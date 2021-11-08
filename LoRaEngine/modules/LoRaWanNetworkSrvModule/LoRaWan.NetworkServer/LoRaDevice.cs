@@ -10,7 +10,6 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
@@ -216,99 +215,99 @@ namespace LoRaWan.NetworkServer
             {
                 // ABP requires the property AppSKey, AppNwkSKey, DevAddr to be present
                 if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
+                {
+                    // ABP Case
+                    AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value as string;
+
+                    if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
+                        throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
+
+                    if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
+                        throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
+
+                    NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value as string;
+                    DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value as string;
+
+                    if (string.IsNullOrEmpty(NwkSKey))
+                        throw new InvalidLoRaDeviceException("NwkSKey is empty");
+
+                    if (string.IsNullOrEmpty(AppSKey))
+                        throw new InvalidLoRaDeviceException("AppSKey is empty");
+
+                    if (string.IsNullOrEmpty(DevAddr))
+                        throw new InvalidLoRaDeviceException("DevAddr is empty");
+
+                    if (twin.Properties.Desired.Contains(TwinProperty.ABPRelaxMode))
                     {
-                        // ABP Case
-                        AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value as string;
-
-                        if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
-                            throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
-
-                        if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
-                            throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
-
-                        NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value as string;
-                        DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value as string;
-
-                        if (string.IsNullOrEmpty(NwkSKey))
-                            throw new InvalidLoRaDeviceException("NwkSKey is empty");
-
-                        if (string.IsNullOrEmpty(AppSKey))
-                            throw new InvalidLoRaDeviceException("AppSKey is empty");
-
-                        if (string.IsNullOrEmpty(DevAddr))
-                            throw new InvalidLoRaDeviceException("DevAddr is empty");
-
-                        if (twin.Properties.Desired.Contains(TwinProperty.ABPRelaxMode))
-                        {
-                            IsABPRelaxedFrameCounter = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.ABPRelaxMode].Value);
-                        }
-
-                        IsOurDevice = true;
+                        IsABPRelaxedFrameCounter = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.ABPRelaxMode].Value);
                     }
+
+                    IsOurDevice = true;
+                }
                 else
+                {
+                    // OTAA
+                    if (!twin.Properties.Desired.Contains(TwinProperty.AppKey))
                     {
-                        // OTAA
-                        if (!twin.Properties.Desired.Contains(TwinProperty.AppKey))
-                        {
-                            throw new InvalidLoRaDeviceException("Missing AppKey for OTAA device");
-                        }
-
-                        AppKey = twin.Properties.Desired[TwinProperty.AppKey].Value as string;
-
-                        if (!twin.Properties.Desired.Contains(TwinProperty.AppEUI))
-                        {
-                            throw new InvalidLoRaDeviceException("Missing AppEUI for OTAA device");
-                        }
-
-                        AppEUI = twin.Properties.Desired[TwinProperty.AppEUI].Value as string;
-
-                        // Check for already joined OTAA device properties
-                        if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
-                            DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value as string;
-
-                        if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
-                            AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value as string;
-
-                        if (twin.Properties.Reported.Contains(TwinProperty.NwkSKey))
-                            NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey].Value as string;
-
-                        if (twin.Properties.Reported.Contains(TwinProperty.NetID))
-                            NetID = twin.Properties.Reported[TwinProperty.NetID].Value as string;
-
-                        if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
-                            DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
-
-                        // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
-                        if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
-                        {
-                            DesiredRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
-                        }
-
-                        if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
-                        {
-                            DesiredRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
-                        }
-
-                        if (twin.Properties.Desired.Contains(TwinProperty.RXDelay))
-                        {
-                            DesiredRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
-                        }
-
-                        if (twin.Properties.Reported.Contains(TwinProperty.RX2DataRate))
-                        {
-                            ReportedRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX2DataRate].Value);
-                        }
-
-                        if (twin.Properties.Reported.Contains(TwinProperty.RX1DROffset))
-                        {
-                            ReportedRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX1DROffset].Value);
-                        }
-
-                        if (twin.Properties.Reported.Contains(TwinProperty.RXDelay))
-                        {
-                            ReportedRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
-                        }
+                        throw new InvalidLoRaDeviceException("Missing AppKey for OTAA device");
                     }
+
+                    AppKey = twin.Properties.Desired[TwinProperty.AppKey].Value as string;
+
+                    if (!twin.Properties.Desired.Contains(TwinProperty.AppEUI))
+                    {
+                        throw new InvalidLoRaDeviceException("Missing AppEUI for OTAA device");
+                    }
+
+                    AppEUI = twin.Properties.Desired[TwinProperty.AppEUI].Value as string;
+
+                    // Check for already joined OTAA device properties
+                    if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
+                        DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value as string;
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
+                        AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value as string;
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.NwkSKey))
+                        NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey].Value as string;
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.NetID))
+                        NetID = twin.Properties.Reported[TwinProperty.NetID].Value as string;
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
+                        DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
+
+                    // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
+                    if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
+                    {
+                        DesiredRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
+                    }
+
+                    if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
+                    {
+                        DesiredRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
+                    }
+
+                    if (twin.Properties.Desired.Contains(TwinProperty.RXDelay))
+                    {
+                        DesiredRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
+                    }
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.RX2DataRate))
+                    {
+                        ReportedRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX2DataRate].Value);
+                    }
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.RX1DROffset))
+                    {
+                        ReportedRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX1DROffset].Value);
+                    }
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.RXDelay))
+                    {
+                        ReportedRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
+                    }
+                }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
                     GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value as string;
@@ -323,73 +322,73 @@ namespace LoRaWan.NetworkServer
                 }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
-                    {
-                        var preferredWindowTwinValue = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
-                        if (preferredWindowTwinValue == Constants.ReceiveWindow2)
-                            PreferredWindow = preferredWindowTwinValue;
-                    }
+                {
+                    var preferredWindowTwinValue = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
+                    if (preferredWindowTwinValue == Constants.ReceiveWindow2)
+                        PreferredWindow = preferredWindowTwinValue;
+                }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
-                    {
-                        var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
-                        _ = Enum.TryParse<DeduplicationMode>(val, true, out var mode);
-                        Deduplication = mode;
-                    }
+                {
+                    var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
+                    _ = Enum.TryParse<DeduplicationMode>(val, true, out var mode);
+                    Deduplication = mode;
+                }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
+                {
+                    if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
                     {
-                        if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
-                        {
-                            ClassType = LoRaDeviceClassType.C;
-                        }
+                        ClassType = LoRaDeviceClassType.C;
                     }
+                }
 
                 if (twin.Properties.Reported.Contains(TwinProperty.PreferredGatewayID))
-                    {
-                        this.preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, twin.Properties.Reported[TwinProperty.PreferredGatewayID].Value as string);
-                    }
+                {
+                    this.preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, twin.Properties.Reported[TwinProperty.PreferredGatewayID].Value as string);
+                }
 
                 if (twin.Properties.Reported.Contains(TwinProperty.Region))
+                {
+                    var regionValue = twin.Properties.Reported[TwinProperty.Region].Value as string;
+                    if (Enum.TryParse<LoRaRegionType>(regionValue, true, out var loRaRegion))
                     {
-                        var regionValue = twin.Properties.Reported[TwinProperty.Region].Value as string;
-                        if (Enum.TryParse<LoRaRegionType>(regionValue, true, out var loRaRegion))
+                        if (Enum.IsDefined(typeof(LoRaRegionType), loRaRegion))
                         {
-                            if (Enum.IsDefined(typeof(LoRaRegionType), loRaRegion))
-                            {
-                                this.region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, loRaRegion);
-                            }
-                        }
-
-                        if (LoRaRegion == LoRaRegionType.NotSet)
-                        {
-                            Logger.Log(DevEUI, $"invalid region value: {regionValue}", LogLevel.Error);
+                            this.region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, loRaRegion);
                         }
                     }
+
+                    if (LoRaRegion == LoRaRegionType.NotSet)
+                    {
+                        Logger.Log(DevEUI, $"invalid region value: {regionValue}", LogLevel.Error);
+                    }
+                }
 
                 //  We are prioritizing the choice of the join channel from reported properties (set for OTAA devices)
                 //  over the manually provisioned channel (set in desired properties for ABP devices).
                 if (twin.Properties.Reported.Contains(TwinProperty.CN470JoinChannel))
-                    {
-                        ReportedCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.CN470JoinChannel].Value);
-                    }
+                {
+                    ReportedCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.CN470JoinChannel].Value);
+                }
                 else if (twin.Properties.Desired.Contains(TwinProperty.CN470JoinChannel))
-                    {
-                        DesiredCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.CN470JoinChannel].Value);
-                    }
+                {
+                    DesiredCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.CN470JoinChannel].Value);
+                }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt))
-                    {
-                        Supports32BitFCnt = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value);
-                    }
+                {
+                    Supports32BitFCnt = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value);
+                }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.KeepAliveTimeout))
+                {
+                    var value = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.KeepAliveTimeout].Value);
+                    if (value > 0)
                     {
-                        var value = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.KeepAliveTimeout].Value);
-                        if (value > 0)
-                        {
-                            KeepAliveTimeout = Math.Max(value, Constants.MinKeepAliveTimeout);
-                        }
+                        KeepAliveTimeout = Math.Max(value, Constants.MinKeepAliveTimeout);
                     }
+                }
 
                 return true;
             }
