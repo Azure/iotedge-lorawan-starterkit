@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public void CreateKeyMethod_Should_Produce_Expected_Key()
         {
             // arrange
-            var expectedKey = "79-67-CF-75-00-58-6B-03-A9-30-B1-C9-84-82-E0-9F-9C-D3-1E-6F-C5-38-9E-D3-F1-63-E6-89-4D-4D-88-B4";
+            var expectedKey = "75-E3-A2-B3-0C-8B-2C-F6-58-02-AA-8F-F8-93-42-56-07-DD-27-B9-51-60-AC-24-76-E4-7C-11-5E-0B-9A-68";
 
             // act/assert
             Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(defaultUpdf));
