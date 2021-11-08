@@ -12,11 +12,11 @@ Accepted
 
 The goal of observability for the LoRaWAN IoT Edge starter kit is to:
 
-1. Monitor if the LoRaWAN Starter Kit solution works accoridng to the user expectations regarding the following factors:
+1. Monitor if the LoRaWAN Starter Kit solution works according to the user expectations regarding the following factors:
    - Coverage. The data is coming from the majority of observed IoT assets
    - Freshness. The data coming from the assets is fresh and relevant
    - Throughput. The data is delivered from the assets without significant delays.
-   - Correctness. The ratio of erors and lost messages from the assets is small
+   - Correctness. The ratio of errors and lost messages from the assets is small
 1. Provide monitoring instruments to detect possible failure/violation in each factor
 1. Provide instruments to identify and diagnose failures to get to the problem quickly
 
