@@ -51,9 +51,8 @@ namespace LoRaTools.Regions
             TXPowertoMaxEIRP.Add(6, 4);
             TXPowertoMaxEIRP.Add(7, 2);
 
-            if (useDwellTimeLimit)
-            {
-                RX1DROffsetTable = new int[8][]
+            RX1DROffsetTable = useDwellTimeLimit
+                ? new int[8][]
                 {
                     new int[] { 2, 2, 2, 2, 2, 2, 2, 2 },
                     new int[] { 2, 2, 2, 2, 2, 2, 2, 3 },
@@ -63,12 +62,9 @@ namespace LoRaTools.Regions
                     new int[] { 5, 4, 3, 2, 2, 2, 6, 7 },
                     new int[] { 6, 5, 4, 3, 2, 2, 7, 7 },
                     new int[] { 7, 6, 5, 4, 3, 2, 7, 7 },
-                };
-            }
-            else
-            {
-                RX1DROffsetTable = new int[8][]
-                 {
+                }
+                : new int[8][]
+                {
                     new int[] { 0, 0, 0, 0, 0, 0, 1, 2 },
                     new int[] { 1, 0, 0, 0, 0, 0, 2, 3 },
                     new int[] { 2, 1, 0, 0, 0, 0, 3, 4 },
@@ -77,8 +73,7 @@ namespace LoRaTools.Regions
                     new int[] { 5, 4, 3, 2, 1, 0, 6, 7 },
                     new int[] { 6, 5, 4, 3, 2, 1, 7, 7 },
                     new int[] { 7, 6, 5, 4, 3, 2, 7, 7 },
-                 };
-            }
+                };
 
             var validDatarates = new HashSet<string>()
             {
