@@ -15,6 +15,12 @@ if [[ -z "$SPI_DEV" ]] || [[ $SPI_DEV == '$LBS_SPI_DEV' ]]; then
     SPI_DEV = 0
 fi
 
+if [[ -z "$TC_TRUST_PATH" ]]; then
+    echo "No TC_TRUST_PATH detected in environment variables."
+else
+    cp $TC_TRUST_PATH tc.trust
+fi
+
 if [[ -z "$TC_URI" ]]; then
     echo "No TC_URI detected in environment variables."
 else
