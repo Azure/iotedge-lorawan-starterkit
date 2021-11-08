@@ -14,6 +14,7 @@ namespace LoRaTools.Regions
     {
         private const double Channel0Frequency = 923.2;
         private const double Channel1Frequency = 923.4;
+        private const double Epsilon = 0.001;
 
         private readonly bool useDwellTimeLimit;
 
@@ -107,7 +108,7 @@ namespace LoRaTools.Regions
             FrequencyOffset = Math.Round(frequencyChannel0.Mega - Channel0Frequency, 2, MidpointRounding.AwayFromZero);
 
             var channel1Offset = Math.Round(frequencyChannel1.Mega - Channel1Frequency, 2, MidpointRounding.AwayFromZero);
-            if (Math.Round(channel1Offset - FrequencyOffset, 1) != 0)
+            if (Math.Abs(channel1Offset - FrequencyOffset) > Epsilon)
             {
                 throw new ConfigurationErrorsException($"Provided channel frequencies {frequencyChannel0}, {frequencyChannel1} for Region {LoRaRegion} are inconsistent.");
             }
