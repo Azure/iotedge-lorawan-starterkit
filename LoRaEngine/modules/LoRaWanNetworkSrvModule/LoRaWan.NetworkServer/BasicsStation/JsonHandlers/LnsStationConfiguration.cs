@@ -183,21 +183,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                       return region;
                                   });
 
-/*
-    {
-      "msgtype"    : "router_config"
-      "NetID"      : [ INT, .. ]
-      "JoinEui"    : [ [INT,INT], .. ]  // ranges: beg,end inclusive
-      "region"     : STRING             // e.g. "EU863", "US902", ..
-      "hwspec"     : STRING
-      "freq_range" : [ INT, INT ]       // min, max (hz)
-      "DRs"        : [ [INT,INT,INT], .. ]   // sf,bw,dnonly
-      "sx1301_conf": [ SX1301CONF, .. ]
-      "nocca"      : BOOL
-      "nodc"       : BOOL
-      "nodwell"    : BOOL
-    }
- */
+        /*
+            {
+              "msgtype"    : "router_config"
+              "NetID"      : [ INT, .. ]
+              "JoinEui"    : [ [INT,INT], .. ]  // ranges: beg,end inclusive
+              "region"     : STRING             // e.g. "EU863", "US902", ..
+              "hwspec"     : STRING
+              "freq_range" : [ INT, INT ]       // min, max (hz)
+              "DRs"        : [ [INT,INT,INT], .. ]   // sf,bw,dnonly
+              "sx1301_conf": [ SX1301CONF, .. ]
+              "nocca"      : BOOL
+              "nodc"       : BOOL
+              "nodwell"    : BOOL
+            }
+        */
 
         public static string GetConfiguration(string jsonInput) => RouterConfigurationConverter.Read(jsonInput);
 

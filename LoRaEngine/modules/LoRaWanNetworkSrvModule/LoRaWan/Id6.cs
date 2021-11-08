@@ -75,7 +75,7 @@ namespace LoRaWan
                 (colon, state) = state switch
 #pragma warning restore IDE0072 // Add missing cases
                 {
-                    var s and (FormatterState.Word or FormatterState.Blank or FormatterState.ColonColonWord)  => (true, s),
+                    var s and (FormatterState.Word or FormatterState.Blank or FormatterState.ColonColonWord) => (true, s),
                     FormatterState.WordColonBlank or FormatterState.BlankColonBlank => (true, FormatterState.ColonColon),
                     var s => (false, s)
                 };
@@ -174,7 +174,7 @@ namespace LoRaWan
             {
                 var ch = chars[0];
 
-                restate:
+            restate:
                 switch (state)
                 {
                     case ParserState.BeforeColonColon:
