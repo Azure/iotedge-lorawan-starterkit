@@ -29,6 +29,8 @@ namespace LoRaTools.Regions
 
             useDwellTimeLimit = dwellTime == 1;
 
+            FrequencyOffset = 0;
+
             // Values assuming FOpts param is used
             DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
             DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
