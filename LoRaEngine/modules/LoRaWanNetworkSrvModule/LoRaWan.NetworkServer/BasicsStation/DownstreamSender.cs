@@ -11,17 +11,22 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading.Tasks;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
+    using Microsoft.Extensions.Logging;
 
     internal class DownstreamSender : IPacketForwarder
     {
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
+        private readonly ILogger<DownstreamSender> logger;
         private readonly Random random = new Random();
 
-        public DownstreamSender(WebSocketWriterRegistry<StationEui, string> socketWriterRegistry, IBasicsStationConfigurationService basicsStationConfigurationService)
+        public DownstreamSender(WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
+                                IBasicsStationConfigurationService basicsStationConfigurationService,
+                                ILogger<DownstreamSender> logger)
         {
             this.socketWriterRegistry = socketWriterRegistry;
             this.basicsStationConfigurationService = basicsStationConfigurationService;
+            this.logger = logger;
         }
 
         public async Task SendDownstreamAsync(DownlinkPktFwdMessage message)
@@ -29,12 +34,19 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (message is null) throw new ArgumentNullException(nameof(message));
             if (message.StationEui == default) throw new ArgumentException($"A proper StationEui needs to be set. Received '{message.StationEui}'.");
 
+            using var scope = this.logger.BeginDeviceScope(message.DevEui);
+
             if (this.socketWriterRegistry.TryGetHandle(message.StationEui, out var webSocketWriterHandle))
             {
                 var region = await this.basicsStationConfigurationService.GetRegionAsync(message.StationEui, CancellationToken.None);
                 var payload = Message(message, region);
+                this.logger.LogDebug("Sending message to station with EUI '{stationEui}'. Payload '{payload}'.", message.StationEui, message.Txpk.Data);
                 await webSocketWriterHandle.SendAsync(payload, CancellationToken.None);
-            };
+            }
+            else
+            {
+                this.logger.LogWarning("Could not retrieve an active connection for Station with EUI '{stationEui}'. The payload '{payload}' will be dropped.", message.StationEui, message.Txpk.Data);
+            }
         }
 
         private string Message(DownlinkPktFwdMessage message, Region region)

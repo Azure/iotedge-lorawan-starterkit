@@ -37,7 +37,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
 
             loraDataByteArray = Encoding.UTF8.GetBytes(loraDataBase64);
 
-            downlinkSender = new DownstreamSender(socketWriterRegistry, basicStationConfigurationService.Object);
+            downlinkSender = new DownstreamSender(socketWriterRegistry,
+                                                  basicStationConfigurationService.Object,
+                                                  Mock.Of<ILogger<DownstreamSender>>());
         }
 
         [Theory]
