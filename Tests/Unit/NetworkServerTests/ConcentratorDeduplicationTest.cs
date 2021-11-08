@@ -13,11 +13,11 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
     {
-        private readonly ConcentratorDeduplication ConcentratorDeduplication;
+        private readonly ConcentratorDeduplication concentratorDeduplication;
 
         public ConcentratorDeduplicationTest()
         {
-            this.ConcentratorDeduplication = new ConcentratorDeduplication(NullLogger<IConcentratorDeduplication>.Instance);
+            this.concentratorDeduplication = new ConcentratorDeduplication(NullLogger<IConcentratorDeduplication>.Instance);
         }
 
         [Theory]
@@ -30,16 +30,16 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var stationEui = new StationEui();
             if (!isCacheEmpty)
             {
-                _ = this.ConcentratorDeduplication.ShouldDrop(new UpstreamDataFrame(default, 1, "another_payload", default), stationEui);
+                _ = this.concentratorDeduplication.ShouldDrop(new UpstreamDataFrame(default, 1, "another_payload", default), stationEui);
             }
 
             // act
-            var result = this.ConcentratorDeduplication.ShouldDrop(updf, stationEui);
+            var result = this.concentratorDeduplication.ShouldDrop(updf, stationEui);
 
             // assert
             Assert.False(result);
             var key = ConcentratorDeduplication.CreateCacheKey(updf);
-            Assert.True(this.ConcentratorDeduplication.Cache.TryGetValue(key, out var addedStation));
+            Assert.True(this.concentratorDeduplication.Cache.TryGetValue(key, out var addedStation));
             Assert.Equal(stationEui, addedStation);
         }
 
@@ -51,15 +51,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // arrange
             var updf = new UpstreamDataFrame(default, 1, "payload", default);
             var stationEui = new StationEui();
-            _ = this.ConcentratorDeduplication.ShouldDrop(updf, stationEui);
+            _ = this.concentratorDeduplication.ShouldDrop(updf, stationEui);
 
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
 
             // act/assert
-            Assert.Equal(expectedResult, this.ConcentratorDeduplication.ShouldDrop(updf, anotherStation));
+            Assert.Equal(expectedResult, this.concentratorDeduplication.ShouldDrop(updf, anotherStation));
             var key = ConcentratorDeduplication.CreateCacheKey(updf);
-            Assert.Equal(1, this.ConcentratorDeduplication.Cache.Count);
-            Assert.True(this.ConcentratorDeduplication.Cache.TryGetValue(key, out var addedStation));
+            Assert.Equal(1, this.concentratorDeduplication.Cache.Count);
+            Assert.True(this.concentratorDeduplication.Cache.TryGetValue(key, out var addedStation));
             Assert.Equal(expectedResult ? stationEui : anotherStation, addedStation);
         }
 
@@ -103,6 +103,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(expectedResult, sut.Cache.TryGetValue(key, out var _));
         }
 
-        public void Dispose() => this.ConcentratorDeduplication.Dispose();
+        public void Dispose() => this.concentratorDeduplication.Dispose();
     }
 }

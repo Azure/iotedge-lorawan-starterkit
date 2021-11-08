@@ -14,16 +14,16 @@ namespace LoRaWan.NetworkServer
     {
         internal readonly MemoryCache Cache;
 
-        private readonly ILogger<IConcentratorDeduplication> Logger;
-        private readonly TimeSpan CacheEntryExpiration;
+        private readonly ILogger<IConcentratorDeduplication> logger;
+        private readonly TimeSpan cacheEntryExpiration;
 
         public ConcentratorDeduplication(
             ILogger<IConcentratorDeduplication> logger,
             int cacheEntryExpirationInMilliSeconds = 60_000)
         {
             this.Cache = new MemoryCache(new MemoryCacheOptions());
-            this.Logger = logger;
-            this.CacheEntryExpiration = TimeSpan.FromMilliseconds(cacheEntryExpirationInMilliSeconds);
+            this.logger = logger;
+            this.cacheEntryExpiration = TimeSpan.FromMilliseconds(cacheEntryExpirationInMilliSeconds);
         }
 
         public bool ShouldDrop(UpstreamDataFrame updf, StationEui stationEui)
@@ -44,11 +44,11 @@ namespace LoRaWan.NetworkServer
 
             if (previousStation == stationEui)
             {
-                this.Logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
+                this.logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
                 return false;
             }
 
-            this.Logger.LogInformation($"Duplicate message detected from DevAddr: {updf.DevAddr}, dropping.");
+            this.logger.LogInformation($"Duplicate message detected from DevAddr: {updf.DevAddr}, dropping.");
             return true;
         }
 
@@ -63,7 +63,7 @@ namespace LoRaWan.NetworkServer
         private void AddToCache(string key, StationEui stationEui)
             => this.Cache.Set(key, stationEui, new MemoryCacheEntryOptions()
             {
-                SlidingExpiration = this.CacheEntryExpiration
+                SlidingExpiration = this.cacheEntryExpiration
             });
 
         public void Dispose() => this.Cache.Dispose();
