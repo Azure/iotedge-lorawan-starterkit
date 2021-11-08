@@ -564,7 +564,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
             'nodwell': true}");
 
             var region = LnsStationConfiguration.GetRegion(config);
-            Assert.Equal(RegionManager.AS923, region);
+            Assert.Equal(typeof(RegionAS923), region.GetType()); ;
             Assert.Equal(-1.8, ((RegionAS923)region).FrequencyOffset);
         }
     }

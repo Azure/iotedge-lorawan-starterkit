@@ -162,6 +162,6 @@ namespace LoRaTools.Regions
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
         public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
-            new RX2ReceiveWindow(923.2 + FrequencyOffset, 2);
+            new RX2ReceiveWindow(Math.Round(923.2 + FrequencyOffset, 2, MidpointRounding.AwayFromZero), 2);
     }
 }

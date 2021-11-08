@@ -12,7 +12,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     {
         public RegionAS923TestWithRxpk()
         {
-            Region = RegionManager.AS923;
+            Region = new RegionAS923().WithFrequencyOffset(new Hertz(923_200_000), new Hertz(923_400_000));
         }
 
         [Theory]
