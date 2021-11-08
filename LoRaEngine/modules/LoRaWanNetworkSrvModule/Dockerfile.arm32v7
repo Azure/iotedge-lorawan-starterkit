@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build-env
 
 WORKDIR /build
 COPY Directory.Build.props ./
@@ -24,7 +24,7 @@ WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModul
 
 RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:3.1-bullseye-slim-arm32v7
+FROM mcr.microsoft.com/dotnet/aspnet:3.1-buster-slim-arm32v7
 WORKDIR /app
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
 
