@@ -93,13 +93,7 @@ namespace LoRaTools.Regions
             {
                 if (eu868 == null)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                    // False positive
-                    if (eu868 == null)
-#pragma warning restore CA1508 // Avoid dead conditional code
-                    {
-                        eu868 = new RegionEU868();
-                    }
+                    eu868 = new RegionEU868();
                 }
 
                 return eu868;
@@ -114,13 +108,7 @@ namespace LoRaTools.Regions
             {
                 if (us915 == null)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                    // False positive
-                    if (us915 == null)
-#pragma warning restore CA1508 // Avoid dead conditional code
-                    {
-                        us915 = new RegionUS915();
-                    }
+                    us915 = new RegionUS915();
                 }
 
                 return us915;
@@ -135,13 +123,7 @@ namespace LoRaTools.Regions
             {
                 if (cn470 == null)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                    // False positive
-                    if (cn470 == null)
-#pragma warning restore CA1508 // Avoid dead conditional code
-                    {
-                        cn470 = new RegionCN470();
-                    }
+                    cn470 = new RegionCN470();
                 }
 
                 return cn470;
@@ -156,14 +138,9 @@ namespace LoRaTools.Regions
             {
                 if (as923 == null)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                    // False positive
-                    if (as923 == null)
-#pragma warning restore CA1508 // Avoid dead conditional code
-                    {
-                        // Temporarily using these default parameter values until we can pass the configured frequencies to the region
-                        as923 = new RegionAS923(new LoRaWan.Hertz(923200000), new LoRaWan.Hertz(923400000));
-                    }
+
+                    // Temporarily using these default parameter values until we can pass the configured frequencies to the region
+                    as923 = new RegionAS923(new LoRaWan.Hertz(923200000), new LoRaWan.Hertz(923400000));
                 }
 
                 return as923;
