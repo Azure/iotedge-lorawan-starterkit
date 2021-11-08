@@ -75,17 +75,17 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [Theory]
         [InlineData(100, 50, true)]
         [InlineData(100, 150, false)]
-        public async void CachedEntries_Should_Expire(int expirationTimeout, int delay, bool expectedResult)
+        public async void CachedEntries_Should_Expire(int expirationInMilliseconds, int delayInMilliseconds, bool expectedResult)
         {
             // arrange
-            using var sut = new ConcentratorDeduplication(NullLogger<IConcentratorDeduplication>.Instance, expirationTimeout);
+            using var sut = new ConcentratorDeduplication(NullLogger<IConcentratorDeduplication>.Instance, TimeSpan.FromMilliseconds(expirationInMilliseconds));
             var stationEui = new StationEui();
 
             // act
             _ = sut.ShouldDrop(defaultUpdf, stationEui);
 
             // assert
-            await Task.Delay(delay);
+            await Task.Delay(delayInMilliseconds);
             var key = ConcentratorDeduplication.CreateCacheKey(defaultUpdf);
             Assert.Equal(expectedResult, sut.Cache.TryGetValue(key, out var _));
         }

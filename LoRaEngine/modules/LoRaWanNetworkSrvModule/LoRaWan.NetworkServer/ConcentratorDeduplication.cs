@@ -16,14 +16,15 @@ namespace LoRaWan.NetworkServer
 
         private readonly ILogger<IConcentratorDeduplication> logger;
         private readonly TimeSpan cacheEntryExpiration;
+        private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
         public ConcentratorDeduplication(
             ILogger<IConcentratorDeduplication> logger,
-            int cacheEntryExpirationInMilliSeconds = 60_000)
+            TimeSpan? cacheEntryExpiration = null)
         {
             this.Cache = new MemoryCache(new MemoryCacheOptions());
             this.logger = logger;
-            this.cacheEntryExpiration = TimeSpan.FromMilliseconds(cacheEntryExpirationInMilliSeconds);
+            this.cacheEntryExpiration = cacheEntryExpiration ?? DefaultExpiration;
         }
 
         public bool ShouldDrop(UpstreamDataFrame updf, StationEui stationEui)
