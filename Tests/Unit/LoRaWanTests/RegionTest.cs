@@ -136,7 +136,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             if (upstream)
             {
                 Assert.NotNull(datarate);
+#pragma warning disable CWE476 // false positive
                 Assert.Equal(isValid, region.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue((ushort)datarate));
+#pragma warning restore CWE476 // false positive
             }
             else
             {
