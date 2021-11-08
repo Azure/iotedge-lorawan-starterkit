@@ -262,7 +262,7 @@ namespace LoRaWan.NetworkServer
                     loraSpecDesiredRxDelay,
                     null);
 
-                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.StationEui);
+                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.Rxpk.Rfch, request.Rxpk.Time, request.StationEui);
                 if (joinAccept != null)
                 {
                     _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);

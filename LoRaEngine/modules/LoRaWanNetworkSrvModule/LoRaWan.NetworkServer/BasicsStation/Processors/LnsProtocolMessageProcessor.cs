@@ -11,8 +11,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Linq;
     using System.Net.NetworkInformation;
     using System.Net.WebSockets;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
@@ -22,14 +24,20 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     {
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
+        private readonly IPacketForwarder downstreamSender;
+        private readonly IMessageDispatcher messageDispatcher;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
+                                           IPacketForwarder packetForwarder,
+                                           IMessageDispatcher messageDispatcher,
                                            ILogger<LnsProtocolMessageProcessor> logger)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.socketWriterRegistry = socketWriterRegistry;
+            this.downstreamSender = packetForwarder;
+            this.messageDispatcher = messageDispatcher;
             this.logger = logger;
         }
 
@@ -166,14 +174,58 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 case LnsMessageType.Version:
                     var stationVersion = LnsData.VersionMessageReader.Read(json);
                     this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
-                    var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
-                    await socket.SendAsync(response, cancellationToken);
+                    var routerConfigResponse = await this.basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
+                    await socket.SendAsync(routerConfigResponse, cancellationToken);
                     break;
                 case LnsMessageType.JoinRequest:
                     this.logger.LogInformation($"Received 'jreq' message: {json}.");
+                    try
+                    {
+                        var jreq = LnsData.JoinRequestFrameReader.Read(json);
+                        var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
+                        var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
+
+                        var loraRequest = new LoRaRequest(rxpk, this.downstreamSender, DateTime.UtcNow);
+                        loraRequest.SetPayload(new LoRaPayloadJoinRequestLns(jreq.MacHeader,
+                                                                             jreq.JoinEui,
+                                                                             jreq.DevEui,
+                                                                             jreq.DevNonce,
+                                                                             jreq.Mic));
+                        loraRequest.SetRegion(routerRegion);
+                        loraRequest.SetStationEui(stationEui);
+                        this.messageDispatcher.DispatchRequest(loraRequest);
+
+                    }
+                    catch (JsonException)
+                    {
+                        this.logger.LogInformation($"Received unexpected 'jreq' message: {json}.");
+                    }
                     break;
                 case LnsMessageType.UplinkDataFrame:
                     this.logger.LogInformation($"Received 'updf' message: {json}.");
+                    try
+                    {
+                        var updf = LnsData.UpstreamDataFrameReader.Read(json);
+                        var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
+                        var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
+
+                        var loraRequest = new LoRaRequest(rxpk, this.downstreamSender, DateTime.UtcNow);
+                        loraRequest.SetPayload(new LoRaPayloadDataLns(updf.DevAddr,
+                                                                      updf.MacHeader,
+                                                                      updf.Control,
+                                                                      updf.Counter,
+                                                                      updf.Options,
+                                                                      updf.Payload,
+                                                                      updf.Port,
+                                                                      updf.Mic));
+                        loraRequest.SetRegion(routerRegion);
+                        loraRequest.SetStationEui(stationEui);
+                        this.messageDispatcher.DispatchRequest(loraRequest);
+                    }
+                    catch (JsonException)
+                    {
+                        this.logger.LogError($"Received unexpected 'updf' message: {json}.");
+                    }
                     break;
                 case LnsMessageType.TransmitConfirmation:
                     this.logger.LogInformation($"Received 'dntxed' message: {json}.");
