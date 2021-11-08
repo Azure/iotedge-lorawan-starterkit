@@ -12,7 +12,7 @@ Currently the documentation is not very well structured, and content is hard to 
 
 ### 1. Structurize the current folders
 
-Bring more structure to the current documentation folders, and use GitHub "markdown-preview" feature. The docs can be searched via GitHunb search function. This also means adding additional links from each document to other documents to make things more discoverable.
+Bring more structure to the current documentation folders, and use GitHub "markdown-preview" feature. The docs can be searched via GitHub search function. This also means adding additional links from each document to other documents to make things more discoverable.
 
 ### 2. Use GitHub pages
 
