@@ -4,7 +4,6 @@ WORKDIR /build
 COPY Directory.Build.props ./
 COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
-COPY global.json ./
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj", "LoRaWanNetworkSrvModule/"]
@@ -12,7 +11,7 @@ COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoRaWan.
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan/LoRaWan.csproj", "LoRaWan/"]
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools/LoRaTools.csproj", "LoraTools/"]
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger/Logger.csproj", "Logger/"]
-RUN dotnet restore "LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj" -r linux-arm
+RUN dotnet restore "LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj"
 
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger Logger
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools LoraTools
@@ -22,7 +21,7 @@ COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan LoRaWan
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule
 
-RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out -r linux-arm --no-restore --self-contained false
+RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:3.1-bullseye-slim-arm32v7
 WORKDIR /app
