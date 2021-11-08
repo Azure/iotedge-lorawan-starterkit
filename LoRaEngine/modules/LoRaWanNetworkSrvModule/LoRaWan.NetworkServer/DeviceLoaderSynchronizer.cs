@@ -45,7 +45,6 @@ namespace LoRaWan.NetworkServer
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
         private readonly NetworkServerConfiguration configuration;
         private readonly Action<LoRaDevice> registerDeviceAction;
-        private readonly Task loading;
         private volatile LoaderState state;
         private volatile bool loadingDevicesFailed;
         private readonly object queueLock;
@@ -72,10 +71,20 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
-            this.loading = Task.Run(() => Load().ContinueWith((t) => continuationAction(t, this),
-                                                                   CancellationToken.None,
-                                                                   TaskContinuationOptions.ExecuteSynchronously,
-                                                                   TaskScheduler.Default));
+            _ = TaskUtil.RunOnThreadPool(async () =>
+            {
+                var t = Load();
+
+                try
+                {
+                    await t;
+                }
+                finally
+                {
+                    continuationAction(t, this);
+                }
+            },
+            ex => Logger.Log($"Error while loading: {ex}.", LogLevel.Error));
         }
 
         private async Task Load()
@@ -95,8 +104,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(this.devAddr, $"error searching device for payload. {ex.Message}", LogLevel.Error);
-                    throw;
+                    throw new LoRaProcessingException("Error when searching device for payload.", ex);
                 }
 
                 SetState(LoaderState.CreatingDeviceInstances);
@@ -120,9 +128,8 @@ namespace LoRaWan.NetworkServer
                     SetState(LoaderState.Finished);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Logger.Log(this.devAddr, $"failed to create one or more devices. {ex.Message}", LogLevel.Error);
                 NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason.ApplicationError);
                 throw;
             }

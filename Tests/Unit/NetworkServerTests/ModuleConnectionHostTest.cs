@@ -174,7 +174,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).Throws<IotHubCommunicationException>();
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object);
-            await Assert.ThrowsAsync<IotHubCommunicationException>(() => moduleClient.CreateAsync(CancellationToken.None));
+            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => moduleClient.CreateAsync(CancellationToken.None));
+            Assert.Equal(LoRaProcessingErrorCode.TwinFetchFailed, ex.ErrorCode);
         }
 
         [Fact]
