@@ -1,10 +1,9 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim-amd64 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim AS build-env
 
 WORKDIR /build
 COPY Directory.Build.props ./
 COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
-COPY global.json ./
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj", "LoRaWanNetworkSrvModule/"]
