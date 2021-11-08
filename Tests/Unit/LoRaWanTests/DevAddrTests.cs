@@ -30,6 +30,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Fact]
+        public void Write_Writes_Byte_And_Returns_Updated_Span()
+        {
+            var bytes = new byte[4];
+            var remainingBytes = this.subject.Write(bytes);
+            Assert.Equal(0, remainingBytes.Length);
+            Assert.Equal(new byte[] { 222, 123, 111, 235 }, bytes);
+        }
+
+        [Fact]
         public void Equals_Returns_True_When_Value_Equals()
         {
             var other = this.subject; // assignment = value copy semantics

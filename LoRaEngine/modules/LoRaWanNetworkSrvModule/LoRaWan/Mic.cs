@@ -28,6 +28,12 @@ namespace LoRaWan
         public static bool operator ==(Mic left, Mic right) => left.Equals(right);
         public static bool operator !=(Mic left, Mic right) => !left.Equals(right);
 
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
+            return buffer[Size..];
+        }
+
         //   The Message Integrity Code (MIC) ensures the integrity and authenticity of a message.
         //   The message integrity code is calculated over all the fields in the message and then added
         //   to the message. The following list shows what fields are used to calculate the MIC for each

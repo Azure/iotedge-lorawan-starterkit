@@ -22,6 +22,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Fact]
+        public void FromMega_Returns_Expected_Hertz()
+        {
+            var hz = Hertz.FromMega(863.5);
+            Assert.Equal(863500, hz.Kilo);
+            Assert.Equal(863.5, hz.Mega);
+            Assert.Equal(0.8635, hz.Giga);
+        }
+
+        [Fact]
         public void Equals_Returns_True_When_Value_Equals()
         {
             var other = new Hertz(863_000_000);

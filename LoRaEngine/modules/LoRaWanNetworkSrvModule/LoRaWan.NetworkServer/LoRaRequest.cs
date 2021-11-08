@@ -10,6 +10,8 @@ namespace LoRaWan.NetworkServer
 
     public class LoRaRequest
     {
+        public virtual StationEui StationEui { get; private set; }
+
         public virtual Rxpk Rxpk { get; }
 
         public virtual LoRaPayload Payload { get; private set; }
@@ -56,6 +58,8 @@ namespace LoRaWan.NetworkServer
         internal void SetPayload(LoRaPayload loRaPayload) => Payload = loRaPayload;
 
         internal void SetRegion(Region loRaRegion) => Region = loRaRegion;
+
+        internal void SetStationEui(StationEui stationEui) => StationEui = stationEui;
 
         public virtual LoRaOperationTimeWatcher GetTimeWatcher() => new LoRaOperationTimeWatcher(Region, StartTime);
     }

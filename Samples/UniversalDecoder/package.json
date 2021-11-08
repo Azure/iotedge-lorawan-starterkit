@@ -18,8 +18,8 @@
         "express-validator": "^6.13.0",
         "fs-extra": "^10.0.0",
         "glob": "^7.1.7",
-        "pino": "^7.0.5",
-        "pino-pretty": "^7.1.0"
+        "pino": "^7.1.0",
+        "pino-pretty": "^7.2.0"
     },
     "devDependencies": {
         "jest": "^27.3.1",
