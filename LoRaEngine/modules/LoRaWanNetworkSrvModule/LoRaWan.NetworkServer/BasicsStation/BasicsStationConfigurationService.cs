@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                   LoRaProcessingErrorCode.InvalidDeviceConfiguration);
             }
 
-            var info = queryResult.Single();
+            var info = queryResult[0];
             using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
             var twin = await client.GetTwinAsync();
 
