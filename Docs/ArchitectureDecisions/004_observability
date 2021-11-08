@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-The goals of observability for the LoRaWAN IoT Edge starter kit are to:
+The goal of observability for the LoRaWAN IoT Edge starter kit is to:
 
 1. Monitor if the LoRaWAN Starter Kit solution works accoridng to the user expectations regarding the following factors:
    - Coverage. The data is coming from the majority of observed IoT assets
@@ -100,7 +100,3 @@ We support the following alerts when the user opts in to use Application Insight
 ## Alternatives considered
 
 As a generic alternative to the Application Insights SDK we considered the OpenTelemetry .NET SDK. This would allow us to abstract emitting telemetry for different backend systems. However, the status of the project - [open-telemetry/opentelemetry-dotnet: The OpenTelemetry .NET Client (github.com)](https://github.com/open-telemetry/opentelemetry-dotnet) - is not ready to be added to the Starter Kit. Especially Prometheus exporter (alpha) and metrics in general (experimental) do not help us improving our solution at the moment.
-
-### Logging
-
-We considered to make it configurable to emit logs as IoT Hub messages. Since this would only enable us to send logs of the LNS to IoT Hub, and not logs of the edgeAgent or edgeHub, we decided to not support this feature for now.
