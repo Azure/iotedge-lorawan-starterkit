@@ -27,13 +27,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
         public MacHeader MacHeader { get; }
-        public virtual DevAddr DevAddr { get; }
+        public DevAddr DevAddr { get; }
         public FrameControl Control { get; }
-        public virtual ushort Counter { get; }
+        public ushort Counter { get; }
         public string Options { get; }
         public FramePort Port { get; }
-        public virtual string Payload { get; }
-        public virtual Mic Mic { get; }
+        public string Payload { get; }
+        public Mic Mic { get; }
         public RadioMetadata RadioMetadata { get; }
     }
 }

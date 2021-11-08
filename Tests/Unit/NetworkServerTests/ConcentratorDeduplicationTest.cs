@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     public sealed class ConcentratorDeduplicationTest : IDisposable
     {
         private readonly ConcentratorDeduplication concentratorDeduplication;
-        private static readonly UpstreamDataFrame defaultUpdf = new UpstreamDataFrame(default, default, default, 1, "payload", default, default, default, default);
+        private static readonly UpstreamDataFrame defaultUpdf = new UpstreamDataFrame(default, new DevAddr(), default, 1, default, default, "payload", new Mic(), default);
 
 
         public ConcentratorDeduplicationTest()
@@ -64,29 +64,13 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public void CacheKey_Should_Consider_All_Required_Fields()
+        public void CreateKeyMethod_Should_Produce_Expected_Key()
         {
             // arrange
-            var updf = new Mock<UpstreamDataFrame>(
-                new MacHeader(),
-                default,
-                default,
-                default,
-                default,
-                default,
-                "payload",
-                default,
-                default);
-            _ = updf.Setup(x => x.DevAddr);
-            _ = updf.Setup(x => x.Counter);
-            _ = updf.Setup(x => x.Payload);
-            _ = updf.Setup(x => x.Mic);
+            var expectedKey = "B2-B3-F7-92-97-4D-5B-9A-03-96-17-4A-56-EE-9E-B8-18-A1-EB-2E-98-28-AE-57-3D-DE-34-ED-E3-55-DF-81";
 
-            // act
-            _ = ConcentratorDeduplication.CreateCacheKey(updf.Object);
-
-            // assert
-            updf.VerifyAll();
+            // act/assert
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(defaultUpdf));
         }
 
         [Theory]
