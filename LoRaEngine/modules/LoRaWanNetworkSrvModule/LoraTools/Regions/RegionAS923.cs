@@ -5,22 +5,31 @@ namespace LoRaTools.Regions
 {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
 
     public class RegionAS923 : Region
     {
+        private const ulong Channel0Frequency = 923_200_000;
+        private const ulong Channel1Frequency = 923_400_000;
+
         private readonly Hertz frequencyOffset;
         private readonly bool useDwellTimeLimit;
 
         public RegionAS923(Hertz frequencyChannel0, Hertz frequencyChannel1, int dwellTime = 0)
             : base(LoRaRegionType.AS923)
         {
-            frequencyOffset = new Hertz(frequencyChannel0.AsUInt64 - 923_200_000);
-            if (frequencyChannel1.AsUInt64 - 923_400_000 != frequencyOffset.AsUInt64)
+            frequencyOffset = new Hertz(frequencyChannel0.AsUInt64 - Channel0Frequency);
+            if (frequencyChannel1.AsUInt64 - Channel1Frequency != frequencyOffset.AsUInt64)
             {
-                throw new ArgumentException($"Provided channel frequencies {frequencyChannel0}, {frequencyChannel1} for Region {LoRaRegion} are inconsistent.");
+                throw new ConfigurationErrorsException($"Provided channel frequencies {frequencyChannel0}, {frequencyChannel1} for Region {LoRaRegion} are inconsistent.");
+            }
+
+            if (dwellTime is not 0 and not 1)
+            {
+                throw new ConfigurationErrorsException($"Incorrect DwellTime parameter value {dwellTime}; allowed values are 0 or 1.");
             }
 
             useDwellTimeLimit = dwellTime == 1;
