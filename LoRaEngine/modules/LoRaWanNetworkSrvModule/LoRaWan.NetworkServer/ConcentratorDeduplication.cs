@@ -55,7 +55,7 @@ namespace LoRaWan.NetworkServer
         internal static string CreateCacheKey(UpstreamDataFrame updf)
         {
             using var sha256 = SHA256.Create();
-            var key = sha256.ComputeHash(Encoding.UTF8.GetBytes(string.Join("", updf.DevAddr, updf.FrameCounter, updf.FRMPayload, updf.Mic)));
+            var key = sha256.ComputeHash(Encoding.UTF8.GetBytes(string.Join("", updf.DevAddr, updf.Counter, updf.Payload, updf.Mic)));
 
             return BitConverter.ToString(key);
         }
