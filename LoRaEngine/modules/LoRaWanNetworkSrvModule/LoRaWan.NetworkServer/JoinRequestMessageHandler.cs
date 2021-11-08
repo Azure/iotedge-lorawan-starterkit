@@ -182,7 +182,7 @@ namespace LoRaWan.NetworkServer
                 if (windowToUse == Constants.ReceiveWindow1)
                 {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                        datr = loraRegion.GetDownstreamDR(request.Rxpk);
+                        datr = loraRegion.GetDownstreamDataRate(request.Rxpk);
                         if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                         {
@@ -203,7 +203,7 @@ namespace LoRaWan.NetworkServer
 
                         freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                        datr = loraRegion.GetDownstreamRX2Datarate(devEUI, this.configuration.Rx2DataRate, null);
+                        datr = loraRegion.GetDownstreamRX2DataRate(devEUI, this.configuration.Rx2DataRate, null);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     }
 

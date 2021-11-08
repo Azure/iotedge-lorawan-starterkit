@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
         protected void TestRegionDataRateRxpk(IList<Rxpk> rxpk, string outputDr, int rx1DrOffset = 0)
         {
-            Assert.Equal(Region.GetDownstreamDR(rxpk[0], rx1DrOffset), outputDr);
+            Assert.Equal(Region.GetDownstreamDataRate(rxpk[0], rx1DrOffset), outputDr);
         }
 
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             var rxpk = GenerateRxpk(datarate, freq);
             Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _, deviceJoinInfo));
-            Assert.Null(Region.GetDownstreamDR(rxpk[0]));
+            Assert.Null(Region.GetDownstreamDataRate(rxpk[0]));
         }
 
         protected static IList<Rxpk> GenerateRxpk(string dr, double freq)
@@ -95,7 +95,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         protected void TestDownstreamRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
         {
             var devEui = "testDevice";
-            var datr = Region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo);
+            var datr = Region.GetDownstreamRX2DataRate(devEui, nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo);
             Assert.Equal(expectedDr, datr);
         }
 

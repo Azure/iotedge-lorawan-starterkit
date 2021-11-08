@@ -164,23 +164,40 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                                     ? RegionManager.TryTranslateToRegion(loraRegionType, out var resolvedRegion)
                                                                         ? resolvedRegion
                                                                         : throw new NotSupportedException($"'{loraRegionType}' is not a supported region.")
-                                                                    : throw new JsonException($"'{s}' is not a valid region value as defined in '{nameof(LoRaRegionType)}'.")));
+                                                                    : throw new JsonException($"'{s}' is not a valid region value as defined in '{nameof(LoRaRegionType)}'.")),
+                              JsonReader.Property("sx1301_conf", JsonReader.Array(Sx1301ConfReader)),
+                                  (region, radioConf) =>
+                                  {
+                                      if (region is RegionAS923 as923 && radioConf.FirstOrDefault() is { } configuration)
+                                      {
+                                          var chan0CentralFreq = configuration.ChannelMultiSf0.Radio ? configuration.Radio0.Freq.AsUInt64
+                                                                                                     : configuration.Radio1.Freq.AsUInt64;
+                                          var chan0Freq = configuration.ChannelMultiSf0.If < 0 ? chan0CentralFreq - (ulong)(-1 * configuration.ChannelMultiSf0.If)
+                                                                                               : chan0CentralFreq + (ulong)configuration.ChannelMultiSf0.If;
+                                          var chan1CentralFreq = configuration.ChannelMultiSf1.Radio ? configuration.Radio0.Freq.AsUInt64
+                                                                                                     : configuration.Radio1.Freq.AsUInt64;
+                                          var chan1Freq = configuration.ChannelMultiSf1.If < 0 ? chan1CentralFreq - (ulong)(-1 * configuration.ChannelMultiSf1.If)
+                                                                                               : chan1CentralFreq + (ulong)configuration.ChannelMultiSf1.If;
+                                          return as923.WithFrequencyOffset(new Hertz(chan0Freq), new Hertz(chan1Freq));
+                                      }
+                                      return region;
+                                  });
 
-        /*
-            {
-              "msgtype"    : "router_config"
-              "NetID"      : [ INT, .. ]
-              "JoinEui"    : [ [INT,INT], .. ]  // ranges: beg,end inclusive
-              "region"     : STRING             // e.g. "EU863", "US902", ..
-              "hwspec"     : STRING
-              "freq_range" : [ INT, INT ]       // min, max (hz)
-              "DRs"        : [ [INT,INT,INT], .. ]   // sf,bw,dnonly
-              "sx1301_conf": [ SX1301CONF, .. ]
-              "nocca"      : BOOL
-              "nodc"       : BOOL
-              "nodwell"    : BOOL
-            }
-         */
+/*
+    {
+      "msgtype"    : "router_config"
+      "NetID"      : [ INT, .. ]
+      "JoinEui"    : [ [INT,INT], .. ]  // ranges: beg,end inclusive
+      "region"     : STRING             // e.g. "EU863", "US902", ..
+      "hwspec"     : STRING
+      "freq_range" : [ INT, INT ]       // min, max (hz)
+      "DRs"        : [ [INT,INT,INT], .. ]   // sf,bw,dnonly
+      "sx1301_conf": [ SX1301CONF, .. ]
+      "nocca"      : BOOL
+      "nodc"       : BOOL
+      "nodwell"    : BOOL
+    }
+ */
 
         public static string GetConfiguration(string jsonInput) => RouterConfigurationConverter.Read(jsonInput);
 

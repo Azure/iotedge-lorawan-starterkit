@@ -478,5 +478,94 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
             var config = JsonUtil.Strictify(@"{'region':'NotSet'}");
             Assert.Throws<NotSupportedException>(() => _ = LnsStationConfiguration.GetRegion(config));
         }
+
+        [Fact]
+        public void RegionConfigurationConverter_CorrectlyReadsAS923Region()
+        {
+            var config = JsonUtil.Strictify(@"{
+            'msgtype': 'router_config',
+            'NetID': [1],
+            'JoinEui': [[0, 18446744073709551615]],
+	        'region': 'AS923',
+	        'hwspec': 'sx1301/1',
+	        'freq_range': [ 920000000, 925000000 ],
+            'DRs': [ [ 11, 125, 0 ],
+                       [ 10, 125, 0 ],
+                       [ 9, 125, 0 ],
+                       [ 8, 125, 0 ],
+                       [ 7, 125, 0 ],
+                       [ 7, 250, 0 ] ],
+            'sx1301_conf': [
+                        {
+                            'radio_0': {
+                                'enable': true,
+                                'freq': 923200000
+                            },
+                            'radio_1': {
+                                'enable': true,
+                                'freq': 923400000
+                            },
+                            'chan_FSK': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -1800000
+                            },
+                            'chan_Lora_std': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -1800000,
+                                'bandwidth': 250000,
+                                'spread_factor': 7
+                            },
+                            'chan_multiSF_0': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -1800000
+                            },
+                            'chan_multiSF_1': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -1800000
+                            },
+                            'chan_multiSF_2': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': 0
+                            },
+                            'chan_multiSF_3': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -1800000
+                            },
+                            'chan_multiSF_4': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -1800000
+                            },
+                            'chan_multiSF_5': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 0
+                            },
+                            'chan_multiSF_6': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -1800000
+                            },
+                            'chan_multiSF_7': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -1800000
+                            }
+                        }
+                    ],
+            'nocca': true,
+            'nodc': true,
+            'nodwell': true}");
+
+            var region = LnsStationConfiguration.GetRegion(config);
+            Assert.Equal(typeof(RegionAS923), region.GetType()); ;
+            Assert.Equal(-1.8, ((RegionAS923)region).FrequencyOffset);
+        }
     }
 }
