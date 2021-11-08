@@ -18,6 +18,21 @@ namespace LoRaWan.NetworkServer
         private readonly TimeSpan cacheEntryExpiration;
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
+        [ThreadStatic]
+        private static SHA256 sha256;
+        private static SHA256 Sha256
+        {
+            get
+            {
+                if (sha256 is null)
+                {
+                    sha256 = SHA256.Create();
+                }
+
+                return sha256;
+            }
+        }
+
         public ConcentratorDeduplication(
             ILogger<IConcentratorDeduplication> logger,
             TimeSpan? cacheEntryExpiration = null)
@@ -55,11 +70,9 @@ namespace LoRaWan.NetworkServer
 
         internal static string CreateCacheKey(UpstreamDataFrame updf)
         {
-            using var sha256 = SHA256.Create();
-
             var builder = new StringBuilder();
             _ = builder.Append(updf.DevAddr).Append(updf.Mic).Append(updf.Counter).Append(updf.Payload);
-            var key = sha256.ComputeHash(Encoding.UTF8.GetBytes(builder.ToString()));
+            var key = Sha256.ComputeHash(Encoding.UTF8.GetBytes(builder.ToString()));
             return BitConverter.ToString(key);
         }
 
