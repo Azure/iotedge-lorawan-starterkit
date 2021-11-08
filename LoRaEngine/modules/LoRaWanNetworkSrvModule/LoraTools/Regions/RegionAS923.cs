@@ -12,21 +12,16 @@ namespace LoRaTools.Regions
 
     public class RegionAS923 : Region
     {
-        private const ulong Channel0Frequency = 923_200_000;
-        private const ulong Channel1Frequency = 923_400_000;
+        private const double Channel0Frequency = 923.2;
+        private const double Channel1Frequency = 923.4;
 
-        private readonly Hertz frequencyOffset;
         private readonly bool useDwellTimeLimit;
 
-        public RegionAS923(Hertz frequencyChannel0, Hertz frequencyChannel1, int dwellTime = 0)
+        public double FrequencyOffset { get; private set; }
+
+        public RegionAS923(int dwellTime = 0)
             : base(LoRaRegionType.AS923)
         {
-            frequencyOffset = new Hertz(frequencyChannel0.AsUInt64 - Channel0Frequency);
-            if (frequencyChannel1.AsUInt64 - Channel1Frequency != frequencyOffset.AsUInt64)
-            {
-                throw new ConfigurationErrorsException($"Provided channel frequencies {frequencyChannel0}, {frequencyChannel1} for Region {LoRaRegion} are inconsistent.");
-            }
-
             if (dwellTime is not 0 and not 1)
             {
                 throw new ConfigurationErrorsException($"Incorrect DwellTime parameter value {dwellTime}; allowed values are 0 or 1.");
@@ -101,6 +96,24 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
+        /// Calculates the frequency offset (AS923_FREQ_OFFSET_HZ) value for region AS923.
+        /// </summary>
+        /// <param name="frequencyChannel0">Configured frequency for radio 0.</param>
+        /// <param name="frequencyChannel1">Configured frequency for radio 1.</param>
+        public RegionAS923 WithFrequencyOffset(Hertz frequencyChannel0, Hertz frequencyChannel1)
+        {
+            FrequencyOffset = Math.Round(frequencyChannel0.Mega - Channel0Frequency, 2, MidpointRounding.AwayFromZero);
+
+            var channel1Offset = Math.Round(frequencyChannel1.Mega - Channel1Frequency, 2, MidpointRounding.AwayFromZero);
+            if (channel1Offset != FrequencyOffset)
+            {
+                throw new ConfigurationErrorsException($"Provided channel frequencies {frequencyChannel0}, {frequencyChannel1} for Region {LoRaRegion} are inconsistent.");
+            }
+
+            return this;
+        }
+
+        /// <summary>
         /// Logic to get the correct downstream transmission frequency for region CN470.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
@@ -147,6 +160,6 @@ namespace LoRaTools.Regions
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
         public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
-            new RX2ReceiveWindow(923.2 + frequencyOffset.Mega, 2);
+            new RX2ReceiveWindow(923.2 + FrequencyOffset, 2);
     }
 }

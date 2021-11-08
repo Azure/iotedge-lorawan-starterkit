@@ -139,8 +139,7 @@ namespace LoRaTools.Regions
                 if (as923 == null)
                 {
 
-                    // Temporarily using these default parameter values until we can pass the configured frequencies to the region
-                    as923 = new RegionAS923(new LoRaWan.Hertz(923200000), new LoRaWan.Hertz(923400000));
+                    as923 = new RegionAS923();
                 }
 
                 return as923;
