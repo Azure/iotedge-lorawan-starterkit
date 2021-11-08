@@ -4,6 +4,8 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Collections.Generic;
+    using System.Security.Cryptography.X509Certificates;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
@@ -19,18 +21,42 @@ namespace LoRaWan.NetworkServer.BasicsStation
         private const int SecurePort = 5001;
         private const int Port = 5000;
 
-        public static async Task RunServerAsync(CancellationToken cancellationToken)
+        public static async Task RunServerAsync(NetworkServerConfiguration configuration, CancellationToken cancellationToken)
         {
+            if (configuration is null) throw new ArgumentNullException(nameof(configuration));
+
+            var endpoints = new List<string>()
+            {
+                FormattableString.Invariant($"http://0.0.0.0:{Port}")
+            };
+
+            if (!string.IsNullOrEmpty(configuration.LnsServerPfxPath))
+            {
+                endpoints.Add(FormattableString.Invariant($"https://0.0.0.0:{SecurePort}"));
+            }
+
             using var webHost = WebHost.CreateDefaultBuilder()
-                                       .UseUrls(FormattableString.Invariant($"http://0.0.0.0:{Port}"),
-                                                FormattableString.Invariant($"https://0.0.0.0:{SecurePort}"))
+                                       .UseUrls(endpoints.ToArray())
                                        .UseStartup<BasicsStationNetworkServerStartup>()
-                                       .UseKestrel()
+                                       .UseKestrel(config =>
+                                       {
+                                           if (!string.IsNullOrEmpty(configuration.LnsServerPfxPath))
+                                           {
+                                               config.ConfigureHttpsDefaults(https =>
+                                               {
+                                                   https.ServerCertificate = string.IsNullOrEmpty(configuration.LnsServerPfxPassword)
+                                                                             ? new X509Certificate2(configuration.LnsServerPfxPath)
+                                                                             : new X509Certificate2(configuration.LnsServerPfxPath,
+                                                                                                    configuration.LnsServerPfxPassword,
+                                                                                                    X509KeyStorageFlags.DefaultKeySet);
+                                               });
+                                           }
+                                       })
                                        .Build();
 
             // We want to make sure the module connection is started at the start of the Network server.
             // This is needed when we run as module, therefore we are blocking.
-            if (webHost.Services.GetRequiredService<NetworkServerConfiguration>().RunningAsIoTEdgeModule)
+            if (configuration.RunningAsIoTEdgeModule)
             {
                 var moduleConnection = webHost.Services.GetRequiredService<ModuleConnectionHost>();
                 await moduleConnection.CreateAsync(cancellationToken);
