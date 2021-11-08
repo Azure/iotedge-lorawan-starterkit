@@ -20,6 +20,8 @@ This document summarizes decisions taken for the purpose of implementing support
 
 - MAC commands - support will be added later on as part of [#414](https://github.com/Azure/iotedge-lorawan-starterkit/issues/414)
 - Adaptive Data Rate - support will be added later on as part of [#415](https://github.com/Azure/iotedge-lorawan-starterkit/issues/415)
+- DwellTime - it is not yet clear whether the parameter needs to be set or not, this is tracked in user story [#732](https://github.com/Azure/iotedge-lorawan-starterkit/issues/732)
+- FOpts - it is not yet clear whether this parameter needs to be used, this is tracked for all regions as part of user story [#717](https://github.com/Azure/iotedge-lorawan-starterkit/issues/717)
 
 ## Decision
 
