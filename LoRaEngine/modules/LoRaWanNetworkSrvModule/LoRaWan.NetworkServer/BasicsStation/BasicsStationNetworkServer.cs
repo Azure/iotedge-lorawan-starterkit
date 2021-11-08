@@ -25,22 +25,15 @@ namespace LoRaWan.NetworkServer.BasicsStation
         {
             if (configuration is null) throw new ArgumentNullException(nameof(configuration));
 
-            var endpoints = new List<string>()
-            {
-                FormattableString.Invariant($"http://0.0.0.0:{Port}")
-            };
-
-            if (!string.IsNullOrEmpty(configuration.LnsServerPfxPath))
-            {
-                endpoints.Add(FormattableString.Invariant($"https://0.0.0.0:{SecurePort}"));
-            }
+            var shouldUseCertificate = string.IsNullOrEmpty(configuration.LnsServerPfxPath);
 
             using var webHost = WebHost.CreateDefaultBuilder()
-                                       .UseUrls(endpoints.ToArray())
+                                       .UseUrls(shouldUseCertificate ? FormattableString.Invariant($"https://0.0.0.0:{SecurePort}")
+                                                                     : FormattableString.Invariant($"http://0.0.0.0:{Port}"))
                                        .UseStartup<BasicsStationNetworkServerStartup>()
                                        .UseKestrel(config =>
                                        {
-                                           if (!string.IsNullOrEmpty(configuration.LnsServerPfxPath))
+                                           if (shouldUseCertificate)
                                            {
                                                config.ConfigureHttpsDefaults(https =>
                                                {
