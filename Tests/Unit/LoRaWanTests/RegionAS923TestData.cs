@@ -102,6 +102,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             {
                 new object[] { region, null, null, 2 },
                 new object[] { region, null, (ushort)2, 2 },
+                new object[] { region, null, (ushort)5, 5 },
                 new object[] { region, (ushort)3, null, 3 },
                 new object[] { region, (ushort)3, (ushort)4, 4 },
                 new object[] { region, (ushort)2, (ushort)3, 3 },
@@ -127,6 +128,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
                 new object[] { region, 0, true },
                 new object[] { region, 7, true },
                 new object[] { region, 8, false },
+                new object[] { region, 10, false },
            };
 
         public static IEnumerable<object[]> TestIsDRIndexWithinAcceptableValuesData =>
