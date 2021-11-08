@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  lorawannetworkserver-amd64:
+    build:
+      context: ..
+      dockerfile: LoRaEngine/modules/LoRaWanNetworkSrvModule/Dockerfile.amd64
+    image: ${CONTAINER_REGISTRY_ADDRESS:?"CONTAINER_REGISTRY_ADDRESS environment variable need to be set"}/lorawannetworksrvmodule:${NET_SRV_VERSION:-0.0.1-local-amd64}
+
+  lorawannetworkserver-arm32v7:
+    build:
+      context: ..
+      dockerfile: LoRaEngine/modules/LoRaWanNetworkSrvModule/Dockerfile.arm32v7
+    image: ${CONTAINER_REGISTRY_ADDRESS:?"CONTAINER_REGISTRY_ADDRESS environment variable need to be set"}/lorawannetworksrvmodule:${NET_SRV_VERSION:-0.0.1-local-arm32v7}
+
+  lorawanpktfwdmodule-arm32v7:
+    build:
+      context: ..
+      dockerfile: LoRaEngine/modules/LoRaWanPktFwdModule/Dockerfile.amd64
+    image: ${CONTAINER_REGISTRY_ADDRESS:?"CONTAINER_REGISTRY_ADDRESS environment variable need to be set"}/lorawanpktfwdmodule:${NET_SRV_VERSION:-0.0.1-local-amd64}
+
+  lorawanpktfwdmodule-arm32v7:
+    build:
+      context: ..
+      dockerfile: LoRaEngine/modules/LoRaWanPktFwdModule/Dockerfile.arm32v7
+    image: ${CONTAINER_REGISTRY_ADDRESS:?"CONTAINER_REGISTRY_ADDRESS environment variable need to be set"}/lorawanpktfwdmodule:${NET_SRV_VERSION:-0.0.1-local-arm32v7}
+
+  lorabasicsstationmodule-arm32v7:
+    build:
+      context: ..
+      dockerfile: LoRaEngine/modules/LoRaBasicsStationModule/Dockerfile.arm32v7
+    image: ${CONTAINER_REGISTRY_ADDRESS:?"CONTAINER_REGISTRY_ADDRESS environment variable need to be set"}/lorawanbasestation:${NET_SRV_VERSION:-0.0.1-local-arm32v7}
+
+  lorabasicsstationmodule-amd64:
+    build:
+      context: ..
+      dockerfile: LoRaEngine/modules/LoRaBasicsStationModule/Dockerfile.amd64
+    image: ${CONTAINER_REGISTRY_ADDRESS:?"CONTAINER_REGISTRY_ADDRESS environment variable need to be set"}/lorawanbasestation:${NET_SRV_VERSION:-0.0.1-local-amd64}

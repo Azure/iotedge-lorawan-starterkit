@@ -21,10 +21,12 @@ namespace LoRaTools.Regions
             region = null;
             switch (value)
             {
+                case LoRaRegionType.EU863: //Case added for LoRa Basics Station compatibility
                 case LoRaRegionType.EU868:
                     region = EU868;
                     return true;
 
+                case LoRaRegionType.US902: //Case added for LoRa Basics Station compatibility
                 case LoRaRegionType.US915:
                     region = US915;
                     return true;

@@ -5,9 +5,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.Regions;
 
     internal interface IBasicsStationConfigurationService
     {
         Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken);
+        Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken);
     }
 }

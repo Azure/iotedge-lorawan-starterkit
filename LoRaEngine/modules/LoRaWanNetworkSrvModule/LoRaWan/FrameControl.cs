@@ -77,5 +77,11 @@ namespace LoRaWan
 
         public static bool operator ==(FrameControl left, FrameControl right) => left.Equals(right);
         public static bool operator !=(FrameControl left, FrameControl right) => !left.Equals(right);
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            buffer[0] = this.value;
+            return buffer[Size..];
+        }
     }
 }

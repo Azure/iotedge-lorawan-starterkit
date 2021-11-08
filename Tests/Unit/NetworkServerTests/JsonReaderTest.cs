@@ -151,6 +151,32 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("null")]
         [InlineData("false")]
         [InlineData("true")]
+        [InlineData("'foobar'")]
+        [InlineData("[]")]
+        [InlineData("{}")]
+        public void Single_With_Invalid_Input(string json)
+        {
+            Assert.Throws<JsonException>(() => _ = JsonReader.Single().Read(JsonUtil.Strictify(json)));
+        }
+
+        [Fact]
+        public void Single_Moves_Reader()
+        {
+            TestMovesReaderPastReadValue(JsonReader.Single(), "4.2");
+        }
+
+        [Theory]
+        [InlineData(4.2, "4.2")]
+        public void Single_With_Valid_Input(float expected, string json)
+        {
+            var result = JsonReader.Single().Read(JsonUtil.Strictify(json));
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("null")]
+        [InlineData("false")]
+        [InlineData("true")]
         [InlineData("-4.2")]
         [InlineData("'foobar'")]
         [InlineData("[]")]
@@ -375,7 +401,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                               ValueTuple.Create);
 
         [Theory]
-        [InlineData(0 , "foobar", "{ str: 'foobar' }")]
+        [InlineData(0, "foobar", "{ str: 'foobar' }")]
         [InlineData(42, "foobar", "{ num: 42, str: 'foobar' }")]
         [InlineData(42, "foobar", "{ str: 'foobar', num: 42 }")]
         [InlineData(42, "foobar", "{ str: 'FOOBAR', num: -42, str: 'foobar', num: 42 }")]

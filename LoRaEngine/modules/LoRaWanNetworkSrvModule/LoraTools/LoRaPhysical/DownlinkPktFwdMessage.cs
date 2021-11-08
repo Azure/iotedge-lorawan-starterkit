@@ -4,39 +4,35 @@
 namespace LoRaTools.LoRaPhysical
 {
     using System;
+    using System.Globalization;
+    using LoRaWan;
     using Newtonsoft.Json;
 
     /// <summary>
     /// JSON of a Downlink message for the Packet forwarder.
     /// </summary>
-    public class DownlinkPktFwdMessage : PktFwdMessage
+    public class DownlinkPktFwdMessage
     {
         [JsonProperty("txpk")]
         public Txpk Txpk { get; set; }
 
+        [JsonIgnore]
+        public string DevEui { get; }
+
+        [JsonIgnore]
+        public ushort LnsRxDelay { get; }
+
+        [JsonIgnore]
+        public ulong Xtime { get; }
+
+        [JsonIgnore]
+        public uint? AntennaPreference { get; }
+
+        [JsonIgnore]
+        public StationEui StationEui { get; }
+
         public DownlinkPktFwdMessage()
         {
-        }
-
-        [Obsolete("This constructor will be faded out at message processor refactory")]
-        public DownlinkPktFwdMessage(string data, string datr = "SF12BW125", uint rfch = 0, double freq = 869.525000, long tmst = 0)
-        {
-            var byteData = Convert.FromBase64String(data);
-            Txpk = new Txpk()
-            {
-                Imme = tmst == 0,
-                Tmst = tmst,
-                Data = data,
-                Size = (uint)byteData.Length,
-                Freq = freq,
-                Rfch = rfch,
-                Modu = "LORA",
-                Datr = datr,
-                Codr = "4/5",
-                // TODO put 14 for EU
-                Powe = 14,
-                Ipol = true
-            };
         }
 
         /// <summary>
@@ -44,7 +40,7 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used in case of a response to a upstream message.
         /// </summary>
         /// <returns>DownlinkPktFwdMessage object ready to be sent.</returns>
-        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, long tmst = 0)
+        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, string devEui, long tmst = 0, ushort lnsRxDelay = 0, uint? rfch = null, string time = "", StationEui stationEui = default)
         {
             if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
 
@@ -63,20 +59,12 @@ namespace LoRaTools.LoRaPhysical
                 Powe = 14,
                 Ipol = true
             };
-        }
 
-        [Obsolete("ad")]
-        [JsonIgnore]
-        public override PktFwdMessageAdapter PktFwdMessageAdapter
-        {
-            get
-            {
-                var pktFwdMessageAdapter = new PktFwdMessageAdapter
-                {
-                    Txpk = Txpk
-                };
-                return pktFwdMessageAdapter;
-            }
+            DevEui = devEui;
+            LnsRxDelay = lnsRxDelay;
+            AntennaPreference = rfch;
+            StationEui = stationEui;
+            Xtime = string.IsNullOrEmpty(time) ? 0 : ulong.Parse(time, CultureInfo.InvariantCulture);
         }
     }
 }
