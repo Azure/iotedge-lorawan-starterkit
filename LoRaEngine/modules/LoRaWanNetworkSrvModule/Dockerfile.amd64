@@ -22,7 +22,7 @@ COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan LoRaWan
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule
 
-RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out --no-restore --self-contained false
+RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out -r linux-x64 --no-restore --self-contained false
 
 FROM mcr.microsoft.com/dotnet/aspnet:3.1-bullseye-slim
 WORKDIR /app

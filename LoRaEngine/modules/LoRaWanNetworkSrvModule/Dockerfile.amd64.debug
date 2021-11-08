@@ -32,7 +32,7 @@ COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan LoRaWan
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule
 
-RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Debug -o out --no-restore --self-contained false
+RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Debug -o out --no-restore --self-contained false -r linux-x64
 
 FROM base
 WORKDIR /app
