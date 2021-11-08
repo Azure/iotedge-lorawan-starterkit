@@ -59,11 +59,11 @@ The core modules `edgeHub` and `edgeAgent` support emitting metrics through a Pr
 
 We will always expose LNS custom metrics in Prometheus format using [prometheus-net/prometheus-net](https://github.com/prometheus-net/prometheus-net), such that they can be consumed by any scraper that supports the Prometheus format. This will give us the following features:
 
-- Unified metrics format accross all modules in the Edge device. 
+- Unified metrics format accross all modules in the Edge device.
   - The Prometheus format is industrial standard understood by various consumers.
 - Decouples metrics exposure from the delivery-to-cloud approach. If at one point we decide to change how we scrap the metrics or how/where we deliver them to the observer, we can do that without changing the modules.
 - Eliminates any dependencies on Azure Monitor services (Log Analytics / Application Insights) for essential monitoring
-- Potentially gives ability to work offline if metrics are sent by the collector module through the Edge Hub using device-to-cloud channel. 
+- Potentially gives ability to work offline if metrics are sent by the collector module through the Edge Hub using device-to-cloud channel.
 - It's up to the customer to configure how, where and what metrics to deliver from any module on an edge device.
 
 In addition to this, we will support Application Insights metrics on an opt-in basis. When enabled, we will deliver most metrics (custom and default from LNS, except the edgeAgent and edgeHub metrics, which can only be delivered to Log Analytics) to Application Insights. This will ensure that we get many of the features that we get with Application Insights out of the box (Live Metrics, integration with alerts and workbooks), while still keeping the flexibility of consuming the metrics in Prometheus format and all the advantages that come with it. This comes at the cost of increased implementation complexity.
