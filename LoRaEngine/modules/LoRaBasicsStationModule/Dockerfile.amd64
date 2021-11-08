@@ -1,6 +1,6 @@
 #This docker builds a container for the LoRa Base station
 
-FROM debian as build
+FROM debian:bullseye as build
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
@@ -8,10 +8,10 @@ RUN git clone --branch v2.0.5 --single-branch --depth 1 https://github.com/lorab
 WORKDIR /basicstation
 RUN make platform=linux variant=std
 
-FROM debian
+FROM debian:bullseye-slim
 WORKDIR /bin
 COPY --from=build /basicstation/build-linux-std/bin/station /bin/station
-COPY start_basestation_amd64.sh .
-COPY station.conf .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basestation_amd64.sh .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
 COPY --from=build /basicstation/deps/lgw/platform-linux/reset_lgw.sh .
 ENTRYPOINT ["./start_basestation_amd64.sh"]

@@ -3,39 +3,17 @@
 
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
-    using LoRaWan;
     using Xunit;
 
-    public class DevAddrTests
+    public class FramePortTests
     {
-        private readonly DevAddr subject = new(0xeb6f7bde);
-        private readonly DevAddr other = new(0x12345678);
+        private readonly FramePort subject = new(0);
+        private readonly FramePort other = new(15);
 
         [Fact]
         public void Size()
         {
-            Assert.Equal(4, DevAddr.Size);
-        }
-
-        [Fact]
-        public void NetworkId()
-        {
-            Assert.Equal(0x75, this.subject.NetworkId);
-        }
-
-        [Fact]
-        public void NetworkAddress()
-        {
-            Assert.Equal(0x16f7bde, this.subject.NetworkAddress);
-        }
-
-        [Fact]
-        public void Write_Writes_Byte_And_Returns_Updated_Span()
-        {
-            var bytes = new byte[4];
-            var remainingBytes = this.subject.Write(bytes);
-            Assert.Equal(0, remainingBytes.Length);
-            Assert.Equal(new byte[] { 222, 123, 111, 235 }, bytes);
+            Assert.Equal(1, FramePort.Size);
         }
 
         [Fact]
@@ -91,9 +69,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Fact]
-        public void ToString_Returns_Hexadecimal_String()
+        public void MacCommandFPort_Should_Be_Flagged()
         {
-            Assert.Equal("EB6F7BDE", this.subject.ToString());
+            Assert.True(new FramePort(0).IsMacCommandFPort);
+        }
+
+        [Fact]
+        public void MacLayerTestFPort_Should_Be_Flagged()
+        {
+            Assert.True(new FramePort(224).IsMacLayerTestFPort);
         }
     }
 }

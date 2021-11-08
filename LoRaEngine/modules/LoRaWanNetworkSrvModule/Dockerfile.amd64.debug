@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:3.1-buster-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:3.1-bullseye-slim AS base
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends unzip procps && \
@@ -9,23 +9,30 @@ USER moduleuser
 RUN curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l ~/vsdbg
 
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim AS build-env
 
 WORKDIR /build
 COPY Directory.Build.props ./
 COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
-WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger ./Logger
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools ./LoraTools
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer ./LoRaWan.NetworkServer
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule ./LoRaWanNetworkSrvModule
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan ./LoRaWan
+
+WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj", "LoRaWanNetworkSrvModule/"]
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoRaWan.NetworkServer.csproj", "LoRaWan.NetworkServer/"]
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan/LoRaWan.csproj", "LoRaWan/"]
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools/LoRaTools.csproj", "LoraTools/"]
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger/Logger.csproj", "Logger/"]
+RUN dotnet restore "LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj"
+
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger Logger
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools LoraTools
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer LoRaWan.NetworkServer
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule LoRaWanNetworkSrvModule
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan LoRaWan
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule
-RUN dotnet restore
 
-RUN dotnet publish -c Debug -o out
+RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out --no-restore
 
 FROM base
 WORKDIR /app
