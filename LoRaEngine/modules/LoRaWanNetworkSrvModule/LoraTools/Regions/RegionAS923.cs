@@ -107,7 +107,7 @@ namespace LoRaTools.Regions
             FrequencyOffset = Math.Round(frequencyChannel0.Mega - Channel0Frequency, 2, MidpointRounding.AwayFromZero);
 
             var channel1Offset = Math.Round(frequencyChannel1.Mega - Channel1Frequency, 2, MidpointRounding.AwayFromZero);
-            if (channel1Offset != FrequencyOffset)
+            if (Math.Round(channel1Offset - FrequencyOffset, 1) != 0)
             {
                 throw new ConfigurationErrorsException($"Provided channel frequencies {frequencyChannel0}, {frequencyChannel1} for Region {LoRaRegion} are inconsistent.");
             }
