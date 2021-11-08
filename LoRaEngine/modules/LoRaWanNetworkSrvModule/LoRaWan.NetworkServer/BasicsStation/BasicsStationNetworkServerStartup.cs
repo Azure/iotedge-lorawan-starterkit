@@ -9,7 +9,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
-    using LoRaWan.NetworkServer.BasicsStation.Stubs;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Azure.Devices.Client;
@@ -62,11 +61,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
                         .AddSingleton<ILoRaModuleClientFactory>(loraModuleFactory)
                         .AddTransient<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
-                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
-
-                        // STUB for the Ipkt Fwd until Danigian implement the LNS implementation.
-                        .AddSingleton<IPacketForwarder, PacketForwarderStub>();
+                        .AddSingleton<IPacketForwarder, DownstreamSender>()
+                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
