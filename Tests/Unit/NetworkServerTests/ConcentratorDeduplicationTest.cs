@@ -8,13 +8,12 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Logging.Abstractions;
-    using Moq;
     using Xunit;
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
     {
         private readonly ConcentratorDeduplication concentratorDeduplication;
-        private static readonly UpstreamDataFrame defaultUpdf = new UpstreamDataFrame(default, new DevAddr(), default, 1, default, default, "payload", new Mic(), default);
+        private static readonly UpstreamDataFrame defaultUpdf = new UpstreamDataFrame(default, new DevAddr(1), default, 2, default, default, "payload", new Mic(4), default);
 
 
         public ConcentratorDeduplicationTest()
@@ -67,7 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public void CreateKeyMethod_Should_Produce_Expected_Key()
         {
             // arrange
-            var expectedKey = "B2-B3-F7-92-97-4D-5B-9A-03-96-17-4A-56-EE-9E-B8-18-A1-EB-2E-98-28-AE-57-3D-DE-34-ED-E3-55-DF-81";
+            var expectedKey = "79-67-CF-75-00-58-6B-03-A9-30-B1-C9-84-82-E0-9F-9C-D3-1E-6F-C5-38-9E-D3-F1-63-E6-89-4D-4D-88-B4";
 
             // act/assert
             Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(defaultUpdf));
