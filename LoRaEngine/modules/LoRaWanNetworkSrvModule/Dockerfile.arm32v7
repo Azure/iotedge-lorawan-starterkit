@@ -28,7 +28,4 @@ FROM mcr.microsoft.com/dotnet/aspnet:3.1-bullseye-slim-arm32v7
 WORKDIR /app
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
 
-RUN useradd -ms /bin/bash moduleuser
-USER moduleuser
-
 ENTRYPOINT ["dotnet", "LoRaWanNetworkSrvModule.dll"]
