@@ -141,7 +141,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Fact]
         public void Parse_Throws_When_Input_Is_Invalid()
         {
-            _ = Assert.Throws<FormatException>(() => DevEui.Parse("foobar"));
+            _ = Assert.Throws<FormatException>(() => Parse("foobar"));
         }
 
         [Fact]
