@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
     using System;
-    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -70,24 +69,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // act/assert
             Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(defaultUpdf));
-        }
-
-        [Theory]
-        [InlineData(200, 0, true)]
-        [InlineData(200, 400, false)]
-        public async void CachedEntries_Should_Expire(int expirationInMilliseconds, int delayInMilliseconds, bool expectedResult)
-        {
-            // arrange
-            using var sut = new ConcentratorDeduplication(NullLogger<IConcentratorDeduplication>.Instance, TimeSpan.FromMilliseconds(expirationInMilliseconds));
-            var stationEui = new StationEui();
-
-            // act
-            _ = sut.ShouldDrop(defaultUpdf, stationEui);
-
-            // assert
-            await Task.Delay(delayInMilliseconds);
-            var key = ConcentratorDeduplication.CreateCacheKey(defaultUpdf);
-            Assert.Equal(expectedResult, sut.Cache.TryGetValue(key, out var _));
         }
 
         public void Dispose() => this.concentratorDeduplication.Dispose();
