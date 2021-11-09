@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     using LoRaWan;
     using Xunit;
 
-    public abstract class EuiTests<T> where T : struct, IEquatable<T>
+    public abstract class EuiTests<T> where T : struct, IEquatable<T>, IFormattable
     {
         private T Subject => Parse("01-23-45-67-89-AB-CD-EF");
 
@@ -19,6 +19,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
         private static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
         private static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
+        private static readonly char[] SupportedFormats = new[] { 'G', 'g', 'D', 'd', 'I', 'i', 'N', 'n', 'E', 'e' };
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()
@@ -82,6 +83,34 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void ToString_Returns_Hexadecimal_String()
         {
             Assert.Equal("01-23-45-67-89-AB-CD-EF", this.Subject.ToString());
+        }
+
+        [Theory]
+        [InlineData(null, "01-23-45-67-89-AB-CD-EF")]
+        [InlineData("G", "01-23-45-67-89-AB-CD-EF")]
+        [InlineData("g", "01-23-45-67-89-AB-CD-EF")]
+        [InlineData("D", "01-23-45-67-89-AB-CD-EF")]
+        [InlineData("d", "01-23-45-67-89-AB-CD-EF")]
+        [InlineData("I", "0123:4567:89AB:CDEF")]
+        [InlineData("i", "0123:4567:89AB:CDEF")]
+        [InlineData("E", "01:23:45:67:89:AB:CD:EF")]
+        [InlineData("e", "01:23:45:67:89:AB:CD:EF")]
+        [InlineData("N", "0123456789ABCDEF")]
+        [InlineData("n", "0123456789ABCDEF")]
+        public void ToString_Returns_Correctly_Formatted_String(string format, string expectedRepresentation)
+        {
+            Assert.Equal(expectedRepresentation, Subject.ToString(format, null));
+        }
+
+        [Fact]
+        public void ToString_Throws_FormatException_When_Format_Is_Not_Supported()
+        {
+            var ex = Assert.Throws<FormatException>(() => Subject.ToString("z", null));
+
+            foreach (var c in SupportedFormats)
+            {
+                Assert.True(ex.Message.Contains(c, StringComparison.Ordinal));
+            }
         }
 
         [Fact]

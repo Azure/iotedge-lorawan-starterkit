@@ -13,7 +13,7 @@ namespace LoRaWan
     using System;
     using System.Buffers.Binary;
 
-    readonly partial struct DevEui : IEquatable<DevEui>
+    readonly partial struct DevEui : IEquatable<DevEui>, IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -27,14 +27,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is DevEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString()
-        {
-            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-            Span<char> chars = stackalloc char[bytes.Length * 3 - 1];
-            BinaryPrimitives.WriteUInt64BigEndian(bytes, this.value);
-            Hexadecimal.Write(bytes, chars, '-');
-            return new string(chars);
-        }
+        public override string ToString() => ToString("G", null);
 
         public static bool operator ==(DevEui left, DevEui right) => left.Equals(right);
         public static bool operator !=(DevEui left, DevEui right) => !left.Equals(right);
@@ -71,9 +64,31 @@ namespace LoRaWan
                 return false;
             }
         }
+
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            return format?.ToLowerInvariant() switch
+            {
+                null or "g" or "d"  => ToHex(this.value, '-'),
+                "e"                 => ToHex(this.value, ':'),
+                "n"                 => ToHex(value, null),
+                "i"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth),
+                _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
+            };
+
+            static string ToHex(ulong value, char? separator)
+            {
+                Span<byte> bytes = stackalloc byte[sizeof(ulong)];
+                var nChars = separator is null ? bytes.Length * 2 : bytes.Length * 3 - 1;
+                Span<char> chars = stackalloc char[nChars];
+                BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
+                Hexadecimal.Write(bytes, chars, separator);
+                return new string(chars);
+            }
+        }
     }
 
-    readonly partial struct JoinEui : IEquatable<JoinEui>
+    readonly partial struct JoinEui : IEquatable<JoinEui>, IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -87,14 +102,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is JoinEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString()
-        {
-            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-            Span<char> chars = stackalloc char[bytes.Length * 3 - 1];
-            BinaryPrimitives.WriteUInt64BigEndian(bytes, this.value);
-            Hexadecimal.Write(bytes, chars, '-');
-            return new string(chars);
-        }
+        public override string ToString() => ToString("G", null);
 
         public static bool operator ==(JoinEui left, JoinEui right) => left.Equals(right);
         public static bool operator !=(JoinEui left, JoinEui right) => !left.Equals(right);
@@ -131,9 +139,31 @@ namespace LoRaWan
                 return false;
             }
         }
+
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            return format?.ToLowerInvariant() switch
+            {
+                null or "g" or "d"  => ToHex(this.value, '-'),
+                "e"                 => ToHex(this.value, ':'),
+                "n"                 => ToHex(value, null),
+                "i"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth),
+                _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
+            };
+
+            static string ToHex(ulong value, char? separator)
+            {
+                Span<byte> bytes = stackalloc byte[sizeof(ulong)];
+                var nChars = separator is null ? bytes.Length * 2 : bytes.Length * 3 - 1;
+                Span<char> chars = stackalloc char[nChars];
+                BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
+                Hexadecimal.Write(bytes, chars, separator);
+                return new string(chars);
+            }
+        }
     }
 
-    readonly partial struct StationEui : IEquatable<StationEui>
+    readonly partial struct StationEui : IEquatable<StationEui>, IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -147,14 +177,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is StationEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString()
-        {
-            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-            Span<char> chars = stackalloc char[bytes.Length * 3 - 1];
-            BinaryPrimitives.WriteUInt64BigEndian(bytes, this.value);
-            Hexadecimal.Write(bytes, chars, '-');
-            return new string(chars);
-        }
+        public override string ToString() => ToString("G", null);
 
         public static bool operator ==(StationEui left, StationEui right) => left.Equals(right);
         public static bool operator !=(StationEui left, StationEui right) => !left.Equals(right);
@@ -189,6 +212,28 @@ namespace LoRaWan
             {
                 result = default;
                 return false;
+            }
+        }
+
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            return format?.ToLowerInvariant() switch
+            {
+                null or "g" or "d"  => ToHex(this.value, '-'),
+                "e"                 => ToHex(this.value, ':'),
+                "n"                 => ToHex(value, null),
+                "i"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth),
+                _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
+            };
+
+            static string ToHex(ulong value, char? separator)
+            {
+                Span<byte> bytes = stackalloc byte[sizeof(ulong)];
+                var nChars = separator is null ? bytes.Length * 2 : bytes.Length * 3 - 1;
+                Span<char> chars = stackalloc char[nChars];
+                BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
+                Hexadecimal.Write(bytes, chars, separator);
+                return new string(chars);
             }
         }
     }
