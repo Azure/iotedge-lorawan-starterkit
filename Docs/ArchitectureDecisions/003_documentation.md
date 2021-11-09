@@ -41,8 +41,8 @@ allows for a place where the docs can be published from.
 ## Open Questions
 
 - [x] Can multiple branches be locked in GitHub? E.g. ideally `docs/main` will be
-locked and can only be updated through a PR.
-  * **YES** - it is possible to add rules to different branches.
+locked and can only be updated through a PR. **YES** - it is possible to add
+rules to different branches.
 
 ## Alternatives Considered
 
