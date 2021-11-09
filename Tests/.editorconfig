@@ -26,3 +26,6 @@ dotnet_diagnostic.CA1034.severity = none
 
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity=suggestion
+
+# IDE0055: Fix formatting
+dotnet_diagnostic.IDE0055.severity=suggestion

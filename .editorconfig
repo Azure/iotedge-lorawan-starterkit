@@ -78,9 +78,6 @@ dotnet_diagnostic.IDE0021.severity=suggestion
 # IDE0061: Use block body for local functions
 dotnet_diagnostic.IDE0061.severity=suggestion
 
-# IDE0055: Fix formatting
-dotnet_diagnostic.IDE0055.severity=suggestion
-
 # IDE0052: Unused private member
 dotnet_diagnostic.IDE0052.severity=suggestion
 

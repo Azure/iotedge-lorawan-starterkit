@@ -9,6 +9,7 @@ namespace LoRaWan
 
     public enum MacMessageType
     {
+#pragma warning disable format
         JoinRequest         = 0, // 000
         JoinAccept          = 1, // 001
         UnconfirmedDataUp   = 2, // 010
@@ -17,5 +18,6 @@ namespace LoRaWan
         ConfirmedDataDown   = 5, // 101
         RejoinRequest       = 6, // 110 (was reserved/FRU before 1.1)
         Proprietary         = 7, // 111
+#pragma warning restore format
     }
 }
