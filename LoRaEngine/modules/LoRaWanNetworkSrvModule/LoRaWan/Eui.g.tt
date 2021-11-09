@@ -67,44 +67,23 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, string? format, out <#= t #> result)
         {
-            result = default;
-
-            return format?.ToLowerInvariant() switch
+            var (success, tempResult) = format?.ToLowerInvariant() switch
             {
-                null or "g" or "d"  => TryParseHex(input, '-', out result),
-                "e"                 => TryParseHex(input, ':', out result),
-                "n"                 => TryParseHex(input, null, out result),
-                "i"                 => TryParseId6(input, out result),
-                _                   => false
+                null or "g" or "d"  => TryParseHex(input, '-'),
+                "e"                 => TryParseHex(input, ':'),
+                "n"                 => TryParseHex(input, null),
+                "i"                 => TryParseId6(input),
+                _                   => (false, default)
             };
 
-            static bool TryParseHex(ReadOnlySpan<char> input, char? separator, out <#= t #> result)
-            {
-                if (Hexadecimal.TryParse(input, out var raw, separator))
-                {
-                    result = new <#= t #>(raw);
-                    return true;
-                }
-                else
-                {
-                    result = default;
-                    return false;
-                }
-            }
+            result = tempResult;
+            return success;
 
-            static bool TryParseId6(ReadOnlySpan<char> input, out <#= t #> result)
-            {
-                if (Id6.TryParse(input, out var raw))
-                {
-                    result = new <#= t #>(raw);
-                    return true;
-                }
-                else
-                {
-                    result = default;
-                    return false;
-                }
-            }
+            static (bool, <#= t #>) TryParseHex(ReadOnlySpan<char> input, char? separator) =>
+                Hexadecimal.TryParse(input, out var raw, separator) ? (true, new <#= t #>(raw)) : (false, default);
+
+            static (bool, <#= t #>) TryParseId6(ReadOnlySpan<char> input) =>
+                Id6.TryParse(input, out var raw) ? (true, new <#= t #>(raw)) : (false, default);
         }
 
         public string ToString(string? format, IFormatProvider? formatProvider)
