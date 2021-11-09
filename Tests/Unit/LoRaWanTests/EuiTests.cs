@@ -110,10 +110,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             var ex = Assert.Throws<FormatException>(() => Subject.ToString("z", null));
 
-            foreach (var c in SupportedFormats)
+            foreach (var c in SupportedFormats.Where(c => c != null).Cast<char>())
             {
-                if (c is { } cp)
-                    Assert.True(ex.Message.Contains(cp, StringComparison.Ordinal));
+                Assert.True(ex.Message.Contains(c, StringComparison.Ordinal));
             }
         }
 
