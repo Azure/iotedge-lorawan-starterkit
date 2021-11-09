@@ -20,18 +20,8 @@ namespace LoRaWan.NetworkServer
 
         [ThreadStatic]
         private static SHA256 sha256;
-        private static SHA256 Sha256
-        {
-            get
-            {
-                if (sha256 is null)
-                {
-                    sha256 = SHA256.Create();
-                }
 
-                return sha256;
-            }
-        }
+        private static SHA256 Sha256 => sha256 ??= SHA256.Create();
 
         public ConcentratorDeduplication(
             IMemoryCache cache,
