@@ -30,7 +30,7 @@ We will support Azure Monitor as a first-class monitoring solution for our start
 - Always expose metrics using [prometheus-net](https://github.com/prometheus-net/prometheus-net).
   - Additionally, we track LNS metrics using the ASP.NET Core Application Insights SDK (when opted in)
 - Track traces using the Application Insights SDK (when opted in)
-- Support alerts when using Application Insights
+- Support alerts when using Application Insights and/or Log Analytics (with Prometheus format and metrics collector module)
 - For now we will not support complete distributed tracing in the LoRaWAN starter kit, other than what Application Insights tracing will give us out of the box. We will evaluate this with [#695](https://github.com/Azure/iotedge-lorawan-starterkit/issues/695).
 
 A more thorough description of each bullet point follows below.
