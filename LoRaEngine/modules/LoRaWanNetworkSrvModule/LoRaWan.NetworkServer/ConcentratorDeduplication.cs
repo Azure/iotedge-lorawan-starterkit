@@ -47,15 +47,11 @@ namespace LoRaWan.NetworkServer
             if (updf == null) throw new ArgumentNullException(nameof(updf));
 
             var key = CreateCacheKey(updf);
-            StationEui previousStation;
 
-            lock (this.Cache)
+            if (!this.Cache.TryGetValue(key, out StationEui previousStation))
             {
-                if (!this.Cache.TryGetValue(key, out previousStation))
-                {
-                    AddToCache(key, stationEui);
-                    return false;
-                }
+                AddToCache(key, stationEui);
+                return false;
             }
 
             if (previousStation == stationEui)
