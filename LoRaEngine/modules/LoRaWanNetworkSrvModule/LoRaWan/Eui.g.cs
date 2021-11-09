@@ -77,31 +77,7 @@ namespace LoRaWan
                 Id6.TryParse(input, out var raw) ? (true, new DevEui(raw)) : (false, default);
         }
 
-        public string ToString(string? format, IFormatProvider? formatProvider)
-        {
-            return format switch
-            {
-                null or "G" or "D"  => ToHex(this.value, '-', LetterCase.Upper),
-                "g" or "d"          => ToHex(this.value, '-', LetterCase.Lower),
-                "E"                 => ToHex(this.value, ':', LetterCase.Upper),
-                "e"                 => ToHex(this.value, ':', LetterCase.Lower),
-                "N"                 => ToHex(this.value, null, LetterCase.Upper),
-                "n"                 => ToHex(this.value, null, LetterCase.Lower),
-                "I"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth),
-                "i"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
-                _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
-            };
-
-            static string ToHex(ulong value, char? separator, LetterCase letterCase)
-            {
-                Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-                var nChars = separator is null ? bytes.Length * 2 : bytes.Length * 3 - 1;
-                Span<char> chars = stackalloc char[nChars];
-                BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
-                Hexadecimal.Write(bytes, chars, separator, letterCase);
-                return new string(chars);
-            }
-        }
+        public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
     }
 
     readonly partial struct JoinEui : IEquatable<JoinEui>, IFormattable
@@ -168,31 +144,7 @@ namespace LoRaWan
                 Id6.TryParse(input, out var raw) ? (true, new JoinEui(raw)) : (false, default);
         }
 
-        public string ToString(string? format, IFormatProvider? formatProvider)
-        {
-            return format switch
-            {
-                null or "G" or "D"  => ToHex(this.value, '-', LetterCase.Upper),
-                "g" or "d"          => ToHex(this.value, '-', LetterCase.Lower),
-                "E"                 => ToHex(this.value, ':', LetterCase.Upper),
-                "e"                 => ToHex(this.value, ':', LetterCase.Lower),
-                "N"                 => ToHex(this.value, null, LetterCase.Upper),
-                "n"                 => ToHex(this.value, null, LetterCase.Lower),
-                "I"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth),
-                "i"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
-                _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
-            };
-
-            static string ToHex(ulong value, char? separator, LetterCase letterCase)
-            {
-                Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-                var nChars = separator is null ? bytes.Length * 2 : bytes.Length * 3 - 1;
-                Span<char> chars = stackalloc char[nChars];
-                BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
-                Hexadecimal.Write(bytes, chars, separator, letterCase);
-                return new string(chars);
-            }
-        }
+        public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
     }
 
     readonly partial struct StationEui : IEquatable<StationEui>, IFormattable
@@ -259,30 +211,6 @@ namespace LoRaWan
                 Id6.TryParse(input, out var raw) ? (true, new StationEui(raw)) : (false, default);
         }
 
-        public string ToString(string? format, IFormatProvider? formatProvider)
-        {
-            return format switch
-            {
-                null or "G" or "D"  => ToHex(this.value, '-', LetterCase.Upper),
-                "g" or "d"          => ToHex(this.value, '-', LetterCase.Lower),
-                "E"                 => ToHex(this.value, ':', LetterCase.Upper),
-                "e"                 => ToHex(this.value, ':', LetterCase.Lower),
-                "N"                 => ToHex(this.value, null, LetterCase.Upper),
-                "n"                 => ToHex(this.value, null, LetterCase.Lower),
-                "I"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth),
-                "i"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
-                _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
-            };
-
-            static string ToHex(ulong value, char? separator, LetterCase letterCase)
-            {
-                Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-                var nChars = separator is null ? bytes.Length * 2 : bytes.Length * 3 - 1;
-                Span<char> chars = stackalloc char[nChars];
-                BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
-                Hexadecimal.Write(bytes, chars, separator, letterCase);
-                return new string(chars);
-            }
-        }
+        public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
     }
 }
