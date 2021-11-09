@@ -98,8 +98,6 @@ namespace LoRaWan
             }
         }
 
-        public string ToString(string? format) => ToString(format, null);
-
         public string ToString(string? format, IFormatProvider? formatProvider)
         {
             return format switch
@@ -108,10 +106,10 @@ namespace LoRaWan
                 "g" or "d"          => ToHex(this.value, '-', LetterCase.Lower),
                 "E"                 => ToHex(this.value, ':', LetterCase.Upper),
                 "e"                 => ToHex(this.value, ':', LetterCase.Lower),
-                "N"                 => ToHex(value, null, LetterCase.Upper),
-                "n"                 => ToHex(value, null, LetterCase.Lower),
-                "I"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth),
-                "i"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
+                "N"                 => ToHex(this.value, null, LetterCase.Upper),
+                "n"                 => ToHex(this.value, null, LetterCase.Lower),
+                "I"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth),
+                "i"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
                 _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
             };
 
@@ -212,8 +210,6 @@ namespace LoRaWan
             }
         }
 
-        public string ToString(string? format) => ToString(format, null);
-
         public string ToString(string? format, IFormatProvider? formatProvider)
         {
             return format switch
@@ -222,10 +218,10 @@ namespace LoRaWan
                 "g" or "d"          => ToHex(this.value, '-', LetterCase.Lower),
                 "E"                 => ToHex(this.value, ':', LetterCase.Upper),
                 "e"                 => ToHex(this.value, ':', LetterCase.Lower),
-                "N"                 => ToHex(value, null, LetterCase.Upper),
-                "n"                 => ToHex(value, null, LetterCase.Lower),
-                "I"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth),
-                "i"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
+                "N"                 => ToHex(this.value, null, LetterCase.Upper),
+                "n"                 => ToHex(this.value, null, LetterCase.Lower),
+                "I"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth),
+                "i"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
                 _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
             };
 
@@ -326,8 +322,6 @@ namespace LoRaWan
             }
         }
 
-        public string ToString(string? format) => ToString(format, null);
-
         public string ToString(string? format, IFormatProvider? formatProvider)
         {
             return format switch
@@ -336,10 +330,10 @@ namespace LoRaWan
                 "g" or "d"          => ToHex(this.value, '-', LetterCase.Lower),
                 "E"                 => ToHex(this.value, ':', LetterCase.Upper),
                 "e"                 => ToHex(this.value, ':', LetterCase.Lower),
-                "N"                 => ToHex(value, null, LetterCase.Upper),
-                "n"                 => ToHex(value, null, LetterCase.Lower),
-                "I"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth),
-                "i"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
+                "N"                 => ToHex(this.value, null, LetterCase.Upper),
+                "n"                 => ToHex(this.value, null, LetterCase.Lower),
+                "I"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth),
+                "i"                 => Id6.Format(this.value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
                 _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
             };
 
