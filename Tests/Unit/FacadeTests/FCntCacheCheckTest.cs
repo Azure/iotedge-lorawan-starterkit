@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.FacadeTests
+namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
-    using LoraKeysManagerFacade;
+    using global::LoraKeysManagerFacade;
     using LoRaWan.Tests.Common;
     using System.Threading.Tasks;
     using Xunit;

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.FacadeTests
+namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using LoraKeysManagerFacade;
-    using LoraKeysManagerFacade.FunctionBundler;
+    using global::LoraKeysManagerFacade;
+    using global::LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;

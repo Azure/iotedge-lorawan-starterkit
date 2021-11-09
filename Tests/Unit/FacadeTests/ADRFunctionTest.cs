@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.FacadeTests
+namespace LoRaWan.Tests.Unit.FunctionBundler
 {
     using System;
     using System.Threading.Tasks;
-    using LoraKeysManagerFacade;
-    using LoraKeysManagerFacade.FunctionBundler;
+    using global::LoraKeysManagerFacade;
+    using global::LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using LoRaWan.Tests.Common;
     using Moq;
