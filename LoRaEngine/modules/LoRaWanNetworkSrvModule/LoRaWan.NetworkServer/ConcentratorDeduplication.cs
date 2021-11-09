@@ -52,14 +52,15 @@ namespace LoRaWan.NetworkServer
         {
             using var sha256 = SHA256.Create();
 
-            var totalBufferLength = DevAddr.Size + Mic.Size + sizeof(ushort) + updf.Payload.Length;
-            var buffer = new byte[totalBufferLength];
-            _ = updf.DevAddr.Write(buffer);
-            _ = updf.Mic.Write(buffer.AsSpan()[DevAddr.Size..]);
-            BinaryPrimitives.WriteUInt32LittleEndian(buffer.AsSpan()[(DevAddr.Size + Mic.Size)..], updf.Counter);
-            _ = Encoding.UTF8.GetBytes(updf.Payload.AsSpan(), buffer.AsSpan()[(totalBufferLength - updf.Payload.Length)..]);
+            var totalBufferLength = DevAddr.Size + Mic.Size + updf.Payload.Length + sizeof(ushort);
+            Span<byte> buffer = stackalloc byte[totalBufferLength];
+            var head = buffer;
+            buffer = updf.DevAddr.Write(buffer);
+            buffer = updf.Mic.Write(buffer);
+            _ = Encoding.UTF8.GetBytes(updf.Payload, buffer);
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer[updf.Payload.Length..], updf.Counter);
 
-            var key = sha256.ComputeHash(buffer);
+            var key = sha256.ComputeHash(head.ToArray());
 
             return BitConverter.ToString(key);
         }
