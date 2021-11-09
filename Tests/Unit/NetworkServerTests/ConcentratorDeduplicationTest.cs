@@ -73,8 +73,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Theory]
-        [InlineData(100, 50, true)]
-        [InlineData(100, 150, false)]
+        [InlineData(200, 0, true)]
+        [InlineData(200, 400, false)]
         public async void CachedEntries_Should_Expire(int expirationInMilliseconds, int delayInMilliseconds, bool expectedResult)
         {
             // arrange
