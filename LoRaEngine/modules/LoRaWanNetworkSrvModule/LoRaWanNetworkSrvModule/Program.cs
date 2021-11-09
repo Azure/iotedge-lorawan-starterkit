@@ -6,6 +6,9 @@ using System.Threading;
 using LoRaWan.NetworkServer;
 using LoRaWan.NetworkServer.BasicsStation;
 
+// Similar to bug https://github.com/dotnet/roslyn-analyzers/issues/5184
+#pragma warning disable CA1812
+
 using var cts = new CancellationTokenSource();
 var cancellationToken = cts.Token;
 var cancelKeyPresses = 0;
