@@ -243,6 +243,8 @@ namespace LoRaWan
                 }
             }
 #pragma warning disable CA1031 // Do not catch general exception types
+            // To be handled with #456.
+            // https://github.com/Azure/iotedge-lorawan-starterkit/issues/456
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
