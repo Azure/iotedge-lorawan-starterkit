@@ -13,19 +13,17 @@ namespace LoRaWan.NetworkServer
 
     public sealed class ConcentratorDeduplication : IConcentratorDeduplication, IDisposable
     {
-        internal readonly MemoryCache Cache;
-
-        private readonly ILogger<IConcentratorDeduplication> logger;
-        private readonly TimeSpan cacheEntryExpiration;
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
+        private readonly IMemoryCache cache;
+        private readonly ILogger<IConcentratorDeduplication> logger;
+
         public ConcentratorDeduplication(
-            ILogger<IConcentratorDeduplication> logger,
-            TimeSpan? cacheEntryExpiration = null)
+            IMemoryCache cache,
+            ILogger<IConcentratorDeduplication> logger)
         {
-            this.Cache = new MemoryCache(new MemoryCacheOptions());
+            this.cache = cache;
             this.logger = logger;
-            this.cacheEntryExpiration = cacheEntryExpiration ?? DefaultExpiration;
         }
 
         public bool ShouldDrop(UpstreamDataFrame updf, StationEui stationEui)
@@ -34,7 +32,7 @@ namespace LoRaWan.NetworkServer
 
             var key = CreateCacheKey(updf);
 
-            if (!this.Cache.TryGetValue(key, out StationEui previousStation))
+            if (!this.cache.TryGetValue(key, out StationEui previousStation))
             {
                 AddToCache(key, stationEui);
                 return false;
@@ -67,11 +65,11 @@ namespace LoRaWan.NetworkServer
         }
 
         private void AddToCache(string key, StationEui stationEui)
-            => this.Cache.Set(key, stationEui, new MemoryCacheEntryOptions()
+            => this.cache.Set(key, stationEui, new MemoryCacheEntryOptions()
             {
-                SlidingExpiration = this.cacheEntryExpiration
+                SlidingExpiration = DefaultExpiration
             });
 
-        public void Dispose() => this.Cache.Dispose();
+        public void Dispose() => this.cache.Dispose();
     }
 }
