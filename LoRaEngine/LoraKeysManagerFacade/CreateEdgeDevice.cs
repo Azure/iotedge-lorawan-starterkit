@@ -92,7 +92,8 @@ namespace LoraKeysManagerFacade
                     json = wc.DownloadString(deviceConfigurationUrl);
                 }
 
-                json = ReplaceJsonWithCorrectValues(region, resetPin, json, spiSpeed, spiDev);
+                var appInsightsInstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
+                json = ReplaceJsonWithCorrectValues(region, resetPin, json, spiSpeed, spiDev, appInsightsInstrumentationKey);
 
                 var spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
                 _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
@@ -155,10 +156,11 @@ namespace LoraKeysManagerFacade
             return PrepareResponse(HttpStatusCode.OK);
         }
 
-        private static string ReplaceJsonWithCorrectValues(string region, string resetPin, string json, string spiSpeed, string spiDev)
+        private static string ReplaceJsonWithCorrectValues(string region, string resetPin, string json, string spiSpeed, string spiDev, string appInsightsInstrumentationKey)
         {
             json = json.Replace("[$region]", region, StringComparison.Ordinal);
             json = json.Replace("[$reset_pin]", resetPin, StringComparison.Ordinal);
+            json = json.Replace("[$appinsights_instrumentationkey]", appInsightsInstrumentationKey, StringComparison.Ordinal);
 
             if (string.Equals(spiSpeed, "8", StringComparison.OrdinalIgnoreCase) ||
                 string.IsNullOrEmpty(spiSpeed))

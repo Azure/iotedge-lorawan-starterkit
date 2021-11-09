@@ -28,16 +28,16 @@
 							"OptimizeForPerformance": {
 								"value": "false"
 							},
-              "mqttSettings__enabled": {
-                "value": "false"
-              },
-              "httpSettings__enabled": {
-                "value": "false"
-              },
-              "AuthenticationMode": {
-                "value": "CloudAndScope"
-              }
-			},
+              				"mqttSettings__enabled": {
+              				  "value": "false"
+              				},
+              				"httpSettings__enabled": {
+              				  "value": "false"
+              				},
+              				"AuthenticationMode": {
+              				  "value": "CloudAndScope"
+              				}
+						},
 						"status": "running",
 						"restartPolicy": "always"
 					}
@@ -59,7 +59,10 @@
 							},
 							"LOG_TO_HUB": {
 							  "value": "true"
-							}					
+							},
+							"APPINSIGHTS_INSTRUMENTATIONKEY": {
+								"value": "[$appinsights_instrumentationkey]"
+							}
 						},
 						"status": "running",
 						"restartPolicy": "always"

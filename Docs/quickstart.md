@@ -23,7 +23,7 @@ The template will deploy in your Azure subscription the Following resources:
 
 1. Press on the button here below to start your Azure Deployment.
     <!-- markdownlint-disable MD033 -->
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fmaster%2FTemplate%2Fazuredeploy.json" target="_blank">
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Ffeature%2F739-azure-monitor-observability%2FTemplate%2Fazuredeploy.json" target="_blank">
         <img src="http://azuredeploy.net/deploybutton.png"/>
     </a>
     <!-- markdownlint-enable MD033 -->
@@ -37,6 +37,7 @@ The template will deploy in your Azure subscription the Following resources:
     - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](/Arduino) would be ready to use immediately.
     - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
     - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
+    - **useAzureMonitor** - You can opt out of using Azure Monitor services for observability on the deployed components.
 
     The deployment would take c.a. 10 minutes to complete.
 

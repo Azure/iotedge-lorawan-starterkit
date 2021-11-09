@@ -58,6 +58,13 @@
             "metadata": {
                 "description": "SPI Dev version for x86 based gateway"
             }
+        },
+        "useAzureMonitor": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Controls whether observability is setup for the deployed components."
+            }
         }
     },
     "variables": {
@@ -73,7 +80,8 @@
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
         "appInsightName": "[concat(parameters('uniqueSolutionPrefix'), 'insight')]",
-        "redisCacheName": "[concat(parameters('uniqueSolutionPrefix'), 'redis')]"
+        "redisCacheName": "[concat(parameters('uniqueSolutionPrefix'), 'redis')]",
+        "logAnalyticsName": "[concat('log-', parameters('uniqueSolutionPrefix'))]"
     },
     "resources": [
         {
@@ -120,7 +128,8 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
                 "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]",
-                "[resourceId('Microsoft.Cache/Redis', variables('redisCacheName'))]"
+                "[resourceId('Microsoft.Cache/Redis', variables('redisCacheName'))]",
+                "[resourceId('microsoft.insights/components/', variables('appInsightName'))]"
             ],
             "resources": [],
             "properties": {
@@ -177,7 +186,7 @@
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey]"
+                            "value": "[if(parameters('useAzureMonitor'), reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey, '')]"
                         },
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
@@ -224,6 +233,7 @@
         },
         {
             "type": "Microsoft.Insights/components",
+            "condition": "[parameters('useAzureMonitor')]",
             "kind": "web",
             "name": "[variables('appInsightName')]",
             "apiVersion": "2015-05-01",
@@ -233,6 +243,22 @@
                 "ApplicationId": "[variables('appInsightName')]"
             },
             "dependsOn": []
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2021-06-01",
+            "condition": "[parameters('useAzureMonitor')]",
+            "name": "[variables('logAnalyticsName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "retentionInDays": 30,
+                "sku": {
+                    "name": "PerGB2018"
+                },
+                "workspaceCapping": {
+                    "dailyQuotaGb": 10
+                }
+            }
         },
         {
             "apiVersion": "2018-03-01",
