@@ -16,9 +16,8 @@ namespace LoRaWan.NetworkServer
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
         private readonly IMemoryCache cache;
+        private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
         private readonly ILogger<IConcentratorDeduplication> logger;
-        private readonly WebSocketWriterRegistry<StationEui, string> SocketRegistry;
-
 
         [ThreadStatic]
         private static SHA256 sha256;
@@ -41,7 +40,7 @@ namespace LoRaWan.NetworkServer
             ILogger<IConcentratorDeduplication> logger)
         {
             this.cache = cache;
-            this.SocketRegistry = socketRegistry;
+            this.socketRegistry = socketRegistry;
             this.logger = logger;
         }
 
@@ -91,7 +90,7 @@ namespace LoRaWan.NetworkServer
         }
 
         private bool IsConnectionOpen(StationEui stationEui)
-            => this.SocketRegistry.IsSocketWriterOpen(stationEui);
+            => this.socketRegistry.IsSocketWriterOpen(stationEui);
 
         private void AddToCache(string key, StationEui stationEui)
             => this.cache.Set(key, stationEui, new MemoryCacheEntryOptions()
