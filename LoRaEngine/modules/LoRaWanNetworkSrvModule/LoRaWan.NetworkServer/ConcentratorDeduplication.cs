@@ -56,7 +56,7 @@ namespace LoRaWan.NetworkServer
         internal static string CreateCacheKey(UpstreamDataFrame updf)
         {
             var totalBufferLength = DevAddr.Size + Mic.Size + updf.Payload.Length + sizeof(ushort);
-            Span<byte> buffer = stackalloc byte[totalBufferLength];
+            var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength];
             var head = buffer;
             buffer = updf.DevAddr.Write(buffer);
             buffer = updf.Mic.Write(buffer);
