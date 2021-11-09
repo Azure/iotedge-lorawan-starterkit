@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System;
+    using System.Linq;
     using LoRaWan;
     using Xunit;
 
@@ -15,11 +16,13 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
         protected abstract int Size { get; }
         protected abstract T Parse(string input);
+        protected abstract T Parse(string input, string format);
         protected abstract bool TryParse(string input, out T result);
+        protected abstract bool TryParse(string input, string format, out T result);
 
         private static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
         private static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
-        private static readonly char[] SupportedFormats = new[] { 'G', 'g', 'D', 'd', 'I', 'i', 'N', 'n', 'E', 'e' };
+        private static readonly char?[] SupportedFormats = new char?[] { null, 'G', 'g', 'D', 'd', 'I', 'i', 'N', 'n', 'E', 'e' };
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()
@@ -109,7 +112,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
             foreach (var c in SupportedFormats)
             {
-                Assert.True(ex.Message.Contains(c, StringComparison.Ordinal));
+                if (c is { } cp)
+                    Assert.True(ex.Message.Contains(cp, StringComparison.Ordinal));
             }
         }
 
@@ -118,6 +122,21 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             var result = Parse(this.Subject.ToString());
             Assert.Equal(Subject, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(SupportedFormatsTheoryData))]
+        public void Parse_Returns_Parsed_Value_With_Valid_Format(string format)
+        {
+            var result = Parse(Subject.ToString(format, null), format);
+            Assert.Equal(Subject, result);
+        }
+
+        [Fact]
+        public void Parse_Throws_When_Format_Is_Unsupported()
+        {
+            const string format = "z";
+            _ = Assert.Throws<FormatException>(() => Parse(Subject.ToString(null, null), format));
         }
 
         [Fact]
@@ -143,6 +162,25 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.Equal(Subject, result);
         }
 
+        [Theory]
+        [MemberData(nameof(SupportedFormatsTheoryData))]
+        public void TryParse_Returns_Parsed_Value_With_Valid_Format(string format)
+        {
+            var succeeded = TryParse(Subject.ToString(format, null), format, out var result);
+            Assert.True(succeeded);
+            Assert.Equal(Subject, result);
+        }
+
+        [Fact]
+        public void TryParse_Returns_False_When_Format_Is_Unsupported()
+        {
+            const string format = "z";
+            var succeeded = TryParse(Subject.ToString(null, null), format, out var result);
+
+            Assert.False(succeeded);
+            Assert.Equal(default, result);
+        }
+
         [Fact]
         public void TryParse_Input_Is_Case_Insensitive()
         {
@@ -160,26 +198,38 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.False(succeeded);
             Assert.True(result == default);
         }
+
+#pragma warning disable CA1000 // Do not declare static members on generic types
+        public static object[][] SupportedFormatsTheoryData() =>
+#pragma warning restore CA1000 // Do not declare static members on generic types
+            SupportedFormats.Select(f => new object[] { f }).ToArray();
     }
 
     public class DevEuiTests : EuiTests<DevEui>
     {
         protected override int Size => DevEui.Size;
         protected override DevEui Parse(string input) => DevEui.Parse(input);
+        protected override DevEui Parse(string input, string format) => DevEui.Parse(input, format);
         protected override bool TryParse(string input, out DevEui result) => DevEui.TryParse(input, out result);
+        protected override bool TryParse(string input, string format, out DevEui result) => DevEui.TryParse(input, format, out result);
     }
 
     public class JoinEuiTests : EuiTests<JoinEui>
     {
         protected override int Size => JoinEui.Size;
         protected override JoinEui Parse(string input) => JoinEui.Parse(input);
+        protected override JoinEui Parse(string input, string format) => JoinEui.Parse(input, format);
         protected override bool TryParse(string input, out JoinEui result) => JoinEui.TryParse(input, out result);
+        protected override bool TryParse(string input, string format, out JoinEui result) => JoinEui.TryParse(input, format, out result);
+
     }
 
     public class StationEuiTests : EuiTests<StationEui>
     {
         protected override int Size => StationEui.Size;
         protected override StationEui Parse(string input) => StationEui.Parse(input);
+        protected override StationEui Parse(string input, string format) => StationEui.Parse(input, format);
         protected override bool TryParse(string input, out StationEui result) => StationEui.TryParse(input, out result);
+        protected override bool TryParse(string input, string format, out StationEui result) => StationEui.TryParse(input, format, out result);
     }
 }

@@ -60,17 +60,50 @@ namespace LoRaWan
         public static <#= t #> Parse(ReadOnlySpan<char> input) =>
             TryParse(input, out var result) ? result : throw new FormatException();
 
-        public static bool TryParse(ReadOnlySpan<char> input, out <#= t #> result)
+        public static <#= t #> Parse(ReadOnlySpan<char> input, string? format) =>
+            TryParse(input, format, out var result) ? result : throw new FormatException();
+
+        public static bool TryParse(ReadOnlySpan<char> input, out <#= t #> result) => TryParse(input, "G", out result);
+
+        public static bool TryParse(ReadOnlySpan<char> input, string? format, out <#= t #> result)
         {
-            if (Hexadecimal.TryParse(input, out var raw, '-'))
+            result = default;
+
+            return format?.ToLowerInvariant() switch
             {
-                result = new <#= t #>(raw);
-                return true;
+                null or "g" or "d"  => TryParseHex(input, '-', out result),
+                "e"                 => TryParseHex(input, ':', out result),
+                "n"                 => TryParseHex(input, null, out result),
+                "i"                 => TryParseId6(input, out result),
+                _                   => false
+            };
+
+            static bool TryParseHex(ReadOnlySpan<char> input, char? separator, out <#= t #> result)
+            {
+                if (Hexadecimal.TryParse(input, out var raw, separator))
+                {
+                    result = new <#= t #>(raw);
+                    return true;
+                }
+                else
+                {
+                    result = default;
+                    return false;
+                }
             }
-            else
+
+            static bool TryParseId6(ReadOnlySpan<char> input, out <#= t #> result)
             {
-                result = default;
-                return false;
+                if (Id6.TryParse(input, out var raw))
+                {
+                    result = new <#= t #>(raw);
+                    return true;
+                }
+                else
+                {
+                    result = default;
+                    return false;
+                }
             }
         }
 
