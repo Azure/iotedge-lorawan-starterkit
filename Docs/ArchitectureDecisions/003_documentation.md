@@ -21,15 +21,9 @@ branch and/or folder. The folders are limited to `/` or `/docs`. The best practi
 seems to be to create a detached branch or git subtree called `gh-pages` which
 contains only the static website in a `/docs` folder.
 
-1. **Use DocFX static site generator**.
-[DocFX](https://dotnet.github.io/docfx/) is an open source tool provided by
-Microsoft that allows you to generate a static website based on a set of
-markdown files. Additionally, it can build documentation for a codebase based on
-the "triple slash" comments (`///`) in .NET code.  
-It uses `yaml` files to provide structure to the documentation. There is no
-built-in support in GitHub, but there are already some GitHub Actions available
-to help automate the publishing of docs. However, we will not use the code
-documentation feature of DocFX, since the code does not represent an API.
+1. **Use mkdocs and [mkdocs-material](https://squidfunk.github.io/mkdocs-material/)**
+to generate the static website. It allows to create good looking documentation
+website in a quick and easy way. There is built-in support for GitHub Actions.
 
 1. **Create a detached branch to keep all docs**, called `docs/main`.
 This keeps history out of the main code repository, and allows for changes to
@@ -58,6 +52,16 @@ There are Github Actions available to help you build and publish the static
 website. Jekyll requires you to add specific `yaml` snippets to your documentation
 to be able to build a static site. Also,
 [it is not fully supported on Windows right now](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/about-github-pages-and-jekyll).  
+
+1. **Use DocFX static site generator**.
+[DocFX](https://dotnet.github.io/docfx/) is an open source tool provided by
+Microsoft that allows you to generate a static website based on a set of
+markdown files. Additionally, it can build documentation for a codebase based on
+the "triple slash" comments (`///`) in .NET code.  
+It uses `yaml` files to provide structure to the documentation. There is no
+built-in support in GitHub, but there are already some GitHub Actions available
+to help automate the publishing of docs. However, we will not use the code
+documentation feature of DocFX, since the code does not represent an API.
 
 1. Use a different repository for the docs
 While this is a solution for some OSS repositories, it is overkill for this one.
