@@ -179,6 +179,13 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.Equal(default, result);
         }
 
+        [Fact]
+        public void String_Interpolation_Success_Case()
+        {
+            var result = $"N = {Subject:N}, I = {Subject:I}";
+            Assert.Equal("N = 0123456789ABCDEF, I = 0123:4567:89AB:CDEF", result);
+        }
+
 #pragma warning disable CA1000 // Do not declare static members on generic types
         public static object[][] SupportedFormatsTheoryData() =>
 #pragma warning restore CA1000 // Do not declare static members on generic types
