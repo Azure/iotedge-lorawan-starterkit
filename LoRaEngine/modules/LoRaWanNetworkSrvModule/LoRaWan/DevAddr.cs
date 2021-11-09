@@ -4,6 +4,7 @@
 namespace LoRaWan
 {
     using System;
+    using System.Buffers.Binary;
     using System.Globalization;
 
     /// <summary>
@@ -43,5 +44,11 @@ namespace LoRaWan
 
         public static bool operator ==(DevAddr left, DevAddr right) => left.Equals(right);
         public static bool operator !=(DevAddr left, DevAddr right) => !left.Equals(right);
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
+            return buffer[Size..];
+        }
     }
 }

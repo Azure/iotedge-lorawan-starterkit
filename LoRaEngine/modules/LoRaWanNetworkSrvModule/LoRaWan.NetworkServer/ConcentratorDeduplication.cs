@@ -3,30 +3,46 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Buffers.Binary;
+    using System.Security.Cryptography;
+    using System.Text;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
-    using System;
-    using System.Security.Cryptography;
-    using System.Text;
 
     public sealed class ConcentratorDeduplication : IConcentratorDeduplication, IDisposable
     {
-        internal readonly MemoryCache Cache;
-        internal readonly WebSocketWriterRegistry<StationEui, string> SocketRegistry;
+        private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
-        private readonly ILogger<IConcentratorDeduplication> Logger;
-        private readonly TimeSpan CacheEntryExpiration;
+        private readonly IMemoryCache cache;
+        private readonly ILogger<IConcentratorDeduplication> logger;
+        private readonly WebSocketWriterRegistry<StationEui, string> SocketRegistry;
+
+
+        [ThreadStatic]
+        private static SHA256 sha256;
+        private static SHA256 Sha256
+        {
+            get
+            {
+                if (sha256 is null)
+                {
+                    sha256 = SHA256.Create();
+                }
+
+                return sha256;
+            }
+        }
 
         public ConcentratorDeduplication(
+            IMemoryCache cache,
             WebSocketWriterRegistry<StationEui, string> socketRegistry,
-            ILogger<IConcentratorDeduplication> logger,
-            int cacheEntryExpirationInMilliSeconds = 60_000)
+            ILogger<IConcentratorDeduplication> logger)
         {
-            this.Cache = new MemoryCache(new MemoryCacheOptions());
+            this.cache = cache;
             this.SocketRegistry = socketRegistry;
-            this.Logger = logger;
-            this.CacheEntryExpiration = TimeSpan.FromMilliseconds(cacheEntryExpirationInMilliSeconds);
+            this.logger = logger;
         }
 
         public bool ShouldDrop(UpstreamDataFrame updf, StationEui stationEui)
@@ -34,41 +50,42 @@ namespace LoRaWan.NetworkServer
             if (updf == null) throw new ArgumentNullException(nameof(updf));
 
             var key = CreateCacheKey(updf);
-            StationEui previousStation;
 
-            lock (this.Cache)
+            if (!this.cache.TryGetValue(key, out StationEui previousStation))
             {
-                if (!this.Cache.TryGetValue(key, out previousStation))
-                {
-                    AddToCache(key, stationEui);
-                    return false;
-                }
+                AddToCache(key, stationEui);
+                return false;
             }
 
             if (previousStation == stationEui)
             {
-                this.Logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
+                this.logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
                 return false;
             }
 
             // received from a different station
             if (IsConnectionOpen(previousStation))
             {
-                this.Logger.LogInformation($"Duplicate message received from station with EUI: {stationEui}, dropping.");
+                this.logger.LogInformation($"Duplicate message received from station with EUI: {stationEui}, dropping.");
                 return true;
             }
 
-            this.Logger.LogInformation($"Connectivity to previous station with EUI {previousStation}, was lost, will use {stationEui} from now onwards.");
-            lock (this.Cache)
-                AddToCache(key, stationEui);
-
+            this.logger.LogInformation($"Connectivity to previous station with EUI {previousStation}, was lost, will use station with EUI: {stationEui} from now onwards.");
+            AddToCache(key, stationEui);
             return false;
         }
 
         internal static string CreateCacheKey(UpstreamDataFrame updf)
         {
-            using var sha256 = SHA256.Create();
-            var key = sha256.ComputeHash(Encoding.UTF8.GetBytes(string.Join("", updf.DevAddr, updf.FrameCounter, updf.FRMPayload, updf.Mic)));
+            var totalBufferLength = DevAddr.Size + Mic.Size + updf.Payload.Length + sizeof(ushort);
+            Span<byte> buffer = stackalloc byte[totalBufferLength];
+            var head = buffer;
+            buffer = updf.DevAddr.Write(buffer);
+            buffer = updf.Mic.Write(buffer);
+            _ = Encoding.UTF8.GetBytes(updf.Payload, buffer);
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer[updf.Payload.Length..], updf.Counter);
+
+            var key = Sha256.ComputeHash(head.ToArray());
 
             return BitConverter.ToString(key);
         }
@@ -77,11 +94,11 @@ namespace LoRaWan.NetworkServer
             => this.SocketRegistry.IsSocketWriterOpen(stationEui);
 
         private void AddToCache(string key, StationEui stationEui)
-            => this.Cache.Set(key, stationEui, new MemoryCacheEntryOptions()
+            => this.cache.Set(key, stationEui, new MemoryCacheEntryOptions()
             {
-                SlidingExpiration = this.CacheEntryExpiration
+                SlidingExpiration = DefaultExpiration
             });
 
-        public void Dispose() => this.Cache.Dispose();
+        public void Dispose() => this.cache.Dispose();
     }
 }

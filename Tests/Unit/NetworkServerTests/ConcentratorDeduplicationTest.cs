@@ -3,23 +3,35 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
-    using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.BasicsStation;
-    using Microsoft.Extensions.Logging.Abstractions;
-    using Moq;
     using System;
     using System.Net.WebSockets;
-    using System.Threading.Tasks;
+    using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
+    using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
+    using Moq;
     using Xunit;
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
     {
-        private readonly ConcentratorDeduplication ConcentratorDeduplication;
+        private readonly ConcentratorDeduplication concentratorDeduplication;
+        private static readonly UpstreamDataFrame defaultUpdf = new UpstreamDataFrame(default, new DevAddr(1), default, 2, default, default, "payload", new Mic(4), default);
+
+#pragma warning disable CA2213 // Disposable fields should be disposed
+        // false positive, ownership passed to ConcentratorDeduplication
+        private readonly MemoryCache cache;
+#pragma warning restore CA2213 // Disposable fields should be disposed
+        private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
 
         public ConcentratorDeduplicationTest()
         {
-            var socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
-            this.ConcentratorDeduplication = new ConcentratorDeduplication(socketRegistry, NullLogger<IConcentratorDeduplication>.Instance);
+            this.cache = new MemoryCache(new MemoryCacheOptions());
+            this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
+
+            this.concentratorDeduplication = new ConcentratorDeduplication(
+                this.cache,
+                this.socketRegistry,
+                NullLogger<IConcentratorDeduplication>.Instance);
         }
 
         [Theory]
@@ -28,20 +40,19 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public void When_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool isCacheEmpty)
         {
             // arrange
-            var updf = new UpstreamDataFrame(default, 1, "payload", default);
             var stationEui = new StationEui();
             if (!isCacheEmpty)
             {
-                _ = this.ConcentratorDeduplication.ShouldDrop(new UpstreamDataFrame(default, 1, "another_payload", default), stationEui);
+                _ = this.concentratorDeduplication.ShouldDrop(new UpstreamDataFrame(default, new DevAddr(1), default, 2, default, default, "another_payload", new Mic(4), default), stationEui);
             }
 
             // act
-            var result = this.ConcentratorDeduplication.ShouldDrop(updf, stationEui);
+            var result = this.concentratorDeduplication.ShouldDrop(defaultUpdf, stationEui);
 
             // assert
             Assert.False(result);
-            var key = ConcentratorDeduplication.CreateCacheKey(updf);
-            Assert.True(this.ConcentratorDeduplication.Cache.TryGetValue(key, out var addedStation));
+            var key = ConcentratorDeduplication.CreateCacheKey(defaultUpdf);
+            Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(stationEui, addedStation);
         }
 
@@ -54,9 +65,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool activeConnectionToPreviousStation, bool expectedResult)
         {
             // arrange
-            var updf = new UpstreamDataFrame(default, 1, "payload", default);
             var stationEui = new StationEui();
-            _ = this.ConcentratorDeduplication.ShouldDrop(updf, stationEui);
+            _ = this.concentratorDeduplication.ShouldDrop(defaultUpdf, stationEui);
 
             var socketMock = new Mock<WebSocket>();
             IWebSocketWriter<string> channel = null;
@@ -65,59 +75,28 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 _ = socketMock.Setup(x => x.State).Returns(WebSocketState.Closed);
             }
             channel = new WebSocketTextChannel(socketMock.Object, TimeSpan.FromMinutes(1)); // send timeout not relevant
-            this.ConcentratorDeduplication.SocketRegistry.Register(stationEui, channel);
+            _ = this.socketRegistry.Register(stationEui, channel);
 
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
 
             // act/assert
-            Assert.Equal(expectedResult, this.ConcentratorDeduplication.ShouldDrop(updf, anotherStation));
-            var key = ConcentratorDeduplication.CreateCacheKey(updf);
-            Assert.Equal(1, this.ConcentratorDeduplication.Cache.Count);
-            Assert.True(this.ConcentratorDeduplication.Cache.TryGetValue(key, out var addedStation));
+            Assert.Equal(expectedResult, this.concentratorDeduplication.ShouldDrop(defaultUpdf, anotherStation));
+            Assert.Equal(1, this.cache.Count);
+            var key = ConcentratorDeduplication.CreateCacheKey(defaultUpdf);
+            Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(expectedResult ? stationEui : anotherStation, addedStation);
         }
 
         [Fact]
-        public void CacheKey_Should_Consider_All_Required_Fields()
+        public void CreateKeyMethod_Should_Produce_Expected_Key()
         {
             // arrange
-            var updf = new Mock<UpstreamDataFrame>(
-                new DevAddr(0x0),
-                (ushort)0x0,
-                "payload",
-                new Mic(0x0));
-            _ = updf.Setup(x => x.DevAddr);
-            _ = updf.Setup(x => x.FrameCounter);
-            _ = updf.Setup(x => x.FRMPayload);
-            _ = updf.Setup(x => x.Mic);
+            var expectedKey = "43-E3-69-8D-70-E2-50-77-06-01-63-D1-DD-74-ED-E0-B5-BA-3B-54-09-FB-88-B3-B9-DB-6D-97-68-01-97-52";
 
-            // act
-            _ = ConcentratorDeduplication.CreateCacheKey(updf.Object);
-
-            // assert
-            updf.VerifyAll();
+            // act/assert
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(defaultUpdf));
         }
 
-        [Theory]
-        [InlineData(100, 50, true)]
-        [InlineData(100, 150, false)]
-        public async void CachedEntries_Should_Expire(int expirationTimeout, int delay, bool expectedResult)
-        {
-            // arrange
-            var socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
-            using var sut = new ConcentratorDeduplication(socketRegistry, NullLogger<IConcentratorDeduplication>.Instance, expirationTimeout);
-            var updf = new UpstreamDataFrame(default, 1, "payload", default);
-            var stationEui = new StationEui();
-
-            // act
-            _ = sut.ShouldDrop(updf, stationEui);
-
-            // assert
-            await Task.Delay(delay);
-            var key = ConcentratorDeduplication.CreateCacheKey(updf);
-            Assert.Equal(expectedResult, sut.Cache.TryGetValue(key, out var _));
-        }
-
-        public void Dispose() => this.ConcentratorDeduplication.Dispose();
+        public void Dispose() => this.concentratorDeduplication.Dispose();
     }
 }
