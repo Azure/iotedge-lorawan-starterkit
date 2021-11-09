@@ -4,7 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using LoRaTools.Regions;
+    using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using Moq;
     using Xunit;

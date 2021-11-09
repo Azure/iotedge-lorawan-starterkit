@@ -9,7 +9,7 @@ namespace LoRaWan.Tests.Unit.CommonAPI
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.FunctionBundler;
-    using LoRaTools.CommonAPI;
+    using global::LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;

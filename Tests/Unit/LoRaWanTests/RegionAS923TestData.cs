@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.LoRaWanTests
+namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 {
     using System.Collections.Generic;
     using System.Linq;
-    using LoRaTools.Regions;
+    using global::LoRaTools.Regions;
 
     public static class RegionAS923TestData
     {

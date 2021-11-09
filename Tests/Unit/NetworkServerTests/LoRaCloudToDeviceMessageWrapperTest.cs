@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Linq;
     using System.Text;
+    using global::LoRaTools;
     using LoRaTools;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;

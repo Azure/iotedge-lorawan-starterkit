@@ -8,12 +8,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
+    using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using global::LoRaTools.LoRaPhysical;
 
     public class DownstreamSenderTests
     {

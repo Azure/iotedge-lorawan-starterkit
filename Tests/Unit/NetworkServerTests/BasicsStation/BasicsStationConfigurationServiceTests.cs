@@ -3,7 +3,7 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 {
-    using LoRaTools.Regions;
+    using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;

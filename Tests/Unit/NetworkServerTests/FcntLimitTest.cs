@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Threading.Tasks;
-    using LoRaTools.LoRaMessage;
+    using global::LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;

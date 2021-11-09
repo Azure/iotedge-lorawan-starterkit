@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Text;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
-    using LoRaTools.CommonAPI;
+    using global::LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;

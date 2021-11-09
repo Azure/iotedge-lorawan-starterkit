@@ -9,8 +9,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.FunctionBundler;
-    using LoRaTools.ADR;
-    using LoRaTools.CommonAPI;
+    using global::LoRaTools.ADR;
+    using global::LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;

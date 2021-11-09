@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.LoRaWanTests
+namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 {
     using System;
-    using LoRaTools.Regions;
+    using global::LoRaTools.Regions;
     using Xunit;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]

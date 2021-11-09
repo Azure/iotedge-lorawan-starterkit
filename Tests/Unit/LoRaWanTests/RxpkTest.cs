@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.LoRaWanTests
+namespace LoRaWan.Tests.Unit.LoRaTools.LoRaPhysical
 {
     using System.Linq;
     using System.Text;
-    using LoRaTools.LoRaPhysical;
+    using global::LoRaTools.LoRaPhysical;
     using Xunit;
 
     public class RxpkTest

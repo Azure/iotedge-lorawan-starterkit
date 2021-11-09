@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
@@ -333,7 +334,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Verify(x => x.Disconnect(), Times.Never());
 
             // device is in cache
-            var devAddrDictionary = target.InternalGetCachedDevicesForDevAddr(LoRaTools.Utils.ConversionHelper.ByteArrayToString(payload1.DevAddr));
+            var devAddrDictionary = target.InternalGetCachedDevicesForDevAddr(ConversionHelper.ByteArrayToString(payload1.DevAddr));
             Assert.NotNull(devAddrDictionary);
             Assert.True(devAddrDictionary.TryGetValue(simulatedDevice.DevEUI, out var cachedLoRaDevice));
             Assert.False(cachedLoRaDevice.IsOurDevice);
@@ -384,7 +385,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Verify(x => x.GetTwinAsync(), Times.Once());
 
             // device is in cache
-            var devAddrDictionary = target.InternalGetCachedDevicesForDevAddr(LoRaTools.Utils.ConversionHelper.ByteArrayToString(payload1.DevAddr));
+            var devAddrDictionary = target.InternalGetCachedDevicesForDevAddr(ConversionHelper.ByteArrayToString(payload1.DevAddr));
             Assert.NotNull(devAddrDictionary);
             Assert.True(devAddrDictionary.TryGetValue(simulatedDevice.DevEUI, out var cachedLoRaDevice));
             Assert.False(cachedLoRaDevice.IsOurDevice);

@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.LoRaWanTests
+namespace LoRaWan.Tests.Unit
 {
     using System.Collections.Generic;
-    using LoRaTools.ADR;
-    using LoRaTools.LoRaPhysical;
+    using global::LoRaTools.ADR;
+    using global::LoRaTools.LoRaPhysical;
     using Xunit;
 
 #pragma warning disable CA1812 // Unused class

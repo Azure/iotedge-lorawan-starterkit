@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools.CommonAPI;
+    using global::LoRaTools.CommonAPI;
     using LoRaWan.Core;
     using Xunit;
 

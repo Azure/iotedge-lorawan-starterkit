@@ -7,11 +7,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
-    using LoRaTools.CommonAPI;
-    using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
-    using LoRaTools.Utils;
+    using global::LoRaTools.CommonAPI;
+    using global::LoRaTools.LoRaMessage;
+    using global::LoRaTools.LoRaPhysical;
+    using global::LoRaTools.Regions;
+    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;

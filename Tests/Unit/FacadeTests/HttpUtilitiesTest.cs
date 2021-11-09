@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System.Collections.Generic;
     using global::LoraKeysManagerFacade;
-    using LoRaTools.CommonAPI;
+    using global::LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Primitives;
     using Xunit;

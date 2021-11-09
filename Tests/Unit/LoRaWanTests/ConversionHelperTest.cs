@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.LoRaWanTests
+namespace LoRaWan.Tests.Unit.SensorDecoderModule
 {
     using System;
-    using LoRaTools.Utils;
+    using global::LoRaTools.Utils;
     using Xunit;
 
     /// <summary>

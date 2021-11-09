@@ -3,16 +3,16 @@
 
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
 
-namespace LoRaWan.Tests.Unit.LoRaWanTests
+namespace LoRaWan.Tests.Unit
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using LoRaTools;
-    using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
+    using global::LoRaTools;
+    using global::LoRaTools.LoRaMessage;
+    using global::LoRaTools.LoRaPhysical;
+    using global::LoRaTools.Utils;
     using Xunit;
 
     /// <summary>
@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.True(joinRequest.CheckMic(appKey));
             Assert.True(joinRequest.CheckMic(appKey)); // ensure multiple calls work!
 
-            var rxpk = new LoRaTools.LoRaPhysical.Rxpk()
+            var rxpk = new Rxpk()
             {
                 Chan = 7,
                 Rfch = 1,
@@ -92,7 +92,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             rxpk.Size = (uint)data.Length;
 
             var decodedJoinRequestBytes = Convert.FromBase64String(rxpk.Data);
-            var decodedJoinRequest = new LoRaTools.LoRaMessage.LoRaPayloadJoinRequest(decodedJoinRequestBytes);
+            var decodedJoinRequest = new global::LoRaTools.LoRaMessage.LoRaPayloadJoinRequest(decodedJoinRequestBytes);
             Assert.True(decodedJoinRequest.CheckMic(appKey));
         }
 

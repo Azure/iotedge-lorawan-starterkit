@@ -15,7 +15,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
     using Xunit;
     using static Bandwidth;
     using static SpreadingFactor;
-    using LoRaTools.Regions;
+    using global::LoRaTools.Regions;
 
     public class LnsStationConfigurationTests
     {

@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.Unit.FunctionBundler
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.FunctionBundler;
-    using LoRaTools.ADR;
+    using global::LoRaTools.ADR;
     using LoRaWan.Tests.Common;
     using Moq;
     using Xunit;

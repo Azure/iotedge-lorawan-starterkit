@@ -6,7 +6,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using LoRaTools.Regions;
+    using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;

@@ -8,8 +8,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
-    using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
+    using global::LoRaTools.LoRaMessage;
+    using global::LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -283,7 +283,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages.First();
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr.ToArray(), global::LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 

@@ -11,9 +11,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
-    using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
+    using global::LoRaTools.LoRaMessage;
+    using global::LoRaTools.LoRaPhysical;
+    using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.Processors;

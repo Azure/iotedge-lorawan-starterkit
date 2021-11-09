@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.LoRaWanTests
+namespace LoRaWan.Tests.Unit.SensorDecoderModule
 {
-    using LoRaTools;
-    using LoRaTools.CommonAPI;
+    using global::LoRaTools;
+    using global::LoRaTools.CommonAPI;
     using Xunit;
 
     public class LoRaCloudToDeviceMessageTest
