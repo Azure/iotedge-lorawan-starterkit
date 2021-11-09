@@ -68,6 +68,8 @@ We will always expose LNS custom metrics in Prometheus format using [prometheus-
 
 In addition to this, we will support Application Insights metrics on an opt-in basis. When enabled, we will deliver most metrics (custom and default from LNS, except the edgeAgent and edgeHub metrics, which can only be delivered to Log Analytics) to Application Insights. This will ensure that we get many of the features that we get with Application Insights out of the box (Live Metrics, integration with alerts and workbooks), while still keeping the flexibility of consuming the metrics in Prometheus format and all the advantages that come with it. This comes at the cost of increased implementation complexity.
 
+> Note: IoT Hub comes with [curated workbooks](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-explore-curated-visualizations?view=iotedge-2020-11&tabs=devices%2Cmessaging) and [predefined queries for alerts](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-alerts?view=iotedge-2020-11) based on built-in Prometheus-format metrics that are delivered by the metrics collector module to LogAnalytics.
+
 #### Custom metrics/events
 
 | Name                       | Description                                                  | Source | Namespace | Dimensions                 |
