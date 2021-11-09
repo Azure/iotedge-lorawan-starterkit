@@ -17,7 +17,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
         // false positive, ownership passed to ConcentratorDeduplication
-        private readonly IMemoryCache cache;
+        private readonly MemoryCache cache;
 #pragma warning restore CA2213 // Disposable fields should be disposed
 
         public ConcentratorDeduplicationTest()
@@ -63,6 +63,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // act/assert
             Assert.Equal(expectedResult, this.concentratorDeduplication.ShouldDrop(defaultUpdf, anotherStation));
+            Assert.Equal(1, this.cache.Count);
             var key = ConcentratorDeduplication.CreateCacheKey(defaultUpdf);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(expectedResult ? stationEui : anotherStation, addedStation);
