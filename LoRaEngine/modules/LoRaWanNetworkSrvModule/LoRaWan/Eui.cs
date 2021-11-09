@@ -51,6 +51,7 @@ namespace LoRaWan
         {
             return format switch
             {
+#pragma warning disable format
                 null or "G" or "D" => ToHex(value, '-', LetterCase.Upper),
                 "g" or "d"         => ToHex(value, '-', LetterCase.Lower),
                 "E"                => ToHex(value, ':', LetterCase.Upper),
@@ -59,6 +60,7 @@ namespace LoRaWan
                 "n"                => ToHex(value, null, LetterCase.Lower),
                 "I"                => Id6.Format(value, Id6.FormatOptions.FixedWidth),
                 "i"                => Id6.Format(value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
+#pragma warning restore format
                 _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
             };
 

@@ -494,7 +494,7 @@ namespace LoRaWan.NetworkServer
             {
                 return Convert.ToInt32(value);
             }
-            catch(FormatException)
+            catch (FormatException)
             {
             }
             catch (OverflowException)
@@ -525,7 +525,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (OverflowException)
             {
-                Logger.Log("value represents a number that is less than MinValue or greater than MaxValue." ,LogLevel.Error);
+                Logger.Log("value represents a number that is less than MinValue or greater than MaxValue.", LogLevel.Error);
             }
             catch (FormatException)
             {

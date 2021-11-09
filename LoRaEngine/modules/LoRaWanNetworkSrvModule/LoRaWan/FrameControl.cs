@@ -12,11 +12,13 @@ namespace LoRaWan
     public enum FCtrlFlags : byte
 #pragma warning restore CA1711, CA1028
     {
+#pragma warning disable format
         None      = 0,
         Adr       = 0x80,
         AdrAckReq = 0x40,
         Ack       = 0x20,
         FPending  = 0x10,
+#pragma warning restore format
     }
 
     /// <summary>
@@ -34,7 +36,8 @@ namespace LoRaWan
 
         public FrameControl(FCtrlFlags flags, int optionsLength = 0) :
             this(unchecked((byte)((byte)(((byte)flags & FOptsLenMask) == 0 ? flags : throw new ArgumentException(null, nameof(flags)))
-                                         | (optionsLength is >= 0 and <= 15 ? optionsLength : throw new ArgumentOutOfRangeException(nameof(optionsLength), optionsLength, null))))) { }
+                                         | (optionsLength is >= 0 and <= 15 ? optionsLength : throw new ArgumentOutOfRangeException(nameof(optionsLength), optionsLength, null)))))
+        { }
 
         private bool HasFlags(FCtrlFlags flags) => ((FCtrlFlags)this.value & flags) == flags;
 

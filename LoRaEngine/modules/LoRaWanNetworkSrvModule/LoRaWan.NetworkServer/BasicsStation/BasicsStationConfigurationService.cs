@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     {
         private const string RouterConfigPropertyName = "routerConfig";
         private const string CachePrefixName = "routerConfig:";
-        
+
         private static readonly TimeSpan CacheTimeout = TimeSpan.FromHours(2);
         private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiService;
