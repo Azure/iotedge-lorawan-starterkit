@@ -55,7 +55,7 @@ We use built-in tracing from Azure Application Insights (on an opt-in basis). Th
 
 ### Metrics
 
-The core modules `edgeHub` and `edgeAgent` support emitting metrics through a Prometheus endpoint, using the strategy described in [Access built-in metrics - Azure IoT Edge | Microsoft Docs](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-access-built-in-metrics?view=iotedge-2020-11). To collect these metrics and integrate everything with Application Insights, we use the metric collector (preview) as suggested in [Collect and transport metrics - Azure IoT Edge | Microsoft Docs](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-collect-and-transport-metrics?view=iotedge-2020-11&tabs=iothub) to export metrics to a Log Analytics storage.
+The core modules `edgeHub` and `edgeAgent` support emitting metrics through a Prometheus endpoint, using the strategy described in [Access built-in metrics - Azure IoT Edge | Microsoft Docs](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-access-built-in-metrics?view=iotedge-2020-11). To collect these metrics and integrate everything with Azure Monitor, we use the metric collector (preview) as suggested in [Collect and transport metrics - Azure IoT Edge | Microsoft Docs](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-collect-and-transport-metrics?view=iotedge-2020-11&tabs=iothub) to export metrics to a Log Analytics storage.
 
 We will always expose LNS custom metrics in Prometheus format using [prometheus-net/prometheus-net](https://github.com/prometheus-net/prometheus-net), such that they can be consumed by any scraper that supports the Prometheus format. This will give us the following features:
 
