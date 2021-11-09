@@ -62,7 +62,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData("SF10BW125", "SF11BW125", 1)]
         [InlineData("SF8BW125", "SF10BW125", 2)]
         [InlineData("SF7BW500", "SF9BW125", 3)]
-        [InlineData("SF7BW500", "SF7BW500", 10)]
+        [InlineData("SF7BW500", null, 10)]
         public void TestDataRate(string inputDr, string outputDr, int rx1DrOffset)
         {
             var rxpk = GenerateRxpk(inputDr, 470.3);

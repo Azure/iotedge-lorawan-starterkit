@@ -31,7 +31,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionUS915TestData.TestRegionDataRateDataDR4), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470TestData.TestRegionDataRateData), MemberType = typeof(RegionCN470TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionDataRateData), MemberType = typeof(RegionAS923TestData))]
-        public void TestDownstreamDataRate(Region region, double inputFrequency, ushort inputDataRate, ushort outputDr, int rx1DrOffset = 0)
+        public void TestDownstreamDataRate(Region region, double inputFrequency, ushort inputDataRate, ushort? outputDr, int rx1DrOffset = 0)
         {
             Assert.Equal(region.GetDownstreamDataRate(inputFrequency, inputDataRate, rx1DrOffset), outputDr);
         }

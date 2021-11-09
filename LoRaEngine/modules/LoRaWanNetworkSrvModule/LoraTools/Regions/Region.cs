@@ -152,15 +152,16 @@ namespace LoRaTools.Regions
 
             if (IsValidUpstreamRxpk(upstreamChannel))
             {
-                // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
+                // If the rx1 offset is a valid value we use it, otherwise we report an error
                 if (rx1DrOffset <= RX1DROffsetTable[0].Count - 1)
                 {
                     return DRtoConfiguration[(ushort)RX1DROffsetTable[GetDRFromFreqAndChan(upstreamChannel.Datr)][rx1DrOffset]].configuration;
                 }
                 else
                 {
-                    Logger.Log($"rx1 Dr Offset was not set to a valid value {rx1DrOffset}, defaulting to {upstreamChannel.Datr} datarate", LogLevel.Error);
-                    return upstreamChannel.Datr;
+                    Logger.Log($"RX1 data rate offset was set to an invalid value {rx1DrOffset}; " +
+                        $"maximum allowed offset is {RX1DROffsetTable[0].Count - 1}", LogLevel.Error);
+                    return null;
                 }
             }
 
@@ -177,15 +178,16 @@ namespace LoRaTools.Regions
         {
             if (IsValidUpstreamFrequencyAndDataRate(frequency, dataRate))
             {
-                // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datarate
+                // If the rx1 offset is a valid value we use it, otherwise we report an error
                 if (rx1DrOffset <= RX1DROffsetTable[0].Count - 1)
                 {
                     return (ushort)RX1DROffsetTable[dataRate][rx1DrOffset];
                 }
                 else
                 {
-                    Logger.Log($"rx1 Dr Offset was not set to a valid value {rx1DrOffset}, defaulting to {dataRate} datarate", LogLevel.Error);
-                    return dataRate;
+                    Logger.Log($"RX1 data rate offset was set to an invalid value {rx1DrOffset}; " +
+                        $"maximum allowed offset is {RX1DROffsetTable[0].Count - 1}", LogLevel.Error);
+                    return null;
                 }
             }
 
