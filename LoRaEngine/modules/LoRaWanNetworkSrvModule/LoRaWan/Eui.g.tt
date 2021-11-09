@@ -60,30 +60,18 @@ namespace LoRaWan
         public static <#= t #> Parse(ReadOnlySpan<char> input) =>
             TryParse(input, out var result) ? result : throw new FormatException();
 
-        public static <#= t #> Parse(ReadOnlySpan<char> input, string? format) =>
-            TryParse(input, format, out var result) ? result : throw new FormatException();
-
-        public static bool TryParse(ReadOnlySpan<char> input, out <#= t #> result) => TryParse(input, "G", out result);
-
-        public static bool TryParse(ReadOnlySpan<char> input, string? format, out <#= t #> result)
+        public static bool TryParse(ReadOnlySpan<char> input, out <#= t #> result)
         {
-            var (success, tempResult) = format?.ToLowerInvariant() switch
+            if (Eui.TryParse(input, out var raw))
             {
-                null or "g" or "d"  => TryParseHex(input, '-'),
-                "e"                 => TryParseHex(input, ':'),
-                "n"                 => TryParseHex(input, null),
-                "i"                 => TryParseId6(input),
-                _                   => (false, default)
-            };
-
-            result = tempResult;
-            return success;
-
-            static (bool, <#= t #>) TryParseHex(ReadOnlySpan<char> input, char? separator) =>
-                Hexadecimal.TryParse(input, out var raw, separator) ? (true, new <#= t #>(raw)) : (false, default);
-
-            static (bool, <#= t #>) TryParseId6(ReadOnlySpan<char> input) =>
-                Id6.TryParse(input, out var raw) ? (true, new <#= t #>(raw)) : (false, default);
+                result = new <#= t #>(raw);
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
         }
 
         public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);

@@ -45,6 +45,8 @@ namespace LoRaWan
 
     internal static class Eui
     {
+        private const int HexadecimalEuiCharacterCount = 23;
+
         public static string Format(ulong value, string? format)
         {
             return format switch
@@ -68,6 +70,29 @@ namespace LoRaWan
                 Span<char> chars = stackalloc char[nChars];
                 Hexadecimal.Write(bytes, chars, separator, letterCase);
                 return new string(chars);
+            }
+        }
+
+        public static bool TryParse(ReadOnlySpan<char> input, out ulong result)
+        {
+            if (input.Contains('-'))
+            {
+                return Hexadecimal.TryParse(input, out result, '-');
+            }
+            else if (input.Contains(':'))
+            {
+                if (input.Length == HexadecimalEuiCharacterCount)
+                {
+                    return Hexadecimal.TryParse(input, out result, ':');
+                }
+                else
+                {
+                    return Id6.TryParse(input, out result);
+                }
+            }
+            else
+            {
+                return Hexadecimal.TryParse(input, out result, null);
             }
         }
     }
