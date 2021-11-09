@@ -107,24 +107,30 @@ namespace LoRaWan
             }
         }
 
+        public string ToString(string? format) => ToString(format, null);
+
         public string ToString(string? format, IFormatProvider? formatProvider)
         {
-            return format?.ToLowerInvariant() switch
+            return format switch
             {
-                null or "g" or "d"  => ToHex(this.value, '-'),
-                "e"                 => ToHex(this.value, ':'),
-                "n"                 => ToHex(value, null),
-                "i"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth),
+                null or "G" or "D"  => ToHex(this.value, '-', LetterCase.Upper),
+                "g" or "d"          => ToHex(this.value, '-', LetterCase.Lower),
+                "E"                 => ToHex(this.value, ':', LetterCase.Upper),
+                "e"                 => ToHex(this.value, ':', LetterCase.Lower),
+                "N"                 => ToHex(value, null, LetterCase.Upper),
+                "n"                 => ToHex(value, null, LetterCase.Lower),
+                "I"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth),
+                "i"                 => Id6.Format(value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
                 _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
             };
 
-            static string ToHex(ulong value, char? separator)
+            static string ToHex(ulong value, char? separator, LetterCase letterCase)
             {
                 Span<byte> bytes = stackalloc byte[sizeof(ulong)];
                 var nChars = separator is null ? bytes.Length * 2 : bytes.Length * 3 - 1;
                 Span<char> chars = stackalloc char[nChars];
                 BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
-                Hexadecimal.Write(bytes, chars, separator);
+                Hexadecimal.Write(bytes, chars, separator, letterCase);
                 return new string(chars);
             }
         }

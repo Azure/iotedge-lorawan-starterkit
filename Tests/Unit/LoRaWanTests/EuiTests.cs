@@ -91,15 +91,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Theory]
         [InlineData(null, "01-23-45-67-89-AB-CD-EF")]
         [InlineData("G", "01-23-45-67-89-AB-CD-EF")]
-        [InlineData("g", "01-23-45-67-89-AB-CD-EF")]
         [InlineData("D", "01-23-45-67-89-AB-CD-EF")]
-        [InlineData("d", "01-23-45-67-89-AB-CD-EF")]
-        [InlineData("I", "0123:4567:89AB:CDEF")]
-        [InlineData("i", "0123:4567:89AB:CDEF")]
+        [InlineData("g", "01-23-45-67-89-ab-cd-ef")]
+        [InlineData("d", "01-23-45-67-89-ab-cd-ef")]
         [InlineData("E", "01:23:45:67:89:AB:CD:EF")]
-        [InlineData("e", "01:23:45:67:89:AB:CD:EF")]
+        [InlineData("e", "01:23:45:67:89:ab:cd:ef")]
+        [InlineData("I", "0123:4567:89AB:CDEF")]
+        [InlineData("i", "0123:4567:89ab:cdef")]
         [InlineData("N", "0123456789ABCDEF")]
-        [InlineData("n", "0123456789ABCDEF")]
+        [InlineData("n", "0123456789abcdef")]
         public void ToString_Returns_Correctly_Formatted_String(string format, string expectedRepresentation)
         {
             Assert.Equal(expectedRepresentation, Subject.ToString(format, null));
