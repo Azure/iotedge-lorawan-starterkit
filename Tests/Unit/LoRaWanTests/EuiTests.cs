@@ -135,8 +135,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Fact]
         public void Parse_Throws_When_Format_Is_Unsupported()
         {
-            const string format = "z";
-            _ = Assert.Throws<FormatException>(() => Parse(Subject.ToString(null, null), format));
+            _ = Assert.Throws<FormatException>(() => Parse(Subject.ToString(null, null), "z"));
         }
 
         [Fact]
@@ -174,8 +173,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Fact]
         public void TryParse_Returns_False_When_Format_Is_Unsupported()
         {
-            const string format = "z";
-            var succeeded = TryParse(Subject.ToString(null, null), format, out var result);
+            var succeeded = TryParse(Subject.ToString(null, null), "z", out var result);
 
             Assert.False(succeeded);
             Assert.Equal(default, result);
