@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
+namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
     using System.Collections.Generic;
@@ -15,7 +15,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
     using Xunit;
     using static Bandwidth;
     using static SpreadingFactor;
-    using static NetworkServer.BasicsStation.RouterConfigStationFlags;
     using LoRaTools.Regions;
 
     public class LnsStationConfigurationTests
@@ -35,7 +34,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                          (SF7 , BW125, false),
                                          (SF7 , BW250, false),
                                      },
-                                     flags: NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
+                                     flags: RouterConfigStationFlags.NoClearChannelAssessment | RouterConfigStationFlags.NoDutyCycle | RouterConfigStationFlags.NoDwellTimeLimitations);
 
         internal static string ValidRouterConfigMessage = JsonUtil.Strictify(@"{
             'msgtype': 'router_config',
@@ -219,7 +218,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                                      (SF7 , BW125, false),
                                                      (SF7 , BW250, false),
                                                  },
-                                                 flags: NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
+                                                 flags: RouterConfigStationFlags.NoClearChannelAssessment | RouterConfigStationFlags.NoDutyCycle | RouterConfigStationFlags.NoDwellTimeLimitations);
 
             // act
             var actual = LnsStationConfiguration.GetConfiguration(input);
@@ -365,7 +364,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                                        (Hertz Min, Hertz Max) freqRange,
                                                        IEnumerable<(SpreadingFactor SpreadingFactor, Bandwidth Bandwidth, bool DnOnly)> dataRates,
                                                        string sx1301Conf = null,
-                                                       RouterConfigStationFlags flags = None)
+                                                       RouterConfigStationFlags flags = RouterConfigStationFlags.None)
         {
             var defaultSx1301Conf = JsonUtil.Strictify(@"[{
                 'radio_0': {
@@ -453,9 +452,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                  Serialize(new[] { freqRange.Min.AsUInt64, freqRange.Max.AsUInt64 }),
                                  Serialize(dataRates?.Select(dr => new object[] { dr.SpreadingFactor, dr.Bandwidth, dr.DnOnly ? 1 : 0 })),
                                  sx1301Conf ?? defaultSx1301Conf,
-                                 Serialize((flags & NoClearChannelAssessment) == NoClearChannelAssessment),
-                                 Serialize((flags & NoDutyCycle) == NoDutyCycle),
-                                 Serialize((flags & NoDwellTimeLimitations) == NoDwellTimeLimitations));
+                                 Serialize((flags & RouterConfigStationFlags.NoClearChannelAssessment) == RouterConfigStationFlags.NoClearChannelAssessment),
+                                 Serialize((flags & RouterConfigStationFlags.NoDutyCycle) == RouterConfigStationFlags.NoDutyCycle),
+                                 Serialize((flags & RouterConfigStationFlags.NoDwellTimeLimitations) == RouterConfigStationFlags.NoDwellTimeLimitations));
         }
 
         [Fact]

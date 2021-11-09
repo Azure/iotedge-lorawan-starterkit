@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
+namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
     using System.Text.Json;
+    using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using LoRaWan.Tests.Common;
-    using NetworkServer;
     using Xunit;
 
     public class LnsDataTests
