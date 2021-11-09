@@ -1,6 +1,6 @@
 #This docker builds a container for the AAEON intel LoRaWaN gateway
 
-FROM debian:bullseye AS builder1
+FROM debian:buster AS builder1
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
@@ -11,7 +11,7 @@ WORKDIR /packet_forwarder
 RUN ./compile.sh
 RUN cp /packet_forwarder/lora_pkt_fwd/lora_pkt_fwd /lora_pkt_fwd_spidev1
 
-FROM debian:bullseye AS builder2
+FROM debian:buster AS builder2
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
@@ -22,7 +22,7 @@ WORKDIR /packet_forwarder
 RUN ./compile.sh
 RUN cp /packet_forwarder/lora_pkt_fwd/lora_pkt_fwd /lora_pkt_fwd_spidev2
 
-FROM debian:bullseye-slim AS exec
+FROM debian:buster-slim AS exec
 WORKDIR /LoRa
 COPY --from=builder1 /lora_pkt_fwd_spidev1 .
 COPY --from=builder2 /lora_pkt_fwd_spidev2 .
