@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
-    using System.Collections.Generic;
     using System.Security.Cryptography.X509Certificates;
     using System.Threading;
     using System.Threading.Tasks;
@@ -25,7 +24,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         {
             if (configuration is null) throw new ArgumentNullException(nameof(configuration));
 
-            var shouldUseCertificate = string.IsNullOrEmpty(configuration.LnsServerPfxPath);
+            var shouldUseCertificate = !string.IsNullOrEmpty(configuration.LnsServerPfxPath);
 
             using var webHost = WebHost.CreateDefaultBuilder()
                                        .UseUrls(shouldUseCertificate ? FormattableString.Invariant($"https://0.0.0.0:{SecurePort}")
