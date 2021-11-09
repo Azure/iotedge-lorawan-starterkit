@@ -18,6 +18,21 @@ namespace LoRaWan.NetworkServer
         private readonly IMemoryCache cache;
         private readonly ILogger<IConcentratorDeduplication> logger;
 
+        [ThreadStatic]
+        private static SHA256 sha256;
+        private static SHA256 Sha256
+        {
+            get
+            {
+                if (sha256 is null)
+                {
+                    sha256 = SHA256.Create();
+                }
+
+                return sha256;
+            }
+        }
+
         public ConcentratorDeduplication(
             IMemoryCache cache,
             ILogger<IConcentratorDeduplication> logger)
@@ -50,8 +65,6 @@ namespace LoRaWan.NetworkServer
 
         internal static string CreateCacheKey(UpstreamDataFrame updf)
         {
-            using var sha256 = SHA256.Create();
-
             var totalBufferLength = DevAddr.Size + Mic.Size + updf.Payload.Length + sizeof(ushort);
             Span<byte> buffer = stackalloc byte[totalBufferLength];
             var head = buffer;
@@ -60,7 +73,7 @@ namespace LoRaWan.NetworkServer
             _ = Encoding.UTF8.GetBytes(updf.Payload, buffer);
             BinaryPrimitives.WriteUInt16LittleEndian(buffer[updf.Payload.Length..], updf.Counter);
 
-            var key = sha256.ComputeHash(head.ToArray());
+            var key = Sha256.ComputeHash(head.ToArray());
 
             return BitConverter.ToString(key);
         }
