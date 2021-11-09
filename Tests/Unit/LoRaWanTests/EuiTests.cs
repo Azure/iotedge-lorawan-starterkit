@@ -194,9 +194,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Fact]
         public void TryParse_Returns_False_When_Input_Is_Invalid()
         {
-            var succeeded = DevEui.TryParse("foobar", out var result);
+            var succeeded = TryParse("foobar", out var result);
             Assert.False(succeeded);
-            Assert.True(result == default);
+            Assert.Equal(default, result);
         }
 
 #pragma warning disable CA1000 // Do not declare static members on generic types
