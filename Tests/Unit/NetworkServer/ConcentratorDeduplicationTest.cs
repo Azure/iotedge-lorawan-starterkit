@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.NetworkServerTests
+namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Net.WebSockets;
@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [Theory]
         [InlineData(true, true, false)]
         // we consider sameStationAsBefore: true, activeConnectionToPreviousStation: false
-        // an edge case as we just received a message from that same station
+        // an edge case that we don't need to cover since we just received a message from that same station
         [InlineData(false, true, true)]
         [InlineData(false, false, false)]
         public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool activeConnectionToPreviousStation, bool expectedResult)
