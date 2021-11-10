@@ -181,7 +181,7 @@ namespace LoRaWan.NetworkServer
                     return new SearchDevicesResult();
                 }
 
-                Logger.Log(eui, $"error calling get device by devEUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
+                Logger.Log(eui, $"error calling get device/station by EUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
 
                 return new SearchDevicesResult();
             }
