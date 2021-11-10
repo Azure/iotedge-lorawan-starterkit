@@ -13,9 +13,6 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     internal static class EuiTests
     {
         public static readonly char?[] SupportedFormats = { null, 'G', 'g', 'D', 'd', 'I', 'i', 'N', 'n', 'E', 'e' };
-
-        public static object[][] SupportedFormatsTheoryData() =>
-            SupportedFormats.Select(f => new object[] { f }).ToArray();
     }
 
     public abstract class EuiTests<T> where T : struct, IEquatable<T>, IFormattable
@@ -129,6 +126,11 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             var result = Parse(this.Subject.ToString());
             Assert.Equal(Subject, result);
         }
+
+#pragma warning disable CA1000 // Do not declare static members on generic types (necessary for unit tests)
+        public static object[][] SupportedFormatsTheoryData() =>
+#pragma warning restore CA1000 // Do not declare static members on generic types
+            SupportedFormats.Select(f => new object[] { f }).ToArray();
 
         [Theory]
         [MemberData(nameof(SupportedFormatsTheoryData))]
