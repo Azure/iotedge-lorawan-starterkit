@@ -56,10 +56,11 @@ nav:
     - user-guide/caching.md
     - user-guide/station-configuration.md
     - user-guide/upgrade.md
-  - 'Decorder Samples':
-    - samples/decoder.md
-    - samples/universal.md
-    - samples/cayenne.md
+  - 'Samples':
+    - samples/arduino.md
+    - samples/decoders/decoder.md
+    - samples/decoders/universal.md
+    - samples/decoders/cayenne.md
   - Tools:
     - tools/device-provisioning.md
   - 'Decision Log':
