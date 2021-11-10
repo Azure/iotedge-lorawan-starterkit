@@ -27,7 +27,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is DevEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => ToString("G", null);
+        public override string ToString() => ToString(null, null);
 
         public static bool operator ==(DevEui left, DevEui right) => left.Equals(right);
         public static bool operator !=(DevEui left, DevEui right) => !left.Equals(right);
@@ -82,7 +82,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is JoinEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => ToString("G", null);
+        public override string ToString() => ToString(null, null);
 
         public static bool operator ==(JoinEui left, JoinEui right) => left.Equals(right);
         public static bool operator !=(JoinEui left, JoinEui right) => !left.Equals(right);
@@ -137,7 +137,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is StationEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => ToString("G", null);
+        public override string ToString() => ToString(null, null);
 
         public static bool operator ==(StationEui left, StationEui right) => left.Equals(right);
         public static bool operator !=(StationEui left, StationEui right) => !left.Equals(right);

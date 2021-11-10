@@ -36,7 +36,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is <#= t #> other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => ToString("G", null);
+        public override string ToString() => ToString(null, null);
 
         public static bool operator ==(<#= t #> left, <#= t #> right) => left.Equals(right);
         public static bool operator !=(<#= t #> left, <#= t #> right) => !left.Equals(right);
