@@ -385,7 +385,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var devEUI = simDevice.DevEUI;
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
-            this.deviceApi.Setup(x => x.SearchByDevEUIAsync(devEUI))
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
             var twin = simDevice.CreateOTAATwin(
