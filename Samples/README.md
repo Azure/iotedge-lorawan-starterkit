@@ -2,8 +2,6 @@
 
 The following samples are available:
 
-- Decoder
-- UniversalDecoder
-- CayenneDecoder
-
-The documentation can be found at <https://github.com/Azure/iotedge-lorawan-starterkit/tree/docs/main/docs/samples>
+- [Decoder](https://azure.github.io/iotedge-lorawan-starterkit/samples/decoders/decoder/)
+- [UniversalDecoder](https://azure.github.io/iotedge-lorawan-starterkit/samples/decoders/universal/)
+- [CayenneDecoder](https://azure.github.io/iotedge-lorawan-starterkit/samples/decoders/cayenne/)
