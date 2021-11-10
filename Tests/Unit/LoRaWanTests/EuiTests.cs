@@ -8,6 +8,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     using System.Linq;
     using LoRaWan;
     using Xunit;
+    using static LoRaWan.Tests.Unit.LoRaWanTests.EuiTests;
+
+    internal static class EuiTests
+    {
+        public static readonly char?[] SupportedFormats = { null, 'G', 'g', 'D', 'd', 'I', 'i', 'N', 'n', 'E', 'e' };
+
+        public static object[][] SupportedFormatsTheoryData() =>
+            SupportedFormats.Select(f => new object[] { f }).ToArray();
+    }
 
     public abstract class EuiTests<T> where T : struct, IEquatable<T>, IFormattable
     {
@@ -21,7 +30,6 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
         private static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
         private static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
-        private static readonly char?[] SupportedFormats = { null, 'G', 'g', 'D', 'd', 'I', 'i', 'N', 'n', 'E', 'e' };
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()
@@ -197,11 +205,6 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             var result = string.Format(CultureInfo.InvariantCulture, format, Subject);
             Assert.Equal(expected, result);
         }
-
-#pragma warning disable CA1000 // Do not declare static members on generic types
-        public static object[][] SupportedFormatsTheoryData() =>
-#pragma warning restore CA1000 // Do not declare static members on generic types
-            SupportedFormats.Select(f => new object[] { f }).ToArray();
     }
 
     public class DevEuiTests : EuiTests<DevEui>
