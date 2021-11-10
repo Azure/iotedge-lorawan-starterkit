@@ -56,7 +56,6 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
            new List<object[]>
            {
                new object[] { region, null, 869.525 },
-               new object[] { region, null, 869.525 },
                new object[] { region, 868.250, 868.250 },
            };
 

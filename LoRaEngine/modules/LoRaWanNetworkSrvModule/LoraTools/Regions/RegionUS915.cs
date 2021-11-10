@@ -102,14 +102,11 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Returns the default RX2 receive window parameters - frequency and data rate.
-        /// </summary>
-        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(923.3, 8);
-
-        /// <summary>
         /// Logic to get the correct downstream transmission frequency for region US915.
         /// </summary>
+        /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
+        /// <param name="dataRate">Data rate at which the message was transmitted.</param>
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null)
         {
             downstreamFrequency = 0;
@@ -125,5 +122,11 @@ namespace LoRaTools.Regions
 
             return false;
         }
+
+        /// <summary>
+        /// Returns the default RX2 receive window parameters - frequency and data rate.
+        /// </summary>
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(923.3, 8);
     }
 }

@@ -44,11 +44,17 @@ namespace LoRaWan.NetworkServer
         {
             if (request is null) throw new ArgumentNullException(nameof(request));
 
-            if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out var loRaPayload))
+            if (request.Payload is null)
             {
-                Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
-                request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRxpk);
-                return;
+                // Following code is only needed for PktFwd compatibility.
+                // Any LoRaRequest generated from LNS protocol 'updf' or 'jreq' messages already has the payload set.
+                if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out var loRaPayload))
+                {
+                    Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
+                    request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRxpk);
+                    return;
+                }
+                request.SetPayload(loRaPayload);
             }
 
             if (this.loraRegion == null)
@@ -66,16 +72,15 @@ namespace LoRaWan.NetworkServer
                 this.loraRegion = currentRegion;
             }
 
-            request.SetPayload(loRaPayload);
             request.SetRegion(this.loraRegion);
 
             var loggingRequest = new LoggingLoRaRequest(request);
 
-            if (loRaPayload.LoRaMessageType == LoRaMessageType.JoinRequest)
+            if (request.Payload.LoRaMessageType == LoRaMessageType.JoinRequest)
             {
                 DispatchLoRaJoinRequest(loggingRequest);
             }
-            else if (loRaPayload.LoRaMessageType is LoRaMessageType.UnconfirmedDataUp or LoRaMessageType.ConfirmedDataUp)
+            else if (request.Payload.LoRaMessageType is LoRaMessageType.UnconfirmedDataUp or LoRaMessageType.ConfirmedDataUp)
             {
                 DispatchLoRaDataMessage(loggingRequest);
             }

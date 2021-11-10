@@ -11,6 +11,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
+    using LoRaTools.LoRaMessage;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
@@ -23,6 +26,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     public class LnsProtocolMessageProcessorTests
     {
         private readonly Mock<IBasicsStationConfigurationService> basicsStationConfigurationMock;
+        private readonly Mock<IMessageDispatcher> messageDispatcher;
+        private readonly Mock<IPacketForwarder> packetForwarder;
         private readonly LnsProtocolMessageProcessor lnsMessageProcessorMock;
         private readonly Mock<WebSocket> socketMock;
         private readonly Mock<HttpContext> httpContextMock;
@@ -34,9 +39,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             this.socketMock = new Mock<WebSocket>();
             this.httpContextMock = new Mock<HttpContext>();
             this.basicsStationConfigurationMock = new Mock<IBasicsStationConfigurationService>();
+            basicsStationConfigurationMock.Setup(m => m.GetRegionAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+                                          .Returns(Task.FromResult(RegionManager.EU868));
+            this.messageDispatcher = new Mock<IMessageDispatcher>();
+            this.packetForwarder = new Mock<IPacketForwarder>();
 
-            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(basicsStationConfigurationMock.Object,
+            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(this.basicsStationConfigurationMock.Object,
                                                                            new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>()),
+                                                                           this.packetForwarder.Object,
+                                                                           this.messageDispatcher.Object,
                                                                            loggerMock);
         }
 
@@ -246,6 +257,105 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // assert
             Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
+        }
+
+        private static Rxpk GetExpectedRxpk()
+        {
+            var radioMetadataUpInfo = new RadioMetadataUpInfo(0, 68116944405337035, 0, -53, (float)8.25);
+            var radioMetadata = new RadioMetadata(new DataRate(5), new Hertz(868300000), radioMetadataUpInfo);
+            return new BasicStationToRxpk(radioMetadata, RegionManager.EU868);
+        }
+
+        private static bool AreRxpkEqual(Rxpk subject, Rxpk other) =>
+            subject.Chan == other.Chan
+            && subject.Codr == other.Codr
+            && subject.Data == other.Data
+            && subject.Datr == other.Datr
+            && subject.Freq == other.Freq
+            && subject.Lsnr == other.Lsnr
+            && subject.Modu == other.Modu
+            && subject.RequiredSnr == other.RequiredSnr
+            && subject.Rfch == other.Rfch
+            && subject.Rssi == other.Rssi
+            && subject.Size == other.Size
+            && subject.Stat == other.Stat
+            && subject.Time == other.Time
+            && subject.Tmms == other.Tmms
+            && subject.Tmst == other.Tmst;
+
+        [Fact]
+        public async Task InternalHandleDataAsync_ShouldProperlyCreateLoraPayloadForUpdfRequest()
+        {
+            // arrange
+            var message = JsonUtil.Strictify(@"{'msgtype':'updf','MHdr':128,'DevAddr':50244358,'FCtrl':0,'FCnt':1,'FOpts':'','FPort':8,'FRMPayload':'CB',
+                                                'MIC':45234788,'RefTime':0.000000,'DR':5,'Freq':868300000,'upinfo':{'rctx':0,'xtime':68116944405337035,
+                                                'gpstime':0,'fts':-1,'rssi':-53,'snr':8.25,'rxtime':1636131701.731686}}");
+            var expectedRxpk = GetExpectedRxpk();
+            var expectedMhdr = new byte[] { 128 };
+            var expectedDevAddr = new byte[] { 2, 254, 171, 6 };
+            var expectedMic = new byte[] { 100, 58, 178, 2 };
+            SetDataPathParameter();
+            SetupSocketReceiveAsync(message);
+
+            // intercepting messageDispatcher
+            LoRaRequest loRaRequest = null;
+            this.messageDispatcher.Setup(m => m.DispatchRequest(It.IsAny<LoRaRequest>()))
+                                  .Callback<LoRaRequest>((req) => loRaRequest = req);
+
+            // act
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
+                                                                       this.socketMock.Object,
+                                                                       CancellationToken.None);
+
+            // assert
+            Assert.NotNull(loRaRequest);
+            Assert.True(AreRxpkEqual(loRaRequest.Rxpk, expectedRxpk));
+            Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr.Span.ToArray());
+            Assert.Equal(LoRaMessageType.ConfirmedDataUp, loRaRequest.Payload.LoRaMessageType);
+            Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
+            Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
+            Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
+            Assert.Equal(RegionManager.EU868, loRaRequest.Region);
+        }
+
+        [Fact]
+        public async Task InternalHandleDataAsync_ShouldProperlyCreateLoraPayloadForJoinRequest()
+        {
+            // arrange
+            var message = JsonUtil.Strictify(@"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E',
+                                                'DevNonce':54360,'MIC':-1056607131,'RefTime':0.000000,'DR':5,'Freq':868300000,'upinfo':{'rctx':0,
+                                                'xtime':68116944405337035,'gpstime':0,'fts':-1,'rssi':-53,'snr':8.25,'rxtime':1636131701.731686}}");
+            var expectedRxpk = GetExpectedRxpk();
+            var expectedMhdr = new byte[] { 0 };
+            var expectedMic = new byte[] { 101, 116, 5, 193 };
+            var expectedAppEui = new byte[] { 181, 196, 210, 229, 200, 120, 98, 71 };
+            var expectedDevEui = new byte[] { 158, 22, 164, 238, 223, 193, 39, 133 };
+            var expectedDevNonce = new byte[] { 88, 212 };
+            SetDataPathParameter();
+            SetupSocketReceiveAsync(message);
+
+            // intercepting messageDispatcher
+            LoRaRequest loRaRequest = null;
+            this.messageDispatcher.Setup(m => m.DispatchRequest(It.IsAny<LoRaRequest>()))
+                                  .Callback<LoRaRequest>((req) => loRaRequest = req);
+
+            // act
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
+                                                                       this.socketMock.Object,
+                                                                       CancellationToken.None);
+
+            // assert
+            Assert.NotNull(loRaRequest);
+            Assert.True(AreRxpkEqual(loRaRequest.Rxpk, expectedRxpk));
+            Assert.IsType<LoRaPayloadJoinRequestLns>(loRaRequest.Payload);
+            Assert.Equal(LoRaMessageType.JoinRequest, loRaRequest.Payload.LoRaMessageType);
+            Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
+            Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
+            Assert.Equal(expectedAppEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEUI.Span.ToArray());
+            Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI.Span.ToArray());
+            Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevNonce.Span.ToArray());
+            Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
+            Assert.Equal(RegionManager.EU868, loRaRequest.Region);
         }
 
         [Theory]

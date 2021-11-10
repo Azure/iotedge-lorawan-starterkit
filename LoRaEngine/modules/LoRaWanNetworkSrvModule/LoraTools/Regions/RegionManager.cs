@@ -35,6 +35,10 @@ namespace LoRaTools.Regions
                     region = CN470;
                     return true;
 
+                case LoRaRegionType.AS923:
+                    region = AS923;
+                    return true;
+
                 case LoRaRegionType.NotSet:
                 default:
                     return false;
@@ -70,6 +74,13 @@ namespace LoRaTools.Regions
                 region = CN470;
                 return true;
             }
+            // Note: Resolving region based on frequency should be avoided as AS923 frequency band overlaps with US915;
+            // should be removed once this obsolete method is no longer used.
+            else if (rxpk.Freq is <= 928 and >= 915)
+            {
+                region = AS923;
+                return true;
+            }
 
             return false;
         }
@@ -82,13 +93,7 @@ namespace LoRaTools.Regions
             {
                 if (eu868 == null)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                    // False positive
-                    if (eu868 == null)
-#pragma warning restore CA1508 // Avoid dead conditional code
-                    {
-                        eu868 = new RegionEU868();
-                    }
+                    eu868 = new RegionEU868();
                 }
 
                 return eu868;
@@ -103,13 +108,7 @@ namespace LoRaTools.Regions
             {
                 if (us915 == null)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                    // False positive
-                    if (us915 == null)
-#pragma warning restore CA1508 // Avoid dead conditional code
-                    {
-                        us915 = new RegionUS915();
-                    }
+                    us915 = new RegionUS915();
                 }
 
                 return us915;
@@ -124,16 +123,26 @@ namespace LoRaTools.Regions
             {
                 if (cn470 == null)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                    // False positive
-                    if (cn470 == null)
-#pragma warning restore CA1508 // Avoid dead conditional code
-                    {
-                        cn470 = new RegionCN470();
-                    }
+                    cn470 = new RegionCN470();
                 }
 
                 return cn470;
+            }
+        }
+
+        private static Region as923;
+
+        public static Region AS923
+        {
+            get
+            {
+                if (as923 == null)
+                {
+
+                    as923 = new RegionAS923();
+                }
+
+                return as923;
             }
         }
     }

@@ -25,5 +25,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\LoRaWan.Tests.Common.csproj" />
   </ItemGroup>
-  
+
 </Project>
