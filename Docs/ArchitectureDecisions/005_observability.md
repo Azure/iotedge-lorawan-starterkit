@@ -1,4 +1,4 @@
-# 003 - Observability
+# 005 - Observability
 
 **Date**: 2021-11-08
 
@@ -86,6 +86,8 @@ In addition to this, we will support Application Insights metrics on an opt-in b
 | D2CMessagesProcessingError | Number of errors processing (decoding, decrypting) messages  | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
 | D2CMessageSize             | Message size in bytes received from device                   | LNS    | LoRaWan   | Gateway Id, Device Id      |
 | D2CMessageSizeUpstream     | Message size in bytes sent upstream                          | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
+
+Equivalent metrics should be added for cloud to device messages.
 
 ### Alerts
 
