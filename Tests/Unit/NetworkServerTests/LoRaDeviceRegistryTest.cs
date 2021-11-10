@@ -526,7 +526,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceApi.Object,
                 deviceFactory);
 
-            var actual = await deviceRegistry.GetDeviceByDevEUIAsync("1");
+            var actual = await deviceRegistry.GetDeviceByDevEUIAsync(new DevEui(1).ToString("N", null));
             Assert.Null(actual);
 
             deviceApi.VerifyAll();
@@ -550,7 +550,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceApi.Object,
                 deviceFactory);
 
-            var actual = await deviceRegistry.GetDeviceByDevEUIAsync("1");
+            var actual = await deviceRegistry.GetDeviceByDevEUIAsync(new DevEui(1).ToString("N", null));
             Assert.Null(actual);
 
             deviceApi.VerifyAll();
