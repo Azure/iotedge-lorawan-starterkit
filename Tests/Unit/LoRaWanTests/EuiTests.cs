@@ -179,11 +179,22 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.Equal(default, result);
         }
 
-        [Fact]
-        public void String_Interpolation_Success_Case()
+        [Theory]
+        [InlineData("{0}", "01-23-45-67-89-AB-CD-EF")]
+        [InlineData("{0:G}", "01-23-45-67-89-AB-CD-EF")]
+        [InlineData("{0:D}", "01-23-45-67-89-AB-CD-EF")]
+        [InlineData("{0:g}", "01-23-45-67-89-ab-cd-ef")]
+        [InlineData("{0:d}", "01-23-45-67-89-ab-cd-ef")]
+        [InlineData("{0:E}", "01:23:45:67:89:AB:CD:EF")]
+        [InlineData("{0:e}", "01:23:45:67:89:ab:cd:ef")]
+        [InlineData("{0:I}", "0123:4567:89AB:CDEF")]
+        [InlineData("{0:i}", "0123:4567:89ab:cdef")]
+        [InlineData("{0:N}", "0123456789ABCDEF")]
+        [InlineData("{0:n}", "0123456789abcdef")]
+        public void String_Interpolation_Success_Case(string format, string expected)
         {
-            var result = $"N = {Subject:N}, I = {Subject:I}";
-            Assert.Equal("N = 0123456789ABCDEF, I = 0123:4567:89AB:CDEF", result);
+            var result = string.Format(CultureInfo.InvariantCulture, format, Subject);
+            Assert.Equal(expected, result);
         }
 
 #pragma warning disable CA1000 // Do not declare static members on generic types
