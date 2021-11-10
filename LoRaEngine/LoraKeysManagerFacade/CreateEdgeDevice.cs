@@ -97,19 +97,17 @@ namespace LoraKeysManagerFacade
                     return JsonConvert.DeserializeObject<ConfigurationContent>(json);
                 }
 
-                var appInsightsInstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
                 var deviceConfigurationContent = GetConfigurationContent(Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION"), new Dictionary<string, string>
                 {
                     ["[$region]"] = region,
                     ["[$reset_pin]"] = resetPin,
-                    ["[$appinsights_instrumentationkey]"] = appInsightsInstrumentationKey,
                     ["[$spi_speed]"] = string.IsNullOrEmpty(spiSpeed) || string.Equals(spiSpeed, "8", StringComparison.OrdinalIgnoreCase) ? string.Empty : ",'SPI_SPEED':{'value':'2'}",
                     ["[$spi_dev]"] = string.IsNullOrEmpty(spiDev) || string.Equals(spiDev, "2", StringComparison.OrdinalIgnoreCase) ? string.Empty : ",'SPI_DEV':{'value':'1'}"
                 });
 
                 await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, deviceConfigurationContent);
 
-                if (!string.IsNullOrEmpty(appInsightsInstrumentationKey))
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY")))
                 {
                     log.LogDebug("Opted-in to use Azure Monitor. Deploying the observability layer.");
                     // If Appinsights Key is set this means that user opted in to use Azure Monitor.

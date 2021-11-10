@@ -56,10 +56,7 @@
 							},
 							"LOG_TO_HUB": {
 							  "value": "true"
-							},
-							"APPINSIGHTS_INSTRUMENTATIONKEY": {
-								"value": "[$appinsights_instrumentationkey]"
-							}				
+							}			
 						},
 						"status": "running",
 						"restartPolicy": "always"
