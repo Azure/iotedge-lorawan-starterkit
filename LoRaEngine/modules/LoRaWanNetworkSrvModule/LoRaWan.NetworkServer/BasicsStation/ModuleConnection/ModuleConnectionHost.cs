@@ -189,7 +189,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                     this.loRaDeviceAPIService.URL = url;
                     if (desiredProperties.Contains(Constants.FacadeServerAuthCodeKey))
                     {
-                        this.loRaDeviceAPIService.SetAuthCode((string)desiredProperties[Constants.FacadeServerAuthCodeKey]);
+                        this.loRaDeviceAPIService.SetAuthCode(desiredProperties[Constants.FacadeServerAuthCodeKey]);
                     }
 
                     Logger.Log("Desired property changed", LogLevel.Debug);
