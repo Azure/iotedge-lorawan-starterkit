@@ -26,6 +26,7 @@ theme:
     - toc.integrate
 
 repo_url: https://github.com/Azure/iotedge-lorawan-starterkit
+edit_uri: tree/docs/main/docs
 
 markdown_extensions:
   - pymdownx.highlight
