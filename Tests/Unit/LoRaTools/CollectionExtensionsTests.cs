@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaTools.Tests.Unit.Utils
+namespace LoRaWan.Tests.Unit.LoRaTools.Utils
 {
     using System;
     using System.Linq;
-    using LoRaTools.Utils;
+    using global::LoRaTools.Utils;
     using Xunit;
 
     public class CollectionExtensionsTests
