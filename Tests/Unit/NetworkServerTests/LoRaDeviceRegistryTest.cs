@@ -471,7 +471,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
 
             var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(simDevice.DevEUI, "N")))
+            deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(simDevice.DevEUI)))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);

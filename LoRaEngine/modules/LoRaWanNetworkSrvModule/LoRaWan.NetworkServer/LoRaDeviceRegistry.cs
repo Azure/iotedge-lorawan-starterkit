@@ -194,7 +194,7 @@ namespace LoRaWan.NetworkServer
             if (this.cache.TryGetValue<LoRaDevice>(CacheKeyForDevEUIDevice(devEUI), out var cachedDevice))
                 return cachedDevice;
 
-            var searchResult = await this.loRaDeviceAPIService.SearchByEuiAsync(DevEui.Parse(devEUI, "N"));
+            var searchResult = await this.loRaDeviceAPIService.SearchByEuiAsync(DevEui.Parse(devEUI));
             if (searchResult == null || searchResult.Count == 0)
                 return null;
 
