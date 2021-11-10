@@ -142,7 +142,7 @@ namespace LoRaTools.Regions
         public abstract bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>
-        /// Implement correct logic to get the downstream data rate based on the region.
+        /// Returns downstream data rate based on the upstream channel and RX1 DR offset.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
@@ -152,44 +152,43 @@ namespace LoRaTools.Regions
 
             if (IsValidUpstreamRxpk(upstreamChannel))
             {
-                // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
+                // If the rx1 offset is a valid value we use it, otherwise we throw an exception
                 if (rx1DrOffset <= RX1DROffsetTable[0].Count - 1)
                 {
                     return DRtoConfiguration[(ushort)RX1DROffsetTable[GetDRFromFreqAndChan(upstreamChannel.Datr)][rx1DrOffset]].configuration;
                 }
                 else
                 {
-                    Logger.Log($"rx1 Dr Offset was not set to a valid value {rx1DrOffset}, defaulting to {upstreamChannel.Datr} datarate", LogLevel.Error);
-                    return upstreamChannel.Datr;
+                    throw new LoRaProcessingException($"RX1 data rate offset was set to an invalid value {rx1DrOffset}; " +
+                        $"maximum allowed offset is {RX1DROffsetTable[0].Count - 1}", LoRaProcessingErrorCode.InvalidDataRateOffset);
                 }
             }
 
-            return null;
+            throw new LoRaProcessingException($"Invalid upstream data rate {upstreamChannel.Datr}", LoRaProcessingErrorCode.InvalidDataRate);
         }
 
         /// <summary>
-        /// Implement correct logic to get the downstream data rate based on the region.
+        /// Returns downstream data rate based on the upstream data rate and RX1 DR offset.
         /// </summary>
-        /// <param name="frequency">Frequency on which the message was transmitted.</param>
         /// <param name="dataRate">Data rate at which the message was transmitted.</param>
         /// <param name="rx1DrOffset">RX1 offset to be used for calculating downstream data rate.</param>
-        public ushort? GetDownstreamDataRate(double frequency, ushort dataRate, int rx1DrOffset = 0)
+        public ushort GetDownstreamDataRate(ushort dataRate, int rx1DrOffset = 0)
         {
-            if (IsValidUpstreamFrequencyAndDataRate(frequency, dataRate))
+            if (IsValidUpstreamDataRate(dataRate))
             {
-                // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datarate
+                // If the rx1 offset is a valid value we use it, otherwise we throw an exception
                 if (rx1DrOffset <= RX1DROffsetTable[0].Count - 1)
                 {
                     return (ushort)RX1DROffsetTable[dataRate][rx1DrOffset];
                 }
                 else
                 {
-                    Logger.Log($"rx1 Dr Offset was not set to a valid value {rx1DrOffset}, defaulting to {dataRate} datarate", LogLevel.Error);
-                    return dataRate;
+                    throw new LoRaProcessingException($"RX1 data rate offset was set to an invalid value {rx1DrOffset}; " +
+                           $"maximum allowed offset is {RX1DROffsetTable[0].Count - 1}", LoRaProcessingErrorCode.InvalidDataRateOffset);
                 }
             }
 
-            return null;
+            throw new LoRaProcessingException($"Invalid upstream data rate {dataRate}", LoRaProcessingErrorCode.InvalidDataRate);
         }
 
         /// <summary>
@@ -348,9 +347,7 @@ namespace LoRaTools.Regions
         /// <param name="dataRate">Data rate with which the message was transmitted.</param>
         protected bool IsValidUpstreamFrequencyAndDataRate(double frequency, ushort dataRate)
         {
-            if (frequency < RegionLimits.FrequencyRange.min ||
-                frequency > RegionLimits.FrequencyRange.max ||
-                !RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(dataRate))
+            if (!IsValidUpstreamFrequency(frequency) || !IsValidUpstreamDataRate(dataRate))
             {
                 Logger.Log("A upstream message not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
                 return false;
@@ -358,6 +355,10 @@ namespace LoRaTools.Regions
 
             return true;
         }
+
+        private bool IsValidUpstreamFrequency(double frequency) => RegionLimits.FrequencyRange.min <= frequency && frequency <= RegionLimits.FrequencyRange.max;
+
+        private bool IsValidUpstreamDataRate(ushort dataRate) => RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(dataRate);
 
         /// <summary>
         /// Get Datarate number from SF#BW# string.
