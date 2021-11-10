@@ -14,4 +14,5 @@ COPY --from=build /basicstation/build-linux-std/bin/station /bin/station
 COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basestation_amd64.sh .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
 COPY --from=build /basicstation/deps/lgw/platform-linux/reset_lgw.sh .
+RUN chmod +x ./start_basestation_amd64.sh
 ENTRYPOINT ["./start_basestation_amd64.sh"]
