@@ -57,7 +57,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task On_Desired_Properties_Correct_Update_Should_Update()
         {
-            var loRaDeviceApiServiceBase = Mock.Of<LoRaDeviceAPIServiceBase>();
             var networkServerConfiguration = Mock.Of<NetworkServerConfiguration>();
             var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
             var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
@@ -100,16 +99,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 FacadeServerUrl = new Uri(facadeUri),
                 FacadeAuthCode = facadeCode
             };
-            var loRaDeviceApiServiceBase = new LoRaDeviceAPIService(networkServerConfiguration, Mock.Of<IServiceFacadeHttpClientProvider>());
+
+            var localLoRaDeviceApiServiceBase = new LoRaDeviceAPIService(networkServerConfiguration, Mock.Of<IServiceFacadeHttpClientProvider>());
             var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
             var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
             var loRaModuleClientFactory = Mock.Of<ILoRaModuleClientFactory>();
 
-            await using var moduleClientFactory = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase);
+            await using var moduleClientFactory = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, localLoRaDeviceApiServiceBase);
 
             await moduleClientFactory.OnDesiredPropertiesUpdate(new TwinCollection(twinUpdate), null);
-            Assert.Equal(facadeUri + "/", loRaDeviceApiServiceBase.URL.ToString());
-            Assert.Equal(facadeCode, loRaDeviceApiServiceBase.AuthCode);
+            Assert.Equal(facadeUri + "/", localLoRaDeviceApiServiceBase.URL.ToString());
+            Assert.Equal(facadeCode, localLoRaDeviceApiServiceBase.AuthCode);
         }
 
         [Fact]

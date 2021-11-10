@@ -206,14 +206,7 @@ namespace LoRaWan.NetworkServer
             // |    1    |   1   |
             // |    2    |   2   |
             // |    3    |   3   |
-            if (rXDelay is > 1 and < 16)
-            {
-                return (windowTime + rXDelay - 1);
-            }
-            else
-            {
-                return windowTime;
-            }
+            return (rXDelay is > 1 and < 16) ? windowTime + rXDelay - 1 : windowTime;
         }
     }
 }
