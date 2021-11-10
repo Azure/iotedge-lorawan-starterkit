@@ -856,6 +856,15 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
+            if (updateProperties.StationEui != default)
+            {
+                this.lastProcessingStationEui.Set(updateProperties.StationEui);
+                if (this.lastProcessingStationEui.IsDirty())
+                {
+                    reportedProperties[this.lastProcessingStationEui.PropertyName] = updateProperties.StationEui.ToString();
+                }
+            }
+
             reportedProperties[TwinProperty.CN470JoinChannel] = updateProperties.CN470JoinChannel;
 
             if (RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
@@ -960,6 +969,7 @@ namespace LoRaWan.NetworkServer
 
                 this.region.AcceptChanges();
                 this.preferredGatewayID.AcceptChanges();
+                this.lastProcessingStationEui.AcceptChanges();
 
                 ResetFcnt();
                 InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);

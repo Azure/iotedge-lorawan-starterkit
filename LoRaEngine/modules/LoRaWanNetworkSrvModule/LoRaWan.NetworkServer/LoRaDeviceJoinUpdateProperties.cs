@@ -40,5 +40,7 @@ namespace LoRaWan.NetworkServer
         /// Gets or sets value indicating the join channel plan for region CN470.
         /// </summary>
         public int? CN470JoinChannel { get; set; }
+
+        public StationEui StationEui { get; set; }
     }
 }
