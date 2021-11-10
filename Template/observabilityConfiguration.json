@@ -1,0 +1,32 @@
+{
+    "modulesContent": {
+        "$edgeAgent": {
+            "properties.desired.modules.IotHubMetricsCollectorModule": {
+                "settings": {
+					"image": "mcr.microsoft.com/azureiotedge-metrics-collector:1.0"
+				},
+				"type": "docker",
+				"env": {
+				  	"ResourceId": {
+						"value": "/subscriptions/[$subscription_id]/resourceGroups/iottest/providers/Microsoft.Devices/IotHubs/[$gateway_name]"
+				  	},
+				  	"UploadTarget": {
+						"value": "AzureMonitor"
+				  	},
+				  	"LogAnalyticsWorkspaceId": {
+						"value": "[$log_analytics_workspace_id]"
+				  	},
+				  	"LogAnalyticsSharedKey": {
+						"value": "[$log_analytics_shared_key]"
+				  	},
+				  	"MetricsEndpointsCSV": {
+						"value": "http://edgeHub:9600/metrics,http://edgeAgent:9600/metrics"
+				  	}
+				},
+				"status": "running",
+				"restartPolicy": "always",
+				"version": "1.0"
+            }
+        }
+    }
+}

@@ -129,7 +129,8 @@
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
                 "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]",
                 "[resourceId('Microsoft.Cache/Redis', variables('redisCacheName'))]",
-                "[resourceId('microsoft.insights/components/', variables('appInsightName'))]"
+                "[resourceId('microsoft.insights/components/', variables('appInsightName'))]",
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]"
             ],
             "resources": [],
             "properties": {
@@ -191,6 +192,22 @@
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
                             "value": "[variables('functionZipBinary')]"
+                        },
+                        {
+                            "name": "OBSERVABILITY_CONFIG_LOCATION",
+                            "value": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit/',variables('gitBranch'),'/Template/observabilityConfiguration.json')]"
+                        },
+                        {
+                            "name": "SUBSCRIPTION_ID",
+                            "value": "[subscription().subscriptionId]"
+                        },
+                        {
+                            "name": "LOG_ANALYTICS_WORKSPACE_ID",
+                            "value": "[if(parameters('useAzureMonitor'), reference(concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsName'))).customerId, '')]"
+                        },
+                        {
+                            "name": "LOG_ANALYTICS_WORKSPACE_KEY",
+                            "value": "[if(parameters('useAzureMonitor'), listKeys(resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName')), '2021-06-01').primarySharedKey, '')]"
                         }
                     ]
                 }
