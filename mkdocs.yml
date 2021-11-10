@@ -1,0 +1,80 @@
+site_name: Test documentation
+theme: 
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - header.autohide
+    - toc.integrate
+
+repo_url: https://github.com/Azure/iotedge-lorawan-starterkit
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_div_format
+  - pymdownx.snippets
+  - meta
+  - toc:
+      toc_depth: 1-2
+
+extra_css:
+  - https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js
+
+nav:
+  - index.md
+  - quickstart.md
+  - 'User Guide':
+    - user-guide/devguide.md
+    - user-guide/architecture.md
+    - user-guide/message-flows.md
+    - user-guide/partner.md
+    - user-guide/caching.md
+    - user-guide/station-configuration.md
+    - user-guide/upgrade.md
+  - 'Decorder Samples':
+    - samples/decoder.md
+    - samples/universal.md
+    - samples/cayenne.md
+  - Tools:
+    - tools/device-provisioning.md
+  - 'Decision Log':
+    - adr/001_region_cn470_implementation.md
+    - adr/002_lbs_configuration.md
+    - adr/003_documentation.md
+  - About:
+    - 'Known Issues': issues.md
+    - 'Support': support.md
+    - 'Contributing': contributing.md
+    - 'License': 'license.md'
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Azure/iotedge-lorawan-starterkit
+      name: iotedge-lorawan-starterkit on GitHub
+
