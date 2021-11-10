@@ -8,7 +8,7 @@
         "type": "docker",
         "env": {
           "ResourceId": {
-            "value": "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/iottest/providers/Microsoft.Devices/IotHubs/$GATEWAY_NAME"
+            "value": "$IOT_HUB_RESOURCE_ID"
           },
           "UploadTarget": {
             "value": "AzureMonitor"

@@ -116,8 +116,7 @@ namespace LoraKeysManagerFacade
                     _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "IotHubMetricsCollectorModule"));
                     var observabilityConfigurationContent = GetConfigurationContent(Environment.GetEnvironmentVariable("OBSERVABILITY_CONFIG_LOCATION"), new Dictionary<string, string>
                     {
-                        ["[$subscription_id]"] = Environment.GetEnvironmentVariable("SUBSCRIPTION_ID"),
-                        ["[$gateway_name]"] = deviceName,
+                        ["[$iot_hub_resource_id]"] = Environment.GetEnvironmentVariable("IOT_HUB_RESOURCE_ID"),
                         ["[$log_analytics_workspace_id]"] = Environment.GetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_ID"),
                         ["[$log_analytics_shared_key]"] = Environment.GetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_KEY")
                     });

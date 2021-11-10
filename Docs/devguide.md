@@ -307,8 +307,7 @@ We support Azure Monitor for observability of the LoRaWAN starter kit. If you de
 
 ```{bash}
 APPINSIGHTS_INSTRUMENTATIONKEY=de4ea2e5-4299-43b7-92af-47d0459ceec1
-SUBSCRIPTION_ID=dc48ccf2-e567-4442-ace4-cb9af2d31a4f
-GATEWAY_NAME=gateway
+IOT_HUB_RESOURCE_ID=/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Devices/IotHubs/{iot_hub_name}
 LOG_ANALYTICS_WORKSPACE_ID=15a52392-6c73-4fe9-9a8a-b6204910fe67
 LOG_ANALYTICS_SHARED_KEY="..."
 ```

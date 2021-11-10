@@ -198,8 +198,8 @@
                             "value": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit/',variables('gitBranch'),'/Template/observabilityConfiguration.json')]"
                         },
                         {
-                            "name": "SUBSCRIPTION_ID",
-                            "value": "[subscription().subscriptionId]"
+                            "name": "IOT_HUB_RESOURCE_ID",
+                            "value": "[resourceId('Microsoft.Devices/IotHubs', variables('iotHubName'))]"
                         },
                         {
                             "name": "LOG_ANALYTICS_WORKSPACE_ID",
