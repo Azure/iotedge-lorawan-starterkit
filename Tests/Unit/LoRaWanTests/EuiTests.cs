@@ -20,7 +20,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
         private static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
         private static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
-        private static readonly char?[] SupportedFormats = new char?[] { null, 'G', 'g', 'D', 'd', 'I', 'i', 'N', 'n', 'E', 'e' };
+        private static readonly char?[] SupportedFormats = { null, 'G', 'g', 'D', 'd', 'I', 'i', 'N', 'n', 'E', 'e' };
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()
