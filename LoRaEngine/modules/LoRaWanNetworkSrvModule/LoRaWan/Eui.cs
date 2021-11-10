@@ -45,8 +45,6 @@ namespace LoRaWan
 
     internal static class Eui
     {
-        private const int HexadecimalEuiCharacterCount = 23;
-
         public static string Format(ulong value, string? format)
         {
             return format switch
