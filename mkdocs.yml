@@ -1,4 +1,4 @@
-site_name: Test documentation
+site_name: IoTEdge LoRaWAN StarterKit - documentation
 theme: 
   name: material
   palette:
