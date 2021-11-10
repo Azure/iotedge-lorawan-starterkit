@@ -157,13 +157,20 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public override async Task<SearchDevicesResult> SearchByDevEUIAsync(string devEUI)
+        public override Task<SearchDevicesResult> SearchByEuiAsync(DevEui eui) =>
+            SearchByEuiAsync(eui.ToString("N", null));
+
+        /// <inheritdoc />
+        public override Task<SearchDevicesResult> SearchByEuiAsync(StationEui eui) =>
+            SearchByEuiAsync(eui.ToString("N", null));
+
+        private async Task<SearchDevicesResult> SearchByEuiAsync(string eui)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = BuildUri("GetDeviceByDevEUI", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
-                ["DevEUI"] = devEUI
+                ["DevEUI"] = eui
             });
 
             var response = await client.GetAsync(new Uri(url.ToString()));
@@ -174,7 +181,7 @@ namespace LoRaWan.NetworkServer
                     return new SearchDevicesResult();
                 }
 
-                Logger.Log(devEUI, $"error calling get device by devEUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
+                Logger.Log(eui, $"error calling get device/station by EUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
 
                 return new SearchDevicesResult();
             }

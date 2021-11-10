@@ -28,9 +28,18 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Theory]
-        [InlineData(900, "SF12BW125")]
-        [InlineData(914.5, "SF8BW125")]
-        [InlineData(930, "SF8BW125")]
+        [InlineData(8)]
+        [InlineData(10)]
+        public void GetDownstreamDataRate_ThrowsWhenOffsetInvalid(int rx1DrOffset)
+        {
+            TestRegionDataRateRxpk_ThrowsWhenOffsetInvalid("SF12BW125", 923.2, rx1DrOffset);
+
+        }
+
+        [Theory]
+        [InlineData(900, "SF14BW125")]
+        [InlineData(914.5, "SF6BW125")]
+        [InlineData(930, "SFBW125")]
         [InlineData(923.4, "SF32BW543")]
         [InlineData(925.5, "SF0BW125")]
         public void TestLimit(double freq, string datarate)

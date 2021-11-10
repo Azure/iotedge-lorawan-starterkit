@@ -71,26 +71,27 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             };
 
             foreach (var dr in dataRates)
+                yield return new object[] { region, dr, inputDrToExpectedDr[dr] };
+        }
+
+        public static IEnumerable<object[]> TestRegionDataRateDataDR4() =>
+            new List<object[]>
             {
-                foreach (var freq in frequenciesDR1To3)
-                    yield return new object[] { region, freq, dr, inputDrToExpectedDr[dr] };
-            }
-        }
+                new object[]{ region, 4, 13 }
+            };
 
-        public static IEnumerable<object[]> TestRegionDataRateDataDR4()
-        {
-            ushort dataRate =  4;
-            ushort expectedDr = 13;
-
-            foreach (var freq in frequenciesDR4)
-                yield return new object[] { region, freq, dataRate, expectedDr };
-        }
+        public static IEnumerable<object[]> TestRegionDataRateData_InvalidOffset =>
+           new List<object[]>
+           {
+               new object[] { region, 0, 4 },
+               new object[] { region, 0, 5 },
+           };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
           new List<object[]>
           {
-               new object[] { region, 700, 0 },
-               new object[] { region, 1024, 2 },
+               new object[] { region, 700, 5 },
+               new object[] { region, 1024, 10 },
                new object[] { region, 915, 90 },
                new object[] { region, 920, 100 },
           };
