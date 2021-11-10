@@ -314,7 +314,9 @@ namespace LoRaWan.Tests.Integration
         [Fact]
         public async Task After_Sending_Class_C_Downstream_Should_Disconnect_Client()
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID, deviceClassType: 'c'));
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1,
+                                                                                     gatewayID: ServerConfiguration.GatewayID,
+                                                                                     deviceClassType: 'c'));
             var devEUI = simulatedDevice.DevEUI;
 
             // will disconnected client
@@ -347,6 +349,7 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.LoRaRegion = LoRaRegionType.EU868;
             cachedDevice.InternalAcceptChanges();
             cachedDevice.SetFcntDown(cachedDevice.FCntDown + Constants.MaxFcntUnsavedDelta - 1);
+            cachedDevice.SetLastProcessingStationEui(new StationEui(ulong.MaxValue));
 
             using var cache = NewNonEmptyCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);

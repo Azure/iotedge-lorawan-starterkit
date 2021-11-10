@@ -43,7 +43,8 @@ namespace LoRaWan.Tests.Integration
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
+                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
+                    { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
                 });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync())
@@ -178,12 +179,14 @@ namespace LoRaWan.Tests.Integration
 
             var joinRxpk = simDevice.CreateJoinRequest().SerializeUplink(simDevice.AppKey).Rxpk[0];
             using var joinRequest = CreateWaitableRequest(joinRxpk);
+            joinRequest.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
 
             simDevice.SetupJoin(savedAppSKey, savedNwkSKey, savedDevAddr);
             using var request = CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1").Rxpk[0]);
+            request.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
