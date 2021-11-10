@@ -38,7 +38,17 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string devNonce);
 
-        public abstract Task<SearchDevicesResult> SearchByDevEUIAsync(string devEUI);
+        /// <summary>
+        /// Searches station devices in IoT Hub.
+        /// </summary>
+        /// <param name="eui">EUI of the station.</param>
+        public abstract Task<SearchDevicesResult> SearchByEuiAsync(StationEui eui);
+
+        /// <summary>
+        /// Searches LoRa devices in IoT Hub.
+        /// </summary>
+        /// <param name="eui">EUI of the LoRa device.</param>
+        public abstract Task<SearchDevicesResult> SearchByEuiAsync(DevEui eui);
 
         /// <summary>
         /// Sets the authorization code for the URL.

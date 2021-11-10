@@ -42,7 +42,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             SetupDeviceKeyLookup(stationEui, new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
 
         private void SetupDeviceKeyLookup(StationEui stationEui, params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
-            loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByDevEUIAsync(stationEui.ToString()))
+            loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByEuiAsync(stationEui))
                                     .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
 
         private void SetupTwinResponse(StationEui stationEui, string primaryKey) =>
@@ -123,7 +123,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // assert
                 Assert.Equal(result.Length, numberOfConcurrentAccess);
                 this.loRaDeviceFactoryMock.Verify(ldf => ldf.CreateDeviceClient(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByDevEUIAsync(It.IsAny<string>()), Times.Once);
+                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByEuiAsync(It.IsAny<StationEui>()), Times.Once);
                 foreach (var r in result)
                     Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), r);
             }
@@ -147,7 +147,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // arrange
                 const string primaryKey = "foo";
                 SetupTwinResponse(this.stationEui, primaryKey);
-                this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.SearchByDevEUIAsync(It.IsAny<string>()))
+                this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.SearchByEuiAsync(It.IsAny<StationEui>()))
                                              .Throws(new InvalidOperationException())
                                              .Returns(Task.FromResult(new SearchDevicesResult(new[]
                                              {
@@ -160,7 +160,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 var result = await Act();
 
                 // assert
-                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByDevEUIAsync(It.IsAny<string>()), Times.Exactly(2));
+                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByEuiAsync(It.IsAny<StationEui>()), Times.Exactly(2));
                 Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
             }
         }

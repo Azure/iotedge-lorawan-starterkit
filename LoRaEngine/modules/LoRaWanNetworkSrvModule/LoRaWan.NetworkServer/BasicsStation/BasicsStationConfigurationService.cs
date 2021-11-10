@@ -63,7 +63,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         private async Task<string> GetRouterConfigMessageInternalAsync(StationEui stationEui)
         {
-            var queryResult = await this.loRaDeviceApiService.SearchByDevEUIAsync(stationEui.ToString());
+            var queryResult = await this.loRaDeviceApiService.SearchByEuiAsync(stationEui);
             if (queryResult.Count != 1)
             {
                 throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",

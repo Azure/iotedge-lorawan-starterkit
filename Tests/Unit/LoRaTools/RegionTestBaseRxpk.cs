@@ -37,11 +37,20 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
+        protected void TestRegionDataRateRxpk_ThrowsWhenOffsetInvalid(string inputDr, double inputFreq, int rx1DrOffset)
+        {
+            var rxpk = GenerateRxpk(inputDr, inputFreq);
+            var ex = Assert.Throws<LoRaProcessingException>(() => Region.GetDownstreamDataRate(rxpk[0], rx1DrOffset));
+            Assert.Equal(LoRaProcessingErrorCode.InvalidDataRateOffset, ex.ErrorCode);
+        }
+
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
         protected void TestRegionLimitRxpk(double freq, string datarate, DeviceJoinInfo deviceJoinInfo = null)
         {
             var rxpk = GenerateRxpk(datarate, freq);
             Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _, deviceJoinInfo));
-            Assert.Null(Region.GetDownstreamDataRate(rxpk[0]));
+            var ex = Assert.Throws<LoRaProcessingException>(() => Region.GetDownstreamDataRate(rxpk[0]));
+            Assert.Equal(LoRaProcessingErrorCode.InvalidDataRate, ex.ErrorCode);
         }
 
         protected static IList<Rxpk> GenerateRxpk(string dr, double freq)

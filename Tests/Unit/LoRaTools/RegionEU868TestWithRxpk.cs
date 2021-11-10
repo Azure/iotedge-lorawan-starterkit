@@ -28,11 +28,11 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Theory]
-        [InlineData(800, "SF12BW125")]
-        [InlineData(1023, "SF8BW125")]
+        [InlineData(800, "SF15BW125")]
+        [InlineData(1023, "SF6BW125")]
         [InlineData(868.1, "SF0BW125")]
         [InlineData(869.3, "SF32BW543")]
-        [InlineData(800, "SF0BW125")]
+        [InlineData(800, "SF7BW200")]
         public void TestLimit(double freq, string datarate)
         {
             TestRegionLimitRxpk(freq, datarate);

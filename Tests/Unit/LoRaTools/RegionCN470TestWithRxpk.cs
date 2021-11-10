@@ -62,7 +62,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [InlineData("SF10BW125", "SF11BW125", 1)]
         [InlineData("SF8BW125", "SF10BW125", 2)]
         [InlineData("SF7BW500", "SF9BW125", 3)]
-        [InlineData("SF7BW500", "SF7BW500", 10)]
         public void TestDataRate(string inputDr, string outputDr, int rx1DrOffset)
         {
             var rxpk = GenerateRxpk(inputDr, 470.3);
@@ -70,8 +69,17 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Theory]
-        [InlineData(470, "SF12BW125")]
-        [InlineData(510, "SF11BW125")]
+        [InlineData(6)]
+        [InlineData(10)]
+        public void GetDownstreamDataRate_ThrowsWhenOffsetInvalid(int rx1DrOffset)
+        {
+            TestRegionDataRateRxpk_ThrowsWhenOffsetInvalid("SF12BW125", 470.3, rx1DrOffset);
+
+        }
+
+        [Theory]
+        [InlineData(470, "SF13BW125")]
+        [InlineData(510, "SF1FBW125")]
         [InlineData(509, "SF2BW125")]
         [InlineData(490, "SF30BW125")]
         public void TestLimit(double freq, string datarate)
