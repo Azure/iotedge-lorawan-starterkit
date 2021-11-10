@@ -75,27 +75,13 @@ namespace LoRaWan
             }
         }
 
-        public static bool TryParse(ReadOnlySpan<char> input, out ulong result)
-        {
-            if (input.Contains('-'))
+        public static bool TryParse(ReadOnlySpan<char> input, out ulong result) =>
+            input.Length switch
             {
-                return Hexadecimal.TryParse(input, out result, '-');
-            }
-            else if (input.Contains(':'))
-            {
-                if (input.Length == HexadecimalEuiCharacterCount)
-                {
-                    return Hexadecimal.TryParse(input, out result, ':');
-                }
-                else
-                {
-                    return Id6.TryParse(input, out result);
-                }
-            }
-            else
-            {
-                return Hexadecimal.TryParse(input, out result, null);
-            }
-        }
+                23 => Hexadecimal.TryParse(input, out result, '-')  // e.g. "88:99:AA:BB:CC:DD:EE:FF"
+                   || Hexadecimal.TryParse(input, out result, ':'), // e.g. "88-99-AA-BB-CC-DD-EE-FF"
+                16 => Hexadecimal.TryParse(input, out result),      // e.g. "8899AABBCCDDEEFF"
+                _ => Id6.TryParse(input, out result)                // e.g. "8899:AABB:CCDD:EEFF"
+            };
     }
 }
