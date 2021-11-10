@@ -328,11 +328,15 @@ namespace LoRaWan.NetworkServer
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
-            // TODO #407: we need to get from LoRaDevice which stationEui to use here for sending downstream
-            StationEui stationEui = default;
-
             return new DownlinkMessageBuilderResponse(
-                ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, rxDelay, stationEui: stationEui),
+                ackLoRaMessage.Serialize(loRaDevice.AppSKey,
+                                         loRaDevice.NwkSKey,
+                                         datr,
+                                         freq,
+                                         tmst,
+                                         loRaDevice.DevEUI,
+                                         rxDelay,
+                                         stationEui: loRaDevice.LastProcessingStationEui),
                 isMessageTooLong);
         }
 
