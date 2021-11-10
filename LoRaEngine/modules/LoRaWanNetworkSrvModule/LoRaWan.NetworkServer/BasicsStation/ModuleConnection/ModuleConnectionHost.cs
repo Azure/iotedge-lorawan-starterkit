@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly IClassCDeviceMessageSender classCMessageSender;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
+        private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
@@ -26,11 +27,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             NetworkServerConfiguration networkServerConfiguration,
             IClassCDeviceMessageSender defaultClassCDevicesMessageSender,
             ILoRaModuleClientFactory loRaModuleClientFactory,
-            ILoRaDeviceRegistry loRaDeviceRegistry)
+            ILoRaDeviceRegistry loRaDeviceRegistry,
+            LoRaDeviceAPIServiceBase loRaDeviceAPIService)
         {
             this.networkServerConfiguration = networkServerConfiguration ?? throw new ArgumentNullException(nameof(networkServerConfiguration));
             this.classCMessageSender = defaultClassCDevicesMessageSender ?? throw new ArgumentNullException(nameof(defaultClassCDevicesMessageSender));
             this.loRaDeviceRegistry = loRaDeviceRegistry ?? throw new ArgumentNullException(nameof(loRaDeviceRegistry));
+            this.loRaDeviceAPIService = loRaDeviceAPIService ?? throw new ArgumentNullException(nameof(loRaDeviceAPIService)); ;
             this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
         }
 
@@ -183,10 +186,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             {
                 if (Uri.TryCreate(urlString, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))
                 {
-                    this.networkServerConfiguration.FacadeServerUrl = url;
+                    this.loRaDeviceAPIService.URL = url;
                     if (desiredProperties.Contains(Constants.FacadeServerAuthCodeKey))
                     {
-                        this.networkServerConfiguration.FacadeAuthCode = (string)desiredProperties[Constants.FacadeServerAuthCodeKey];
+                        this.loRaDeviceAPIService.SetAuthCode((string)desiredProperties[Constants.FacadeServerAuthCodeKey]);
                     }
 
                     Logger.Log("Desired property changed", LogLevel.Debug);

@@ -60,7 +60,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
                         .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
                         .AddSingleton<ILoRaModuleClientFactory>(loraModuleFactory)
-                        .AddTransient<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
+                        .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();

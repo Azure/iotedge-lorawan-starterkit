@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer
         public int GetReceiveWindow1Delay(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.ReceiveDelay1;
+            return CalculateRXWindowsTime((int)this.loraRegion.ReceiveDelay1, loRaDevice.ReportedRXDelay);
         }
 
         private bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow1Delay(loRaDevice);
@@ -94,7 +94,7 @@ namespace LoRaWan.NetworkServer
         public int GetReceiveWindow2Delay(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return loRaDevice.ReceiveDelay2 ?? (int)this.loraRegion.ReceiveDelay2;
+            return CalculateRXWindowsTime((int)this.loraRegion.ReceiveDelay2, loRaDevice.ReportedRXDelay);
         }
 
         private bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow2Delay(loRaDevice);
@@ -195,6 +195,25 @@ namespace LoRaWan.NetworkServer
             }
 
             return TimeSpan.Zero;
+        }
+
+        private static int CalculateRXWindowsTime(int windowTime, ushort rXDelay)
+        {
+            // RxDelay follows specification of RXTimingSetupReq and the delay
+            // | rXDelay | Delay |
+            // ===================
+            // |    0    |   1   |
+            // |    1    |   1   |
+            // |    2    |   2   |
+            // |    3    |   3   |
+            if (rXDelay is > 1 and < 16)
+            {
+                return (windowTime + rXDelay - 1);
+            }
+            else
+            {
+                return windowTime;
+            }
         }
     }
 }

@@ -76,7 +76,9 @@ namespace LoRaWan.NetworkServer
             if (receiveWindow == Constants.ReceiveWindow2)
             {
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
-                tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
+#pragma warning disable CS0618 // Type or member is obsolete
+                tmst = rxpk.Tmst + (timeWatcher.GetReceiveWindow2Delay(loRaDevice) * Constants.ConvertToPktFwdTime);
+#pragma warning restore CS0618 // Type or member is obsolete
                 freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency, deviceJoinInfo);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo);
@@ -101,7 +103,9 @@ namespace LoRaWan.NetworkServer
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
 
-                tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow1Delay(loRaDevice), loRaDevice.ReportedRXDelay);
+#pragma warning disable CS0618 // Type or member is obsolete
+                tmst = rxpk.Tmst + (timeWatcher.GetReceiveWindow1Delay(loRaDevice) * Constants.ConvertToPktFwdTime);
+#pragma warning restore CS0618 // Type or member is obsolete
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow1Delay(loRaDevice);
             }
 
@@ -415,18 +419,6 @@ namespace LoRaWan.NetworkServer
             }
 
             return macCommands.Values;
-        }
-
-        private static long CalculateTime(int windowTime, ushort rXDelay)
-        {
-            if (rXDelay is > 1 and < 16)
-            {
-                return (windowTime + rXDelay - 1) * Constants.ConvertToPktFwdTime;
-            }
-            else
-            {
-                return windowTime * Constants.ConvertToPktFwdTime;
-            }
         }
     }
 }
