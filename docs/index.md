@@ -3,7 +3,7 @@ title: Home
 hide:
   - navigation
 ---
-
+<!-- markdownlint-disable MD025 -->
 # Azure IoT Edge LoRaWAN Starter Kit
 
 [![LoRa CI](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml)
@@ -78,7 +78,7 @@ appropriate documentation based on your persona and applicability.
 
 - **Setup a LoRaWAN Gateway**: We provide an easy to use Azure ARM template and
 deployment guidance to get you quickly started with the LoRaWAN starter kit.
-Use the [Quick Start](user-guide/quickstart.md) to setup a LoRaWAN Gateway and
+Use the [Quick Start](quickstart.md) to setup a LoRaWAN Gateway and
 connect to LoRA end nodes.
 - **Upgrade an existing installation**:
 Refer to the [upgrade guide](user-guide/upgrade.md) for instructions and tips for a
@@ -114,3 +114,4 @@ with [RAK833-SPI mPCIe-LoRa-Concentrator](http://www.embeddedpi.com/iocards)
 - Raspberry Pi 3 with [IC880A](https://wireless-solutions.de/products/radiomodules/ic880a.html)
 - [RAK833-USB mPCIe-LoRa-Concentrator with Raspberry Pi 3](https://github.com/Ellerbach/lora_gateway/tree/a31d80bf93006f33c2614205a6845b379d032c57)
 
+<!-- markdownlint-enable MD025 -->

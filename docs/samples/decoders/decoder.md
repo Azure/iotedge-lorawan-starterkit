@@ -5,7 +5,7 @@ This sample allows you to create and run your own LoRa message decoder in an ind
 
 ## Customizing
 
-To add a new decoder, simply copy or reuse  the sample ```DecoderValueSensor``` method from the ```LoraDecoders``` class in [LoraDecoder.cs](/Samples/DecoderSample/Classes/LoraDecoders.cs). You can name the method whatever you like and can create as many decoders as you need by adding new, individual methods to the ```LoraDecoders``` class.
+To add a new decoder, simply copy or reuse  the sample ```DecoderValueSensor``` method from the ```LoraDecoders``` class in [LoraDecoder.cs](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/DecoderSample/Classes/LoraDecoders.cs). You can name the method whatever you like and can create as many decoders as you need by adding new, individual methods to the ```LoraDecoders``` class.
 
 The payload sent to the decoder is passed as string ```devEui```, byte[] ```payload``` and uint ```fport```.
 
@@ -59,7 +59,7 @@ http://localhost:yourPort/api/<decodername>?devEui=0000000000000000&fport=1&payl
 
 You should see the result as JSON string.
 
-![Decoder Sample - Debugging on localhost](../images/decodersample-debugging.png)
+![Decoder Sample - Debugging on localhost](../../images/decodersample-debugging.png)
 
 When running the solution in a container, the [Kestrel webserver](https://docs.microsoft.com/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-3.1) from .NET Core uses the HTTP default port 80 of the container and does not need to bind it to a port on the host machine as Docker allows for container-to-container communication. IoT Edge automatically creates the required [Docker Network Bridge](https://docs.docker.com/network/bridge/).
 
@@ -71,16 +71,16 @@ We are using the [Azure IoT Edge for Visual Studio Code](https://marketplace.vis
 
 Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine.
 
-Edit the file [module.json](/Samples/DecoderSample/module.json) to contain your container registry address, image name and version number:
+Edit the file [module.json](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/DecoderSample/module.json) to contain your container registry address, image name and version number:
 
-![Decoder Sample - module.json file](../images/decodersample-module-json.png)
+![Decoder Sample - module.json file](../../images/decodersample-module-json.png)
 
 We provide the Dockerfiles for the following architectures:
 
-- [Dockerfile.amd64](/Samples/DecoderSample/Dockerfile.amd64)
-- [Dockerfile.arm32v7](/Samples/DecoderSample/Dockerfile.arm32v7)
+- [Dockerfile.amd64](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/DecoderSample/Dockerfile.amd64)
+- [Dockerfile.arm32v7](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/DecoderSample/Dockerfile.arm32v7)
 
-To build the Docker image, right-click on the [module.json](/Samples/DecoderSample/module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for (ARM32v7 or AMD64) from the drop-down menu.
+To build the Docker image, right-click on the [module.json](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/DecoderSample/module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for (ARM32v7 or AMD64) from the drop-down menu.
 
 To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 80 to a free port on your host machine, like for example 8881.
 
@@ -98,13 +98,13 @@ http://localhost:8881/api/DecoderValueSensor?devEui=0000000000000000&fport=1&pay
 
 If required, add credentials to access your container registry to the IoT Edge device by adding them to IoT Hub &rarr; IoT Edge &rarr; Your Device &rarr; Set Modules &rarr; Container Registry settings.
 
-![Decoder Sample - Edge Module Container Registry Permission](../images/decodersample-edgepermission.png)
+![Decoder Sample - Edge Module Container Registry Permission](../../images/decodersample-edgepermission.png)
 
 Configure your IoT Edge gateway device to include the custom container. IoT Hub &rarr; IoT Edge &rarr; Your Device &rarr; Set Modules &rarr; Deployment Modules &rarr; Add &rarr; IoT Edge Module. Set the module Name and Image URI, pointing to your image created above.
 
 **Make sure to choose all lowercase letters for the Module Name as the container will be unreachable otherwise!**
 
-![Decoder Sample - Edge Module](../images/decodersample-edgemodule.png)
+![Decoder Sample - Edge Module](../../images/decodersample-edgemodule.png)
 
 To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT Devices &rarr; Device Details &rarr; Device Twin and set the ```SensorDecoder``` value in the desired properties to:
 
@@ -114,7 +114,7 @@ http://<decoder module name>/api/<DecoderName>
 
 **Again make sure to chosse all lowercase letters for the module name to make sure it is reachable.**
 
-![Decoder Sample - LoRa Device Twin](../images/decodersample-devicetwin.png)
+![Decoder Sample - LoRa Device Twin](../../images/decodersample-devicetwin.png)
 
 In case the custom decoder is unreachable, throws an error or return invalid JSON, the error message will be shown in your device's messages in IoT Hub.
 

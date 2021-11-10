@@ -20,6 +20,7 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top
+    - navigation.expand
     - search.suggest
     - search.highlight
     - header.autohide
@@ -56,11 +57,13 @@ nav:
     - user-guide/caching.md
     - user-guide/station-configuration.md
     - user-guide/upgrade.md
+    - user-guide/documentation.md
   - 'Samples':
     - samples/arduino.md
-    - samples/decoders/decoder.md
-    - samples/decoders/universal.md
-    - samples/decoders/cayenne.md
+    - 'Decoders':
+      - samples/decoders/decoder.md
+      - samples/decoders/universal.md
+      - samples/decoders/cayenne.md
   - Tools:
     - tools/device-provisioning.md
   - 'Decision Log':

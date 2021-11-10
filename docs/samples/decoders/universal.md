@@ -100,17 +100,17 @@ Install the [Azure IoT Edge for Visual Studio Code](https://marketplace.visualst
 
 Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine, or `az acr login -n mycontainerregistry` if the Azure CLI is available.
 
-Edit the file [module.json](/Samples/UniversalDecoder/module.json) to contain your container registry address, image name and version number:
+Edit the file [module.json](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/UniversalDecoder/module.json) to contain your container registry address, image name and version number:
 
-![Decoder Sample - module.json file](../images/decodersample-module-json.png)
+![Decoder Sample - module.json file](../../images/decodersample-module-json.png)
 
 We provide the Dockerfiles for the following architectures:
 
-- [Dockerfile.amd64](/Samples/UniversalDecoder//Dockerfile.amd64)
-- [Dockerfile.arm32v7](/Samples/UniversalDecoder//Dockerfile.arm32v7)
-- [Dockerfile.arm64v8](/Samples/UniversalDecoder//Dockerfile.arm64v8)
+- [Dockerfile.amd64](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/UniversalDecoder/Dockerfile.amd64)
+- [Dockerfile.arm32v7](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/UniversalDecoder/Dockerfile.arm32v7)
+- [Dockerfile.arm64v8](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/UniversalDecoder/Dockerfile.arm64v8)
 
-To build the Docker image, right-click on the [module.json](/Samples/UniversalDecoder/module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for from the drop-down menu.
+To build the Docker image, right-click on the [module.json](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/UniversalDecoder/module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for from the drop-down menu.
 
 To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 8080 to a free port on your host machine (8080 is usually good).
 
@@ -128,13 +128,13 @@ http://localhost:8080/api/DecoderValueSensor?devEui=0000000000000000&fport=1&pay
 
 If required, add credentials to access your container registry to the IoT Edge device by adding them to IoT Hub &rarr; IoT Edge &rarr; Your Device &rarr; Set Modules &rarr; Container Registry settings.
 
-![Decoder Sample - Edge Module Container Registry Permission](../images/decodersample-edgepermission.png)
+![Decoder Sample - Edge Module Container Registry Permission](../../images/decodersample-edgepermission.png)
 
 Configure your IoT Edge gateway device to include the custom container. IoT Hub &rarr; IoT Edge &rarr; Your Device &rarr; Set Modules &rarr; Deployment Modules &rarr; Add &rarr; IoT Edge Module. Set the module Name and Image URI, pointing to your image created above.
 
 **Make sure to choose all lowercase letters for the Module Name as the container will be unreachable otherwise!**
 
-![Decoder Sample - Edge Module](../images/decodersample-edgemodule.png)
+![Decoder Sample - Edge Module](../../images/decodersample-edgemodule.png)
 
 To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT Devices &rarr; Device Details &rarr; Device Twin and set the ```SensorDecoder``` value in the desired properties to:
 
@@ -150,7 +150,7 @@ http://universaldecoder:8080/decoders
 
 **Again make sure to choose all lowercase letters for the module name to make sure it is reachable.**
 
-![Decoder Sample - LoRa Device Twin](../images/decodersample-devicetwin.png)
+![Decoder Sample - LoRa Device Twin](../../images/decodersample-devicetwin.png)
 
 In case the custom decoder is unreachable, throws an error or return invalid JSON, the error message will be shown in your device's messages in IoT Hub.
 

@@ -1,11 +1,7 @@
----
-Title: Quick Start
----
-
 # Quick Start
 
 An Azure deployment template is available to deploy all the required Azure infrastructure and get you started quickly.
-If you'd rather deploy it manually please jump directly into the [do it yourself section](devguide.md).
+If you'd rather deploy it manually please jump directly into the [do it yourself section](user-guide/devguide.md).
 
 ## Prerequisites
 
@@ -38,7 +34,7 @@ The template will deploy in your Azure subscription the Following resources:
     - **Location** - In which DataCenter the resources should be deployed. Make sure to choose a location where [IoT Hub is available](https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&regions=all)
     - **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the [naming restrictions of Storage](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage) apply here.
     - **Edge gateway name** - the name of your LoRa Gateway node in the IoT Hub.
-    - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](/Arduino) would be ready to use immediately.
+    - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino) would be ready to use immediately.
     - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
     - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
 
@@ -50,19 +46,19 @@ The template will deploy in your Azure subscription the Following resources:
 
 5. If your gateway is a Raspberry Pi, **don't forget to [enable SPI](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/) , (You need to restart your pi)**.
 
-By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.
+By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.
 
 ### What does the template do?
 
-The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](/Template).
+The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template).
 
-If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](LoRaWanPktFwdRAK833USB).
+If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Docs/LoRaWanPktFwdRAK833USB).
 
 ## Using a Proxy Server to connect your Concentrator to Azure
 
 This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.
 
-Follow [this guide](devguide.md#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
+Follow [this guide](user-guide/devguide.md#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
 
 1. Configure the Docker daemon and the IoT Edge daemon on your device to use a proxy server.
 2. Configure the `edgeAgent` properties in the `config.yaml` file on your device.
@@ -76,7 +72,7 @@ A LoRa device is a normal IoT Hub device with some specific device twin tags. Yo
 
 ### ABP (personalization) and OTAA (over the air) provisioning
 
-You can  provision the devices manually in the Azure portal or better use the provided [Command Line Interface Provisioning Tool](../Tools/Cli-LoRa-Device-Provisioning) to **list**, **query**, **verify**, **add**, **update**, and **remove**  devices in IoT Hub.
+You can  provision the devices manually in the Azure portal or better use the provided [Command Line Interface Provisioning Tool](tools/device-provisioning.md) to **list**, **query**, **verify**, **add**, **update**, and **remove**  devices in IoT Hub.
 
 It is also recommended to use the CLI tool to verify manually added or edited LoRa devices in IoT Hub to ensure the device twin settings are all correct and will work.
 
@@ -200,9 +196,9 @@ If you want to decode it on the Edge you have the following two options:
 
 1. Specify a method that implements the right logic in the `LoraDecoders` class in the `LoraDecoders.cs` file of the `LoRaWan.NetworkServer`.
 
-2. Adapt the [DecoderSample](./Samples/DecoderSample) which allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. [This description](./Samples/DecoderSample#azure-iot-edge-lorawan-starter-kit) shows you how to get started.
+2. Adapt the [DecoderSample](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Samples/DecoderSample) which allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. [This description](samples/decoders/decoder.md) shows you how to get started.
 
-In both cases, we have already provided a simple decoder called `"DecoderValueSensor"` that takes the whole payload as a single numeric value and constructs the following json output as a response (The example of an Arduino sending a sensor value as string (i.e. "23.5") is available in the [Arduino folder](./Arduino)):
+In both cases, we have already provided a simple decoder called `"DecoderValueSensor"` that takes the whole payload as a single numeric value and constructs the following json output as a response (The example of an Arduino sending a sensor value as string (i.e. "23.5") is available in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino)):
 
 ```json
 {
@@ -302,7 +298,7 @@ By default the network server does not use the local edge queue (edgeHub), sendi
 
 ## Customize the solution & Deep dive
 
-Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
+Have a look at the [LoRaEngine folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine) for more in details explanation.
 
 ## Cloud to device message
 
@@ -356,7 +352,7 @@ Should return
 
 The solution support sending Cloud to device (C2D) messages to LoRa class A devices using [standard IoT Hub SDKs](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d). The message body should follow the following contract:
 
-![C2D portal](../images/cloudtodevice.png)
+![C2D portal](images/cloudtodevice.png)
 
 The following tools can be used to send cloud to devices messages from Azure :
 
@@ -366,11 +362,11 @@ The following tools can be used to send cloud to devices messages from Azure :
 
 In confirmed messages a ConfirmedDataDown message will be send to the LoRa device (as in picture above and below). You can enable additional message tracking options by setting the C2D message id to a value (C2D message ID is automatically populated with the Device Explorer tool used in the image below).
 
-![C2D portal](../images/sendC2DConfirmed.png)
+![C2D portal](images/sendC2DConfirmed.png)
 
 As soon as the device acknowledges the message, it will report it in the logs and as a message property named 'C2DMsgConfirmed' on a message upstream (or generate an empty message in case of an empty ack message). The value of the message property will be set to the C2D message id that triggered the response if not null, otherwise to 'C2D Msg Confirmation'. You can find here below a set of picture illustrating the response when the C2D message id was sent to the value '4d3d0cd3-603a-4e00-a441-74aa55f53401'.
 
-![C2D portal](../images/receiveC2DConfirmation.png)
+![C2D portal](images/receiveC2DConfirmation.png)
 
 ### Class C devices
 
@@ -386,7 +382,7 @@ Once the requirements are met, sending downstream messages is achieved by callin
 
 The method name is `CloudToDeviceMessage` and the payload is the JSON following the structure previously described. Don't forget to set a value to the `devEUI` property.
 
-![C2D Class C portal](../images/cloudtodevice-classc.png)
+![C2D Class C portal](images/cloudtodevice-classc.png)
 
 ## MAC Commands
 
