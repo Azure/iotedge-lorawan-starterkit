@@ -64,6 +64,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
+
+            var appInsightsKey = Configuration.GetValue<string>("APPINSIGHTS_INSTRUMENTATIONKEY");
+            if (!string.IsNullOrEmpty(appInsightsKey))
+                _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
         }
 
 #pragma warning disable CA1822 // Mark members as static
