@@ -29,6 +29,13 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             }
         }
 
+        public static IEnumerable<object[]> TestRegionDataRateData_InvalidOffset =>
+          new List<object[]>
+          {
+               new object[] { region, frequencies[0], 0, 6 },
+               new object[] { region, frequencies[1], 1, 10 },
+          };
+
         public static IEnumerable<object[]> TestRegionLimitData =>
           new List<object[]>
           {

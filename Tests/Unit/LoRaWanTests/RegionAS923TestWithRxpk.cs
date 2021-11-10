@@ -28,13 +28,12 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Theory]
-        [InlineData("SF12BW125", 8)]
-        [InlineData("SF11BW125", 9)]
-        [InlineData("SF9BW125", 10)]
-        public void TestDataRateInvalidOffset(string dataRate, int rx1DrOffset)
+        [InlineData(8)]
+        [InlineData(10)]
+        public void GetDownstreamDataRate_ThrowsWhenOffsetInvalid(int rx1DrOffset)
         {
-            var rxpk = GenerateRxpk(dataRate, 923.2);
-            TestRegionDataRateRxpk(rxpk, null, rx1DrOffset);
+            TestRegionDataRateRxpk_ThrowsWhenOffsetInvalid("SF12BW125", 923.2, rx1DrOffset);
+
         }
 
         [Theory]

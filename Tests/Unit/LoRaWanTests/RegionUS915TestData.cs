@@ -86,6 +86,13 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
                 yield return new object[] { region, freq, dataRate, expectedDr };
         }
 
+        public static IEnumerable<object[]> TestRegionDataRateData_InvalidOffset =>
+           new List<object[]>
+           {
+               new object[] { region, frequenciesDR1To3[0], 0, 4 },
+               new object[] { region, frequenciesDR4[0], 0, 5 },
+           };
+
         public static IEnumerable<object[]> TestRegionLimitData =>
           new List<object[]>
           {

@@ -35,29 +35,35 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             return new List<object[]>
             {
                 // No DwellTime limit
-                new object[] { region, freq, 0, (ushort)0, 0 },
-                new object[] { region, freq, 1, (ushort)1, 0 },
-                new object[] { region, freq, 6, (ushort)6, 0 },
-                new object[] { region, freq, 2, (ushort)1, 1 },
-                new object[] { region, freq, 3, (ushort)1, 2 },
-                new object[] { region, freq, 4, (ushort)2, 2 },
-                new object[] { region, freq, 5, (ushort)7, 7 },
-                new object[] { region, freq, 6, (ushort)7, 6 },
-                new object[] { region, freq, 3, (ushort)4, 6 },
-                new object[] { region, freq, 1, null, 10 },
+                new object[] { region, freq, 0, 0, 0 },
+                new object[] { region, freq, 1, 1, 0 },
+                new object[] { region, freq, 6, 6, 0 },
+                new object[] { region, freq, 2, 1, 1 },
+                new object[] { region, freq, 3, 1, 2 },
+                new object[] { region, freq, 4, 2, 2 },
+                new object[] { region, freq, 5, 7, 7 },
+                new object[] { region, freq, 6, 7, 6 },
+                new object[] { region, freq, 3, 4, 6 },
                 // With DwellTime limit
-                new object[] { regionWithDwellTime, freq, 0, (ushort)2, 0 },
-                new object[] { regionWithDwellTime, freq, 1, (ushort)2, 0 },
-                new object[] { regionWithDwellTime, freq, 6, (ushort)6, 0 },
-                new object[] { regionWithDwellTime, freq, 2, (ushort)2, 1 },
-                new object[] { regionWithDwellTime, freq, 3, (ushort)2, 2 },
-                new object[] { regionWithDwellTime, freq, 4, (ushort)2, 2 },
-                new object[] { regionWithDwellTime, freq, 5, (ushort)7, 7 },
-                new object[] { regionWithDwellTime, freq, 6, (ushort)7, 6 },
-                new object[] { regionWithDwellTime, freq, 3, (ushort)4, 6 },
-                new object[] { regionWithDwellTime, freq, 1, null, 10 },
+                new object[] { regionWithDwellTime, freq, 0, 2, 0 },
+                new object[] { regionWithDwellTime, freq, 1, 2, 0 },
+                new object[] { regionWithDwellTime, freq, 6, 6, 0 },
+                new object[] { regionWithDwellTime, freq, 2, 2, 1 },
+                new object[] { regionWithDwellTime, freq, 3, 2, 2 },
+                new object[] { regionWithDwellTime, freq, 4, 2, 2 },
+                new object[] { regionWithDwellTime, freq, 5, 7, 7 },
+                new object[] { regionWithDwellTime, freq, 6, 7, 6 },
+                new object[] { regionWithDwellTime, freq, 3, 4, 6 },
             };
         }
+
+        public static IEnumerable<object[]> TestRegionDataRateData_InvalidOffset =>
+           new List<object[]>
+           {
+               new object[] { region, frequencies[0].Mega, 1, 8 },
+               new object[] { region, frequencies[0].Mega, 1, 9 },
+               new object[] { regionWithDwellTime, frequencies[0].Mega, 1, 10 },
+           };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
           new List<object[]>
