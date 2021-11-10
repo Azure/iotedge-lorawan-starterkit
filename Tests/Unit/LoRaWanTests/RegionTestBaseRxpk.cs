@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             var rxpk = GenerateRxpk(inputDr, inputFreq);
             var ex = Assert.Throws<LoRaProcessingException>(() => Region.GetDownstreamDataRate(rxpk[0], rx1DrOffset));
-            Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, ex.ErrorCode);
+            Assert.Equal(LoRaProcessingErrorCode.InvalidDataRateOffset, ex.ErrorCode);
         }
 
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]

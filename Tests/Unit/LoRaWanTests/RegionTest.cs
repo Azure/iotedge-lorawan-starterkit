@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void GetDownstreamDataRate_ThrowsWhenOffsetInvalid(Region region, double inputFrequency, ushort inputDataRate, int rx1DrOffset)
         {
             var ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(inputFrequency, inputDataRate, rx1DrOffset));
-            Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, ex.ErrorCode);
+            Assert.Equal(LoRaProcessingErrorCode.InvalidDataRateOffset, ex.ErrorCode);
         }
 
         [Theory]
