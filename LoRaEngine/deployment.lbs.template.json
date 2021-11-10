@@ -57,7 +57,14 @@
                 },
                 "AuthenticationMode": {
                   "value": "CloudAndScope"
+                },
+                "NestedEdgeEnabled": {
+                  "value": "false"
+                },
+                "RuntimeLogLevel": {
+                  "value": "Debug"
                 }
+
               }
             }
           },
@@ -85,7 +92,7 @@
               "version": "1.0",
               "env": {
                 "ENABLE_GATEWAY": {
-                  "value": "false"
+                  "value": "true"
                 },
                 "LOG_LEVEL": {
                   "value": "$NET_SRV_LOG_LEVEL"
