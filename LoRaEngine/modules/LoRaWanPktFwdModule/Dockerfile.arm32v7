@@ -20,7 +20,7 @@ WORKDIR /build/packet_forwarder
 RUN ./compile.sh
 RUN cp /build/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd /lora_pkt_fwd_spi_speed
 
-FROM arm32v7/debian:bullseye-slim as exec
+FROM arm32v7/debian:buster-slim as exec
 WORKDIR /LoRa
 COPY --from=builder /build/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd .
 COPY --from=builder2 /lora_pkt_fwd_spi_speed .

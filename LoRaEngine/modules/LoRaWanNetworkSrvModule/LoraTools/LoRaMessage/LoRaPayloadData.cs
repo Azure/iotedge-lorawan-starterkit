@@ -377,52 +377,59 @@ namespace LoRaTools.LoRaMessage
         {
             if (!Frmpayload.Span.IsEmpty)
             {
-                var aesEngine = new AesEngine();
-                var tmp = ConversionHelper.StringToByteArray(appSkey);
-                aesEngine.Init(true, new KeyParameter(tmp));
-                var fcntBytes = GetFcntBlockInfo();
-
-                byte[] aBlock =
+                try
                 {
-                    0x01, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
-                    DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, 0x00
-                };
+                    var aesEngine = new AesEngine();
+                    var tmp = ConversionHelper.StringToByteArray(appSkey);
+                    aesEngine.Init(true, new KeyParameter(tmp));
+                    var fcntBytes = GetFcntBlockInfo();
 
-                byte[] sBlock = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                var size = Frmpayload.Length;
-                var decrypted = new byte[size];
-                byte bufferIndex = 0;
-                short ctr = 1;
-                int i;
-                while (size >= 16)
-                {
-                    aBlock[15] = (byte)(ctr & 0xFF);
-                    ctr++;
-                    var processed = aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
-                    if (processed != aBlock.Length) throw new InvalidOperationException($"Failed to process block. Processed length was {processed}");
-
-                    for (i = 0; i < 16; i++)
+                    byte[] aBlock =
                     {
-                        decrypted[bufferIndex + i] = (byte)(Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
+                        0x01, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
+                        DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, 0x00
+                    };
+
+                    byte[] sBlock = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                    var size = Frmpayload.Length;
+                    var decrypted = new byte[size];
+                    byte bufferIndex = 0;
+                    short ctr = 1;
+                    int i;
+                    while (size >= 16)
+                    {
+                        aBlock[15] = (byte)(ctr & 0xFF);
+                        ctr++;
+                        var processed = aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
+                        if (processed != aBlock.Length) throw new InvalidOperationException($"Failed to process block. Processed length was {processed}");
+
+                        for (i = 0; i < 16; i++)
+                        {
+                            decrypted[bufferIndex + i] = (byte)(Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
+                        }
+
+                        size -= 16;
+                        bufferIndex += 16;
                     }
 
-                    size -= 16;
-                    bufferIndex += 16;
-                }
-
-                if (size > 0)
-                {
-                    aBlock[15] = (byte)(ctr & 0xFF);
-                    var processed = aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
-                    if (processed != aBlock.Length) throw new InvalidOperationException($"Failed to process block. Processed length was {processed}");
-
-                    for (i = 0; i < size; i++)
+                    if (size > 0)
                     {
-                        decrypted[bufferIndex + i] = (byte)(Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
-                    }
-                }
+                        aBlock[15] = (byte)(ctr & 0xFF);
+                        var processed = aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
+                        if (processed != aBlock.Length) throw new InvalidOperationException($"Failed to process block. Processed length was {processed}");
 
-                return decrypted;
+                        for (i = 0; i < size; i++)
+                        {
+                            decrypted[bufferIndex + i] = (byte)(Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
+                        }
+                    }
+
+                    return decrypted;
+                }
+                catch (Exception ex)
+                {
+                    throw new LoRaProcessingException("Failed to decrypt payload.", ex, LoRaProcessingErrorCode.PayloadDecryptionFailed);
+                }
             }
             else
             {

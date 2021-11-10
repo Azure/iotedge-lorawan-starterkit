@@ -384,7 +384,7 @@ namespace LoRaWan.Tests.Integration
 
             // Ensure we are using second window datr
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            Assert.Equal(euRegion.GetDownstreamDR(rxpk), txpk.Datr);
+            Assert.Equal(euRegion.GetDownstreamDataRate(rxpk), txpk.Datr);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             // Ensure tmst was computed to 1 second

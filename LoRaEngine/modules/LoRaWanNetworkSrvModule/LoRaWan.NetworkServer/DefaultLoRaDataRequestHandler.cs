@@ -178,11 +178,9 @@ namespace LoRaWan.NetworkServer
                         {
                             decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey);
                         }
-#pragma warning disable CA1031 // Do not catch general exception types
-                        catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+                        catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.PayloadDecryptionFailed)
                         {
-                            Logger.Log(loRaDevice.DevEUI, $"failed to decrypt message: {ex.Message}", LogLevel.Error);
+                            Logger.Log(loRaDevice.DevEUI, ex.ToString(), LogLevel.Error);
                         }
                     }
 
@@ -466,19 +464,10 @@ namespace LoRaWan.NetworkServer
         {
             if (this.classCDeviceMessageSender != null)
             {
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        _ = await this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage);
-                    }
-#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
-                    catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-                    {
-                        Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
-                    }
-                });
+                _ = TaskUtil.RunOnThreadPool(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage),
+                                             ex => Logger.Log(cloudToDeviceMessage.DevEUI,
+                                                              $"[class-c] error sending class C cloud to device message. {ex.Message}",
+                                                              LogLevel.Error));
             }
         }
 
@@ -529,7 +518,13 @@ namespace LoRaWan.NetworkServer
             else
             {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                maxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDR(rxpk));
+                var downstreamDataRate = loRaRegion.GetDownstreamDataRate(rxpk);
+                if (downstreamDataRate == null)
+                {
+                    Logger.Log(loRaDevice.DevEUI, "Failed to get downstream data rate", LogLevel.Error);
+                    return false;
+                }
+                maxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDataRate(rxpk));
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
 

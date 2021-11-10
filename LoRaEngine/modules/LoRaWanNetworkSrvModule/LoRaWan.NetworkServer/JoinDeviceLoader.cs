@@ -52,5 +52,5 @@ namespace LoRaWan.NetworkServer
 
             return null;
         }
-}
+    }
 }

@@ -13,7 +13,7 @@ namespace LoRaWan
     using System;
     using System.Buffers.Binary;
 
-    readonly partial struct DevEui : IEquatable<DevEui>
+    readonly partial struct DevEui : IEquatable<DevEui>, IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -27,14 +27,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is DevEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString()
-        {
-            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-            Span<char> chars = stackalloc char[bytes.Length * 3 - 1];
-            BinaryPrimitives.WriteUInt64BigEndian(bytes, this.value);
-            Hexadecimal.Write(bytes, chars, '-');
-            return new string(chars);
-        }
+        public override string ToString() => ToString(null, null);
 
         public static bool operator ==(DevEui left, DevEui right) => left.Equals(right);
         public static bool operator !=(DevEui left, DevEui right) => !left.Equals(right);
@@ -60,7 +53,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out DevEui result)
         {
-            if (Hexadecimal.TryParse(input, out var raw, '-'))
+            if (Eui.TryParse(input, out var raw))
             {
                 result = new DevEui(raw);
                 return true;
@@ -71,9 +64,11 @@ namespace LoRaWan
                 return false;
             }
         }
+
+        public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
     }
 
-    readonly partial struct JoinEui : IEquatable<JoinEui>
+    readonly partial struct JoinEui : IEquatable<JoinEui>, IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -87,14 +82,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is JoinEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString()
-        {
-            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-            Span<char> chars = stackalloc char[bytes.Length * 3 - 1];
-            BinaryPrimitives.WriteUInt64BigEndian(bytes, this.value);
-            Hexadecimal.Write(bytes, chars, '-');
-            return new string(chars);
-        }
+        public override string ToString() => ToString(null, null);
 
         public static bool operator ==(JoinEui left, JoinEui right) => left.Equals(right);
         public static bool operator !=(JoinEui left, JoinEui right) => !left.Equals(right);
@@ -120,7 +108,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out JoinEui result)
         {
-            if (Hexadecimal.TryParse(input, out var raw, '-'))
+            if (Eui.TryParse(input, out var raw))
             {
                 result = new JoinEui(raw);
                 return true;
@@ -131,9 +119,11 @@ namespace LoRaWan
                 return false;
             }
         }
+
+        public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
     }
 
-    readonly partial struct StationEui : IEquatable<StationEui>
+    readonly partial struct StationEui : IEquatable<StationEui>, IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -147,14 +137,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is StationEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString()
-        {
-            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-            Span<char> chars = stackalloc char[bytes.Length * 3 - 1];
-            BinaryPrimitives.WriteUInt64BigEndian(bytes, this.value);
-            Hexadecimal.Write(bytes, chars, '-');
-            return new string(chars);
-        }
+        public override string ToString() => ToString(null, null);
 
         public static bool operator ==(StationEui left, StationEui right) => left.Equals(right);
         public static bool operator !=(StationEui left, StationEui right) => !left.Equals(right);
@@ -180,7 +163,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out StationEui result)
         {
-            if (Hexadecimal.TryParse(input, out var raw, '-'))
+            if (Eui.TryParse(input, out var raw))
             {
                 result = new StationEui(raw);
                 return true;
@@ -191,5 +174,7 @@ namespace LoRaWan
                 return false;
             }
         }
+
+        public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
     }
 }

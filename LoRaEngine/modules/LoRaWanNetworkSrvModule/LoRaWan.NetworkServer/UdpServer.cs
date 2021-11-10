@@ -90,11 +90,19 @@ namespace LoRaWan.NetworkServer
         public static async Task RunServerAsync()
         {
             Logger.LogAlways("Starting LoRaWAN Server...");
-            using var udpServer = UdpServer.Create();
 
-            await udpServer.InitCallBack();
+            try
+            {
+                using var udpServer = UdpServer.Create();
 
-            await udpServer.RunUdpListener();
+                await udpServer.InitCallBack();
+
+                await udpServer.RunUdpListener();
+            }
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"Initialization failed with error: {ex.Message}", LogLevel.Error)))
+            {
+                throw;
+            }
         }
 
         private async Task UdpSendMessageAsync(byte[] messageToSend, string remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
@@ -207,85 +215,75 @@ namespace LoRaWan.NetworkServer
 
         private async Task InitCallBack()
         {
-            try
+            ITransportSettings transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only);
+
+            ITransportSettings[] settings = { transportSettings };
+
+            // if running as Edge module
+            if (this.configuration.RunningAsIoTEdgeModule)
             {
-                ITransportSettings transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only);
+                this.ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
 
-                ITransportSettings[] settings = { transportSettings };
-
-                // if running as Edge module
-                if (this.configuration.RunningAsIoTEdgeModule)
+                Logger.Init(new LoggerConfiguration
                 {
-                    this.ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
+                    ModuleClient = this.ioTHubModuleClient,
+                    LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
+                    LogToConsole = this.configuration.LogToConsole,
+                    LogToHub = this.configuration.LogToHub,
+                    LogToUdp = this.configuration.LogToUdp,
+                    LogToUdpPort = this.configuration.LogToUdpPort,
+                    LogToUdpAddress = this.configuration.LogToUdpAddress,
+                    GatewayId = this.configuration.GatewayID
+                });
 
-                    Logger.Init(new LoggerConfiguration
-                    {
-                        ModuleClient = this.ioTHubModuleClient,
-                        LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
-                        LogToConsole = this.configuration.LogToConsole,
-                        LogToHub = this.configuration.LogToHub,
-                        LogToUdp = this.configuration.LogToUdp,
-                        LogToUdpPort = this.configuration.LogToUdpPort,
-                        LogToUdpAddress = this.configuration.LogToUdpAddress,
-                        GatewayId = this.configuration.GatewayID
-                    });
-
-                    if (this.configuration.IoTEdgeTimeout > 0)
-                    {
-                        this.ioTHubModuleClient.OperationTimeoutInMilliseconds = this.configuration.IoTEdgeTimeout;
-                        Logger.Log($"Changing timeout to {this.ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", LogLevel.Debug);
-                    }
-
-                    Logger.Log("Getting properties from module twin...", LogLevel.Information);
-
-                    var moduleTwin = await this.ioTHubModuleClient.GetTwinAsync();
-                    var moduleTwinCollection = moduleTwin.Properties.Desired;
-                    try
-                    {
-                        this.loRaDeviceAPIService.URL = new Uri(moduleTwinCollection["FacadeServerUrl"].Value);
-                        Logger.LogAlways($"Facade function url: {this.loRaDeviceAPIService.URL}");
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        Logger.Log("Module twin FacadeServerUrl property does not exist", LogLevel.Error);
-                        throw;
-                    }
-
-                    try
-                    {
-                        this.loRaDeviceAPIService.SetAuthCode(moduleTwinCollection["FacadeAuthCode"].Value as string);
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        Logger.Log("Module twin FacadeAuthCode does not exist", LogLevel.Error);
-                        throw;
-                    }
-
-                    await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
-
-                    await this.ioTHubModuleClient.SetMethodDefaultHandlerAsync(OnDirectMethodCalled, null);
+                if (this.configuration.IoTEdgeTimeout > 0)
+                {
+                    this.ioTHubModuleClient.OperationTimeoutInMilliseconds = this.configuration.IoTEdgeTimeout;
+                    Logger.Log($"Changing timeout to {this.ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", LogLevel.Debug);
                 }
 
-                // running as non edge module for test and debugging
-                else
+                Logger.Log("Getting properties from module twin...", LogLevel.Information);
+
+                var moduleTwin = await this.ioTHubModuleClient.GetTwinAsync();
+                var moduleTwinCollection = moduleTwin.Properties.Desired;
+                try
                 {
-                    Logger.Init(new LoggerConfiguration
-                    {
-                        ModuleClient = null,
-                        LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
-                        LogToConsole = this.configuration.LogToConsole,
-                        LogToHub = this.configuration.LogToHub,
-                        LogToUdp = this.configuration.LogToUdp,
-                        LogToUdpPort = this.configuration.LogToUdpPort,
-                        LogToUdpAddress = this.configuration.LogToUdpAddress,
-                        GatewayId = this.configuration.GatewayID
-                    });
+                    this.loRaDeviceAPIService.URL = new Uri(moduleTwinCollection["FacadeServerUrl"].Value);
+                    Logger.LogAlways($"Facade function url: {this.loRaDeviceAPIService.URL}");
                 }
+                catch (ArgumentOutOfRangeException)
+                {
+                    throw new LoRaProcessingException("Module twin 'FacadeServerUrl' property does not exist.", LoRaProcessingErrorCode.InvalidModuleConfiguration);
+                }
+
+                try
+                {
+                    this.loRaDeviceAPIService.SetAuthCode(moduleTwinCollection["FacadeAuthCode"].Value as string);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    throw new LoRaProcessingException("Module twin 'FacadeAuthCode' does not exist.", LoRaProcessingErrorCode.InvalidModuleConfiguration);
+                }
+
+                await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
+
+                await this.ioTHubModuleClient.SetMethodDefaultHandlerAsync(OnDirectMethodCalled, null);
             }
-            catch (Exception ex)
+
+            // running as non edge module for test and debugging
+            else
             {
-                Logger.Log($"Initialization failed with error: {ex.Message}", LogLevel.Error);
-                throw;
+                Logger.Init(new LoggerConfiguration
+                {
+                    ModuleClient = null,
+                    LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
+                    LogToConsole = this.configuration.LogToConsole,
+                    LogToHub = this.configuration.LogToHub,
+                    LogToUdp = this.configuration.LogToUdp,
+                    LogToUdpPort = this.configuration.LogToUdpPort,
+                    LogToUdpAddress = this.configuration.LogToUdpAddress,
+                    GatewayId = this.configuration.GatewayID
+                });
             }
 
             // Report Log level
@@ -294,47 +292,43 @@ namespace LoRaWan.NetworkServer
 
         private async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
-            if (string.Equals("clearcache", methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+            string devEui = null;
+
+            try
             {
-                return await ClearCache();
+                if (string.Equals("clearcache", methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return await ClearCache();
+                }
+                else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (this.classCMessageSender == null)
+                    {
+                        return new MethodResponse((int)HttpStatusCode.NotFound);
+                    }
+
+                    var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
+                    devEui = c2d.DevEUI;
+                    Logger.Log(devEui, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
+
+                    using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
+
+                    if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
+                    {
+                        return new MethodResponse((int)HttpStatusCode.OK);
+                    }
+
+                    return new MethodResponse((int)HttpStatusCode.BadRequest);
+                }
             }
-            else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log(devEui, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error)))
             {
-                return await SendCloudToDeviceMessageAsync(methodRequest);
+                throw;
             }
 
             Logger.Log($"Unknown direct method called: {methodRequest?.Name}", LogLevel.Error);
 
             return new MethodResponse(404);
-        }
-
-        private async Task<MethodResponse> SendCloudToDeviceMessageAsync(MethodRequest methodRequest)
-        {
-            if (this.classCMessageSender == null)
-            {
-                return new MethodResponse((int)HttpStatusCode.NotFound);
-            }
-
-            var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
-            Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
-
-            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
-
-            try
-            {
-                if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
-                {
-                    return new MethodResponse((int)HttpStatusCode.OK);
-                }
-            }
-#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                Logger.Log(c2d.DevEUI, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
-            }
-
-            return new MethodResponse((int)HttpStatusCode.BadRequest);
         }
 
         private Task<MethodResponse> ClearCache()
@@ -366,12 +360,12 @@ namespace LoRaWan.NetworkServer
                 {
                     Logger.Log($"Error when receiving desired property: {exception}", LogLevel.Error);
                 }
+
+                throw;
             }
-#pragma warning disable CA1031 // Do not catch general exception types. Recommended by doc.
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"Error when receiving desired property: {ex.Message}", LogLevel.Error)))
             {
-                Logger.Log($"Error when receiving desired property: {ex.Message}", LogLevel.Error);
+                throw;
             }
 
             return Task.CompletedTask;

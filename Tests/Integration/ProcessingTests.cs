@@ -917,7 +917,6 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var appEUI = simulatedDevice.LoRaDevice.AppEUI;
             var devAddr = simulatedDevice.DevAddr;
 
             // Device twin will be queried
@@ -1155,7 +1154,6 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.Is<LoRaDeviceTelemetry>(t => t.Fcnt == deviceInitialFcntUp + 2), It.IsAny<Dictionary<string, string>>()))
                 .ReturnsAsync(true);
 
-            var sb = new StringBuilder();
             // in multigateway scenario the device api will be called to resolve fcntDown
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
@@ -1303,7 +1301,6 @@ namespace LoRaWan.Tests.Integration
             deviceClient.Setup(dc => dc.Dispose());
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0, gatewayID: ServerGatewayID));
 
-            using var loRaDevice = CreateLoRaDevice(simulatedDevice);
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
 
             // Add this device to the allowed dev address list
@@ -1498,7 +1495,6 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
-            var devEUI = simulatedDevice1.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice1.LoRaDevice.DevAddr;
 
             var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2, gatewayID: ServerGatewayID))
@@ -1611,7 +1607,6 @@ namespace LoRaWan.Tests.Integration
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
             var devEUI = simDevice.LoRaDevice.DeviceID;
-            var devAddr = simDevice.LoRaDevice.DevAddr;
 
             var loRaDevice = CreateLoRaDevice(simDevice);
 

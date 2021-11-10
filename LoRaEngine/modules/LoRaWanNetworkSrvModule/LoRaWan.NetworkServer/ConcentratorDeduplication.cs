@@ -21,18 +21,8 @@ namespace LoRaWan.NetworkServer
 
         [ThreadStatic]
         private static SHA256 sha256;
-        private static SHA256 Sha256
-        {
-            get
-            {
-                if (sha256 is null)
-                {
-                    sha256 = SHA256.Create();
-                }
 
-                return sha256;
-            }
-        }
+        private static SHA256 Sha256 => sha256 ??= SHA256.Create();
 
         public ConcentratorDeduplication(
             IMemoryCache cache,
@@ -77,8 +67,8 @@ namespace LoRaWan.NetworkServer
         internal static string CreateCacheKey(UpstreamDataFrame updf)
         {
             var totalBufferLength = DevAddr.Size + Mic.Size + updf.Payload.Length + sizeof(ushort);
-            Span<byte> buffer = stackalloc byte[totalBufferLength];
-            var head = buffer;
+            var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
+            var head = buffer; // keeps a view pointing at the start of the buffer
             buffer = updf.DevAddr.Write(buffer);
             buffer = updf.Mic.Write(buffer);
             _ = Encoding.UTF8.GetBytes(updf.Payload, buffer);
@@ -98,6 +88,7 @@ namespace LoRaWan.NetworkServer
                 SlidingExpiration = DefaultExpiration
             });
 
-        public void Dispose() => this.cache.Dispose();
+        public void Dispose()
+            => this.cache.Dispose();
     }
 }

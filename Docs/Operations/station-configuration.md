@@ -4,17 +4,17 @@ Following the LoRaWAN  Network Server (LNS) specification, each Basics Station (
 
 In the following we describe how to register an LBS in IoT Hub and how to store its configuration.
 
-1. Create an IoT Hub device that has a name equal to the LBS EUI in hex-representation, e.g. `DC-A6-32-FF-FE-B3-2F-C6`.
+1. Create an IoT Hub device that has a name equal to the LBS EUI in hex-representation, e.g. `DCA632FFFEB32FC6`.
 2. The LBS configuration needs to be stored as a desired twin property of the newly created LBS device. Make sure to store the configuration under `properties.desired.routerConfig`.
    1. The configuration follows the `router_config` format from the LNS protocol as closely as possible. However, since device twins encode numbers as 32-bit values and given some configuration properties (such as EUIs) are 64-bit numbers, there are some minor differences.
-   2. The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DC-A6-32-FF-FE-B3-2F-C5","DC-A6-32-FF-FE-B3-2F-C7"]]`
+   2. The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]`
    3. A full configuration example might look like this, relative to the desired twin property path `properties.desired`:
 
       ```json
       {
         "routerConfig": {
           "NetID": [1],
-          "JoinEui": [["DC-A6-32-FF-FE-B3-2F-C5", "DC-A6-32-FF-FE-B3-2F-C7"]],
+          "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
           "region": "EU863",
           "hwspec": "sx1301/1",
           "freq_range": [863000000, 870000000],
