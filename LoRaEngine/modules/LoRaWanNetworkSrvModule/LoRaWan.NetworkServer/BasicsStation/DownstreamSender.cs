@@ -40,7 +40,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
             {
                 var region = await this.basicsStationConfigurationService.GetRegionAsync(message.StationEui, CancellationToken.None);
                 var payload = Message(message, region);
-                Logger.Log(payload, LogLevel.Debug);
                 this.logger.LogDebug("Sending message to station with EUI '{stationEui}'. Payload '{payload}'.", message.StationEui, message.Txpk.Data);
                 await webSocketWriterHandle.SendAsync(payload, CancellationToken.None);
             }

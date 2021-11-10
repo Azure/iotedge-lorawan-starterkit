@@ -117,11 +117,11 @@ jobs:
       run: |
         echo ${{ secrets.ACR_CREDENTIALS }} | docker login "loramoduleintegrationtest.azurecr.io" --username  "loramoduleintegrationtest" --password-stdin
         docker buildx bake --push LoRaWanNetworkServerarm32
-        # docker buildx bake --push LoraBasicsStationarm32v7
       working-directory: LoRaEngine
       env:
         CONTAINER_REGISTRY_ADDRESS: "loramoduleintegrationtest.azurecr.io"
 
+    # This image is very costly to rebuild and we rebuild it only when something change in the folders since last commit.
     - name: Build Docker LoRaWanBasicsStation images
       run: |
         git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7

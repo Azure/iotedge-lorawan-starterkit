@@ -76,9 +76,7 @@ namespace LoRaWan.NetworkServer
             if (receiveWindow == Constants.ReceiveWindow2)
             {
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
-#pragma warning disable CS0618 // Type or member is obsolete
                 tmst = rxpk.Tmst + (timeWatcher.GetReceiveWindow2Delay(loRaDevice) * Constants.ConvertToPktFwdTime);
-#pragma warning restore CS0618 // Type or member is obsolete
                 freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency, deviceJoinInfo);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo);
@@ -94,6 +92,7 @@ namespace LoRaWan.NetworkServer
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the data rate in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
+
                 // The logic for passing CN470 join channel will change as part of #561
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq, deviceJoinInfo))
@@ -103,9 +102,7 @@ namespace LoRaWan.NetworkServer
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
 
-#pragma warning disable CS0618 // Type or member is obsolete
                 tmst = rxpk.Tmst + (timeWatcher.GetReceiveWindow1Delay(loRaDevice) * Constants.ConvertToPktFwdTime);
-#pragma warning restore CS0618 // Type or member is obsolete
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow1Delay(loRaDevice);
             }
 
