@@ -60,6 +60,7 @@ namespace LoRaWan
         DeviceClientCreationFailed,
         PayloadDecryptionFailed,
         DeviceInitializationFailed,
+        InvalidDataRate,
         InvalidDataRateOffset
     }
 }

@@ -49,7 +49,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             var rxpk = GenerateRxpk(datarate, freq);
             Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _, deviceJoinInfo));
-            Assert.Null(Region.GetDownstreamDataRate(rxpk[0]));
+            var ex = Assert.Throws<LoRaProcessingException>(() => Region.GetDownstreamDataRate(rxpk[0]));
+            Assert.Equal(LoRaProcessingErrorCode.InvalidDataRate, ex.ErrorCode);
         }
 
         protected static IList<Rxpk> GenerateRxpk(string dr, double freq)

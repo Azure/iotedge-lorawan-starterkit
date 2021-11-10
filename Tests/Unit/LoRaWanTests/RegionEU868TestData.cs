@@ -23,24 +23,21 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
         public static IEnumerable<object[]> TestRegionDataRateData() {
             foreach (var dr in dataRates)
-            {
-                foreach (var freq in frequencies)
-                    yield return new object[] { region, freq, dr, dr };
-            }
+                yield return new object[] { region, dr, dr };
         }
 
         public static IEnumerable<object[]> TestRegionDataRateData_InvalidOffset =>
           new List<object[]>
           {
-               new object[] { region, frequencies[0], 0, 6 },
-               new object[] { region, frequencies[1], 1, 10 },
+               new object[] { region, 0, 6 },
+               new object[] { region, 1, 10 },
           };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
           new List<object[]>
           {
-               new object[] { region, 800, 0 },
-               new object[] { region, 1023, 4 },
+               new object[] { region, 800, 8 },
+               new object[] { region, 1023, 10 },
                new object[] { region, 868.1, 90 },
                new object[] { region, 869.3, 100 },
                new object[] { region, 800, 100 },

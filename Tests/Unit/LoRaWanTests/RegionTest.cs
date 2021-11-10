@@ -31,9 +31,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionUS915TestData.TestRegionDataRateDataDR4), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470TestData.TestRegionDataRateData), MemberType = typeof(RegionCN470TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionDataRateData), MemberType = typeof(RegionAS923TestData))]
-        public void TestDownstreamDataRate(Region region, double inputFrequency, ushort inputDataRate, ushort outputDr, int rx1DrOffset = 0)
+        public void TestDownstreamDataRate(Region region, ushort inputDataRate, ushort outputDr, int rx1DrOffset = 0)
         {
-            Assert.Equal(region.GetDownstreamDataRate(inputFrequency, inputDataRate, rx1DrOffset), outputDr);
+            Assert.Equal(region.GetDownstreamDataRate(inputDataRate, rx1DrOffset), outputDr);
         }
 
         [Theory]
@@ -41,9 +41,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionUS915TestData.TestRegionDataRateData_InvalidOffset), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionDataRateData_InvalidOffset), MemberType = typeof(RegionAS923TestData))]
         [MemberData(nameof(RegionCN470TestData.TestRegionDataRateData_InvalidOffset), MemberType = typeof(RegionCN470TestData))]
-        public void GetDownstreamDataRate_ThrowsWhenOffsetInvalid(Region region, double inputFrequency, ushort inputDataRate, int rx1DrOffset)
+        public void GetDownstreamDataRate_ThrowsWhenOffsetInvalid(Region region, ushort inputDataRate, int rx1DrOffset)
         {
-            var ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(inputFrequency, inputDataRate, rx1DrOffset));
+            var ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(inputDataRate, rx1DrOffset));
             Assert.Equal(LoRaProcessingErrorCode.InvalidDataRateOffset, ex.ErrorCode);
         }
 
@@ -56,7 +56,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
             Assert.False(region.TryGetDownstreamChannelFrequency(inputFrequency, datarate, out _, deviceJoinInfo));
-            Assert.Null(region.GetDownstreamDataRate(inputFrequency, datarate));
+            var ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(datarate));
+            Assert.Equal(LoRaProcessingErrorCode.InvalidDataRate, ex.ErrorCode);
         }
 
         [Theory]

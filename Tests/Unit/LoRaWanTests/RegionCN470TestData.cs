@@ -45,28 +45,28 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public static IEnumerable<object[]> TestRegionDataRateData =>
            new List<object[]>
            {
-               new object[] { region, 470.3, 0, 0, 0 },
-               new object[] { region, 470.3, 1, 1, 0 },
-               new object[] { region, 470.3, 2, 2, 0 },
-               new object[] { region, 470.3, 6, 6, 0 },
-               new object[] { region, 470.3, 2, 1, 1 },
-               new object[] { region, 470.3, 3, 1, 2 },
-               new object[] { region, 470.3, 4, 2, 2 },
-               new object[] { region, 470.3, 6, 3, 3 },
+               new object[] { region, 0, 0, 0 },
+               new object[] { region, 1, 1, 0 },
+               new object[] { region, 2, 2, 0 },
+               new object[] { region, 6, 6, 0 },
+               new object[] { region, 2, 1, 1 },
+               new object[] { region, 3, 1, 2 },
+               new object[] { region, 4, 2, 2 },
+               new object[] { region, 6, 3, 3 },
            };
 
         public static IEnumerable<object[]> TestRegionDataRateData_InvalidOffset =>
            new List<object[]>
            {
-               new object[] { region, 470.3, 0, 6 },
-               new object[] { region, 470.3, 2, 10 },
+               new object[] { region, 0, 6 },
+               new object[] { region, 2, 10 },
            };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
            new List<object[]>
            {
-               new object[] { region, 470, 0, 0 },
-               new object[] { region, 510, 1, 0 },
+               new object[] { region, 470, 8, 0 },
+               new object[] { region, 510, 10, 0 },
                new object[] { region, 509, 100, 0 },
                new object[] { region, 490, 110, 0 },
            };

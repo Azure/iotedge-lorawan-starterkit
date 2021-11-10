@@ -78,8 +78,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Theory]
-        [InlineData(470, "SF12BW125")]
-        [InlineData(510, "SF11BW125")]
+        [InlineData(470, "SF13BW125")]
+        [InlineData(510, "SF1FBW125")]
         [InlineData(509, "SF2BW125")]
         [InlineData(490, "SF30BW125")]
         public void TestLimit(double freq, string datarate)
