@@ -91,7 +91,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 
             var req2 = new FunctionBundlerRequest() { GatewayId = "gateway2", ClientFCntUp = staleFcntUp, Rssi = -90 };
             var pipeline2 = new FunctionBundlerPipelineExecuter(new IFunctionBundlerExecutionItem[] { this.preferredGatewayExecutionItem }, devEUI, req2);
-            var res2 = await this.preferredGatewayExecutionItem.ExecuteAsync(pipeline2);
 
             var t1 = Task.Run(() => this.preferredGatewayExecutionItem.ExecuteAsync(pipeline1));
 
