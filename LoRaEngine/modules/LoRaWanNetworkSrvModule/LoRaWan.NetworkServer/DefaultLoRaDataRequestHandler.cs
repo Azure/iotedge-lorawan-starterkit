@@ -91,6 +91,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
+            var stationEuiChanged = false;
 
             try
             {
@@ -407,6 +408,13 @@ namespace LoRaWan.NetworkServer
                     _ = request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
                 }
 
+                if (loRaDevice.ClassType is LoRaDeviceClassType.C
+                    && loRaDevice.LastProcessingStationEui != request.StationEui)
+                {
+                    loRaDevice.SetLastProcessingStationEui(request.StationEui);
+                    stationEuiChanged = true;
+                }
+
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
             }
             finally
@@ -414,7 +422,7 @@ namespace LoRaWan.NetworkServer
 
                 try
                 {
-                    _ = await loRaDevice.SaveChangesAsync();
+                    _ = await loRaDevice.SaveChangesAsync(force: stationEuiChanged);
                 }
                 catch (OperationCanceledException saveChangesException)
                 {
