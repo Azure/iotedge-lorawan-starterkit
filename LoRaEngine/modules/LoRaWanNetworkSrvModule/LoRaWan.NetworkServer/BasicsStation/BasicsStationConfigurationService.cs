@@ -4,13 +4,11 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging;
 
     internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable
     {
