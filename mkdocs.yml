@@ -66,6 +66,8 @@ nav:
     - adr/001_region_cn470_implementation.md
     - adr/002_lbs_configuration.md
     - adr/003_documentation.md
+    - adr/004_region_as923_implementation.md
+    - adr/005_observability.md
   - About:
     - 'Known Issues': issues.md
     - 'Support': support.md
