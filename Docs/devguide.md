@@ -69,6 +69,7 @@ If you want to update a LoRa Gateway running a previous version fo our software 
 - [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
 - [Azure Functions](https://azure.microsoft.com/en-us/services/functions/)
 - [Redis Cache](https://azure.microsoft.com/en-us/services/cache/)
+- [Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/overview)
 
 ### Prerequisites
 
@@ -299,6 +300,20 @@ This is how a complete transmission looks like:
 You can even test sending Cloud-2-Device message (e.g. by VSCode right click on the device in the explorer -> `Send C2D Message To Device`).
 
 The Arduino example provided above will print the message on the console. Keep in mind that a [LoRaWAN Class A](https://www.thethingsnetwork.org/docs/lorawan/) device will only receive after a transmit, in our case every 30 seconds.
+
+### Observability
+
+We support Azure Monitor for observability of the LoRaWAN starter kit. If you decide to use Azure Monitor, you will need to create an Application Insights instance and a Log Analytics workspace in your subscription. To enable observability, modify the following settings in your `.env` file:
+
+```{bash}
+APPINSIGHTS_INSTRUMENTATIONKEY=de4ea2e5-4299-43b7-92af-47d0459ceec1
+SUBSCRIPTION_ID=dc48ccf2-e567-4442-ace4-cb9af2d31a4f
+GATEWAY_NAME=gateway
+LOG_ANALYTICS_WORKSPACE_ID=15a52392-6c73-4fe9-9a8a-b6204910fe67
+LOG_ANALYTICS_SHARED_KEY="..."
+```
+
+Generate a deployment manifest from `deployment_observability.layered.template.json` and deploy it to the edge devices for which you want to apply the observability. The template will set up the metrics collector module on the edge and connect it with your Log Analytics instance. The gateway will connect to your Application Insights instance. Please make sure that you set the `APPINSIGHTS_INSTRUMENTATIONKEY` also before deploying the `deployment.template.json` solution, if you want to make sure that the gateway can connect to Application Insights.
 
 ## Debugging in Visual Studio, outside of IoT Edge and Docker
 
