@@ -189,6 +189,13 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public int KeepAliveTimeout { get; set; }
 
+        /// <summary>
+        /// Gets or sets the StationEui for the Basic Station that last processed a message coming from this device.
+        /// </summary>
+        private ChangeTrackingProperty<StationEui> lastProcessingStationEui = new ChangeTrackingProperty<StationEui>(TwinProperty.LastProcessingStationEui, default);
+
+        public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
+
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
         {
             DevAddr = devAddr;
@@ -390,11 +397,19 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
+                if (twin.Properties.Reported.Contains(TwinProperty.LastProcessingStationEui))
+                {
+                    var stationEui = StationEui.Parse(twin.Properties.Reported[TwinProperty.LastProcessingStationEui].Value as string);
+                    lastProcessingStationEui = new ChangeTrackingProperty<StationEui>(TwinProperty.LastProcessingStationEui, stationEui);
+                }
+
                 return true;
             }
 
             return false;
         }
+
+        public void SetLastProcessingStationEui(StationEui s) => this.lastProcessingStationEui.Set(s);
 
         private void InitializeFrameCounters(Twin twin)
         {
@@ -1114,6 +1129,7 @@ namespace LoRaWan.NetworkServer
             yield return this.dataRate;
             yield return this.txPower;
             yield return this.nbRep;
+            yield return this.lastProcessingStationEui;
         }
 
         internal void UpdatePreferredGatewayID(string value, bool acceptChanges)
