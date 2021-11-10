@@ -24,6 +24,7 @@ contains only the static website in a `/docs` folder.
 1. **Use mkdocs and [mkdocs-material](https://squidfunk.github.io/mkdocs-material/)**
 to generate the static website. It allows to create good looking documentation
 website in a quick and easy way. There is built-in support for GitHub Actions.
+It supports [mermaidjs](https://mermaid-js.github.io/mermaid/#/) diagrams.
 
 1. **Create a detached branch to keep all docs**, called `docs/main`.
 This keeps history out of the main code repository, and allows for changes to
