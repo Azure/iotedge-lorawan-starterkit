@@ -67,6 +67,7 @@ nav:
   - Tools:
     - tools/device-provisioning.md
   - 'Decision Log':
+    - adr/index.md
     - adr/001_region_cn470_implementation.md
     - adr/002_lbs_configuration.md
     - adr/003_documentation.md
