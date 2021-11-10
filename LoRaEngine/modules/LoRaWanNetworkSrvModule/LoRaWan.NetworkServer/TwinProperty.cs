@@ -15,6 +15,7 @@ namespace LoRaWan.NetworkServer
         public const string AppEUI = "AppEUI";
         public const string AppKey = "AppKey";
         public const string GatewayID = "GatewayID";
+        public const string LastProcessingStationEui = "LastProcessingStationEui";
         public const string SensorDecoder = "SensorDecoder";
         public const string FCntUp = "FCntUp";
         public const string FCntDown = "FCntDown";
