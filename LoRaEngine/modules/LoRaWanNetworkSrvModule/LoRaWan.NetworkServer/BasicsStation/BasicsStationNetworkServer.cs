@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
+    using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +26,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (configuration is null) throw new ArgumentNullException(nameof(configuration));
 
             var shouldUseCertificate = !string.IsNullOrEmpty(configuration.LnsServerPfxPath);
-
             using var webHost = WebHost.CreateDefaultBuilder()
                                        .UseUrls(shouldUseCertificate ? FormattableString.Invariant($"https://0.0.0.0:{SecurePort}")
                                                                      : FormattableString.Invariant($"http://0.0.0.0:{Port}"))
@@ -46,15 +46,25 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                        })
                                        .Build();
 
-            // We want to make sure the module connection is started at the start of the Network server.
-            // This is needed when we run as module, therefore we are blocking.
-            if (configuration.RunningAsIoTEdgeModule)
-            {
-                var moduleConnection = webHost.Services.GetRequiredService<ModuleConnectionHost>();
-                await moduleConnection.CreateAsync(cancellationToken);
-            }
+            var telemetryClient = webHost.Services.GetService<TelemetryClient>();
 
-            await webHost.RunAsync(cancellationToken);
+            try
+            {
+                // We want to make sure the module connection is started at the start of the Network server.
+                // This is needed when we run as module, therefore we are blocking.
+                if (configuration.RunningAsIoTEdgeModule)
+                {
+                    var moduleConnection = webHost.Services.GetRequiredService<ModuleConnectionHost>();
+                    await moduleConnection.CreateAsync(cancellationToken);
+                }
+
+                await webHost.RunAsync(cancellationToken);
+            }
+            finally
+            {
+                telemetryClient?.Flush();
+                await Task.Delay(TimeSpan.FromSeconds(5), CancellationToken.None);
+            }
         }
     }
 }

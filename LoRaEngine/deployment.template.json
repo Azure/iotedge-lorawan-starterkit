@@ -55,6 +55,9 @@
               "mqttSettings__enabled": {
                 "value": "false"
               },
+              "httpSettings__enabled": {
+                "value": "false"
+              },
               "AuthenticationMode": {
                 "value": "CloudAndScope"
               }
@@ -101,9 +104,6 @@
               },
               "LOG_TO_UDP_ADDRESS": {
                 "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
-              },
-              "APPINSIGHTS_INSTRUMENTATIONKEY": {
-                "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
               }
             },
             "status": "running",
