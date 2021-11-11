@@ -44,11 +44,7 @@ jobs:
     - id: set_txpower
       name: Set TXPower value
       run: |
-        if [ 1 <= ${{ github.event.inputs.TxPower }} && ${{ github.event.inputs.TxPower }} <= 14 ]; then
-          txPower=${{ github.event.inputs.TxPower }}
-        else
-          txPower=14
-        fi
+        txPower=14 && [ 1<=${{ github.event.inputs.TxPower }} && ${{ github.event.inputs.TxPower }}<=14 ] && txPower=${{ github.event.inputs.TxPower }}
         echo "Setting TxPower to $txPower"
         echo "::set-output name=TxPower::$txPower"
 
