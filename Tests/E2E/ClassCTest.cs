@@ -37,24 +37,14 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setClassTypeAsync(LoRaArduinoSerial._class_type_t.CLASS_C);
 
             // send one confirmed message for ensuring that a basicstation is "bound" to the device
-            var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
-            Log($"{device.DeviceID}: Sending unconfirmed '{msg}'");
-            await ArduinoDevice.transferPacketAsync(msg, 10);
+            for (var i = 0; i < 5; i++)
+            {
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
+                Log($"{device.DeviceID}: Sending unconfirmed '{msg}'");
+                await ArduinoDevice.transferPacketAsync(msg, 10);
 
-            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-
-            // After transferPacket: Expectation from serial
-            // +MSG: Done
-            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
-
-            // 0000000000000005: valid frame counter, msg: 1 server: 0
-            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
-
-            // 0000000000000005: decoding with: DecoderValueSensor port: 8
-            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
-
-            // 0000000000000005: message '{"value": 51}' sent to hub
-            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+            }
 
             TestFixtureCi.ClearLogs();
 
