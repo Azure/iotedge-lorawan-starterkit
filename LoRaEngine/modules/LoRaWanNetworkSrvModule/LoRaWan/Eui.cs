@@ -3,6 +3,9 @@
 
 namespace LoRaWan
 {
+    using System;
+    using System.Buffers.Binary;
+
     /// <summary>
     /// Global end-device ID in IEEE EUI-64 (64-bit Extended Unique Identifier) address space
     /// that uniquely identifies the end-device.
@@ -39,4 +42,44 @@ namespace LoRaWan
     /// EUI are 8 bytes multi-octet fields and are transmitted as little endian.
     /// </remarks>
     public partial struct StationEui { }
+
+    internal static class Eui
+    {
+        public static string Format(ulong value, string? format)
+        {
+            return format switch
+            {
+#pragma warning disable format
+                null or "G" or "D" => ToHex(value, '-', LetterCase.Upper),
+                "g" or "d"         => ToHex(value, '-', LetterCase.Lower),
+                "E"                => ToHex(value, ':', LetterCase.Upper),
+                "e"                => ToHex(value, ':', LetterCase.Lower),
+                "N"                => ToHex(value, null, LetterCase.Upper),
+                "n"                => ToHex(value, null, LetterCase.Lower),
+                "I"                => Id6.Format(value, Id6.FormatOptions.FixedWidth),
+                "i"                => Id6.Format(value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
+#pragma warning restore format
+                _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
+            };
+
+            static string ToHex(ulong value, char? separator, LetterCase letterCase)
+            {
+                Span<byte> bytes = stackalloc byte[sizeof(ulong)];
+                BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
+                var nChars = separator is null ? bytes.Length * 2 : (bytes.Length * 3) - 1;
+                Span<char> chars = stackalloc char[nChars];
+                Hexadecimal.Write(bytes, chars, separator, letterCase);
+                return new string(chars);
+            }
+        }
+
+        public static bool TryParse(ReadOnlySpan<char> input, out ulong result) =>
+            input.Length switch
+            {
+                23 => Hexadecimal.TryParse(input, out result, '-')  // e.g. "88:99:AA:BB:CC:DD:EE:FF"
+                   || Hexadecimal.TryParse(input, out result, ':'), // e.g. "88-99-AA-BB-CC-DD-EE-FF"
+                16 => Hexadecimal.TryParse(input, out result),      // e.g. "8899AABBCCDDEEFF"
+                _ => Id6.TryParse(input, out result)                // e.g. "8899:AABB:CCDD:EEFF"
+            };
+    }
 }

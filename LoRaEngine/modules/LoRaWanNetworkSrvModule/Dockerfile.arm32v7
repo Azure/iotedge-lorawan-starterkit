@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim-amd64 AS build-env
 
 WORKDIR /build
 COPY Directory.Build.props ./

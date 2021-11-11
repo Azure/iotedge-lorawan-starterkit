@@ -518,6 +518,12 @@ namespace LoRaWan.NetworkServer
             else
             {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                var downstreamDataRate = loRaRegion.GetDownstreamDataRate(rxpk);
+                if (downstreamDataRate == null)
+                {
+                    Logger.Log(loRaDevice.DevEUI, "Failed to get downstream data rate", LogLevel.Error);
+                    return false;
+                }
                 maxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDataRate(rxpk));
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }

@@ -81,7 +81,7 @@ namespace LoRaWan.Tests.Integration
 
             var devEUI = simulatedDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.SearchByDevEUIAsync(devEUI))
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
                 .ReturnsAsync(new SearchDevicesResult(
                     new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
@@ -169,7 +169,7 @@ namespace LoRaWan.Tests.Integration
 
             var devEUI = simulatedDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.SearchByDevEUIAsync(devEUI))
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
             this.deviceClient.Setup(x => x.GetTwinAsync())
