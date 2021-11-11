@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaWan.NetworkServer
 {
     using System;
@@ -11,7 +13,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
-    public sealed class ConcentratorDeduplication : IConcentratorDeduplication, IDisposable
+    internal sealed class ConcentratorDeduplication : IConcentratorDeduplication, IDisposable
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
@@ -20,7 +22,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<IConcentratorDeduplication> logger;
 
         [ThreadStatic]
-        private static SHA256 sha256;
+        private static SHA256? sha256;
 
         private static SHA256 Sha256 => sha256 ??= SHA256.Create();
 
@@ -48,7 +50,7 @@ namespace LoRaWan.NetworkServer
 
             if (previousStation == stationEui)
             {
-                this.logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
+                this.logger.LogDebug($"Message received from the same EUI: {stationEui} as before, will be considered a resubmit.");
                 return false;
             }
 
