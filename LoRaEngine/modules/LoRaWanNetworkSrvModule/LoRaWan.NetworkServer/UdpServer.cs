@@ -226,10 +226,8 @@ namespace LoRaWan.NetworkServer
 
                 Logger.Init(new LoggerConfiguration
                 {
-                    ModuleClient = this.ioTHubModuleClient,
                     LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
                     LogToConsole = this.configuration.LogToConsole,
-                    LogToHub = this.configuration.LogToHub,
                     LogToUdp = this.configuration.LogToUdp,
                     LogToUdpPort = this.configuration.LogToUdpPort,
                     LogToUdpAddress = this.configuration.LogToUdpAddress,
@@ -275,10 +273,8 @@ namespace LoRaWan.NetworkServer
             {
                 Logger.Init(new LoggerConfiguration
                 {
-                    ModuleClient = null,
                     LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
                     LogToConsole = this.configuration.LogToConsole,
-                    LogToHub = this.configuration.LogToHub,
                     LogToUdp = this.configuration.LogToUdp,
                     LogToUdpPort = this.configuration.LogToUdpPort,
                     LogToUdpAddress = this.configuration.LogToUdpAddress,

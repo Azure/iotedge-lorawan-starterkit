@@ -48,10 +48,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             // Obsolete, this should be removed as part of #456
             Logger.Init(new LoggerConfiguration
             {
-                ModuleClient = this.loRaModuleClient.GetModuleClient(),
                 LogLevel = LoggerConfiguration.InitLogLevel(networkServerConfiguration.LogLevel),
                 LogToConsole = networkServerConfiguration.LogToConsole,
-                LogToHub = networkServerConfiguration.LogToHub,
                 LogToUdp = networkServerConfiguration.LogToUdp,
                 LogToUdpPort = networkServerConfiguration.LogToUdpPort,
                 LogToUdpAddress = networkServerConfiguration.LogToUdpAddress,
