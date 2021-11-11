@@ -45,10 +45,12 @@ jobs:
       name: Set TXPower value
       run: |
         if [ 1 <= ${{ github.event.inputs.TxPower }} && {{ github.event.inputs.TxPower }} <= 14 ]; then
-          echo "::set-output name=TxPower::${{ github.event.inputs.TxPower }}"
+          a=${{ github.event.inputs.TxPower }}
         else
-          echo "::set-output name=TxPower::14"
+          a=14
         fi
+        echo "A value: $a"
+        echo "::set-output name=TxPower::$a"
 
     outputs:
       AZURE_FUNCTIONAPP_NAME: ${{ env.AZURE_FUNCTIONAPP_NAME }}
