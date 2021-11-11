@@ -41,12 +41,21 @@ jobs:
       run: |
         echo "::set-output name=StopFullCi::true"
 
+    - id: set_txpower
+      name: Set TXPower value
+      run: |
+        if [ 1 <= ${{ github.event.inputs.TxPower }} && {{ github.event.inputs.TxPower }} <= 14 ]; then
+          echo "::set-output name=TxPower::${{ github.event.inputs.TxPower }}"
+        else
+          echo "::set-output name=TxPower::14"
+        fi
+
     outputs:
       AZURE_FUNCTIONAPP_NAME: ${{ env.AZURE_FUNCTIONAPP_NAME }}
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
-      TxPower: ${{ github.event.inputs.TxPower }}
+      TxPower: ${{ steps.set_txpower.outputs.TxPower }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
