@@ -43,8 +43,7 @@ namespace LoRaWan.Tests.Integration
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
-                    { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
+                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
                 });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync())
@@ -74,6 +73,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             using var request = CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1", fcnt: payloadFcnt).Rxpk[0]);
+            request.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
@@ -121,8 +121,6 @@ namespace LoRaWan.Tests.Integration
 
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
             Assert.Equal(payloadFcnt, loRaDevice.FCntUp);
-
-            Assert.False(loRaDevice.HasFrameCountChanges);
 
             LoRaDeviceApi.VerifyAll();
             LoRaDeviceClient.VerifyAll();
