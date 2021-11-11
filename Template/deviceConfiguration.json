@@ -56,9 +56,6 @@
 							},
 							"LOG_LEVEL": {
 							  "value": "2"
-							},
-							"LOG_TO_HUB": {
-							  "value": "true"
 							}					
 						},
 						"status": "running",
