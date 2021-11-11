@@ -369,6 +369,13 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
+                if (loRaDevice.ClassType is LoRaDeviceClassType.C
+                    && loRaDevice.LastProcessingStationEui != request.StationEui)
+                {
+                    loRaDevice.SetLastProcessingStationEui(request.StationEui);
+                    stationEuiChanged = true;
+                }
+
                 // No C2D message and request was not confirmed, return nothing
                 if (!requiresConfirmation)
                 {
@@ -406,16 +413,6 @@ namespace LoRaWan.NetworkServer
                 if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                 {
                     _ = request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
-                }
-
-                Logger.Log("Before changing stationEui", LogLevel.Information);
-                if (loRaDevice.ClassType is LoRaDeviceClassType.C
-                    && loRaDevice.LastProcessingStationEui != request.StationEui)
-                {
-                    Logger.Log("In changing stationEui", LogLevel.Information);
-                    loRaDevice.SetLastProcessingStationEui(request.StationEui);
-                    stationEuiChanged = true;
-                    Logger.Log("After changing stationEui", LogLevel.Information);
                 }
 
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
