@@ -70,7 +70,7 @@ The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Ar
     "UdpLog": "true",
     "FunctionAppBaseUrl": "https://your-function-app.azurewebsites.net/api/",
     "FunctionAppCode": "your-function-code=",
-    "CustomTxPower": "0"
+    "TxPower": "14"
   }
 }
 ```

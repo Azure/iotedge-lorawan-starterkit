@@ -41,39 +41,43 @@ namespace LoRaWan.Tests.E2E
             return result;
         }
 
+        public Task SetupLora(TestConfiguration configuration) =>
+            SetupLora(configuration.LoraRegion, power: configuration.TxPower);
+
+
         // Setup lora for a given region
         public async Task SetupLora(
             LoraRegion region,
-            LoRaArduinoSerial._data_rate_t dataRate = LoRaArduinoSerial._data_rate_t.DR6,
+            _data_rate_t dataRate = _data_rate_t.DR6,
             short power = 14,
             bool adr = false)
         {
             try
             {
-                await this.setAdaptiveDataRateAsync(adr);
+                await setAdaptiveDataRateAsync(adr);
 
                 if (region == LoraRegion.EU)
                 {
-                    await this.setDataRateAsync(dataRate, LoRaArduinoSerial._physical_type_t.EU868);
-                    await this.setChannelAsync(0, 868.1F);
-                    await this.setChannelAsync(1, 868.3F);
-                    await this.setChannelAsync(2, 868.5F);
-                    await this.setChannelAsync(3, 867.1F);
-                    await this.setChannelAsync(4, 867.3F);
-                    await this.setChannelAsync(5, 867.5F);
-                    await this.setChannelAsync(6, 867.7F);
-                    await this.setReceiceWindowFirstAsync(0, 868.1F);
-                    await this.setReceiceWindowSecondAsync(869.5F, LoRaArduinoSerial._data_rate_t.DR0);
+                    await setDataRateAsync(dataRate, _physical_type_t.EU868);
+                    await setChannelAsync(0, 868.1F);
+                    await setChannelAsync(1, 868.3F);
+                    await setChannelAsync(2, 868.5F);
+                    await setChannelAsync(3, 867.1F);
+                    await setChannelAsync(4, 867.3F);
+                    await setChannelAsync(5, 867.5F);
+                    await setChannelAsync(6, 867.7F);
+                    await setReceiceWindowFirstAsync(0, 868.1F);
+                    await setReceiceWindowSecondAsync(869.5F, _data_rate_t.DR0);
                 }
                 else
                 {
-                    await this.setDataRateAsync(LoRaArduinoSerial._data_rate_t.DR0, LoRaArduinoSerial._physical_type_t.US915HYBRID);
+                    await setDataRateAsync(_data_rate_t.DR0, _physical_type_t.US915HYBRID);
                 }
 
-                await this.setConfirmedMessageRetryTimeAsync(10);
-                await this.setDutyCycleAsync(false);
-                await this.setJoinDutyCycleAsync(false);
-                await this.setPowerAsync(power);
+                await setConfirmedMessageRetryTimeAsync(10);
+                await setDutyCycleAsync(false);
+                await setJoinDutyCycleAsync(false);
+                await setPowerAsync(power);
             }
 #pragma warning disable CA1031 // Do not catch general exception types.
             catch (Exception ex)
