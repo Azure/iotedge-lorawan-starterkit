@@ -228,9 +228,9 @@ namespace LoRaWan.NetworkServer
                 {
                     LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
                     LogToConsole = this.configuration.LogToConsole,
-                    LogToUdp = this.configuration.LogToUdp,
-                    LogToUdpPort = this.configuration.LogToUdpPort,
-                    LogToUdpAddress = this.configuration.LogToUdpAddress,
+                    LogToTcp = this.configuration.LogToTcp,
+                    LogToTcpPort = this.configuration.LogToTcpPort,
+                    LogToTcpAddress = this.configuration.LogToTcpAddress,
                     GatewayId = this.configuration.GatewayID
                 });
 
@@ -275,9 +275,9 @@ namespace LoRaWan.NetworkServer
                 {
                     LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
                     LogToConsole = this.configuration.LogToConsole,
-                    LogToUdp = this.configuration.LogToUdp,
-                    LogToUdpPort = this.configuration.LogToUdpPort,
-                    LogToUdpAddress = this.configuration.LogToUdpAddress,
+                    LogToTcp = this.configuration.LogToTcp,
+                    LogToTcpPort = this.configuration.LogToTcpPort,
+                    LogToTcpAddress = this.configuration.LogToTcpAddress,
                     GatewayId = this.configuration.GatewayID
                 });
             }

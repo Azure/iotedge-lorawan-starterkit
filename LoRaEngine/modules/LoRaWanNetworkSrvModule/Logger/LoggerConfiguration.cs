@@ -20,13 +20,13 @@ namespace LoRaWan
 
         // Gets/sets if logging to udp is enabled (used for integration tests mainly)
         // Default: false
-        public bool LogToUdp { get; set; }
+        public bool LogToTcp { get; set; }
 
         // Gets/sets udp address to send log
-        public string LogToUdpAddress { get; set; }
+        public string LogToTcpAddress { get; set; }
 
         // Gets/sets udp port to send logs
-        public int LogToUdpPort { get; set; } = 6000;
+        public int LogToTcpPort { get; set; } = 6000;
 
         /// <summary>
         /// Gets or sets the id of the gateway running the logger.
