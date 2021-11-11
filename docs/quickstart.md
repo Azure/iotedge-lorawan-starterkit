@@ -52,7 +52,7 @@ By using the `docker ps` command, you should see the Edge containers being deplo
 
 The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template).
 
-If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Docs/LoRaWanPktFwdRAK833USB).
+If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in the LoRaWanPktFwdRAK833USB [submodule](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Docs/).
 
 ## Using a Proxy Server to connect your Concentrator to Azure
 

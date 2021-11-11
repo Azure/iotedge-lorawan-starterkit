@@ -37,9 +37,9 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_div_format
+  - abbr
   - pymdownx.snippets
   - meta
-  - abbr
   - toc:
       toc_depth: 1-2
 

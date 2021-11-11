@@ -4,7 +4,7 @@ This sample allows you to create and run your own LoRa message decoder in an ind
 
 ## How to use the sample decoder
 
-This decode takes a Lora payload and decode it based on the [Cayenne encoding specification](https://github.com/myDevicesIoT/cayenne-docs/blob/masterLORA.md).
+This decode takes a Lora payload and decode it based on the [Cayenne encoding specification](https://github.com/myDevicesIoT/cayenne-docs/blob/master/LORA.md).
 
 The payload is decoded and transformed into a json object.
 
