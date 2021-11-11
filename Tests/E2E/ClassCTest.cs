@@ -37,13 +37,11 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setClassTypeAsync(LoRaArduinoSerial._class_type_t.CLASS_C);
 
             // send one confirmed message for ensuring that a basicstation is "bound" to the device
-            for (var i = 0; i < 2; i++)
-            {
-                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
-                Log($"{device.DeviceID}: Sending unconfirmed '{msg}'");
-                await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
-            }
+            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+            var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
+            Log($"{device.DeviceID}: Sending confirmed '{msg}'");
+            await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
+            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             TestFixtureCi.ClearLogs();
 
