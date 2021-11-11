@@ -77,6 +77,62 @@ jobs:
         package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
+  build_push_docker_images:
+    needs:
+    - env_var
+    name: Build and Push Docker images
+    runs-on: ubuntu-latest
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout current branch
+      with:
+        fetch-depth: '2'
+
+    - run: |
+        if [ ${{ github.ref	}} = "refs/heads/dev" ]; then
+        echo "dev"
+        IMAGE_TAG="$DEV_IMAGE_TAG"
+        elif [ ${{ github.ref	}} = "refs/heads/master" ]; then
+        echo "master"
+        IMAGE_TAG="$MASTER_IMAGE_TAG"
+        elif [ ${{ github.event_name }} == "pull_request" ]; then
+        echo "pull request"
+        IMAGE_TAG="pr-${{ github.event.number}}"
+        else
+        echo "all others"
+        IMAGE_TAG="custom-${GITHUB_REF##*/}"
+        fi
+        echo "Using image tag prefix $IMAGE_TAG"
+        IMAGE_TAG="$IMAGE_TAG-${{ github.run_number }}"
+        echo "Using image tag $IMAGE_TAG"
+        echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
+        echo "::set-env name=LBS_VERSION::$IMAGE_TAG"
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    - uses: docker/setup-buildx-action@v1
+      id: buildx
+      with:
+         install: true
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+
+    - name: Build Docker LoRaWanNetworkServer images
+      run: |
+        echo ${{ secrets.ACR_CREDENTIALS }} | docker login "loramoduleintegrationtest.azurecr.io" --username  "loramoduleintegrationtest" --password-stdin
+        docker buildx bake --push LoRaWanNetworkServerarm32
+      working-directory: LoRaEngine
+      env:
+        CONTAINER_REGISTRY_ADDRESS: "loramoduleintegrationtest.azurecr.io"
+
+    # This image is very costly to rebuild and we rebuild it only when something change in the folders since last commit.
+    - name: Build Docker LoRaWanBasicsStation images
+      run: |
+        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7
+      working-directory: LoRaEngine
+      env:
+        CONTAINER_REGISTRY_ADDRESS: "loramoduleintegrationtest.azurecr.io"
+
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
     strategy:
@@ -91,6 +147,7 @@ jobs:
             architecture: arm32v7
     needs:
     - env_var
+    - build_push_docker_images
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
     env:
       CONTAINER_REGISTRY_ADDRESS: "loramoduleintegrationtest.azurecr.io"
@@ -118,6 +175,7 @@ jobs:
       DEV_IMAGE_TAG: dev
       DEVICE_ID: ${{ matrix.gateway }}
       MASTER_IMAGE_TAG: master
+      LBS_TC_URI: 'ws://172.17.0.1:5000'
     runs-on: ubuntu-latest
     name: Run IoT Edge Deployment on ARM gateway
     steps:
@@ -142,18 +200,20 @@ jobs:
           IMAGE_TAG="$IMAGE_TAG-${{ github.run_number }}"
           echo "Using image tag $IMAGE_TAG"
           echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
-          echo "::set-env name=PKT_FWD_VERSION::$IMAGE_TAG"
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
-      - name: Iot Edge Push Solution
-        uses: ./devops
-        id: edgedev_push
-        with:
-          command: push
-          folder_path: 'LoRaEngine'
-          file_name: 'deployment.test.template.json'
-          target_platform: ${{ matrix.architecture }}
+      # Replacement need to occur to be compliant with the IoT Edge tool, we should remove in the future.
+      - run: |
+          $LBS_IMAGE_TAG=$(az acr repository show-tags --username ${{ env.CONTAINER_REGISTRY_USERNAME }} --password ${{ env.CONTAINER_REGISTRY_PASSWORD }} --name ${{ env.CONTAINER_REGISTRY_ADDRESS }} --repository lorabasicsstation --orderby time_desc -o json | ConvertFrom-Json)[0]
+
+          $LBS_IMAGE_TAG=$LBS_IMAGE_TAG.replace("-${{ matrix.architecture }}",'')
+          echo $LBS_IMAGE_TAG
+          echo "::set-env name=LBS_VERSION::$LBS_IMAGE_TAG"
+        shell: pwsh
+        name: Compute latest LBS build
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       - name: Iot Edge Deploy
         uses: ./devops
@@ -161,13 +221,14 @@ jobs:
         with:
           command: deploy
           folder_path: 'LoRaEngine'
-          file_name: 'deployment.test.template.json'
+          file_name: 'deployment.lbs.template.json'
           target_platform: ${{ matrix.architecture }}
+
 
       - name: Wait for IoT Edge Deployment
         run: |
           az extension add --name azure-iot
-          until `az iot edge deployment show-metric --deployment-id ${{ env.IOT_EDGE_DEPLOYMENT_ID }} --metric-id reportedSuccessfulCount --metric-type system --login '${{ secrets.IOTHUB_CONNECTION_STRING }}' | grep -q $DEVICE_ID`; do sleep 10 && echo wait; done
+          until `az iot edge deployment show-metric --deployment-id $IOT_EDGE_DEPLOYMENT_ID --metric-id reportedSuccessfulCount --metric-type system --login '${{ secrets.IOTHUB_CONNECTION_STRING }}' | grep -q $DEVICE_ID`; do sleep 10 && echo wait; done
 
           # We add the 3 minutes sleep to let the container start up
           # TODO We might want to revisit this once there are some options to check that the network server started.
