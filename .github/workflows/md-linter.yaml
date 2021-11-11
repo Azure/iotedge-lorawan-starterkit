@@ -9,7 +9,7 @@ on:
       - '**.markdown'
   push:
     branches:
-      - dev
+      - docs/main
 jobs:
   lint-markdown:
     runs-on: ubuntu-latest
