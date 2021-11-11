@@ -53,7 +53,7 @@ namespace LoRaWan.NetworkServer
             }
 
             // received from a different station
-            if (IsConnectionOpen(previousStation))
+            if (this.socketRegistry.IsSocketWriterOpen(previousStation))
             {
                 this.logger.LogInformation($"Duplicate message received from station with EUI: {stationEui}, dropping.");
                 return true;
@@ -78,9 +78,6 @@ namespace LoRaWan.NetworkServer
 
             return BitConverter.ToString(key);
         }
-
-        private bool IsConnectionOpen(StationEui stationEui)
-            => this.socketRegistry.IsSocketWriterOpen(stationEui);
 
         private void AddToCache(string key, StationEui stationEui)
             => this.cache.Set(key, stationEui, new MemoryCacheEntryOptions()

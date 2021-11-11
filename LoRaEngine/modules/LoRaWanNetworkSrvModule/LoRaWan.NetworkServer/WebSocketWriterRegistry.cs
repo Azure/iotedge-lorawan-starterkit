@@ -85,6 +85,16 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
+        /// Checks whether the socket writer associated with the given key
+        /// is flagged as open. Actual connectivity is not checked.
+        /// </summary>
+        /// <remarks>
+        /// Implementation does not throw when key is not present in the underlying dictionary.
+        /// </remarks>
+        public bool IsSocketWriterOpen(TKey key)
+            => TryGetWriter(key, out var socketWriter) && !socketWriter.IsClosed;
+
+        /// <summary>
         /// Registers a socket writer under a key, returning a handle to the writer.
         /// </summary>
         /// <remarks>
@@ -157,28 +167,6 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Checks whether the socket writer associated with the given key
-        /// is flagged as open. Actual connectivity is not checked.
-        /// </summary>
-        /// <remarks>
-        /// Implementation does not throw when key is not present in the underlying dictionary.
-        /// </remarks>
-        public bool IsSocketWriterOpen(TKey key)
-        {
-            IWebSocketWriter<TMessage> socketWriter;
-
-            try
-            {
-                socketWriter = this.sockets[key].Object;
-                return !socketWriter.IsClosed;
-            }
-            catch (KeyNotFoundException)
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Removes closed sockets at default interval periods until cancellation is requested.
         /// </summary>
         public Task RunPrunerAsync(CancellationToken cancellationToken) =>
@@ -219,6 +207,23 @@ namespace LoRaWan.NetworkServer
                     _ = this.sockets.Remove(key);
 
                 return keys;
+            }
+        }
+
+        private bool TryGetWriter(TKey key, [NotNullWhen(true)] out IWebSocketWriter<TMessage>? socketWriter)
+        {
+            lock (this.sockets)
+            {
+                if (this.sockets.TryGetValue(key, out var entry))
+                {
+                    socketWriter = entry.Object;
+                    return true;
+                }
+                else
+                {
+                    socketWriter = default;
+                    return false;
+                }
             }
         }
     }
