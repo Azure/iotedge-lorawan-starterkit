@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.E2E
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
@@ -35,6 +36,42 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
             await ArduinoDevice.setClassTypeAsync(LoRaArduinoSerial._class_type_t.CLASS_C);
 
+            // send one confirmed message for ensuring that a basicstation is "bound" to the device
+            var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
+            Log($"{device.DeviceID}: Sending confirmed '{msg}'");
+            await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
+
+            await Task.Delay(2 * Constants.DELAY_BETWEEN_MESSAGES);
+
+            // After transferPacketWithConfirmed: Expectation from serial
+            // +CMSG: ACK Received
+            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
+
+            // 0000000000000005: valid frame counter, msg: 1 server: 0
+            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+
+            // 0000000000000005: decoding with: DecoderValueSensor port: 8
+            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+
+            // 0000000000000005: message '{"value": 51}' sent to hub
+            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+
+            if (device.IsMultiGw)
+            {
+                var searchTokenSending = $"{device.DeviceID}: sending a downstream message";
+                var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase));
+                Assert.NotNull(sending.MatchedEvent);
+
+                var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
+                var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase));
+                Assert.NotNull(ignored.MatchedEvent);
+
+                Assert.NotEqual(sending.MatchedEvent.SourceId, ignored.MatchedEvent.SourceId);
+            }
+
+            TestFixtureCi.ClearLogs();
+
+            // Now sending a c2d
             var c2d = new LoRaCloudToDeviceMessage()
             {
                 DevEUI = device.DeviceID,
