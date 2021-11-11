@@ -35,6 +35,6 @@ Follow these steps to onboard your device with a custom decoder:
 
 - Go through the [Developer Guidance](devguide.md) to clone the repo and make sure everything works in your local dev environment.
 - Make sure everything works with an Azure subscription with Standard Pricing SKU's, for example we do not support the Free Azure IoT Hub SKU.
-- We have provided a [sample reference implementation](/Samples/DecoderSample) of a decoder, please refer to this as a template and leverage the [instructions](/Samples/DecoderSample/ReadMe.md) to create implementation of your customer decoder.
+- We have provided a [sample reference implementation](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Samples/DecoderSample) of a decoder, please refer to this as a template and leverage the [instructions](../samples/decoders/decoder.md) to create implementation of your customer decoder.
 - The Sample code can also contain device model specific tests that when run allows for testing of the gateway.
 - Since we are .NET Core and C# based, the sample is based on the .NET technology stack, however you can create your decoders in your preferred languages by implementing similar interfaces. If you have a specific language or platform to be supported, submit an issue to let us know.
