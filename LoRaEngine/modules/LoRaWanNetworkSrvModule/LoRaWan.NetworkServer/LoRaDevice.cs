@@ -68,10 +68,6 @@ namespace LoRaWan.NetworkServer
 
         public string SensorDecoder { get; set; }
 
-        public int? ReceiveDelay1 { get; set; }
-
-        public int? ReceiveDelay2 { get; set; }
-
         public bool IsABPRelaxedFrameCounter { get; set; }
 
         public bool Supports32BitFCnt { get; set; }

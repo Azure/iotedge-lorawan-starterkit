@@ -107,4 +107,5 @@ jobs:
       run: |
         docker buildx bake
       working-directory: LoRaEngine
-
+      env:
+        CONTAINER_REGISTRY_ADDRESS: docker.io/test
