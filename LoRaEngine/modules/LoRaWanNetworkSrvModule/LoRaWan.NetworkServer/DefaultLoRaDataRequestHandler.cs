@@ -408,11 +408,14 @@ namespace LoRaWan.NetworkServer
                     _ = request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
                 }
 
+                Logger.Log("Before changing stationEui", LogLevel.Information);
                 if (loRaDevice.ClassType is LoRaDeviceClassType.C
                     && loRaDevice.LastProcessingStationEui != request.StationEui)
                 {
+                    Logger.Log("In changing stationEui", LogLevel.Information);
                     loRaDevice.SetLastProcessingStationEui(request.StationEui);
                     stationEuiChanged = true;
+                    Logger.Log("After changing stationEui", LogLevel.Information);
                 }
 
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);

@@ -169,6 +169,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                   string json,
                                                   CancellationToken cancellationToken)
         {
+            Logger.Log(json, LogLevel.Information);
             switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:
