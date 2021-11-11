@@ -4,10 +4,13 @@ hide:
   - navigation
 ---
 <!-- markdownlint-disable MD025 -->
+<!-- markdown-link-check-disable -->
 # Azure IoT Edge LoRaWAN Starter Kit
 
 [![LoRa E2E CI](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/e2e-ci.yaml/badge.svg?branch=dev)](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/e2e-ci.yaml)
 [![codecov](https://codecov.io/gh/Azure/iotedge-lorawan-starterkit/branch/dev/graph/badge.svg)](https://codecov.io/gh/Azure/iotedge-lorawan-starterkit)
+
+<!-- markdown-link-check-enable -->
 
 The LoRaWAN starter kit is an OSS cross platform private network implementation
 of the [LoRaWAN specification](https://lora-alliance.org/resource_hub/lorawan-specification-v1-0-2/)

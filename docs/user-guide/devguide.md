@@ -61,7 +61,7 @@ Another view of the architecture and a more message driven view is the following
 
 The following guide describes the necessary steps to build and deploy the LoRaEngine to an [Azure IoT Edge](https://azure.microsoft.com/en-us/services/iot-edge/) installation on a LoRaWAN antenna gateway.
 
-If you want to update a LoRa Gateway running a previous version fo our software to the current release, follow [this guide](/upgrade.md)
+If you want to update a LoRa Gateway running a previous version fo our software to the current release, follow [this guide](upgrade.md)
 
 ### Used Azure services
 
