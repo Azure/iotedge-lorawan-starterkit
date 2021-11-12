@@ -237,7 +237,7 @@ namespace LoRaWan
                                 buffers.Return(buffer);
                             }
                         }
-                        catch (SocketException ex)
+                        catch (Exception ex) when (ex is SocketException or IOException)
                         {
                             this.logger?.LogError(ex, "Error writing to the logging socket.");
                             client.Dispose();
