@@ -142,6 +142,7 @@ namespace LoRaWan.NetworkServer
                     {
                         updatedProperties.SavePreferredGateway = true;
                         updatedProperties.SaveRegion = true;
+                        updatedProperties.StationEui = request.StationEui;
                     }
 
                     if (request.Region.LoRaRegion == LoRaRegionType.CN470)

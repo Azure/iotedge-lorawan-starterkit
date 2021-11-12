@@ -31,9 +31,6 @@
               "mqttSettings__enabled": {
                 "value": "false"
               },
-              "httpSettings__enabled": {
-                "value": "false"
-              },
               "AuthenticationMode": {
                 "value": "CloudAndScope"
               }

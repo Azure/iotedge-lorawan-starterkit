@@ -73,6 +73,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             using var request = CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1", fcnt: payloadFcnt).Rxpk[0]);
+            request.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
@@ -120,8 +121,6 @@ namespace LoRaWan.Tests.Integration
 
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
             Assert.Equal(payloadFcnt, loRaDevice.FCntUp);
-
-            Assert.False(loRaDevice.HasFrameCountChanges);
 
             LoRaDeviceApi.VerifyAll();
             LoRaDeviceClient.VerifyAll();
@@ -178,12 +177,14 @@ namespace LoRaWan.Tests.Integration
 
             var joinRxpk = simDevice.CreateJoinRequest().SerializeUplink(simDevice.AppKey).Rxpk[0];
             using var joinRequest = CreateWaitableRequest(joinRxpk);
+            joinRequest.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
 
             simDevice.SetupJoin(savedAppSKey, savedNwkSKey, savedDevAddr);
             using var request = CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1").Rxpk[0]);
+            request.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);

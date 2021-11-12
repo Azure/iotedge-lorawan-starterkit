@@ -120,14 +120,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
                 try
                 {
-                    c2d = JsonSerializer.Deserialize<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
+                    c2d = JsonSerializer.Deserialize<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
                 catch (JsonException ex)
                 {
                     Logger.Log($"Impossible to parse Json for c2d message for device {c2d?.DevEUI}, error: {ex}", LogLevel.Error);
                     return new MethodResponse((int)HttpStatusCode.BadRequest);
                 }
-
 
                 Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
 

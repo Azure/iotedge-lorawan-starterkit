@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.ApplicationInsights;
     using Prometheus;
 
     internal sealed class BasicsStationNetworkServerStartup
@@ -34,12 +35,21 @@ namespace LoRaWan.NetworkServer.BasicsStation
             ITransportSettings[] settings = { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) };
             var loraModuleFactory = new LoRaModuleClientFactory(settings);
 
+            var appInsightsKey = Configuration.GetValue<string>("APPINSIGHTS_INSTRUMENTATIONKEY");
+            var useApplicationInsights = !string.IsNullOrEmpty(appInsightsKey);
             _ = services.AddLogging(loggingBuilder =>
                         {
                             _ = loggingBuilder.ClearProviders();
                             var logLevel = (LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture);
                             _ = loggingBuilder.SetMinimumLevel(logLevel);
                             _ = loggingBuilder.AddLoRaConsoleLogger(c => c.LogLevel = logLevel);
+
+                            if (useApplicationInsights)
+                            {
+                                _ = loggingBuilder.AddApplicationInsights(appInsightsKey)
+                                                  .AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, logLevel);
+
+                            }
                         })
                         .AddMemoryCache()
                         .AddSingleton(NetworkServerConfiguration)
@@ -65,6 +75,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
+
+            if (useApplicationInsights)
+                _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
         }
 
 #pragma warning disable CA1822 // Mark members as static
