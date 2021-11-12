@@ -210,13 +210,13 @@ namespace LoRaWan
                 await foreach (var message in this.channel.Reader.ReadAllAsync(cancellationToken))
                 {
                     const int attempts = 10;
-                    for (var attempt = 1; attempt <= attempts; attempt++)
+                    for (var attempt = 1; ; attempt++)
                     {
                         try
                         {
                             if (!client.Connected)
                             {
-                                this.logger?.LogDebug("Connecting to log server at: " + this.serverEndpoint);
+                                this.logger?.LogDebug($"Connecting to log server at (attempt {attempt}/{attempts}): " + this.serverEndpoint);
                                 await client.ConnectAsync(this.serverEndpoint.Address, this.serverEndpoint.Port);
                             }
 
@@ -242,6 +242,13 @@ namespace LoRaWan
                             this.logger?.LogError(ex, "Error writing to the logging socket.");
                             client.Dispose();
                             client = new TcpClient();
+#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
+                            if (attempt == attempts)
+                            {
+                                this.logger?.LogWarning("Dropping message after all attempts failed: " + message);
+#pragma warning restore CA1508 // Avoid dead conditional code
+                                break;
+                            }
                             this.logger?.LogDebug($"Waiting (delay = {ConnectionRetryInterval}) before retrying to connecting to logging server.");
                             await Task.Delay(ConnectionRetryInterval, cancellationToken);
                         }
