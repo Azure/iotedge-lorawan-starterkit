@@ -103,16 +103,10 @@ namespace LoRaWan.Tests.Common
                 new SearchLogOptions(string.Concat(logMessageStart1, " or ", logMessageStart2)));
         }
 
-        public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null)
-        {
-            SearchLogResult searchResult;
-            if (this.tcpLogListener != null)
-                searchResult = await SearchUdpLogs(predicate, options);
-            else
-                searchResult = await SearchIoTHubLogs(predicate, options);
-
-            return searchResult;
-        }
+        public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null) =>
+            this.tcpLogListener != null
+                ? await SearchUdpLogs(predicate, options)
+                : await SearchIoTHubLogs(predicate, options);
 
         /// <summary>
         /// Searches the UDP log, matching the passed in predicate to
