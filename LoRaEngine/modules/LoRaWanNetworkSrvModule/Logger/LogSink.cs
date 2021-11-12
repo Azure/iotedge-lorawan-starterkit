@@ -33,7 +33,7 @@ namespace LoRaWan
 
         public virtual void Log(LogLevel logLevel, string message)
         {
-            if (logLevel > LogLevel)
+            if (LogLevel > logLevel)
                 return;
             CoreLog(logLevel, message);
         }
