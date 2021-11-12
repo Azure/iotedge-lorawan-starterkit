@@ -14,15 +14,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
         TransmitConfirmation,   // dntxed
         DownlinkMessage,        // dnmsg
 
-        /* Following are not implemented:
-
+        // Following message types are not handled in current LoRaWan Network Server implementation
         ProprietaryDataFrame,   // propdf
         MulticastSchedule,      // dnsched
         TimeSync,               // timesync
         RunCommand,             // runcmd
-        RemoteShell,            // rmtsh
-
-        */
+        RemoteShell             // rmtsh
     }
 
     internal static class LnsMessageTypeExtensions
@@ -30,12 +27,17 @@ namespace LoRaWan.NetworkServer.BasicsStation
         internal static string ToBasicStationString(this LnsMessageType lnsMessageType) => lnsMessageType switch
         {
 #pragma warning disable format
-            LnsMessageType.Version              => "version",
-            LnsMessageType.RouterConfig         => "router_config",
-            LnsMessageType.JoinRequest          => "jreq",
-            LnsMessageType.UplinkDataFrame      => "updf",
+            LnsMessageType.Version => "version",
+            LnsMessageType.RouterConfig => "router_config",
+            LnsMessageType.JoinRequest => "jreq",
+            LnsMessageType.UplinkDataFrame => "updf",
             LnsMessageType.TransmitConfirmation => "dntxed",
-            LnsMessageType.DownlinkMessage      => "dnmsg",
+            LnsMessageType.DownlinkMessage => "dnmsg",
+            LnsMessageType.ProprietaryDataFrame => "propdf",
+            LnsMessageType.MulticastSchedule => "dnsched",
+            LnsMessageType.TimeSync => "timesync",
+            LnsMessageType.RunCommand => "runcmd",
+            LnsMessageType.RemoteShell => "rmtsh",
 #pragma warning restore format
             _ => throw new ArgumentOutOfRangeException(nameof(lnsMessageType), lnsMessageType, null),
         };

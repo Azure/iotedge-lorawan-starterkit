@@ -17,6 +17,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 "updf" => LnsMessageType.UplinkDataFrame,
                 "dntxed" => LnsMessageType.TransmitConfirmation,
                 "dnmsg" => LnsMessageType.DownlinkMessage,
+                "propdf" => LnsMessageType.ProprietaryDataFrame,
+                "dnsched" => LnsMessageType.MulticastSchedule,
+                "timesync" => LnsMessageType.TimeSync,
+                "runcmd" => LnsMessageType.RunCommand,
+                "rmtsh" => LnsMessageType.RemoteShell,
                 _ => null
             };
 
