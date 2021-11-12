@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
+    using Prometheus;
 
     internal sealed class BasicsStationNetworkServerStartup
     {
@@ -100,6 +101,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);
                            });
                    });
+
+            _ = app.UseMetricServer();
         }
     }
 }

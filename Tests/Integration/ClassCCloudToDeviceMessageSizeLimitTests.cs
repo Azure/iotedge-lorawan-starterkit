@@ -87,7 +87,8 @@ namespace LoRaWan.Tests.Integration
 
             var twin = simulatedDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
             {
-                { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
+                { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
+                { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
             });
             this.deviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);

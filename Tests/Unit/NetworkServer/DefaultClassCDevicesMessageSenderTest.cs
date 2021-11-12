@@ -79,7 +79,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
+                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
+                    { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync())
@@ -222,7 +223,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
+                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
+                    { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync())
@@ -332,7 +334,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     // OTAA device, already joined
                     { TwinProperty.DevAddr, devAddr },
                     { TwinProperty.AppSKey, appSKey },
-                    { TwinProperty.NwkSKey, nwkSKey }
+                    { TwinProperty.NwkSKey, nwkSKey },
+                    { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync())
@@ -366,6 +369,58 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
             this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkPktFwdMessage>()), Times.Once());
+
+            this.packetForwarder.VerifyAll();
+            this.deviceApi.VerifyAll();
+            this.deviceClient.VerifyAll();
+        }
+
+        [Fact]
+        public async Task When_StationEui_Missing_Should_Fail()
+        {
+            const string devAddr = "023637F8";
+            const string appSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
+            const string nwkSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
+            var devEUI = simDevice.DevEUI;
+            simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
+
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+
+            var twin = simDevice.CreateOTAATwin(
+                desiredProperties: new Dictionary<string, object>
+                {
+                    { TwinProperty.RX2DataRate, "10" }
+                },
+                reportedProperties: new Dictionary<string, object>
+                {
+                    { TwinProperty.RX2DataRate, 10 },
+                    { TwinProperty.Region, LoRaRegionType.US915.ToString() },
+                    // OTAA device, already joined
+                    { TwinProperty.DevAddr, devAddr },
+                    { TwinProperty.AppSKey, appSKey },
+                    { TwinProperty.NwkSKey, nwkSKey },
+                });
+
+            this.deviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
+            {
+                Payload = "hello",
+                DevEUI = devEUI,
+                Fport = 10,
+                MessageId = Guid.NewGuid().ToString(),
+            };
+
+            var target = new DefaultClassCDevicesMessageSender(
+                this.serverConfiguration,
+                this.loRaDeviceRegistry,
+                this.packetForwarder.Object,
+                this.frameCounterStrategyProvider);
+
+            Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();
