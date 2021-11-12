@@ -22,8 +22,8 @@ This guide helps you to execute and author E2E tests on your local environment.
 * Seeeduino LoRaWan device (leaf test device) connected via USB to a computer where the LoRaWan.Tests.E2E will run.
 * Module LoRaWanNetworkSrvModule logging configured with following environment variables:
   * LOG_LEVEL: 1
-  * LOG_TO_UDP: true
-  * LOG_TO_UDP_ADDRESS: development machine IP address (ensure IoT Edge machine can ping it)
+  * LOG_TO_TCP: true
+  * LOG_TO_TCP_ADDRESS: development machine IP address (ensure IoT Edge machine can ping it)
 * E2E test configuration (in file `appsettings.local.json`) has UDP logging enabled `"UdpLog": "true"`
 
 ## Installation
