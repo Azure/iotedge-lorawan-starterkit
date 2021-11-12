@@ -78,6 +78,9 @@ jobs:
     - env_var
     name: Build and Push Docker images
     runs-on: ubuntu-latest
+    env:
+      DEV_IMAGE_TAG: dev
+      MASTER_IMAGE_TAG: master
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
     steps:
     - uses: actions/checkout@v2
