@@ -69,19 +69,9 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public bool TryGetHandle(TKey key, [NotNullWhen(true)] out IWebSocketWriterHandle<TMessage>? handle)
         {
-            lock (this.sockets)
-            {
-                if (this.sockets.TryGetValue(key, out var entry))
-                {
-                    handle = entry.Handle;
-                    return true;
-                }
-                else
-                {
-                    handle = default;
-                    return false;
-                }
-            }
+            var keyFound = TryGetValue(key, out var value);
+            handle = value?.Handle;
+            return keyFound;
         }
 
         /// <summary>
@@ -92,7 +82,7 @@ namespace LoRaWan.NetworkServer
         /// Implementation does not throw when key is not present in the underlying dictionary.
         /// </remarks>
         public bool IsSocketWriterOpen(TKey key)
-            => TryGetWriter(key, out var socketWriter) && !socketWriter.IsClosed;
+            => TryGetValue(key, out var value) && !value!.Value.Object.IsClosed; // when key found, value will not be null
 
         /// <summary>
         /// Registers a socket writer under a key, returning a handle to the writer.
@@ -210,20 +200,13 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private bool TryGetWriter(TKey key, [NotNullWhen(true)] out IWebSocketWriter<TMessage>? socketWriter)
+        private bool TryGetValue(TKey key, [NotNullWhen(true)] out (IWebSocketWriter<TMessage> Object, Handle Handle)? value)
         {
             lock (this.sockets)
             {
-                if (this.sockets.TryGetValue(key, out var entry))
-                {
-                    socketWriter = entry.Object;
-                    return true;
-                }
-                else
-                {
-                    socketWriter = default;
-                    return false;
-                }
+                var keyFound = this.sockets.TryGetValue(key, out var v);
+                value = v; // converts to nullable type
+                return keyFound;
             }
         }
     }
