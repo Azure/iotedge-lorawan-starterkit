@@ -14,7 +14,8 @@ namespace LoRaWan
 
         private static ILogSink sink = new ConsoleLogSink(LogLevel.Error);
 
-        public static void Init(LoggerConfiguration configuration)
+        public static void Init(LoggerConfiguration configuration,
+                                ILogger<TcpLogSink> tcpLogSinkLogger = null)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
@@ -40,7 +41,8 @@ namespace LoRaWan
                 ? TcpLogSink.Start(someEndPoint, configuration.LogLevel,
                                    string.IsNullOrEmpty(configuration.GatewayId)
                                        ? null
-                                       : msg => $"[{configuration.GatewayId}] {msg}")
+                                       : msg => $"[{configuration.GatewayId}] {msg}",
+                                   tcpLogSinkLogger)
                 : null;
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
