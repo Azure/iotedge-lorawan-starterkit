@@ -149,11 +149,11 @@ namespace LoRaWan
 
     public sealed class TcpLogSink : ILogSink, IDisposable
     {
-        private static readonly TimeSpan ConnectionRetryInterval = TimeSpan.FromSeconds(10);
-
         private readonly ILogger? logger;
         private readonly IPEndPoint serverEndpoint;
         private readonly Func<string, string>? formatter;
+        private readonly int maxRetryAttempts;
+        private readonly TimeSpan retryDelay;
         private readonly CancellationTokenSource cancellationTokenSource = new();
         private readonly Channel<string> channel = Channel.CreateBounded<string>(new BoundedChannelOptions(1000)
         {
@@ -165,18 +165,29 @@ namespace LoRaWan
                                        Func<string, string>? formatter = null,
                                        ILogger<TcpLogSink>? logger = null)
         {
-            var sink = new TcpLogSink(serverEndPoint, logLevel, formatter, logger);
+            return Start(serverEndPoint, logLevel, 6, TimeSpan.FromSeconds(10), formatter, logger);
+        }
+
+        public static TcpLogSink Start(IPEndPoint serverEndPoint, LogLevel logLevel,
+                                       int maxRetryAttempts, TimeSpan retryDelay,
+                                       Func<string, string>? formatter = null,
+                                       ILogger<TcpLogSink>? logger = null)
+        {
+            var sink = new TcpLogSink(serverEndPoint, logLevel, maxRetryAttempts, retryDelay, formatter, logger);
             _ = Task.Run(() => sink.SendAllLogMessagesAsync(sink.cancellationTokenSource.Token));
             return sink;
         }
 
         private TcpLogSink(IPEndPoint serverEndpoint, LogLevel logLevel,
+                           int maxRetryAttempts, TimeSpan retryDelay,
                            Func<string, string>? formatter,
                            ILogger? logger)
         {
             this.serverEndpoint = serverEndpoint;
             LogLevel = logLevel;
             this.formatter = formatter;
+            this.maxRetryAttempts = maxRetryAttempts;
+            this.retryDelay = retryDelay;
             this.logger = logger;
         }
 
@@ -209,14 +220,13 @@ namespace LoRaWan
             {
                 await foreach (var message in this.channel.Reader.ReadAllAsync(cancellationToken))
                 {
-                    const int attempts = 10;
                     for (var attempt = 1; ; attempt++)
                     {
                         try
                         {
                             if (!client.Connected)
                             {
-                                this.logger?.LogDebug($"Connecting to log server at (attempt {attempt}/{attempts}): " + this.serverEndpoint);
+                                this.logger?.LogDebug($"Connecting to log server at (attempt {attempt}/{this.maxRetryAttempts}): " + this.serverEndpoint);
                                 await client.ConnectAsync(this.serverEndpoint.Address, this.serverEndpoint.Port);
                             }
 
@@ -242,15 +252,13 @@ namespace LoRaWan
                             this.logger?.LogError(ex, "Error writing to the logging socket.");
                             client.Dispose();
                             client = new TcpClient();
-#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
-                            if (attempt == attempts)
+                            if (attempt == this.maxRetryAttempts)
                             {
                                 this.logger?.LogWarning("Dropping message after all attempts failed: " + message);
-#pragma warning restore CA1508 // Avoid dead conditional code
                                 break;
                             }
-                            this.logger?.LogDebug($"Waiting (delay = {ConnectionRetryInterval}) before retrying to connecting to logging server.");
-                            await Task.Delay(ConnectionRetryInterval, cancellationToken);
+                            this.logger?.LogDebug($"Waiting (delay = {this.retryDelay}) before retrying to connecting to logging server.");
+                            await Task.Delay(this.retryDelay, cancellationToken);
                         }
                     }
                 }
