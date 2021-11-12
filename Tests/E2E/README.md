@@ -18,7 +18,7 @@ This guide helps you to execute and author E2E tests on your local environment.
  +---------+
 ```
 
-* LoRaWan solution up and running (IoT Edge Device, IoT Hub, LoRa Keys Azure Function, Redis, etc.)
+* LoRaWan solution up and running (IoT Edge Device, IoT Hub, LoRa Keys Azure Function, Redis, container registry etc.)
 * Seeeduino LoRaWan device (leaf test device) connected via USB to a computer where the LoRaWan.Tests.E2E will run.
 * Module LoRaWanNetworkSrvModule logging configured with following environment variables:
   * LOG_LEVEL: 1
@@ -26,9 +26,46 @@ This guide helps you to execute and author E2E tests on your local environment.
   * LOG_TO_UDP_ADDRESS: development machine IP address (ensure IoT Edge machine can ping it)
 * E2E test configuration (in file `appsettings.local.json`) has UDP logging enabled `"UdpLog": "true"`
 
-## Installation
+## Setup
 
-1. Connect and setup Seeduino Arduino with the serial pass sketch
+### LoRa Basics Station and LNS setup
+
+Configure LoRa Basics Station and Network Server to run on your local LoRa gateway:
+
+1. Copy `LoRaEngine/example.env` file and name it `.env`.
+
+    - Update Container Registry settings and facade function app section with details of your created registry and function app.
+    - Update LoRaWanNetworkSrvModule settings:
+        ```
+        NET_SRV_LOG_LEVEL=1
+        NET_SRV_LOGTO_HUB=true
+        NET_SRV_LOGTO_UDP=true
+        NET_SRV_LOG_TO_UDP_ADDRESS=<your-local-ip-address>
+        ```
+    - Update `LBS_TC_URI`:
+    
+        `LBS_TC_URI=ws://172.17.0.1:5000`
+
+2. Build and push IoT Edge solution to your container registry using `LoRaEngine/deployment.lbs.template.json` file.
+
+    In VS Code: Ctrl+Shift+P -> Azure IoT Edge: Bild and Push IoT Edge Solution -> select template file. 
+
+3. Make sure the generated deployment template (`LoRaEngine/config/deployment.lbs.json`) contains the correct region configuration in the `LoRaWanNetworkSrvModule` section, e.g.:
+    ```
+    "REGION": {
+        "value": "EU868"
+    }
+    ```
+
+3. Create deployment for a single device using generated deployment template.
+
+    In VS Code, right-click on `LoRaEngine/config/deployment.lbs.json` and select Create Deployment for Single Device.
+
+4. Provision a device in your IoT Hub by following the [Basics Station configuration](https://github.com/Azure/iotedge-lorawan-starterkit/blob/docs/main/docs/user-guide/station-configuration.md) docs.
+
+### End device setup
+
+Connect and setup Seeduino Arduino with the serial pass sketch
 
     ```c
     void setup()
@@ -50,7 +87,9 @@ This guide helps you to execute and author E2E tests on your local environment.
     }
     ```
 
-2. Create/edit E2E settings in file `appsettings.local.json`
+### E2E test configuration
+
+Create/edit E2E settings in file `appsettings.local.json`
 
 The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Arduino board is connected to (Arduino IDE displays it). On macos you can discover through `ls /dev/tty*` and/or `ls /dev/cu*` bash commands. On Linux you can discover them with `ls /dev/ttyACM*`.
 
