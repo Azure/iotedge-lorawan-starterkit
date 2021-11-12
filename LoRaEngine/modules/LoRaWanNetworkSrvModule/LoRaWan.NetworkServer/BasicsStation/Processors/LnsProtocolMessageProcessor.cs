@@ -232,6 +232,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     break;
                 case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
                     throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
+                case var messageType and (LnsMessageType.ProprietaryDataFrame
+                                          or LnsMessageType.MulticastSchedule
+                                          or LnsMessageType.TimeSync
+                                          or LnsMessageType.RunCommand
+                                          or LnsMessageType.RemoteShell):
+                    this.logger.LogWarning($"'{messageType}' ({messageType.ToBasicStationString()}) is not handled in current LoRaWan Network Server implementation.");
+                    break;
                 default:
                     throw new SwitchExpressionException();
             }
