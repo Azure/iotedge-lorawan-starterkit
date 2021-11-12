@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using System.Collections.Generic;
     using System.Net;
     using System.Net.Http;
     using System.Text;
@@ -13,6 +14,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     public class CreateEdgeDevice
@@ -28,7 +30,8 @@ namespace LoraKeysManagerFacade
 
         [FunctionName(nameof(CreateEdgeDevice))]
         public async Task<HttpResponseMessage> CreateEdgeDeviceImp(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            ILogger log)
         {
             // parse query parameter
             var queryStrings = req.GetQueryParameterDictionary();
@@ -82,22 +85,45 @@ namespace LoraKeysManagerFacade
             try
             {
                 _ = await this.registryManager.AddDeviceAsync(edgeGatewayDevice);
-
-                var deviceConfigurationUrl = Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION");
-                string json = null;
-
-                // todo correct
-                using (var wc = new WebClient())
-                {
-                    json = wc.DownloadString(deviceConfigurationUrl);
-                }
-
-                json = ReplaceJsonWithCorrectValues(region, resetPin, json, spiSpeed, spiDev);
-
-                var spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
                 _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
 
-                await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
+                static ConfigurationContent GetConfigurationContent(string configLocation, IDictionary<string, string> tokenReplacements)
+                {
+                    using var wc = new WebClient();
+                    var json = wc.DownloadString(configLocation);
+                    foreach (var r in tokenReplacements)
+                        json = json.Replace(r.Key, r.Value, StringComparison.Ordinal);
+                    return JsonConvert.DeserializeObject<ConfigurationContent>(json);
+                }
+
+                var deviceConfigurationContent = GetConfigurationContent(Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION"), new Dictionary<string, string>
+                {
+                    ["[$region]"] = region,
+                    ["[$reset_pin]"] = resetPin,
+                    ["[$spi_speed]"] = string.IsNullOrEmpty(spiSpeed) || string.Equals(spiSpeed, "8", StringComparison.OrdinalIgnoreCase) ? string.Empty : ",'SPI_SPEED':{'value':'2'}",
+                    ["[$spi_dev]"] = string.IsNullOrEmpty(spiDev) || string.Equals(spiDev, "2", StringComparison.OrdinalIgnoreCase) ? string.Empty : ",'SPI_DEV':{'value':'1'}"
+                });
+
+                await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, deviceConfigurationContent);
+
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_ID")))
+                {
+                    log.LogDebug("Opted-in to use Azure Monitor on the edge. Deploying the observability layer.");
+                    // If Appinsights Key is set this means that user opted in to use Azure Monitor.
+                    _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "IotHubMetricsCollectorModule"));
+                    var observabilityConfigurationContent = GetConfigurationContent(Environment.GetEnvironmentVariable("OBSERVABILITY_CONFIG_LOCATION"), new Dictionary<string, string>
+                    {
+                        ["[$iot_hub_resource_id]"] = Environment.GetEnvironmentVariable("IOT_HUB_RESOURCE_ID"),
+                        ["[$log_analytics_workspace_id]"] = Environment.GetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_ID"),
+                        ["[$log_analytics_shared_key]"] = Environment.GetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_KEY")
+                    });
+
+                    _ = await this.registryManager.AddConfigurationAsync(new Configuration($"obs-{Guid.NewGuid()}")
+                    {
+                        Content = observabilityConfigurationContent,
+                        TargetCondition = $"deviceId='{deviceName}'"
+                    });
+                }
 
                 var twin = new Twin();
                 twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
@@ -127,9 +153,11 @@ namespace LoraKeysManagerFacade
                 }
             }
 #pragma warning disable CA1031 // Do not catch general exception types. This will go away when we implement #242
-            catch (Exception)
+            catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
+                log.LogWarning(ex.Message);
+
                 // In case of an exception in device provisioning we want to make sure that we return a proper template if our devices are successfullycreated
                 var edgeGateway = await this.registryManager.GetDeviceAsync(deviceName);
 
@@ -153,42 +181,6 @@ namespace LoraKeysManagerFacade
             }
 
             return PrepareResponse(HttpStatusCode.OK);
-        }
-
-        private static string ReplaceJsonWithCorrectValues(string region, string resetPin, string json, string spiSpeed, string spiDev)
-        {
-            json = json.Replace("[$region]", region, StringComparison.Ordinal);
-            json = json.Replace("[$reset_pin]", resetPin, StringComparison.Ordinal);
-
-            if (string.Equals(spiSpeed, "8", StringComparison.OrdinalIgnoreCase) ||
-                string.IsNullOrEmpty(spiSpeed))
-            {
-                // default case
-                json = json.Replace("[$spi_speed]", string.Empty, StringComparison.Ordinal);
-            }
-            else
-            {
-                json = json.Replace(
-                    "[$spi_speed]",
-                    ",'SPI_SPEED':{'value':'2'}",
-                    StringComparison.Ordinal);
-            }
-
-            if (string.Equals(spiDev, "2", StringComparison.OrdinalIgnoreCase) ||
-                string.IsNullOrEmpty(spiDev))
-            {
-                // default case
-                json = json.Replace("[$spi_dev]", string.Empty, StringComparison.Ordinal);
-            }
-            else
-            {
-                json = json.Replace(
-                    "[$spi_dev]",
-                    ",'SPI_DEV':{'value':'1'}",
-                    StringComparison.Ordinal);
-            }
-
-            return json;
         }
 
         private static HttpResponseMessage PrepareResponse(HttpStatusCode httpStatusCode)

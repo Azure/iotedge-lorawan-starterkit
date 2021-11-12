@@ -31,9 +31,6 @@
               "mqttSettings__enabled": {
                 "value": "false"
               },
-              "httpSettings__enabled": {
-                "value": "false"
-              },
               "AuthenticationMode": {
                 "value": "CloudAndScope"
               }
@@ -59,7 +56,7 @@
 							},
 							"LOG_TO_HUB": {
 							  "value": "true"
-							}					
+							}			
 						},
 						"status": "running",
 						"restartPolicy": "always"

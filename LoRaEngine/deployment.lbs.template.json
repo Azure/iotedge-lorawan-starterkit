@@ -55,9 +55,6 @@
                 "mqttSettings__enabled": {
                   "value": "false"
                 },
-                "httpSettings__enabled": {
-                  "value": "false"
-                },
                 "AuthenticationMode": {
                   "value": "CloudAndScope"
                 }
@@ -107,6 +104,9 @@
                 },
                 "USE_BASIC_STATION": {
                   "value": true
+                },
+                "APPINSIGHTS_INSTRUMENTATIONKEY": {
+                  "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
                 }
               },
               "status": "running",
