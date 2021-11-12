@@ -314,6 +314,8 @@ LOG_ANALYTICS_SHARED_KEY="..."
 
 Generate a deployment manifest from `deployment_observability.layered.template.json` and deploy it to the edge devices for which you want to apply the observability. The template will set up the metrics collector module on the edge and connect it with your Log Analytics instance. The gateway will connect to your Application Insights instance. Please make sure that you set the `APPINSIGHTS_INSTRUMENTATIONKEY` also before deploying the `deployment.template.lbs.json` solution, if you want to make sure that the gateway can connect to Application Insights. The Application Insights log level will always be the same as the console log level.
 
+The Network Server will always expose metrics in Prometheus format at the path `/metrics`. You can scrape these metrics using the tool of you choice.
+
 ## Debugging in Visual Studio, outside of IoT Edge and Docker
 
 <!-- markdown-link-check-disable -->
