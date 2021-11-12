@@ -224,11 +224,12 @@ namespace LoRaWan
                             var buffer = buffers.Rent(size);
                             var bi = encoding.GetBytes(message, buffer);
                             buffer[bi++] = 13; // CR
-                            buffer[bi] = 10;   // LF
+                            buffer[bi++] = 10; // LF
+                            Debug.Assert(bi == size);
 
                             try
                             {
-                                await client.GetStream().WriteAsync(buffer, cancellationToken);
+                                await client.GetStream().WriteAsync(buffer.AsMemory(..bi), cancellationToken);
                                 break;
                             }
                             finally
