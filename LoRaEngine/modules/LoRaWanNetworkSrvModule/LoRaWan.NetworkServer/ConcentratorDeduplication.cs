@@ -87,7 +87,6 @@ namespace LoRaWan.NetworkServer
                 SlidingExpiration = DefaultExpiration
             });
 
-        public void Dispose()
-            => this.cache.Dispose();
+        public void Dispose() => this.cache.Dispose();
     }
 }
