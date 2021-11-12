@@ -242,7 +242,7 @@ namespace LoRaWan
                             this.logger?.LogError(ex, "Error writing to the logging socket.");
                             client.Dispose();
                             client = new TcpClient();
-                            this.logger?.LogError(ex, $"Waiting (delay = {ConnectionRetryInterval}) before retrying to connecting to logging server.");
+                            this.logger?.LogDebug($"Waiting (delay = {ConnectionRetryInterval}) before retrying to connecting to logging server.");
                             await Task.Delay(ConnectionRetryInterval, cancellationToken);
                         }
                     }
