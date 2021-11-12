@@ -11,9 +11,6 @@ on: # rebuild any PRs and main branch changes
       TestsToRun:
         default: '[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]'
         description: 'tests to run'
-      CustomTxPower:
-        description: 'Custom TXPower value (used if > 0)'
-        default: '0'
 env:
   buildConfiguration: 'Release'
   AZURE_FUNCTIONAPP_NAME: loramoduleintegrationtest
@@ -46,7 +43,6 @@ jobs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
-      CustomTxPower: ${{ github.event.inputs.CustomTxPower }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
@@ -199,7 +195,6 @@ jobs:
       E2ETESTS_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
       E2ETESTS_FunctionAppCode: ${{ secrets.FUNCTION_AUTH_CODE }}
       E2ETESTS_FunctionAppBaseUrl: "https://${{ needs.env_var.outputs.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
-      E2ETESTS_CustomTxPower: ${{ needs.env_var.outputs.CustomTxPower }}
 
     steps:
     - uses: actions/checkout@v2

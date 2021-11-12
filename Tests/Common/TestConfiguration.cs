@@ -73,7 +73,5 @@ namespace LoRaWan.Tests.Common
         public Uri FunctionAppBaseUrl { get; set; }
 
         public int NumberOfGateways { get; set; } = 2;
-
-        public int CustomTxPower { get; set; }
     }
 }
