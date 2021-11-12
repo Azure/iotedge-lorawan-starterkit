@@ -24,7 +24,7 @@ This guide helps you to execute and author E2E tests on your local environment.
   * LOG_LEVEL: 1
   * LOG_TO_TCP: true
   * LOG_TO_TCP_ADDRESS: development machine IP address (ensure IoT Edge machine can ping it)
-* E2E test configuration (in file `appsettings.local.json`) has UDP logging enabled `"UdpLog": "true"`
+* E2E test configuration (in file `appsettings.local.json`) has TCP logging enabled `"TcpLog": "true"`
 
 ## Installation
 
@@ -67,7 +67,7 @@ The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Ar
     "CreateDevices": true,
     "NetworkServerModuleLogAssertLevel": "Error",
     "DevicePrefix": "your-two-letter-device-prefix",
-    "UdpLog": "true",
+    "TcpLog": "true",
     "FunctionAppBaseUrl": "https://your-function-app.azurewebsites.net/api/",
     "FunctionAppCode": "your-function-code="
   }

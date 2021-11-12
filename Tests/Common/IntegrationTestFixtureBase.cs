@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Common
 
         public const string MESSAGE_IDENTIFIER_PROPERTY_NAME = "messageIdentifier";
         private RegistryManager registryManager;
-        private UdpLogListener udpLogListener;
+        private TcpLogListener tcpLogListener;
 
         public TestConfiguration Configuration { get; }
 
@@ -78,7 +78,7 @@ namespace LoRaWan.Tests.Common
         public virtual void ClearLogs()
         {
             IoTHubMessages?.ResetEvents();
-            this.udpLogListener?.ResetEvents();
+            this.tcpLogListener?.ResetEvents();
         }
 
         public Task DisposeAsync() => Task.FromResult(0);
@@ -280,10 +280,9 @@ namespace LoRaWan.Tests.Common
                 await IoTHubMessages.StartAsync();
             }
 
-            if (Configuration.UdpLog)
+            if (Configuration.TcpLog)
             {
-                this.udpLogListener = new UdpLogListener(Configuration.UdpLogPort);
-                this.udpLogListener.Start();
+                this.tcpLogListener = TcpLogListener.Start(Configuration.TcpLogPort);
             }
         }
 
@@ -365,8 +364,8 @@ namespace LoRaWan.Tests.Common
                     this.registryManager?.Dispose();
                     this.registryManager = null;
 
-                    this.udpLogListener?.Dispose();
-                    this.udpLogListener = null;
+                    this.tcpLogListener?.Dispose();
+                    this.tcpLogListener = null;
                 }
 
                 this.disposedValue = true;

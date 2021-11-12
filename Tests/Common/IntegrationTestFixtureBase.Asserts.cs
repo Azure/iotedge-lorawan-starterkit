@@ -106,7 +106,7 @@ namespace LoRaWan.Tests.Common
         public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null)
         {
             SearchLogResult searchResult;
-            if (this.udpLogListener != null)
+            if (this.tcpLogListener != null)
                 searchResult = await SearchUdpLogs(predicate, options);
             else
                 searchResult = await SearchIoTHubLogs(predicate, options);
@@ -135,7 +135,7 @@ namespace LoRaWan.Tests.Common
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in this.udpLogListener.Events)
+                foreach (var item in this.tcpLogListener.Events)
                 {
                     var (message, sourceId) = SearchLogEvent.Parse(item);
                     if (predicate(message))
@@ -168,7 +168,7 @@ namespace LoRaWan.Tests.Common
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in this.udpLogListener.Events)
+                foreach (var item in this.tcpLogListener.Events)
                 {
                     var (message, sourceId) = SearchLogEvent.Parse(item);
                     if (predicate(message))
@@ -235,7 +235,7 @@ namespace LoRaWan.Tests.Common
                 return null;
 
             SearchLogResult searchResult;
-            if (this.udpLogListener != null)
+            if (this.tcpLogListener != null)
                 searchResult = await SearchUdpLogs(predicate, options);
             else
                 searchResult = await SearchIoTHubLogs(predicate, options);
@@ -337,7 +337,7 @@ namespace LoRaWan.Tests.Common
 
                 var sourceIdFilter = options?.SourceIdFilter;
 
-                foreach (var item in this.udpLogListener.Events)
+                foreach (var item in this.tcpLogListener.Events)
                 {
                     var searchLogEvent = new SearchLogEvent(item);
                     processedEvents.Add(searchLogEvent);
