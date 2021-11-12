@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DEFAULT_TC_TRUST_PATH="/var/lorastarterkit/certs/tc.trust"
+
 if [[ -z "$RESET_PIN" ]]; then
     echo "No RESET_PIN environment variable set, skipping the pin reset. If you experience problem with starting the concentrator please set this variable to your manufacturer reset pin"
 else
@@ -16,9 +18,15 @@ if [[ -z "$SPI_DEV" ]] || [[ $SPI_DEV == '$LBS_SPI_DEV' ]]; then
 fi
 
 if [[ -z "$TC_TRUST_PATH" ]]; then
-    echo "No TC_TRUST_PATH detected in environment variables."
+    echo "No TC_TRUST_PATH detected in environment variables. Trying to check for default location."
+    if [ -z "$(ls -A $DEFAULT_TC_TRUST_PATH 2> /dev/null)" ]; then
+        echo "No file found at $DEFAULT_TC_TRUST_PATH. Nothing was copied over."
+    else
+        echo "A file was found at $DEFAULT_TC_TRUST_PATH. Copying it over."
+        cp -v $DEFAULT_TC_TRUST_PATH .
+    fi
 else
-    cp $TC_TRUST_PATH tc.trust
+    cp -v $TC_TRUST_PATH tc.trust
 fi
 
 if [[ -z "$TC_URI" ]]; then
