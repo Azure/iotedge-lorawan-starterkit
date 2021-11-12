@@ -3,42 +3,23 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
 {
-    using System.Collections.Generic;
     using LoRaWan.NetworkServer.BasicsStation;
-    using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Xunit;
 
     public class BasicsStationNetworkServerStartupTests
     {
-        private class FunctionsHostBuilderWrapper : IFunctionsHostBuilder
-        {
-            public FunctionsHostBuilderWrapper(IServiceCollection services)
-            {
-                Services = services;
-            }
-            public IServiceCollection Services { get; }
-        }
-
         [Fact]
         public void All_Dependencies_Are_Registered_Correctly()
         {
+            // arrange
             var services = new ServiceCollection();
-            var functionsHostWrapper = new FunctionsHostBuilderWrapper(services);
+            var config = new ConfigurationBuilder().Build();
 
-            var configuration = new Dictionary<string, string>
-            {
-            };
-
-            var config = new ConfigurationBuilder().AddInMemoryCollection(configuration)
-                                                   .Build();
-
-            services.AddSingleton<IConfiguration>(config);
-
+            // act + assert
             var startup = new BasicsStationNetworkServerStartup(config);
-
-            startup.ConfigureServices(functionsHostWrapper.Services);
+            startup.ConfigureServices(services);
 
             services.BuildServiceProvider(new ServiceProviderOptions
             {
