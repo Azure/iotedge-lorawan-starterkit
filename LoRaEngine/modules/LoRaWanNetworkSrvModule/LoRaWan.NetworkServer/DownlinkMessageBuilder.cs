@@ -76,22 +76,23 @@ namespace LoRaWan.NetworkServer
             if (receiveWindow == Constants.ReceiveWindow2)
             {
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
-                tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
+                tmst = rxpk.Tmst + (timeWatcher.GetReceiveWindow2Delay(loRaDevice) * Constants.ConvertToPktFwdTime);
                 freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency, deviceJoinInfo);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                datr = loRaRegion.GetDownstreamRX2Datarate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo);
+                datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
             else
             {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                datr = loRaRegion.GetDownstreamDR(rxpk, loRaDevice.ReportedRX1DROffset);
+                datr = loRaRegion.GetDownstreamDataRate(rxpk, loRaDevice.ReportedRX1DROffset);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (datr == null)
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the data rate in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
+
                 // The logic for passing CN470 join channel will change as part of #561
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq, deviceJoinInfo))
@@ -101,7 +102,7 @@ namespace LoRaWan.NetworkServer
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
 
-                tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow1Delay(loRaDevice), loRaDevice.ReportedRXDelay);
+                tmst = rxpk.Tmst + (timeWatcher.GetReceiveWindow1Delay(loRaDevice) * Constants.ConvertToPktFwdTime);
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow1Delay(loRaDevice);
             }
 
@@ -263,7 +264,7 @@ namespace LoRaWan.NetworkServer
             // Class C always use RX2
             freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            datr = loRaRegion.GetDownstreamRX2Datarate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate);
+            datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             // get max. payload size based on data rate from LoRaRegion
@@ -328,11 +329,15 @@ namespace LoRaWan.NetworkServer
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
-            // TODO #407: we need to get from LoRaDevice which stationEui to use here for sending downstream
-            StationEui stationEui = default;
-
             return new DownlinkMessageBuilderResponse(
-                ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, rxDelay, stationEui: stationEui),
+                ackLoRaMessage.Serialize(loRaDevice.AppSKey,
+                                         loRaDevice.NwkSKey,
+                                         datr,
+                                         freq,
+                                         tmst,
+                                         loRaDevice.DevEUI,
+                                         rxDelay,
+                                         stationEui: loRaDevice.LastProcessingStationEui),
                 isMessageTooLong);
         }
 
@@ -415,18 +420,6 @@ namespace LoRaWan.NetworkServer
             }
 
             return macCommands.Values;
-        }
-
-        private static long CalculateTime(int windowTime, ushort rXDelay)
-        {
-            if (rXDelay is > 1 and < 16)
-            {
-                return (windowTime + rXDelay - 1) * Constants.ConvertToPktFwdTime;
-            }
-            else
-            {
-                return windowTime * Constants.ConvertToPktFwdTime;
-            }
         }
     }
 }

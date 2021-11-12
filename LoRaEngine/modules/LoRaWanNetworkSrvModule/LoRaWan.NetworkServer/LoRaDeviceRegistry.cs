@@ -194,7 +194,7 @@ namespace LoRaWan.NetworkServer
             if (this.cache.TryGetValue<LoRaDevice>(CacheKeyForDevEUIDevice(devEUI), out var cachedDevice))
                 return cachedDevice;
 
-            var searchResult = await this.loRaDeviceAPIService.SearchByDevEUIAsync(devEUI);
+            var searchResult = await this.loRaDeviceAPIService.SearchByEuiAsync(DevEui.Parse(devEUI));
             if (searchResult == null || searchResult.Count == 0)
                 return null;
 
@@ -266,41 +266,31 @@ namespace LoRaWan.NetworkServer
 
             Logger.Log(devEUI, "querying the registry for OTAA device", LogLevel.Debug);
 
-            try
+            var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
+                gatewayID: this.configuration.GatewayID,
+                devEUI: devEUI,
+                devNonce: devNonce);
+
+            if (searchDeviceResult.IsDevNonceAlreadyUsed)
             {
-                var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
-                    gatewayID: this.configuration.GatewayID,
-                    devEUI: devEUI,
-                    devNonce: devNonce);
-
-                if (searchDeviceResult.IsDevNonceAlreadyUsed)
-                {
-                    Logger.Log(devEUI, $"join refused: Join already processed by another gateway.", LogLevel.Information);
-                    return null;
-                }
-
-                if (searchDeviceResult?.Devices == null || searchDeviceResult.Devices.Count == 0)
-                {
-                    var msg = searchDeviceResult.RefusedMessage ?? "join refused: no devices found matching join request";
-                    Logger.Log(devEUI, msg, LogLevel.Information);
-                    return null;
-                }
-
-                var matchingDeviceInfo = searchDeviceResult.Devices[0];
-                var loader = GetOrCreateJoinDeviceLoader(matchingDeviceInfo);
-                var loRaDevice = await loader.WaitCompleteAsync();
-                if (!loader.CanCache)
-                    RemoveJoinDeviceLoader(devEUI);
-
-                return loRaDevice;
-            }
-#pragma warning disable CA1031 // Do not catch general exception types. TODO revisit as part of #565
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                Logger.Log(devEUI, $"failed to get join devices from api. {ex.Message}", LogLevel.Error);
+                Logger.Log(devEUI, $"join refused: Join already processed by another gateway.", LogLevel.Information);
                 return null;
             }
+
+            if (searchDeviceResult?.Devices == null || searchDeviceResult.Devices.Count == 0)
+            {
+                var msg = searchDeviceResult.RefusedMessage ?? "join refused: no devices found matching join request";
+                Logger.Log(devEUI, msg, LogLevel.Information);
+                return null;
+            }
+
+            var matchingDeviceInfo = searchDeviceResult.Devices[0];
+            var loader = GetOrCreateJoinDeviceLoader(matchingDeviceInfo);
+            var loRaDevice = await loader.WaitCompleteAsync();
+            if (!loader.CanCache)
+                RemoveJoinDeviceLoader(devEUI);
+
+            return loRaDevice;
         }
 
         /// <summary>

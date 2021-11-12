@@ -98,8 +98,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log(eui, $"could not create IoT Hub device client with error: {ex.Message}", LogLevel.Error);
-                throw;
+                throw new LoRaProcessingException("Could not create IoT Hub device client.", ex, LoRaProcessingErrorCode.DeviceClientCreationFailed);
             }
         }
     }

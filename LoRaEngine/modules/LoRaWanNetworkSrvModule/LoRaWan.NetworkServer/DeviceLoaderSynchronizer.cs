@@ -5,7 +5,6 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
-    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
@@ -45,7 +44,6 @@ namespace LoRaWan.NetworkServer
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
         private readonly NetworkServerConfiguration configuration;
         private readonly Action<LoRaDevice> registerDeviceAction;
-        private readonly Task loading;
         private volatile LoaderState state;
         private volatile bool loadingDevicesFailed;
         private readonly object queueLock;
@@ -72,10 +70,20 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
-            this.loading = Task.Run(() => Load().ContinueWith((t) => continuationAction(t, this),
-                                                                   CancellationToken.None,
-                                                                   TaskContinuationOptions.ExecuteSynchronously,
-                                                                   TaskScheduler.Default));
+            _ = TaskUtil.RunOnThreadPool(async () =>
+            {
+                var t = Load();
+
+                try
+                {
+                    await t;
+                }
+                finally
+                {
+                    continuationAction(t, this);
+                }
+            },
+            ex => Logger.Log($"Error while loading: {ex}.", LogLevel.Error));
         }
 
         private async Task Load()
@@ -95,8 +103,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(this.devAddr, $"error searching device for payload. {ex.Message}", LogLevel.Error);
-                    throw;
+                    throw new LoRaProcessingException("Error when searching device for payload.", ex);
                 }
 
                 SetState(LoaderState.CreatingDeviceInstances);
@@ -120,9 +127,8 @@ namespace LoRaWan.NetworkServer
                     SetState(LoaderState.Finished);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Logger.Log(this.devAddr, $"failed to create one or more devices. {ex.Message}", LogLevel.Error);
                 NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason.ApplicationError);
                 throw;
             }
@@ -151,11 +157,9 @@ namespace LoRaWan.NetworkServer
                 {
                     _ = await Task.WhenAll(initTasks);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types. TODO Will be revisited in #565
-                catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+                catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.DeviceInitializationFailed)
                 {
-                    Logger.Log(this.devAddr, $"one or more device initialization failed. {ex.Message}", LogLevel.Error);
+                    Logger.Log(this.devAddr, $"one or more device initializations failed: {ex}", LogLevel.Error);
                 }
             }
 
@@ -352,50 +356,55 @@ namespace LoRaWan.NetworkServer
 
         private async Task<LoRaDevice> InitializeDeviceAsync(LoRaDevice loRaDevice)
         {
-
-            // Our device if it does not have a gateway assigned or is assigned to our
-            var isOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
-            // Only create client if the device is our
-            if (!isOurDevice)
+            try
             {
-                loRaDevice.IsOurDevice = false;
-                return loRaDevice;
-            }
-
-            // Calling initialize async here to avoid making async calls in the concurrent dictionary
-            // Since only one device will be added, we guarantee that initialization only happens once
-            if (await loRaDevice.InitializeAsync())
-            {
-                // revalidate based on device twin property
-                loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
-                if (loRaDevice.IsOurDevice)
+                // Our device if it does not have a gateway assigned or is assigned to our
+                var isOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
+                // Only create client if the device is our
+                if (!isOurDevice)
                 {
-                    // once added, call initializers
-                    if (this.initializers != null)
-                    {
-                        foreach (var initializer in this.initializers)
-                            initializer.Initialize(loRaDevice);
-                    }
+                    loRaDevice.IsOurDevice = false;
+                    return loRaDevice;
                 }
 
-                // checking again in case one of the initializers change the value
-                if (!loRaDevice.IsOurDevice)
+                // Calling initialize async here to avoid making async calls in the concurrent dictionary
+                // Since only one device will be added, we guarantee that initialization only happens once
+                if (await loRaDevice.InitializeAsync())
                 {
-                    // Initialization does not use activity counters
-                    // This should not fail
-                    if (!loRaDevice.TryDisconnect())
+                    // revalidate based on device twin property
+                    loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
+                    if (loRaDevice.IsOurDevice)
                     {
-                        Logger.Log(loRaDevice.DevEUI, "failed to disconnect device from another gateway", LogLevel.Error);
+                        // once added, call initializers
+                        if (this.initializers != null)
+                        {
+                            foreach (var initializer in this.initializers)
+                                initializer.Initialize(loRaDevice);
+                        }
                     }
+
+                    // checking again in case one of the initializers change the value
+                    if (!loRaDevice.IsOurDevice)
+                    {
+                        // Initialization does not use activity counters
+                        // This should not fail
+                        if (!loRaDevice.TryDisconnect())
+                        {
+                            Logger.Log(loRaDevice.DevEUI, "failed to disconnect device from another gateway", LogLevel.Error);
+                        }
+                    }
+
+                    return loRaDevice;
                 }
 
-                return loRaDevice;
+                // instance not used, dispose the connection
+                loRaDevice.Dispose();
+                return null;
             }
-
-
-            // instance not used, dispose the connection
-            loRaDevice.Dispose();
-            return null;
+            catch (Exception ex)
+            {
+                throw new LoRaProcessingException($"Device initialization of device '{loRaDevice.DevEUI}' failed.", ex, LoRaProcessingErrorCode.DeviceInitializationFailed);
+            }
         }
     }
 }

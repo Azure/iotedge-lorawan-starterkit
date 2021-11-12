@@ -112,6 +112,16 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public bool UseBasicsStation { get; private set; }
 
+        /// <summary>
+        /// Path of the .pfx certificate to be used for LNS Server endpoint
+        /// </summary>
+        public string LnsServerPfxPath { get; private set; }
+
+        /// <summary>
+        /// Password of the .pfx certificate to be used for LNS Server endpoint
+        /// </summary>
+        public string LnsServerPfxPassword { get; private set; }
+
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
         {
@@ -143,6 +153,8 @@ namespace LoRaWan.NetworkServer
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
             config.UseBasicsStation = envVars.GetEnvVar("USE_BASIC_STATION", false);
+            config.LnsServerPfxPath = envVars.GetEnvVar("LNS_SERVER_PFX_PATH", string.Empty);
+            config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
 
             return config;
         }

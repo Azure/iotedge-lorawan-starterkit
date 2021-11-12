@@ -37,7 +37,7 @@ namespace LoRaWan.NetworkServer
         {
             get
             {
-                if (typeof(T).IsEnum)
+                if (typeof(T).IsEnum || this.current is StationEui)
                     return this.current.ToString();
 
                 return this.current;

@@ -75,6 +75,12 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
+            if (loRaDevice.LastProcessingStationEui == default)
+            {
+                Logger.Log(loRaDevice.DevEUI, $"[class-c] sending cloud to device messages expects a class C device already connected to one station and reported its StationEui. No StationEui was saved for this device.", LogLevel.Error);
+                return false;
+            }
+
             var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
             if (frameCounterStrategy == null)
             {

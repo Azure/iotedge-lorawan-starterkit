@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly IClassCDeviceMessageSender classCMessageSender;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
+        private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
@@ -26,11 +27,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             NetworkServerConfiguration networkServerConfiguration,
             IClassCDeviceMessageSender defaultClassCDevicesMessageSender,
             ILoRaModuleClientFactory loRaModuleClientFactory,
-            ILoRaDeviceRegistry loRaDeviceRegistry)
+            ILoRaDeviceRegistry loRaDeviceRegistry,
+            LoRaDeviceAPIServiceBase loRaDeviceAPIService)
         {
             this.networkServerConfiguration = networkServerConfiguration ?? throw new ArgumentNullException(nameof(networkServerConfiguration));
             this.classCMessageSender = defaultClassCDevicesMessageSender ?? throw new ArgumentNullException(nameof(defaultClassCDevicesMessageSender));
             this.loRaDeviceRegistry = loRaDeviceRegistry ?? throw new ArgumentNullException(nameof(loRaDeviceRegistry));
+            this.loRaDeviceAPIService = loRaDeviceAPIService ?? throw new ArgumentNullException(nameof(loRaDeviceAPIService));
             this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
         }
 
@@ -69,8 +72,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
             catch (IotHubCommunicationException)
             {
-                Logger.Log($"There was a critical problem with the IoT Hub in getting the module twins.", LogLevel.Error);
-                throw;
+                throw new LoRaProcessingException("There was a critical problem with the IoT Hub in getting the module twins.",
+                                                  LoRaProcessingErrorCode.TwinFetchFailed);
             }
 
             var moduleTwinCollection = moduleTwin?.Properties?.Desired;
@@ -90,18 +93,25 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         {
             if (methodRequest == null) throw new ArgumentNullException(nameof(methodRequest));
 
-            if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                return await ClearCache();
+                if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return await ClearCache();
+                }
+                else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return await SendCloudToDeviceMessageAsync(methodRequest);
+                }
+
+                Logger.Log($"Unknown direct method called: {methodRequest.Name}", LogLevel.Error);
+
+                return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
-            else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"An exception occurred on a direct method call: {ex}", LogLevel.Error)))
             {
-                return await SendCloudToDeviceMessageAsync(methodRequest);
+                throw;
             }
-
-            Logger.Log($"Unknown direct method called: {methodRequest.Name}", LogLevel.Error);
-
-            return new MethodResponse((int)HttpStatusCode.BadRequest);
         }
 
         internal async Task<MethodResponse> SendCloudToDeviceMessageAsync(MethodRequest methodRequest)
@@ -112,14 +122,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
                 try
                 {
-                    c2d = JsonSerializer.Deserialize<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
+                    c2d = JsonSerializer.Deserialize<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
                 catch (JsonException ex)
                 {
                     Logger.Log($"Impossible to parse Json for c2d message for device {c2d?.DevEUI}, error: {ex}", LogLevel.Error);
                     return new MethodResponse((int)HttpStatusCode.BadRequest);
                 }
-
 
                 Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
 
@@ -156,6 +165,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             {
                 Logger.Log($"A desired properties update was detected but the parameters are out of range with exception :  {ex}", LogLevel.Warning);
             }
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"An exception occurred on desired property update: {ex}", LogLevel.Error)))
+            {
+                throw;
+            }
 
             return Task.CompletedTask;
         }
@@ -172,10 +185,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             {
                 if (Uri.TryCreate(urlString, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))
                 {
-                    this.networkServerConfiguration.FacadeServerUrl = url;
+                    this.loRaDeviceAPIService.URL = url;
                     if (desiredProperties.Contains(Constants.FacadeServerAuthCodeKey))
                     {
-                        this.networkServerConfiguration.FacadeAuthCode = (string)desiredProperties[Constants.FacadeServerAuthCodeKey];
+                        this.loRaDeviceAPIService.SetAuthCode((string)desiredProperties[Constants.FacadeServerAuthCodeKey]);
                     }
 
                     Logger.Log("Desired property changed", LogLevel.Debug);

@@ -2,7 +2,7 @@
   "$schema-version": "0.0.1",
   "description": "",
   "image": {
-    "repository": "$CONTAINER_REGISTRY_ADDRESS/lorawanbasestation",
+    "repository": "$CONTAINER_REGISTRY_ADDRESS/lorabasicsstation",
     "tag": {
       "version": "$LBS_VERSION",
       "platforms": {
@@ -11,7 +11,7 @@
       }
     },
     "buildOptions": [],
-    "contextPath": "./"
+    "contextPath": "../../.."
   },
   "language": "csharp"
 }

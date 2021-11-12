@@ -29,12 +29,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
     {
         internal static string ToBasicStationString(this LnsMessageType lnsMessageType) => lnsMessageType switch
         {
+#pragma warning disable format
             LnsMessageType.Version              => "version",
             LnsMessageType.RouterConfig         => "router_config",
             LnsMessageType.JoinRequest          => "jreq",
             LnsMessageType.UplinkDataFrame      => "updf",
             LnsMessageType.TransmitConfirmation => "dntxed",
             LnsMessageType.DownlinkMessage      => "dnmsg",
+#pragma warning restore format
             _ => throw new ArgumentOutOfRangeException(nameof(lnsMessageType), lnsMessageType, null),
         };
     }

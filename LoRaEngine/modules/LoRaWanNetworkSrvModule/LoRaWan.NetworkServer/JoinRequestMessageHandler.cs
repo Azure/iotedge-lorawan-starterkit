@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer
                 {
                     var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
 
-                var joinReq = (LoRaPayloadJoinRequest)request.Payload;
+                    var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
                     devEUI = joinReq.GetDevEUIAsString();
                     var appEUI = joinReq.GetAppEUIAsString();
@@ -142,6 +142,7 @@ namespace LoRaWan.NetworkServer
                     {
                         updatedProperties.SavePreferredGateway = true;
                         updatedProperties.SaveRegion = true;
+                        updatedProperties.StationEui = request.StationEui;
                     }
 
                     if (request.Region.LoRaRegion == LoRaRegionType.CN470)
@@ -175,14 +176,14 @@ namespace LoRaWan.NetworkServer
                         return;
                     }
 
-                double freq = 0;
-                string datr = null;
-                uint tmst = 0;
-                ushort lnsRxDelay = 0;
-                if (windowToUse == Constants.ReceiveWindow1)
-                {
+                    double freq = 0;
+                    string datr = null;
+                    uint tmst = 0;
+                    ushort lnsRxDelay = 0;
+                    if (windowToUse == Constants.ReceiveWindow1)
+                    {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                        datr = loraRegion.GetDownstreamDR(request.Rxpk);
+                        datr = loraRegion.GetDownstreamDataRate(request.Rxpk);
                         if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                         {
@@ -191,19 +192,19 @@ namespace LoRaWan.NetworkServer
                             return;
                         }
 
-                    // set tmst for the normal case
-                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay1 * 1000000);
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1;
-                }
-                else
-                {
-                    Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Debug);
-                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
+                        // set tmst for the normal case
+                        tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay1 * 1000000);
+                        lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1;
+                    }
+                    else
+                    {
+                        Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Debug);
+                        tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
+                        lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
 
                         freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                        datr = loraRegion.GetDownstreamRX2Datarate(devEUI, this.configuration.Rx2DataRate, null);
+                        datr = loraRegion.GetDownstreamRX2DataRate(devEUI, this.configuration.Rx2DataRate, null);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     }
 
@@ -240,33 +241,33 @@ namespace LoRaWan.NetworkServer
                         Logger.Log(devEUI, $"twin RX1 offset DR value is not within acceptable values", LogLevel.Error);
                     }
 
-                // The following DesiredRxDelay is different than the RxDelay to be passed to Serialize function
-                // This one is a delay between TX and RX for any message to be processed by joining device
-                // The field accepted by Serialize method is an indication of the delay (compared to receive time of join request)
-                // of when the message Join Accept message should be sent
-                ushort loraSpecDesiredRxDelay = 0;
-                if (Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
-                {
-                    loraSpecDesiredRxDelay = loRaDevice.DesiredRXDelay;
-                }
-                else
-                {
-                    Logger.Log(devEUI, $"twin RX delay value is not within acceptable values", LogLevel.Error);
-                }
+                    // The following DesiredRxDelay is different than the RxDelay to be passed to Serialize function
+                    // This one is a delay between TX and RX for any message to be processed by joining device
+                    // The field accepted by Serialize method is an indication of the delay (compared to receive time of join request)
+                    // of when the message Join Accept message should be sent
+                    ushort loraSpecDesiredRxDelay = 0;
+                    if (Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                    {
+                        loraSpecDesiredRxDelay = loRaDevice.DesiredRXDelay;
+                    }
+                    else
+                    {
+                        Logger.Log(devEUI, $"twin RX delay value is not within acceptable values", LogLevel.Error);
+                    }
 
-                var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
-                    ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
-                    ConversionHelper.StringToByteArray(devAddr), // todo add device address management
-                    appNonceBytes,
-                    dlSettings,
-                    loraSpecDesiredRxDelay,
-                    null);
+                    var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
+                        ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
+                        ConversionHelper.StringToByteArray(devAddr), // todo add device address management
+                        appNonceBytes,
+                        dlSettings,
+                        loraSpecDesiredRxDelay,
+                        null);
 
-                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.StationEui);
-                if (joinAccept != null)
-                {
-                    _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);
-                    request.NotifySucceeded(loRaDevice, joinAccept);
+                    var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.Rxpk.Rfch, request.Rxpk.Time, request.StationEui);
+                    if (joinAccept != null)
+                    {
+                        _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);
+                        request.NotifySucceeded(loRaDevice, joinAccept);
 
                         if (Logger.LoggerLevel <= LogLevel.Debug)
                         {
@@ -279,14 +280,13 @@ namespace LoRaWan.NetworkServer
                         }
                     }
                 }
-#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
-                // Method is not awaited on call site, removing general exception handling might result in loss of observability.
-                catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+                catch (Exception ex) when
+                    (ExceptionFilterUtility.True(() => Logger.Log(devEUI ?? ConversionHelper.ByteArrayToString(request.Payload.DevAddr),
+                                                                  $"failed to handle join request. {ex.Message}",
+                                                                  LogLevel.Error)))
                 {
-                    var deviceId = devEUI ?? ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
-                    Logger.Log(deviceId, $"failed to handle join request. {ex.Message}", LogLevel.Error);
                     request.NotifyFailed(loRaDevice, ex);
+                    throw;
                 }
             }
         }

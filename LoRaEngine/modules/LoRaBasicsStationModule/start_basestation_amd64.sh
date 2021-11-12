@@ -12,7 +12,7 @@ fi
 
 if [[ -z "$SPI_DEV" ]] || [[ $SPI_DEV == '$LBS_SPI_DEV' ]]; then
     echo "No custom SPI dev set up, defaulting to spi dev 0"
-    SPI_DEV = 0
+    SPI_DEV=0
 fi
 
 if [[ -z "$TC_TRUST_PATH" ]]; then
