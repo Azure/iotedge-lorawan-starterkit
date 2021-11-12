@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.E2E
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
@@ -35,6 +36,16 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
             await ArduinoDevice.setClassTypeAsync(LoRaArduinoSerial._class_type_t.CLASS_C);
 
+            // send one confirmed message for ensuring that a basicstation is "bound" to the device
+            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+            var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
+            Log($"{device.DeviceID}: Sending confirmed '{msg}'");
+            await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
+            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+            TestFixtureCi.ClearLogs();
+
+            // Now sending a c2d
             var c2d = new LoRaCloudToDeviceMessage()
             {
                 DevEUI = device.DeviceID,

@@ -91,6 +91,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
+            var stationEuiChanged = false;
 
             try
             {
@@ -368,6 +369,13 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
+                if (loRaDevice.ClassType is LoRaDeviceClassType.C
+                    && loRaDevice.LastProcessingStationEui != request.StationEui)
+                {
+                    loRaDevice.SetLastProcessingStationEui(request.StationEui);
+                    stationEuiChanged = true;
+                }
+
                 // No C2D message and request was not confirmed, return nothing
                 if (!requiresConfirmation)
                 {
@@ -414,7 +422,7 @@ namespace LoRaWan.NetworkServer
 
                 try
                 {
-                    _ = await loRaDevice.SaveChangesAsync();
+                    _ = await loRaDevice.SaveChangesAsync(force: stationEuiChanged);
                 }
                 catch (OperationCanceledException saveChangesException)
                 {
