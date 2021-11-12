@@ -197,6 +197,10 @@ namespace LoRaWan
             {
                 this.cancellationTokenSource.Cancel();
             }
+            catch (ObjectDisposedException)
+            {
+                return; // bail out because this means object has already been disposed before
+            }
             catch (AggregateException ex)
             {
                 // "AggregateException" is thrown and contains all the exceptions thrown by the
