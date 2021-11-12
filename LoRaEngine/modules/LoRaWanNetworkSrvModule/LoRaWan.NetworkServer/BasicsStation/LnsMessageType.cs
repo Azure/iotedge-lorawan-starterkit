@@ -26,7 +26,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
     {
         internal static string ToBasicStationString(this LnsMessageType lnsMessageType) => lnsMessageType switch
         {
-#pragma warning disable format
             LnsMessageType.Version => "version",
             LnsMessageType.RouterConfig => "router_config",
             LnsMessageType.JoinRequest => "jreq",
@@ -38,7 +37,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
             LnsMessageType.TimeSync => "timesync",
             LnsMessageType.RunCommand => "runcmd",
             LnsMessageType.RemoteShell => "rmtsh",
-#pragma warning restore format
             _ => throw new ArgumentOutOfRangeException(nameof(lnsMessageType), lnsMessageType, null),
         };
     }
