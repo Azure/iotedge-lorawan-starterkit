@@ -230,7 +230,7 @@ namespace LoRaWan
                             try
                             {
                                 await client.GetStream().WriteAsync(buffer.AsMemory(..bi), cancellationToken);
-                                break;
+                                break; // don't retry on success
                             }
                             finally
                             {
