@@ -138,7 +138,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");
 
             var channel = new WebSocketTextChannel(socket, sendTimeout: TimeSpan.FromSeconds(3));
-            var handle = socketWriterRegistry.Register(stationEui, channel);
+            var handle = this.socketWriterRegistry.Register(stationEui, channel);
 
             try
             {

@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.socketMock = new Mock<WebSocket>();
             this.httpContextMock = new Mock<HttpContext>();
             this.basicsStationConfigurationMock = new Mock<IBasicsStationConfigurationService>();
-            basicsStationConfigurationMock.Setup(m => m.GetRegionAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+            _ = this.basicsStationConfigurationMock.Setup(m => m.GetRegionAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
                                           .Returns(Task.FromResult(RegionManager.EU868));
             this.messageDispatcher = new Mock<IMessageDispatcher>();
             this.packetForwarder = new Mock<IPacketForwarder>();
