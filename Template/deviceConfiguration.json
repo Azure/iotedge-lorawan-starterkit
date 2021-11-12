@@ -53,7 +53,7 @@
 							},
 							"LOG_LEVEL": {
 							  "value": "2"
-							}			
+							}
 						},
 						"status": "running",
 						"restartPolicy": "always"
