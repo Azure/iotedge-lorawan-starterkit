@@ -89,7 +89,6 @@ namespace LoraKeysManagerFacade
 
                 static ConfigurationContent GetConfigurationContent(string configLocation, IDictionary<string, string> tokenReplacements)
                 {
-                    // todo correct
                     using var wc = new WebClient();
                     var json = wc.DownloadString(configLocation);
                     foreach (var r in tokenReplacements)
