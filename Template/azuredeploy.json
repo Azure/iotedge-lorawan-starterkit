@@ -81,7 +81,7 @@
         "iotHubOwnerPolicyName": "iothubowner",
         "appInsightName": "[concat(parameters('uniqueSolutionPrefix'), 'insight')]",
         "redisCacheName": "[concat(parameters('uniqueSolutionPrefix'), 'redis')]",
-        "logAnalyticsName": "[concat('log-', parameters('uniqueSolutionPrefix'))]"
+        "logAnalyticsName": "[concat(parameters('uniqueSolutionPrefix'), 'log')]"
     },
     "resources": [
         {
