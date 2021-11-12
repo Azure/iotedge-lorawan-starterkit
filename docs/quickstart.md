@@ -18,7 +18,7 @@ The template will deploy in your Azure subscription the Following resources:
 - [IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
 - [Azure Function](https://azure.microsoft.com/en-us/services/functions/)
 - [Redis Cache](https://azure.microsoft.com/en-us/services/cache/)
-- [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) (when opted in to use Azure Monitor)
+- [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview)
 - [Log Analytics](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-overview) (when opted in to use Azure Monitor)
 
 ## Step-by-step instructions
@@ -39,7 +39,7 @@ The template will deploy in your Azure subscription the Following resources:
     - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino) would be ready to use immediately.
     - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
     - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
-    - **useAzureMonitor** - You can opt out of using Azure Monitor services for observability on the deployed components.
+    - **useAzureMonitorOnEdge** - You can opt out of using Azure Monitor services for observability on IoT Edge.
 
     The deployment would take c.a. 10 minutes to complete.
 
