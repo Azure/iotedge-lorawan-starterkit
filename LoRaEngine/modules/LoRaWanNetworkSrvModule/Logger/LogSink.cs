@@ -281,6 +281,19 @@ namespace LoRaWan
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
+            // NOTE! The following will induce an "ObjectDisposedException" in two ways.
+            // When this object is disposed, it cancels the cancellation token source then proceeds
+            // to dispose it. If the cancellation token source is disposed then accessing its token
+            // will "ObjectDisposedException". If it's been cancelled but not yet disposed then the
+            // cancellation token query will return true and we'll throw "ObjectDisposedException".
+            // Either way, if the object is being disposed while we end up here then an
+            // "ObjectDisposedException" will get thrown. If by chance it gets disposed past the
+            // following gate, then the worst that can happen is that another message can end up on
+            // the channel, which is harmless.
+
+            if (this.cancellationTokenSource.Token.IsCancellationRequested)
+                throw new ObjectDisposedException(nameof(TcpLogSink));
+
             message = this.formatter?.Invoke(message) ?? message;
 
             if (message.IndexOfAny(NewLineChars) >= 0)
