@@ -4,7 +4,6 @@
 namespace LoRaWan
 {
     using System;
-    using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
     // Defines the logger configuration

@@ -6,7 +6,6 @@ namespace LoRaWan
     using System;
     using System.Net;
     using System.Net.Sockets;
-    using System.Text;
     using Microsoft.Extensions.Logging;
 
     public static class Logger
