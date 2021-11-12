@@ -74,6 +74,7 @@ namespace LoRaWan.Tests.Common
 
         public int NumberOfGateways { get; set; } = 2;
 
+        // Gets/sets the TXPower value to use in tests
         public short TxPower { get; set; } = 14;
     }
 }
