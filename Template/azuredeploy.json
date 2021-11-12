@@ -59,11 +59,11 @@
                 "description": "SPI Dev version for x86 based gateway"
             }
         },
-        "useAzureMonitor": {
+        "useAzureMonitorOnEdge": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
-                "description": "Controls whether observability is setup for the deployed components."
+                "description": "Controls whether observability is set up for IoT edge."
             }
         }
     },
@@ -187,7 +187,7 @@
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[if(parameters('useAzureMonitor'), reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey, '')]"
+                            "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey]"
                         },
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
@@ -203,11 +203,11 @@
                         },
                         {
                             "name": "LOG_ANALYTICS_WORKSPACE_ID",
-                            "value": "[if(parameters('useAzureMonitor'), reference(concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsName'))).customerId, '')]"
+                            "value": "[if(parameters('useAzureMonitorOnEdge'), reference(concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsName'))).customerId, '')]"
                         },
                         {
                             "name": "LOG_ANALYTICS_WORKSPACE_KEY",
-                            "value": "[if(parameters('useAzureMonitor'), listKeys(resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName')), '2021-06-01').primarySharedKey, '')]"
+                            "value": "[if(parameters('useAzureMonitorOnEdge'), listKeys(resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName')), '2021-06-01').primarySharedKey, '')]"
                         }
                     ]
                 }
@@ -250,7 +250,6 @@
         },
         {
             "type": "Microsoft.Insights/components",
-            "condition": "[parameters('useAzureMonitor')]",
             "kind": "web",
             "name": "[variables('appInsightName')]",
             "apiVersion": "2015-05-01",
@@ -264,7 +263,7 @@
         {
             "type": "Microsoft.OperationalInsights/workspaces",
             "apiVersion": "2021-06-01",
-            "condition": "[parameters('useAzureMonitor')]",
+            "condition": "[parameters('useAzureMonitorOnEdge')]",
             "name": "[variables('logAnalyticsName')]",
             "location": "[resourceGroup().location]",
             "properties": {

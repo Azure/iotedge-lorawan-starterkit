@@ -106,9 +106,9 @@ namespace LoraKeysManagerFacade
 
                 await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, deviceConfigurationContent);
 
-                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY")))
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_ID")))
                 {
-                    log.LogDebug("Opted-in to use Azure Monitor. Deploying the observability layer.");
+                    log.LogDebug("Opted-in to use Azure Monitor on the edge. Deploying the observability layer.");
                     // If Appinsights Key is set this means that user opted in to use Azure Monitor.
                     _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "IotHubMetricsCollectorModule"));
                     var observabilityConfigurationContent = GetConfigurationContent(Environment.GetEnvironmentVariable("OBSERVABILITY_CONFIG_LOCATION"), new Dictionary<string, string>
