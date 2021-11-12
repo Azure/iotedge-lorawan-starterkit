@@ -1,8 +1,8 @@
 # LoRa Basics™ Station credentials management in 'Azure IoT Edge LoRaWAN Starter Kit'
 
-Starting with LoRaWAN starter kit 2.0.0, the LoRaWan Network Server runs a WebSocket endpoint compatible with [LNS Protocol](https://doc.sm.tc/station/tcproto.html) from LoRa Basics™ Station.
+Starting with 'Azure IoT Edge LoRaWAN Starter Kit' v2.0.0, the LoRaWan Network Server runs a WebSocket endpoint compatible with [LNS Protocol](https://doc.sm.tc/station/tcproto.html) from LoRa Basics™ Station.
 
-As it's possible to read in [official LoRa Basics™ Station documentation](https://doc.sm.tc/station/credentials.html) a Basics Station client needs some credentials to establish a secure connection to LNS compatible endpoints.
+As it's possible to read in [official LoRa Basics™ Station documentation](https://doc.sm.tc/station/credentials.html) a Basics™ Station client needs some credentials to establish a secure connection to LNS compatible endpoints.
 
 ## Server Authentication
 
