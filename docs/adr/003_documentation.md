@@ -38,6 +38,14 @@ the documentation without triggering any tag, version or CI.
 1. **Create a detached branch to keep static site**, called `gh-pages`. This
 allows for a place where the docs can be published from.
 
+1. **Versioning**: the tool [mike]() is used for managing the versions.
+
+1. Two different workflows will manage the deployment:
+
+   1. CI for each push to `docs/main` will automatically deploy version called `dev`
+   1. Manual workflow with parameter for `version` will deploy that version, set
+  it to latest and additionally tag the repo with `docs@<version>`
+
 ## Open Questions
 
 - [x] Can multiple branches be locked in GitHub? E.g. ideally `docs/main` will be
