@@ -85,6 +85,8 @@ nav:
     - 'License': 'license.md'
 
 extra:
+  version:
+    provider: mike
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/Azure/iotedge-lorawan-starterkit
