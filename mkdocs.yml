@@ -18,13 +18,15 @@ theme:
     repo: fontawesome/brands/github
   features:
     - navigation.tabs
-    - navigation.tabs.sticky
+    # - navigation.tabs.sticky
+    - navigation.sections
     - navigation.top
-    - navigation.expand
+    # - navigation.expand
+    - navigation.tracking
     - search.suggest
     - search.highlight
-    - header.autohide
-    - toc.integrate
+   # - header.autohide
+   # - toc.integrate
 
 repo_url: https://github.com/Azure/iotedge-lorawan-starterkit
 edit_uri: edit/docs/main/docs/
@@ -40,8 +42,10 @@ markdown_extensions:
   - abbr
   - pymdownx.snippets
   - meta
-  - toc:
-      toc_depth: 1-2
+  - toc
+
+plugins:
+  - search
 
 extra_css:
   - https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css
@@ -68,13 +72,12 @@ nav:
       - samples/decoders/cayenne.md
   - Tools:
     - tools/device-provisioning.md
-  - 'Decision Log':
-    - adr/index.md
-    - adr/001_region_cn470_implementation.md
-    - adr/002_lbs_configuration.md
-    - adr/003_documentation.md
-    - adr/004_region_as923_implementation.md
-    - adr/005_observability.md
+  #- 'Decision Log':
+  #  - adr/001_region_cn470_implementation.md
+  #  - adr/002_lbs_configuration.md
+  #  - adr/003_documentation.md
+  #  - adr/004_region_as923_implementation.md
+  #  - adr/005_observability.md
   - About:
     - 'Known Issues': issues.md
     - 'Support': support.md

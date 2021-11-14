@@ -1,6 +1,27 @@
 # Upgrade LoRaWAN to a new version
 <!-- allow github to generate 'copy' buttons for coded URLs -->
 <!-- markdownlint-disable MD040 -->
+## Release 1.0.7
+
+To update from version 1.0.6, 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
+
+### Update the IoT Edge security daemon when upgrading from IoT Edge 1.1 (release prior to 1.0.6)
+
+Since release 1.0.6, the starter kit uses Azure IoT Edge version 1.2 which includes major changes the the IoT Edge Security daemon. Please follow this documentation to [Update IoT Edge](https://docs.microsoft.com/azure/iot-edge/how-to-update-iot-edge?view=iotedge-2020-11&tabs=linux) to upgrade Azure IoT Edge to 1.2.
+
+### Updating from release post 1.0.3
+
+|Deployment Module|Image URI|
+|-|-|
+|LoRaWanNetworkSrvModule|loraedge/lorawannetworksrvmodule:1.0.7|
+|LoRaWanPktFwdModule|loraedge/lorawanpktfwdmodule:1.0.7|
+
+On the same `Set Modules` page, also update your current edge version to 1.2.2 by pressing the `Configure Advanced Edge Runtime settings` button. On the menu, ensure the edge hub and edge agent are using version 1.2.2 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.2.2 and mcr.microsoft.com/azureiotedge-agent:1.2.2.
+
+### Updating the Azure Function Facade
+
+If you are upgrading from release 1.0.5, There are no changes on the Azure function therefore you can use the same bin. If you are upgrading from a previous release please follow function deployment guidance under release [Release 1.0.5](#Release-1.0.5).
+
 ## Release 1.0.6
 
 To update from version 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.

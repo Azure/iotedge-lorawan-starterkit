@@ -1,3 +1,7 @@
+---
+hide:
+  - navigation
+---
 # Quick Start
 
 An Azure deployment template is available to deploy all the required Azure infrastructure and get you started quickly.
@@ -396,3 +400,5 @@ The Solution has an initial support for MAC Commands. Currently only the command
   ]
 }
 ```
+
+--8<-- "includes/abbreviations.md"
