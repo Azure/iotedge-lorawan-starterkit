@@ -1,0 +1,1676 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>Upgrade LoRaWAN to a new version - IoTEdge LoRaWAN StarterKit - documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+      <script>var palette=__get("__palette");if(null!==palette&&"object"==typeof palette.color)for(var key in palette.color)document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#upgrade-lorawan-to-a-new-version" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-header__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IoTEdge LoRaWAN StarterKit - documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Upgrade LoRaWAN to a new version
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../quickstart/" class="md-tabs__link">
+      Quick Start
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../devguide/" class="md-tabs__link md-tabs__link--active">
+        User Guide
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../samples/arduino/" class="md-tabs__link">
+        Samples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tools/device-provisioning/" class="md-tabs__link">
+        Tools
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../issues/" class="md-tabs__link">
+        About
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-nav__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    IoTEdge LoRaWAN StarterKit - documentation
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../devguide/" class="md-nav__link">
+        Developer Guidance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        Architecture and Concepts for the LoRaWAN starter kit
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../message-flows/" class="md-nav__link">
+        Message Flows
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../partner/" class="md-nav__link">
+        Device Manufacturer Guidance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../caching/" class="md-nav__link">
+        Caching
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../station-configuration/" class="md-nav__link">
+        Basics Station configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Upgrade LoRaWAN to a new version
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Upgrade LoRaWAN to a new version
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#release-106" class="md-nav__link">
+    Release 1.0.6
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.6">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#update-the-iot-edge-security-daemon-when-upgrading-from-iot-edge-11" class="md-nav__link">
+    Update the IoT Edge security daemon when upgrading from IoT Edge 1.1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-from-105-104-or-103" class="md-nav__link">
+    Updating from 1.0.5, 1.0.4 or 1.0.3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-105" class="md-nav__link">
+    Release 1.0.5
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-from-104-or-103" class="md-nav__link">
+    Updating from 1.0.4 or 1.0.3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_1" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-104" class="md-nav__link">
+    Release 1.0.4
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-from-103" class="md-nav__link">
+    Updating from 1.0.3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_2" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-103" class="md-nav__link">
+    Release 1.0.3
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-101-or-102-to-release-103" class="md-nav__link">
+    Updating existing installations from 1.0.1 or 1.0.2 to release 1.0.3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_3" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-102" class="md-nav__link">
+    Release 1.0.2
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-101-to-release-102" class="md-nav__link">
+    Updating existing installations from 1.0.1 to release 1.0.2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_4" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-101" class="md-nav__link">
+    Release 1.0.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-100-to-release-101" class="md-nav__link">
+    Updating existing installations from 1.0.0 to release 1.0.1
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating existing installations from 1.0.0 to release 1.0.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-your-gateways-iot-edge-module-versions" class="md-nav__link">
+    Updating your gateways' IoT Edge module versions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_5" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-040-preview-to-release-100" class="md-nav__link">
+    Updating existing installations from 0.4.0-preview to release 1.0.0
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating existing installations from 0.4.0-preview to release 1.0.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_6" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-030-preview-to-040-preview" class="md-nav__link">
+    Updating existing installations from 0.3.0-preview to 0.4.0-preview
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating existing installations from 0.3.0-preview to 0.4.0-preview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-iot-edge-runtime-containers-to-version-106" class="md-nav__link">
+    Updating IoT Edge Runtime Containers to Version 1.0.6
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_7" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-020-preview-to-030-preview" class="md-nav__link">
+    Updating existing installations from 0.2.0-preview to 0.3.0-preview
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating existing installations from 0.2.0-preview to 0.3.0-preview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-iot-edge-runtime-containers-to-version-105" class="md-nav__link">
+    Updating IoT Edge Runtime Containers to Version 1.0.5
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_8" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+        Working with the documentation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Samples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Samples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Samples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/arduino/" class="md-nav__link">
+        Arduino Demo Code
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2">
+          Decoders
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Decoders" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          Decoders
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/decoder/" class="md-nav__link">
+        Decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/universal/" class="md-nav__link">
+        Universal Decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/cayenne/" class="md-nav__link">
+        Cayenne Decoder
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Tools
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tools" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Tools
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/device-provisioning/" class="md-nav__link">
+        LoRa device provisioning CLI
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          About
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="About" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          About
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/" class="md-nav__link">
+        Known Issues
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../support/" class="md-nav__link">
+        Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        Contributing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../license/" class="md-nav__link">
+        License
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#release-106" class="md-nav__link">
+    Release 1.0.6
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.6">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#update-the-iot-edge-security-daemon-when-upgrading-from-iot-edge-11" class="md-nav__link">
+    Update the IoT Edge security daemon when upgrading from IoT Edge 1.1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-from-105-104-or-103" class="md-nav__link">
+    Updating from 1.0.5, 1.0.4 or 1.0.3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-105" class="md-nav__link">
+    Release 1.0.5
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-from-104-or-103" class="md-nav__link">
+    Updating from 1.0.4 or 1.0.3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_1" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-104" class="md-nav__link">
+    Release 1.0.4
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-from-103" class="md-nav__link">
+    Updating from 1.0.3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_2" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-103" class="md-nav__link">
+    Release 1.0.3
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-101-or-102-to-release-103" class="md-nav__link">
+    Updating existing installations from 1.0.1 or 1.0.2 to release 1.0.3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_3" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-102" class="md-nav__link">
+    Release 1.0.2
+  </a>
+  
+    <nav class="md-nav" aria-label="Release 1.0.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-101-to-release-102" class="md-nav__link">
+    Updating existing installations from 1.0.1 to release 1.0.2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_4" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-101" class="md-nav__link">
+    Release 1.0.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-100-to-release-101" class="md-nav__link">
+    Updating existing installations from 1.0.0 to release 1.0.1
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating existing installations from 1.0.0 to release 1.0.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-your-gateways-iot-edge-module-versions" class="md-nav__link">
+    Updating your gateways' IoT Edge module versions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_5" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-040-preview-to-release-100" class="md-nav__link">
+    Updating existing installations from 0.4.0-preview to release 1.0.0
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating existing installations from 0.4.0-preview to release 1.0.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_6" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-030-preview-to-040-preview" class="md-nav__link">
+    Updating existing installations from 0.3.0-preview to 0.4.0-preview
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating existing installations from 0.3.0-preview to 0.4.0-preview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-iot-edge-runtime-containers-to-version-106" class="md-nav__link">
+    Updating IoT Edge Runtime Containers to Version 1.0.6
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_7" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-existing-installations-from-020-preview-to-030-preview" class="md-nav__link">
+    Updating existing installations from 0.2.0-preview to 0.3.0-preview
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating existing installations from 0.2.0-preview to 0.3.0-preview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-iot-edge-runtime-containers-to-version-105" class="md-nav__link">
+    Updating IoT Edge Runtime Containers to Version 1.0.5
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-the-azure-function-facade_8" class="md-nav__link">
+    Updating the Azure Function Facade
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/user-guide/upgrade.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="upgrade-lorawan-to-a-new-version">Upgrade LoRaWAN to a new version</h1>
+<!-- allow github to generate 'copy' buttons for coded URLs -->
+<!-- markdownlint-disable MD040 -->
+<h2 id="release-106">Release 1.0.6</h2>
+<p>To update from version 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the <a href="#Release-1.0.3">Release 1.0.3</a> section below.</p>
+<h3 id="update-the-iot-edge-security-daemon-when-upgrading-from-iot-edge-11">Update the IoT Edge security daemon when upgrading from IoT Edge 1.1</h3>
+<p>Since release 1.0.6, the starter kit uses Azure IoT Edge version 1.2 which includes major changes the the IoT Edge Security daemon. Please follow this documentation to <a href="https://docs.microsoft.com/azure/iot-edge/how-to-update-iot-edge?view=iotedge-2020-11&amp;tabs=linux">Update IoT Edge</a> to upgrade Azure IoT Edge to 1.2.</p>
+<h3 id="updating-from-105-104-or-103">Updating from 1.0.5, 1.0.4 or 1.0.3</h3>
+<table>
+<thead>
+<tr>
+<th>Deployment Module</th>
+<th>Image URI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRaWanNetworkSrvModule</td>
+<td>loraedge/lorawannetworksrvmodule:1.0.6</td>
+</tr>
+<tr>
+<td>LoRaWanPktFwdModule</td>
+<td>loraedge/lorawanpktfwdmodule:1.0.6</td>
+</tr>
+</tbody>
+</table>
+<p>On the same <code>Set Modules</code> page, also update your current edge version to 1.2.2 by pressing the <code>Configure Advanced Edge Runtime settings</code> button. On the menu, ensure the edge hub and edge agent are using version 1.2.2 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.2.2 and mcr.microsoft.com/azureiotedge-agent:1.2.2.</p>
+<h3 id="updating-the-azure-function-facade">Updating the Azure Function Facade</h3>
+<p>There are no changes on the Azure function therefore you can use the same versioning as Release 1.0.5 just below.</p>
+<h2 id="release-105">Release 1.0.5</h2>
+<p>To update from version 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the <a href="#Release-1.0.3">Release 1.0.3</a> section below.</p>
+<h3 id="updating-from-104-or-103">Updating from 1.0.4 or 1.0.3</h3>
+<table>
+<thead>
+<tr>
+<th>Deployment Module</th>
+<th>Image URI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRaWanNetworkSrvModule</td>
+<td>loraedge/lorawannetworksrvmodule:1.0.5</td>
+</tr>
+<tr>
+<td>LoRaWanPktFwdModule</td>
+<td>loraedge/lorawanpktfwdmodule:1.0.5</td>
+</tr>
+</tbody>
+</table>
+<p>On the same <code>Set Modules</code> page, also update your current edge version to 1.0.9.5 by pressing the <code>Configure Advanced Edge Runtime settings</code> button. On the menu, ensure the edge hub and edge agent are using version 1.0.9.5 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.0.9.5 and mcr.microsoft.com/azureiotedge-agent:1.0.9.5.</p>
+<h3 id="updating-the-azure-function-facade_1">Updating the Azure Function Facade</h3>
+<p>If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined <a href="../devguide/#setup-azure-function-facade-and-azure-container-registry">here</a> if you have a previous version of this Azure Function running.</p>
+<p>If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an <code>App Setting</code> in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:</p>
+<div class="highlight"><pre><span></span><code>https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.5/function-1.0.5.zip
+</code></pre></div>
+<h2 id="release-104">Release 1.0.4</h2>
+<p>To update from version 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the <a href="#Release-1.0.3">Release 1.0.3</a> section below.</p>
+<h3 id="updating-from-103">Updating from 1.0.3</h3>
+<table>
+<thead>
+<tr>
+<th>Deployment Module</th>
+<th>Image URI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRaWanNetworkSrvModule</td>
+<td>loraedge/lorawannetworksrvmodule:1.0.4</td>
+</tr>
+<tr>
+<td>LoRaWanPktFwdModule</td>
+<td>loraedge/lorawanpktfwdmodule:1.0.4</td>
+</tr>
+</tbody>
+</table>
+<p>On the same <code>Set Modules</code> page, also update your current edge version to 1.0.9.4 by pressing the <code>Configure Advanced Edge Runtime settings</code> button. On the menu, ensure the edge hub and edge agent are using version 1.0.9.4 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.0.9.4 and mcr.microsoft.com/azureiotedge-agent:1.0.9.4.</p>
+<h3 id="updating-the-azure-function-facade_2">Updating the Azure Function Facade</h3>
+<p>If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined <a href="../devguide/#setup-azure-function-facade-and-azure-container-registry">here</a> if you have a previous version of this Azure Function running.</p>
+<p>If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an <code>App Setting</code> in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:</p>
+<div class="highlight"><pre><span></span><code>https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.4/function-1.0.4.zip
+</code></pre></div>
+<h2 id="release-103">Release 1.0.3</h2>
+<p>To update from 1.0.1 or 1.0.2 you can follow the below instructions. If you want to update manually from a version prior to 1.0.1, please refer to <a href="##Updating-existing-installations-from-1.0.0-to-release-1.0.1">Updating existing installations from 1.0.0 to release 1.0.1</a> section below.</p>
+<h3 id="updating-existing-installations-from-101-or-102-to-release-103">Updating existing installations from 1.0.1 or 1.0.2 to release 1.0.3</h3>
+<p>Go to your solution's Azure IoT Hub and under IoT Edge, select each of your gateways. Select <code>Set Modules</code> and configure the two deployment modules <code>LoRaWanNetworkSrvModule</code> and <code>LoRaWanPktFwdModule</code>. Make sure, the following image URIs are configured:</p>
+<table>
+<thead>
+<tr>
+<th>Deployment Module</th>
+<th>Image URI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRaWanNetworkSrvModule</td>
+<td>loraedge/lorawannetworksrvmodule:1.0.3</td>
+</tr>
+<tr>
+<td>LoRaWanPktFwdModule</td>
+<td>loraedge/lorawanpktfwdmodule:1.0.3</td>
+</tr>
+</tbody>
+</table>
+<p>On the same <code>Set Modules</code> page, also update your current edge version to 1.0.9 by pressing the <code>Configure Advanced Edge Runtime settings</code> button. On the menu, ensure the edge hub and edge agent are using version 1.0.9 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.0.9 and mcr.microsoft.com/azureiotedge-agent:1.0.9.</p>
+<h3 id="updating-the-azure-function-facade_3">Updating the Azure Function Facade</h3>
+<p>If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined <a href="../devguide/#setup-azure-function-facade-and-azure-container-registry">here</a> if you have a previous version of this Azure Function running.</p>
+<p>If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an <code>App Setting</code> in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:</p>
+<div class="highlight"><pre><span></span><code>https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.3/function-1.0.3.zip
+</code></pre></div>
+<h2 id="release-102">Release 1.0.2</h2>
+<p>We recommend re-deploying your solution based on the 1.0.2 release if you have been working with a solution before version 1.0.2. To update from 1.0.1 you can follow the below instructions. If you want to update manually from a version prior to 1.0.1, please refer to <a href="##Updating-existing-installations-from-1.0.0-to-release-1.0.1">Updating existing installations from 1.0.0 to release 1.0.1</a> section below.</p>
+<h3 id="updating-existing-installations-from-101-to-release-102">Updating existing installations from 1.0.1 to release 1.0.2</h3>
+<p>Go to your solution's Azure IoT Hub and under IoT Edge, select each of your gateways. Select <code>Set Modules</code> and configure the two deployment modules <code>LoRaWanNetworkSrvModule</code> and <code>LoRaWanPktFwdModule</code>. Make sure, the following image URIs are configured:</p>
+<table>
+<thead>
+<tr>
+<th>Deployment Module</th>
+<th>Image URI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRaWanNetworkSrvModule</td>
+<td>loraedge/lorawannetworksrvmodule:1.0.2</td>
+</tr>
+<tr>
+<td>LoRaWanPktFwdModule</td>
+<td>loraedge/lorawanpktfwdmodule:1.0.2</td>
+</tr>
+</tbody>
+</table>
+<p>On the same <code>Set Modules</code> page, also update your current edge version to 1.0.7 by pressing the <code>Configure Advanced Edge Runtime settings</code> button. On the menu, ensure the edge hub and edge agent are using version 1.0.7 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.0.7 and mcr.microsoft.com/azureiotedge-agent:1.0.7.</p>
+<h3 id="updating-the-azure-function-facade_4">Updating the Azure Function Facade</h3>
+<p>If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined <a href="../devguide/#setup-azure-function-facade-and-azure-container-registry">here</a> if you have a previous version of this Azure Function running.</p>
+<p>If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an <code>App Setting</code> in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:</p>
+<div class="highlight"><pre><span></span><code>https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.2/function-1.0.2.zip
+</code></pre></div>
+<h2 id="release-101">Release 1.0.1</h2>
+<p>We recommend re-deploying your solution based on the 1.0.1 release if you have been working with a pre-release version. If you prefer to update your existing installation, the following lists describes the required steps.</p>
+<h2 id="updating-existing-installations-from-100-to-release-101">Updating existing installations from 1.0.0 to release 1.0.1</h2>
+<h3 id="updating-your-gateways-iot-edge-module-versions">Updating your gateways' IoT Edge module versions</h3>
+<p>Go to your solution's Azure IoT Hub and under IoT Edge, select each of your gateways. Select <code>Set Modules</code> and configure the two deployment modules <code>LoRaWanNetworkSrvModule</code> and <code>LoRaWanPktFwdModule</code>. Make sure, the following image URIs are configured:</p>
+<table>
+<thead>
+<tr>
+<th>Deployment Module</th>
+<th>Image URI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRaWanNetworkSrvModule</td>
+<td>loraedge/lorawannetworksrvmodule:1.0.1</td>
+</tr>
+<tr>
+<td>LoRaWanPktFwdModule</td>
+<td>loraedge/lorawanpktfwdmodule:1.0.1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="updating-the-azure-function-facade_5">Updating the Azure Function Facade</h3>
+<p>If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined <a href="../devguide/#setup-azure-function-facade-and-azure-container-registry">here</a> if you have a previous version of this Azure Function running.</p>
+<p>If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an <code>App Setting</code> in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:</p>
+<div class="highlight"><pre><span></span><code>https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.1/function-1.0.1.zip
+</code></pre></div>
+<p>Edit the Function's <code>Application settings</code> and make sure the <code>FUNCTIONS_EXTENSION_VERSION</code> App setting is set to <code>~2</code>.
+If during a previous upgrade you manually set it to <code>2.0.12342.0</code>, please change it back to <code>~2</code>.</p>
+<table>
+<thead>
+<tr>
+<th>App Settings Name</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FUNCTIONS_EXTENSION_VERSION</td>
+<td><strong>~2</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Make sure the IoT Hub and Redis connection strings are properly configured in the function.</p>
+<h2 id="updating-existing-installations-from-040-preview-to-release-100">Updating existing installations from 0.4.0-preview to release 1.0.0</h2>
+<h3 id="updating-the-azure-function-facade_6">Updating the Azure Function Facade</h3>
+<p>If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined <a href="../devguide/#setup-azure-function-facade-and-azure-container-registry">here</a> if you have a previous version of this Azure Function running.</p>
+<p>If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an <code>App Setting</code> in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:</p>
+<div class="highlight"><pre><span></span><code>https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.0/function-1.0.0.zip
+</code></pre></div>
+<p>Edit the Function's <code>Application settings</code> and change the <code>FUNCTIONS_EXTENSION_VERSION</code> App setting from <code>~2</code> to <code>2.0.12342.0</code></p>
+<table>
+<thead>
+<tr>
+<th>App Settings Name</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FUNCTIONS_EXTENSION_VERSION</td>
+<td><strong>2.0.12342.0</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Make sure the IoT Hub and Redis connection strings are properly configured in the function.</p>
+<h2 id="updating-existing-installations-from-030-preview-to-040-preview">Updating existing installations from 0.3.0-preview to 0.4.0-preview</h2>
+<h3 id="updating-iot-edge-runtime-containers-to-version-106">Updating IoT Edge Runtime Containers to Version 1.0.6</h3>
+<p>We highly recommend running the latest version of the IoT Edge runtime containers on your gateway to Version 1.0.6. The way that you update the <code>IoT Edge agent</code> and <code>IoT Edge hub</code> containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment.</p>
+<p>The process is outlined in detail <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers">here</a>.</p>
+<p>Furthermore, make sure, the following environment variables are set for your <code>Edge hub</code> container:</p>
+<div class="highlight"><pre><span></span><code>mqttSettings__enabled: false
+httpSettings__enabled: false
+TwinManagerVersion: v2
+</code></pre></div>
+<p>You do this by clicking "Set Modules" &rarr; "Configure advanced edge runtime settings" on your IoT Edge device in Azure IoT Hub.</p>
+<p>Make sure the <strong>DevAddr</strong> of your ABP LoRa devices starts with <strong>"02"</strong>: Due to addition of NetId support in this pre-relese, ABP devices created by the template  prior to 0.4.0-preview (and all devices with an incompatible NetId in general) will be incompatible with the 0.4.0-preview. In this case, make sure the DevAddr of your ABP LoRa devices starts with "02".</p>
+<h3 id="updating-the-azure-function-facade_7">Updating the Azure Function Facade</h3>
+<p>Re-deploy the updated version of the Azure Function Facade as outlined <a href="../devguide/#setup-azure-function-facade-and-azure-container-registry">here</a> if you have a previous version of this Azure Function running.</p>
+<p>Make sure the IoT Hub and Redis connection strings are properly configured in the function.</p>
+<h2 id="updating-existing-installations-from-020-preview-to-030-preview">Updating existing installations from 0.2.0-preview to 0.3.0-preview</h2>
+<h3 id="updating-iot-edge-runtime-containers-to-version-105">Updating IoT Edge Runtime Containers to Version 1.0.5</h3>
+<p>We highly recommend running the latest version of the IoT Edge runtime containers on your gateway (Version 1.0.5 at the time of writing). The way that you update the <code>IoT Edge agent</code> and <code>IoT Edge hub</code> containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment.</p>
+<p>The process is outlined in detail <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers">here</a>.</p>
+<h3 id="updating-the-azure-function-facade_8">Updating the Azure Function Facade</h3>
+<p>Re-deploy the updated version of the Azure Function Facade as outlined <a href="../devguide/#setup-azure-function-facade-and-azure-container-registry">here</a> if you have a previous version of this Azure Function running.</p>
+<p>Make sure the IoT Hub and Redis connection strings are properly configured in the function.</p>
+<!-- markdownlint-enable MD040 -->
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../station-configuration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Basics Station configuration" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Basics Station configuration
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../documentation/" class="md-footer__link md-footer__link--next" aria-label="Next: Working with the documentation" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Working with the documentation
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+      <a href="https://github.com/Azure/iotedge-lorawan-starterkit" target="_blank" rel="noopener" title="iotedge-lorawan-starterkit on GitHub" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
