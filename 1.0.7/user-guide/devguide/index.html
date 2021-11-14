@@ -1,0 +1,1524 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>Developer Guidance - IoTEdge LoRaWAN StarterKit - documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+      <script>var palette=__get("__palette");if(null!==palette&&"object"==typeof palette.color)for(var key in palette.color)document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#developer-guidance" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-header__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IoTEdge LoRaWAN StarterKit - documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Developer Guidance
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../quickstart/" class="md-tabs__link">
+      Quick Start
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="./" class="md-tabs__link md-tabs__link--active">
+        User Guide
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../samples/arduino/" class="md-tabs__link">
+        Samples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tools/device-provisioning/" class="md-tabs__link">
+        Tools
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../issues/" class="md-tabs__link">
+        About
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-nav__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    IoTEdge LoRaWAN StarterKit - documentation
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Developer Guidance
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Developer Guidance
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    Directory Structure
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loraengine" class="md-nav__link">
+    LoRaEngine
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-overall-architecture" class="md-nav__link">
+    The overall architecture
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started-with-build-and-deploy-loraengine" class="md-nav__link">
+    Getting started with: Build and deploy LoRaEngine
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting started with: Build and deploy LoRaEngine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#used-azure-services" class="md-nav__link">
+    Used Azure services
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-redis-cache" class="md-nav__link">
+    Create Redis Cache
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-azure-function-facade-and-azure-container-registry" class="md-nav__link">
+    Setup Azure function facade and Azure Container registry
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup Azure function facade and Azure Container registry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deploy-manually-using-visual-studio" class="md-nav__link">
+    Deploy manually using Visual Studio
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy-manually-using-visual-studio-code" class="md-nav__link">
+    Deploy manually using Visual Studio Code
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#if-you-choose-to-create-an-empty-azure-function-pointing-to-our-zipped-code" class="md-nav__link">
+    If you choose to create an empty Azure Function pointing to our Zipped code
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#follow-these-next-steps-in-both-cases" class="md-nav__link">
+    Follow these next steps in both cases
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-a-proxy-server-to-connect-your-concentrator-to-azure" class="md-nav__link">
+    Use a Proxy server to connect your Concentrator to Azure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-concentrator-with-azure-iot-edge" class="md-nav__link">
+    Setup concentrator with Azure IoT Edge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provision-lora-leaf-device" class="md-nav__link">
+    Provision LoRa leaf device
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-to-cloud-and-cloud-to-device-messaging-in-action" class="md-nav__link">
+    Device to Cloud and Cloud to Device messaging in action
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-in-visual-studio-outside-of-iot-edge-and-docker" class="md-nav__link">
+    Debugging in Visual Studio, outside of IoT Edge and Docker
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        Architecture and Concepts for the LoRaWAN starter kit
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../message-flows/" class="md-nav__link">
+        Message Flows
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../partner/" class="md-nav__link">
+        Device Manufacturer Guidance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../caching/" class="md-nav__link">
+        Caching
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../station-configuration/" class="md-nav__link">
+        Basics Station configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrade/" class="md-nav__link">
+        Upgrade LoRaWAN to a new version
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+        Working with the documentation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Samples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Samples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Samples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/arduino/" class="md-nav__link">
+        Arduino Demo Code
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2">
+          Decoders
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Decoders" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          Decoders
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/decoder/" class="md-nav__link">
+        Decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/universal/" class="md-nav__link">
+        Universal Decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/cayenne/" class="md-nav__link">
+        Cayenne Decoder
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Tools
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tools" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Tools
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/device-provisioning/" class="md-nav__link">
+        LoRa device provisioning CLI
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          About
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="About" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          About
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/" class="md-nav__link">
+        Known Issues
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../support/" class="md-nav__link">
+        Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        Contributing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../license/" class="md-nav__link">
+        License
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    Directory Structure
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loraengine" class="md-nav__link">
+    LoRaEngine
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-overall-architecture" class="md-nav__link">
+    The overall architecture
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started-with-build-and-deploy-loraengine" class="md-nav__link">
+    Getting started with: Build and deploy LoRaEngine
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting started with: Build and deploy LoRaEngine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#used-azure-services" class="md-nav__link">
+    Used Azure services
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-redis-cache" class="md-nav__link">
+    Create Redis Cache
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-azure-function-facade-and-azure-container-registry" class="md-nav__link">
+    Setup Azure function facade and Azure Container registry
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup Azure function facade and Azure Container registry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deploy-manually-using-visual-studio" class="md-nav__link">
+    Deploy manually using Visual Studio
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy-manually-using-visual-studio-code" class="md-nav__link">
+    Deploy manually using Visual Studio Code
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#if-you-choose-to-create-an-empty-azure-function-pointing-to-our-zipped-code" class="md-nav__link">
+    If you choose to create an empty Azure Function pointing to our Zipped code
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#follow-these-next-steps-in-both-cases" class="md-nav__link">
+    Follow these next steps in both cases
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-a-proxy-server-to-connect-your-concentrator-to-azure" class="md-nav__link">
+    Use a Proxy server to connect your Concentrator to Azure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-concentrator-with-azure-iot-edge" class="md-nav__link">
+    Setup concentrator with Azure IoT Edge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provision-lora-leaf-device" class="md-nav__link">
+    Provision LoRa leaf device
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-to-cloud-and-cloud-to-device-messaging-in-action" class="md-nav__link">
+    Device to Cloud and Cloud to Device messaging in action
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-in-visual-studio-outside-of-iot-edge-and-docker" class="md-nav__link">
+    Debugging in Visual Studio, outside of IoT Edge and Docker
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/user-guide/devguide.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="developer-guidance">Developer Guidance</h1>
+<h2 id="directory-structure">Directory Structure</h2>
+<p>The code is organized into three sections:</p>
+<ul>
+<li><strong>LoRaEngine</strong> - a .NET core 3.1 solution with the following folders:</li>
+<li><strong>modules</strong> - Azure IoT Edge modules.</li>
+<li><strong>LoraKeysManagerFacade</strong> - An Azure function handling device provisioning
+  (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.</li>
+<li><strong>LoRaDevTools</strong> - library for dev tools (git submodule)</li>
+<li><strong>Arduino</strong> - Examples and references for LoRa Arduino based devices.</li>
+<li><strong>Template</strong> - Contain code useful for the "deploy to Azure button"</li>
+<li><strong>Tools</strong> - Contains tools that support the LoRaWan Gateway project</li>
+<li><strong>Cli-LoRa-Device-Provisioning</strong> - .NET Core 2.1 Command Line tool that
+  allows to list, query, verify, insert, edit, update and delete LoRa leaf
+  device configurations into IoT Hub</li>
+<li><strong>Samples</strong> - Contains sample decoders</li>
+<li><strong>Docs</strong> - Additional modules, pictures and documentations</li>
+</ul>
+<h2 id="loraengine">LoRaEngine</h2>
+<p>A <strong>.NET Core 3.1</strong> solution with the following projects:</p>
+<ul>
+<li><strong>modules</strong> - Azure IoT Edge modules.</li>
+<li><strong>LoRaWanPktFwdModule</strong> packages the network forwarder into an IoT Edge compatible docker container. See <a href="https://github.com/Lora-net/packet_forwarder">https://github.com/Lora-net/packet_forwarder</a> and <a href="https://github.com/Lora-net/lora_gateway">https://github.com/Lora-net/lora_gateway</a>. If you are using a RAK833-USB see the <code>LoRaWanPktFwdRAK833USB</code> <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Docs">submodule</a></li>
+<li><strong>LoRaWanNetworkSrvModule</strong> - is the LoRaWAN network server implementation.</li>
+<li><strong>LoraKeysManagerFacade</strong> - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.</li>
+<li><strong>LoRaDevTools</strong> - library for dev tools (git submodule)</li>
+</ul>
+<h2 id="the-overall-architecture">The overall architecture</h2>
+<p>This schema represent the various components and how they interact to have a better understand of the various solution elements.</p>
+<p><img alt="schema" src="../../images/detailedschema.jpg" /></p>
+<ol>
+<li>Once the IoT Edge engine start on the Edge device, the code modules are downloaded from the Azure Container Registry.</li>
+<li>The module containing the <code>LoRaWan network server</code> is downloaded on the Edge device</li>
+</ol>
+<blockquote>
+<p>Notes:</p>
+<ul>
+<li>The LoRaWanPktFwdModule can be replaced by the <code>LoRaWan Packet Forwarder for RAK833-USB</code> if you have a RAK833 connected thru USB</li>
+<li>The LoRaWan gateway must implement a UDP server on port 1680 to forward the LoRa commands from/to the <code>LoRaWan Network Server</code> module. In our case it is called <code>LoRaWan Packet Forwarder</code></li>
+</ul>
+</blockquote>
+<ol>
+<li>The LoRaWan Network Server request status for the LoRa devices. The Azure Function <code>LoraKeysManagerFacade</code> is used to aquire the device identity from IoT Hub.</li>
+<li>In the case you're using the demo device with the automatic deployment Azure Resource Manager (ARM) template: the Azure function <code>LoraKeysManagerFacade</code> will register the device <code>47AAC86800430028</code> into the Azure IoT Hub for you. Otherwise you need to provision a device yourself in IoT Hub: <a href="../../tools/device-provisioning/">device provisioning</a></li>
+<li>The Azure function <code>LoraKeysManagerFacade</code> sends back the device identity to the module</li>
+<li>
+<p>The <code>LoRaWan Network Server</code> module:</p>
+<ul>
+<li>instantiate the device on the LoRa Gateway if needed</li>
+<li>gather the LoRa sensor data from the LoRaWan gateway thru the <code>LoRaWan Packet Forwarder</code></li>
+<li>decode the LoRa data if requested</li>
+</ul>
+</li>
+<li>
+<p>Publish the LoRa sensor data to Azure IoT Hub</p>
+</li>
+</ol>
+<p>Another view of the architecture and a more message driven view is the following:</p>
+<p><img alt="architecture details" src="../../images/architectdetails2.png" /></p>
+<h2 id="getting-started-with-build-and-deploy-loraengine">Getting started with: Build and deploy LoRaEngine</h2>
+<p>The following guide describes the necessary steps to build and deploy the LoRaEngine to an <a href="https://azure.microsoft.com/en-us/services/iot-edge/">Azure IoT Edge</a> installation on a LoRaWAN antenna gateway.</p>
+<p>If you want to update a LoRa Gateway running a previous version fo our software to the current release, follow <a href="../upgrade/">this guide</a></p>
+<h3 id="used-azure-services">Used Azure services</h3>
+<ul>
+<li><a href="https://azure.microsoft.com/en-us/services/iot-hub/">Azure IoT Hub</a></li>
+<li><a href="https://azure.microsoft.com/en-us/services/container-registry/">Azure Container registry</a></li>
+<li><a href="https://azure.microsoft.com/en-us/services/functions/">Azure Functions</a></li>
+<li><a href="https://azure.microsoft.com/en-us/services/cache/">Redis Cache</a></li>
+</ul>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Have LoRaWAN concentrator and edge node hardware ready for testing. The LoRaEngine has been tested and build for various hardware setups. However, for this guide we used the <a href="http://wiki.seeedstudio.com/LoRa_LoRaWan_Gateway_Kit/">Seeed LoRa/LoRaWAN Gateway Kit</a> and concentrator and the <a href="http://wiki.seeedstudio.com/Seeeduino_LoRAWAN/">Seeeduino LoRaWAN</a> as edge node.</li>
+<li><a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm">Installed Azure IoT Edge</a> on your LoRaWAN concentrator enabled edge device.</li>
+<li>SetUp an Azure IoT Hub instance and be familiar with <a href="https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux">Azure IoT Edge module deployment</a> mechanism.</li>
+<li>Be familiar with <a href="https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux">Azure IoT Edge module development</a>. Note: the following guide expects that your modules will be pushed to <a href="https://azure.microsoft.com/en-us/services/container-registry/">Azure Container registry</a>.</li>
+<li>Create a new IoT Edge device in you IoT Hub with a name of your choice and the default settings.</li>
+</ul>
+<h3 id="create-redis-cache">Create Redis Cache</h3>
+<ul>
+<li>Create a <code>Redis Cache</code> in your resource group and the region you are using with a <code>DNS Name</code> of your choice and of the size <code>Standard C0</code>. Leave all other settings unchanged.</li>
+<li>Navigate to your Redis Cache and from Settings -&gt; Access Keys, note the <code>Primary connection string (StackExchange.Redis)</code>.</li>
+</ul>
+<h3 id="setup-azure-function-facade-and-azure-container-registry">Setup Azure function facade and <a href="https://azure.microsoft.com/en-us/services/container-registry/">Azure Container registry</a></h3>
+<p>You have the option to either deploy the Azure Function code from your Visual Studio Code to Azure or create an empty Azure Function that points to a Zip file hosted by us, containing the function code. Follow one of the two sets of instructions that follow:</p>
+<h4 id="deploy-manually-using-visual-studio">Deploy manually using Visual Studio</h4>
+<p>On your Visual Studio Solution, right click on the 'LoRaKeysManagerFacade' project, select 'deploy', then 'Azure' and then 'Azure function'. You should then arrive on a page where you just need to hit the deploy button to get the code deployed on Azure.
+<img alt="Deploy to Azure Function from Visual Studio" src="../../images/vsdeploytoazurefunc.PNG" /></p>
+<h4 id="deploy-manually-using-visual-studio-code">Deploy manually using Visual Studio Code</h4>
+<ul>
+<li>
+<p>Open the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">Azure function folder</a> with Visual Studio Code with the <a href="https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions">Azure Functions Plugin</a> installed. Now run the command <code>Azure Functions: Deploy to function app...</code> and provide the name of the Azure function to deploy to. If prompted, select  environment <code>C#</code> and  version <code>V3</code>.</p>
+</li>
+<li>
+<p>If you want to just deploy the function from Visual Studio Code with the root project folder <code>iotedge-lorawan-starterkit</code> open (of which the Function is a subfolder <code>/LoRaEngine/LoraKeysManagerFacade</code>), you need to run the Visual Studio Command <code>Azure Functions: Deploy to function app...</code> and then <strong>manually</strong> choose the folder <code>LoraKeysManagerFacade/bin/Release/netcoreapp3.1/publish</code>. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.</p>
+</li>
+</ul>
+<h4 id="if-you-choose-to-create-an-empty-azure-function-pointing-to-our-zipped-code">If you choose to create an empty Azure Function pointing to our Zipped code</h4>
+<ul>
+<li>Using the Azure Portal, create a new "Function App" in the resource group and location you chose for the deployment, using the default creation settings.</li>
+<li>Once the function is created, navigate to the <code>Application settings</code> from the Overview page.</li>
+<li>Add a new <code>Application Setting</code> with:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>App Settings Name</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WEBSITE_RUN_FROM_ZIP</td>
+<td><a href="https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.4/function-1.0.4.zip">https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.4/function-1.0.4.zip</a></td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Run Azure Function from Zip file" src="../../images/FunctionRunFromZip.png" /></p>
+<h4 id="follow-these-next-steps-in-both-cases">Follow these next steps in both cases</h4>
+<ul>
+<li>Configure IoT Hub and Redis connection strings in the function:</li>
+</ul>
+<p>Copy your Redis Cache connection string in a connection string names <code>RedisConnectionString</code></p>
+<p>Copy your IoT Hub <code>Connection string</code> with owner policy applied:</p>
+<p><img alt="Copy IoT Hub Connection string" src="../../images/CopyIoTHubString.PNG" /></p>
+<p>Now paste it into <code>Application settings</code> -&gt; <code>Connection strings</code> as <code>IoTHubConnectionString</code> of type <code>Custom</code>:</p>
+<p><img alt="Paste IoT Hub Connection string" src="../../images/FunctionPasteString.PNG" /></p>
+<p>Also, add the previously saved <code>Primary connection string (StackExchange.Redis)</code> from your Redis Cache to the <code>Connection strings</code> of your function. Use type <code>Custom</code> again.</p>
+<p><img alt="Add Redis Cache Connection string" src="../../images/FunctionRedisKey.png" /></p>
+<p>From the Facade Azure function, extract the <code>Host key</code> of type <code>_master</code> and save it somewhere. (We will need it in the next step)</p>
+<p><img alt="Extract Facade function Host key" src="../../images/FunctionHostKey.PNG" /></p>
+<ul>
+<li>Create your <code>.env</code> file in the <code>/LoRaEngine</code> folder by copying the <code>example.env</code> file located <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/example.env">here</a></li>
+<li>Configure your <code>.env</code> file with your own <a href="https://azure.microsoft.com/en-us/services/container-registry/">Azure Container registry</a> as well as the Facade access URL and credentials. Set the region to "EU" or "US" based on your location. You do not need to change any of the other settings at this point.
+Those variables will be used by our <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/deployment.template.json">Azure IoT Edge solution template</a>.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>...
+CONTAINER_REGISTRY_ADDRESS=yourregistry.azurecr.io
+CONTAINER_REGISTRY_USERNAME=yourlogin
+CONTAINER_REGISTRY_PASSWORD=registrypassword
+...
+REGION=EU
+...
+FACADE_SERVER_URL=https://yourfunction.azurewebsites.net/api/
+FACADE_AUTH_CODE=yourfunctionpassword
+...
+</code></pre></div>
+<h3 id="use-a-proxy-server-to-connect-your-concentrator-to-azure">Use a Proxy server to connect your Concentrator to Azure</h3>
+<blockquote>
+<p><strong>This step is optional and should only be executed if your concentrator needs to use a proxy server to communicate with Azure</strong></p>
+</blockquote>
+<p>Follow the guide on <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-configure-proxy-support">configuring an IoT Edge device to communicate through a proxy server</a> to:</p>
+<ol>
+<li>Configure the Docker daemon and the IoT Edge daemon on your device to use a proxy server.</li>
+<li>Configure the edgeAgent properties in the config.yaml file on your device.</li>
+<li>Set environment variables for the IoT Edge runtime in the deployment manifest.</li>
+</ol>
+<p>After that, add the environment variable <code>https_proxy</code> to the <code>LoRaWanNetworkSrvModule</code> in your <code>IoT Hub</code> &rarr; <code>IoT Edge</code> &rarr; <code>Edge Device</code> &rarr; <code>Set Modules</code> section.</p>
+<p><img alt="IoT Hub Edge Device Module Setting" src="../../images/EdgeSetProxy.png" /></p>
+<blockquote>
+<p><strong>End of optional proxy configuration</strong></p>
+</blockquote>
+<h3 id="setup-concentrator-with-azure-iot-edge">Setup concentrator with Azure IoT Edge</h3>
+<ul>
+<li>
+<p>Note: if your LoRa chip set is connected by SPI on raspberry PI bus don't forget to <a href="https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/">enable it</a>, (You need to restart your pi).</p>
+</li>
+<li>
+<p>Build and deploy Azure IoT Edge solution</p>
+</li>
+</ul>
+<p>We will use <a href="https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge">Azure IoT Edge for Visual Studio Code</a> extension to build, push and deploy our solution.</p>
+<p>Make sure you are logged in to the Azure Container Registry you are using. Run <code>docker login &lt;mycontainerregistry&gt;.azurecr.io</code> on your development machine.</p>
+<p>Select the architecture of your gateway (Azure IoT Edge Solution Default Platform) by clicking on the  button in the taskbar and selecting <code>amd64</code> or <code>arm32v7</code> in the command pallette.</p>
+<p><img alt="VSCode: Azure IoT Edge Solution Default Platform" src="../../images/iotedgetargetplatform.png" /></p>
+<p>Now, build an push the solution by right clicking <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/deployment.template.json">deployment.template.json</a> and select <code>Build and Push IoT Edge Solution</code>.</p>
+<p><img alt="VSCode: Build and push edge solution" src="../../images/CreateEdgeSolution.PNG" /></p>
+<p>After that you can push the solution to your IoT Edge device by right clicking on the device and selecting <code>Create Deployment for single device</code>. In the file dialog, navigate to the <code>LoRaEngine\config</code> folder and select the <code>deployment.json</code> file which was created during the previous step.</p>
+<p><img alt="VSCode: Deploy edge solution" src="../../images/DeployEdge.PNG" /></p>
+<h3 id="provision-lora-leaf-device">Provision LoRa leaf device</h3>
+<p>The <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Arduino/EU/TemperatureOtaaLora/TemperatureOtaaLora.ino">sample code</a> used in this example is based on <a href="http://wiki.seeedstudio.com/Seeeduino_LoRAWAN/">Seeeduino LoRaWAN</a> with a <a href="http://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/">Grove - Temperature Sensor</a>. It sends every 30 seconds its current temperature reading and prints out a Cloud-2-Device message if one is transmitted in its receive window.</p>
+<p>The sample has configured the following sample <a href="https://www.thethingsnetwork.org/lorawan/security.html">device identifiers and credentials</a>:</p>
+<ul>
+<li>DevEUI: <code>47AAC86800430010</code></li>
+<li>AppEUI: <code>BE7A0000000014E3</code></li>
+<li>AppKey: <code>8AFE71A145B253E49C3031AD068277A3</code></li>
+</ul>
+<p>You will need your own identifiers when provisioning the device.</p>
+<p>Look out for these code lines:</p>
+<div class="highlight"><pre><span></span><code><span class="n">lora</span><span class="p">.</span><span class="n">setId</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;47AAC86800430010&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;BE7A0000000014E3&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="n">lora</span><span class="p">.</span><span class="n">setKey</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<!-- markdown-link-check-disable -->
+<p>To provisioning a device in Azure IoT Hub with these identifiers and capable to <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoRaPayloadDecoder.cs">decode</a> simple value payload into Json you have to create a device with:</p>
+<p>Device Id: <code>47AAC86800430010</code> and Device Twin's deired properties:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span> <span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;AppKey&quot;</span><span class="p">:</span> <span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span> <span class="s2">&quot;DecoderValueSensor&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>You can  provision the device manually in the Azure portal or use the provided <a href="../../tools/device-provisioning/">Command Line Interface Provisioning Tool to list, query, verify add, update, and remove  devices</a>.</p>
+<!-- markdown-link-check-enable -->
+
+<p>The command to execute is:</p>
+<div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="n">run</span> <span class="p">--</span> <span class="n">add</span> <span class="p">-</span><span class="n">-type</span> <span class="n">OTAA</span> <span class="p">-</span><span class="n">-deveui</span> <span class="n">47AAC86800430010</span> <span class="p">-</span><span class="n">-appeui</span> <span class="n">BE7A0000000014E3</span> <span class="p">-</span><span class="n">-appkey</span> <span class="n">8AFE71A145B253E49C3031AD068277A3</span> <span class="p">-</span><span class="n">-decoder</span> <span class="n">DecoderValueSensor</span>
+</code></pre></div>
+<p>To manually provision the device in IoT Hub, do the following:</p>
+<p><img alt="Create device in Azure IoT Hub" src="../../images/CreateDevice.PNG" /></p>
+<p><img alt="Set device twin in Azure IoT Hub" src="../../images/DeviceTwin.PNG" /></p>
+<h3 id="device-to-cloud-and-cloud-to-device-messaging-in-action">Device to Cloud and Cloud to Device messaging in action</h3>
+<p>As soon as you start your device you should see the following:</p>
+<ul>
+<li><a href="https://www.thethingsnetwork.org/lorawan/security.html">DevAddr, AppSKey and NwkSKey</a> are generated and stored in the Device Twin, e.g.:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span> <span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;AppKey&quot;</span><span class="p">:</span> <span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span> <span class="s2">&quot;DecoderValueSensor&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;AppSKey&quot;</span><span class="p">:</span> <span class="s2">&quot;5E8513F64D99A63753A5F0DBB9FB9F91&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;NwkSKey&quot;</span><span class="p">:</span> <span class="s2">&quot;C0EF4B9495BD4A4C32B42438CD52D4B8&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;DevAddr&quot;</span><span class="p">:</span> <span class="s2">&quot;025DEAAE&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;DevNonce&quot;</span><span class="p">:</span> <span class="s2">&quot;D9B6&quot;</span>
+  <span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>If you follow the logs of the network server module (e.g. <code>sudo iotedge logs LoRaWanNetworkSrvModule -f</code>) you can follow the LoRa device join:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>{&quot;rxpk&quot;:[{&quot;tmst&quot;:3831950603,&quot;chan&quot;:2,&quot;rfch&quot;:1,&quot;freq&quot;:868.500000,&quot;stat&quot;:1,&quot;modu&quot;:&quot;LORA&quot;,&quot;datr&quot;:&quot;SF7BW125&quot;,&quot;codr&quot;:&quot;4/5&quot;,&quot;lsnr&quot;:8.5,&quot;rssi&quot;:-30,&quot;size&quot;:23,&quot;data&quot;:&quot;AOMUAAAAAHq+EABDAGjIqkfZtkroyCc=&quot;}]}
+Join Request Received
+{&quot;txpk&quot;:{&quot;imme&quot;:false,&quot;data&quot;:&quot;IE633dznxvgA89ZTkH1jET0=&quot;,&quot;tmst&quot;:3836950603,&quot;size&quot;:17,&quot;freq&quot;:868.5,&quot;rfch&quot;:0,&quot;modu&quot;:&quot;LORA&quot;,&quot;datr&quot;:&quot;SF7BW125&quot;,&quot;codr&quot;:&quot;4/5&quot;,&quot;powe&quot;:14,&quot;ipol&quot;:true}}
+Using edgeHub as local queue
+Updating twins...
+Join Accept sent
+TX ACK RECEIVED
+</code></pre></div>
+<ul>
+<li>Every 30 seconds the temperature is transmitted by the device, e.g.:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;time&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+  <span class="nt">&quot;tmms&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;tmst&quot;</span><span class="p">:</span> <span class="mi">4226472308</span><span class="p">,</span>
+  <span class="nt">&quot;freq&quot;</span><span class="p">:</span> <span class="mf">868.5</span><span class="p">,</span>
+  <span class="nt">&quot;chan&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+  <span class="nt">&quot;rfch&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&quot;stat&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&quot;modu&quot;</span><span class="p">:</span> <span class="s2">&quot;LORA&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;datr&quot;</span><span class="p">:</span> <span class="s2">&quot;SF12BW125&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;codr&quot;</span><span class="p">:</span> <span class="s2">&quot;4/5&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;rssi&quot;</span><span class="p">:</span> <span class="mi">-33</span><span class="p">,</span>
+  <span class="nt">&quot;lsnr&quot;</span><span class="p">:</span> <span class="mf">7.5</span><span class="p">,</span>
+  <span class="nt">&quot;size&quot;</span><span class="p">:</span> <span class="mi">18</span><span class="p">,</span>
+  <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">18.78</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;EUI&quot;</span><span class="p">:</span> <span class="s2">&quot;47AAC86800430010&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;gatewayId&quot;</span><span class="p">:</span> <span class="s2">&quot;berry2&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;edgets&quot;</span><span class="p">:</span> <span class="mi">1534253192857</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Note: an easy way to follow messages send from the device is again with VSCode: right click on the device in the explorer -&gt; <code>Start Monitoring D2C Message</code>.</p>
+<p>This is how a complete transmission looks like:</p>
+<p><img alt="Complete transmission" src="../../images/RoundtripTemp.PNG" /></p>
+<p>You can even test sending Cloud-2-Device message (e.g. by VSCode right click on the device in the explorer -&gt; <code>Send C2D Message To Device</code>).</p>
+<p>The Arduino example provided above will print the message on the console. Keep in mind that a <a href="https://www.thethingsnetwork.org/lorawan/">LoRaWAN Class A</a> device will only receive after a transmit, in our case every 30 seconds.</p>
+<h2 id="debugging-in-visual-studio-outside-of-iot-edge-and-docker">Debugging in Visual Studio, outside of IoT Edge and Docker</h2>
+<!-- markdown-link-check-disable -->
+
+<p>It is possible to run the LoRaEngine locally from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to follow in order to enable this feature:</p>
+<ol>
+<li>
+<p>Either change the value <em>server_adress</em> in the file <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/modules/LoRaWanPktFwdModule/local_conf.json">local_conf.json</a> (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.</p>
+</li>
+<li>
+<p><strong>Alternatively</strong>, configure your unmodified LoRaWanPktFwdModule Docker container / Edge module with the environment variable <code>NETWORK_SERVER=&lt;ip of your computer&gt;</code></p>
+</li>
+<li>
+<p>If you are using a Wireless network in Windows, make sure it is configured as a private network in your Windows settings. Otherwise, the Windows Firewall will bock the incoming UDP packets.</p>
+</li>
+<li>
+<p>Open the properties of the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule">LoRaWanNetworkServerModule</a> and set the following Environment Variables under the Debug tab:</p>
+<ul>
+<li>IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)</li>
+<li>ENABLE_GATEWAY : false</li>
+<li>LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)</li>
+<li>FACADE_SERVER_URL : <a href="http://localhost:7071/api/">http://localhost:7071/api/</a> (when debugging locally or any other URL of the Azure function you want to use)</li>
+<li>IOTEDGE_DEVICEID : The Name of your PC</li>
+</ul>
+</li>
+<li>
+<p>Add a <code>local.settings.json</code> file to the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">LoRaKeysManagerFacade</a> containing:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;IsEncrypted&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;AzureWebJobsStorage&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Connection String of your deployed blob storage&gt;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;WEBSITE_CONTENTSHARE&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Name of your Azure function&gt;&quot;</span>
+
+  <span class="p">},</span>
+  <span class="nt">&quot;ConnectionStrings&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Connection string of your IoT Hub Owner (go to keys -&gt; IoT Hub owner and select the connection string)&gt;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;RedisConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Connection string of your Redis Cache&gt;&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+</li>
+<li>
+<p>Right click on your solution and select properties, select multiple startup projects. Start <code>LoRaWanNetworkSrvModule</code> and <code>LoRaKeysManagerFacade</code>.</p>
+</li>
+<li>
+<p>If you hit start in your VS solution, you will receive messages directly from your packet forwarder. You will be able to debug directly from your computer.</p>
+</li>
+</ol>
+<p>Happy Debugging!</p>
+<!-- markdown-link-check-enable -->
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../../quickstart/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Quick Start" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Quick Start
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../architecture/" class="md-footer__link md-footer__link--next" aria-label="Next: Architecture and Concepts for the LoRaWAN starter kit" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Architecture and Concepts for the LoRaWAN starter kit
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+      <a href="https://github.com/Azure/iotedge-lorawan-starterkit" target="_blank" rel="noopener" title="iotedge-lorawan-starterkit on GitHub" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1798 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>Quick Start - IoTEdge LoRaWAN StarterKit - documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+      <script>var palette=__get("__palette");if(null!==palette&&"object"==typeof palette.color)for(var key in palette.color)document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#quick-start" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-header__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IoTEdge LoRaWAN StarterKit - documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Quick Start
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href=".." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  <li class="md-tabs__item">
+    <a href="./" class="md-tabs__link md-tabs__link--active">
+      Quick Start
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../user-guide/devguide/" class="md-tabs__link">
+        User Guide
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../samples/arduino/" class="md-tabs__link">
+        Samples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../tools/device-provisioning/" class="md-tabs__link">
+        Tools
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../issues/" class="md-tabs__link">
+        About
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-nav__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    IoTEdge LoRaWAN StarterKit - documentation
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Quick Start
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Quick Start
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployed-azure-infrastructure" class="md-nav__link">
+    Deployed Azure Infrastructure
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-instructions" class="md-nav__link">
+    Step-by-step instructions
+  </a>
+  
+    <nav class="md-nav" aria-label="Step-by-step instructions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-template-do" class="md-nav__link">
+    What does the template do?
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-a-proxy-server-to-connect-your-concentrator-to-azure" class="md-nav__link">
+    Using a Proxy Server to connect your Concentrator to Azure
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lora-device-provisioning" class="md-nav__link">
+    LoRa Device provisioning
+  </a>
+  
+    <nav class="md-nav" aria-label="LoRa Device provisioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#abp-personalization-and-otaa-over-the-air-provisioning" class="md-nav__link">
+    ABP (personalization) and OTAA (over the air) provisioning
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-device-properties" class="md-nav__link">
+    Optional device properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-reported-properties" class="md-nav__link">
+    Device Reported Properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decoders" class="md-nav__link">
+    Decoders
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-clearing" class="md-nav__link">
+    Cache Clearing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-and-logging" class="md-nav__link">
+    Monitoring and Logging
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-processing-and-routing" class="md-nav__link">
+    Local Processing and Routing
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customize-the-solution-deep-dive" class="md-nav__link">
+    Customize the solution &amp; Deep dive
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cloud-to-device-message" class="md-nav__link">
+    Cloud to device message
+  </a>
+  
+    <nav class="md-nav" aria-label="Cloud to device message">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sending-messages-using-the-azure-function" class="md-nav__link">
+    Sending messages using the Azure Function
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#class-a-devices" class="md-nav__link">
+    Class A devices
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#class-c-devices" class="md-nav__link">
+    Class C devices
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mac-commands" class="md-nav__link">
+    MAC Commands
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/devguide/" class="md-nav__link">
+        Developer Guidance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/architecture/" class="md-nav__link">
+        Architecture and Concepts for the LoRaWAN starter kit
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/message-flows/" class="md-nav__link">
+        Message Flows
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/partner/" class="md-nav__link">
+        Device Manufacturer Guidance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/caching/" class="md-nav__link">
+        Caching
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/station-configuration/" class="md-nav__link">
+        Basics Station configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/upgrade/" class="md-nav__link">
+        Upgrade LoRaWAN to a new version
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/documentation/" class="md-nav__link">
+        Working with the documentation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Samples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Samples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Samples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../samples/arduino/" class="md-nav__link">
+        Arduino Demo Code
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2">
+          Decoders
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Decoders" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          Decoders
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../samples/decoders/decoder/" class="md-nav__link">
+        Decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../samples/decoders/universal/" class="md-nav__link">
+        Universal Decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../samples/decoders/cayenne/" class="md-nav__link">
+        Cayenne Decoder
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Tools
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tools" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Tools
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/device-provisioning/" class="md-nav__link">
+        LoRa device provisioning CLI
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          About
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="About" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          About
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../issues/" class="md-nav__link">
+        Known Issues
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/" class="md-nav__link">
+        Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        Contributing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        License
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployed-azure-infrastructure" class="md-nav__link">
+    Deployed Azure Infrastructure
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-instructions" class="md-nav__link">
+    Step-by-step instructions
+  </a>
+  
+    <nav class="md-nav" aria-label="Step-by-step instructions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-template-do" class="md-nav__link">
+    What does the template do?
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-a-proxy-server-to-connect-your-concentrator-to-azure" class="md-nav__link">
+    Using a Proxy Server to connect your Concentrator to Azure
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lora-device-provisioning" class="md-nav__link">
+    LoRa Device provisioning
+  </a>
+  
+    <nav class="md-nav" aria-label="LoRa Device provisioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#abp-personalization-and-otaa-over-the-air-provisioning" class="md-nav__link">
+    ABP (personalization) and OTAA (over the air) provisioning
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-device-properties" class="md-nav__link">
+    Optional device properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-reported-properties" class="md-nav__link">
+    Device Reported Properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decoders" class="md-nav__link">
+    Decoders
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-clearing" class="md-nav__link">
+    Cache Clearing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-and-logging" class="md-nav__link">
+    Monitoring and Logging
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-processing-and-routing" class="md-nav__link">
+    Local Processing and Routing
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customize-the-solution-deep-dive" class="md-nav__link">
+    Customize the solution &amp; Deep dive
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cloud-to-device-message" class="md-nav__link">
+    Cloud to device message
+  </a>
+  
+    <nav class="md-nav" aria-label="Cloud to device message">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sending-messages-using-the-azure-function" class="md-nav__link">
+    Sending messages using the Azure Function
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#class-a-devices" class="md-nav__link">
+    Class A devices
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#class-c-devices" class="md-nav__link">
+    Class C devices
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mac-commands" class="md-nav__link">
+    MAC Commands
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/quickstart.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="quick-start">Quick Start</h1>
+<p>An Azure deployment template is available to deploy all the required Azure infrastructure and get you started quickly.
+If you'd rather deploy it manually please jump directly into the <a href="../user-guide/devguide/">do it yourself section</a>.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>The template supports x86 and <abbr title="Azure Resource Manager">ARM</abbr> architectures and will automatically deploy the correct version to your gateway. Make sure to provide your gateway's reset pin in the dialog before the deployment.</p>
+<p>Additionally, if your gateway use SPI_DEV version 1 the packet forwarder module will not work out-of-the-box. To fix this, simply add an environment variable 'SPI_DEV' set to the value 1 to the LoRaWanPktFwdModule module (SPI_DEV is set to 2 by default).</p>
+<p>The LoRa device demo code in the Arduino folder is built only for Seeduino LoRaWan board and was not test with other Arduino LoRa boards.</p>
+<h2 id="deployed-azure-infrastructure">Deployed Azure Infrastructure</h2>
+<p>The template will deploy in your Azure subscription the Following resources:</p>
+<ul>
+<li><a href="https://azure.microsoft.com/en-us/services/iot-hub/">IoT Hub</a></li>
+<li><a href="https://azure.microsoft.com/en-us/services/functions/">Azure Function</a></li>
+<li><a href="https://azure.microsoft.com/en-us/services/cache/">Redis Cache</a></li>
+</ul>
+<h2 id="step-by-step-instructions">Step-by-step instructions</h2>
+<ol>
+<li>
+<p>Press on the button here below to start your Azure Deployment.
+    <!-- markdownlint-disable MD033 -->
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fmaster%2FTemplate%2Fazuredeploy.json" target="_blank">
+        <img src="http://azuredeploy.net/deploybutton.png"/>
+    </a>
+    <!-- markdownlint-enable MD033 --></p>
+</li>
+<li>
+<p>You will get to a page asking you to fill the following fields :</p>
+<ul>
+<li><strong>Resource Group</strong> - A logical "folder" where all the template resource would be put into, just choose a meaningful name.</li>
+<li><strong>Location</strong> - In which DataCenter the resources should be deployed. Make sure to choose a location where <a href="https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&amp;regions=all">IoT Hub is available</a></li>
+<li><strong>Unique Solution Prefix</strong> - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage">naming restrictions of Storage</a> apply here.</li>
+<li><strong>Edge gateway name</strong> - the name of your LoRa Gateway node in the IoT Hub.</li>
+<li><strong>Deploy Device</strong> - Do you want demo end devices to be already provisioned (one using <abbr title="Over The Air Activation">OTAA</abbr> and one using <abbr title="Activation By Personalization">ABP</abbr>)? If yes set this to true, the code located in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a> would be ready to use immediately.</li>
+<li><strong>Reset pin</strong> - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)</li>
+<li><strong>Region</strong> - In what region are you operating your device (currently only EU868 and US915 is supported)</li>
+</ul>
+<p>The deployment would take c.a. 10 minutes to complete.</p>
+</li>
+<li>
+<p>During this time, you can proceed to <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm">install IoT Edge to your gateway</a>.</p>
+</li>
+<li>
+<p>Once the Azure deployment is finished, connect your IoT Edge with the cloud <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm#configure-the-azure-iot-edge-security-daemon">as described in point 3</a>. You can get the connection string by clicking on the deployed IoT Hub -&gt; IoT Edge Devices -&gt; Connection string, as shown in the picture below.</p>
+</li>
+<li>
+<p>If your gateway is a Raspberry Pi, <strong>don't forget to <a href="https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/">enable SPI</a> , (You need to restart your pi)</strong>.</p>
+</li>
+</ol>
+<p>By using the <code>docker ps</code> command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a> to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.</p>
+<h3 id="what-does-the-template-do">What does the template do?</h3>
+<p>The template provision an IoT Hub with a <a href="https://github.com/Lora-net/packet_forwarder">packet forwarder</a> and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template">here</a>.</p>
+<p>If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in the LoRaWanPktFwdRAK833USB <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Docs/">submodule</a>.</p>
+<h2 id="using-a-proxy-server-to-connect-your-concentrator-to-azure">Using a Proxy Server to connect your Concentrator to Azure</h2>
+<p>This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.</p>
+<p>Follow <a href="../user-guide/devguide/#use-a-proxy-server-to-connect-your-concentrator-to-azure">this guide</a> to:</p>
+<ol>
+<li>Configure the Docker daemon and the IoT Edge daemon on your device to use a proxy server.</li>
+<li>Configure the <code>edgeAgent</code> properties in the <code>config.yaml</code> file on your device.</li>
+<li>Set environment variables for the IoT Edge runtime in the deployment manifest.</li>
+<li>Add the <code>https_proxy</code> environment variable to the <code>LoRaWanNetworkSrvModule</code> in IoT Hub.</li>
+</ol>
+<h2 id="lora-device-provisioning">LoRa Device provisioning</h2>
+<p>A LoRa device is a normal IoT Hub device with some specific device twin tags. You manage it like you would with any other IoT Hub device.
+<strong>To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did plese follow the ClearCache procedure that you find below.</strong></p>
+<h3 id="abp-personalization-and-otaa-over-the-air-provisioning"><abbr title="Activation By Personalization">ABP</abbr> (personalization) and <abbr title="Over The Air Activation">OTAA</abbr> (over the air) provisioning</h3>
+<p>You can  provision the devices manually in the Azure portal or better use the provided <a href="../tools/device-provisioning/">Command Line Interface Provisioning Tool</a> to <strong>list</strong>, <strong>query</strong>, <strong>verify</strong>, <strong>add</strong>, <strong>update</strong>, and <strong>remove</strong>  devices in IoT Hub.</p>
+<p>It is also recommended to use the <abbr title="Command Line Interface">CLI</abbr> tool to verify manually added or edited LoRa devices in IoT Hub to ensure the device twin settings are all correct and will work.</p>
+<p>To manually provision:</p>
+<ul>
+<li>Login in to the Azure portal go to IoT Hub -&gt; IoT devices -&gt; Add</li>
+<li>Use the DeviceEUI as DeviceID -&gt; Save</li>
+<li>Click on the newly created device</li>
+<li>
+<p>Click on Device Twin menu</p>
+</li>
+<li>
+<p>Add the followings desired properties for <abbr title="Over The Air Activation">OTAA</abbr>:</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span> <span class="s2">&quot;App EUI&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;AppKey&quot;</span><span class="p">:</span> <span class="s2">&quot;App Key&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;GatewayID&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+  <span class="p">},</span>
+</code></pre></div>
+<p>Or the followings desired properties for <abbr title="Activation By Personalization">ABP</abbr>:</p>
+<p><strong>DevAddr must be unique for every device! It is like an ip address for lora.</strong></p>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;AppSKey&quot;</span><span class="p">:</span> <span class="s2">&quot;Device AppSKey&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;NwkSKey&quot;</span><span class="p">:</span> <span class="s2">&quot;Device NwkSKey&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;DevAddr&quot;</span><span class="p">:</span> <span class="s2">&quot;Device Addr&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;GatewayID&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+  <span class="p">},</span>
+</code></pre></div>
+<p>It should look something like this for <abbr title="Activation By Personalization">ABP</abbr>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;deviceId&quot;</span><span class="p">:</span> <span class="s2">&quot;BE7A00000000888F&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;etag&quot;</span><span class="p">:</span> <span class="s2">&quot;AAAAAAAAAAs=&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;deviceEtag&quot;</span><span class="p">:</span> <span class="s2">&quot;NzMzMTE3MTAz&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enabled&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;statusUpdateTime&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01T00:00:00&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;connectionState&quot;</span><span class="p">:</span> <span class="s2">&quot;Disconnected&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;lastActivityTime&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-08-06T15:16:32.0658492&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;cloudToDeviceMessageCount&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;authenticationType&quot;</span><span class="p">:</span> <span class="s2">&quot;sas&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;x509Thumbprint&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;primaryThumbprint&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;secondaryThumbprint&quot;</span><span class="p">:</span> <span class="kc">null</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="mi">324</span><span class="p">,</span>
+  <span class="nt">&quot;tags&quot;</span><span class="p">:</span> <span class="p">{</span>
+
+  <span class="p">},</span>
+  <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;AppSKey&quot;</span><span class="p">:</span> <span class="s2">&quot;2B7E151628AED2A6ABF7158809CF4F3C&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;NwkSKey&quot;</span><span class="p">:</span> <span class="s2">&quot;1B6E151628AED2A6ABF7158809CF4F2C&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;DevAddr&quot;</span><span class="p">:</span> <span class="s2">&quot;0028B9B9&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;GatewayID&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;$metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-03-28T06:12:46.1007943Z&quot;</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;$version&quot;</span><span class="p">:</span> <span class="mi">1</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;reported&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;$metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-08-06T15:16:32.2689851Z&quot;</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;$version&quot;</span><span class="p">:</span> <span class="mi">313</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>Click Save</li>
+<li>Turn on the device and you are ready to go</li>
+</ul>
+<h3 id="optional-device-properties">Optional device properties</h3>
+<p>Customization's to lora devices are set by creating specific twin desired properties on the device. The following customization's are available:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Configuration</th>
+<th>When to use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enable/disable downstream messages</td>
+<td>Allows disabling the downstream (cloud to device) for a device. By default downstream messages are enabled</td>
+<td>Add twin desired property <code>"Downlink": false</code> to disable downstream messages. The absence of the twin property or setting value to <code>true</code> will enable downlink messages.</td>
+<td>Disabling downlink on devices decreases message processing latency, since the network server will not look for cloud to device messages when an uplink is received. Only disable it in devices that are not expecting messages from cloud. Acknowledgement of confirmed upstream are sent to devices even when downlink is set to false</td>
+</tr>
+<tr>
+<td>Preferred receive window</td>
+<td>Allows setting the device preferred receive window (RX1 or RX2). The default preferred receive window is 1</td>
+<td>Add twin desired property <code>"PreferredWindow": 2</code> sets RX2 as preferred window. The absence of the twin property or setting the value to <code>1</code> will set RX1 as preferred window.</td>
+<td>Using the second receive window increases the chances that the end application can process the upstream message and send a cloud to device message to the lora device without requiring and additional upstream message. Basically completing the round trip in less than 2 seconds.</td>
+</tr>
+<tr>
+<td>Message Deduplication</td>
+<td>Allows controlling the handling of duplicate messages received by multiple gateways.The default is None.</td>
+<td>Add twin desired property <code>"Deduplication": "Drop"</code> to instruct dropping duplicate messages on the gateway, set it to <code>"Mark"</code> if you want to mark messages to the IotHub with <code>"dupmsg": true</code> in case the message was already processed. Example payload: Device: [47AAC86800430028], Data:[{"time":null,"tmms":0,"tmst":3201165987,"freq":868.3,"chan":1,"rfch":1,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","rssi":-61,"lsnr":8.2,"size":14,"data":{"value":1},"port":10,"fcnt":2,"rawdata":"QImRWQIAAgAK8I3rbqc=","eui":"47AAC86800430028","gatewayid":"simulatorpaschule1","edgets":1550501633879,<code>"dupmsg": true</code>}]</td>
+<td>Deduplication on the gateway allows you to control how you want to handle duplicate messages in a multi gateway environment without having to add additional logic on the receiving or processing end.</td>
+</tr>
+<tr>
+<td>RX1 Datarate Offset</td>
+<td>Allows setting an offset between received Datarate and retransmit datarate as specified in the LoRa Specifiations. Valid for <abbr title="Over The Air Activation">OTAA</abbr> devices. If an invalid value is provided the network server will use default value 0.</td>
+<td>Add twin desired property <code>"RX1DROffset": #</code> where # is a valid specification number to create an offset of # between received Datarate and Transmit Datarate. Please find the full table in the LoRa Specification example: upstream DR2, with a RX1DROffset of 1 will result in a transmission on DR1</td>
+<td>Setting an offset between receive and transmit could help deal with very saturated network. Warning, this is an advanced option, please only use if you are aware of your network specification.</td>
+</tr>
+<tr>
+<td>RX2 Datarate</td>
+<td>Allows setting a custom Datarate for second receive windows. Valid for <abbr title="Over The Air Activation">OTAA</abbr> devices. If an invalid value is provided the network server will use default value 0 (DR0).</td>
+<td>Add twin desired property <code>"RX2DataRate": #</code> where # is a valid specification number to set the RX2 DR to DR#. Example: if a value of 2 is provided, second receive windows will use DR2 instead of the default DR0.</td>
+<td>Setting a custom RX2 Datarate could help your RX2 devices to benefit of higher datarate. Warning, this is an advanced topic, changing it to higher datarate could be very dangerous and result in RX2 becoming unusable if the devices are not within reach of the specified datarate. Usage of this feature is especially not recommanded if ADR is enabled.</td>
+</tr>
+<tr>
+<td>RX Delay</td>
+<td>Allows setting a custom wait time between receiving and transmission as specified in the specification.</td>
+<td>Add twin desired property <code>"RXDelay": #</code> where # is a valid specification number to set the RxDelay to wait for # seconds. Note that values 0 and 1 are default. Example: if a value of 2 is provided, The RX1 transmit windows will open 2 second after receiving the message. RX2 windows will always stay 1 second after RX1</td>
+<td>Setting a custom RXDelay could be usefull in case of long processing time, this could give more time to the server/device to compute their answers and lower the risk of missing the transmission windows.  The defaults should work in most production scenarios, we recommend to use the default unless you have an explicit need for a longer delay</td>
+</tr>
+<tr>
+<td>Disable <abbr title="Activation By Personalization">ABP</abbr> relax mode</td>
+<td>Allows to disable the relax mode when using <abbr title="Activation By Personalization">ABP</abbr>. By default relaxed mode is enabled</td>
+<td>Add twin desired property <code>"ABPRelaxMode": false</code> will disable relaxed mode.</td>
+<td>Disable the relaxed mode to minimize reply attack possiblitites. Allowing relaxed mode, allows a device to reset framecounters on the server by specifying 0/1. <strong>Important</strong>: in production deployments, we recommend turning relaxed mode off</td>
+</tr>
+<tr>
+<td>Specify frame counter up start value</td>
+<td>Allows to explicitly specify a frame counter up start value. If the device joins, this value will be used to validate the first frame and initialize the server state for the device.</td>
+<td>Add twin desired property <code>"FCntUpStart": 10</code> will set the frame counter up to 10.</td>
+<td>If you disable <abbr title="Activation By Personalization">ABP</abbr> relax mode (see ABPRelaxMode) you usually want to set this value. In general, if your device starts with anything but 0 or 1, you specify the value here. If your device has relaxed mode disabled or uses 32 bit counters and got out of sync, this is a way to re-synchronize the counter between the server and the device. see 32bit counter support and reset counter</td>
+</tr>
+<tr>
+<td>Specify frame counter down start value</td>
+<td>Allows to explicitly specify a frame counter down start value.</td>
+<td>Add twin desired property <code>"FCntDownStart": 10</code> will set the frame counter up to 10.</td>
+<td>If your device expects a frame counter down other than 1 in the first message, use this to configure the value</td>
+</tr>
+<tr>
+<td>32bit counter support</td>
+<td>Allow the usage of 32bit counters on your device.</td>
+<td>Add twin desired property <code>"Supports32BitFCnt": true</code> will enable 32bit support for your device.</td>
+<td>Your device will keep a 32bit counter but only sends the lower 16bit over the wire. The server will infere the upper 16bit by looking at the traffic. The additional 2 bytes increase security and minimize the reply atack surface</td>
+</tr>
+<tr>
+<td>Reset counter</td>
+<td>Allows to reset the frame counters to the FCntUpStart/FCntDownStart values respectively.</td>
+<td>Add twin desired property <code>"FCntResetCounter": 1</code> will use the values specified in <code>"FCntUpStart"</code> and <code>"FCntDownStart"</code> to set the framecounters to the desired values. The <code>"FCntResetCounter"</code> in the desired properties has to be higher than the value in the reported properties for this to take effect. If there is no value in the reporte properties yet, it will be applied and the reported properties get updated, as soon as the counters got updated.</td>
+<td>If your device got out of sync (missed frames larger than the specified MAX_FCNT_GAP in the specification (16384 as of this writing)), you can re-synchronize the counters using this reset mechanism.</td>
+</tr>
+<tr>
+<td>Device Connection Timeout</td>
+<td>Allows defining a sliding expiration to the connection between the leaf device and IoT/Edge Hub. The default is none, which causes the connection to not be dropped</td>
+<td>Add twin desired property <code>"KeepAliveTimeout": 60</code> to add a 60 seconds sliding expiration. The minimum value is 60 seconds.</td>
+<td>Enabling device connection timeout allows a large device deployment to have a better usage of gateway resources by limiting open connections. We don't recommend enabling connection timeout in devices that send confirmed messages and/or expected cloud to device messages, as the reconnection time might prevent the network server from responding in time.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Important</strong>: changes made to twin desired properties in devices that are already connected will only take effect once the network server is restarted or <a href="#cache-clearing">cache is cleared</a>.</p>
+<h3 id="device-reported-properties">Device Reported Properties</h3>
+<p>This section provide a brief description of the device reported properties you can see appear on your device.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Used By</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DataRate</td>
+<td>The Device Current Datarate</td>
+<td>This value will be only reported if you are using Adaptive Data Rate</td>
+</tr>
+<tr>
+<td>TxPower</td>
+<td>The Device Current Transmit Power</td>
+<td>This value will be only reported if you are using Adaptive Data Rate</td>
+</tr>
+<tr>
+<td>NbRep</td>
+<td>The Device Current repetition when transmitting. E.g. if set to two, the device will transmit twice his upstream messages</td>
+<td>This value will be only reported if you are using Adaptive Data Rate</td>
+</tr>
+<tr>
+<td>RX2DataRate</td>
+<td>The Device Current Rx2Datarate</td>
+<td>This value will be only reported if you set a Custom property as specified in the previous section. The two values might differ as a device value is currently updated only as part of the join process.</td>
+</tr>
+<tr>
+<td>RX1DROffset</td>
+<td>The Device Current RX1DROffset</td>
+<td>This value will be only reported if you set a Custom property as specified in the previous section. The two values might differ as a device value is currently updated only as part of the join process.</td>
+</tr>
+<tr>
+<td>RXDelay</td>
+<td>The Device Current RXDelay</td>
+<td>This value will be only reported if you set a Custom property as specified in the previous section. The two values might differ as a device value is currently updated only as part of the join process.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="decoders">Decoders</h3>
+<p>The SensorDecoder tag is used to define which method will be used to decode the LoRa payload. If you leave it out or empty it will send the raw decrypted payload in the data field of the json message as <strong>Base64 encoded</strong> value to IoT Hub.</p>
+<p>If you want to decode it on the Edge you have the following two options:</p>
+<ol>
+<li>
+<p>Specify a method that implements the right logic in the <code>LoraDecoders</code> class in the <code>LoraDecoders.cs</code> file of the <code>LoRaWan.NetworkServer</code>.</p>
+</li>
+<li>
+<p>Adapt the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Samples/DecoderSample">DecoderSample</a> which allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. <a href="../samples/decoders/decoder/">This description</a> shows you how to get started.</p>
+</li>
+</ol>
+<p>In both cases, we have already provided a simple decoder called <code>"DecoderValueSensor"</code> that takes the whole payload as a single numeric value and constructs the following json output as a response (The example of an Arduino sending a sensor value as string (i.e. "23.5") is available in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a>):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="err">.....</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;value&quot;</span><span class="p">:</span> <span class="mf">23.5</span><span class="p">}</span>
+  <span class="err">.....</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If you want the raw decrypted payload to be sent to IoT Hub as <strong>Hex encoded</strong> value in the data field of the json message, you can set the decoder to <code>"DecoderHexSensor"</code>. The byte array {1, 2, 4, 8, 255} for example will be converted to "01020408FF" by this built-in decoder.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="err">.....</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;01020408FF&quot;</span><span class="p">}</span>
+  <span class="err">.....</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>To add the sample <code>"DecoderValueSensor"</code> or <code>"DecoderHexSensor</code>" to the sample LoRa device configured above, change it's desired properties in IoT Hub as follows for option 1:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span> <span class="s2">&quot;App EUI&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;AppKey&quot;</span><span class="p">:</span> <span class="s2">&quot;App Key&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;GatewayID&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span> <span class="s2">&quot;DecoderValueSensor&quot;</span>
+  <span class="p">},</span>
+</code></pre></div>
+<p>or as follows for option 2:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span> <span class="s2">&quot;App EUI&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;AppKey&quot;</span><span class="p">:</span> <span class="s2">&quot;App Key&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;GatewayID&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span> <span class="s2">&quot;http://your_container_name/api/DecoderValueSensor&quot;</span>
+  <span class="p">},</span>
+</code></pre></div>
+<p>The <code>"DecoderValueSensor"</code> and <code>"DecoderHexSensor"</code> decoders are not a best practice but it makes it easier to experiment sending sensor readings to IoT Hub without having to change any code.</p>
+<p>if the SensorDecoder tag has a "http" in it's string value, it will forward the decoding call to an external decoder, as described in option 2 above, using standard Http. The call expects a return value with the same format as the json here above or an error string.</p>
+<h3 id="cache-clearing">Cache Clearing</h3>
+<p>Due to the gateway caching the device information (tags) for 1 day, if the device tries to connect before you have provisioned it, it will not be able to connect because it will be considered a device for another LoRa network.
+To clear the cache and allow the device to connect follow these steps:</p>
+<ul>
+<li>IoT Hub -&gt; IoT Edge -&gt; click on the device ID of your gateway</li>
+<li>Click on LoRaWanNetworkSrvModule</li>
+<li>Click Direct Method</li>
+<li>Type "ClearCache" on Method Name</li>
+<li>Click Invoke Method</li>
+</ul>
+<p>Alternatively you can restart the Gateway or the LoRaWanNetworkSrvModule container.</p>
+<h2 id="monitoring-and-logging">Monitoring and Logging</h2>
+<p>There is a logging mechanism that outputs valuable information to the console of the docker container and can optionally forward these messages to IoT Hub.</p>
+<p>You can control logging with the following environment variables in the <strong>LoRaWanNetworkSrvModule</strong> IoT Edge module:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LOG_LEVEL</td>
+<td>"1" or "Debug"</td>
+<td>Everything is logged, including the up- and downstream messages to the packet forwarder.</td>
+</tr>
+<tr>
+<td></td>
+<td>"2" or "Information"</td>
+<td>Errors and information are logged.</td>
+</tr>
+<tr>
+<td></td>
+<td>"3" or "Error"</td>
+<td>Only errors are logged. (default if omitted)</td>
+</tr>
+</tbody>
+</table>
+<p>For production environments, the <strong>LOG_LEVEL</strong> should be set to <strong>Error</strong>.</p>
+<p>Setting <strong>LOG_LEVEL</strong> to <strong>Debug</strong> causes a lot of messages to be generated. Make sure to set <strong>LOG_TO_HUB</strong> to <strong>false</strong> in this case.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LOG_TO_HUB</td>
+<td>true</td>
+<td>Log info are sent from the module to IoT Hub.</td>
+</tr>
+<tr>
+<td></td>
+<td>false</td>
+<td>Log info is not sent to IoT Hub (default if omitted)</td>
+</tr>
+</tbody>
+</table>
+<p>You can use VSCode or <a href="https://github.com/azure/azure-iot-cli-extension">Azure IoT <abbr title="Command Line Interface">CLI</abbr> extension</a> to monitor the log messages directly in IoT Hub if <strong>LOG_TO_HUB</strong> is set to <strong>true</strong>.</p>
+<p>Log in to the gateway and use <code>sudo docker logs LoRaWanNetworkSrvModule -f</code> to follow the logs if you are not logging to IoT Hub.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LOG_TO_CONSOLE</td>
+<td>true</td>
+<td>Log to docker logs (default if omitted)</td>
+</tr>
+<tr>
+<td></td>
+<td>false</td>
+<td>Does not log to docker logs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="local-processing-and-routing">Local Processing and Routing</h2>
+<p>By default the network server does not use the local edge queue (edgeHub), sending directly messages to IoT Hub. If you need to do local processing, please set the following setting to true on the <code>LoRaWanNetworkSrvModule</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ENABLE_GATEWAY</td>
+<td>true</td>
+<td>Messages go to edgeHub and then to IoT Hub</td>
+</tr>
+<tr>
+<td></td>
+<td>false</td>
+<td>Messages go directly to IoT Hub, skipping local edgeHub Queue</td>
+</tr>
+</tbody>
+</table>
+<h2 id="customize-the-solution-deep-dive">Customize the solution &amp; Deep dive</h2>
+<p>Have a look at the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine">LoRaEngine folder</a> for more in details explanation.</p>
+<h2 id="cloud-to-device-message">Cloud to device message</h2>
+<p>Sending cloud to device messages in the solution uses the following JSON format to describe the downstream:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;devEUI&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;fport&quot;</span><span class="p">:</span> <span class="err">i</span><span class="kc">nte</span><span class="err">ger</span><span class="p">,</span>
+  <span class="nt">&quot;confirmed&quot;</span><span class="p">:</span> <span class="err">boolea</span><span class="kc">n</span><span class="p">,</span>
+  <span class="nt">&quot;payload&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;rawPayload&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;macCommands&quot;</span><span class="p">:[</span>
+    <span class="p">{</span> <span class="nt">&quot;cid&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="fields">Fields</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>devEUI</td>
+<td>String</td>
+<td>Device EUI</td>
+<td>Only when sending messages to class C devices</td>
+</tr>
+<tr>
+<td>fport</td>
+<td>Integer</td>
+<td>Payload fport, must be between 1 and 223 if you are sending data. 0 if it is Mac command</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>confirmed</td>
+<td>Boolean</td>
+<td>Indicates if an ack is required from the LoRa device. By default <code>false</code></td>
+<td>No</td>
+</tr>
+<tr>
+<td>payload</td>
+<td>String</td>
+<td>Payload as text</td>
+<td>Either <code>payload</code> or <code>rawPayload</code> must be provided</td>
+</tr>
+<tr>
+<td>rawPayload</td>
+<td>String</td>
+<td>Payload as byte encoded in base64 format</td>
+<td>Either <code>payload</code> or <code>rawPayload</code> must be provided</td>
+</tr>
+<tr>
+<td>Mac command cid</td>
+<td>String</td>
+<td>Mac command identifier. The mac command <code>DevStatusCmd</code> is implemented, allowing you to request a device its status</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="sending-messages-using-the-azure-function">Sending messages using the Azure Function</h3>
+<p>Sending messages to class A devices is a simple task, since those devices will send an upstream link giving the network server the chance of looking in <a href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d">Azure IoT Hub cloud to device message queue</a> for pending downlink messages. Class C devices are complexer because they, for the most part, are only listening for messages. Using the cloud to message queue would not be very effective as it would require the network server to keep a client connection that would rarely be used, wasting resources. In this solution sending messages to class C devices is available through a direct method in the network server. However, in a multiple gateway scenario there is still the need to resolve the closest gateway before calling the relevant network server.</p>
+<p>The companion Azure Function deployed with the solution has a HTTP based endpoint to send messages to LoRa devices. It takes away the complexity of figuring out the device type and closest gateway.</p>
+<p>The function endpoint looks like <code>https://YOUR-FUNCTION-NAME.azurewebsites.net/api/cloudtodevicemessage/{devEUI}?code=YOUR-FUNCTION-APP-CODE</code></p>
+<p>To send a message to a device send a POST request including the content as the body:</p>
+<div class="highlight"><pre><span></span><code>curl -d <span class="s1">&#39;{&quot;rawPayload&quot;: &quot;AAA=&quot;,&quot;fport&quot;: 1}&#39;</span> -H <span class="s2">&quot;Content-Type: application/json&quot;</span> https://YOUR-FUNCTION-NAME.azurewebsites.net/api/cloudtodevicemessage/YOUR-DEVEUI?code<span class="o">=</span>YOUR-FUNCTION-APP-CODE
+</code></pre></div>
+<p>Should return</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;devEUI&quot;</span><span class="p">:</span><span class="s2">&quot;47AAC86800430028&quot;</span><span class="p">,</span><span class="nt">&quot;messageID&quot;</span><span class="p">:</span><span class="s2">&quot;10c3e09f-0e58-4d28-8da1-37bb3fcf9435&quot;</span><span class="p">,</span><span class="nt">&quot;deviceClassType&quot;</span><span class="p">:</span><span class="s2">&quot;A&quot;</span><span class="p">}</span>
+</code></pre></div>
+<h3 id="class-a-devices">Class A devices</h3>
+<p>The solution support sending Cloud to device (C2D) messages to LoRa class A devices using <a href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d">standard IoT Hub SDKs</a>. The message body should follow the following contract:</p>
+<p><img alt="C2D portal" src="../images/cloudtodevice.png" /></p>
+<p>The following tools can be used to send cloud to devices messages from Azure :</p>
+<ul>
+<li><a href="http://portal.azure.com">Azure Portal</a> &rarr; IoT Hub &rarr; Devices &rarr; message to device</li>
+<li><a href="https://github.com/azure/azure-iot-cli-extension">Azure IoT <abbr title="Command Line Interface">CLI</abbr> Extension</a></li>
+<li><a href="https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit">Visual Studio Code IoT Hub Extension</a></li>
+</ul>
+<p>In confirmed messages a ConfirmedDataDown message will be send to the LoRa device (as in picture above and below). You can enable additional message tracking options by setting the C2D message id to a value (C2D message ID is automatically populated with the Device Explorer tool used in the image below).</p>
+<p><img alt="C2D portal" src="../images/sendC2DConfirmed.png" /></p>
+<p>As soon as the device acknowledges the message, it will report it in the logs and as a message property named 'C2DMsgConfirmed' on a message upstream (or generate an empty message in case of an empty ack message). The value of the message property will be set to the C2D message id that triggered the response if not null, otherwise to 'C2D Msg Confirmation'. You can find here below a set of picture illustrating the response when the C2D message id was sent to the value '4d3d0cd3-603a-4e00-a441-74aa55f53401'.</p>
+<p><img alt="C2D portal" src="../images/receiveC2DConfirmation.png" /></p>
+<h3 id="class-c-devices">Class C devices</h3>
+<p>To send downstream messages to class C devices the following is required:</p>
+<ul>
+<li>The device twin desired property <code>"ClassType": "C"</code> must be set.</li>
+<li>The device must send at least one message upstream.</li>
+</ul>
+<p>Once the requirements are met, sending downstream messages is achieved by calling the direct method <code>CloudToDeviceMessage</code> in the module client. In Azure Portal:</p>
+<ul>
+<li><a href="http://portal.azure.com">Azure Portal</a> &rarr; IoT Hub &rarr; IoT Edge &rarr; LoRaWanNetworkSrvModule (under Modules) &rarr; Direct Method</li>
+<li><a href="https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit">Visual Studio Code IoT Hub Extension</a></li>
+</ul>
+<p>The method name is <code>CloudToDeviceMessage</code> and the payload is the JSON following the structure previously described. Don't forget to set a value to the <code>devEUI</code> property.</p>
+<p><img alt="C2D Class C portal" src="../images/cloudtodevice-classc.png" /></p>
+<h2 id="mac-commands">MAC Commands</h2>
+<p>The Solution has an initial support for MAC Commands. Currently only the command Device Status is available. The command will return the device status (battery and communication margin). To try it, send a Cloud to Device message with the following format:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;fport&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;macCommands&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span> <span class="nt">&quot;cid&quot;</span><span class="p">:</span> <span class="s2">&quot;DevStatusCmd&quot;</span> <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Home
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../user-guide/devguide/" class="md-footer__link md-footer__link--next" aria-label="Next: Developer Guidance" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Developer Guidance
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+      <a href="https://github.com/Azure/iotedge-lorawan-starterkit" target="_blank" rel="noopener" title="iotedge-lorawan-starterkit on GitHub" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
