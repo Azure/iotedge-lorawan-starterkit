@@ -940,55 +940,125 @@
 <p>Following the LoRaWAN  Network Server (LNS) specification, each Basics Station (LBS) will at some point invoke the discovery endpoint on a LNS. Subsequently, it will establish a data connection on the data endpoint to receive its setup information. To ensure that the LBS is able to receive the setup information, you will need to add the LBS configuration (in LNS protocol specification called: "<code>router_config</code>") to IoT Hub. An LBS that does not have its configuration stored in IoT Hub will not be able to connect to the LNS.</p>
 <p>In the following we describe how to register an LBS in IoT Hub and how to store its configuration.</p>
 <ol>
-<li>Create an IoT Hub device that has a name equal to the LBS EUI in hex-representation, e.g. <code>DCA632FFFEB32FC6</code>.</li>
-<li>The LBS configuration needs to be stored as a desired twin property of the newly created LBS device. Make sure to store the configuration under <code>properties.desired.routerConfig</code>.</li>
+<li>
+<p>Create an IoT Hub device that has a name equal to the LBS EUI in hex-representation, e.g. <code>DCA632FFFEB32FC6</code>. If you are running a dev kit on a Linux machine, the EUI will be retrieved from the MAC address of the eth0 interface as follows:</p>
+<div class="highlight"><pre><span></span><code>cat /sys/class/net/eth0/address <span class="c1"># prints the MAC Address of eth0</span>
+<span class="c1"># Assuming aa:bb:cc:00:11:22 is the returned MAC Address</span>
+<span class="c1"># your EUI will be AABBCCFFFE001122 </span>
+<span class="c1"># Please note the insertion of the literals &#39;FFFE&#39;  in the middle, as per https://doc.sm.tc/station/glossary.html?highlight=mac</span>
+</code></pre></div>
+</li>
+<li>
+<p>The LBS configuration needs to be stored as a desired twin property of the newly created LBS device. Make sure to store the configuration under <code>properties.desired.routerConfig</code>.</p>
+</li>
 <li>The configuration follows the <code>router_config</code> format from the LNS protocol as closely as possible. However, since device twins encode numbers as 32-bit values and given some configuration properties (such as EUIs) are 64-bit numbers, there are some minor differences.</li>
 <li>The <code>JoinEui</code> nested array must consist of hexadecimal-encoded strings. The property should look similar to: <code>"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]</code></li>
 <li>
 <p>A full configuration example might look like this, relative to the desired twin property path <code>properties.desired</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;routerConfig&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;NetID&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-    <span class="nt">&quot;JoinEui&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;DCA632FFFEB32FC5&quot;</span><span class="p">,</span> <span class="s2">&quot;DCA632FFFEB32FC7&quot;</span><span class="p">]],</span>
-    <span class="nt">&quot;region&quot;</span><span class="p">:</span> <span class="s2">&quot;EU863&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;hwspec&quot;</span><span class="p">:</span> <span class="s2">&quot;sx1301/1&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;freq_range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">863000000</span><span class="p">,</span> <span class="mi">870000000</span><span class="p">],</span>
-    <span class="nt">&quot;DRs&quot;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="p">[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-      <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-      <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-      <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-      <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-      <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="p">],</span>
-    <span class="nt">&quot;sx1301_conf&quot;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="p">{</span>
-        <span class="nt">&quot;radio_0&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;freq&quot;</span><span class="p">:</span> <span class="mi">867500000</span> <span class="p">},</span>
-        <span class="nt">&quot;radio_1&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;freq&quot;</span><span class="p">:</span> <span class="mi">868500000</span> <span class="p">},</span>
-        <span class="nt">&quot;chan_FSK&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">300000</span> <span class="p">},</span>
-        <span class="nt">&quot;chan_Lora_std&quot;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-          <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-          <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">-200000</span><span class="p">,</span>
-          <span class="nt">&quot;bandwidth&quot;</span><span class="p">:</span> <span class="mi">250000</span><span class="p">,</span>
-          <span class="nt">&quot;spread_factor&quot;</span><span class="p">:</span> <span class="mi">7</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;chan_multiSF_0&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">-400000</span> <span class="p">},</span>
-        <span class="nt">&quot;chan_multiSF_1&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">-200000</span> <span class="p">},</span>
-        <span class="nt">&quot;chan_multiSF_2&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">},</span>
-        <span class="nt">&quot;chan_multiSF_3&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">-400000</span> <span class="p">},</span>
-        <span class="nt">&quot;chan_multiSF_4&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">-200000</span> <span class="p">},</span>
-        <span class="nt">&quot;chan_multiSF_5&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">},</span>
-        <span class="nt">&quot;chan_multiSF_6&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">200000</span> <span class="p">},</span>
-        <span class="nt">&quot;chan_multiSF_7&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;enable&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nt">&quot;radio&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;if&quot;</span><span class="p">:</span> <span class="mi">400000</span> <span class="p">}</span>
-      <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="nt">&quot;nocca&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-    <span class="nt">&quot;nodc&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-    <span class="nt">&quot;nodwell&quot;</span><span class="p">:</span> <span class="kc">true</span>
-  <span class="p">}</span>
-<span class="p">}</span>
+<p><details>
+    <summary>EU863 Example Configuration</summary></p>
+<div class="highlight"><pre><span></span><code>```json
+{
+  &quot;routerConfig&quot;: {
+    &quot;NetID&quot;: [1],
+    &quot;JoinEui&quot;: [[&quot;DCA632FFFEB32FC5&quot;, &quot;DCA632FFFEB32FC7&quot;]],
+    &quot;region&quot;: &quot;EU863&quot;,
+    &quot;hwspec&quot;: &quot;sx1301/1&quot;,
+    &quot;freq_range&quot;: [863000000, 870000000],
+    &quot;DRs&quot;: [
+      [11, 125, 0],
+      [10, 125, 0],
+      [9, 125, 0],
+      [8, 125, 0],
+      [7, 125, 0],
+      [7, 250, 0]
+    ],
+    &quot;sx1301_conf&quot;: [
+      {
+        &quot;radio_0&quot;: { &quot;enable&quot;: true, &quot;freq&quot;: 867500000 },
+        &quot;radio_1&quot;: { &quot;enable&quot;: true, &quot;freq&quot;: 868500000 },
+        &quot;chan_FSK&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 1, &quot;if&quot;: 300000 },
+        &quot;chan_Lora_std&quot;: {
+          &quot;enable&quot;: true,
+          &quot;radio&quot;: 1,
+          &quot;if&quot;: -200000,
+          &quot;bandwidth&quot;: 250000,
+          &quot;spread_factor&quot;: 7
+        },
+        &quot;chan_multiSF_0&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 1, &quot;if&quot;: -400000 },
+        &quot;chan_multiSF_1&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 1, &quot;if&quot;: -200000 },
+        &quot;chan_multiSF_2&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 1, &quot;if&quot;: 0 },
+        &quot;chan_multiSF_3&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 0, &quot;if&quot;: -400000 },
+        &quot;chan_multiSF_4&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 0, &quot;if&quot;: -200000 },
+        &quot;chan_multiSF_5&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 0, &quot;if&quot;: 0 },
+        &quot;chan_multiSF_6&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 0, &quot;if&quot;: 200000 },
+        &quot;chan_multiSF_7&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 0, &quot;if&quot;: 400000 }
+      }
+    ],
+    &quot;nocca&quot;: true,
+    &quot;nodc&quot;: true,
+    &quot;nodwell&quot;: true
+  }
+}
+```
 </code></pre></div>
+</details>
+<p><details>
+    <summary>US902 Example Configuration</summary></p>
+<div class="highlight"><pre><span></span><code>```json
+{
+  &quot;routerConfig&quot;: {
+    &quot;NetID&quot;: [1],
+    &quot;JoinEui&quot;: [[&quot;DCA632FFFEB32FC5&quot;, &quot;DCA632FFFEB32FC7&quot;]],
+    &quot;region&quot;: &quot;US902&quot;,
+    &quot;hwspec&quot;: &quot;sx1301/1&quot;,
+    &quot;freq_range&quot;: [902000000, 928000000],
+    &quot;DRs&quot;: [
+      [10, 125, 0],
+      [9, 125, 0],
+      [8, 125, 0],
+      [7, 125, 0],
+      [8, 500, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+      [12, 500, 1],
+      [11, 500, 1],
+      [10, 500, 1],
+      [9, 500, 1],
+      [8, 500, 1],
+      [8, 500, 1]
+    ],
+    &quot;sx1301_conf&quot;: [
+      {
+        &quot;radio_0&quot;: { &quot;enable&quot;: true, &quot;freq&quot;: 902700000 },
+        &quot;radio_1&quot;: { &quot;enable&quot;: true, &quot;freq&quot;: 903400000 },
+        &quot;chan_FSK&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 1, &quot;if&quot;: 300000 },
+        &quot;chan_Lora_std&quot;: {
+          &quot;enable&quot;: true,
+          &quot;radio&quot;: 0,
+          &quot;if&quot;: 300000,
+          &quot;bandwidth&quot;: 500000,
+          &quot;spread_factor&quot;: 8
+        },
+        &quot;chan_multiSF_0&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 0, &quot;if&quot;: -400000 },
+        &quot;chan_multiSF_1&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 0, &quot;if&quot;: -200000 },
+        &quot;chan_multiSF_2&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 0, &quot;if&quot;: 0 },
+        &quot;chan_multiSF_3&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 0, &quot;if&quot;: 200000 },
+        &quot;chan_multiSF_4&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 1, &quot;if&quot;: -300000 },
+        &quot;chan_multiSF_5&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 1, &quot;if&quot;: -100000 },
+        &quot;chan_multiSF_6&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 1, &quot;if&quot;: 100000 },
+        &quot;chan_multiSF_7&quot;: { &quot;enable&quot;: true, &quot;radio&quot;: 1, &quot;if&quot;: 300000 }
+      }
+    ],
+    &quot;nocca&quot;: true,
+    &quot;nodc&quot;: true,
+    &quot;nodwell&quot;: true
+  }
+}
+```
+</code></pre></div>
+</details>
 </li>
 <li>
 <p>A more thorough description of <code>sx1301_conf</code> can be found at <a href="https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message">The LNS Protocol</a> specification.</p>
