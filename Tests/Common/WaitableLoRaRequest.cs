@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -49,6 +50,21 @@ namespace LoRaWan.Tests.Common
                                                  IPacketForwarder packetForwarder = null,
                                                  TimeSpan? startTimeOffset = null,
                                                  TimeSpan? constantElapsedTime = null,
+                                                 bool useRealTimer = false) =>
+            Create(rxpk, LoRaEnumerable.Repeat(constantElapsedTime ?? TimeSpan.Zero), packetForwarder, startTimeOffset, useRealTimer);
+
+        /// <summary>
+        /// Creates a WaitableLoRaRequest that uses a deterministic time handler.
+        /// </summary>
+        /// <param name="rxpk">Rxpk instance.</param>
+        /// <param name="elapsedTimes">Returns an elapsed time every time it is requested.</param>
+        /// <param name="packetForwarder">PacketForwarder instance.</param>
+        /// <param name="startTimeOffset">Is subtracted from the current time to determine the start time for the deterministic time watcher. Default is TimeSpan.Zero.</param>
+        /// <param name="useRealTimer">Allows you to opt-in to use a real, non-deterministic time watcher.</param>
+        public static WaitableLoRaRequest Create(Rxpk rxpk,
+                                                 IEnumerable<TimeSpan> elapsedTimes,
+                                                 IPacketForwarder packetForwarder = null,
+                                                 TimeSpan? startTimeOffset = null,
                                                  bool useRealTimer = false)
         {
             var request = new WaitableLoRaRequest(rxpk,
@@ -57,12 +73,11 @@ namespace LoRaWan.Tests.Common
 
             if (!useRealTimer)
             {
-                constantElapsedTime ??= TimeSpan.Zero;
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (!RegionManager.TryResolveRegion(rxpk, out var region))
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     throw new InvalidOperationException("Could not resolve region.");
-                var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
+                var timeWatcher = new TestLoRaOperationTimeWatcher(region, elapsedTimes);
                 request.UseTimeWatcher(timeWatcher);
             }
 

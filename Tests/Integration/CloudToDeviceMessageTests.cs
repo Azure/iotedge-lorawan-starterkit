@@ -972,7 +972,7 @@ namespace LoRaWan.Tests.Integration
                 .CreateMessage();
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                .ReturnsAsync(cloudToDeviceMessage, TimeSpan.FromMilliseconds(2001));
+                .ReturnsAsync(cloudToDeviceMessage);
 
             LoRaDeviceClient.Setup(x => x.AbandonAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
@@ -991,7 +991,13 @@ namespace LoRaWan.Tests.Integration
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk, useRealTimer: true);
+            using var request = WaitableLoRaRequest.Create(rxpk, new[]
+            {
+                TimeSpan.FromMilliseconds(100),
+                TimeSpan.FromMilliseconds(100),
+                TimeSpan.FromSeconds(3),
+                TimeSpan.FromSeconds(3)
+            }, PacketForwarder);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
