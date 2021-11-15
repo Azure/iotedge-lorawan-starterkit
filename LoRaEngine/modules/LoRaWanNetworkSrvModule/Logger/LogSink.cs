@@ -209,9 +209,9 @@ namespace LoRaWan
                               ? new StringValues(SplitIntoLines(log).Append(string.Empty).ToArray()) // re-normalize
                               : new StringValues(log);
 
-                    for (var attempt = 1; ; attempt++)
+                    foreach (var line in lines)
                     {
-                        foreach (var line in lines)
+                        for (var attempt = 1; ; attempt++)
                         {
                             try
                             {
