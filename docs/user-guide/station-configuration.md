@@ -18,113 +18,113 @@ In the following we describe how to register an LBS in IoT Hub and how to store 
    2. The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]`
    3. A full configuration example might look like this, relative to the desired twin property path `properties.desired`:
 
-    <details>
-      <summary>EU863 Example Configuration</summary>
+      <details>
+        <summary>EU863 Example Configuration</summary>
 
-      ```json
-      {
-        "routerConfig": {
-          "NetID": [1],
-          "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
-          "region": "EU863",
-          "hwspec": "sx1301/1",
-          "freq_range": [863000000, 870000000],
-          "DRs": [
-            [11, 125, 0],
-            [10, 125, 0],
-            [9, 125, 0],
-            [8, 125, 0],
-            [7, 125, 0],
-            [7, 250, 0]
-          ],
-          "sx1301_conf": [
-            {
-              "radio_0": { "enable": true, "freq": 867500000 },
-              "radio_1": { "enable": true, "freq": 868500000 },
-              "chan_FSK": { "enable": true, "radio": 1, "if": 300000 },
-              "chan_Lora_std": {
-                "enable": true,
-                "radio": 1,
-                "if": -200000,
-                "bandwidth": 250000,
-                "spread_factor": 7
-              },
-              "chan_multiSF_0": { "enable": true, "radio": 1, "if": -400000 },
-              "chan_multiSF_1": { "enable": true, "radio": 1, "if": -200000 },
-              "chan_multiSF_2": { "enable": true, "radio": 1, "if": 0 },
-              "chan_multiSF_3": { "enable": true, "radio": 0, "if": -400000 },
-              "chan_multiSF_4": { "enable": true, "radio": 0, "if": -200000 },
-              "chan_multiSF_5": { "enable": true, "radio": 0, "if": 0 },
-              "chan_multiSF_6": { "enable": true, "radio": 0, "if": 200000 },
-              "chan_multiSF_7": { "enable": true, "radio": 0, "if": 400000 }
-            }
-          ],
-          "nocca": true,
-          "nodc": true,
-          "nodwell": true
+        ```json
+        {
+          "routerConfig": {
+            "NetID": [1],
+            "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
+            "region": "EU863",
+            "hwspec": "sx1301/1",
+            "freq_range": [863000000, 870000000],
+            "DRs": [
+              [11, 125, 0],
+              [10, 125, 0],
+              [9, 125, 0],
+              [8, 125, 0],
+              [7, 125, 0],
+              [7, 250, 0]
+            ],
+            "sx1301_conf": [
+              {
+                "radio_0": { "enable": true, "freq": 867500000 },
+                "radio_1": { "enable": true, "freq": 868500000 },
+                "chan_FSK": { "enable": true, "radio": 1, "if": 300000 },
+                "chan_Lora_std": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": -200000,
+                  "bandwidth": 250000,
+                  "spread_factor": 7
+                },
+                "chan_multiSF_0": { "enable": true, "radio": 1, "if": -400000 },
+                "chan_multiSF_1": { "enable": true, "radio": 1, "if": -200000 },
+                "chan_multiSF_2": { "enable": true, "radio": 1, "if": 0 },
+                "chan_multiSF_3": { "enable": true, "radio": 0, "if": -400000 },
+                "chan_multiSF_4": { "enable": true, "radio": 0, "if": -200000 },
+                "chan_multiSF_5": { "enable": true, "radio": 0, "if": 0 },
+                "chan_multiSF_6": { "enable": true, "radio": 0, "if": 200000 },
+                "chan_multiSF_7": { "enable": true, "radio": 0, "if": 400000 }
+              }
+            ],
+            "nocca": true,
+            "nodc": true,
+            "nodwell": true
+          }
         }
-      }
-      ```
+        ```
 
-    </details>
+      </details>
 
-    <details>
-      <summary>US902 Example Configuration</summary>
+      <details>
+        <summary>US902 Example Configuration</summary>
 
-      ```json
-      {
-        "routerConfig": {
-          "NetID": [1],
-          "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
-          "region": "US902",
-          "hwspec": "sx1301/1",
-          "freq_range": [902000000, 928000000],
-          "DRs": [
-            [10, 125, 0],
-            [9, 125, 0],
-            [8, 125, 0],
-            [7, 125, 0],
-            [8, 500, 0],
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
-            [12, 500, 1],
-            [11, 500, 1],
-            [10, 500, 1],
-            [9, 500, 1],
-            [8, 500, 1],
-            [8, 500, 1]
-          ],
-          "sx1301_conf": [
-            {
-              "radio_0": { "enable": true, "freq": 902700000 },
-              "radio_1": { "enable": true, "freq": 903400000 },
-              "chan_FSK": { "enable": true, "radio": 1, "if": 300000 },
-              "chan_Lora_std": {
-                "enable": true,
-                "radio": 0,
-                "if": 300000,
-                "bandwidth": 500000,
-                "spread_factor": 8
-              },
-              "chan_multiSF_0": { "enable": true, "radio": 0, "if": -400000 },
-              "chan_multiSF_1": { "enable": true, "radio": 0, "if": -200000 },
-              "chan_multiSF_2": { "enable": true, "radio": 0, "if": 0 },
-              "chan_multiSF_3": { "enable": true, "radio": 0, "if": 200000 },
-              "chan_multiSF_4": { "enable": true, "radio": 1, "if": -300000 },
-              "chan_multiSF_5": { "enable": true, "radio": 1, "if": -100000 },
-              "chan_multiSF_6": { "enable": true, "radio": 1, "if": 100000 },
-              "chan_multiSF_7": { "enable": true, "radio": 1, "if": 300000 }
-            }
-          ],
-          "nocca": true,
-          "nodc": true,
-          "nodwell": true
+        ```json
+        {
+          "routerConfig": {
+            "NetID": [1],
+            "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
+            "region": "US902",
+            "hwspec": "sx1301/1",
+            "freq_range": [902000000, 928000000],
+            "DRs": [
+              [10, 125, 0],
+              [9, 125, 0],
+              [8, 125, 0],
+              [7, 125, 0],
+              [8, 500, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+              [12, 500, 1],
+              [11, 500, 1],
+              [10, 500, 1],
+              [9, 500, 1],
+              [8, 500, 1],
+              [8, 500, 1]
+            ],
+            "sx1301_conf": [
+              {
+                "radio_0": { "enable": true, "freq": 902700000 },
+                "radio_1": { "enable": true, "freq": 903400000 },
+                "chan_FSK": { "enable": true, "radio": 1, "if": 300000 },
+                "chan_Lora_std": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": 300000,
+                  "bandwidth": 500000,
+                  "spread_factor": 8
+                },
+                "chan_multiSF_0": { "enable": true, "radio": 0, "if": -400000 },
+                "chan_multiSF_1": { "enable": true, "radio": 0, "if": -200000 },
+                "chan_multiSF_2": { "enable": true, "radio": 0, "if": 0 },
+                "chan_multiSF_3": { "enable": true, "radio": 0, "if": 200000 },
+                "chan_multiSF_4": { "enable": true, "radio": 1, "if": -300000 },
+                "chan_multiSF_5": { "enable": true, "radio": 1, "if": -100000 },
+                "chan_multiSF_6": { "enable": true, "radio": 1, "if": 100000 },
+                "chan_multiSF_7": { "enable": true, "radio": 1, "if": 300000 }
+              }
+            ],
+            "nocca": true,
+            "nodc": true,
+            "nodwell": true
+          }
         }
-      }
-      ```
+        ```
 
-    </details>
+      </details>
 
    4. A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
 
