@@ -105,7 +105,7 @@ namespace LoRaWan.Tests.Common
 
         public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null) =>
             this.tcpLogListener != null
-                ? await SearchUdpLogs(predicate, options)
+                ? await SearchTcpLogs(predicate, options)
                 : await SearchIoTHubLogs(predicate, options);
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace LoRaWan.Tests.Common
                 return null;
 
             var searchResult = this.tcpLogListener != null
-                ? await SearchUdpLogs(predicate, options)
+                ? await SearchTcpLogs(predicate, options)
                 : await SearchIoTHubLogs(predicate, options);
 
             if (!searchResult.Found)
@@ -284,7 +284,7 @@ namespace LoRaWan.Tests.Common
             }
             else
             {
-                log = await SearchUdpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchTcpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
             }
 
             var timeIndexStart = log.FoundLogResult.IndexOf(token, StringComparison.Ordinal) + token.Length;
@@ -306,7 +306,7 @@ namespace LoRaWan.Tests.Common
             };
         }
 
-        private async Task<SearchLogResult> SearchUdpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchTcpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
@@ -351,9 +351,9 @@ namespace LoRaWan.Tests.Common
             return new SearchLogResult(false, processedEvents);
         }
 
-        private async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchTcpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
         {
-            return await SearchUdpLogs(evt => predicate(evt.Message), options);
+            return await SearchTcpLogs(evt => predicate(evt.Message), options);
         }
 
         private async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
