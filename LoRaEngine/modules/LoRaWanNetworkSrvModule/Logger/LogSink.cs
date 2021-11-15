@@ -296,15 +296,10 @@ namespace LoRaWan
 
             message = this.formatter?.Invoke(message) ?? message;
 
-            if (message.IndexOfAny(NewLineChars) >= 0)
-            {
-                foreach (var line in SplitIntoLines(message))
-                    _ = this.channel.Writer.TryWrite(line);
-            }
-            else
-            {
-                _ = this.channel.Writer.TryWrite(message);
-            }
+            if (message.IndexOfAny(NewLineChars) >= 0) // re-normalize line endings
+                message = string.Join('\n', SplitIntoLines(message).Append(string.Empty));
+
+            _ = this.channel.Writer.TryWrite(message);
 
             static IEnumerable<string> SplitIntoLines(string input)
             {
