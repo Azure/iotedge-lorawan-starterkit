@@ -27,7 +27,7 @@ Assuming the .pfx file is located in a folder on the host OS at /mnt/lora/certs,
 
   ```json
   "Binds":  [
-  	"/mnt/lora/certs/:/var/lorastarterkit/certs/"
+   "/mnt/lora/certs/:/var/lorastarterkit/certs/"
   ]
   ```
 
@@ -47,7 +47,7 @@ As in previous section, assuming the 'tc.trust' certificate (PEM) is located in 
 
   ```json
   "Binds":  [
-  	"/mnt/lora/certs/:/var/lorastarterkit/certs/"
+   "/mnt/lora/certs/:/var/lorastarterkit/certs/"
   ]
   ```
 
@@ -59,4 +59,3 @@ The expected location of the file can be overridden by using the **'TC_TRUST_PAT
 ## Client certification
 
 Currently LoRaWan Network Server does not implement any client certificate validation.
-
