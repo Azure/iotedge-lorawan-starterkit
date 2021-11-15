@@ -38,8 +38,24 @@ namespace LoRaWan.Tests.Common
                 listener.Start(someBackLog);
             else
                 listener.Start();
-            _ = ListenAsync(listener, processor);
+            _ = ListenAsync();
             return new SimpleTcpListener(listener);
+
+            async Task ListenAsync()
+            {
+                while (true)
+                    _ = OnAcceptAsync(await listener.AcceptTcpClientAsync().ConfigureAwait(false));
+
+                async Task OnAcceptAsync(TcpClient client)
+                {
+                    using (client)
+                    {
+                        var stream = client.GetStream();
+                        await using (stream.ConfigureAwait(false))
+                            await processor(new Context(client), stream).ConfigureAwait(false);
+                    }
+                }
+            }
         }
 
         public void Dispose()
@@ -48,22 +64,6 @@ namespace LoRaWan.Tests.Common
             if (listener is null || listener != Interlocked.CompareExchange(ref this.listener, null, listener))
                 return;
             listener.Stop();
-        }
-
-        private static async Task ListenAsync(TcpListener listener, Func<Context, NetworkStream, Task> processor)
-        {
-            while (true)
-                _ = OnAcceptAsync(await listener.AcceptTcpClientAsync().ConfigureAwait(false));
-
-            async Task OnAcceptAsync(TcpClient client)
-            {
-                using (client)
-                {
-                    var stream = client.GetStream();
-                    await using (stream.ConfigureAwait(false))
-                        await processor(new Context(client), stream).ConfigureAwait(false);
-                }
-            }
         }
     }
 }
