@@ -1300,6 +1300,8 @@ If you'd rather deploy it manually please jump directly into the <a href="../use
 <li><a href="https://azure.microsoft.com/en-us/services/iot-hub/">IoT Hub</a></li>
 <li><a href="https://azure.microsoft.com/en-us/services/functions/">Azure Function</a></li>
 <li><a href="https://azure.microsoft.com/en-us/services/cache/">Redis Cache</a></li>
+<li><a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights</a></li>
+<li><a href="https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-overview">Log Analytics</a> (when opted in to use Azure Monitor)</li>
 </ul>
 <h2 id="step-by-step-instructions">Step-by-step instructions</h2>
 <ol>
@@ -1321,6 +1323,7 @@ If you'd rather deploy it manually please jump directly into the <a href="../use
 <li><strong>Deploy Device</strong> - Do you want demo end devices to be already provisioned (one using <abbr title="Over The Air Activation">OTAA</abbr> and one using <abbr title="Activation By Personalization">ABP</abbr>)? If yes set this to true, the code located in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a> would be ready to use immediately.</li>
 <li><strong>Reset pin</strong> - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)</li>
 <li><strong>Region</strong> - In what region are you operating your device (currently only EU868 and US915 is supported)</li>
+<li><strong>useAzureMonitorOnEdge</strong> - You can opt out of using Azure Monitor services for observability on IoT Edge.</li>
 </ul>
 <p>The deployment would take c.a. 10 minutes to complete.</p>
 </li>
