@@ -31,7 +31,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
@@ -93,7 +93,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             for (var i = 0; i < 10; i++)
             {
