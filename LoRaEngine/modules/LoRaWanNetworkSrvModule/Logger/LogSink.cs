@@ -18,6 +18,7 @@ namespace LoRaWan
     using System.Threading.Channels;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Primitives;
 
     public interface ILogSink
     {
@@ -222,47 +223,54 @@ namespace LoRaWan
 
             try
             {
-                await foreach (var message in this.channel.Reader.ReadAllAsync(cancellationToken))
+                await foreach (var log in this.channel.Reader.ReadAllAsync(cancellationToken))
                 {
+                    var lines = log.IndexOfAny(NewLineChars) >= 0
+                              ? new StringValues(SplitIntoLines(log).Append(string.Empty).ToArray()) // re-normalize
+                              : new StringValues(log);
+
                     for (var attempt = 1; ; attempt++)
                     {
-                        try
+                        foreach (var line in lines)
                         {
-                            if (!client.Connected)
-                            {
-                                this.logger?.LogDebug($"Connecting to log server at (attempt {attempt}/{this.maxRetryAttempts}): " + this.serverEndpoint);
-                                await client.ConnectAsync(this.serverEndpoint.Address, this.serverEndpoint.Port);
-                            }
-
-                            var size = encoding.GetByteCount(message) + 2;
-                            var buffer = buffers.Rent(size);
-                            var bi = encoding.GetBytes(message, buffer);
-                            buffer[bi++] = 13; // CR
-                            buffer[bi++] = 10; // LF
-                            Debug.Assert(bi == size);
-
                             try
                             {
-                                await client.GetStream().WriteAsync(buffer.AsMemory(..bi), cancellationToken);
-                                break; // don't retry on success
+                                if (!client.Connected)
+                                {
+                                    this.logger?.LogDebug($"Connecting to log server at (attempt {attempt}/{this.maxRetryAttempts}): " + this.serverEndpoint);
+                                    await client.ConnectAsync(this.serverEndpoint.Address, this.serverEndpoint.Port);
+                                }
+
+                                var size = encoding.GetByteCount(line) + 2;
+                                var buffer = buffers.Rent(size);
+                                var bi = encoding.GetBytes(line, buffer);
+                                buffer[bi++] = 13; // CR
+                                buffer[bi++] = 10; // LF
+                                Debug.Assert(bi == size);
+
+                                try
+                                {
+                                    await client.GetStream().WriteAsync(buffer.AsMemory(..bi), cancellationToken);
+                                    break; // don't retry on success
+                                }
+                                finally
+                                {
+                                    buffers.Return(buffer);
+                                }
                             }
-                            finally
+                            catch (Exception ex) when (ex is SocketException or IOException)
                             {
-                                buffers.Return(buffer);
+                                this.logger?.LogError(ex, "Error writing to the logging socket.");
+                                client.Dispose();
+                                client = new TcpClient();
+                                if (attempt == this.maxRetryAttempts)
+                                {
+                                    this.logger?.LogWarning("Dropping message after all attempts failed: " + line);
+                                    break;
+                                }
+                                this.logger?.LogDebug($"Waiting (delay = {this.retryDelay}) before retrying to connecting to logging server.");
+                                await Task.Delay(this.retryDelay, cancellationToken);
                             }
-                        }
-                        catch (Exception ex) when (ex is SocketException or IOException)
-                        {
-                            this.logger?.LogError(ex, "Error writing to the logging socket.");
-                            client.Dispose();
-                            client = new TcpClient();
-                            if (attempt == this.maxRetryAttempts)
-                            {
-                                this.logger?.LogWarning("Dropping message after all attempts failed: " + message);
-                                break;
-                            }
-                            this.logger?.LogDebug($"Waiting (delay = {this.retryDelay}) before retrying to connecting to logging server.");
-                            await Task.Delay(this.retryDelay, cancellationToken);
                         }
                     }
                 }
@@ -270,6 +278,13 @@ namespace LoRaWan
             finally
             {
                 client.Dispose();
+            }
+
+            static IEnumerable<string> SplitIntoLines(string input)
+            {
+                using var reader = new StringReader(input);
+                while (reader.ReadLine() is { } line)
+                    yield return line;
             }
         }
 
@@ -294,19 +309,7 @@ namespace LoRaWan
             if (this.cancellationTokenSource.Token.IsCancellationRequested)
                 throw new ObjectDisposedException(nameof(TcpLogSink));
 
-            message = this.formatter?.Invoke(message) ?? message;
-
-            if (message.IndexOfAny(NewLineChars) >= 0) // re-normalize line endings
-                message = string.Join('\n', SplitIntoLines(message).Append(string.Empty));
-
-            _ = this.channel.Writer.TryWrite(message);
-
-            static IEnumerable<string> SplitIntoLines(string input)
-            {
-                using var reader = new StringReader(input);
-                while (reader.ReadLine() is { } line)
-                    yield return line;
-            }
+            _ = this.channel.Writer.TryWrite(this.formatter?.Invoke(message) ?? message);
         }
     }
 }

@@ -8,6 +8,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLogging)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfiguration)" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="6.0.0" />
     <PackageReference Include="Nullable" Version="$(NullablePkg)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
