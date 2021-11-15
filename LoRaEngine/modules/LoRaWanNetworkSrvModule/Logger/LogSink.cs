@@ -42,11 +42,6 @@ namespace LoRaWan
         protected virtual void CoreLog(LogLevel logLevel, string message) { /* Nop */ }
     }
 
-    public static class NullLogSink
-    {
-        public static readonly ILogSink Instance = new LogSink(LogLevel.None);
-    }
-
     public static class LogSinkExtensions
     {
         public static void LogAlways(this ILogSink logger, string message)
@@ -97,14 +92,6 @@ namespace LoRaWan
                 (null, { } snd) => snd,
                 ({ } fst, { } snd) => Create(fst, snd),
                 _ => null
-            };
-
-        public static ILogSink Create(params ILogSink[] sinks) =>
-            sinks.Length switch
-            {
-                0 => NullLogSink.Instance,
-                1 => sinks[0],
-                _ => sinks.Aggregate(Create)
             };
 
         private sealed class LogSink : ILogSink, IDisposable
