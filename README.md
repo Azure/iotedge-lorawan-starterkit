@@ -17,7 +17,6 @@ Azure IoT Edge users to experiment with LoRaWAN technology.
 ![Architecture](/Docs/Images/EdgeArchitecture.png)
 
 - [Features](#features)
-- [LoRaWAN Specification Support](#lorawan-specification-support)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [Known Issues and Limitations](#known-issues-and-limitations)
@@ -38,23 +37,6 @@ for more details)
 - Easy deployment and setup using Azure ARM templates.
 - Small to Midsize Scalability Tests.
 - Simulator for development and testing without the need to own a Gateway.
-
-## LoRaWAN Specification Support
-
-We plan to support the following key features of LoRaWAN 1.0.2 specification,
-however please note that not all of them are available as of today. Please refer
-to our release notes for more details on what is available.
-
-- Current supported Specification: *1.0.2*.
-- Support of Class A and C devices.
-- Support of **EU868** and **US915** channel frequencies.
-- Activation through ABP and OTAA.
-- Confirmed and unconfirmed upstream messages.
-- Confirmed and unconfirmed downstream messages.
-- Multi-gateways.
-- Message de-duplication.
-- Support of MAC commands.
-- ADR Support.
 
 ## Prerequisites
 
