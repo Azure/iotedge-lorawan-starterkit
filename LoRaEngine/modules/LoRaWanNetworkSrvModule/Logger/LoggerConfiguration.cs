@@ -17,14 +17,14 @@ namespace LoRaWan
         // Default: 4 (Error)
         public LogLevel LogLevel { get; set; } = LogLevel.Error;
 
-        // Gets/sets if logging to udp is enabled (used for integration tests mainly)
+        // Gets/sets if logging to TCP is enabled (used for integration tests mainly)
         // Default: false
         public bool LogToTcp { get; set; }
 
-        // Gets/sets udp address to send log
+        // Gets/sets TCP address to send log
         public string LogToTcpAddress { get; set; }
 
-        // Gets/sets udp port to send logs
+        // Gets/sets TCP port to send logs
         public int LogToTcpPort { get; set; } = 6000;
 
         /// <summary>
