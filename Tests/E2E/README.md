@@ -50,13 +50,6 @@ Configure LoRa Basics Station and Network Server to run on your local LoRa gatew
 
     In VS Code: Ctrl+Shift+P -> Azure IoT Edge: Bild and Push IoT Edge Solution -> select template file. 
 
-3. Make sure the generated deployment template (`LoRaEngine/config/deployment.lbs.json`) contains the correct region configuration in the `LoRaWanNetworkSrvModule` section, e.g.:
-    ```
-    "REGION": {
-        "value": "EU868"
-    }
-    ```
-
 3. Create deployment for a single device using generated deployment template.
 
     In VS Code, right-click on `LoRaEngine/config/deployment.lbs.json` and select Create Deployment for Single Device.

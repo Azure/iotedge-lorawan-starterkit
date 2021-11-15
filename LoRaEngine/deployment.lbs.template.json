@@ -107,9 +107,6 @@
                 },
                 "APPINSIGHTS_INSTRUMENTATIONKEY": {
                   "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
-                },
-                "REGION": {
-                  "value": "EU868"
                 }
               },
               "status": "running",
