@@ -49,9 +49,6 @@ namespace LoRaWan
 
     public static class LogSinkExtensions
     {
-        public static ILogSink And(this ILogSink first, ILogSink second) =>
-            CompositeLogSink.Create(first, second);
-
         public static void LogAlways(this ILogSink logger, string message)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
