@@ -1,4 +1,4 @@
-# LoRa Basics™ Station credentials management in 'Azure IoT Edge LoRaWAN Starter Kit'
+# Basics Station credentials management
 
 Starting with 'Azure IoT Edge LoRaWAN Starter Kit' v2.0.0, the LoRaWan Network Server runs a WebSocket endpoint compatible with [LNS Protocol](https://doc.sm.tc/station/tcproto.html) from LoRa Basics™ Station.
 
@@ -19,17 +19,17 @@ As stated above, LNS_SERVER_PFX_PATH is a path inside the IoT Edge module filesy
 
 Assuming the .pfx file is located in a folder on the host OS at /mnt/lora/certs, you will need to 'bind' this path to one in the IoT Edge module itself. In order to do so:
 
-- Log into your Azure Portal
+1. Log into your Azure Portal
 
-- Identify the IoT Edge Device in IoT Hub
+2. Identify the IoT Edge Device in IoT Hub
 
-- Set the 'LoRaWanNetworkSrvModule' HostConfiguration to include a binding for the folder
+3. Set the 'LoRaWanNetworkSrvModule' HostConfiguration to include a binding for the folder
 
-  ```json
-  "Binds":  [
-   "/mnt/lora/certs/:/var/lorastarterkit/certs/"
-  ]
-  ```
+    ```json
+    "Binds":  [
+    "/mnt/lora/certs/:/var/lorastarterkit/certs/"
+    ]
+    ```
 
 Additional reference on this process can be found [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-access-host-storage-from-module?view=iotedge-2020-11).
 
@@ -39,17 +39,17 @@ If you are making use of the bundled 'LoRaBasicsStationModule', it's possible to
 
 As in previous section, assuming the 'tc.trust' certificate (PEM) is located in a folder on the host OS at /mnt/lora/certs, you can 'bind' this path to one in the IoT Edge module itself. In order to do so:
 
-- Log into your Azure Portal
+1. Log into your Azure Portal
 
-- Identify the IoT Edge Device in IoT Hub
+2. Identify the IoT Edge Device in IoT Hub
 
-- Set the 'LoRaBasicsStationModule' HostConfiguration to include a binding for the folder
+3. Set the 'LoRaBasicsStationModule' HostConfiguration to include a binding for the folder
 
-  ```json
-  "Binds":  [
-   "/mnt/lora/certs/:/var/lorastarterkit/certs/"
-  ]
-  ```
+    ```json
+    "Binds":  [
+    "/mnt/lora/certs/:/var/lorastarterkit/certs/"
+    ]
+    ```
 
 Additional reference on this process can be found [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-access-host-storage-from-module?view=iotedge-2020-11).
 
