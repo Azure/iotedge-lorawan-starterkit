@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Common
     using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
 
     public sealed class SimpleTcpListener : IDisposable
     {
@@ -31,7 +32,9 @@ namespace LoRaWan.Tests.Common
         public static SimpleTcpListener Start(int port, Func<Context, NetworkStream, Task> processor) =>
             Start(port, null, processor);
 
-        public static SimpleTcpListener Start(int port, int? backlog, Func<Context, NetworkStream, Task> processor)
+        public static SimpleTcpListener Start(int port, int? backlog,
+                                              Func<Context, NetworkStream, Task> processor,
+                                              ILogger<SimpleTcpListener>? logger = null)
         {
             var listener = TcpListener.Create(port);
             if (backlog is { } someBackLog)
@@ -44,15 +47,34 @@ namespace LoRaWan.Tests.Common
             async Task ListenAsync()
             {
                 while (true)
-                    _ = OnAcceptAsync(await listener.AcceptTcpClientAsync().ConfigureAwait(false));
+                {
+                    try
+                    {
+                        _ = OnAcceptAsync(await listener.AcceptTcpClientAsync().ConfigureAwait(false));
+                    }
+                    catch (Exception ex) when (ex is not OutOfMemoryException)
+                    {
+                        logger?.LogError(ex, "Error accepting client connection.");
+                    }
+                }
 
                 async Task OnAcceptAsync(TcpClient client)
                 {
-                    using (client)
+                    await Task.Yield(); // Ensure remaining does not run on caller stack.
+
+                    try
                     {
                         var stream = client.GetStream();
                         await using (stream.ConfigureAwait(false))
                             await processor(new Context(client), stream).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger?.LogError(ex, "Error while processing data from the client.");
+                    }
+                    finally
+                    {
+                        client.Dispose();
                     }
                 }
             }
