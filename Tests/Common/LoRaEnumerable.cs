@@ -9,7 +9,8 @@ namespace LoRaWan.Tests.Common
     {
         public static IEnumerable<T> Repeat<T>(T value)
         {
-            yield return value;
+            while (true)
+                yield return value;
         }
     }
 }
