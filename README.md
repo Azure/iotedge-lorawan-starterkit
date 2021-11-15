@@ -27,7 +27,7 @@ Azure IoT Edge users to experiment with LoRaWAN technology.
 ## Features
 
 - LoRaWAN 1.0.2 implementation
-(see [LoRaWAN Specification Support](https://azure.github.io/iotedge-lorawan-starterkit/dev/#lorawan-specification-support)
+(see [LoRaWAN Specification Support][specificationsupport]
 for more details)
 - Device and Gateway management done completely through Azure IoT Hub.
 - Bi-directional communication between LoRa end devices and Azure cloud.
@@ -63,14 +63,14 @@ appropriate documentation based on your persona and applicability.
 
 - **Setup a LoRaWAN Gateway**: We provide an easy to use Azure ARM template and
 deployment guidance to get you quickly started with the LoRaWAN starter kit.
-Use the [Quick Start](https://azure.github.io/iotedge-lorawan-starterkit/dev/quickstart/) to setup a LoRaWAN Gateway and
+Use the [Quick Start][quickstart] to setup a LoRaWAN Gateway and
 connect to LoRA end nodes.
 - **Upgrade an existing installation**:
-Refer to the [upgrade guide](https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/upgrade/) for instructions and tips for a
+Refer to the [upgrade guide][upgradeguide] for instructions and tips for a
 clean upgrade.
 - **Develop and debug the LoRaWAN starter kit**: If you are a developer and want
 to contribute or customize the LoRaWAN starter kit, refer to our
-[Developer Guidance](https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/devguide/) for more details on how to build, test
+[Developer Guidance][devguide] for more details on how to build, test
 and deploy the kit in your dev environment. We also support a
 
 - **Enable a gateway or device to be compatible with the starter kit**: We have
@@ -80,12 +80,12 @@ implementation and focussed on the specifics on underlying architectures
 requirements; these could be specific to a gateway and the packet forwarders
 they use or to the LoRa nodes and the decoders the device may use. We have
 provided specific instructions on making these specialized hardware compatible
-with our kit. You can follow these [instructions](https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/partner/) depending on
+with our kit. You can follow these [instructions][partnerinstructions] depending on
 your scenarios and also have your device gateway highlighted on our repo.
 
 ## Known Issues and Limitations
 
-Refer to [Known Issues](https://azure.github.io/iotedge-lorawan-starterkit/dev/issues/) for known issues, gotchas and
+Refer to [Known Issues][knownissues] for known issues, gotchas and
 limitations.
 
 ## Tested Gateways
@@ -109,4 +109,11 @@ an issue in this repo.
 
 If you would like to contribute to the IoT Edge LoRaWAN Starter Kit source code,
 please base your own branch and pull request (PR) off our dev branch.
-Refer to the [Dev Guide](https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/devguide/) for development and debugging instructions.
+Refer to the [Dev Guide][devguide] for development and debugging instructions.
+
+[quickstart]:           https://azure.github.io/iotedge-lorawan-starterkit/dev/quickstart/
+[upgradeguide]:         https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/upgrade/
+[devguide]:             https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/devguide/
+[knownissues]:          https://azure.github.io/iotedge-lorawan-starterkit/dev/issues/
+[partnerinstructions]:  https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/partner/
+[specificationsupport]: https://azure.github.io/iotedge-lorawan-starterkit/dev/#lorawan-specification-support
