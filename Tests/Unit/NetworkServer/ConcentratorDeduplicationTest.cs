@@ -4,10 +4,12 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Net.WebSockets;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging.Abstractions;
+    using Moq;
     using Xunit;
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
@@ -19,12 +21,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         // false positive, ownership passed to ConcentratorDeduplication
         private readonly MemoryCache cache;
 #pragma warning restore CA2213 // Disposable fields should be disposed
+        private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
 
         public ConcentratorDeduplicationTest()
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
+            this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
+
             this.concentratorDeduplication = new ConcentratorDeduplication(
                 this.cache,
+                this.socketRegistry,
                 NullLogger<IConcentratorDeduplication>.Instance);
         }
 
@@ -51,13 +57,25 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool expectedResult)
+        [InlineData(true, true, false)]
+        // we consider sameStationAsBefore: true, activeConnectionToPreviousStation: false
+        // an edge case that we don't need to cover since we just received a message from that same station
+        [InlineData(false, true, true)]
+        [InlineData(false, false, false)]
+        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool activeConnectionToPreviousStation, bool expectedResult)
         {
             // arrange
             var stationEui = new StationEui();
             _ = this.concentratorDeduplication.ShouldDrop(defaultUpdf, stationEui);
+
+            var socketMock = new Mock<WebSocket>();
+            IWebSocketWriter<string> channel = null;
+            if (!activeConnectionToPreviousStation)
+            {
+                _ = socketMock.Setup(x => x.State).Returns(WebSocketState.Closed);
+            }
+            channel = new WebSocketTextChannel(socketMock.Object, TimeSpan.FromMinutes(1)); // send timeout not relevant
+            _ = this.socketRegistry.Register(stationEui, channel);
 
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
 

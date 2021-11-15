@@ -14,10 +14,9 @@ workloads. Alternatively, it allows sending commands from the cloud to the end
 nodes. The goal of the the project is to provide guidance and a reference for
 Azure IoT Edge users to experiment with LoRaWAN technology.
 
-![Architecture](/Docs/Pictures/EdgeArchitecture.png)
+![Architecture](/Docs/Images/EdgeArchitecture.png)
 
 - [Features](#features)
-- [LoRaWAN Specification Support](#lorawan-specification-support)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [Known Issues and Limitations](#known-issues-and-limitations)
@@ -28,7 +27,7 @@ Azure IoT Edge users to experiment with LoRaWAN technology.
 ## Features
 
 - LoRaWAN 1.0.2 implementation
-(see [LoRaWAN Specification Support](#LoRaWAN-1.0.2-Specification-Support)
+(see [LoRaWAN Specification Support][specificationsupport]
 for more details)
 - Device and Gateway management done completely through Azure IoT Hub.
 - Bi-directional communication between LoRa end devices and Azure cloud.
@@ -38,23 +37,6 @@ for more details)
 - Easy deployment and setup using Azure ARM templates.
 - Small to Midsize Scalability Tests.
 - Simulator for development and testing without the need to own a Gateway.
-
-## LoRaWAN Specification Support
-
-We plan to support the following key features of LoRaWAN 1.0.2 specification,
-however please note that not all of them are available as of today. Please refer
-to our release notes for more details on what is available.
-
-- Current supported Specification: *1.0.2*.
-- Support of Class A and C devices.
-- Support of **EU868** and **US915** channel frequencies.
-- Activation through ABP and OTAA.
-- Confirmed and unconfirmed upstream messages.
-- Confirmed and unconfirmed downstream messages.
-- Multi-gateways.
-- Message de-duplication.
-- Support of MAC commands.
-- ADR Support.
 
 ## Prerequisites
 
@@ -81,14 +63,14 @@ appropriate documentation based on your persona and applicability.
 
 - **Setup a LoRaWAN Gateway**: We provide an easy to use Azure ARM template and
 deployment guidance to get you quickly started with the LoRaWAN starter kit.
-Use the [Quick Start](/Docs/quickstart.md) to setup a LoRaWAN Gateway and
+Use the [Quick Start][quickstart] to setup a LoRaWAN Gateway and
 connect to LoRA end nodes.
 - **Upgrade an existing installation**:
-Refer to the [upgrade guide](/Docs/upgrade.md) for instructions and tips for a
+Refer to the [upgrade guide][upgradeguide] for instructions and tips for a
 clean upgrade.
 - **Develop and debug the LoRaWAN starter kit**: If you are a developer and want
 to contribute or customize the LoRaWAN starter kit, refer to our
-[Developer Guidance](/Docs/devguide.md) for more details on how to build, test
+[Developer Guidance][devguide] for more details on how to build, test
 and deploy the kit in your dev environment. We also support a
 
 - **Enable a gateway or device to be compatible with the starter kit**: We have
@@ -98,12 +80,12 @@ implementation and focussed on the specifics on underlying architectures
 requirements; these could be specific to a gateway and the packet forwarders
 they use or to the LoRa nodes and the decoders the device may use. We have
 provided specific instructions on making these specialized hardware compatible
-with our kit. You can follow these [instructions](/Docs/partner.md) depending on
+with our kit. You can follow these [instructions][partnerinstructions] depending on
 your scenarios and also have your device gateway highlighted on our repo.
 
 ## Known Issues and Limitations
 
-Refer to [Known Issues](/Docs/issues.md) for known issues, gotchas and
+Refer to [Known Issues][knownissues] for known issues, gotchas and
 limitations.
 
 ## Tested Gateways
@@ -127,4 +109,11 @@ an issue in this repo.
 
 If you would like to contribute to the IoT Edge LoRaWAN Starter Kit source code,
 please base your own branch and pull request (PR) off our dev branch.
-Refer to the [Dev Guide](/Docs/devguide.md) for development and debugging instructions.
+Refer to the [Dev Guide][devguide] for development and debugging instructions.
+
+[quickstart]:           https://azure.github.io/iotedge-lorawan-starterkit/dev/quickstart/
+[upgradeguide]:         https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/upgrade/
+[devguide]:             https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/devguide/
+[knownissues]:          https://azure.github.io/iotedge-lorawan-starterkit/dev/issues/
+[partnerinstructions]:  https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/partner/
+[specificationsupport]: https://azure.github.io/iotedge-lorawan-starterkit/dev/#lorawan-specification-support
