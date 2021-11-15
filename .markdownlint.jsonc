@@ -2,5 +2,7 @@
     // disable line length limitations for existing documentation
     "MD013": false,
     // allow same headings
-    "MD024": false
+    "MD024": false,
+    // inline html
+    "MD033": false
 }

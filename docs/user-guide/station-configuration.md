@@ -8,15 +8,18 @@ In the following we describe how to register an LBS in IoT Hub and how to store 
 
     ```bash
     cat /sys/class/net/eth0/address # prints the MAC Address of eth0
-    # Assuming aa:bb:cc:dd:ee:ff is the returned MAC Address
-    # your EUI will be AABBCCFFFEDDEEFF 
-    # Please note the insertion of FFFE in the middle, as per https://doc.sm.tc/station/glossary.html?highlight=mac
+    # Assuming aa:bb:cc:00:11:22 is the returned MAC Address
+    # your EUI will be AABBCCFFFE001122 
+    # Please note the insertion of the literals 'FFFE'  in the middle, as per https://doc.sm.tc/station/glossary.html?highlight=mac
     ```
 
 2. The LBS configuration needs to be stored as a desired twin property of the newly created LBS device. Make sure to store the configuration under `properties.desired.routerConfig`.
    1. The configuration follows the `router_config` format from the LNS protocol as closely as possible. However, since device twins encode numbers as 32-bit values and given some configuration properties (such as EUIs) are 64-bit numbers, there are some minor differences.
    2. The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]`
    3. A full configuration example might look like this, relative to the desired twin property path `properties.desired`:
+
+    <details>
+      <summary>EU863 Example Configuration</summary>
 
       ```json
       {
@@ -62,6 +65,11 @@ In the following we describe how to register an LBS in IoT Hub and how to store 
         }
       }
       ```
+
+    </details>
+
+    <details>
+      <summary>US902 Example Configuration</summary>
 
       ```json
       {
@@ -115,6 +123,8 @@ In the following we describe how to register an LBS in IoT Hub and how to store 
         }
       }
       ```
+
+    </details>
 
    4. A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
 
