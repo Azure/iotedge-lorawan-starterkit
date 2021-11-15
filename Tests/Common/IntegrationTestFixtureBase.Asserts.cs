@@ -228,11 +228,9 @@ namespace LoRaWan.Tests.Common
             if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
                 return null;
 
-            SearchLogResult searchResult;
-            if (this.tcpLogListener != null)
-                searchResult = await SearchUdpLogs(predicate, options);
-            else
-                searchResult = await SearchIoTHubLogs(predicate, options);
+            var searchResult = this.tcpLogListener != null
+                ? await SearchUdpLogs(predicate, options)
+                : await SearchIoTHubLogs(predicate, options);
 
             if (!searchResult.Found)
             {
