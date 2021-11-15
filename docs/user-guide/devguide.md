@@ -309,7 +309,7 @@ We support Azure Monitor for observability of the LoRaWAN starter kit. If you de
 APPINSIGHTS_INSTRUMENTATIONKEY={appinsight_key}
 IOT_HUB_RESOURCE_ID=/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Devices/IotHubs/{iot_hub_name}
 LOG_ANALYTICS_WORKSPACE_ID={log_analytics_workspace_id}
-LOG_ANALYTICS_SHARED_KEY="..."
+LOG_ANALYTICS_SHARED_KEY={log_analytics_shared_key}
 ```
 
 Generate a deployment manifest from `deployment_observability.layered.template.json` and deploy it to the edge devices for which you want to apply the observability. The template will set up the metrics collector module on the edge and connect it with your Log Analytics instance. The gateway will connect to your Application Insights instance. Make sure to set the `APPINSIGHTS_INSTRUMENTATIONKEY` before deploying the `deployment.template.lbs.json` solution, if you want to make sure that the gateway can connect to Application Insights. The Application Insights log level will always be the same as the console log level.
