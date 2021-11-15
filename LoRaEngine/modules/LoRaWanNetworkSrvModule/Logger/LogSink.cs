@@ -94,20 +94,18 @@ namespace LoRaWan
                 _ => null
             };
 
-        private sealed class LogSink : ILogSink, IDisposable
+        private sealed class LogSink : LoRaWan.LogSink, IDisposable
         {
             private readonly ILogSink first;
             private readonly ILogSink second;
 
-            public LogSink(ILogSink first, ILogSink second)
+            public LogSink(ILogSink first, ILogSink second) :
+                base((LogLevel)Math.Min((int)first.LogLevel, (int)second.LogLevel))
             {
-                LogLevel = (LogLevel)Math.Min((int)first.LogLevel, (int)second.LogLevel);
                 (this.first, this.second) = (first, second);
             }
 
-            public LogLevel LogLevel { get; }
-
-            public void Log(LogLevel logLevel, string message)
+            public override void Log(LogLevel logLevel, string message)
             {
                 this.first.Log(logLevel, message);
                 this.second.Log(logLevel, message);
@@ -132,7 +130,7 @@ namespace LoRaWan
         }
     }
 
-    public sealed class TcpLogSink : ILogSink, IDisposable
+    public sealed class TcpLogSink : LogSink, IDisposable
     {
         private readonly ILogger? logger;
         private readonly IPEndPoint serverEndpoint;
@@ -157,10 +155,10 @@ namespace LoRaWan
         private TcpLogSink(IPEndPoint serverEndpoint, LogLevel logLevel,
                            int? maxRetryAttempts, TimeSpan? retryDelay, int? backlogCapacity,
                            Func<string, string>? formatter,
-                           ILogger? logger)
+                           ILogger? logger) :
+            base(logLevel)
         {
             this.serverEndpoint = serverEndpoint;
-            LogLevel = logLevel;
             this.formatter = formatter;
             this.maxRetryAttempts = maxRetryAttempts ?? 6;
             this.retryDelay = retryDelay ?? TimeSpan.FromSeconds(10);
@@ -268,11 +266,9 @@ namespace LoRaWan
             }
         }
 
-        public LogLevel LogLevel { get; }
-
         private static readonly char[] NewLineChars = { '\n', '\r' };
 
-        public void Log(LogLevel logLevel, string message)
+        protected override void CoreLog(LogLevel logLevel, string message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
