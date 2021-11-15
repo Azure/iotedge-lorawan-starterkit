@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Common
                 {
                     try
                     {
-                        _ = OnAcceptAsync(await listener.AcceptTcpClientAsync().ConfigureAwait(false));
+                        _ = OnProcessAsync(await listener.AcceptTcpClientAsync().ConfigureAwait(false));
                     }
                     catch (Exception ex) when (ex is not OutOfMemoryException)
                     {
@@ -58,7 +58,7 @@ namespace LoRaWan.Tests.Common
                     }
                 }
 
-                async Task OnAcceptAsync(TcpClient client)
+                async Task OnProcessAsync(TcpClient client)
                 {
                     await Task.Yield(); // Ensure remaining does not run on caller stack.
 
