@@ -76,12 +76,6 @@ namespace LoRaWan.NetworkServer
         public string LogLevel { get; set; } = "4";
 
         /// <summary>
-        /// Gets or sets a value indicating whether logging to IoT Hub is enabled.
-        /// Default is false.
-        /// </summary>
-        public bool LogToHub { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether logging to udp is enabled (used for integration tests mainly).
         /// Default is false.
         /// </summary>
@@ -139,7 +133,6 @@ namespace LoRaWan.NetworkServer
             var facadeUrl = envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty);
             config.FacadeServerUrl = string.IsNullOrEmpty(facadeUrl) ? null : new Uri(envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty));
             config.FacadeAuthCode = envVars.GetEnvVar("FACADE_AUTH_CODE", string.Empty);
-            config.LogToHub = envVars.GetEnvVar("LOG_TO_HUB", config.LogToHub);
             config.LogLevel = envVars.GetEnvVar("LOG_LEVEL", config.LogLevel);
             config.LogToConsole = envVars.GetEnvVar("LOG_TO_CONSOLE", config.LogToConsole);
             config.LogToUdp = envVars.GetEnvVar("LOG_TO_UDP", config.LogToUdp);
