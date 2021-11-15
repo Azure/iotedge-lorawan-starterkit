@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;

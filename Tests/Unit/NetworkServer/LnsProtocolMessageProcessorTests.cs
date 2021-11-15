@@ -261,6 +261,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
         }
 
+
+        [Theory]
+        [InlineData(LnsMessageType.ProprietaryDataFrame)]
+        [InlineData(LnsMessageType.MulticastSchedule)]
+        [InlineData(LnsMessageType.RemoteShell)]
+        [InlineData(LnsMessageType.RunCommand)]
+        [InlineData(LnsMessageType.TimeSync)]
+        internal async Task InternalHandleDataAsync_ShouldNotThrow_OnNonHandledMessageTypes(LnsMessageType lnsMessageType)
+        {
+            // arrange
+            InitializeConfigurationServiceMock();
+            SetDataPathParameter();
+
+            SetupSocketReceiveAsync($@"{{ msgtype: '{lnsMessageType.ToBasicStationString()}' }}");
+
+            // act and assert
+            // (it's important that it does not throw)
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
+                                                                       this.socketMock.Object,
+                                                                       CancellationToken.None);
+        }
+
         private static Rxpk GetExpectedRxpk()
         {
             var radioMetadataUpInfo = new RadioMetadataUpInfo(0, 68116944405337035, 0, -53, (float)8.25);

@@ -1,0 +1,36 @@
+# This workflow needs to be triggered manually to create a 
+# new version of the documentation
+# 
+# this workflow needs to live in default branch to be able
+# to be triggered manually due to a limitation of github actions.
+
+# make sure to select the branch `docs/main` when triggering this action
+name: publish-docs-new-version
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version that needs to be deployed'
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.x      
+      - run: git fetch origin gh-pages --depth=1
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+      - run: | 
+          pip install mkdocs-material
+          pip install mike
+      # deploy this version and set alias to latest
+      - run: | 
+          mike deploy --push --update-aliases ${{ github.event.inputs.version }} latest
+          mike list
+      # tag the repository
+      - run: git tag docs@${{ github.event.inputs.version }}

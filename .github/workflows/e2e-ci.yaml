@@ -78,6 +78,9 @@ jobs:
     - env_var
     name: Build and Push Docker images
     runs-on: ubuntu-latest
+    env:
+      DEV_IMAGE_TAG: dev
+      MASTER_IMAGE_TAG: master
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
     steps:
     - uses: actions/checkout@v2
@@ -153,7 +156,6 @@ jobs:
       IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_CONNECTION_STRING }}
       IOT_EDGE_DEPLOYMENT_ID: "citest${{ matrix.gateway }}"
       NET_SRV_LOG_LEVEL: 1
-      NET_SRV_LOGTO_HUB: false
       NET_SRV_LOGTO_UDP: true
       NET_SRV_IOTEDGE_TIMEOUT: 0
       NET_SRV_LOG_TO_UDP_ADDRESS: "itestup"
