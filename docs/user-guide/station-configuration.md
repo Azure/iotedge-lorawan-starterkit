@@ -10,6 +10,7 @@ In the following we describe how to register an LBS in IoT Hub and how to store 
     cat /sys/class/net/eth0/address # prints the MAC Address of eth0
     # Assuming aa:bb:cc:dd:ee:ff is the returned MAC Address
     # your EUI will be AABBCCFFFEDDEEFF 
+    # Please note the insertion of FFFE in the middle, as per https://doc.sm.tc/station/glossary.html?highlight=mac
     ```
 
 2. The LBS configuration needs to be stored as a desired twin property of the newly created LBS device. Make sure to store the configuration under `properties.desired.routerConfig`.
