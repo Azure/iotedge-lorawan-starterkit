@@ -116,3 +116,4 @@ with [RAK833-SPI mPCIe-LoRa-Concentrator](http://www.embeddedpi.com/iocards)
 - [RAK833-USB mPCIe-LoRa-Concentrator with Raspberry Pi 3](https://github.com/Ellerbach/lora_gateway/tree/a31d80bf93006f33c2614205a6845b379d032c57)
 
 <!-- markdownlint-enable MD025 -->
+--8<-- "includes/abbreviations.md"
