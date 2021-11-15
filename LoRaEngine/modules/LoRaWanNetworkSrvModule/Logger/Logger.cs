@@ -39,10 +39,10 @@ namespace LoRaWan
                 = endPoint is { } someEndPoint
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 ? TcpLogSink.Start(someEndPoint, configuration.LogLevel,
-                                   string.IsNullOrEmpty(configuration.GatewayId)
-                                       ? null
-                                       : msg => $"[{configuration.GatewayId}] {msg}",
-                                   tcpLogSinkLogger)
+                                   formatter: string.IsNullOrEmpty(configuration.GatewayId)
+                                              ? null
+                                              : msg => $"[{configuration.GatewayId}] {msg}",
+                                   logger: tcpLogSinkLogger)
                 : null;
 #pragma warning restore CA2000 // Dispose objects before losing scope
 

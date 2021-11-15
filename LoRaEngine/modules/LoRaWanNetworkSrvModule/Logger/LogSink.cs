@@ -156,39 +156,35 @@ namespace LoRaWan
         private readonly int maxRetryAttempts;
         private readonly TimeSpan retryDelay;
         private readonly CancellationTokenSource cancellationTokenSource = new();
-        private readonly Channel<string> channel = Channel.CreateBounded<string>(new BoundedChannelOptions(1000)
-        {
-            SingleReader = true,
-            FullMode = BoundedChannelFullMode.DropOldest,
-        });
+        private readonly Channel<string> channel;
 
         public static TcpLogSink Start(IPEndPoint serverEndPoint, LogLevel logLevel,
+                                       int? maxRetryAttempts = null,
+                                       TimeSpan? retryDelay = null,
+                                       int? backlogCapacity = null,
                                        Func<string, string>? formatter = null,
                                        ILogger<TcpLogSink>? logger = null)
         {
-            return Start(serverEndPoint, logLevel, 6, TimeSpan.FromSeconds(10), formatter, logger);
-        }
-
-        public static TcpLogSink Start(IPEndPoint serverEndPoint, LogLevel logLevel,
-                                       int maxRetryAttempts, TimeSpan retryDelay,
-                                       Func<string, string>? formatter = null,
-                                       ILogger<TcpLogSink>? logger = null)
-        {
-            var sink = new TcpLogSink(serverEndPoint, logLevel, maxRetryAttempts, retryDelay, formatter, logger);
+            var sink = new TcpLogSink(serverEndPoint, logLevel, maxRetryAttempts, retryDelay, backlogCapacity, formatter, logger);
             _ = Task.Run(() => sink.SendAllLogMessagesAsync(sink.cancellationTokenSource.Token));
             return sink;
         }
 
         private TcpLogSink(IPEndPoint serverEndpoint, LogLevel logLevel,
-                           int maxRetryAttempts, TimeSpan retryDelay,
+                           int? maxRetryAttempts, TimeSpan? retryDelay, int? backlogCapacity,
                            Func<string, string>? formatter,
                            ILogger? logger)
         {
             this.serverEndpoint = serverEndpoint;
             LogLevel = logLevel;
             this.formatter = formatter;
-            this.maxRetryAttempts = maxRetryAttempts;
-            this.retryDelay = retryDelay;
+            this.maxRetryAttempts = maxRetryAttempts ?? 6;
+            this.retryDelay = retryDelay ?? TimeSpan.FromSeconds(10);
+            this.channel = Channel.CreateBounded<string>(new BoundedChannelOptions(backlogCapacity ?? 1000)
+            {
+                SingleReader = true,
+                FullMode = BoundedChannelFullMode.DropOldest,
+            });
             this.logger = logger;
         }
 
