@@ -31,8 +31,6 @@ env:
   EDGEHUB_ROUTE: "FROM /* INTO $upstream"
   RESET_PIN: 7
   REGION: "EU"
-  EDGE_AGENT_VERSION: 1.2.2
-  EDGE_HUB_VERSION: 1.2.2
   EDGEHUB_OPTIMIZEFORPERFORMANCE: false
   EDGEHUB_MQTTSETTINGS_ENABLED: false
   EDGEHUB_HTTPSETTINGS_ENABLED: false
@@ -177,13 +175,16 @@ jobs:
   deploy_arm_gw_iot_edge:
     environment:
       name: CI_ALL_IN_ONE_ARM_GATEWAY
-      url: https://github.com
+      url: https://github.com/Azure/iotedge-lorawan-starterkit/runs/${{ github.run_id }}?check_suite_focus=true
     needs:
     - env_var
     - build_push_docker_images
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on All-In-One ARM gateway
+    env:
+      EDGE_AGENT_VERSION: 1.2.6
+      EDGE_HUB_VERSION: 1.2.6
     steps:
       - uses: actions/checkout@v2
         name: Checkout current branch
@@ -205,7 +206,7 @@ jobs:
   deploy_eflow_gw_iot_edge:
     environment:
       name: CI_EFLOW_AZURE_VM
-      url: https://github.com
+      url: https://github.com/Azure/iotedge-lorawan-starterkit/runs/${{ github.run_id }}?check_suite_focus=true
     needs:
     - env_var
     - build_push_docker_images
@@ -218,6 +219,8 @@ jobs:
       IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
       FACADE_SERVER_URL: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
       FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
+      EDGE_AGENT_VERSION: 1.1.8
+      EDGE_HUB_VERSION: 1.1.8
     steps:
       - uses: actions/checkout@v2
         name: Checkout current branch
@@ -241,7 +244,7 @@ jobs:
     - build_push_docker_images
     environment:
       name: CI_CONCENTRATOR_EFLOW_ARM32
-      url: https://github.com
+      url: https://github.com/Azure/iotedge-lorawan-starterkit/runs/${{ github.run_id }}?check_suite_focus=true
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on EFLOW VM gateway
@@ -272,6 +275,7 @@ jobs:
     name: Run E2E Tests
     environment:
       name: CI_AZURE_ENVIRONMENT
+      url: https://github.com/Azure/iotedge-lorawan-starterkit/runs/${{ github.run_id }}?check_suite_focus=true
     if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success'))
     needs:
       - deploy_arm_gw_iot_edge
@@ -317,42 +321,42 @@ jobs:
       run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
     - name:  Runs SensorDecoding E2E tests
-      if: always() && contains('SensorDecodingTest', ${{ env.TestsToRun }} )
+      if: always() && contains('SensorDecodingTest', env.TestsToRun )
       uses: ./.github/actions/rune2etest
       id: e2e_tests_sensordecoding
       with:
         test_name: 'SensorDecodingTest'
 
     - name:  Runs OTAAJoin E2E tests
-      if: always() && contains('OTAAJoin', ${{ env.TestsToRun }} )
+      if: always() && contains('OTAAJoin', env.TestsToRun )
       uses: ./.github/actions/rune2etest
       id: e2e_tests_otaajointest
       with:
         test_name: 'OTAAJoin'
 
     - name:  Runs MacTest E2E tests
-      if: always() && contains('MacTest', ${{ env.TestsToRun }} )
+      if: always() && contains('MacTest', env.TestsToRun )
       uses: ./.github/actions/rune2etest
       id: e2e_tests_mactest
       with:
         test_name: 'MacTest'
 
     - name:  Runs ClassC E2E tests
-      if: always() && contains('ClassC', ${{ env.TestsToRun }} )
+      if: always() && contains('ClassC', env.TestsToRun )
       uses: ./.github/actions/rune2etest
       id: e2e_tests_classctest
       with:
         test_name: 'ClassC'
 
     - name:  Runs C2D E2E tests
-      if: always() && contains('C2D', ${{ env.TestsToRun }} )
+      if: always() && contains('C2D', env.TestsToRun )
       uses: ./.github/actions/rune2etest
       id: e2e_tests_c2dctest
       with:
         test_name: 'C2D'
 
     - name:  Runs MultiGatewayTest E2E tests
-      if: always() && contains('MultiGatewayTest', ${{ env.TestsToRun }} )
+      if: always() && contains('MultiGatewayTest', env.TestsToRun )
       uses: ./.github/actions/rune2etest
       id: e2e_tests_multigwtest
       with:
