@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 LogLevel = "Debug",
             };
 
-            LoRaWan.TcpLogger.Init(new LoggerConfiguration()
+            LoRaWan.StaticLogger.Init(new LoggerConfiguration()
             {
                 LogLevel = LogLevel.Debug,
             });

@@ -154,7 +154,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (HttpRequestException ex)
             {
-                TcpLogger.Log(devEUI, $"error in decoder handling: {ex.Message}", LogLevel.Error);
+                StaticLogger.Log(devEUI, $"error in decoder handling: {ex.Message}", LogLevel.Error);
 
                 return new DecodePayloadResult()
                 {

@@ -94,7 +94,7 @@ namespace LoRaTools.LoRaPhysical
                 var payload = Encoding.UTF8.GetString(physicalPayload.Message);
                 if (!payload.StartsWith("{\"stat", StringComparison.Ordinal))
                 {
-                    TcpLogger.Log($"Physical dataUp {payload}", LogLevel.Debug);
+                    StaticLogger.Log($"Physical dataUp {payload}", LogLevel.Debug);
                     var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
                     if (payloadObject != null)
                     {
@@ -106,7 +106,7 @@ namespace LoRaTools.LoRaPhysical
                 }
                 else
                 {
-                    TcpLogger.Log($"Statistic: {payload}", LogLevel.Debug);
+                    StaticLogger.Log($"Statistic: {payload}", LogLevel.Debug);
                 }
             }
 

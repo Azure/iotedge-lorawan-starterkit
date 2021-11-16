@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
 
             if (!string.IsNullOrEmpty(loRaDevice.GatewayID))
             {
-                TcpLogger.Log(loRaDevice.DevEUI, "LoRa device has a specific gateway assigned. Ignoring deduplication as it is not applicable.", LogLevel.Debug);
+                StaticLogger.Log(loRaDevice.DevEUI, "LoRa device has a specific gateway assigned. Ignoring deduplication as it is not applicable.", LogLevel.Debug);
                 return null;
             }
 
@@ -32,7 +32,7 @@ namespace LoRaWan.NetworkServer
                 case DeduplicationMode.None:
                 default:
                 {
-                    TcpLogger.Log(loRaDevice.DevEUI, "no Deduplication Strategy selected", LogLevel.Debug);
+                    StaticLogger.Log(loRaDevice.DevEUI, "no Deduplication Strategy selected", LogLevel.Debug);
                     return null;
                 }
             }

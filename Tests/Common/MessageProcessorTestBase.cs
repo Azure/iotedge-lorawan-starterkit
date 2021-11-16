@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Common
                 LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
             };
 
-            TcpLogger.Init(new LoggerConfiguration()
+            StaticLogger.Init(new LoggerConfiguration()
             {
                 LogLevel = LogLevel.Debug,
                 LogToConsole = true,

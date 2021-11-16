@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
                 // object is non usable, must try to read twin again
                 // for the future we could retry here
                 this.canCache = false;
-                TcpLogger.Log(loRaDevice.DevEUI, "join refused: error initializing OTAA device, getting twin failed", LogLevel.Error);
+                StaticLogger.Log(loRaDevice.DevEUI, "join refused: error initializing OTAA device, getting twin failed", LogLevel.Error);
             }
 
             return null;

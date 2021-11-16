@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer
                         ce.SlidingExpiration = TimeSpan.FromSeconds(managedConnection.LoRaDevice.KeepAliveTimeout);
                         _ = ce.RegisterPostEvictionCallback(OnScheduledDisconnect);
 
-                        TcpLogger.Log(managedConnection.LoRaDevice.DevEUI, $"client connection timeout set to {managedConnection.LoRaDevice.KeepAliveTimeout} seconds (sliding expiration)", LogLevel.Debug);
+                        StaticLogger.Log(managedConnection.LoRaDevice.DevEUI, $"client connection timeout set to {managedConnection.LoRaDevice.KeepAliveTimeout} seconds (sliding expiration)", LogLevel.Debug);
 
                         return managedConnection;
                     });
@@ -92,7 +92,7 @@ namespace LoRaWan.NetworkServer
 
             if (!managedConnection.LoRaDevice.TryDisconnect())
             {
-                TcpLogger.Log(managedConnection.LoRaDevice.DevEUI, $"scheduled device disconnection has been postponed. Device client connection is active", LogLevel.Information);
+                StaticLogger.Log(managedConnection.LoRaDevice.DevEUI, $"scheduled device disconnection has been postponed. Device client connection is active", LogLevel.Information);
                 SetupSchedule(managedConnection);
             }
         }

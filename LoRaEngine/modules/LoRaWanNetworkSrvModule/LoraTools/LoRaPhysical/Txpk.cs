@@ -63,7 +63,7 @@ namespace LoRaTools.LoRaPhysical
                 }
                 else
                 {
-                    TcpLogger.Log("Error: " + payloadDownObject.Txpk, LogLevel.Error);
+                    StaticLogger.Log("Error: " + payloadDownObject.Txpk, LogLevel.Error);
                 }
             }
 

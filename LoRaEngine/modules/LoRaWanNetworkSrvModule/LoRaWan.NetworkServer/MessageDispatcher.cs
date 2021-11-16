@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
                 // Any LoRaRequest generated from LNS protocol 'updf' or 'jreq' messages already has the payload set.
                 if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out var loRaPayload))
                 {
-                    TcpLogger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
+                    StaticLogger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
                     request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRxpk);
                     return;
                 }
@@ -86,7 +86,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                TcpLogger.Log("Unknwon message type in rxpk, message ignored", LogLevel.Error);
+                StaticLogger.Log("Unknwon message type in rxpk, message ignored", LogLevel.Error);
             }
         }
 
@@ -97,7 +97,7 @@ namespace LoRaWan.NetworkServer
             var loRaPayload = (LoRaPayloadData)request.Payload;
             if (!IsValidNetId(loRaPayload))
             {
-                TcpLogger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})", LogLevel.Debug);
+                StaticLogger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})", LogLevel.Debug);
                 request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidNetId);
                 return;
             }

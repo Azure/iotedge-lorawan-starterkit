@@ -38,14 +38,14 @@ namespace LoRaTools.ADR
             // We do not have enough frame to calculate ADR. We can assume that a crash was the cause.
             if (table == null || table.Entries.Count < 20)
             {
-                TcpLogger.Log(devEUI, "ADR: not enough frames captured. Sending default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
+                StaticLogger.Log(devEUI, "ADR: not enough frames captured. Sending default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
                 return null;
             }
 
             // This is the first contact case to harmonize the txpower state between device and server or the crash case.
             if (!table.CurrentNbRep.HasValue || !table.CurrentTxPower.HasValue)
             {
-                TcpLogger.Log(devEUI, "ADR: Sending the device default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
+                StaticLogger.Log(devEUI, "ADR: Sending the device default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
                 return null;
             }
 

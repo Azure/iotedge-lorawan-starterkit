@@ -66,17 +66,17 @@ namespace LoRaWan.NetworkServer
 
                 SetRetry(true);
 
-                TcpLogger.Log(this.devEUI, $"getting device twin", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"getting device twin", LogLevel.Debug);
 
                 var twins = await this.deviceClient.GetTwinAsync();
 
-                TcpLogger.Log(this.devEUI, $"done getting device twin", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"done getting device twin", LogLevel.Debug);
 
                 return twins;
             }
             catch (OperationCanceledException ex)
             {
-                TcpLogger.Log(this.devEUI, $"could not retrieve device twin with error: {ex.Message}", LogLevel.Error);
+                StaticLogger.Log(this.devEUI, $"could not retrieve device twin with error: {ex.Message}", LogLevel.Error);
                 return null;
             }
             catch (IotHubCommunicationException ex)
@@ -101,17 +101,17 @@ namespace LoRaWan.NetworkServer
 
                 SetRetry(true);
 
-                TcpLogger.Log(this.devEUI, $"updating twin", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"updating twin", LogLevel.Debug);
 
                 await this.deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
-                TcpLogger.Log(this.devEUI, $"twin updated", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"twin updated", LogLevel.Debug);
 
                 return true;
             }
             catch (OperationCanceledException ex)
             {
-                TcpLogger.Log(this.devEUI, $"could not update twin with error: {ex.Message}", LogLevel.Error);
+                StaticLogger.Log(this.devEUI, $"could not update twin with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally
@@ -134,7 +134,7 @@ namespace LoRaWan.NetworkServer
                     var messageJson = JsonConvert.SerializeObject(telemetry, Formatting.None);
                     using var message = new Message(Encoding.UTF8.GetBytes(messageJson));
 
-                    TcpLogger.Log(this.devEUI, $"sending message {messageJson} to hub", LogLevel.Debug);
+                    StaticLogger.Log(this.devEUI, $"sending message {messageJson} to hub", LogLevel.Debug);
 
                     message.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;
                     message.ContentEncoding = Encoding.UTF8.BodyName;
@@ -151,7 +151,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (OperationCanceledException ex)
                 {
-                    TcpLogger.Log(this.devEUI, $"could not send message to IoTHub/Edge with error: {ex.Message}", LogLevel.Error);
+                    StaticLogger.Log(this.devEUI, $"could not send message to IoTHub/Edge with error: {ex.Message}", LogLevel.Error);
                 }
                 finally
                 {
@@ -173,23 +173,23 @@ namespace LoRaWan.NetworkServer
 
                 SetRetry(true);
 
-                TcpLogger.Log(this.devEUI, $"checking cloud to device message for {timeout}", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"checking cloud to device message for {timeout}", LogLevel.Debug);
 
                 var msg = await this.deviceClient.ReceiveAsync(timeout);
 
-                if (TcpLogger.LoggerLevel >= LogLevel.Debug)
+                if (StaticLogger.LoggerLevel >= LogLevel.Debug)
                 {
                     if (msg == null)
-                        TcpLogger.Log(this.devEUI, "done checking cloud to device message, found no message", LogLevel.Debug);
+                        StaticLogger.Log(this.devEUI, "done checking cloud to device message, found no message", LogLevel.Debug);
                     else
-                        TcpLogger.Log(this.devEUI, $"done checking cloud to device message, found message id: {msg.MessageId ?? "undefined"}", LogLevel.Debug);
+                        StaticLogger.Log(this.devEUI, $"done checking cloud to device message, found message id: {msg.MessageId ?? "undefined"}", LogLevel.Debug);
                 }
 
                 return msg;
             }
             catch (OperationCanceledException ex)
             {
-                TcpLogger.Log(this.devEUI, $"could not retrieve cloud to device message with error: {ex.Message}", LogLevel.Error);
+                StaticLogger.Log(this.devEUI, $"could not retrieve cloud to device message with error: {ex.Message}", LogLevel.Error);
                 return null;
             }
             finally
@@ -209,17 +209,17 @@ namespace LoRaWan.NetworkServer
 
                 SetRetry(true);
 
-                TcpLogger.Log(this.devEUI, $"completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 await this.deviceClient.CompleteAsync(cloudToDeviceMessage);
 
-                TcpLogger.Log(this.devEUI, $"done completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"done completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 return true;
             }
             catch (OperationCanceledException ex)
             {
-                TcpLogger.Log(this.devEUI, $"could not complete cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                StaticLogger.Log(this.devEUI, $"could not complete cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally
@@ -239,17 +239,17 @@ namespace LoRaWan.NetworkServer
 
                 SetRetry(true);
 
-                TcpLogger.Log(this.devEUI, $"abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 await this.deviceClient.AbandonAsync(cloudToDeviceMessage);
 
-                TcpLogger.Log(this.devEUI, $"done abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"done abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 return true;
             }
             catch (OperationCanceledException ex)
             {
-                TcpLogger.Log(this.devEUI, $"could not abandon cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                StaticLogger.Log(this.devEUI, $"could not abandon cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally
@@ -269,17 +269,17 @@ namespace LoRaWan.NetworkServer
 
                 SetRetry(true);
 
-                TcpLogger.Log(this.devEUI, $"rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 await this.deviceClient.RejectAsync(cloudToDeviceMessage);
 
-                TcpLogger.Log(this.devEUI, $"done rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, $"done rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 return true;
             }
             catch (OperationCanceledException ex)
             {
-                TcpLogger.Log(this.devEUI, $"could not reject cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                StaticLogger.Log(this.devEUI, $"could not reject cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally
@@ -299,11 +299,11 @@ namespace LoRaWan.NetworkServer
                 this.deviceClient.Dispose();
                 this.deviceClient = null;
 
-                TcpLogger.Log(this.devEUI, "device client disconnected", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, "device client disconnected", LogLevel.Debug);
             }
             else
             {
-                TcpLogger.Log(this.devEUI, "device client was already disconnected", LogLevel.Debug);
+                StaticLogger.Log(this.devEUI, "device client was already disconnected", LogLevel.Debug);
             }
 
             return true;
@@ -319,11 +319,11 @@ namespace LoRaWan.NetworkServer
                 try
                 {
                     this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
-                    TcpLogger.Log(this.devEUI, "device client reconnected", LogLevel.Debug);
+                    StaticLogger.Log(this.devEUI, "device client reconnected", LogLevel.Debug);
                 }
                 catch (ArgumentException ex)
                 {
-                    TcpLogger.Log(this.devEUI, $"could not connect device client with error: {ex.Message}", LogLevel.Error);
+                    StaticLogger.Log(this.devEUI, $"could not connect device client with error: {ex.Message}", LogLevel.Error);
                     return false;
                 }
             }

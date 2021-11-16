@@ -8,7 +8,7 @@ namespace LoRaWan
     using System.Net.Sockets;
     using Microsoft.Extensions.Logging;
 
-    public static class TcpLogger
+    public static class StaticLogger
     {
         public static LogLevel LoggerLevel => sink.LogLevel;
 

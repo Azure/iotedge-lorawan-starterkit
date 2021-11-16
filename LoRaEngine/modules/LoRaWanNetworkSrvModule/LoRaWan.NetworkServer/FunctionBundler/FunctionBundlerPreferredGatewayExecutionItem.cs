@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
 
             request.FunctionItems |= FunctionBundlerItemType.PreferredGateway;
 
-            TcpLogger.Log(context.LoRaDevice.DevEUI, "FunctionBundler ADR request finished preparing.", LogLevel.Debug);
+            StaticLogger.Log(context.LoRaDevice.DevEUI, "FunctionBundler ADR request finished preparing.", LogLevel.Debug);
         }
 
         public void ProcessResult(FunctionBundlerExecutionContext context, FunctionBundlerResult result)

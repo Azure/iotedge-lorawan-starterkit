@@ -105,17 +105,17 @@ namespace LoRaTools
                         case Cid.Zero:
                         case Cid.One:
                         default:
-                            TcpLogger.Log(deviceId, $"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
+                            StaticLogger.Log(deviceId, $"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
                             return null;
                     }
 
                     var addedMacCommand = macCommands[^1];
-                    TcpLogger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
+                    StaticLogger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
                 }
             }
             catch (MacCommandException ex)
             {
-                TcpLogger.Log(deviceId, ex.ToString(), LogLevel.Error);
+                StaticLogger.Log(deviceId, ex.ToString(), LogLevel.Error);
             }
 
             return macCommands;
@@ -154,16 +154,16 @@ namespace LoRaTools
                         case Cid.NewChannelCmd:
                         case Cid.RXTimingCmd:
                         default:
-                            TcpLogger.Log(deviceId, $"a Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
+                            StaticLogger.Log(deviceId, $"a Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
                             return null;
                     }
 
                     var addedMacCommand = macCommands[^1];
-                    TcpLogger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
+                    StaticLogger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
                 }
                 catch (MacCommandException ex)
                 {
-                    TcpLogger.Log(deviceId, ex.ToString(), LogLevel.Error);
+                    StaticLogger.Log(deviceId, ex.ToString(), LogLevel.Error);
                 }
             }
 

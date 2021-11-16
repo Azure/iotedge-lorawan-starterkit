@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer
                 this.executionItems[i].ProcessResult(this.executionContext, result);
             }
 
-            TcpLogger.Log(this.devEui, "FunctionBundler result: ", result, LogLevel.Debug);
+            StaticLogger.Log(this.devEui, "FunctionBundler result: ", result, LogLevel.Debug);
 
             return result;
         }

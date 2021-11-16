@@ -55,7 +55,7 @@ namespace LoRaWan.NetworkServer
 
             if (string.IsNullOrEmpty(this.configuration.IoTHubHostName))
             {
-                TcpLogger.Log("Configuration/Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible", LogLevel.Error);
+                StaticLogger.Log("Configuration/Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible", LogLevel.Error);
             }
 
             connectionString += $"HostName={this.configuration.IoTHubHostName};";
@@ -63,11 +63,11 @@ namespace LoRaWan.NetworkServer
             if (this.configuration.EnableGateway)
             {
                 connectionString += $"GatewayHostName={this.configuration.GatewayHostName};";
-                TcpLogger.Log(devEUI, $"using edgeHub local queue", LogLevel.Debug);
+                StaticLogger.Log(devEUI, $"using edgeHub local queue", LogLevel.Debug);
             }
             else
             {
-                TcpLogger.Log(devEUI, $"using iotHub directly, no edgeHub queue", LogLevel.Debug);
+                StaticLogger.Log(devEUI, $"using iotHub directly, no edgeHub queue", LogLevel.Debug);
             }
 
             return connectionString;

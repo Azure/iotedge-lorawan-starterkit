@@ -93,7 +93,7 @@ namespace Logger
             _ = builder ?? throw new ArgumentNullException(nameof(builder));
 
             builder.AddConfiguration();
-            _ = builder.Services.AddSingleton(_ => LoRaWan.TcpLogger.Init(configuration));
+            _ = builder.Services.AddSingleton(_ => StaticLogger.Init(configuration));
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(sp => new TcpLoggerProvider(sp.GetRequiredService<ILogSink>(), configuration)));
 
             return builder;

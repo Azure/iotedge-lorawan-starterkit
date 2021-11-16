@@ -83,7 +83,7 @@ namespace LoRaWan.NetworkServer
                     continuationAction(t, this);
                 }
             },
-            ex => TcpLogger.Log($"Error while loading: {ex}.", LogLevel.Error));
+            ex => StaticLogger.Log($"Error while loading: {ex}.", LogLevel.Error));
         }
 
         private async Task Load()
@@ -91,7 +91,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 // If device was not found, search in the device API, updating local cache
-                TcpLogger.Log(this.devAddr, "querying the registry for device", LogLevel.Debug);
+                StaticLogger.Log(this.devAddr, "querying the registry for device", LogLevel.Debug);
 
                 SearchDevicesResult searchDeviceResult = null;
                 try
@@ -99,7 +99,7 @@ namespace LoRaWan.NetworkServer
                     searchDeviceResult = await this.loRaDeviceAPIService.SearchByDevAddrAsync(this.devAddr);
 
                     // If device was not found, search in the device API, updating local cache
-                    TcpLogger.Log(this.devAddr, $"querying the registry for devices by devAddr {this.devAddr} found {searchDeviceResult.Devices?.Count ?? 0} devices", LogLevel.Debug);
+                    StaticLogger.Log(this.devAddr, $"querying the registry for devices by devAddr {this.devAddr} found {searchDeviceResult.Devices?.Count ?? 0} devices", LogLevel.Debug);
                 }
                 catch (Exception ex)
                 {
@@ -159,7 +159,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.DeviceInitializationFailed)
                 {
-                    TcpLogger.Log(this.devAddr, $"one or more device initializations failed: {ex}", LogLevel.Error);
+                    StaticLogger.Log(this.devAddr, $"one or more device initializations failed: {ex}", LogLevel.Error);
                 }
             }
 
@@ -300,7 +300,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                TcpLogger.Log(device.DevEUI, $"device is not our device, ignore message", LogLevel.Debug);
+                StaticLogger.Log(device.DevEUI, $"device is not our device, ignore message", LogLevel.Debug);
                 request.NotifyFailed(device, LoRaDeviceRequestFailedReason.BelongsToAnotherGateway);
             }
         }
@@ -320,19 +320,19 @@ namespace LoRaWan.NetworkServer
             switch (failedReason)
             {
                 case LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck:
-                    TcpLogger.Log(deviceId, $"with devAddr {ConversionHelper.ByteArrayToString(request.Payload.DevAddr)} check MIC failed", LogLevel.Debug);
+                    StaticLogger.Log(deviceId, $"with devAddr {ConversionHelper.ByteArrayToString(request.Payload.DevAddr)} check MIC failed", LogLevel.Debug);
                     break;
 
                 case LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr:
-                    TcpLogger.Log(deviceId, $"device is not our device, ignore message", LogLevel.Debug);
+                    StaticLogger.Log(deviceId, $"device is not our device, ignore message", LogLevel.Debug);
                     break;
 
                 case LoRaDeviceRequestFailedReason.ApplicationError:
-                    TcpLogger.Log(deviceId, "problem resolving device", LogLevel.Error);
+                    StaticLogger.Log(deviceId, "problem resolving device", LogLevel.Error);
                     break;
 
                 case LoRaDeviceRequestFailedReason.BelongsToAnotherGateway:
-                    TcpLogger.Log(deviceId, "device is not our device, ignore message", LogLevel.Debug);
+                    StaticLogger.Log(deviceId, "device is not our device, ignore message", LogLevel.Debug);
                     break;
                 case LoRaDeviceRequestFailedReason.InvalidNetId:
                 case LoRaDeviceRequestFailedReason.InvalidRxpk:
@@ -349,7 +349,7 @@ namespace LoRaWan.NetworkServer
                 case LoRaDeviceRequestFailedReason.DeduplicationDrop:
                 case LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed:
                 default:
-                    TcpLogger.Log(deviceId, "device request failed", LogLevel.Debug);
+                    StaticLogger.Log(deviceId, "device request failed", LogLevel.Debug);
                     break;
             }
         }
@@ -390,7 +390,7 @@ namespace LoRaWan.NetworkServer
                         // This should not fail
                         if (!loRaDevice.TryDisconnect())
                         {
-                            TcpLogger.Log(loRaDevice.DevEUI, "failed to disconnect device from another gateway", LogLevel.Error);
+                            StaticLogger.Log(loRaDevice.DevEUI, "failed to disconnect device from another gateway", LogLevel.Error);
                         }
                     }
 

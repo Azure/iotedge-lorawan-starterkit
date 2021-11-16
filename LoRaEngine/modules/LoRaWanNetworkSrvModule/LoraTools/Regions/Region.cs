@@ -209,14 +209,14 @@ namespace LoRaTools.Regions
             // resolve frequency to gateway if set to region's default
             if (nwkSrvRx2Freq.HasValue)
             {
-                TcpLogger.Log(devEUI, $"using custom gateway RX2 frequency {nwkSrvRx2Freq}", LogLevel.Debug);
+                StaticLogger.Log(devEUI, $"using custom gateway RX2 frequency {nwkSrvRx2Freq}", LogLevel.Debug);
                 return nwkSrvRx2Freq.Value;
             }
             else
             {
                 // default frequency
                 var rx2ReceiveWindow = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
-                TcpLogger.Log(devEUI, $"using standard region RX2 frequency {rx2ReceiveWindow.Frequency}", LogLevel.Debug);
+                StaticLogger.Log(devEUI, $"using standard region RX2 frequency {rx2ReceiveWindow.Frequency}", LogLevel.Debug);
                 return rx2ReceiveWindow.Frequency;
             }
         }
@@ -238,12 +238,12 @@ namespace LoRaTools.Regions
                 if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
                 {
                     var datr = DRtoConfiguration[rx2DrFromTwins.Value].configuration;
-                    TcpLogger.Log(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
+                    StaticLogger.Log(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
                     return datr;
                 }
                 else
                 {
-                    TcpLogger.Log(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
+                    StaticLogger.Log(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
                 }
             }
             else
@@ -252,7 +252,7 @@ namespace LoRaTools.Regions
                 if (!string.IsNullOrEmpty(nwkSrvRx2Dr))
                 {
                     var datr = nwkSrvRx2Dr;
-                    TcpLogger.Log(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
+                    StaticLogger.Log(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
                     return datr;
                 }
             }
@@ -260,7 +260,7 @@ namespace LoRaTools.Regions
             // if no settings was set we use region default.
             var rx2ReceiveWindow = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
             var defaultDatr = DRtoConfiguration[rx2ReceiveWindow.DataRate].configuration;
-            TcpLogger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
+            StaticLogger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
             return defaultDatr;
         }
 
@@ -279,12 +279,12 @@ namespace LoRaTools.Regions
                 if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
                 {
                     var datr = rx2DrFromTwins.Value;
-                    TcpLogger.Log(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
+                    StaticLogger.Log(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
                     return datr;
                 }
                 else
                 {
-                    TcpLogger.Log(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
+                    StaticLogger.Log(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
                 }
             }
             else
@@ -293,14 +293,14 @@ namespace LoRaTools.Regions
                 if (nwkSrvRx2Dr.HasValue)
                 {
                     var datr = nwkSrvRx2Dr.Value;
-                    TcpLogger.Log(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
+                    StaticLogger.Log(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
                     return datr;
                 }
             }
 
             // if no settings was set we use region default.
             var defaultDatr = GetDefaultRX2ReceiveWindow(deviceJoinInfo).DataRate;
-            TcpLogger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
+            StaticLogger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
             return defaultDatr;
         }
 
@@ -333,7 +333,7 @@ namespace LoRaTools.Regions
                 rxpk.Freq > RegionLimits.FrequencyRange.max ||
                 !RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
             {
-                TcpLogger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
+                StaticLogger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
                 return false;
             }
 
@@ -349,7 +349,7 @@ namespace LoRaTools.Regions
         {
             if (!IsValidUpstreamFrequency(frequency) || !IsValidUpstreamDataRate(dataRate))
             {
-                TcpLogger.Log("A upstream message not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
+                StaticLogger.Log("A upstream message not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
                 return false;
             }
 

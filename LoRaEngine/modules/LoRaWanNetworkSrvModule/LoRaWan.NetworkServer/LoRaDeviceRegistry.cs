@@ -152,7 +152,8 @@ namespace LoRaWan.NetworkServer
                 var cachedMatchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, (LoRaPayloadData)request.Payload, logError: false));
                 if (cachedMatchingDevice != null)
                 {
-                    TcpLogger.Log(cachedMatchingDevice.DevEUI, "device in cache", LogLevel.Debug);
+                    using var scope = this.logger.BeginDeviceScope(cachedMatchingDevice.DevEUI);
+                    this.logger.LogDebug("device in cache");
                     if (cachedMatchingDevice.IsOurDevice)
                     {
                         return cachedMatchingDevice;
@@ -175,14 +176,15 @@ namespace LoRaWan.NetworkServer
             dictionary[loRaDevice.DevEUI] = loRaDevice;
 
             _ = this.cache.Set(CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, this.resetCacheChangeToken);
-            TcpLogger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
+            using var scope = this.logger.BeginDeviceScope(loRaDevice.DevEUI);
+            this.logger.LogDebug("device added to cache");
 
             if (!string.IsNullOrEmpty(oldDevAddr))
             {
                 var oldDevAddrDictionary = InternalGetCachedDevicesForDevAddr(oldDevAddr, createIfNotExists: false);
                 if (oldDevAddrDictionary != null && oldDevAddrDictionary.TryRemove(loRaDevice.DevEUI, out var _))
                 {
-                    TcpLogger.Log(loRaDevice.DevEUI, $"previous device devAddr ({oldDevAddr}) removed from cache.", LogLevel.Debug);
+                    this.logger.LogDebug($"previous device devAddr ({oldDevAddr}) removed from cache.");
                 }
             }
         }
@@ -221,7 +223,7 @@ namespace LoRaWan.NetworkServer
         /// It validates that the device has a <see cref="LoRaDevice.NwkSKey"/> and mic check.
         /// </summary>
         /// <param name="logError">Indicates if error should be log if mic check fails.</param>
-        private static bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool logError)
+        private bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool logError)
         {
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
                 return false;
@@ -229,7 +231,7 @@ namespace LoRaWan.NetworkServer
             var checkMicResult = loRaDevice.ValidateMic(loraPayload);
             if (!checkMicResult && logError)
             {
-                TcpLogger.Log(loRaDevice.DevEUI, $"with devAddr {loRaDevice.DevAddr} check MIC failed", LogLevel.Debug);
+                this.logger.LogDebug($"{loRaDevice.DevEUI} with devAddr {loRaDevice.DevAddr} check MIC failed");
             }
 
             return checkMicResult;
@@ -261,13 +263,15 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string devNonce)
         {
+            using var scope = this.logger.BeginDeviceScope(devEUI);
+
             if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(devNonce))
             {
-                TcpLogger.Log(devEUI, "join refused: missing devEUI/AppEUI/DevNonce in request", LogLevel.Error);
+                this.logger.LogError("join refused: missing devEUI/AppEUI/DevNonce in request");
                 return null;
             }
 
-            TcpLogger.Log(devEUI, "querying the registry for OTAA device", LogLevel.Debug);
+            this.logger.LogDebug("querying the registry for OTAA device");
 
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
                 gatewayID: this.configuration.GatewayID,
@@ -276,14 +280,13 @@ namespace LoRaWan.NetworkServer
 
             if (searchDeviceResult.IsDevNonceAlreadyUsed)
             {
-                TcpLogger.Log(devEUI, $"join refused: Join already processed by another gateway.", LogLevel.Information);
+                this.logger.LogInformation("join refused: Join already processed by another gateway.");
                 return null;
             }
 
             if (searchDeviceResult?.Devices == null || searchDeviceResult.Devices.Count == 0)
             {
-                var msg = searchDeviceResult.RefusedMessage ?? "join refused: no devices found matching join request";
-                TcpLogger.Log(devEUI, msg, LogLevel.Information);
+                this.logger.LogInformation(searchDeviceResult.RefusedMessage ?? "join refused: no devices found matching join request");
                 return null;
             }
 
@@ -324,7 +327,7 @@ namespace LoRaWan.NetworkServer
                 oldResetCacheToken.Cancel();
                 oldResetCacheToken.Dispose();
 
-                TcpLogger.Log("Device cache cleared", LogLevel.Information);
+                this.logger.LogInformation("Device cache cleared");
             }
         }
 

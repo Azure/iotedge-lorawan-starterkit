@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.loRaDevice = loRaDevice;
-            TcpLogger.Log(this.loRaDevice.DevEUI, "deduplication Strategy: Drop", LogLevel.Debug);
+            StaticLogger.Log(this.loRaDevice.DevEUI, "deduplication Strategy: Drop", LogLevel.Debug);
         }
 
         public DeduplicationResult Process(DeduplicationResult result, uint fCntUp)
@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer
 
             if (result.IsDuplicate)
             {
-                TcpLogger.Log(this.loRaDevice.DevEUI, $"duplicate message '{fCntUp}' is dropped.", LogLevel.Debug);
+                StaticLogger.Log(this.loRaDevice.DevEUI, $"duplicate message '{fCntUp}' is dropped.", LogLevel.Debug);
             }
 
             return result;
