@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             await TestFixture.CleanupC2DDeviceQueueAsync(device.DeviceID);
 
@@ -201,7 +201,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             await TestFixture.CleanupC2DDeviceQueueAsync(device.DeviceID);
 
@@ -331,7 +331,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             await TestFixture.CleanupC2DDeviceQueueAsync(device.DeviceID);
 
@@ -467,7 +467,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
             await TestFixture.CleanupC2DDeviceQueueAsync(device.DeviceID);
 
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
@@ -592,7 +592,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             // Setup protocol properties
-            await ArduinoDevice.SetupLora(TestFixture.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixture.Configuration);
             await TestFixture.CleanupC2DDeviceQueueAsync(device.DeviceID);
 
             // Sends 2x unconfirmed messages
