@@ -313,8 +313,7 @@ jobs:
         dotnet-version: '3.1.x' # SDK Version to use.
 
     - name: .NET SDK Information
-      run: |
-        echo ${{ env.TestsToRun }}
+      run:
         dotnet --info
 
     - name: Configuration for E2E tests
@@ -327,56 +326,56 @@ jobs:
       run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
     - name:  Runs SensorDecoding E2E tests
-      if: always() && contains('SensorDecodingTest', env.TestsToRun )
+      if: always() && contains(env.TestsToRun, 'SensorDecodingTest')
       uses: ./.github/actions/rune2etest
       id: e2e_tests_sensordecoding
       with:
         test_name: 'SensorDecodingTest'
 
     - name:  Runs OTAAJoin E2E tests
-      if: always() && contains('OTAAJoinTest', env.TestsToRun )
+      if: always() && contains(env.TestsToRun, 'OTAAJoinTest')
       uses: ./.github/actions/rune2etest
       id: e2e_tests_otaajointest
       with:
         test_name: 'OTAAJoinTest'
 
     - name:  Runs ABP E2E tests
-      if: always() && contains('ABPTest', env.TestsToRun )
+      if: always() && contains(env.TestsToRun, 'ABPTest')
       uses: ./.github/actions/rune2etest
       id: e2e_tests_abptest
       with:
         test_name: 'ABPTest'
 
     - name:  Runs OTAA E2E tests
-      if: always() && contains('OTAATest', env.TestsToRun )
+      if: always() && contains(env.TestsToRun, 'OTAATest')
       uses: ./.github/actions/rune2etest
       id: e2e_tests_otaatest
       with:
         test_name: 'OTAATest'
 
     - name:  Runs MacTest E2E tests
-      if: always() && contains('MacTest', env.TestsToRun )
+      if: always() && contains(env.TestsToRun, 'MacTest')
       uses: ./.github/actions/rune2etest
       id: e2e_tests_mactest
       with:
         test_name: 'MacTest'
 
     - name:  Runs ClassC E2E tests
-      if: always() && contains('ClassCTest', env.TestsToRun )
+      if: always() && contains(env.TestsToRun, 'ClassCTest')
       uses: ./.github/actions/rune2etest
       id: e2e_tests_classctest
       with:
         test_name: 'ClassCTest'
 
     - name:  Runs C2D E2E tests
-      if: always() && contains('C2DMessageTest', env.TestsToRun )
+      if: always() && contains(env.TestsToRun, 'C2DMessageTest')
       uses: ./.github/actions/rune2etest
       id: e2e_tests_c2dctest
       with:
         test_name: 'C2DMessageTest'
 
     - name:  Runs MultiGatewayTest E2E tests
-      if: always() && contains('MultiGatewayTest', env.TestsToRun )
+      if: always() && contains(env.TestsToRun, 'MultiGatewayTest')
       uses: ./.github/actions/rune2etest
       id: e2e_tests_multigwtest
       with:
