@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -49,7 +50,33 @@ namespace LoRaWan.Tests.Common
                                                  IPacketForwarder packetForwarder = null,
                                                  TimeSpan? startTimeOffset = null,
                                                  TimeSpan? constantElapsedTime = null,
-                                                 bool useRealTimer = false)
+                                                 bool useRealTimer = false) =>
+            Create(rxpk, LoRaEnumerable.RepeatInfinite(constantElapsedTime ?? TimeSpan.Zero), packetForwarder, startTimeOffset, useRealTimer);
+
+        /// <summary>
+        /// Creates a WwaitableLoRaRequest that is configured to miss certain receive windows.
+        /// </summary>
+        /// <param name="rxpk">Rxpk instance.</param>
+        /// <param name="packetForwarder">PacketForwarder instance.</param>
+        /// <param name="inTimeForC2DMessageCheck">If set to true it ensures that processing is fast enough that C2D messages can be checked.</param>
+        /// <param name="inTimeForAdditionalMessageCheck">If set to true it ensures that processing is fast enough that additional C2D messages can be checked.</param>
+        /// <param name="inTimeForDownlinkDelivery">If set to true it ensures that processing is fast enough that C2D messages can be checked.</param>
+        public static WaitableLoRaRequest Create(Rxpk rxpk, IPacketForwarder packetForwarder,
+                                                 bool inTimeForC2DMessageCheck,
+                                                 bool inTimeForAdditionalMessageCheck,
+                                                 bool inTimeForDownlinkDelivery)
+        {
+            var c2dMessageCheckTimeSpan = inTimeForC2DMessageCheck ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
+            var additionalMessageCheckTimeSpan = inTimeForAdditionalMessageCheck ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
+            var downlinkDeliveryTimeSpan = inTimeForDownlinkDelivery ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
+            return Create(rxpk, new[] { c2dMessageCheckTimeSpan, c2dMessageCheckTimeSpan, additionalMessageCheckTimeSpan, downlinkDeliveryTimeSpan }, packetForwarder);
+        }
+
+        private static WaitableLoRaRequest Create(Rxpk rxpk,
+                                                  IEnumerable<TimeSpan> elapsedTimes,
+                                                  IPacketForwarder packetForwarder = null,
+                                                  TimeSpan? startTimeOffset = null,
+                                                  bool useRealTimer = false)
         {
             var request = new WaitableLoRaRequest(rxpk,
                                                   packetForwarder ?? new TestPacketForwarder(),
@@ -57,12 +84,11 @@ namespace LoRaWan.Tests.Common
 
             if (!useRealTimer)
             {
-                constantElapsedTime ??= TimeSpan.Zero;
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (!RegionManager.TryResolveRegion(rxpk, out var region))
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     throw new InvalidOperationException("Could not resolve region.");
-                var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
+                var timeWatcher = new TestLoRaOperationTimeWatcher(region, elapsedTimes);
                 request.UseTimeWatcher(timeWatcher);
             }
 
