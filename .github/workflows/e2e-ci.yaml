@@ -51,8 +51,10 @@ jobs:
           echo "Set up for workflow dispatch"
           echo "::set-output name=E2ETestsToRun::${{ github.event.inputs.TestsToRun }}"
         elif [ ${{ github.event_name }} == 'pull_request' ]; then
+          echo "Set up for pull request"
           echo "::set-output name=E2ETestsToRun::${{ github.event.pull_request.labels.*.name }}"
         else
+          echo "Set up for cron trigger"
           echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest]"
         fi
 
@@ -311,7 +313,9 @@ jobs:
         dotnet-version: '3.1.x' # SDK Version to use.
 
     - name: .NET SDK Information
-      run: dotnet --info
+      run: |
+        echo ${{ env.TestsToRun }}
+        dotnet --info
 
     - name: Configuration for E2E tests
       uses: cschleiden/replace-tokens@v1
