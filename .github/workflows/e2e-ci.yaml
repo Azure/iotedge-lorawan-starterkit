@@ -360,7 +360,7 @@ jobs:
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
-      if: (success() || failure()) && contains(github.event.pull_request.labels.*.name, ${{ env.TestsToRun }} ) != true
+      if: always()
       with:
         name: e2e-test-results
         path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
