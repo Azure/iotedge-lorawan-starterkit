@@ -3,8 +3,8 @@
 
 namespace LoRaWan.Tests.Common
 {
-    using Microsoft.Extensions.Configuration;
     using System;
+    using Microsoft.Extensions.Configuration;
 
     public class TestConfiguration
     {
@@ -73,5 +73,8 @@ namespace LoRaWan.Tests.Common
         public Uri FunctionAppBaseUrl { get; set; }
 
         public int NumberOfGateways { get; set; } = 2;
+
+        // Gets/sets the TXPower value to use in tests
+        public short TxPower { get; set; } = 14;
     }
 }

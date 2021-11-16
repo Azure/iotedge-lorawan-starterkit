@@ -26,18 +26,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IPacketForwarder downstreamSender;
         private readonly IMessageDispatcher messageDispatcher;
+        private readonly IConcentratorDeduplication concentratorDeduplication;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                            IPacketForwarder packetForwarder,
                                            IMessageDispatcher messageDispatcher,
+                                           IConcentratorDeduplication concentratorDeduplication,
                                            ILogger<LnsProtocolMessageProcessor> logger)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.socketWriterRegistry = socketWriterRegistry;
             this.downstreamSender = packetForwarder;
             this.messageDispatcher = messageDispatcher;
+            this.concentratorDeduplication = concentratorDeduplication;
             this.logger = logger;
         }
 
@@ -135,7 +138,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");
 
             var channel = new WebSocketTextChannel(socket, sendTimeout: TimeSpan.FromSeconds(3));
-            var handle = socketWriterRegistry.Register(stationEui, channel);
+            var handle = this.socketWriterRegistry.Register(stationEui, channel);
 
             try
             {
@@ -206,6 +209,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     try
                     {
                         var updf = LnsData.UpstreamDataFrameReader.Read(json);
+
+                        if (this.concentratorDeduplication.ShouldDrop(updf, stationEui))
+                        {
+                            break;
+                        }
+
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
 

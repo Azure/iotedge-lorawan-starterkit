@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
             await ArduinoDevice.setClassTypeAsync(LoRaArduinoSerial._class_type_t.CLASS_C);
 
             // send one confirmed message for ensuring that a basicstation is "bound" to the device

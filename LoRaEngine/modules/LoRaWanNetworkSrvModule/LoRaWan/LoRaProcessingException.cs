@@ -56,7 +56,6 @@ namespace LoRaWan
         Default,
         TwinFetchFailed,
         InvalidDeviceConfiguration,
-        InvalidModuleConfiguration,
         DeviceClientCreationFailed,
         PayloadDecryptionFailed,
         DeviceInitializationFailed,

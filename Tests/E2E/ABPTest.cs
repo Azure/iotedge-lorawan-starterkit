@@ -198,7 +198,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await ArduinoDevice.setKeyAsync(nwkSKeyToUse, appSKeyToUse, null);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             await ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
@@ -242,7 +242,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await ArduinoDevice.setKeyAsync(nwkSKeyToUse, device.AppSKey, null);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             await ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
@@ -287,7 +287,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             // Sends 10x unconfirmed messages
             for (var i = 0; i < messages_count; ++i)
@@ -353,7 +353,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device25.DevAddr, device25.DeviceID, null);
             await ArduinoDevice.setKeyAsync(device25.NwkSKey, device25.AppSKey, null);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
             await ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
             await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith($"{device25.DeviceID}: processing time", StringComparison.Ordinal));
@@ -367,7 +367,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device26.DevAddr, device26.DeviceID, null);
             await ArduinoDevice.setKeyAsync(device26.NwkSKey, device26.AppSKey, null);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
             await ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
@@ -389,7 +389,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device25.DevAddr, device25.DeviceID, null);
             await ArduinoDevice.setKeyAsync(device25.NwkSKey, device25.AppSKey, null);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
             var expectedMessage = GeneratePayloadMessage();
             await ArduinoDevice.transferPacketAsync(expectedMessage, 10);
 
