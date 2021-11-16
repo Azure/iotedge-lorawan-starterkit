@@ -42,10 +42,14 @@ namespace LoRaWan.NetworkServer
 
             var key = CreateCacheKey(updf);
 
-            if (!this.cache.TryGetValue(key, out StationEui previousStation))
+            StationEui previousStation;
+            lock (this.cache)
             {
-                AddToCache(key, stationEui);
-                return false;
+                if (!this.cache.TryGetValue(key, out previousStation))
+                {
+                    AddToCache(key, stationEui);
+                    return false;
+                }
             }
 
             if (previousStation == stationEui)

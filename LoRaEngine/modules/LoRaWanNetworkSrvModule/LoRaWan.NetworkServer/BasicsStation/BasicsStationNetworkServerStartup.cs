@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
+    using System;
     using System.Globalization;
     using LoRaTools.ADR;
     using LoRaWan;
@@ -14,6 +15,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.ApplicationInsights;
@@ -37,45 +39,46 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             var appInsightsKey = Configuration.GetValue<string>("APPINSIGHTS_INSTRUMENTATIONKEY");
             var useApplicationInsights = !string.IsNullOrEmpty(appInsightsKey);
-            _ = services.AddLogging(loggingBuilder =>
-                        {
-                            _ = loggingBuilder.ClearProviders();
-                            var logLevel = (LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture);
-                            _ = loggingBuilder.SetMinimumLevel(logLevel);
-                            _ = loggingBuilder.AddLoRaConsoleLogger(c => c.LogLevel = logLevel);
+            services.AddLogging(loggingBuilder =>
+                {
+                    _ = loggingBuilder.ClearProviders();
+                    var logLevel = (LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture);
+                    _ = loggingBuilder.SetMinimumLevel(logLevel);
+                    _ = loggingBuilder.AddLoRaConsoleLogger(c => c.LogLevel = logLevel);
 
-                            if (useApplicationInsights)
-                            {
-                                _ = loggingBuilder.AddApplicationInsights(appInsightsKey)
-                                                  .AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, logLevel);
+                    if (useApplicationInsights)
+                    {
+                        _ = loggingBuilder.AddApplicationInsights(appInsightsKey)
+                                            .AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, logLevel);
 
-                            }
-                        })
-                        .AddMemoryCache()
-                        .AddSingleton(NetworkServerConfiguration)
-                        .AddSingleton(LoRaTools.CommonAPI.ApiVersion.LatestVersion)
-                        .AddSingleton<ModuleConnectionHost>()
-                        .AddSingleton<IServiceFacadeHttpClientProvider, ServiceFacadeHttpClientProvider>()
-                        .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
-                        .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
-                        .AddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>()
-                        .AddSingleton<ILoRAADRManagerFactory, LoRAADRManagerFactory>()
-                        .AddSingleton<ILoRaDeviceClientConnectionManager, LoRaDeviceClientConnectionManager>()
-                        .AddSingleton<ILoRaPayloadDecoder, LoRaPayloadDecoder>()
-                        .AddSingleton<IFunctionBundlerProvider, FunctionBundlerProvider>()
-                        .AddSingleton<ILoRaDataRequestHandler, DefaultLoRaDataRequestHandler>()
-                        .AddSingleton<ILoRaDeviceFactory, LoRaDeviceFactory>()
-                        .AddSingleton<ILoRaDeviceRegistry, LoRaDeviceRegistry>()
-                        .AddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>()
-                        .AddSingleton<IMessageDispatcher, MessageDispatcher>()
-                        .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
-                        .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
-                        .AddSingleton<ILoRaModuleClientFactory>(loraModuleFactory)
-                        .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
-                        .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
-                        .AddSingleton<IPacketForwarder, DownstreamSender>()
-                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>();
+                    }
+                })
+                .AddMemoryCache()
+                .TryAddSingleton(NetworkServerConfiguration);
+
+            services.TryAddSingleton(LoRaTools.CommonAPI.ApiVersion.LatestVersion);
+            services.TryAddSingleton<ModuleConnectionHost>();
+            services.TryAddSingleton<IServiceFacadeHttpClientProvider, ServiceFacadeHttpClientProvider>();
+            services.TryAddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>();
+            services.TryAddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>();
+            services.TryAddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>();
+            services.TryAddSingleton<ILoRAADRManagerFactory, LoRAADRManagerFactory>();
+            services.TryAddSingleton<ILoRaDeviceClientConnectionManager, LoRaDeviceClientConnectionManager>();
+            services.TryAddSingleton<ILoRaPayloadDecoder, LoRaPayloadDecoder>();
+            services.TryAddSingleton<IFunctionBundlerProvider, FunctionBundlerProvider>();
+            services.TryAddSingleton<ILoRaDataRequestHandler, DefaultLoRaDataRequestHandler>();
+            services.TryAddSingleton<ILoRaDeviceFactory, LoRaDeviceFactory>();
+            services.TryAddSingleton<ILoRaDeviceRegistry, LoRaDeviceRegistry>();
+            services.TryAddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>();
+            services.TryAddSingleton<IMessageDispatcher, MessageDispatcher>();
+            services.TryAddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>();
+            services.TryAddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>();
+            services.TryAddSingleton<ILoRaModuleClientFactory>(loraModuleFactory);
+            services.TryAddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>();
+            services.TryAddSingleton<WebSocketWriterRegistry<StationEui, string>>();
+            services.TryAddSingleton<IPacketForwarder, DownstreamSender>();
+            services.TryAddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
+            services.TryAddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>();
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
@@ -86,6 +89,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 #pragma warning restore CA1822 // Mark members as static
         {
+            _ = app ?? throw new ArgumentException("asdas");
+
             if (env.IsDevelopment())
             {
                 _ = app.UseDeveloperExceptionPage();
