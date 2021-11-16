@@ -212,7 +212,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
                         if (this.concentratorDeduplication.ShouldDrop(updf, stationEui))
                         {
-                            this.logger.LogInformation($"Message with counter {updf.Counter} was detected as a duplicate and will be dropped. ");
                             break;
                         }
 
