@@ -24,6 +24,7 @@ namespace LoRaWan.NetworkServer
 
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
+        private readonly ILogger<LoRaDeviceRegistry> logger;
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
         private readonly NetworkServerConfiguration configuration;
         private readonly object getOrCreateLoadingDevicesRequestQueueLock;
@@ -45,7 +46,8 @@ namespace LoRaWan.NetworkServer
             NetworkServerConfiguration configuration,
             IMemoryCache cache,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
-            ILoRaDeviceFactory deviceFactory)
+            ILoRaDeviceFactory deviceFactory,
+            ILogger<LoRaDeviceRegistry> logger)
         {
             this.configuration = configuration;
             this.resetCacheToken = new CancellationTokenSource();
@@ -53,6 +55,7 @@ namespace LoRaWan.NetworkServer
             this.cache = cache;
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
+            this.logger = logger;
             this.initializers = new HashSet<ILoRaDeviceInitializer>();
             DevAddrReloadInterval = TimeSpan.FromSeconds(30);
             this.getOrCreateLoadingDevicesRequestQueueLock = new object();

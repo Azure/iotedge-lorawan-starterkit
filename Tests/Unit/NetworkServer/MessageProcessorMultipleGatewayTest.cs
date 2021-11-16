@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -46,9 +47,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, connectionManager2, SecondRequestHandlerImplementation);
 
             using var cache1 = NewNonEmptyCache(loRaDevice1);
-            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory, NullLogger<LoRaDeviceRegistry>.Instance);
             using var cache2 = NewNonEmptyCache(loRaDevice2);
-            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(ServerConfiguration, cache2, SecondLoRaDeviceApi.Object, SecondLoRaDeviceFactory);
+            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(ServerConfiguration, cache2, SecondLoRaDeviceApi.Object, SecondLoRaDeviceFactory, NullLogger<LoRaDeviceRegistry>.Instance);
 
             // Send to message processor
             using var messageProcessor1 = new MessageDispatcher(

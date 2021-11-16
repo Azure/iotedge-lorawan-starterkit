@@ -82,7 +82,7 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, NullLogger<LoRaDeviceRegistry>.Instance);
 
             using var messageDispatcher = new MessageDispatcher(
                 ServerConfiguration,
@@ -149,7 +149,7 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, NullLogger<LoRaDeviceRegistry>.Instance);
 
             using var messageDispatcher = new MessageDispatcher(
                 ServerConfiguration,
@@ -222,7 +222,7 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, NullLogger<LoRaDeviceRegistry>.Instance);
 
             using var messageDispatcher = new MessageDispatcher(
                 ServerConfiguration,
@@ -291,7 +291,7 @@ namespace LoRaWan.Tests.Integration
                 .Returns(true);
 
             using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, NullLogger<LoRaDeviceRegistry>.Instance);
 
             using var messageDispatcher = new MessageDispatcher(
                 ServerConfiguration,
@@ -353,7 +353,7 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.SetLastProcessingStationEui(new StationEui(ulong.MaxValue));
 
             using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, NullLogger<LoRaDeviceRegistry>.Instance);
 
             var target = new DefaultClassCDevicesMessageSender(
                 ServerConfiguration,
