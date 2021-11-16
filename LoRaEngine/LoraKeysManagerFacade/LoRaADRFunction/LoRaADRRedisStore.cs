@@ -16,6 +16,7 @@ namespace LoraKeysManagerFacade
         private const string CacheToken = ":ADR";
         private const string LockToken = ":lock";
         private readonly IDatabase redisCache;
+        private readonly ILogger<LoRaADRRedisStore> logger;
 
         private sealed class RedisLockWrapper : IDisposable
         {
@@ -24,12 +25,14 @@ namespace LoraKeysManagerFacade
             private readonly string lockKey;
             private readonly string owner;
             private readonly IDatabase redisCache;
+            private readonly ILogger logger;
             private bool ownsLock;
 
-            internal RedisLockWrapper(string devEUI, IDatabase redisCache, string owner = ":LoRaRedisStore")
+            internal RedisLockWrapper(string devEUI, IDatabase redisCache, ILogger logger, string owner = ":LoRaRedisStore")
             {
                 this.lockKey = GetEntryKey(devEUI) + LockToken;
                 this.redisCache = redisCache;
+                this.logger = logger;
                 this.owner = owner;
             }
 
@@ -56,14 +59,15 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public LoRaADRRedisStore(IDatabase redisCache)
+        public LoRaADRRedisStore(IDatabase redisCache, ILogger<LoRaADRRedisStore> logger)
         {
             this.redisCache = redisCache;
+            this.logger = logger;
         }
 
         public async Task UpdateADRTable(string devEUI, LoRaADRTable table)
         {
-            using var redisLock = new RedisLockWrapper(devEUI, this.redisCache);
+            using var redisLock = new RedisLockWrapper(devEUI, this.redisCache, this.logger);
             if (await redisLock.TakeLockAsync())
             {
                 _ = await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
@@ -75,7 +79,7 @@ namespace LoraKeysManagerFacade
             if (entry is null) throw new ArgumentNullException(nameof(entry));
 
             LoRaADRTable table = null;
-            using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache))
+            using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache, this.logger))
             {
                 if (await redisLock.TakeLockAsync())
                 {
@@ -94,7 +98,7 @@ namespace LoraKeysManagerFacade
 
         public async Task<LoRaADRTable> GetADRTable(string devEUI)
         {
-            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
+            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache, this.logger))
             {
                 if (await redisLock.TakeLockAsync())
                 {
@@ -102,13 +106,14 @@ namespace LoraKeysManagerFacade
                 }
             }
 
-            StaticLogger.Log(devEUI, "Failed to acquire ADR redis lock. Can't deliver ADR Table", LogLevel.Error);
+            using var scope = this.logger.BeginDeviceScope(devEUI);
+            this.logger.LogError("Failed to acquire ADR redis lock. Can't deliver ADR Table");
             return null;
         }
 
         public async Task<bool> Reset(string devEUI)
         {
-            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
+            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache, this.logger))
             {
                 if (await redisLock.TakeLockAsync())
                 {
