@@ -3,6 +3,7 @@ concurrency: e2e
 on: # rebuild any PRs and main branch changes
   schedule:
     - cron: '59 23 * * 1,2,3,4,5'
+  pr:
   workflow_dispatch:
     inputs:
       RunE2ETestsOnly:
@@ -36,9 +37,9 @@ env:
   EDGEHUB_OPTIMIZEFORPERFORMANCE: false
   EDGEHUB_MQTTSETTINGS_ENABLED: false
   EDGEHUB_HTTPSETTINGS_ENABLED: false
+  # these are used for the docker tag computation
   BUILD_BUILDID: ${{ github.run_id }}
   DEV_IMAGE_TAG: dev
-  DEVICE_ID:  primary
   MASTER_IMAGE_TAG: master
 
 jobs:
@@ -284,7 +285,7 @@ jobs:
     env:
       E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
       E2ETESTS_IoTHubEventHubConsumerGroup: ${{ secrets.IOTHUB_CI_CONSUMER_GROUP }}
-      E2ETESTS_LeafDeviceGatewayID: primary
+      E2ETESTS_LeafDeviceGatewayID: itestarm1
       E2ETESTS_DevicePrefix: '01'
       E2ETESTS_EnsureHasEventDelayBetweenReadsInSeconds: 15
       E2ETESTS_EnsureHasEventMaximumTries: 5
