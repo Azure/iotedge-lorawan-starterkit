@@ -18,7 +18,7 @@ namespace Logger
         private readonly ConcurrentDictionary<string, TcpLogger> loggers = new();
         private readonly ILogSink logSink;
         private readonly LoggerConfiguration configuration;
-        private IExternalScopeProvider? externalScopeProvider;
+        private readonly IExternalScopeProvider externalScopeProvider = new LoggerExternalScopeProvider();
 
         public TcpLoggerProvider(ILogSink logSink, LoggerConfiguration loggerConfiguration)
         {
@@ -31,9 +31,6 @@ namespace Logger
             {
                 ExternalScopeProvider = this.externalScopeProvider
             });
-
-        public void SetScopeProvider(IExternalScopeProvider externalScopeProvider) =>
-            this.externalScopeProvider = externalScopeProvider;
 
         public void Dispose()
         {
@@ -83,7 +80,9 @@ namespace Logger
             if (!IsEnabled(logLevel))
                 return;
 
-            this.logSink.Log(logLevel, formatter(state, exception));
+            var formattedMessage = LoggerHelper.AddScopeInformation(ExternalScopeProvider, formatter(state, exception));
+
+            this.logSink.Log(logLevel, formattedMessage);
         }
     }
 
@@ -95,7 +94,7 @@ namespace Logger
 
             builder.AddConfiguration();
             _ = builder.Services.AddSingleton(_ => LoRaWan.TcpLogger.Init(configuration));
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider>(sp => new TcpLoggerProvider(sp.GetRequiredService<ILogSink>(), configuration)));
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(sp => new TcpLoggerProvider(sp.GetRequiredService<ILogSink>(), configuration)));
 
             return builder;
         }
