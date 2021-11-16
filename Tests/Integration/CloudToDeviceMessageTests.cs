@@ -991,13 +991,10 @@ namespace LoRaWan.Tests.Integration
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = WaitableLoRaRequest.Create(rxpk, new[]
-            {
-                TimeSpan.FromMilliseconds(100),
-                TimeSpan.FromMilliseconds(100),
-                TimeSpan.FromSeconds(3),
-                TimeSpan.FromSeconds(3)
-            }, PacketForwarder);
+            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder,
+                                                           inTimeForC2DMessageCheck: true,
+                                                           inTimeForAdditionalMessageCheck: false,
+                                                           inTimeForDownlinkDelivery: false);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 

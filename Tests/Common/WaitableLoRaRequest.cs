@@ -54,18 +54,29 @@ namespace LoRaWan.Tests.Common
             Create(rxpk, LoRaEnumerable.Repeat(constantElapsedTime ?? TimeSpan.Zero), packetForwarder, startTimeOffset, useRealTimer);
 
         /// <summary>
-        /// Creates a WaitableLoRaRequest that uses a deterministic time handler.
+        /// Creates a WwaitableLoRaRequest that is configured to miss certain receive windows.
         /// </summary>
         /// <param name="rxpk">Rxpk instance.</param>
-        /// <param name="elapsedTimes">Returns an elapsed time every time it is requested.</param>
         /// <param name="packetForwarder">PacketForwarder instance.</param>
-        /// <param name="startTimeOffset">Is subtracted from the current time to determine the start time for the deterministic time watcher. Default is TimeSpan.Zero.</param>
-        /// <param name="useRealTimer">Allows you to opt-in to use a real, non-deterministic time watcher.</param>
-        public static WaitableLoRaRequest Create(Rxpk rxpk,
-                                                 IEnumerable<TimeSpan> elapsedTimes,
-                                                 IPacketForwarder packetForwarder = null,
-                                                 TimeSpan? startTimeOffset = null,
-                                                 bool useRealTimer = false)
+        /// <param name="inTimeForC2DMessageCheck">If set to true it ensures that processing is fast enough that C2D messages can be checked.</param>
+        /// <param name="inTimeForAdditionalMessageCheck">If set to true it ensures that processing is fast enough that additional C2D messages can be checked.</param>
+        /// <param name="inTimeForDownlinkDelivery">If set to true it ensures that processing is fast enough that C2D messages can be checked.</param>
+        public static WaitableLoRaRequest Create(Rxpk rxpk, IPacketForwarder packetForwarder,
+                                                 bool inTimeForC2DMessageCheck,
+                                                 bool inTimeForAdditionalMessageCheck,
+                                                 bool inTimeForDownlinkDelivery)
+        {
+            var c2dMessageCheckTimeSpan = inTimeForC2DMessageCheck ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
+            var additionalMessageCheckTimeSpan = inTimeForAdditionalMessageCheck ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
+            var downlinkDeliveryTimeSpan = inTimeForDownlinkDelivery ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
+            return Create(rxpk, new[] { c2dMessageCheckTimeSpan, c2dMessageCheckTimeSpan, additionalMessageCheckTimeSpan, downlinkDeliveryTimeSpan }, packetForwarder);
+        }
+
+        private static WaitableLoRaRequest Create(Rxpk rxpk,
+                                                  IEnumerable<TimeSpan> elapsedTimes,
+                                                  IPacketForwarder packetForwarder = null,
+                                                  TimeSpan? startTimeOffset = null,
+                                                  bool useRealTimer = false)
         {
             var request = new WaitableLoRaRequest(rxpk,
                                                   packetForwarder ?? new TestPacketForwarder(),
