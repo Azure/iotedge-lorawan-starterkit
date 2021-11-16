@@ -21,7 +21,7 @@
           "edgeAgent": {
             "type": "docker",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-agent:$EDGE_AGENT_VERSION",
+              "image": "mcr.microsoft.com/azureiotedge-agent:1.2.2",
               "createOptions": {}
             }
           },
@@ -30,7 +30,7 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-hub:$EDGE_HUB_VERSION",
+              "image": "mcr.microsoft.com/azureiotedge-hub:1.2.2",
               "createOptions": {
                 "HostConfig": {
                   "PortBindings": {
@@ -50,16 +50,10 @@
             },
             "env": {
               "OptimizeForPerformance": {
-                "value": "$EDGEHUB_OPTIMIZEFORPERFORMANCE"
+                "value": "false"
               },
               "mqttSettings__enabled": {
-                "value": "$EDGEHUB_MQTTSETTINGS_ENABLED"
-              },
-              "httpSettings__enabled": {
-                "value": "$EDGEHUB_HTTPSETTINGS_ENABLED"
-              },
-              "LORA_BUILD_ID": {
-                "value": "$BUILD_BUILDID"
+                "value": "false"
               },
               "AuthenticationMode": {
                 "value": "CloudAndScope"
@@ -74,14 +68,13 @@
               "image": "${MODULES.LoRaWanNetworkSrvModule}",
               "createOptions": {
                 "ExposedPorts": {
-                  "1680/udp": {}
+                  "5000/tcp": {}
                 },
                 "HostConfig": {
                   "PortBindings": {
-                    "1680/udp": [
+                    "5000/tcp": [
                       {
-                        "HostPort": "1680",
-                        "HostIp": "172.17.0.1"
+                        "HostPort": "5000"
                       }
                     ]
                   }
@@ -104,39 +97,14 @@
               },
               "LOG_TO_UDP_ADDRESS": {
                 "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
-              }
-            },
-            "status": "running",
-            "restartPolicy": "always"
-          },
-          "LoRaWanPktFwdModule": {
-            "type": "docker",
-            "settings": {
-              "image": "${MODULES.LoRaWanPktFwdModule}",
-              "createOptions": {
-                "HostConfig": {
-                  "NetworkMode": "host",
-                  "Privileged": true
-                },
-                "NetworkingConfig": {
-                  "EndpointsConfig": {
-                    "host": {}
-                  }
-                }
-              }
-            },
-            "env": {
-              "RESET_PIN": {
-                "value": "$RESET_PIN"
               },
-              "REGION": {
-                "value": "$REGION"
+              "USE_BASIC_STATION": {
+                "value": true
               },
-              "PKT_FWD_SPI_DEV":{
-                "value":"$SPI_DEV"
+              "APPINSIGHTS_INSTRUMENTATIONKEY": {
+                "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
               }
             },
-            "version": "1.0",
             "status": "running",
             "restartPolicy": "always"
           },
@@ -173,3 +141,4 @@
     }
   }
 }
+

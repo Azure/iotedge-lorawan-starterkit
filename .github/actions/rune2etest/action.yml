@@ -1,0 +1,25 @@
+name: 'Run E2E test'
+description: 'run an E2E test'
+inputs:
+  test_name:
+    description: 'the test name to run'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+  - name: Runs SensorDecoding E2E tests
+    id: run_e2e_tests
+    shell: bash
+    run: |
+      dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
+      -p:ParallelizeTestCollections=false -r ${{ env.TESTS_RESULTS_FOLDER }}/E2E/ --filter "${{ inputs.test_name }}" \
+      ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
+
+  - name: Add ${{ inputs.test_name }} Test Label
+    uses: buildsville/add-remove-label@v1
+    if: github.event_name == 'pull_request' && steps.run_e2e_tests.conclusion == 'Success'
+    with:
+      token: ${{ github.token }}
+      label: '${{ inputs.test_name }}'
+      type: add
