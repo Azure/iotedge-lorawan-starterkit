@@ -74,19 +74,20 @@ In addition to this, we will support Application Insights metrics on an opt-in b
 
 | Name                       | Description                                                  | Source | Namespace | Dimensions                 |
 | -------------------------- | ------------------------------------------------------------ | ------ | --------- | -------------------------- |
-| MessageDeliveryLatency     | Time from when we received the message from the concentrator until we are done processing it - including downstream send. | LNS    | LoRaWan   | Gateway Id                 |
 | RxWndRate                  | Number of times we hit the different receive windows.        | LNS    | LoRaWan   | Gateway Id, Receive Window |
 | RxWndMiss                  | Number of missed on downstream windows                       | LNS    | LoRaWan   | Gateway Id                 |
 | DeviceCacheHit             | Number of device cache hit                                   | LNS    | LoRaWan   | Gateway Id                 |
 | DeviceLoadRequests         | Number of device load requests                               | LNS    | LoRaWan   | Gateway Id                 |
 | JoinRequests               | Number of join requests                                      | LNS    | LoRaWan   | Gateway Id                 |
 | D2CMessagesReceived        | Number of messages received from device                      | LNS    | LoRaWan   | Gateway Id, Device Id      |
+| D2CMessageDeliveryLatency  | Time from when we received the message from the concentrator until we are done processing it | LNS    | LoRaWan   | Gateway Id                 |
 | D2CMessagesDelivered       | Number of messages sent to upstream                          | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
 | D2CMessagesError           | Number of errors in sending messages to upstream             | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
 | D2CMessagesProcessingError | Number of errors processing (decoding, decrypting) messages  | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
 | D2CMessageSize             | Message size in bytes received from device                   | LNS    | LoRaWan   | Gateway Id, Device Id      |
 | D2CMessageSizeUpstream     | Message size in bytes sent upstream                          | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
 | C2DMessagesReceived        | Number of C2D messages to send to device                     | LNS    | LoRaWan   | Gateway Id, Device Id      |
+| C2DMessageDeliveryLatency  | Time from when we received the message from the cloud until we are done processing it | LNS    | LoRaWan   | Gateway Id                 |
 | C2DMessagesDelivered       | Number of messages sent downstream                           | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
 | C2DMessagesError           | Number of errors in sending messages to downstream           | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
 | C2DMessageSizeDownstream   | Message size in bytes sent downstream                        | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
@@ -95,13 +96,14 @@ In addition to this, we will support Application Insights metrics on an opt-in b
 
 We support the following alerts when the user opts in to use Application Insights.
 
-| Name                              | Description                                                  | Source                                   | Condition |
-| --------------------------------- | ------------------------------------------------------------ | ---------------------------------------- | --------- |
-| HighDeviceLastSeenTime            | Alerts when high device last seen time (coverage/availability, freshness). Might not be easy due to throttling of logs, maybe omit in the beginning. | D2CMessagesReceived metric               | Dynamic   |
-| LowDeviceUpstreamMessageFrequency | Alerts when low device upstream message frequency detected (messages per min) (freshness, throughput) | D2CMessagesDelivered metric              | Dynamic   |
-| HighDeviceMessageLatency          | High device message processing time (throughput)             | MessageDeliveryLatency                   | Dynamic   |
-| HighDeviceMessageErrorRatio       | High device messages error ratio (correctness)               | D2CMessagesError                         | Dynamic   |
-| HighDeviceMessagesLostRatio       | High device messages lost ratio (correctness, throughput)    | D2CMessagesReceived/D2CMessagesDelivered | Dynamic   |
+| Name                            | Description                                               | Source                                   | Condition |
+| ------------------------------- | --------------------------------------------------------- | ---------------------------------------- | --------- |
+| HighUpstreamMessageLatency      | High device message processing time (throughput)          | D2CMessageDeliveryLatency                | Dynamic   |
+| HighUpstreamMessageErrorRatio   | High device messages error ratio (correctness)            | D2CMessagesError                         | Dynamic   |
+| HighUpstreamMessagesLostRatio   | High device messages lost ratio (correctness, throughput) | D2CMessagesReceived/D2CMessagesDelivered | Dynamic   |
+| HighDownstreamMessageLatency    | High device message processing time (throughput)          | C2DMessageDeliveryLatency                | Dynamic   |
+| HighDownstreamMessageErrorRatio | High device messages error ratio (correctness)            | D2CMessagesError                         | Dynamic   |
+| HighDownstreamMessagesLostRatio | High device messages lost ratio (correctness, throughput) | MessagesReceived/D2CMessagesDelivered    | Dynamic   |
 
 ## Alternatives considered
 
