@@ -26,9 +26,9 @@ namespace LoRaWan
         public void Log(LogLevel logLevel, string message);
     }
 
-    public class LogSink : ILogSink
+    public abstract class LogSink : ILogSink
     {
-        public LogSink(LogLevel logLevel) => LogLevel = logLevel;
+        protected LogSink(LogLevel logLevel) => LogLevel = logLevel;
 
         public LogLevel LogLevel { get; }
 
@@ -39,7 +39,7 @@ namespace LoRaWan
             CoreLog(logLevel, message);
         }
 
-        protected virtual void CoreLog(LogLevel logLevel, string message) { /* Nop */ }
+        protected abstract void CoreLog(LogLevel logLevel, string message);
     }
 
     public static class LogSinkExtensions
@@ -94,18 +94,21 @@ namespace LoRaWan
                 _ => null
             };
 
-        private sealed class LogSink : LoRaWan.LogSink, IDisposable
+        private sealed class LogSink : ILogSink, IDisposable
         {
             private readonly ILogSink first;
             private readonly ILogSink second;
 
-            public LogSink(ILogSink first, ILogSink second) :
-                base((LogLevel)Math.Min((int)first.LogLevel, (int)second.LogLevel))
+            public LogSink(ILogSink first, ILogSink second)
             {
-                (this.first, this.second) = (first, second);
+                this.first = first;
+                this.second = second;
+                LogLevel = (LogLevel)Math.Min((int)first.LogLevel, (int)second.LogLevel);
             }
 
-            public override void Log(LogLevel logLevel, string message)
+            public LogLevel LogLevel { get; }
+
+            public void Log(LogLevel logLevel, string message)
             {
                 this.first.Log(logLevel, message);
                 this.second.Log(logLevel, message);
