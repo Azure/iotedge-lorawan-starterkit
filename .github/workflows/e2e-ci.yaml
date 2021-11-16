@@ -247,13 +247,15 @@ jobs:
       url: https://github.com/Azure/iotedge-lorawan-starterkit/runs/${{ github.run_id }}?check_suite_focus=true
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
     runs-on: ubuntu-latest
-    name: Deploy IoT Edge on EFLOW VM gateway
+    name: Deploy IoT Edge on ItestArm2 concentrator
     env:
       DEVICE_ID: ${{ secrets.DEVICE_ID }}
       LBS_TC_URI: ${{ secrets.TC_URI }}
       IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
       FACADE_SERVER_URL: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
       FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
+      EDGE_AGENT_VERSION: 1.1.8
+      EDGE_HUB_VERSION: 1.1.8
     steps:
       - uses: actions/checkout@v2
         name: Checkout current branch
@@ -328,11 +330,25 @@ jobs:
         test_name: 'SensorDecodingTest'
 
     - name:  Runs OTAAJoin E2E tests
-      if: always() && contains('OTAAJoin', env.TestsToRun )
+      if: always() && contains('OTAAJoinTest', env.TestsToRun )
       uses: ./.github/actions/rune2etest
       id: e2e_tests_otaajointest
       with:
-        test_name: 'OTAAJoin'
+        test_name: 'OTAAJoinTest'
+
+    - name:  Runs ABP E2E tests
+      if: always() && contains('ABPTest', env.TestsToRun )
+      uses: ./.github/actions/rune2etest
+      id: e2e_tests_abptest
+      with:
+        test_name: 'ABPTest'
+
+    - name:  Runs OTAA E2E tests
+      if: always() && contains('OTAATest', env.TestsToRun )
+      uses: ./.github/actions/rune2etest
+      id: e2e_tests_otaatest
+      with:
+        test_name: 'OTAATest'
 
     - name:  Runs MacTest E2E tests
       if: always() && contains('MacTest', env.TestsToRun )
@@ -342,18 +358,18 @@ jobs:
         test_name: 'MacTest'
 
     - name:  Runs ClassC E2E tests
-      if: always() && contains('ClassC', env.TestsToRun )
+      if: always() && contains('ClassCTest', env.TestsToRun )
       uses: ./.github/actions/rune2etest
       id: e2e_tests_classctest
       with:
-        test_name: 'ClassC'
+        test_name: 'ClassCTest'
 
     - name:  Runs C2D E2E tests
-      if: always() && contains('C2D', env.TestsToRun )
+      if: always() && contains('C2DMessageTest', env.TestsToRun )
       uses: ./.github/actions/rune2etest
       id: e2e_tests_c2dctest
       with:
-        test_name: 'C2D'
+        test_name: 'C2DMessageTest'
 
     - name:  Runs MultiGatewayTest E2E tests
       if: always() && contains('MultiGatewayTest', env.TestsToRun )
