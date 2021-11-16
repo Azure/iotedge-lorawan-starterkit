@@ -71,6 +71,9 @@ nav:
       - samples/decoders/decoder.md
       - samples/decoders/universal.md
       - samples/decoders/cayenne.md
+  - Testing:
+    - testing/e2e_tests.md
+    - testing/integration_tests.md
   - Tools:
     - tools/device-provisioning.md
   - 'Decision Log':
