@@ -86,8 +86,10 @@ In addition to this, we will support Application Insights metrics on an opt-in b
 | D2CMessagesProcessingError | Number of errors processing (decoding, decrypting) messages  | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
 | D2CMessageSize             | Message size in bytes received from device                   | LNS    | LoRaWan   | Gateway Id, Device Id      |
 | D2CMessageSizeUpstream     | Message size in bytes sent upstream                          | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
-
-Equivalent metrics should be added for cloud to device messages.
+| C2DMessagesReceived        | Number of C2D messages to send to device                     | LNS    | LoRaWan   | Gateway Id, Device Id      |
+| C2DMessagesDelivered       | Number of messages sent downstream                           | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
+| C2DMessagesError           | Number of errors in sending messages to downstream           | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
+| C2DMessageSizeDownstream   | Message size in bytes sent downstream                        | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
 
 ### Alerts
 
