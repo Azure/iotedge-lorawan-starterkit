@@ -39,6 +39,8 @@ namespace LoRaWan.Tools.CLI
 
         public const string RXDelay = "RXDelay";
 
+        public const string RouterConfig = "routerConfig";
+
         /// <summary>
         /// Defines the connection keep alive timeout
         /// </summary>
