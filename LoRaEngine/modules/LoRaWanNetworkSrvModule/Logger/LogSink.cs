@@ -22,8 +22,8 @@ namespace LoRaWan
 
     public interface ILogSink
     {
-        public LogLevel LogLevel { get; }
-        public void Log(LogLevel logLevel, string message);
+        LogLevel LogLevel { get; }
+        void Log(LogLevel logLevel, string message);
     }
 
     public abstract class LogSink : ILogSink
