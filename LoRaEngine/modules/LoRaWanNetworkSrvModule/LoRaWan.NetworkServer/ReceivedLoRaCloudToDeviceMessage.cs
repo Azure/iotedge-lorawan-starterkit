@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer
                 catch (FormatException ex)
                 {
                     // Invalid base64 string, return empty payload
-                    Logger.Log($"Payload '{RawPayload}' is not a valid base64 value: {ex.Message}", LogLevel.Error);
+                    TcpLogger.Log($"Payload '{RawPayload}' is not a valid base64 value: {ex.Message}", LogLevel.Error);
                 }
             }
 

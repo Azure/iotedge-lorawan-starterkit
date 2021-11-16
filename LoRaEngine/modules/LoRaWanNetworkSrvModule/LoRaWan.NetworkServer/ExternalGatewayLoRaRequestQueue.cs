@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
 
         public void Queue(LoRaRequest request)
         {
-            Logger.Log(this.loRaDevice.DevEUI, $"device is not our device, ignore message", LogLevel.Debug);
+            TcpLogger.Log(this.loRaDevice.DevEUI, $"device is not our device, ignore message", LogLevel.Debug);
             request.NotifyFailed(this.loRaDevice, LoRaDeviceRequestFailedReason.BelongsToAnotherGateway);
         }
     }

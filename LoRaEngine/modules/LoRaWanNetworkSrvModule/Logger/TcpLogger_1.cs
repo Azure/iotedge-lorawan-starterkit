@@ -8,14 +8,14 @@ namespace LoRaWan
     using System.Net.Sockets;
     using Microsoft.Extensions.Logging;
 
-    public static class Logger
+    public static class TcpLogger
     {
         public static LogLevel LoggerLevel => sink.LogLevel;
 
         private static ILogSink sink = new ConsoleLogSink(LogLevel.Error);
 
-        public static void Init(LoggerConfiguration configuration,
-                                ILogger<TcpLogSink> tcpLogSinkLogger = null)
+        public static ILogSink Init(LoggerConfiguration configuration,
+                                    ILogger<TcpLogSink> tcpLogSinkLogger = null)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
@@ -56,6 +56,8 @@ namespace LoRaWan
                 tcpLogSink?.Dispose();
                 throw;
             }
+
+            return sink;
 
             static IPAddress Resolve(string address)
             {

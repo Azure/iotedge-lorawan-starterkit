@@ -364,7 +364,7 @@ namespace LoRaWan.NetworkServer
 
                     if (LoRaRegion == LoRaRegionType.NotSet)
                     {
-                        Logger.Log(DevEUI, $"invalid region value: {regionValue}", LogLevel.Error);
+                        TcpLogger.Log(DevEUI, $"invalid region value: {regionValue}", LogLevel.Error);
                     }
                 }
 
@@ -466,7 +466,7 @@ namespace LoRaWan.NetworkServer
                 toReport ??= new TwinCollection();
                 toReport[propertyNameStart] = newfCnt.Value;
                 this.hasFrameCountChanges = true;
-                Logger.Log(DevEUI, $"set {fcntPropertyName} from {propertyNameStart} with {newfCnt.Value}, reset: {reset}", LogLevel.Debug);
+                TcpLogger.Log(DevEUI, $"set {fcntPropertyName} from {propertyNameStart} with {newfCnt.Value}, reset: {reset}", LogLevel.Debug);
             }
             else
             {
@@ -536,11 +536,11 @@ namespace LoRaWan.NetworkServer
             }
             catch (OverflowException)
             {
-                Logger.Log("value represents a number that is less than MinValue or greater than MaxValue.", LogLevel.Error);
+                TcpLogger.Log("value represents a number that is less than MinValue or greater than MaxValue.", LogLevel.Error);
             }
             catch (FormatException)
             {
-                Logger.Log("value does not consist of an optional sign followed by a sequence of digits (0 through 9).", LogLevel.Error);
+                TcpLogger.Log("value does not consist of an optional sign followed by a sequence of digits (0 through 9).", LogLevel.Error);
             }
 
             return 0;
@@ -620,7 +620,7 @@ namespace LoRaWan.NetworkServer
                     if (deviceClientActivityScope == null)
                     {
                         // Logging as information because the real error was logged as error
-                        Logger.Log(DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
+                        TcpLogger.Log(DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
                         return false;
                     }
 
@@ -895,7 +895,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                Logger.Log(DevEUI, "the region provided in the device twin is not a valid value", LogLevel.Error);
+                TcpLogger.Log(DevEUI, "the region provided in the device twin is not a valid value", LogLevel.Error);
             }
 
             if (updateProperties.SavePreferredGateway)
@@ -919,7 +919,7 @@ namespace LoRaWan.NetworkServer
             if (activityScope == null)
             {
                 // Logging as information because the real error was logged as error
-                Logger.Log(DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
+                TcpLogger.Log(DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
                 return false;
             }
 
@@ -942,7 +942,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
+                    TcpLogger.Log(DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
                 }
 
                 if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate))
@@ -951,7 +951,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
+                    TcpLogger.Log(DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
                 }
 
                 if (Region.IsValidRXDelay(DesiredRXDelay))
@@ -960,7 +960,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
+                    TcpLogger.Log(DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
                 }
 
                 this.region.AcceptChanges();
@@ -1077,7 +1077,7 @@ namespace LoRaWan.NetworkServer
         private Task RunAndQueueNext(LoRaRequest request)
         {
             return TaskUtil.RunOnThreadPool(() => CoreAsync(),
-                                            ex => Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error));
+                                            ex => TcpLogger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error));
 
             async Task CoreAsync()
             {

@@ -149,7 +149,7 @@ namespace LoRaWan.NetworkServer
                 var cachedMatchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, (LoRaPayloadData)request.Payload, logError: false));
                 if (cachedMatchingDevice != null)
                 {
-                    Logger.Log(cachedMatchingDevice.DevEUI, "device in cache", LogLevel.Debug);
+                    TcpLogger.Log(cachedMatchingDevice.DevEUI, "device in cache", LogLevel.Debug);
                     if (cachedMatchingDevice.IsOurDevice)
                     {
                         return cachedMatchingDevice;
@@ -172,14 +172,14 @@ namespace LoRaWan.NetworkServer
             dictionary[loRaDevice.DevEUI] = loRaDevice;
 
             _ = this.cache.Set(CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, this.resetCacheChangeToken);
-            Logger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
+            TcpLogger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
 
             if (!string.IsNullOrEmpty(oldDevAddr))
             {
                 var oldDevAddrDictionary = InternalGetCachedDevicesForDevAddr(oldDevAddr, createIfNotExists: false);
                 if (oldDevAddrDictionary != null && oldDevAddrDictionary.TryRemove(loRaDevice.DevEUI, out var _))
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"previous device devAddr ({oldDevAddr}) removed from cache.", LogLevel.Debug);
+                    TcpLogger.Log(loRaDevice.DevEUI, $"previous device devAddr ({oldDevAddr}) removed from cache.", LogLevel.Debug);
                 }
             }
         }
@@ -226,7 +226,7 @@ namespace LoRaWan.NetworkServer
             var checkMicResult = loRaDevice.ValidateMic(loraPayload);
             if (!checkMicResult && logError)
             {
-                Logger.Log(loRaDevice.DevEUI, $"with devAddr {loRaDevice.DevAddr} check MIC failed", LogLevel.Debug);
+                TcpLogger.Log(loRaDevice.DevEUI, $"with devAddr {loRaDevice.DevAddr} check MIC failed", LogLevel.Debug);
             }
 
             return checkMicResult;
@@ -260,11 +260,11 @@ namespace LoRaWan.NetworkServer
         {
             if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(devNonce))
             {
-                Logger.Log(devEUI, "join refused: missing devEUI/AppEUI/DevNonce in request", LogLevel.Error);
+                TcpLogger.Log(devEUI, "join refused: missing devEUI/AppEUI/DevNonce in request", LogLevel.Error);
                 return null;
             }
 
-            Logger.Log(devEUI, "querying the registry for OTAA device", LogLevel.Debug);
+            TcpLogger.Log(devEUI, "querying the registry for OTAA device", LogLevel.Debug);
 
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
                 gatewayID: this.configuration.GatewayID,
@@ -273,14 +273,14 @@ namespace LoRaWan.NetworkServer
 
             if (searchDeviceResult.IsDevNonceAlreadyUsed)
             {
-                Logger.Log(devEUI, $"join refused: Join already processed by another gateway.", LogLevel.Information);
+                TcpLogger.Log(devEUI, $"join refused: Join already processed by another gateway.", LogLevel.Information);
                 return null;
             }
 
             if (searchDeviceResult?.Devices == null || searchDeviceResult.Devices.Count == 0)
             {
                 var msg = searchDeviceResult.RefusedMessage ?? "join refused: no devices found matching join request";
-                Logger.Log(devEUI, msg, LogLevel.Information);
+                TcpLogger.Log(devEUI, msg, LogLevel.Information);
                 return null;
             }
 
@@ -321,7 +321,7 @@ namespace LoRaWan.NetworkServer
                 oldResetCacheToken.Cancel();
                 oldResetCacheToken.Dispose();
 
-                Logger.Log("Device cache cleared", LogLevel.Information);
+                TcpLogger.Log("Device cache cleared", LogLevel.Information);
             }
         }
 

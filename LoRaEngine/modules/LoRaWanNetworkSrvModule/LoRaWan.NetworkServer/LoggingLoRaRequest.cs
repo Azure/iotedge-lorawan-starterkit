@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
         private void LogProcessingTime(string deviceId)
         {
             deviceId ??= ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
-            Logger.Log(deviceId, $"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}", LogLevel.Debug);
+            TcpLogger.Log(deviceId, $"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}", LogLevel.Debug);
         }
 
         public override LoRaOperationTimeWatcher GetTimeWatcher() => this.wrappedRequest.GetTimeWatcher();

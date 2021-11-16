@@ -27,14 +27,14 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
         {
-            Logger.Log(devEUI, $"syncing FCntDown for multigateway", LogLevel.Debug);
+            TcpLogger.Log(devEUI, $"syncing FCntDown for multigateway", LogLevel.Debug);
 
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                Logger.Log(devEUI, $"error calling the NextFCntDown function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                TcpLogger.Log(devEUI, $"error calling the NextFCntDown function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
                 return 0;
             }
 
@@ -54,12 +54,12 @@ namespace LoRaWan.NetworkServer
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                Logger.Log(devEUI, $"error calling the DuplicateMsgCheck function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                TcpLogger.Log(devEUI, $"error calling the DuplicateMsgCheck function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
                 return null;
             }
 
             var payload = await response.Content.ReadAsStringAsync();
-            Logger.Log(devEUI, $"deduplication response: '{payload}'", LogLevel.Debug);
+            TcpLogger.Log(devEUI, $"deduplication response: '{payload}'", LogLevel.Debug);
             return JsonConvert.DeserializeObject<DeduplicationResult>(payload);
         }
 
@@ -74,7 +74,7 @@ namespace LoRaWan.NetworkServer
             using var response = await client.PostAsync(url, content);
             if (!response.IsSuccessStatusCode)
             {
-                Logger.Log(devEUI, $"error calling the bundling function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                TcpLogger.Log(devEUI, $"error calling the bundling function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
                 return null;
             }
 
@@ -89,7 +89,7 @@ namespace LoRaWan.NetworkServer
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                Logger.Log(devEUI, $"error calling the NextFCntDown function, check the function log, {response.ReasonPhrase}", LogLevel.Error);
+                TcpLogger.Log(devEUI, $"error calling the NextFCntDown function, check the function log, {response.ReasonPhrase}", LogLevel.Error);
                 return false;
             }
 
@@ -145,7 +145,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                Logger.Log(devAddr, $"error calling get device function api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
+                TcpLogger.Log(devAddr, $"error calling get device function api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
 
                 // TODO: FBE check if we return null or throw exception
                 return new SearchDevicesResult();
@@ -181,7 +181,7 @@ namespace LoRaWan.NetworkServer
                     return new SearchDevicesResult();
                 }
 
-                Logger.Log(eui, $"error calling get device/station by EUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
+                TcpLogger.Log(eui, $"error calling get device/station by EUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
 
                 return new SearchDevicesResult();
             }

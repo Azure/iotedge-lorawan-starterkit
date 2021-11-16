@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         internal async Task InitModuleAsync(CancellationToken cancellationToken)
         {
             // Obsolete, this should be removed as part of #456
-            Logger.Init(new LoggerConfiguration
+            _ = TcpLogger.Init(new LoggerConfiguration
             {
                 LogLevel = LoggerConfiguration.InitLogLevel(networkServerConfiguration.LogLevel),
                 LogToConsole = networkServerConfiguration.LogToConsole,
@@ -59,10 +59,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             if (networkServerConfiguration.IoTEdgeTimeout > 0)
             {
                 this.loRaModuleClient.OperationTimeout = TimeSpan.FromMilliseconds(networkServerConfiguration.IoTEdgeTimeout);
-                Logger.Log($"Changing timeout to {networkServerConfiguration.IoTEdgeTimeout} ms", LogLevel.Debug);
+                TcpLogger.Log($"Changing timeout to {networkServerConfiguration.IoTEdgeTimeout} ms", LogLevel.Debug);
             }
 
-            Logger.Log("Getting properties from module twin...", LogLevel.Information);
+            TcpLogger.Log("Getting properties from module twin...", LogLevel.Information);
             Twin moduleTwin;
             try
             {
@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             if (!TryUpdateConfigurationWithDesiredProperties(moduleTwinCollection))
             {
-                Logger.Log($"The initial configuration of the facade function could not be found in the desired properties", LogLevel.Error);
+                TcpLogger.Log($"The initial configuration of the facade function could not be found in the desired properties", LogLevel.Error);
                 throw new ConfigurationErrorsException("Could not get Facade information from module twin");
             }
 
@@ -102,11 +102,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                     return await SendCloudToDeviceMessageAsync(methodRequest);
                 }
 
-                Logger.Log($"Unknown direct method called: {methodRequest.Name}", LogLevel.Error);
+                TcpLogger.Log($"Unknown direct method called: {methodRequest.Name}", LogLevel.Error);
 
                 return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
-            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"An exception occurred on a direct method call: {ex}", LogLevel.Error)))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => TcpLogger.Log($"An exception occurred on a direct method call: {ex}", LogLevel.Error)))
             {
                 throw;
             }
@@ -124,11 +124,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 }
                 catch (JsonException ex)
                 {
-                    Logger.Log($"Impossible to parse Json for c2d message for device {c2d?.DevEUI}, error: {ex}", LogLevel.Error);
+                    TcpLogger.Log($"Impossible to parse Json for c2d message for device {c2d?.DevEUI}, error: {ex}", LogLevel.Error);
                     return new MethodResponse((int)HttpStatusCode.BadRequest);
                 }
 
-                Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
+                TcpLogger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
 
                 using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
 
@@ -161,9 +161,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
             catch (ConfigurationErrorsException ex)
             {
-                Logger.Log($"A desired properties update was detected but the parameters are out of range with exception :  {ex}", LogLevel.Warning);
+                TcpLogger.Log($"A desired properties update was detected but the parameters are out of range with exception :  {ex}", LogLevel.Warning);
             }
-            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"An exception occurred on desired property update: {ex}", LogLevel.Error)))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => TcpLogger.Log($"An exception occurred on desired property update: {ex}", LogLevel.Error)))
             {
                 throw;
             }
@@ -189,17 +189,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                         this.loRaDeviceAPIService.SetAuthCode((string)desiredProperties[Constants.FacadeServerAuthCodeKey]);
                     }
 
-                    Logger.Log("Desired property changed", LogLevel.Debug);
+                    TcpLogger.Log("Desired property changed", LogLevel.Debug);
                     return true;
                 }
                 else
                 {
-                    Logger.Log("The Facade server Url present in device desired properties was malformed.", LogLevel.Error);
+                    TcpLogger.Log("The Facade server Url present in device desired properties was malformed.", LogLevel.Error);
                     throw new ConfigurationErrorsException(nameof(desiredProperties));
                 }
             }
 
-            Logger.Log("no desired property changed", LogLevel.Debug);
+            TcpLogger.Log("no desired property changed", LogLevel.Debug);
             return false;
         }
 

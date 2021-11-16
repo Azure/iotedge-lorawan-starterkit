@@ -294,17 +294,17 @@ namespace LoRaTools.LoRaMessage
 
             SetMic(nwkSKey);
             var downlinkPktFwdMessage = new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEUI, tmst, lnsRxDelay, rfch, time, stationEui);
-            if (Logger.LoggerLevel < LogLevel.Information)
+            if (TcpLogger.LoggerLevel < LogLevel.Information)
             {
                 var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
 
                 if (devEUI.Length != 0)
                 {
-                    Logger.Log(devEUI, $"{(LoRaMessageType)Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
+                    TcpLogger.Log(devEUI, $"{(LoRaMessageType)Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
                 }
                 else
                 {
-                    Logger.Log(ConversionHelper.ByteArrayToString(DevAddr.Span.ToArray()), $"{(LoRaMessageType)Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
+                    TcpLogger.Log(ConversionHelper.ByteArrayToString(DevAddr.Span.ToArray()), $"{(LoRaMessageType)Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
                 }
             }
 

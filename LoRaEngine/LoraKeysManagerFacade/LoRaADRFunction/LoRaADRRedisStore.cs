@@ -102,7 +102,7 @@ namespace LoraKeysManagerFacade
                 }
             }
 
-            Logger.Log(devEUI, "Failed to acquire ADR redis lock. Can't deliver ADR Table", LogLevel.Error);
+            TcpLogger.Log(devEUI, "Failed to acquire ADR redis lock. Can't deliver ADR Table", LogLevel.Error);
             return null;
         }
 

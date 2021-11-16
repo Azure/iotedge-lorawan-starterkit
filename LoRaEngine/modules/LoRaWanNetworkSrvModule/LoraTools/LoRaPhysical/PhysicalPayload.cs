@@ -59,7 +59,7 @@ namespace LoRaTools
                 // TX_ACK That packet type is used by the gateway to send a feedback to the to inform if a downlink request has been accepted or rejected by the gateway.
                 if (Identifier == PhysicalIdentifier.TxAck)
                 {
-                    Logger.Log($"Tx ack received from gateway", LogLevel.Debug);
+                    TcpLogger.Log($"Tx ack received from gateway", LogLevel.Debug);
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
                     if (input.Length - 12 > 0)
                     {
