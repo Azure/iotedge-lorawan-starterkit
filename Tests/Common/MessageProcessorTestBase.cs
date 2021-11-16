@@ -13,6 +13,7 @@ namespace LoRaWan.Tests.Common
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
 
     public class MessageProcessorTestBase : IDisposable
@@ -70,7 +71,7 @@ namespace LoRaWan.Tests.Common
             var adrStrategyProvider = new LoRaADRStrategyProvider();
             var adrManagerFactory = new LoRAADRManagerFactory(LoRaDeviceApi.Object);
             var functionBundlerProvider = new FunctionBundlerProvider(LoRaDeviceApi.Object);
-            RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
+            RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance);
             LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
             ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache);

@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Common
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
 
     public sealed class TestLoRaDeviceFactory : ILoRaDeviceFactory, IDisposable
     {
@@ -83,7 +84,7 @@ namespace LoRaWan.Tests.Common
 
             this.connectionManager.Register(loRaDevice, deviceClientToAssign);
 
-            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider));
+            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance));
 
             this.deviceMap[deviceInfo.DevEUI] = loRaDevice;
 
