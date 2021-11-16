@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsTestProject>true</IsTestProject>
@@ -12,6 +12,7 @@
     <PackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisVersion)" />
     <PackageReference Include="xunit" Version="$(XUnitVersion)" />
     <PackageReference Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.17" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudio)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
