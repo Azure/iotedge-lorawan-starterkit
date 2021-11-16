@@ -9,7 +9,7 @@ on: # rebuild any PRs and main branch changes
         description: 'Run E2E tests only'
         default: false
       TestsToRun:
-        default: [SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest]
+        default: '[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest]'
         description: 'tests to run'
       TxPower:
         description: 'TXPower value to use in E2E tests'
