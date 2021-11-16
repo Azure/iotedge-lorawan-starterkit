@@ -3,7 +3,6 @@ concurrency: e2e
 on: # rebuild any PRs and main branch changes
   schedule:
     - cron: '59 23 * * 1,2,3,4,5'
-  pr:
   workflow_dispatch:
     inputs:
       RunE2ETestsOnly:
