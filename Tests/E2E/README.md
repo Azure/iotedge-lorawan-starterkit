@@ -30,7 +30,7 @@ This guide helps you to execute and author E2E tests on your local environment.
 
 ### LoRa Basics Station and LNS setup
 
-Configure LoRa Basics Station and Network Server to run on your local LoRa gateway:
+Configure LoRa Basics Station and Network Server to run on your concentrator:
 
 1. Copy `LoRaEngine/example.env` file and name it `.env`.
 
