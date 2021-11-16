@@ -98,9 +98,6 @@
               "LOG_TO_UDP_ADDRESS": {
                 "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
               },
-              "USE_BASIC_STATION": {
-                "value": true
-              },
               "APPINSIGHTS_INSTRUMENTATIONKEY": {
                 "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
               }
