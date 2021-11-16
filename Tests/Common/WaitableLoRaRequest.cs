@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Common
                                                  TimeSpan? startTimeOffset = null,
                                                  TimeSpan? constantElapsedTime = null,
                                                  bool useRealTimer = false) =>
-            Create(rxpk, LoRaEnumerable.Repeat(constantElapsedTime ?? TimeSpan.Zero), packetForwarder, startTimeOffset, useRealTimer);
+            Create(rxpk, LoRaEnumerable.RepeatInfinite(constantElapsedTime ?? TimeSpan.Zero), packetForwarder, startTimeOffset, useRealTimer);
 
         /// <summary>
         /// Creates a WwaitableLoRaRequest that is configured to miss certain receive windows.

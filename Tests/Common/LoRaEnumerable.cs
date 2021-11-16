@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.Common
 
     internal static class LoRaEnumerable
     {
-        public static IEnumerable<T> Repeat<T>(T value)
+        public static IEnumerable<T> RepeatInfinite<T>(T value)
         {
             while (true)
                 yield return value;
