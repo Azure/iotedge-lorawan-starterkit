@@ -86,7 +86,7 @@ namespace LoRaTools.LoRaPhysical
         /// </summary>
         /// <param name="inputMessage">Input byte array.</param>
         /// <returns>List of rxpk or null if no Rxpk was found.</returns>
-        public static IList<Rxpk> CreateRxpk(byte[] inputMessage)
+        public static IList<Rxpk> CreateRxpk(byte[] inputMessage, ILogger logger = null)
         {
             var physicalPayload = new PhysicalPayload(inputMessage);
             if (physicalPayload.Message != null)
@@ -94,7 +94,7 @@ namespace LoRaTools.LoRaPhysical
                 var payload = Encoding.UTF8.GetString(physicalPayload.Message);
                 if (!payload.StartsWith("{\"stat", StringComparison.Ordinal))
                 {
-                    StaticLogger.Log($"Physical dataUp {payload}", LogLevel.Debug);
+                    logger?.LogDebug($"Physical dataUp {payload}");
                     var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
                     if (payloadObject != null)
                     {
@@ -106,7 +106,7 @@ namespace LoRaTools.LoRaPhysical
                 }
                 else
                 {
-                    StaticLogger.Log($"Statistic: {payload}", LogLevel.Debug);
+                    logger?.LogDebug($"Statistic: {payload}");
                 }
             }
 

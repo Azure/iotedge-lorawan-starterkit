@@ -47,7 +47,7 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used as part of Simulated device for testing purposes.
         /// </summary>
         /// <param name="inputMessage">The Input Message bytes.</param>
-        public static Txpk CreateTxpk(byte[] inputMessage)
+        public static Txpk CreateTxpk(byte[] inputMessage, ILogger logger = null)
         {
             var physicalPayload = new PhysicalPayload(inputMessage, true);
             var payload = Encoding.UTF8.GetString(physicalPayload.Message);
@@ -63,7 +63,7 @@ namespace LoRaTools.LoRaPhysical
                 }
                 else
                 {
-                    StaticLogger.Log("Error: " + payloadDownObject.Txpk, LogLevel.Error);
+                    logger?.LogError("Error: " + payloadDownObject.Txpk);
                 }
             }
 
