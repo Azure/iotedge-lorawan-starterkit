@@ -31,7 +31,7 @@ namespace LoRaTools
         }
 
         // case of inbound messages
-        public PhysicalPayload(byte[] input, bool server = false)
+        public PhysicalPayload(byte[] input, bool server = false, ILogger logger = null)
         {
             if (input is null) throw new ArgumentNullException(nameof(input));
 
@@ -59,7 +59,7 @@ namespace LoRaTools
                 // TX_ACK That packet type is used by the gateway to send a feedback to the to inform if a downlink request has been accepted or rejected by the gateway.
                 if (Identifier == PhysicalIdentifier.TxAck)
                 {
-                    StaticLogger.Log($"Tx ack received from gateway", LogLevel.Debug);
+                    logger?.LogDebug("Tx ack received from gateway");
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
                     if (input.Length - 12 > 0)
                     {
@@ -118,6 +118,7 @@ namespace LoRaTools
 
         // 8 bytes
         private readonly byte[] gatewayIdentifier = new byte[8];
+        private readonly ILogger logger;
 
         // 0-unlimited
         public byte[] Message { get; set; }

@@ -87,7 +87,7 @@ namespace LoRaTools.LoRaPhysical
         /// <returns>List of rxpk or null if no Rxpk was found.</returns>
         public static IList<Rxpk> CreateRxpk(byte[] inputMessage, ILogger logger = null)
         {
-            var physicalPayload = new PhysicalPayload(inputMessage);
+            var physicalPayload = new PhysicalPayload(inputMessage, logger: logger);
             if (physicalPayload.Message != null)
             {
                 var payload = Encoding.UTF8.GetString(physicalPayload.Message);

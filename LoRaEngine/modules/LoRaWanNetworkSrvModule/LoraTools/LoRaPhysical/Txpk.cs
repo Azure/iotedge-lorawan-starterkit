@@ -48,7 +48,7 @@ namespace LoRaTools.LoRaPhysical
         /// <param name="inputMessage">The Input Message bytes.</param>
         public static Txpk CreateTxpk(byte[] inputMessage, ILogger logger = null)
         {
-            var physicalPayload = new PhysicalPayload(inputMessage, true);
+            var physicalPayload = new PhysicalPayload(inputMessage, true, logger);
             var payload = Encoding.UTF8.GetString(physicalPayload.Message);
 
             // deserialize for a downlink message
