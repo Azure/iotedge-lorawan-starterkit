@@ -90,7 +90,7 @@ jobs:
       name: Get the check id
       shell: bash
       run: |
-        checksuiteurl=$(jq .check_suite_url <<< ${{ steps.get-check-run-id.outputs.data }} )
+        checksuiteurl=$(jq .check_suite_url <<< '${{ steps.get-check-run-id.outputs.data }}' )
         echo "::set-output name=checkSuiteUrl::$(echo $checksuiteurl)"
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
