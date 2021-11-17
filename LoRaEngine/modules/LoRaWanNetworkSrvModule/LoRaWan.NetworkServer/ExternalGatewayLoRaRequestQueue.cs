@@ -8,15 +8,17 @@ namespace LoRaWan.NetworkServer
     internal class ExternalGatewayLoRaRequestQueue : ILoRaDeviceRequestQueue
     {
         private readonly LoRaDevice loRaDevice;
+        private readonly ILogger<ExternalGatewayLoRaRequestQueue> logger;
 
-        public ExternalGatewayLoRaRequestQueue(LoRaDevice loRaDevice)
+        public ExternalGatewayLoRaRequestQueue(LoRaDevice loRaDevice, ILogger<ExternalGatewayLoRaRequestQueue> logger)
         {
             this.loRaDevice = loRaDevice;
+            this.logger = logger;
         }
 
         public void Queue(LoRaRequest request)
         {
-            StaticLogger.Log(this.loRaDevice.DevEUI, $"device is not our device, ignore message", LogLevel.Debug);
+            logger.LogDebug("device is not our device, ignore message");
             request.NotifyFailed(this.loRaDevice, LoRaDeviceRequestFailedReason.BelongsToAnotherGateway);
         }
     }

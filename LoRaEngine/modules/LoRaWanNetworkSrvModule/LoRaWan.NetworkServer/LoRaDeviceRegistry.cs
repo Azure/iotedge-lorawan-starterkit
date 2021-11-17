@@ -175,7 +175,7 @@ namespace LoRaWan.NetworkServer
                         return cachedMatchingDevice;
                     }
 
-                    return new ExternalGatewayLoRaRequestQueue(cachedMatchingDevice);
+                    return new ExternalGatewayLoRaRequestQueue(cachedMatchingDevice, this.loggerFactory.CreateLogger<ExternalGatewayLoRaRequestQueue>());
                 }
             }
 
@@ -269,7 +269,7 @@ namespace LoRaWan.NetworkServer
                 return this.cache.GetOrCreate(GetJoinDeviceLoaderCacheKey(ioTHubDeviceInfo.DevEUI), (entry) =>
                 {
                     entry.SlidingExpiration = TimeSpan.FromMinutes(INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES);
-                    return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory);
+                    return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory, this.loggerFactory.CreateLogger<JoinDeviceLoader>());
                 });
             }
         }

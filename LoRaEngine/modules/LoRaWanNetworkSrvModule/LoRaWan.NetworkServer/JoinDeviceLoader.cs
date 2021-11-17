@@ -14,15 +14,17 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IoTHubDeviceInfo ioTHubDevice;
         private readonly ILoRaDeviceFactory deviceFactory;
+        private readonly ILogger<JoinDeviceLoader> logger;
         private readonly Task<LoRaDevice> loading;
         private volatile bool canCache;
 
         internal bool CanCache => this.canCache;
 
-        internal JoinDeviceLoader(IoTHubDeviceInfo ioTHubDevice, ILoRaDeviceFactory deviceFactory)
+        internal JoinDeviceLoader(IoTHubDeviceInfo ioTHubDevice, ILoRaDeviceFactory deviceFactory, ILogger<JoinDeviceLoader> logger)
         {
             this.ioTHubDevice = ioTHubDevice;
             this.deviceFactory = deviceFactory;
+            this.logger = logger;
             this.canCache = true;
             this.loading = Task.Run(() => LoadAsync());
         }
@@ -47,7 +49,7 @@ namespace LoRaWan.NetworkServer
                 // object is non usable, must try to read twin again
                 // for the future we could retry here
                 this.canCache = false;
-                StaticLogger.Log(loRaDevice.DevEUI, "join refused: error initializing OTAA device, getting twin failed", LogLevel.Error);
+                this.logger.LogError("join refused: error initializing OTAA device, getting twin failed");
             }
 
             return null;

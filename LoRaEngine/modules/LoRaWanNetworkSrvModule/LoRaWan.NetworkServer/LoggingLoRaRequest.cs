@@ -17,6 +17,7 @@ namespace LoRaWan.NetworkServer
     public class LoggingLoRaRequest : LoRaRequest
     {
         private readonly LoRaRequest wrappedRequest;
+        private readonly ILogger<LoggingLoRaRequest> logger;
 
         public override IPacketForwarder PacketForwarder => this.wrappedRequest.PacketForwarder;
 
@@ -30,9 +31,10 @@ namespace LoRaWan.NetworkServer
 
         public override StationEui StationEui => this.wrappedRequest.StationEui;
 
-        public LoggingLoRaRequest(LoRaRequest wrappedRequest)
+        public LoggingLoRaRequest(LoRaRequest wrappedRequest, ILogger<LoggingLoRaRequest> logger)
         {
             this.wrappedRequest = wrappedRequest;
+            this.logger = logger;
         }
 
         public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
@@ -49,8 +51,12 @@ namespace LoRaWan.NetworkServer
 
         private void LogProcessingTime(string deviceId)
         {
+            if (!this.logger.IsEnabled(LogLevel.Debug))
+                return;
+
             deviceId ??= ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
-            StaticLogger.Log(deviceId, $"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}", LogLevel.Debug);
+            using var scope = this.logger.BeginDeviceScope(deviceId);
+            this.logger.LogDebug($"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}");
         }
 
         public override LoRaOperationTimeWatcher GetTimeWatcher() => this.wrappedRequest.GetTimeWatcher();

@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Integration
 
         public FunctionBundlerIntegrationTests()
         {
-            this.factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance);
+            this.factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
         }
 

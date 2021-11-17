@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using LoRaTools.CommonAPI;
-    using Microsoft.Extensions.Logging;
     using System;
 
     public class FunctionBundlerPreferredGatewayExecutionItem : IFunctionBundlerExecutionItem
@@ -15,8 +14,6 @@ namespace LoRaWan.NetworkServer
             if (request is null) throw new ArgumentNullException(nameof(request));
 
             request.FunctionItems |= FunctionBundlerItemType.PreferredGateway;
-
-            StaticLogger.Log(context.LoRaDevice.DevEUI, "FunctionBundler ADR request finished preparing.", LogLevel.Debug);
         }
 
         public void ProcessResult(FunctionBundlerExecutionContext context, FunctionBundlerResult result)

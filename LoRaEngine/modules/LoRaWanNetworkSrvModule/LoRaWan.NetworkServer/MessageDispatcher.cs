@@ -20,6 +20,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private volatile Region loraRegion;
         private readonly IJoinRequestMessageHandler joinRequestHandler;
+        private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<MessageDispatcher> logger;
 
         public MessageDispatcher(
@@ -27,6 +28,7 @@ namespace LoRaWan.NetworkServer
             ILoRaDeviceRegistry deviceRegistry,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             IJoinRequestMessageHandler joinRequestHandler,
+            ILoggerFactory loggerFactory,
             ILogger<MessageDispatcher> logger)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -38,6 +40,7 @@ namespace LoRaWan.NetworkServer
             this.deviceRegistry.RegisterDeviceInitializer(new FrameCounterLoRaDeviceInitializer(configuration.GatewayID, frameCounterUpdateStrategyProvider));
 
             this.joinRequestHandler = joinRequestHandler;
+            this.loggerFactory = loggerFactory;
             this.logger = logger;
         }
 
@@ -49,6 +52,7 @@ namespace LoRaWan.NetworkServer
                                    ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
             : this(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
                    new JoinRequestMessageHandler(configuration, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance),
+                   NullLoggerFactory.Instance,
                    NullLogger<MessageDispatcher>.Instance)
         { }
 
@@ -89,7 +93,7 @@ namespace LoRaWan.NetworkServer
 
             request.SetRegion(this.loraRegion);
 
-            var loggingRequest = new LoggingLoRaRequest(request);
+            var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>());
 
             if (request.Payload.LoRaMessageType == LoRaMessageType.JoinRequest)
             {
@@ -110,9 +114,9 @@ namespace LoRaWan.NetworkServer
         private void DispatchLoRaDataMessage(LoRaRequest request)
         {
             var loRaPayload = (LoRaPayloadData)request.Payload;
+            using var scope = this.logger.BeginDeviceScope(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr));
             if (!IsValidNetId(loRaPayload))
             {
-                using var scope = this.logger.BeginDeviceScope(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr));
                 this.logger.LogDebug($"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})");
                 request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidNetId);
                 return;
