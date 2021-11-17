@@ -168,8 +168,7 @@ namespace LoRaWan.NetworkServer
                 var cachedMatchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, (LoRaPayloadData)request.Payload, logError: false));
                 if (cachedMatchingDevice != null)
                 {
-                    using var scope = this.logger.BeginDeviceScope(cachedMatchingDevice.DevEUI);
-                    this.logger.LogDebug("device in cache");
+                    this.logger.LogDebug($"{cachedMatchingDevice.DevEUI} device in cache");
                     if (cachedMatchingDevice.IsOurDevice)
                     {
                         return cachedMatchingDevice;
@@ -279,8 +278,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string devNonce)
         {
-            using var scope = this.logger.BeginDeviceScope(devEUI);
-
             if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(devNonce))
             {
                 this.logger.LogError("join refused: missing devEUI/AppEUI/DevNonce in request");

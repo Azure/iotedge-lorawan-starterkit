@@ -64,8 +64,6 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                using var scope = this.logger.BeginDeviceScope(this.devEUI);
-
                 this.deviceClient.OperationTimeoutInMilliseconds = 60000;
 
                 SetRetry(true);
@@ -101,8 +99,6 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                using var scope = this.logger.BeginDeviceScope(this.devEUI);
-
                 this.deviceClient.OperationTimeoutInMilliseconds = 120000;
 
                 SetRetry(true);
@@ -115,9 +111,8 @@ namespace LoRaWan.NetworkServer
 
                 return true;
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not update twin with error: {ex.Message}")))
             {
-                this.logger.LogError($"could not update twin with error: {ex.Message}");
                 return false;
             }
             finally
@@ -132,8 +127,6 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    using var scope = this.logger.BeginDeviceScope(this.devEUI);
-
                     this.deviceClient.OperationTimeoutInMilliseconds = 120000;
 
                     // Enable retry for this send message, off by default
@@ -175,8 +168,6 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                using var scope = this.logger.BeginDeviceScope(this.devEUI);
-
                 // Set the operation timeout to accepted timeout plus one second
                 // Should not return an operation timeout since we wait less that it
                 this.deviceClient.OperationTimeoutInMilliseconds = (uint)(timeout.TotalMilliseconds + 1000);
@@ -214,8 +205,6 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                using var scope = this.logger.BeginDeviceScope(this.devEUI);
-
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
                 SetRetry(true);
@@ -245,8 +234,6 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                using var scope = this.logger.BeginDeviceScope(this.devEUI);
-
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
                 SetRetry(true);
@@ -276,8 +263,6 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                using var scope = this.logger.BeginDeviceScope(this.devEUI);
-
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
                 SetRetry(true);
@@ -306,8 +291,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public bool Disconnect()
         {
-            using var scope = this.logger.BeginDeviceScope(this.devEUI);
-
             if (this.deviceClient != null)
             {
                 this.deviceClient.Dispose();
@@ -328,8 +311,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public bool EnsureConnected()
         {
-            using var scope = this.logger.BeginDeviceScope(this.devEUI);
-
             if (this.deviceClient == null)
             {
                 try

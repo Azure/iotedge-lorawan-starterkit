@@ -51,8 +51,6 @@ namespace LoRaWan.NetworkServer
 
         public async ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, byte fport, string sensorDecoder)
         {
-            using var scope = this.logger.BeginDeviceScope(devEUI);
-
             sensorDecoder ??= string.Empty;
 
             var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);

@@ -79,7 +79,6 @@ namespace LoRaWan.NetworkServer
                     key,
                     (ce) =>
                     {
-                        using var scope = this.logger.BeginDeviceScope(managedConnection.LoRaDevice.DevEUI);
                         ce.SlidingExpiration = TimeSpan.FromSeconds(managedConnection.LoRaDevice.KeepAliveTimeout);
                         _ = ce.RegisterPostEvictionCallback(OnScheduledDisconnect);
 

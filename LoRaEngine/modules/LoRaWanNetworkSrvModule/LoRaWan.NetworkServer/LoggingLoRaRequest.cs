@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
 
@@ -40,22 +39,20 @@ namespace LoRaWan.NetworkServer
         public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {
             this.wrappedRequest.NotifyFailed(deviceId, reason, exception);
-            LogProcessingTime(deviceId);
+            LogProcessingTime();
         }
 
         public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkPktFwdMessage downlink)
         {
             this.wrappedRequest.NotifySucceeded(loRaDevice, downlink);
-            LogProcessingTime(loRaDevice?.DevEUI);
+            LogProcessingTime();
         }
 
-        private void LogProcessingTime(string deviceId)
+        private void LogProcessingTime()
         {
             if (!this.logger.IsEnabled(LogLevel.Debug))
                 return;
 
-            deviceId ??= ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
-            using var scope = this.logger.BeginDeviceScope(deviceId);
             this.logger.LogDebug($"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}");
         }
 

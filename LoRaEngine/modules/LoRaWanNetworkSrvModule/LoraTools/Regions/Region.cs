@@ -232,8 +232,6 @@ namespace LoRaTools.Regions
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
         public string GetDownstreamRX2DataRate(string devEUI, string nwkSrvRx2Dr, ushort? rx2DrFromTwins, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
         {
-            using var scope = logger.BeginDeviceScope(devEUI);
-
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
             {

@@ -153,6 +153,7 @@ namespace LoRaWan.NetworkServer
                     // Only create devices that don't exist in target dictionary
                     if (!this.existingDevices.ContainsKey(foundDevice.DevEUI))
                     {
+                        using var scope = this.logger.BeginDeviceScope(foundDevice.DevEUI);
                         var loRaDevice = this.deviceFactory.Create(foundDevice);
                         initTasks.Add(InitializeDeviceAsync(loRaDevice));
                     }
@@ -323,9 +324,6 @@ namespace LoRaWan.NetworkServer
 
         private void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
         {
-            var deviceId = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
-            using var scope = this.logger.BeginDeviceScope(deviceId);
-
             switch (failedReason)
             {
                 case LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck:
@@ -363,8 +361,6 @@ namespace LoRaWan.NetworkServer
 
         private async Task<LoRaDevice> InitializeDeviceAsync(LoRaDevice loRaDevice)
         {
-            using var scope = this.logger.BeginDeviceScope(loRaDevice.DevEUI);
-
             try
             {
                 // Our device if it does not have a gateway assigned or is assigned to our

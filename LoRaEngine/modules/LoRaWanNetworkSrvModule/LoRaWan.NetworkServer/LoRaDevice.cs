@@ -222,8 +222,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<bool> InitializeAsync()
         {
-            using var scope = this.logger.BeginDeviceScope(DevEUI);
-
             var twin = await this.connectionManager.GetClient(this)?.GetTwinAsync();
 
             if (twin != null)
@@ -590,8 +588,6 @@ namespace LoRaWan.NetworkServer
         /// <param name="force">Indicates if changes should be saved even if the difference between last saved and current frame counter are less than <see cref="Constants.MaxFcntUnsavedDelta"/>.</param>
         public async Task<bool> SaveChangesAsync(TwinCollection reportedProperties = null, bool force = false)
         {
-            using var scope = this.logger.BeginDeviceScope(DevEUI);
-
             try
             {
                 // We only ever want a single save operation per device
@@ -847,8 +843,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties)
         {
-            using var scope = this.logger.BeginDeviceScope(DevEUI);
-
             var reportedProperties = new TwinCollection();
             reportedProperties[TwinProperty.AppSKey] = updateProperties.AppSKey;
             reportedProperties[TwinProperty.NwkSKey] = updateProperties.NwkSKey;

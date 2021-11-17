@@ -30,8 +30,6 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
         {
-            using var scope = this.logger.BeginDeviceScope(devEUI);
-
             this.logger.LogDebug("syncing FCntDown for multigateway");
 
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
@@ -53,8 +51,6 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown)
         {
-            using var scope = this.logger.BeginDeviceScope(devEUI);
-
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"DuplicateMsgCheck/{devEUI}?code={AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}");
 
@@ -72,8 +68,6 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
         {
-            using var scope = this.logger.BeginDeviceScope(devEUI);
-
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"FunctionBundler/{devEUI}?code={AuthCode}");
 
@@ -93,8 +87,6 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId)
         {
-            using var scope = this.logger.BeginDeviceScope(devEUI);
-
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}");
             var response = await client.GetAsync(url);
@@ -177,8 +169,6 @@ namespace LoRaWan.NetworkServer
 
         private async Task<SearchDevicesResult> SearchByEuiAsync(string eui)
         {
-            using var scope = this.logger.BeginDeviceScope(eui);
-
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = BuildUri("GetDeviceByDevEUI", new Dictionary<string, string>
             {

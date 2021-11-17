@@ -120,7 +120,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                     return new MethodResponse((int)HttpStatusCode.BadRequest);
                 }
 
-                this.logger.LogDebug(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}");
+                using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
+                this.logger.LogDebug($"received cloud to device message from direct method: {methodRequest.DataAsJson}");
 
                 using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
 

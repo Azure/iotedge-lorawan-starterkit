@@ -41,8 +41,6 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            using var scope = this.logger.BeginDeviceScope(message.DevEUI);
-
             if (!message.IsValid(out var validationErrorMessage))
             {
                 this.logger.LogError($"[class-c] {validationErrorMessage}");
