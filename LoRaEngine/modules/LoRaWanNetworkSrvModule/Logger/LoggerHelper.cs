@@ -21,7 +21,7 @@ namespace Logger
         /// </summary>
         /// <param name="message">The already formatted message</param>
         /// <returns></returns>
-        public static string AddScopeInformation(IExternalScopeProvider? scopeProvider, string message)
+        public static string AddScopeInformation(IExternalScopeProvider? scopeProvider, string message, string euiSeparator = "")
         {
             if (scopeProvider is { } sp)
             {
@@ -42,9 +42,9 @@ namespace Logger
 #pragma warning disable format
                 return (devEui, devAddr, stationEui) switch
                 {
-                    ({ } d, _, _)   => string.Concat(d, " ", message),
-                    (_, { } d, _)   => string.Concat(d, " ", message),
-                    (_, _, { } d)   => string.Concat(d, " ", message),
+                    ({ } d, _, _)   => string.Concat(d, euiSeparator, " ", message),
+                    (_, { } d, _)   => string.Concat(d, euiSeparator, " ", message),
+                    (_, _, { } d)   => string.Concat(d, euiSeparator, " ", message),
                     _               => message
                 };
 #pragma warning restore format

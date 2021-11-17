@@ -82,7 +82,7 @@ namespace Logger
             if (!IsEnabled(logLevel))
                 return;
 
-            var formattedMessage = LoggerHelper.AddScopeInformation(ExternalScopeProvider, formatter(state, exception));
+            var formattedMessage = LoggerHelper.AddScopeInformation(ExternalScopeProvider, formatter(state, exception), ":");
 
             this.logSink.Log(logLevel, formattedMessage);
         }

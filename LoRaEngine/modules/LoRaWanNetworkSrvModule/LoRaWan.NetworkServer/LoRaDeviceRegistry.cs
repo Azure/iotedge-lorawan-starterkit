@@ -168,7 +168,8 @@ namespace LoRaWan.NetworkServer
                 var cachedMatchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, (LoRaPayloadData)request.Payload, logError: false));
                 if (cachedMatchingDevice != null)
                 {
-                    this.logger.LogDebug($"{cachedMatchingDevice.DevEUI} device in cache");
+                    using var scope = this.logger.BeginDeviceScope(cachedMatchingDevice.DevEUI);
+                    this.logger.LogDebug("device in cache");
                     if (cachedMatchingDevice.IsOurDevice)
                     {
                         return cachedMatchingDevice;
