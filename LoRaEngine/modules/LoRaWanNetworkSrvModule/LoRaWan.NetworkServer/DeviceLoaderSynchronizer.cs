@@ -167,10 +167,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            if (createdDevices is { })
-            {
-                CreatedDevicesCount = createdDevices.Count;
-            }
+            CreatedDevicesCount = createdDevices != null ? createdDevices.Count : 0;
         }
 
         private void NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason loRaDeviceRequestFailedReason = LoRaDeviceRequestFailedReason.ApplicationError)

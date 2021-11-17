@@ -35,6 +35,7 @@ namespace LoRaWan.Tests.Integration
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
         private readonly MemoryCache cache;
+        private readonly LoRaDeviceClientConnectionManager connectionManager;
         private readonly LoRaDeviceRegistry loRaDeviceRegistry;
         private readonly LoRaDeviceCache deviceCache = LoRaDeviceCacheDefault.CreateDefault();
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
@@ -52,10 +53,8 @@ namespace LoRaWan.Tests.Integration
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
 
             this.cache = new MemoryCache(new MemoryCacheOptions());
-
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, new LoRaDeviceClientConnectionManager(this.cache));
-#pragma warning restore CA2000 // Dispose objects before losing scope
+            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache);
+            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, this.connectionManager);
 
             this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory, this.deviceCache);
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration, this.deviceApi.Object);
@@ -241,6 +240,7 @@ namespace LoRaWan.Tests.Integration
         public void Dispose()
         {
             this.loRaDeviceRegistry.Dispose();
+            this.connectionManager.Dispose();
             this.cache.Dispose();
             this.deviceCache.Dispose();
         }

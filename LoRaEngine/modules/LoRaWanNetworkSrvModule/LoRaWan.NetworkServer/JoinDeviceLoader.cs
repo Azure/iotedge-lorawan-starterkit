@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
                     _ = this.joinLock.Release();
                 }
             }
-            catch (LoRaNetworkServerException ex)
+            catch (LoRaProcessingException ex)
             {
                 Logger.Log(this.ioTHubDevice.DevEUI, $"join refused: Failed to load: {ex}", LogLevel.Error);
                 this.canCache = false;

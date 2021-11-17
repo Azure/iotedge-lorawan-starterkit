@@ -134,14 +134,6 @@ namespace LoRaWan.NetworkServer
             var firstDevice = searchResult[0];
             var loRaDevice = await this.deviceFactory.CreateAndRegisterAsync(firstDevice, CancellationToken.None);
 
-            if (string.IsNullOrEmpty(loRaDevice.DevAddr))
-            {
-                // not joined yet - this is an invalid device
-                _ = this.deviceCache.Remove(devEUI);
-                loRaDevice.Dispose();
-                return null;
-            }
-
             if (this.initializers != null)
             {
                 foreach (var initializers in this.initializers)
@@ -169,7 +161,7 @@ namespace LoRaWan.NetworkServer
                 return this.cache.GetOrCreate(GetJoinDeviceLoaderCacheKey(ioTHubDeviceInfo.DevEUI), (entry) =>
                 {
                     entry.SlidingExpiration = TimeSpan.FromMinutes(INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES);
-                    return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory);
+                    return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory, this.deviceCache);
                 });
             }
         }
@@ -258,164 +250,4 @@ namespace LoRaWan.NetworkServer
 
         public void Dispose() => this.deviceCache.Dispose();
     }
-
-    /*public sealed class LoRaDeviceCache : IDisposable
-    {
-        private CancellationChangeToken resetCacheChangeToken;
-        private CancellationTokenSource resetCacheToken;
-        private readonly IMemoryCache memoryCache;
-
-        public LoRaDeviceCache(IMemoryCache memoryCache)
-        {
-            this.resetCacheToken = new CancellationTokenSource();
-            this.resetCacheChangeToken = new CancellationChangeToken(this.resetCacheToken.Token);
-            this.memoryCache = memoryCache;
-        }
-
-        public LoRaDevice GetByDevEui(string devEUI)
-        {
-            return this.memoryCache.Get<LoRaDevice>(devEUI);
-        }
-
-        public void AddJoinDevice(LoRaDevice device)
-        {
-            _ = device ?? throw new ArgumentNullException(nameof(device));
-            if (string.IsNullOrEmpty(device.DevEUI) || !string.IsNullOrEmpty(device.DevAddr))
-            {
-                throw new ArgumentException($"{nameof(device)} is not a join device");
-            }
-
-            lock (this.memoryCache)
-            {
-                _ = TryRemove(device.DevEUI);
-                this.memoryCache.CreateEntry(device.DevEUI)
-                                .SetAbsoluteExpiration(TimeSpan.FromSeconds(30))
-                                .SetValue(device)
-                                .RegisterPostEvictionCallback(HandleJoinDeviceEviction)
-                                .ExpirationTokens.Add(this.resetCacheChangeToken);
-
-            }
-
-            static void HandleJoinDeviceEviction(object key, object objDevice, EvictionReason reason, object state)
-            {
-                if ((reason is EvictionReason.Capacity or EvictionReason.Expired) && objDevice is LoRaDevice loRaDevice)
-                {
-                    loRaDevice.Dispose();
-                }
-            }
-        }
-
-        public IEnumerable<LoRaDevice> GetByDevAddr(string devAddr)
-        {
-            return GetTargetDictionaryForDevAddr(devAddr).Values;
-        }
-
-        public void Add(LoRaDevice loRaDevice)
-        {
-            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
-
-            lock (this.memoryCache)
-            {
-                // ensure we only cache a single instance
-                _ = TryRemove(loRaDevice.DevEUI);
-
-                var dictionary = GetTargetDictionaryForDevAddr(loRaDevice.DevAddr);
-                dictionary[loRaDevice.DevEUI] = loRaDevice;
-
-                _ = this.memoryCache.Set(loRaDevice.DevEUI, loRaDevice, this.resetCacheChangeToken);
-            }
-
-            Logger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
-        }
-
-        public bool TryRemove(string devEUI, string oldDevAddr = null)
-        {
-            lock (this.memoryCache)
-            {
-                using var loRaDevice = GetByDevEui(devEUI);
-                if (loRaDevice is { })
-                {
-                    this.memoryCache.Remove(devEUI);
-
-                    if (string.IsNullOrEmpty(loRaDevice.DevAddr))
-                    {
-                        // join device case - a join device does not yet have a DevAddr, hence
-                        // it's not registered in the DevAddr lookup table and we only have
-                        // a single representation of it in the cache
-
-                        return true;
-                    }
-
-                    LoRaDevice deviceByDevAddr = null;
-
-                    // if no explicit devAddr was specified, we use the one from the device found
-                    oldDevAddr ??= loRaDevice.DevAddr;
-
-                    if (!this.memoryCache.TryGetValue<DevEUIToLoRaDeviceDictionary>(oldDevAddr, out var loraByDevAddr)
-#pragma warning disable CA2000 // Dispose objects before losing scope: the object is properly disposed
-                    || !loraByDevAddr.Remove(devEUI, out deviceByDevAddr)
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                    || !ReferenceEquals(loRaDevice, deviceByDevAddr))
-                    {
-                        deviceByDevAddr?.Dispose();
-                        throw new InvalidOperationException($"Cache inconsistency detected. {nameof(LoRaDevice)}.DevAddr=={loRaDevice.DevAddr} / devAddr=={oldDevAddr}");
-                    }
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public void Reset()
-        {
-            var oldResetCacheToken = this.resetCacheToken;
-            this.resetCacheToken = new CancellationTokenSource();
-            this.resetCacheChangeToken = new CancellationChangeToken(this.resetCacheToken.Token);
-
-            if (oldResetCacheToken != null && !oldResetCacheToken.IsCancellationRequested && oldResetCacheToken.Token.CanBeCanceled)
-            {
-                oldResetCacheToken.Cancel();
-                oldResetCacheToken.Dispose();
-
-                Logger.Log("Device cache cleared", LogLevel.Information);
-            }
-        }
-
-        private DevEUIToLoRaDeviceDictionary GetTargetDictionaryForDevAddr(string devAddr, bool createIfNotExists = true)
-        {
-            if (createIfNotExists)
-            {
-                lock (this.memoryCache)
-                {
-                    return this.memoryCache.GetOrCreate(devAddr, (cacheEntry) =>
-                    {
-                        cacheEntry.SetAbsoluteExpiration(TimeSpan.FromDays(2))
-                                  .RegisterPostEvictionCallback(CacheEvictionHandler)
-                                  .ExpirationTokens.Add(this.resetCacheChangeToken);
-                        return new DevEUIToLoRaDeviceDictionary();
-                    });
-                }
-            }
-
-            return this.memoryCache.Get<DevEUIToLoRaDeviceDictionary>(devAddr);
-        }
-
-        private void CacheEvictionHandler(object key, object value, EvictionReason reason, object state)
-        {
-            if (reason == EvictionReason.Expired && value is LoRaDevice loraDevice)
-            {
-                lock (this.memoryCache)
-                {
-                    this.memoryCache.Remove(loraDevice.DevEUI);
-                    loraDevice.Dispose();
-                }
-            }
-        }
-
-        public void Dispose()
-        {
-            this.resetCacheToken.Dispose();
-        }
-    }//*/
 }

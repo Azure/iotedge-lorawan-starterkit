@@ -36,12 +36,13 @@ namespace LoRaWan.NetworkServer
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or empty.", nameof(connectionString));
             if (string.IsNullOrEmpty(primaryKey)) throw new ArgumentException($"'{nameof(primaryKey)}' cannot be null or empty.", nameof(primaryKey));
 
+            this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
+
             this.devEUI = devEUI;
             this.noRetryPolicy = new NoRetry();
             this.exponentialBackoff = new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
 
             this.connectionString = connectionString;
-            this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
             this.primaryKey = primaryKey;
             this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
 

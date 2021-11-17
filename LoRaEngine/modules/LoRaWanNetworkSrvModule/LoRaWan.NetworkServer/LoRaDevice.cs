@@ -26,8 +26,14 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal const ushort DefaultJoinValues = 0;
 
+        /// <summary>
+        /// Last time this device connected to the network server
+        /// </summary>
         public DateTimeOffset LastSeen { get; set; }
 
+        /// <summary>
+        /// Last time the twins were updated from IoT Hub
+        /// </summary>
         public DateTimeOffset LastUpdate { get; set; }
 
         public string DevAddr { get; set; }
@@ -229,6 +235,10 @@ namespace LoRaWan.NetworkServer
             try
             {
                 twin = await connection.GetTwinAsync(cancellationToken);
+                if (twin == null)
+                {
+                    return false;
+                }
             }
             catch (IotHubException ex)
             {
@@ -237,11 +247,6 @@ namespace LoRaWan.NetworkServer
             catch (TimeoutException ex)
             {
                 throw new LoRaProcessingException("Failed to load twins due to timeout.", ex, LoRaProcessingErrorCode.DeviceInitializationFailed);
-            }
-
-            if (twin == null)
-            {
-                return false;
             }
 
             // ABP requires the property AppSKey, AppNwkSKey, DevAddr to be present
