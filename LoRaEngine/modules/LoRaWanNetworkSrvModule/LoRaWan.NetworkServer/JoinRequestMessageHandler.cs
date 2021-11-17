@@ -206,9 +206,9 @@ namespace LoRaWan.NetworkServer
                         tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
                         lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
 
-                        freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
+                        freq = loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                        datr = loraRegion.GetDownstreamRX2DataRate(devEUI, this.configuration.Rx2DataRate, null);
+                        datr = loraRegion.GetDownstreamRX2DataRate(devEUI, this.configuration.Rx2DataRate, null, logger);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     }
 

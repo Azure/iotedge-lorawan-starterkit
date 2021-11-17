@@ -4,7 +4,6 @@
 namespace LoRaTools.LoRaPhysical
 {
     using System.Text;
-    using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 

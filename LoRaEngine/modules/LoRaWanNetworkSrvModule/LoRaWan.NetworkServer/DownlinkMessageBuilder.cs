@@ -79,9 +79,9 @@ namespace LoRaWan.NetworkServer
             {
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
                 tmst = rxpk.Tmst + (timeWatcher.GetReceiveWindow2Delay(loRaDevice) * Constants.ConvertToPktFwdTime);
-                freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency, deviceJoinInfo);
+                freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo);
+                datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
             else
@@ -269,9 +269,9 @@ namespace LoRaWan.NetworkServer
             ushort rxDelay = 0; // Class C sends immediately
 
             // Class C always use RX2
-            freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
+            freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate);
+            datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             // get max. payload size based on data rate from LoRaRegion
