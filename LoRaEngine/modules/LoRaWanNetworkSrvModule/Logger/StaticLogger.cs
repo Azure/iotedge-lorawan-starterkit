@@ -3,8 +3,10 @@
 
 namespace LoRaWan
 {
+    using System;
     using Microsoft.Extensions.Logging;
 
+    [Obsolete("Use ILogger instead.")]
     public static class StaticLogger
     {
         public static LogLevel LoggerLevel => sink.LogLevel;

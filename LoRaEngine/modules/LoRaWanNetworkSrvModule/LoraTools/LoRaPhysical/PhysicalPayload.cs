@@ -7,7 +7,6 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
-    using LoRaWan;
     using Microsoft.Extensions.Logging;
 
     /// <summary>
@@ -118,7 +117,6 @@ namespace LoRaTools
 
         // 8 bytes
         private readonly byte[] gatewayIdentifier = new byte[8];
-        private readonly ILogger logger;
 
         // 0-unlimited
         public byte[] Message { get; set; }
