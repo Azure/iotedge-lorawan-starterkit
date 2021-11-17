@@ -10,7 +10,6 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -96,9 +95,9 @@ namespace LoRaWan.Tests.Integration
             loRaDevice.Deduplication = mode;
 
             using var cache1 = NewNonEmptyCache(loRaDevice);
-            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory, NullLogger<LoRaDeviceRegistry>.Instance);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory);
             using var cache2 = NewNonEmptyCache(loRaDevice);
-            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(SecondServerConfiguration, cache2, LoRaDeviceApi.Object, LoRaDeviceFactory, NullLogger<LoRaDeviceRegistry>.Instance);
+            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(SecondServerConfiguration, cache2, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             using var messageProcessor1 = new MessageDispatcher(
                 ServerConfiguration,

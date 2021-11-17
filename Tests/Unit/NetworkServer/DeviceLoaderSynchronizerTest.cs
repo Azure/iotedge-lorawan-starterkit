@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -49,7 +50,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 null,
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
-                (d) => { destinationDictionary.TryAdd(d.DevEUI, d); });
+                (d) => { destinationDictionary.TryAdd(d.DevEUI, d); },
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             await finished.WaitAsync();
 
@@ -92,7 +94,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 null,
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
-                (d) => destinationDictionary.TryAdd(d.DevEUI, d));
+                (d) => destinationDictionary.TryAdd(d.DevEUI, d),
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             using var req1 = WaitableLoRaRequest.Create(payload1);
             target.Queue(req1);
@@ -146,7 +149,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 null,
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
-                (d) => destinationDictionary.TryAdd(d.DevEUI, d));
+                (d) => destinationDictionary.TryAdd(d.DevEUI, d),
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);
@@ -189,7 +193,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 null,
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
-                (d) => destinationDictionary.TryAdd(d.DevEUI, d));
+                (d) => destinationDictionary.TryAdd(d.DevEUI, d),
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);
@@ -239,7 +244,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 null,
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
-                (d) => destinationDictionary.TryAdd(d.DevEUI, d));
+                (d) => destinationDictionary.TryAdd(d.DevEUI, d),
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
             payload.SerializeUplink(simulatedDevice.AppSKey, "00000000000000000000000000EEAAFF");

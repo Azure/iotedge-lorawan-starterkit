@@ -12,6 +12,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Utils;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Microsoft.Extensions.Primitives;
 
     /// <summary>
@@ -24,6 +25,7 @@ namespace LoRaWan.NetworkServer
 
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
+        private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<LoRaDeviceRegistry> logger;
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
         private readonly NetworkServerConfiguration configuration;
@@ -47,6 +49,7 @@ namespace LoRaWan.NetworkServer
             IMemoryCache cache,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
             ILoRaDeviceFactory deviceFactory,
+            ILoggerFactory loggerFactory,
             ILogger<LoRaDeviceRegistry> logger)
         {
             this.configuration = configuration;
@@ -55,6 +58,7 @@ namespace LoRaWan.NetworkServer
             this.cache = cache;
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
+            this.loggerFactory = loggerFactory;
             this.logger = logger;
             this.initializers = new HashSet<ILoRaDeviceInitializer>();
             DevAddrReloadInterval = TimeSpan.FromSeconds(30);
@@ -62,6 +66,17 @@ namespace LoRaWan.NetworkServer
             this.getOrCreateJoinDeviceLoaderLock = new object();
             this.devEUIToLoRaDeviceDictionaryLock = new object();
         }
+
+        /// <summary>
+        /// Constructor should be used for test code only.
+        /// </summary>
+        internal LoRaDeviceRegistry(NetworkServerConfiguration configuration,
+                                    IMemoryCache cache,
+                                    LoRaDeviceAPIServiceBase loRaDeviceAPIService,
+                                    ILoRaDeviceFactory deviceFactory)
+            : this(configuration, cache, loRaDeviceAPIService, deviceFactory,
+                   NullLoggerFactory.Instance, NullLogger<LoRaDeviceRegistry>.Instance)
+        { }
 
         /// <summary>
         /// Registers a <see cref="ILoRaDeviceInitializer"/>.
@@ -132,7 +147,8 @@ namespace LoRaWan.NetworkServer
                                     cts.Cancel();
                                 }
                             },
-                            (l) => UpdateDeviceRegistration(l));
+                            (l) => UpdateDeviceRegistration(l),
+                            this.loggerFactory.CreateLogger<DeviceLoaderSynchronizer>());
 
                         return loader;
                     });

@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Common
                 LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
             };
 
-            PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder());
+            PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance));
             PacketForwarder = new TestPacketForwarder();
             LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerConfiguration, LoRaDeviceApi.Object);
