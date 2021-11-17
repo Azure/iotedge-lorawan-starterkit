@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
     using global::LoraKeysManagerFacade.FunctionBundler;
     using global::LoRaTools.ADR;
     using LoRaWan.Tests.Common;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -44,7 +45,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
                 .Returns(adrStrategy.Object);
 
             this.adrStore = new LoRaADRInMemoryStore();
-            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, new LoRaInMemoryDeviceStore());
+            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, new LoRaInMemoryDeviceStore(), NullLogger<LoRaADRServerManager>.Instance);
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
         }
 

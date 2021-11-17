@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             // .Returns(new LoRaADRStandardStrategy());
             var cacheStore = new LoRaInMemoryDeviceStore();
             this.adrStore = new LoRaADRInMemoryStore();
-            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, cacheStore);
+            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, cacheStore, NullLogger<LoRaADRServerManager>.Instance);
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
 
             var items = new IFunctionBundlerExecutionItem[]
