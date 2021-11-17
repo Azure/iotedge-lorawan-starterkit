@@ -60,10 +60,10 @@ namespace LoRaWan.Tests.Common
 
                 async Task OnProcessAsync(TcpClient client)
                 {
-                    await Task.Yield(); // Ensure remaining does not run on caller stack.
-
                     try
                     {
+                        await Task.Yield(); // Ensure remaining does not run on caller stack.
+
                         var stream = client.GetStream();
                         await using (stream.ConfigureAwait(false))
                             await processor(new Context(client), stream).ConfigureAwait(false);
