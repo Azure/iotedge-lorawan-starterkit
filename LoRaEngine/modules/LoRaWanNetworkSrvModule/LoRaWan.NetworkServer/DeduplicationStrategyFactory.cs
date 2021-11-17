@@ -10,11 +10,13 @@ namespace LoRaWan.NetworkServer
     {
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoggerFactory loggerFactory;
+        private readonly ILogger<DeduplicationStrategyFactory> logger;
 
-        public DeduplicationStrategyFactory(LoRaDeviceAPIServiceBase loRaDeviceAPIService, ILoggerFactory loggerFactory)
+        public DeduplicationStrategyFactory(LoRaDeviceAPIServiceBase loRaDeviceAPIService, ILoggerFactory loggerFactory, ILogger<DeduplicationStrategyFactory> logger)
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.loggerFactory = loggerFactory;
+            this.logger = logger;
         }
 
         public ILoRaDeviceMessageDeduplicationStrategy Create(LoRaDevice loRaDevice)
@@ -23,18 +25,18 @@ namespace LoRaWan.NetworkServer
 
             if (!string.IsNullOrEmpty(loRaDevice.GatewayID))
             {
-                StaticLogger.Log(loRaDevice.DevEUI, "LoRa device has a specific gateway assigned. Ignoring deduplication as it is not applicable.", LogLevel.Debug);
+                this.logger.LogDebug("LoRa device has a specific gateway assigned. Ignoring deduplication as it is not applicable.");
                 return null;
             }
 
             switch (loRaDevice.Deduplication)
             {
                 case DeduplicationMode.Drop: return new DeduplicationStrategyDrop(this.loRaDeviceAPIService, loRaDevice, this.loggerFactory.CreateLogger<DeduplicationStrategyDrop>());
-                case DeduplicationMode.Mark: return new DeduplicationStrategyMark(this.loRaDeviceAPIService, loRaDevice);
+                case DeduplicationMode.Mark: return new DeduplicationStrategyMark(this.loRaDeviceAPIService, loRaDevice, this.loggerFactory.CreateLogger<DeduplicationStrategyMark>());
                 case DeduplicationMode.None:
                 default:
                 {
-                    StaticLogger.Log(loRaDevice.DevEUI, "no Deduplication Strategy selected", LogLevel.Debug);
+                    this.logger.LogDebug("no Deduplication Strategy selected");
                     return null;
                 }
             }

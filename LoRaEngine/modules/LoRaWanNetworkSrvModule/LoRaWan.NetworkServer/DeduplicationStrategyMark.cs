@@ -12,11 +12,11 @@ namespace LoRaWan.NetworkServer
         private readonly LoRaDevice loRaDevice;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
 
-        public DeduplicationStrategyMark(LoRaDeviceAPIServiceBase loRaDeviceAPIService, LoRaDevice loRaDevice)
+        public DeduplicationStrategyMark(LoRaDeviceAPIServiceBase loRaDeviceAPIService, LoRaDevice loRaDevice, ILogger<DeduplicationStrategyMark> logger)
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.loRaDevice = loRaDevice;
-            StaticLogger.Log(this.loRaDevice.DevEUI, "deduplication Strategy: Mark", LogLevel.Debug);
+            logger.LogDebug("deduplication Strategy: Mark");
         }
 
         public DeduplicationResult Process(DeduplicationResult result, uint fCntUp)
