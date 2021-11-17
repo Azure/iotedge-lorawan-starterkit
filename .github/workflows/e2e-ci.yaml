@@ -79,20 +79,20 @@ jobs:
         echo "::set-output name=TxPower::$txPower"
 
     # Get check run id
-      - uses: octokit/request-action@v2.x
-        id: get-check-run-id
-        with:
-          route: GET /repos/{repo}/actions/jobs/{job_id}
-          repo: ${{ github.repository }}
-          job_id: ${{ github.run_id }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: octokit/request-action@v2.x
+      id: get-check-run-id
+      with:
+        route: GET /repos/{repo}/actions/jobs/{job_id}
+        repo: ${{ github.repository }}
+        job_id: ${{ github.run_id }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - id: get-check-id
-        name: Get the check id
-        shell: pwsh
-        run: |
-          echo ${{ steps.get-check-run-id.outputs.data }}
+    - id: get-check-id
+      name: Get the check id
+      shell: pwsh
+      run: |
+        echo ${{ steps.get-check-run-id.outputs.data }}
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
