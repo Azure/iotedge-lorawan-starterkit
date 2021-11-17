@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System.Collections.Generic;
+    using System.Text.Json;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
@@ -14,14 +15,21 @@ namespace LoRaWan.NetworkServer
         private readonly string devEui;
         private readonly IList<IFunctionBundlerExecutionItem> executionItems;
         private readonly FunctionBundlerExecutionContext executionContext;
+        private readonly ILogger<FunctionBundler> logger;
 
-        internal FunctionBundler(string devEui, LoRaDeviceAPIServiceBase deviceApi, FunctionBundlerRequest request, IList<IFunctionBundlerExecutionItem> executionItems, FunctionBundlerExecutionContext executionContext)
+        internal FunctionBundler(string devEui,
+                                 LoRaDeviceAPIServiceBase deviceApi,
+                                 FunctionBundlerRequest request,
+                                 IList<IFunctionBundlerExecutionItem> executionItems,
+                                 FunctionBundlerExecutionContext executionContext,
+                                 ILogger<FunctionBundler> logger)
         {
             this.devEui = devEui;
             this.deviceApi = deviceApi;
             this.request = request;
             this.executionItems = executionItems;
             this.executionContext = executionContext;
+            this.logger = logger;
         }
 
         public async Task<FunctionBundlerResult> Execute()
@@ -33,7 +41,8 @@ namespace LoRaWan.NetworkServer
                 this.executionItems[i].ProcessResult(this.executionContext, result);
             }
 
-            StaticLogger.Log(this.devEui, "FunctionBundler result: ", result, LogLevel.Debug);
+            if (this.logger.IsEnabled(LogLevel.Debug))
+                this.logger.LogDebug($"FunctionBundler result: {JsonSerializer.Serialize(result)}");
 
             return result;
         }

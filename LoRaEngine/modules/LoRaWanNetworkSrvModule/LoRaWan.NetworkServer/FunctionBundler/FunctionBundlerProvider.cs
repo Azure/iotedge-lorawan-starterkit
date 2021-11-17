@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer
     public class FunctionBundlerProvider : IFunctionBundlerProvider
     {
         private readonly LoRaDeviceAPIServiceBase deviceApi;
+        private readonly ILoggerFactory loggerFactory;
 
         private static readonly List<IFunctionBundlerExecutionItem> functionItems = new List<IFunctionBundlerExecutionItem>
         {
@@ -19,9 +20,10 @@ namespace LoRaWan.NetworkServer
             new FunctionBundlerPreferredGatewayExecutionItem(),
         };
 
-        public FunctionBundlerProvider(LoRaDeviceAPIServiceBase deviceApi)
+        public FunctionBundlerProvider(LoRaDeviceAPIServiceBase deviceApi, ILoggerFactory loggerFactory)
         {
             this.deviceApi = deviceApi;
+            this.loggerFactory = loggerFactory;
         }
 
         public FunctionBundler CreateIfRequired(
@@ -80,7 +82,7 @@ namespace LoRaWan.NetworkServer
 
             StaticLogger.Log(loRaDevice.DevEUI, "FunctionBundler request: ", bundlerRequest, LogLevel.Debug);
 
-            return new FunctionBundler(loRaDevice.DevEUI, this.deviceApi, bundlerRequest, qualifyingExecutionItems, context);
+            return new FunctionBundler(loRaDevice.DevEUI, this.deviceApi, bundlerRequest, qualifyingExecutionItems, context, loggerFactory.CreateLogger<FunctionBundler>());
         }
     }
 }

@@ -9,10 +9,12 @@ namespace LoRaWan.NetworkServer
     public class DeduplicationStrategyFactory : IDeduplicationStrategyFactory
     {
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
+        private readonly ILoggerFactory loggerFactory;
 
-        public DeduplicationStrategyFactory(LoRaDeviceAPIServiceBase loRaDeviceAPIService)
+        public DeduplicationStrategyFactory(LoRaDeviceAPIServiceBase loRaDeviceAPIService, ILoggerFactory loggerFactory)
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
+            this.loggerFactory = loggerFactory;
         }
 
         public ILoRaDeviceMessageDeduplicationStrategy Create(LoRaDevice loRaDevice)
@@ -27,7 +29,7 @@ namespace LoRaWan.NetworkServer
 
             switch (loRaDevice.Deduplication)
             {
-                case DeduplicationMode.Drop: return new DeduplicationStrategyDrop(this.loRaDeviceAPIService, loRaDevice);
+                case DeduplicationMode.Drop: return new DeduplicationStrategyDrop(this.loRaDeviceAPIService, loRaDevice, this.loggerFactory.CreateLogger<DeduplicationStrategyDrop>());
                 case DeduplicationMode.Mark: return new DeduplicationStrategyMark(this.loRaDeviceAPIService, loRaDevice);
                 case DeduplicationMode.None:
                 default:
