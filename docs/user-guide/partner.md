@@ -19,7 +19,7 @@ If you would like to test gateway compatibility with out starter kit and also ge
 - Go through the [Developer Guidance](devguide.md) to clone the repo and make sure everything works in your local dev environment.
 - Make sure everything works with an Azure subscription with Standard Pricing SKU's, for example we do not support the Free Azure IoT Hub SKU.
 - Ensure that the gateway specification meet the minimal hardware configuration required for Azure IoT Edge and a container framework like Docker, Moby to run. We recommend at the minimum of 1 GB RAM, rPi based boards and similar configuration devices will be a good candidate for our starter kit.
-- If the gateway requires a specific packet forwarder not provided by our kit (we leverage an implementation of the LoRa packet forwarder). Create the appropriate code for the packet forwarded and link to our repo.
+- If the gateway requires a specific LoRa Basics™ Station not provided by our kit (we leverage an implementation of the LoRa Basics™ Station). Create the appropriate code for the LoRa Basics™ Station and link to our repo.
 - Run the tests on the Gateway (must be a real device) to connect to a LoRa end node and receive and send packets.
 - Once you have tested the framework and have all things running, open an issue on the repo and we will invite you to add a page for your gateway on our repo. The page can include details about your gateway and any specific instructions to make your gateway running with LoRaWAN starter kit.
 

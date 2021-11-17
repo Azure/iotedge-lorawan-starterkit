@@ -23,7 +23,7 @@ The code is organized into three sections:
 A **.NET Core 3.1** solution with the following projects:
 
 - **modules** - Azure IoT Edge modules.
-  - **LoRaWanPktFwdModule** packages the network forwarder into an IoT Edge compatible docker container. See <https://github.com/Lora-net/packet_forwarder> and <https://github.com/Lora-net/lora_gateway>. If you are using a RAK833-USB see the `LoRaWanPktFwdRAK833USB` [submodule](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Docs)
+  - **LoRaBasicsStationModule** packages the Basics Station into an IoT Edge compatible docker container. See <https://github.com/lorabasics/basicstation>. If you are using a RAK833-USB you need to build your own Basics Station docker image starting from the fork [at this link](https://github.com/danigian/basicstation)
   - **LoRaWanNetworkSrvModule** - is the LoRaWAN network server implementation.
 - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
 - **LoRaDevTools** - library for dev tools (git submodule)
@@ -37,18 +37,13 @@ This schema represent the various components and how they interact to have a bet
 1. Once the IoT Edge engine start on the Edge device, the code modules are downloaded from the Azure Container Registry.
 1. The module containing the ```LoRaWan network server``` is downloaded on the Edge device
 
-> Notes:
->
-> - The LoRaWanPktFwdModule can be replaced by the `LoRaWan Packet Forwarder for RAK833-USB` if you have a RAK833 connected thru USB
-> - The LoRaWan gateway must implement a UDP server on port 1680 to forward the LoRa commands from/to the ```LoRaWan Network Server``` module. In our case it is called ```LoRaWan Packet Forwarder```
-
 1. The LoRaWan Network Server request status for the LoRa devices. The Azure Function ```LoraKeysManagerFacade``` is used to aquire the device identity from IoT Hub.
 1. In the case you're using the demo device with the automatic deployment Azure Resource Manager (ARM) template: the Azure function ```LoraKeysManagerFacade``` will register the device ```47AAC86800430028``` into the Azure IoT Hub for you. Otherwise you need to provision a device yourself in IoT Hub: [device provisioning](../tools/device-provisioning.md)
 1. The Azure function ```LoraKeysManagerFacade``` sends back the device identity to the module
 1. The ```LoRaWan Network Server``` module:
 
     - instantiate the device on the LoRa Gateway if needed
-    - gather the LoRa sensor data from the LoRaWan gateway thru the ```LoRaWan Packet Forwarder```
+    - gather the LoRa sensor data from the LoRaWan gateway thru the ```LoRa Basics™ Station```
     - decode the LoRa data if requested
 
 1. Publish the LoRa sensor data to Azure IoT Hub
@@ -355,7 +350,7 @@ It is possible to run the LoRaEngine locally from Visual Studio in order to enab
 
 1. Right click on your solution and select properties, select multiple startup projects. Start `LoRaWanNetworkSrvModule` and `LoRaKeysManagerFacade`.
 
-1. If you hit start in your VS solution, you will receive messages directly from your packet forwarder. You will be able to debug directly from your computer.
+1. If you hit start in your VS solution, you will receive messages directly from your LoRa Basics™ Station. You will be able to debug directly from your computer.
 
 Happy Debugging!
 
