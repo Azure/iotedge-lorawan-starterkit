@@ -44,12 +44,6 @@ namespace LoRaWan
 
     public static class LogSinkExtensions
     {
-        public static void LogAlways(this ILogSink logger, string message)
-        {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-            logger.Log(null, message, LogLevel.Critical);
-        }
-
         public static void Log(this ILogSink logger, string message, LogLevel logLevel)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
@@ -60,65 +54,6 @@ namespace LoRaWan
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
             logger.Log(logLevel, deviceId is { Length: > 0 } ? $"{deviceId}: {message}" : message);
-        }
-
-        /// <summary>
-        /// Use this if you want to serialize an object to JSON and
-        /// append it to the message. The serialization will only take place
-        /// if the logLevel is larger or equal to the configured level.
-        /// </summary>
-        public static void Log(this ILogSink logger, string deviceId, string message, object toJson, LogLevel logLevel)
-        {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-
-            if (logLevel < logger.LogLevel)
-                return;
-
-            var serializedObj = Newtonsoft.Json.JsonConvert.SerializeObject(toJson);
-            logger.Log(deviceId, string.Concat(message, serializedObj), logLevel);
-        }
-    }
-
-    public static class CompositeLogSink
-    {
-        public static ILogSink Create(ILogSink first, ILogSink second) =>
-            new LogSink(first ?? throw new ArgumentNullException(nameof(first)),
-                        second ?? throw new ArgumentNullException(nameof(second)));
-
-        public static ILogSink? Choose(ILogSink? first, ILogSink? second) =>
-            (first, second) switch
-            {
-                ({ } fst, null) => fst,
-                (null, { } snd) => snd,
-                ({ } fst, { } snd) => Create(fst, snd),
-                _ => null
-            };
-
-        private sealed class LogSink : ILogSink, IDisposable
-        {
-            private readonly ILogSink first;
-            private readonly ILogSink second;
-
-            public LogSink(ILogSink first, ILogSink second)
-            {
-                this.first = first;
-                this.second = second;
-                LogLevel = (LogLevel)Math.Min((int)first.LogLevel, (int)second.LogLevel);
-            }
-
-            public LogLevel LogLevel { get; }
-
-            public void Log(LogLevel logLevel, string message)
-            {
-                this.first.Log(logLevel, message);
-                this.second.Log(logLevel, message);
-            }
-
-            public void Dispose()
-            {
-                (this.first as IDisposable)?.Dispose();
-                (this.second as IDisposable)?.Dispose();
-            }
         }
     }
 
