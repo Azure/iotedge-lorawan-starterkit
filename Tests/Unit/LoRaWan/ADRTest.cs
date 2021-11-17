@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit
     using global::LoRaTools.ADR;
     using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
     using Xunit.Abstractions;
@@ -28,7 +29,7 @@ namespace LoRaWan.Tests.Unit
         {
             this.output.WriteLine($"Starting test {testName}");
             var region = RegionManager.EU868;
-            ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
+            ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider(NullLoggerFactory.Instance);
             var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider)
             {
                 CallBase = true
@@ -73,7 +74,7 @@ namespace LoRaWan.Tests.Unit
         {
             var devEUI = "myloratest";
             var region = RegionManager.EU868;
-            ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
+            ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider(NullLoggerFactory.Instance);
             var rxpk = new Rxpk
             {
                 Datr = "SF7BW125"

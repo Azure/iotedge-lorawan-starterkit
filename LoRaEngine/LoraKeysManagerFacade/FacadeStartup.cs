@@ -46,7 +46,10 @@ namespace LoraKeysManagerFacade
             _ = builder.Services
                     .AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)))
                     .AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore)
-                    .AddSingleton<ILoRaADRManager>(sp => new LoRaADRServerManager(new LoRaADRRedisStore(redisCache, sp.GetService<ILogger<LoRaADRRedisStore>>()), new LoRaADRStrategyProvider(), deviceCacheStore, sp.GetService<ILogger<LoRaADRServerManager>>()))
+                    .AddSingleton<ILoRaADRManager>(sp => new LoRaADRServerManager(new LoRaADRRedisStore(redisCache, sp.GetRequiredService<ILogger<LoRaADRRedisStore>>()),
+                                                                                  new LoRaADRStrategyProvider(sp.GetRequiredService<ILoggerFactory>()),
+                                                                                  deviceCacheStore,
+                                                                                  sp.GetRequiredService<ILogger<LoRaADRServerManager>>()))
                     .AddSingleton<CreateEdgeDevice>()
                     .AddSingleton<DeviceGetter>()
                     .AddSingleton<FCntCacheCheck>()

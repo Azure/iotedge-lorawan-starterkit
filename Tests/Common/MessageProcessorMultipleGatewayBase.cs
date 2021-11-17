@@ -49,7 +49,7 @@ namespace LoRaWan.Tests.Common
             SecondFrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(SecondServerConfiguration, SecondLoRaDeviceApi.Object);
             var deduplicationStrategyFactory = new DeduplicationStrategyFactory(SecondLoRaDeviceApi.Object);
             var loRaAdrManagerFactory = new LoRAADRManagerFactory(SecondLoRaDeviceApi.Object, NullLoggerFactory.Instance);
-            var adrStrategyProvider = new LoRaADRStrategyProvider();
+            var adrStrategyProvider = new LoRaADRStrategyProvider(NullLoggerFactory.Instance);
             var functionBundlerProvider = new FunctionBundlerProvider(SecondLoRaDeviceApi.Object);
             SecondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance);
             SecondLoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
