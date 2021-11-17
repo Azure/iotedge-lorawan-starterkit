@@ -90,7 +90,7 @@ jobs:
       name: Get the check id
       shell: pwsh
       run: |
-        $runobject = ConvertFrom-Json ${{ steps.get-check-run-id.outputs.data }}
+        $runobject = ConvertFrom-Json "${{ steps.get-check-run-id.outputs.data }}"
         echo "::set-output name=checkSuiteUrl::$($runobject.check_suite_url)"
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
