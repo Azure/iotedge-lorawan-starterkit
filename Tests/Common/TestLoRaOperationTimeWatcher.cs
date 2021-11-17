@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Collections.Generic;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
 
@@ -12,17 +13,22 @@ namespace LoRaWan.Tests.Common
     /// </summary>
     internal class TestLoRaOperationTimeWatcher : LoRaOperationTimeWatcher
     {
-        private readonly TimeSpan constantElapsedTime;
+        private readonly IEnumerator<TimeSpan> elapsedTimes;
 
-        public TestLoRaOperationTimeWatcher(Region loraRegion, TimeSpan constantElapsedTime)
+        public TestLoRaOperationTimeWatcher(Region loraRegion, IEnumerable<TimeSpan> elapsedTimes)
             : base(loraRegion)
         {
-            this.constantElapsedTime = constantElapsedTime;
+            this.elapsedTimes = elapsedTimes.GetEnumerator();
         }
 
         /// <summary>
         /// Gets time passed since start.
         /// </summary>
-        protected internal override TimeSpan GetElapsedTime() => this.constantElapsedTime;
+        protected internal override TimeSpan GetElapsedTime()
+        {
+            if (!this.elapsedTimes.MoveNext())
+                throw new InvalidOperationException("More elapsed times requested than were set up.");
+            return this.elapsedTimes.Current;
+        }
     }
 }

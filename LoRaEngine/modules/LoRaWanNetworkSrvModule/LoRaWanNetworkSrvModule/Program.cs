@@ -32,6 +32,4 @@ Console.CancelKeyPress += (_, args) =>
 };
 
 var configuration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-var runnerTask = configuration.UseBasicsStation ? BasicsStationNetworkServer.RunServerAsync(configuration, cancellationToken)
-                                                : UdpServer.RunServerAsync();
-await runnerTask;
+await BasicsStationNetworkServer.RunServerAsync(configuration, cancellationToken);

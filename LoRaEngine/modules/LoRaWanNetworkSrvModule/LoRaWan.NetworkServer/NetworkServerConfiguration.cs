@@ -76,12 +76,6 @@ namespace LoRaWan.NetworkServer
         public string LogLevel { get; set; } = "4";
 
         /// <summary>
-        /// Gets or sets a value indicating whether logging to IoT Hub is enabled.
-        /// Default is false.
-        /// </summary>
-        public bool LogToHub { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether logging to udp is enabled (used for integration tests mainly).
         /// Default is false.
         /// </summary>
@@ -106,11 +100,6 @@ namespace LoRaWan.NetworkServer
         /// Gets list of allowed dev addresses.
         /// </summary>
         public HashSet<string> AllowedDevAddresses { get; internal set; }
-
-        /// <summary>
-        /// Use Basics Station Server implementation.
-        /// </summary>
-        public bool UseBasicsStation { get; private set; }
 
         /// <summary>
         /// Path of the .pfx certificate to be used for LNS Server endpoint
@@ -144,7 +133,6 @@ namespace LoRaWan.NetworkServer
             var facadeUrl = envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty);
             config.FacadeServerUrl = string.IsNullOrEmpty(facadeUrl) ? null : new Uri(envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty));
             config.FacadeAuthCode = envVars.GetEnvVar("FACADE_AUTH_CODE", string.Empty);
-            config.LogToHub = envVars.GetEnvVar("LOG_TO_HUB", config.LogToHub);
             config.LogLevel = envVars.GetEnvVar("LOG_LEVEL", config.LogLevel);
             config.LogToConsole = envVars.GetEnvVar("LOG_TO_CONSOLE", config.LogToConsole);
             config.LogToUdp = envVars.GetEnvVar("LOG_TO_UDP", config.LogToUdp);
@@ -152,7 +140,6 @@ namespace LoRaWan.NetworkServer
             config.LogToUdpPort = envVars.GetEnvVar("LOG_TO_UDP_PORT", config.LogToUdpPort);
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
-            config.UseBasicsStation = envVars.GetEnvVar("USE_BASIC_STATION", false);
             config.LnsServerPfxPath = envVars.GetEnvVar("LNS_SERVER_PFX_PATH", string.Empty);
             config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
 

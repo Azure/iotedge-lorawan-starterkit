@@ -11,6 +11,9 @@ on: # rebuild any PRs and main branch changes
       TestsToRun:
         default: '[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]'
         description: 'tests to run'
+      TxPower:
+        description: 'TXPower value to use in E2E tests'
+        default: '6'
 env:
   buildConfiguration: 'Release'
   AZURE_FUNCTIONAPP_NAME: loramoduleintegrationtest
@@ -38,11 +41,23 @@ jobs:
       run: |
         echo "::set-output name=StopFullCi::true"
 
+    - id: set_txpower
+      name: Set TXPower value
+      run: |
+        if [ ${{ github.event.inputs.TxPower }} -ge 1 ] && [ ${{ github.event.inputs.TxPower }} -le 14 ]; then
+          txPower=${{ github.event.inputs.TxPower }}
+        else
+          txPower=14
+        fi
+        echo "Setting TxPower to $txPower"
+        echo "::set-output name=TxPower::$txPower"
+
     outputs:
       AZURE_FUNCTIONAPP_NAME: ${{ env.AZURE_FUNCTIONAPP_NAME }}
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
+      TxPower: ${{ steps.set_txpower.outputs.TxPower }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
@@ -156,7 +171,6 @@ jobs:
       IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_CONNECTION_STRING }}
       IOT_EDGE_DEPLOYMENT_ID: "citest${{ matrix.gateway }}"
       NET_SRV_LOG_LEVEL: 1
-      NET_SRV_LOGTO_HUB: false
       NET_SRV_LOGTO_UDP: true
       NET_SRV_IOTEDGE_TIMEOUT: 0
       NET_SRV_LOG_TO_UDP_ADDRESS: "itestup"
@@ -259,6 +273,7 @@ jobs:
       E2ETESTS_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
       E2ETESTS_FunctionAppCode: ${{ secrets.FUNCTION_AUTH_CODE }}
       E2ETESTS_FunctionAppBaseUrl: "https://${{ needs.env_var.outputs.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
+      E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 
     steps:
     - uses: actions/checkout@v2

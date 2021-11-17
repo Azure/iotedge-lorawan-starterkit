@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
@@ -102,7 +102,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 3);
             Assert.False(joinSucceeded, "Join suceeded for invalid DevEUI");
@@ -123,7 +123,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, appKeyToUse);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 3);
             Assert.False(joinSucceeded, "Join suceeded for invalid AppKey (mic check should fail)");
@@ -148,7 +148,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, appEUIToUse);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 3);
             Assert.False(joinSucceeded, "Join suceeded for invalid AppKey");
@@ -177,7 +177,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
@@ -250,7 +250,7 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
-            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
             var joinSucceeded2 = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded2, "Rejoin failed");
 

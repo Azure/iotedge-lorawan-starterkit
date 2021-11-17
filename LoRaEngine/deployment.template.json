@@ -90,9 +90,6 @@
               "LOG_LEVEL": {
                 "value": "$NET_SRV_LOG_LEVEL"
               },
-              "LOG_TO_HUB": {
-                "value": "$NET_SRV_LOGTO_HUB"
-              },
               "LOG_TO_UDP": {
                 "value": "$NET_SRV_LOGTO_UDP"
               },

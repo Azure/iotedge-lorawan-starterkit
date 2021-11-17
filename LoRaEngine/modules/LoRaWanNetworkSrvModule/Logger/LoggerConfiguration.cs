@@ -10,9 +10,6 @@ namespace LoRaWan
     // Defines the logger configuration
     public class LoggerConfiguration
     {
-        // Gets/sets the module client
-        public ModuleClient ModuleClient { get; set; }
-
         // Gets/sets if logging to console is enabled
         // Default: true
         public bool LogToConsole { get; set; } = true;
@@ -20,10 +17,6 @@ namespace LoRaWan
         // Gets/sets the logging level
         // Default: 4 (Error)
         public LogLevel LogLevel { get; set; } = LogLevel.Error;
-
-        // Gets/sets if logging to IoT Hub is enabled
-        // Default: false
-        public bool LogToHub { get; set; }
 
         // Gets/sets if logging to udp is enabled (used for integration tests mainly)
         // Default: false
