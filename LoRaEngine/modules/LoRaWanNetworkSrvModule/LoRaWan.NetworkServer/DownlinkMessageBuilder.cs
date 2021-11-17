@@ -15,6 +15,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// Helper class to create <see cref="DownlinkPktFwdMessage"/>.
@@ -223,9 +224,13 @@ namespace LoRaWan.NetworkServer
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
             logger.LogInformation($"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}");
-            return new DownlinkMessageBuilderResponse(
-                ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, lnsRxDelay, rxpk.Rfch, rxpk.Time, request.StationEui),
-                isMessageTooLong);
+
+            var downlinkPktFwdMessage = ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, lnsRxDelay, rxpk.Rfch, rxpk.Time, request.StationEui);
+
+            if (logger.IsEnabled(LogLevel.Debug))
+                logger.LogDebug($"{(LoRaMessageType)ackLoRaMessage.Mhdr.Span[0]} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+
+            return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong);
         }
 
         private static ushort ValidateAndConvert16bitFCnt(uint fcntDown)
@@ -331,7 +336,7 @@ namespace LoRaWan.NetworkServer
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
-            return new DownlinkMessageBuilderResponse(
+            var downlinkPktFwdMessage =
                 ackLoRaMessage.Serialize(loRaDevice.AppSKey,
                                          loRaDevice.NwkSKey,
                                          datr,
@@ -339,8 +344,12 @@ namespace LoRaWan.NetworkServer
                                          tmst,
                                          loRaDevice.DevEUI,
                                          rxDelay,
-                                         stationEui: loRaDevice.LastProcessingStationEui),
-                isMessageTooLong);
+                                         stationEui: loRaDevice.LastProcessingStationEui);
+
+            if (logger.IsEnabled(LogLevel.Debug))
+                logger.LogDebug($"{(LoRaMessageType)ackLoRaMessage.Mhdr.Span[0]} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+
+            return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong);
         }
 
         /// <summary>
