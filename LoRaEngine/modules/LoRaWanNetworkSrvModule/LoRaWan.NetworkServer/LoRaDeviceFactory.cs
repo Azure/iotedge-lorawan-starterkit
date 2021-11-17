@@ -35,7 +35,8 @@ namespace LoRaWan.NetworkServer
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
-                this.connectionManager)
+                this.connectionManager,
+                this.loggerFactory.CreateLogger<LoRaDevice>())
             {
                 GatewayID = deviceInfo.GatewayId,
                 NwkSKey = deviceInfo.NwkSKey
