@@ -8,7 +8,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
-    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
 
@@ -23,11 +22,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 GatewayID = "test-gateway",
                 LogLevel = "Debug",
             };
-
-            LoRaWan.StaticLogger.Init(new LoggerConfiguration()
-            {
-                LogLevel = LogLevel.Debug,
-            });
         }
 
         [Fact]

@@ -7,6 +7,8 @@ namespace Logger
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Net;
+    using System.Net.Sockets;
     using LoRaWan;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -93,10 +95,70 @@ namespace Logger
             _ = builder ?? throw new ArgumentNullException(nameof(builder));
 
             builder.AddConfiguration();
-            _ = builder.Services.AddSingleton(_ => StaticLogger.Init(configuration));
+            _ = builder.Services.AddSingleton(_ => Init(configuration));
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(sp => new TcpLoggerProvider(sp.GetRequiredService<ILogSink>(), configuration)));
 
             return builder;
+        }
+
+        private static ILogSink Init(LoggerConfiguration configuration, ILogger<TcpLogSink>? tcpLogSinkLogger = null)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            IPEndPoint? endPoint = null;
+
+#pragma warning disable format
+            if (configuration is { LogToTcp       : true,
+                                   LogToTcpAddress: { Length: > 0 } address,
+                                   LogToTcpPort   : var port and > 0 })
+#pragma warning restore format
+            {
+                endPoint = Resolve(address) is { } someAddress
+                         ? new IPEndPoint(someAddress, port)
+                         : null;
+            }
+
+            var tcpLogSink
+                = endPoint is { } someEndPoint
+                ? TcpLogSink.Start(someEndPoint, configuration.LogLevel,
+                                   formatter: string.IsNullOrEmpty(configuration.GatewayId)
+                                              ? null
+                                              : msg => $"[{configuration.GatewayId}] {msg}",
+                                   logger: tcpLogSinkLogger)
+                : throw new InvalidOperationException($"TCP endpoint is incorrectly configured. Address is '{configuration.LogToTcpAddress}' and port is '{configuration.LogToTcpPort}'");
+
+            return tcpLogSink;
+
+            IPAddress? Resolve(string address)
+            {
+                if (IPAddress.TryParse(address, out var ipAddress))
+                {
+                    return ipAddress;
+                }
+
+                string message;
+
+                try
+                {
+                    // try to parse the address as dns
+                    var addresses = Dns.GetHostAddresses(address);
+                    if (addresses.Length > 0)
+                        return addresses[0];
+
+                    message = $"Could not resolve IP address of '{address}'";
+                }
+                catch (SocketException ex)
+                {
+                    message = $"An error occurred trying to resolve '{address}'. {ex.Message}";
+                }
+                catch (ArgumentException ex)
+                {
+                    message = $"'{address}' is an invalid IP address. {ex.Message}";
+                }
+
+                tcpLogSinkLogger?.LogError(message);
+                return null;
+            }
         }
     }
 }
