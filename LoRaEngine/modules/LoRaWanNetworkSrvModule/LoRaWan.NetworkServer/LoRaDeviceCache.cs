@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
+#nullable enable
 namespace LoRaWan.NetworkServer
 {
     using LoRaTools.LoRaMessage;
@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace LoRaWan.NetworkServer
         private readonly ConcurrentDictionary<string, LoRaDevice> euiCache;
         private readonly object syncLock = new object();
         private readonly NetworkServerConfiguration configuration;
-        private CancellationTokenSource ctsDispose;
+        private readonly CancellationTokenSource ctsDispose;
         private Task currentRefreshTask;
         private readonly StatisticsTracker statisticsTracker = new StatisticsTracker();
 
@@ -30,11 +31,11 @@ namespace LoRaWan.NetworkServer
             this.devAddrCache = new ConcurrentDictionary<string, ConcurrentDictionary<string, LoRaDevice>>();
             this.euiCache = new ConcurrentDictionary<string, LoRaDevice>();
             this.ctsDispose = new CancellationTokenSource();
-            this.currentRefreshTask = RefreshCachAsync(this.ctsDispose.Token);
+            this.currentRefreshTask = RefreshCacheAsync(this.ctsDispose.Token);
             this.configuration = configuration;
         }
 
-        private async Task RefreshCachAsync(CancellationToken cancellationToken)
+        private async Task RefreshCacheAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -45,42 +46,72 @@ namespace LoRaWan.NetworkServer
                 return;
             }
 
-            var now = DateTimeOffset.UtcNow;
+            RemoveExpiredDevices();
+            await RefreshDevicesAsync(cancellationToken);
+
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                currentRefreshTask = RefreshCacheAsync(cancellationToken);
+            }
+        }
+
+        private void RemoveExpiredDevices()
+        {
             lock (this.syncLock)
             {
+                var now = DateTimeOffset.UtcNow;
                 var itemsToRemove = this.euiCache.Values.Where(x => now - x.LastSeen > this.options.MaxUnobservedLifetime);
                 foreach (var expiredDevice in itemsToRemove)
                 {
-                    _ = !Remove(expiredDevice);
+                    _ = Remove(expiredDevice);
                     expiredDevice.Dispose();
                 }
             }
+        }
 
+        private async Task RefreshDevicesAsync(CancellationToken cancellationToken)
+        {
+            var now = DateTimeOffset.UtcNow;
             var itemsToRefresh = this.euiCache.Values.Where(x => now - x.LastUpdate > this.options.RefreshInterval).ToList();
             var tasks = new List<Task>(itemsToRefresh.Count);
 
             foreach (var item in itemsToRefresh)
             {
-                tasks.Add(item.InitializeAsync(this.configuration, cancellationToken));
+                tasks.Add(RefreshDeviceAsync(item, cancellationToken));
             }
 
-            try
+            while (tasks.Count > 0)
             {
-                await Task.WhenAll(tasks);
-            }
-            catch (TaskCanceledException) { }
+                var t = await Task.WhenAny(tasks);
+                _ = tasks.Remove(t);
 
-            if (!cancellationToken.IsCancellationRequested)
-            {
-                currentRefreshTask = RefreshCachAsync(cancellationToken);
+                try
+                {
+                    await t;
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+                catch (LoRaProcessingException ex)
+                {
+                    // retry on next iteration
+                    Logger.Log("Failed to refresh device." + ex.ToString(), LogLevel.Error);
+                }
             }
+        }
+
+        protected virtual Task RefreshDeviceAsync(LoRaDevice device, CancellationToken cancellationToken)
+        {
+            _ = device ?? throw new ArgumentNullException(nameof(device));
+            return device.InitializeAsync(this.configuration, cancellationToken);
         }
 
         public bool Remove(string devEui)
         {
             lock (this.syncLock)
             {
-                return TryGetByDevEui(devEui, out var device) && Remove(device);
+                return TryGetByDevEui(devEui, out var device) && Remove(device!);
             }
         }
 
@@ -176,7 +207,7 @@ namespace LoRaWan.NetworkServer
             CleanupAllDevices();
         }
 
-        public virtual bool TryGetForPayload(LoRaPayload payload, out LoRaDevice loRaDevice)
+        public virtual bool TryGetForPayload(LoRaPayload payload, [MaybeNullWhen(returnValue: false)] out LoRaDevice loRaDevice)
         {
             _ = payload ?? throw new ArgumentNullException(nameof(payload));
 
@@ -206,7 +237,7 @@ namespace LoRaWan.NetworkServer
             return loRaDevice.ValidateMic(loRaPayload);
         }
 
-        public bool TryGetByDevEui(string devEUI, out LoRaDevice loRaDevice)
+        public bool TryGetByDevEui(string devEUI, [MaybeNullWhen(returnValue: false)] out LoRaDevice loRaDevice)
         {
             lock (this.syncLock)
             {
@@ -276,10 +307,8 @@ namespace LoRaWan.NetworkServer
             {
                 lock (this.syncLock)
                 {
-                    this.ctsDispose?.Cancel();
-                    this.ctsDispose?.Dispose();
-                    this.ctsDispose = null;
-
+                    this.ctsDispose.Cancel();
+                    this.ctsDispose.Dispose();
                     CleanupAllDevices();
                 }
             }
