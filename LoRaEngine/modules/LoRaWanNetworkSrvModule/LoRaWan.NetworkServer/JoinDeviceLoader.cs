@@ -16,15 +16,17 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IoTHubDeviceInfo ioTHubDevice;
         private readonly ILoRaDeviceFactory deviceFactory;
+        private readonly LoRaDeviceCache deviceCache;
         private volatile bool canCache;
         private SemaphoreSlim joinLock = new SemaphoreSlim(1);
 
         internal bool CanCache => this.canCache;
 
-        internal JoinDeviceLoader(IoTHubDeviceInfo ioTHubDevice, ILoRaDeviceFactory deviceFactory)
+        internal JoinDeviceLoader(IoTHubDeviceInfo ioTHubDevice, ILoRaDeviceFactory deviceFactory, LoRaDeviceCache deviceCache)
         {
             this.ioTHubDevice = ioTHubDevice;
             this.deviceFactory = deviceFactory;
+            this.deviceCache = deviceCache;
             this.canCache = true;
         }
 
@@ -33,8 +35,14 @@ namespace LoRaWan.NetworkServer
             try
             {
                 await this.joinLock.WaitAsync();
+
                 try
                 {
+                    if (this.deviceCache.TryGetByDevEui(this.ioTHubDevice.DevEUI, out var cachedDevice))
+                    {
+                        return cachedDevice;
+                    }
+
                     return await this.deviceFactory.CreateAndRegisterAsync(this.ioTHubDevice, CancellationToken.None);
                 }
                 finally
