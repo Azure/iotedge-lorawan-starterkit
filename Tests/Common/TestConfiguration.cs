@@ -56,10 +56,10 @@ namespace LoRaWan.Tests.Common
 
         public LoraRegion LoraRegion { get; set; } = LoraRegion.EU;
 
-        // Gets/sets if network server is using udp for logging
+        // Gets/sets if network server is using TCP for logging
         public bool TcpLog { get; set; }
 
-        // Gets/sets network server udp log port
+        // Gets/sets network server TCP log port
         public int TcpLogPort { get; set; } = 6000;
 
         // Gets/sets gateway NetId

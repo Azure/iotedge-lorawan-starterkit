@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.Common
             }
         }
 
-        // Clear IoT Hub, Udp logs and Arduino serial logs
+        // Clear IoT Hub, TCP logs and Arduino serial logs
         public virtual void ClearLogs()
         {
             IoTHubMessages?.ResetEvents();

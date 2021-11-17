@@ -76,18 +76,18 @@ namespace LoRaWan.NetworkServer
         public string LogLevel { get; set; } = "4";
 
         /// <summary>
-        /// Gets or sets a value indicating whether logging to udp is enabled (used for integration tests mainly).
+        /// Gets or sets a value indicating whether logging to TCP is enabled (used for integration tests mainly).
         /// Default is false.
         /// </summary>
         public bool LogToTcp { get; set; }
 
         /// <summary>
-        /// Gets or sets udp address to send log to.
+        /// Gets or sets TCP address to send log to.
         /// </summary>
         public string LogToTcpAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets udp port to send logs to.
+        /// Gets or sets TCP port to send logs to.
         /// </summary>
         public int LogToTcpPort { get; set; } = 6000;
 

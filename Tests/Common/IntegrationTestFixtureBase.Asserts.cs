@@ -109,7 +109,7 @@ namespace LoRaWan.Tests.Common
                 : await SearchIoTHubLogs(predicate, options);
 
         /// <summary>
-        /// Searches the UDP log, matching the passed in predicate to
+        /// Searches the TCP log, matching the passed in predicate to
         /// ensure a particular message got reported by all gateways.
         /// The number of gateways can be driven by configuration.
         /// <see cref="TestConfiguration.NumberOfGateways"/>.
@@ -317,11 +317,11 @@ namespace LoRaWan.Tests.Common
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
                     if (!string.IsNullOrEmpty(options?.Description))
                     {
-                        TestLogger.Log($"UDP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"TCP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     else
                     {
-                        TestLogger.Log($"UDP log message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"TCP log message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));

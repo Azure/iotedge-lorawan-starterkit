@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Common
 
         public void ResetEvents()
         {
-            TestLogger.Log($"*** Clearing udp logs (~{this.events.Count}) ***");
+            TestLogger.Log($"*** Clearing TCP logs (~{this.events.Count}) ***");
             this.events.Clear();
         }
 
