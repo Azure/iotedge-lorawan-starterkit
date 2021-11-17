@@ -14,9 +14,9 @@ namespace Logger
     {
         /// <summary>
         /// Prefixes the message with predefined scope values.
-        /// Right now we only support DevEUI, but could be extended to
-        /// include others (StationEUI, Gateway, DevAddr etc).
-        /// If the message is already prefixed with the DevEUI, we don't
+        /// Right now we only support DevEUI and DevAddr, but could be extended to
+        /// include others (StationEUI, Gateway, etc).
+        /// If the message is already prefixed with the DevEUI/DevAddr, we don't
         /// add it again.
         /// </summary>
         /// <param name="message">The already formatted message</param>
@@ -25,19 +25,36 @@ namespace Logger
         {
             if (scopeProvider is { } sp)
             {
+                string? devEui = null;
+                string? devAddr = null;
+
                 sp.ForEachScope<object?>((activeScope, _) =>
                 {
-                    if (activeScope is IDictionary<string, object> activeScopeDictionary &&
-                        activeScopeDictionary.TryGetValue(ILoggerExtensions.DevEUIKey, out var obj) &&
-                        obj is string devEUI &&
-                        !message.StartsWith(devEUI, StringComparison.OrdinalIgnoreCase))
+                    if (activeScope is IDictionary<string, object> activeScopeDictionary)
                     {
-                        message = string.Concat(devEUI, " ", message);
+                        devEui ??= GetScopeIfNotInMessage(activeScopeDictionary, ILoggerExtensions.DevEUIKey, message);
+                        devAddr ??= GetScopeIfNotInMessage(activeScopeDictionary, ILoggerExtensions.DeviceAddressKey, message);
                     }
                 }, null);
+
+#pragma warning disable format
+                return (devEui, devAddr) switch
+                {
+                    ({ } d, _)  => string.Concat(d, " ", message),
+                    (_, { } d)  => string.Concat(d, " ", message),
+                    _           => message
+                };
+#pragma warning restore format
             }
 
             return message;
+
+            static string? GetScopeIfNotInMessage(IDictionary<string, object> dict, string key, string message) =>
+                dict.TryGetValue(key, out var o) &&
+                o is string result &&
+                !message.StartsWith(result, StringComparison.OrdinalIgnoreCase)
+                ? result
+                : null;
         }
     }
 }

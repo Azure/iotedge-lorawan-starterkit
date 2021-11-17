@@ -75,6 +75,8 @@ namespace LoRaWan.NetworkServer
             this.queuedRequests = new List<LoRaRequest>();
             _ = TaskUtil.RunOnThreadPool(async () =>
             {
+                using var scope = this.logger.BeginDeviceAddressScope(this.devAddr);
+
                 var t = Load();
 
                 try
@@ -91,8 +93,6 @@ namespace LoRaWan.NetworkServer
 
         private async Task Load()
         {
-            using var scope = this.logger.BeginDeviceAddressScope(this.devAddr);
-
             try
             {
                 // If device was not found, search in the device API, updating local cache
@@ -324,7 +324,7 @@ namespace LoRaWan.NetworkServer
         private void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
         {
             var deviceId = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
-            using var scope = this.logger.BeginDeviceAddressScope(deviceId);
+            using var scope = this.logger.BeginDeviceScope(deviceId);
 
             switch (failedReason)
             {

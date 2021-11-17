@@ -69,6 +69,48 @@ namespace LoRaWan.Tests.Unit.Logger
             moqInfo.Verify(x => x.Invoke(It.Is<string>(x => x == message)), Times.Once);
         }
 
+        [Fact]
+        public void When_DevEUI_And_DevAddr_Scope_Set_DevEUI_Scope_Is_Set()
+        {
+            // arrange
+            var options = CreateLoggerConfigMonitor();
+            var moqInfo = new Mock<Action<string>>();
+            var provider = new Mock<LoRaConsoleLoggerProvider>(options);
+            var logger = new TestLoRaConsoleLogger(moqInfo.Object, null, provider.Object);
+            const string devEui = "12345678EUI";
+            const string devAddr = "12345678ADDR";
+            const string message = "foo";
+
+            // act
+            using var euiScope = logger.BeginDeviceScope(devEui);
+            using var addrScope = logger.BeginDeviceAddressScope(devAddr);
+            logger.LogInformation(message);
+
+            // assert
+            var expected = string.Concat(devEui, " ", message);
+            moqInfo.Verify(x => x.Invoke(expected), Times.Once);
+        }
+
+        [Fact]
+        public void DevAddr_Scope_Set_In_Message()
+        {
+            // arrange
+            var options = CreateLoggerConfigMonitor();
+            var moqInfo = new Mock<Action<string>>();
+            var provider = new Mock<LoRaConsoleLoggerProvider>(options);
+            var logger = new TestLoRaConsoleLogger(moqInfo.Object, null, provider.Object);
+            const string devAddr = "12345678ADDR";
+            const string message = "foo";
+
+            // act
+            using var scope = logger.BeginDeviceAddressScope(devAddr);
+            logger.LogInformation(message);
+
+            // assert
+            var expected = string.Concat(devAddr, " ", message);
+            moqInfo.Verify(x => x.Invoke(expected), Times.Once);
+        }
+
         [Theory]
         [InlineData(0, 0, true)]
         [InlineData(0, 1, true)]
