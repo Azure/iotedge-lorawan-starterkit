@@ -90,12 +90,14 @@ jobs:
       name: Get the check id
       shell: pwsh
       run: |
-        echo ${{ steps.get-check-run-id.outputs.data }}
+        $runobject = ConvertFrom-Json ${{ steps.get-check-run-id.outputs.data }}
+        echo "::set-output name=checkSuiteUrl::$($runobject.check_suite_url)"
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
+      CheckSuiteUrl: ${{ steps.get-check-id.outputs.checkSuiteUrl }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
@@ -193,7 +195,7 @@ jobs:
   deploy_arm_gw_iot_edge:
     environment:
       name: CI_ALL_IN_ONE_ARM_GATEWAY
-      url: https://github.com/Azure/iotedge-lorawan-starterkit/runs/${{ github.run_id }}?check_suite_focus=true
+      url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
     needs:
     - env_var
     - build_push_docker_images
@@ -224,7 +226,7 @@ jobs:
   deploy_eflow_gw_iot_edge:
     environment:
       name: CI_EFLOW_AZURE_VM
-      url: https://github.com/Azure/iotedge-lorawan-starterkit/runs/${{ github.run_id }}?check_suite_focus=true
+      url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
     needs:
     - env_var
     - build_push_docker_images
@@ -262,7 +264,7 @@ jobs:
     - build_push_docker_images
     environment:
       name: CI_CONCENTRATOR_EFLOW_ARM32
-      url: https://github.com/Azure/iotedge-lorawan-starterkit/runs/${{ github.run_id }}?check_suite_focus=true
+      url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on ItestArm2 concentrator
@@ -295,7 +297,7 @@ jobs:
     name: Run E2E Tests
     environment:
       name: CI_AZURE_ENVIRONMENT
-      url: https://github.com/Azure/iotedge-lorawan-starterkit/runs/${{ github.run_id }}?check_suite_focus=true
+      url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
     if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success'))
     needs:
       - deploy_arm_gw_iot_edge
