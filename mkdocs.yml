@@ -63,6 +63,7 @@ nav:
     - user-guide/caching.md
     - user-guide/station-configuration.md
     - user-guide/station-credential-management.md
+    - user-guide/station-module-configuration.md
     - user-guide/upgrade.md
     - user-guide/documentation.md
   - 'Samples':
