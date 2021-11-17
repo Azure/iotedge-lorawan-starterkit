@@ -82,8 +82,7 @@ jobs:
     - uses: octokit/request-action@v2.x
       id: get-check-run-id
       with:
-        route: GET /repos/{repo}/actions/jobs/${{ github.run_id }}
-        repo: ${{ github.repository }}
+        route: GET /repos/${{ github.repository }}/actions/jobs/${{ github.run_id }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
