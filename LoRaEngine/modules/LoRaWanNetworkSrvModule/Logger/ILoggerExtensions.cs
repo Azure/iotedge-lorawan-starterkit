@@ -11,11 +11,15 @@ namespace LoRaWan
     {
         public const string DevEUIKey = "DevEUI";
         public const string DeviceAddressKey = "DevAddr";
+        public const string StationEuiKey = "StationEUI";
 
         public static IDisposable BeginDeviceScope(this ILogger logger, string devEUI) =>
             logger?.BeginScope(new Dictionary<string, object> { [DevEUIKey] = devEUI });
 
         public static IDisposable BeginDeviceAddressScope(this ILogger logger, string deviceAddress) =>
             logger?.BeginScope(new Dictionary<string, object> { [DeviceAddressKey] = deviceAddress });
+
+        public static IDisposable BeginEuiScope(this ILogger logger, StationEui eui) =>
+            logger?.BeginScope(new Dictionary<string, object> { [StationEuiKey] = eui.ToString("N", null) });
     }
 }

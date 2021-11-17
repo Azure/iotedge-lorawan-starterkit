@@ -69,25 +69,28 @@ namespace LoRaWan.Tests.Unit.Logger
             moqInfo.Verify(x => x.Invoke(It.Is<string>(x => x == message)), Times.Once);
         }
 
-        [Fact]
-        public void When_DevEUI_And_DevAddr_Scope_Set_DevEUI_Scope_Is_Set()
+        [Theory]
+        [InlineData("EUI", null, null, "EUI foo")]
+        [InlineData(null, "ADDR", null, "ADDR foo")]
+        [InlineData(null, null, 1, "0000000000000001 foo")]
+        [InlineData("EUI", null, 1, "EUI foo")]
+        [InlineData("EUI", "ADDR", null, "EUI foo")]
+        [InlineData(null, "ADDR", 1, "ADDR foo")]
+        public void When_DevEUI_And_DevAddr_Scope_Set_DevEUI_Scope_Is_Set(string devEuiScope, string devAddrScope, int? stationEuiScope, string expected)
         {
             // arrange
             var options = CreateLoggerConfigMonitor();
             var moqInfo = new Mock<Action<string>>();
             var provider = new Mock<LoRaConsoleLoggerProvider>(options);
             var logger = new TestLoRaConsoleLogger(moqInfo.Object, null, provider.Object);
-            const string devEui = "12345678EUI";
-            const string devAddr = "12345678ADDR";
-            const string message = "foo";
 
             // act
-            using var euiScope = logger.BeginDeviceScope(devEui);
-            using var addrScope = logger.BeginDeviceAddressScope(devAddr);
-            logger.LogInformation(message);
+            using var euiScope = devEuiScope is null ? default : logger.BeginDeviceScope(devEuiScope);
+            using var addrScope = devAddrScope is null ? default : logger.BeginDeviceAddressScope(devAddrScope);
+            using var statScope = stationEuiScope is { } s ? logger.BeginEuiScope(new StationEui((ulong)s)) : default;
+            logger.LogInformation("foo");
 
             // assert
-            var expected = string.Concat(devEui, " ", message);
             moqInfo.Verify(x => x.Invoke(expected), Times.Once);
         }
 

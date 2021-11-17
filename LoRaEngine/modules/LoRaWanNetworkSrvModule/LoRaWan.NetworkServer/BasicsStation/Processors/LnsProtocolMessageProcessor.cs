@@ -137,6 +137,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 StationEui.Parse(sEui.ToString())
                 : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");
 
+            using var scope = this.logger.BeginEuiScope(stationEui);
+
             var channel = new WebSocketTextChannel(socket, sendTimeout: TimeSpan.FromSeconds(3));
             var handle = this.socketWriterRegistry.Register(stationEui, channel);
 

@@ -27,6 +27,7 @@ namespace Logger
             {
                 string? devEui = null;
                 string? devAddr = null;
+                string? stationEui = null;
 
                 sp.ForEachScope<object?>((activeScope, _) =>
                 {
@@ -34,15 +35,17 @@ namespace Logger
                     {
                         devEui ??= GetScopeIfNotInMessage(activeScopeDictionary, ILoggerExtensions.DevEUIKey, message);
                         devAddr ??= GetScopeIfNotInMessage(activeScopeDictionary, ILoggerExtensions.DeviceAddressKey, message);
+                        stationEui ??= GetScopeIfNotInMessage(activeScopeDictionary, ILoggerExtensions.StationEuiKey, message);
                     }
                 }, null);
 
 #pragma warning disable format
-                return (devEui, devAddr) switch
+                return (devEui, devAddr, stationEui) switch
                 {
-                    ({ } d, _)  => string.Concat(d, " ", message),
-                    (_, { } d)  => string.Concat(d, " ", message),
-                    _           => message
+                    ({ } d, _, _)   => string.Concat(d, " ", message),
+                    (_, { } d, _)   => string.Concat(d, " ", message),
+                    (_, _, { } d)   => string.Concat(d, " ", message),
+                    _               => message
                 };
 #pragma warning restore format
             }
