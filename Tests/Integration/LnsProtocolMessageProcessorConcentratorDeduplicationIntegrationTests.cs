@@ -22,11 +22,13 @@ namespace LoRaWan.Tests.Integration
     /// <summary>
     /// These tests test the integration between <see cref="LnsProtocolMessageProcessor"/> and <see cref="ConcentratorDeduplication"/>.
     /// </summary>
-    public sealed class LnsProtocolMessageProcessorConcentratorDeduplicationIntegrationTests
+    public sealed class LnsProtocolMessageProcessorConcentratorDeduplicationIntegrationTests : IDisposable
     {
-        private static async Task<TestServer> TestServerAsyncFactory(Mock<IMessageDispatcher> messageDispatcherMock)
+        private IHost testHost;
+
+        private async Task CreateTestHostAsync(Mock<IMessageDispatcher> messageDispatcherMock)
         {
-            var host = await new HostBuilder()
+            this.testHost = await new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                             .UseStartup<BasicsStationNetworkServerStartup>()
@@ -41,8 +43,6 @@ namespace LoRaWan.Tests.Integration
                             })
                             .UseEnvironment("Development"))
                 .StartAsync();
-
-            return host.GetTestServer();
         }
 
         [Theory]
@@ -54,8 +54,8 @@ namespace LoRaWan.Tests.Integration
             var dispatcherCounter = 0;
             var messageDispatcherMock = new Mock<IMessageDispatcher>();
             _ = messageDispatcherMock.Setup(x => x.DispatchRequest(It.IsAny<LoRaRequest>())).Callback(() => dispatcherCounter++);
-            var testServer = await TestServerAsyncFactory(messageDispatcherMock);
-            var wsClient = testServer.CreateWebSocketClient();
+            await CreateTestHostAsync(messageDispatcherMock);
+            var wsClient = this.testHost.GetTestServer().CreateWebSocketClient();
 
             var station1 = StationEui.Parse("a8-27-eb-ff-fe-e1-e3-9a");
             var station2 = isSameStation ? station1 : StationEui.Parse("b8-27-eb-ff-fe-e1-e3-9a");
@@ -107,6 +107,12 @@ namespace LoRaWan.Tests.Integration
             // assert
             var expected = isSameStation ? 2 : 1;
             Assert.Equal(expected, dispatcherCounter);
+        }
+
+        public void Dispose()
+        {
+            _ = this.testHost?.StopAsync();
+            this.testHost?.Dispose();
         }
     }
 }
