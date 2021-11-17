@@ -91,7 +91,10 @@ jobs:
       shell: pwsh
       run: |
         $runobject = ConvertFrom-Json "${{ steps.get-check-run-id.outputs.data }}"
-        echo "::set-output name=checkSuiteUrl::$($runobject.check_suite_url)"
+        $checksuiteurl = $runobject.check_suite_url
+        echo $checksuiteurl
+        echo $runobject.PSObject.Properties
+        echo "::set-output name=checkSuiteUrl::$($checksuiteurl)"
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
