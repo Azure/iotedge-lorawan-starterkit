@@ -17,24 +17,29 @@ namespace LoRaWan.NetworkServer
     public sealed class LoRaDeviceAPIService : LoRaDeviceAPIServiceBase
     {
         private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
+        private readonly ILogger<LoRaDeviceAPIService> logger;
 
         public LoRaDeviceAPIService(NetworkServerConfiguration configuration,
-                                    IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider)
+                                    IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider,
+                                    ILogger<LoRaDeviceAPIService> logger)
             : base(configuration)
         {
             this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;
+            this.logger = logger;
         }
 
         public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
         {
-            StaticLogger.Log(devEUI, $"syncing FCntDown for multigateway", LogLevel.Debug);
+            using var scope = this.logger.BeginDeviceScope(devEUI);
+
+            this.logger.LogDebug("syncing FCntDown for multigateway");
 
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                StaticLogger.Log(devEUI, $"error calling the NextFCntDown function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                this.logger.LogError($"error calling the NextFCntDown function, check the function log. {response.ReasonPhrase}");
                 return 0;
             }
 
@@ -48,23 +53,27 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown)
         {
+            using var scope = this.logger.BeginDeviceScope(devEUI);
+
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"DuplicateMsgCheck/{devEUI}?code={AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}");
 
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                StaticLogger.Log(devEUI, $"error calling the DuplicateMsgCheck function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                this.logger.LogError($"error calling the DuplicateMsgCheck function, check the function log. {response.ReasonPhrase}");
                 return null;
             }
 
             var payload = await response.Content.ReadAsStringAsync();
-            StaticLogger.Log(devEUI, $"deduplication response: '{payload}'", LogLevel.Debug);
+            this.logger.LogDebug($"deduplication response: '{payload}'");
             return JsonConvert.DeserializeObject<DeduplicationResult>(payload);
         }
 
         public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
         {
+            using var scope = this.logger.BeginDeviceScope(devEUI);
+
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"FunctionBundler/{devEUI}?code={AuthCode}");
 
@@ -74,7 +83,7 @@ namespace LoRaWan.NetworkServer
             using var response = await client.PostAsync(url, content);
             if (!response.IsSuccessStatusCode)
             {
-                StaticLogger.Log(devEUI, $"error calling the bundling function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                this.logger.LogError($"error calling the bundling function, check the function log. {response.ReasonPhrase}");
                 return null;
             }
 
@@ -84,12 +93,14 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId)
         {
+            using var scope = this.logger.BeginDeviceScope(devEUI);
+
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                StaticLogger.Log(devEUI, $"error calling the NextFCntDown function, check the function log, {response.ReasonPhrase}", LogLevel.Error);
+                this.logger.LogError($"error calling the NextFCntDown function, check the function log, {response.ReasonPhrase}");
                 return false;
             }
 
@@ -145,7 +156,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                StaticLogger.Log(devAddr, $"error calling get device function api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
+                this.logger.LogError($"{devAddr} error calling get device function api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
 
                 // TODO: FBE check if we return null or throw exception
                 return new SearchDevicesResult();
@@ -166,6 +177,8 @@ namespace LoRaWan.NetworkServer
 
         private async Task<SearchDevicesResult> SearchByEuiAsync(string eui)
         {
+            using var scope = this.logger.BeginDeviceScope(eui);
+
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = BuildUri("GetDeviceByDevEUI", new Dictionary<string, string>
             {
@@ -181,7 +194,7 @@ namespace LoRaWan.NetworkServer
                     return new SearchDevicesResult();
                 }
 
-                StaticLogger.Log(eui, $"error calling get device/station by EUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
+                this.logger.LogError($"error calling get device/station by EUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
 
                 return new SearchDevicesResult();
             }
