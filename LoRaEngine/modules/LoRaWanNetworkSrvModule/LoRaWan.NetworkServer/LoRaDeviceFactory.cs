@@ -12,14 +12,20 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDataRequestHandler dataRequestHandler;
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
+        private readonly ILoggerFactory loggerFactory;
+        private readonly ILogger<LoRaDeviceFactory> logger;
 
         public LoRaDeviceFactory(NetworkServerConfiguration configuration,
                                  ILoRaDataRequestHandler dataRequestHandler,
-                                 ILoRaDeviceClientConnectionManager connectionManager)
+                                 ILoRaDeviceClientConnectionManager connectionManager,
+                                 ILoggerFactory loggerFactory,
+                                 ILogger<LoRaDeviceFactory> logger)
         {
             this.configuration = configuration;
             this.dataRequestHandler = dataRequestHandler;
             this.connectionManager = connectionManager;
+            this.loggerFactory = loggerFactory;
+            this.logger = logger;
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -51,11 +57,13 @@ namespace LoRaWan.NetworkServer
 
         private string CreateIoTHubConnectionString(string devEUI)
         {
+            using var scope = this.logger.BeginDeviceScope(devEUI);
+
             var connectionString = string.Empty;
 
             if (string.IsNullOrEmpty(this.configuration.IoTHubHostName))
             {
-                StaticLogger.Log("Configuration/Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible", LogLevel.Error);
+                this.logger.LogError("Configuration/Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible");
             }
 
             connectionString += $"HostName={this.configuration.IoTHubHostName};";
@@ -63,11 +71,11 @@ namespace LoRaWan.NetworkServer
             if (this.configuration.EnableGateway)
             {
                 connectionString += $"GatewayHostName={this.configuration.GatewayHostName};";
-                StaticLogger.Log(devEUI, $"using edgeHub local queue", LogLevel.Debug);
+                this.logger.LogDebug($"using edgeHub local queue");
             }
             else
             {
-                StaticLogger.Log(devEUI, $"using iotHub directly, no edgeHub queue", LogLevel.Debug);
+                this.logger.LogDebug("using iotHub directly, no edgeHub queue");
             }
 
             return connectionString;
@@ -94,7 +102,7 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(eui, deviceConnectionStr, transportSettings);
+                return new LoRaDeviceClient(eui, deviceConnectionStr, transportSettings, this.loggerFactory.CreateLogger<LoRaDeviceClient>());
             }
             catch (Exception ex)
             {
