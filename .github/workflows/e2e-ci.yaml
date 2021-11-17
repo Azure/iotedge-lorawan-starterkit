@@ -45,6 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - id: e2e_list_step
+      shell: bash
       name: Set E2E tests to run
       run: |
         if [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
@@ -60,12 +61,14 @@ jobs:
 
     - id: check-if-run
       name: Check if deploy on local ci
+      shell: bash
       if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fullci' ) != true
       run: |
         echo "::set-output name=StopFullCi::true"
 
     - id: set_txpower
       name: Set TXPower value
+      shell: bash
       run: |
         if [ ${{ github.event.inputs.TxPower }} -ge 1 ] && [ ${{ github.event.inputs.TxPower }} -le 14 ]; then
           txPower=${{ github.event.inputs.TxPower }}
@@ -75,6 +78,21 @@ jobs:
         echo "Setting TxPower to $txPower"
         echo "::set-output name=TxPower::$txPower"
 
+    # Get check run id
+      - uses: octokit/request-action@v2.x
+        id: get-check-run-id
+        with:
+          route: GET /repos/{repo}/actions/jobs/{job_id}
+          repo: ${{ github.repository }}
+          job_id: ${{ github.run_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: get-check-id
+        name: Get the check id
+        shell: pwsh
+        run: |
+          echo ${{ steps.get-check-run-id.outputs.data }}
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
