@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -721,7 +722,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var manager = new LoRaDeviceClientConnectionManager(cache);
+            using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
             using var device = new LoRaDevice("00000000", "0123456789", manager);
             manager.Register(device, deviceClient.Object);
 
@@ -742,7 +743,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var manager = new LoRaDeviceClientConnectionManager(cache);
+            using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
             using var device = new LoRaDevice("00000000", "0123456789", manager);
             device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
@@ -777,7 +778,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var manager = new LoRaDeviceClientConnectionManager(cache);
+            using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
             using var device = new LoRaDevice("00000000", "0123456789", manager);
             device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
