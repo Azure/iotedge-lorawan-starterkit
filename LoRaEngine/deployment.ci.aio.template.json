@@ -85,6 +85,9 @@
             "version": "1.0",
             "env": {
               "ENABLE_GATEWAY": {
+                "value": "true"
+              },
+              "NestedEdgeEnabled":{
                 "value": "false"
               },
               "LOG_LEVEL": {
