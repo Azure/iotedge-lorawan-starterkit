@@ -1,5 +1,5 @@
 name: 'Deploy IoT Edge'
-description: 'Greet someone'
+description: 'Prepare an IoT Edge Deployment'
 inputs:
   deployment_file_name:
     description: 'edge deployment file name'
