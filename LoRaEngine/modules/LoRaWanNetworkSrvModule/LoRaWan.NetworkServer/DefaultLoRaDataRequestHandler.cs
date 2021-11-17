@@ -291,7 +291,8 @@ namespace LoRaWan.NetworkServer
                         cloudToDeviceMessage,
                         false, // fpending
                         fcntDown.GetValueOrDefault(),
-                        loRaADRResult);
+                        loRaADRResult,
+                        this.logger);
 
                     if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                     {
@@ -395,7 +396,8 @@ namespace LoRaWan.NetworkServer
                     cloudToDeviceMessage,
                     fpending,
                     fcntDown.GetValueOrDefault(),
-                    loRaADRResult);
+                    loRaADRResult,
+                    this.logger);
 
                 if (cloudToDeviceMessage != null)
                 {

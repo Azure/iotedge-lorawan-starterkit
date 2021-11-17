@@ -107,7 +107,8 @@ namespace LoRaWan.NetworkServer
                 loRaDevice, // TODO resolve region from device information
                 region,
                 message,
-                fcntDown);
+                fcntDown,
+                this.logger);
 
             if (downlinkMessageBuilderResp.IsMessageTooLong)
             {
