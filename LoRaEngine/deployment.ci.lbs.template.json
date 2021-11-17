@@ -22,7 +22,7 @@
             "type": "docker",
             "settings": {
               "image": "mcr.microsoft.com/azureiotedge-agent:$EDGE_AGENT_VERSION",
-              "createOptions": ""
+              "createOptions": {}
             }
           },
           "edgeHub": {
@@ -62,50 +62,6 @@
           }
         },
         "modules": {
-          "LoRaWanNetworkSrvModule": {
-            "type": "docker",
-            "settings": {
-              "image": "${MODULES.LoRaWanNetworkSrvModule}",
-              "createOptions": {
-                "ExposedPorts": {
-                  "5000/tcp": {}
-                },
-                "HostConfig": {
-                  "PortBindings": {
-                    "5000/tcp": [
-                      {
-                        "HostPort": "5000",
-                        "HostIp": "172.17.0.1"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "version": "1.0",
-            "env": {
-              "ENABLE_GATEWAY": {
-                "value": "false"
-              },
-              "LOG_LEVEL": {
-                "value": "$NET_SRV_LOG_LEVEL"
-              },
-              "LOG_TO_UDP": {
-                "value": "$NET_SRV_LOGTO_UDP"
-              },
-              "IOTEDGE_TIMEOUT": {
-                "value": "$NET_SRV_IOTEDGE_TIMEOUT"
-              },
-              "LOG_TO_UDP_ADDRESS": {
-                "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
-              },
-              "APPINSIGHTS_INSTRUMENTATIONKEY": {
-                "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
-              }
-            },
-            "status": "running",
-            "restartPolicy": "always"
-          },
           "LoRaBasicsStationModule": {
             "type": "docker",
             "settings": {
@@ -140,16 +96,6 @@
             "version": "1.0",
             "status": "running",
             "restartPolicy": "always"
-          },
-          "sensordecodermodule": {
-            "type": "docker",
-            "settings": {
-              "image": "$CONTAINER_REGISTRY_ADDRESS/decodersample:2.0",
-              "createOptions": {}
-            },
-            "status": "running",
-            "restartPolicy": "always",
-            "version": "1.0"
           }
         }
       }

@@ -29,7 +29,8 @@ namespace LoRaWan.Tests.E2E
 
         public TestDeviceInfo Device5_ABP_MultiGw { get; private set; }
 
-        // Device6_ABP: used for ABP wrong devaddr
+        // Device6_ABP: Not Used at the moment. Was used for wrong devaddr
+        // But test dropped as part of LBS migration.
         public TestDeviceInfo Device6_ABP { get; private set; }
 
         // Device7_ABP: used for ABP wrong nwkskey

@@ -1,4 +1,4 @@
-#This docker builds a container for the LoRa Base station
+#This docker builds a container for the LoRa Basics station on arm32 architecture
 
 FROM arm32v7/debian:buster as build
 RUN apt-get update
