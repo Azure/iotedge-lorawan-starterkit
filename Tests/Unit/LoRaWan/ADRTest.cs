@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Unit
             this.output.WriteLine($"Starting test {testName}");
             var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider(NullLoggerFactory.Instance);
-            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider)
+            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider, NullLogger<LoRaADRManagerBase>.Instance)
             {
                 CallBase = true
             };
@@ -79,7 +79,7 @@ namespace LoRaWan.Tests.Unit
             {
                 Datr = "SF7BW125"
             };
-            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider)
+            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider, NullLogger<LoRaADRManagerBase>.Instance)
             {
                 CallBase = true
             };
