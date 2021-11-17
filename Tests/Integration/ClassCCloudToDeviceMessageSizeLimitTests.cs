@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Integration
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
@@ -35,6 +36,7 @@ namespace LoRaWan.Tests.Integration
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
         private readonly MemoryCache cache;
         private readonly LoRaDeviceRegistry loRaDeviceRegistry;
+        private readonly LoRaDeviceCache deviceCache = LoRaDeviceCacheDefault.CreateDefault();
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
         public ClassCCloudToDeviceMessageSizeLimitTests()
@@ -47,10 +49,15 @@ namespace LoRaWan.Tests.Integration
             this.loRaRegion = RegionManager.EU868;
             PacketForwarder = new TestPacketForwarder();
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object);
+            this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
+
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, new LoRaDeviceClientConnectionManager(this.cache));
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory, this.deviceCache);
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration, this.deviceApi.Object);
         }
 
@@ -90,7 +97,7 @@ namespace LoRaWan.Tests.Integration
                 { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
                 { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
             });
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             var c2dMessageMacCommand = new DevStatusRequest();
@@ -173,7 +180,7 @@ namespace LoRaWan.Tests.Integration
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simulatedDevice.CreateABPTwin());
 
             var c2dMessageMacCommand = new DevStatusRequest();
@@ -235,7 +242,7 @@ namespace LoRaWan.Tests.Integration
         {
             this.loRaDeviceRegistry.Dispose();
             this.cache.Dispose();
-            this.loRaDeviceFactory.Dispose();
+            this.deviceCache.Dispose();
         }
     }
 }

@@ -89,8 +89,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.AbandonAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
-            using var cache = NewNonEmptyCache(loraDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var cache = EmptyMemoryCache();
+            using var loraDeviceCache = CreateDeviceCache(loraDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(

@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServer
 
                 try
                 {
-                    var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
+                    var timeWatcher = request.GetTimeWatcher();
 
                     var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
@@ -87,7 +87,6 @@ namespace LoRaWan.NetworkServer
                             Logger.Log(devEUI, "join refused: DevNonce already used by this device", LogLevel.Error);
                         }
 
-                        loRaDevice.IsOurDevice = false;
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.JoinDevNonceAlreadyUsed);
                         return;
                     }
@@ -208,7 +207,6 @@ namespace LoRaWan.NetworkServer
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     }
 
-                    loRaDevice.IsOurDevice = true;
                     this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                     // Build join accept downlink message

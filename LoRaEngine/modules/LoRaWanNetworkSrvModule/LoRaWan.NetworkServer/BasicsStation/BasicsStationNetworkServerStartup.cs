@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
+    using System;
     using System.Globalization;
     using LoRaTools.ADR;
     using LoRaWan;
@@ -74,6 +75,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
+                        .AddSingleton<LoRaDeviceCache>()
+                        .AddSingleton(x => new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
 
             if (useApplicationInsights)

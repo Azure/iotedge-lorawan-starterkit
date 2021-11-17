@@ -3,6 +3,8 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
@@ -10,12 +12,12 @@ namespace LoRaWan.NetworkServer
     /// Loads devices for join requests
     /// This object remains in cache until join succeeds or timeout expires (2 minutes).
     /// </summary>
-    internal class JoinDeviceLoader
+    internal class JoinDeviceLoader : IDisposable
     {
         private readonly IoTHubDeviceInfo ioTHubDevice;
         private readonly ILoRaDeviceFactory deviceFactory;
-        private readonly Task<LoRaDevice> loading;
         private volatile bool canCache;
+        private SemaphoreSlim joinLock = new SemaphoreSlim(1);
 
         internal bool CanCache => this.canCache;
 
@@ -24,33 +26,43 @@ namespace LoRaWan.NetworkServer
             this.ioTHubDevice = ioTHubDevice;
             this.deviceFactory = deviceFactory;
             this.canCache = true;
-            this.loading = Task.Run(() => LoadAsync());
         }
 
-        /// <summary>
-        /// Returns Task containing the device loading execution.
-        /// Waiting for it will suspend your thread/task until the device join is complete.
-        /// </summary>
-        internal Task<LoRaDevice> WaitCompleteAsync() => this.loading;
-
-        private async Task<LoRaDevice> LoadAsync()
+        internal async Task<LoRaDevice> LoadAsync()
         {
-            var loRaDevice = this.deviceFactory.Create(this.ioTHubDevice);
-
-            if (await loRaDevice.InitializeAsync())
+            try
             {
-                return loRaDevice;
+                await this.joinLock.WaitAsync();
+                try
+                {
+                    return await this.deviceFactory.CreateAndRegisterAsync(this.ioTHubDevice, CancellationToken.None);
+                }
+                finally
+                {
+                    _ = this.joinLock.Release();
+                }
             }
-            else
+            catch (LoRaNetworkServerException ex)
             {
-                // will reach here if getting twins threw an exception
-                // object is non usable, must try to read twin again
-                // for the future we could retry here
+                Logger.Log(this.ioTHubDevice.DevEUI, $"join refused: Failed to load: {ex}", LogLevel.Error);
                 this.canCache = false;
-                Logger.Log(loRaDevice.DevEUI, "join refused: error initializing OTAA device, getting twin failed", LogLevel.Error);
+                return null;
             }
+        }
 
-            return null;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.joinLock?.Dispose();
+                this.joinLock = null;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

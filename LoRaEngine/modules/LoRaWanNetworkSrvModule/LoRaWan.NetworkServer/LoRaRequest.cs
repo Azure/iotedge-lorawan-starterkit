@@ -45,7 +45,7 @@ namespace LoRaWan.NetworkServer
 
         internal void NotifyFailed(LoRaDevice loRaDevice, LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed(loRaDevice?.DevEUI, reason, exception);
 
-        internal void NotifyFailed(LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed((string)null, reason, exception);
+        internal virtual void NotifyFailed(LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed((string)null, reason, exception);
 
         public virtual void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {

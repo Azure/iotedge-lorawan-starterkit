@@ -3,100 +3,50 @@
 
 namespace LoRaWan.Tests.Common
 {
-    using System;
     using System.Collections.Generic;
-    using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.ADR;
-    using Microsoft.Extensions.Caching.Memory;
-
-    public sealed class TestLoRaDeviceFactory : ILoRaDeviceFactory, IDisposable
+    
+    public sealed class TestLoRaDeviceFactory : LoRaDeviceFactory
     {
         private readonly ILoRaDeviceClient loRaDeviceClient;
-        private readonly ILoRaDataRequestHandler requestHandler;
         private readonly IDictionary<string, ILoRaDeviceClient> deviceClientMap = new Dictionary<string, ILoRaDeviceClient>();
         private readonly IDictionary<string, LoRaDevice> deviceMap = new Dictionary<string, LoRaDevice>();
-        private readonly NetworkServerConfiguration configuration;
-        private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
-        private readonly IDeduplicationStrategyFactory deduplicationFactory;
-        private readonly ILoRaADRStrategyProvider adrStrategyProvider;
-        private readonly ILoRAADRManagerFactory adrManagerFactory;
-        private readonly IFunctionBundlerProvider functionBundlerProvider;
-        private readonly ILoRaDeviceClientConnectionManager connectionManager;
-        private readonly IMemoryCache memoryCache;
 
-        public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDeviceClientConnectionManager connectionManager = null)
-        {
-            this.loRaDeviceClient = loRaDeviceClient;
-            this.memoryCache = new MemoryCache(new MemoryCacheOptions
-            {
-                ExpirationScanFrequency = TimeSpan.FromSeconds(5),
-            });
-            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(this.memoryCache);
-        }
+        public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, LoRaDeviceCache deviceCache, ILoRaDeviceClientConnectionManager connectionManager = null)
+            : this(null, connectionManager, deviceCache, null, loRaDeviceClient)
+        { }
 
-        public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDataRequestHandler requestHandler, ILoRaDeviceClientConnectionManager connectionManager = null)
-        {
-            this.loRaDeviceClient = loRaDeviceClient;
-            this.requestHandler = requestHandler;
-            this.memoryCache = new MemoryCache(new MemoryCacheOptions
-            {
-                ExpirationScanFrequency = TimeSpan.FromSeconds(5),
-            });
-            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(this.memoryCache);
-        }
+        public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDataRequestHandler requestHandler, LoRaDeviceCache deviceCache, ILoRaDeviceClientConnectionManager connectionManager = null)
+            : this(requestHandler, connectionManager, deviceCache, null, loRaDeviceClient)
+        { }
 
         public TestLoRaDeviceFactory(
             NetworkServerConfiguration configuration,
-            ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             ILoRaDeviceClient loRaDeviceClient,
-            IDeduplicationStrategyFactory deduplicationFactory,
-            ILoRaADRStrategyProvider adrStrategyProvider,
-            ILoRAADRManagerFactory adrManagerFactory,
-            IFunctionBundlerProvider functionBundlerProvider,
-            ILoRaDeviceClientConnectionManager connectionManager)
-            : this(loRaDeviceClient)
+            ILoRaDeviceClientConnectionManager connectionManager,
+            LoRaDeviceCache deviceCache,
+            ILoRaDataRequestHandler requestHandler)
+            : this(requestHandler, connectionManager, deviceCache, configuration, loRaDeviceClient)
+        { }
+
+        private TestLoRaDeviceFactory(ILoRaDataRequestHandler requestHandler,
+                                      ILoRaDeviceClientConnectionManager connectionManager,
+                                      LoRaDeviceCache deviceCache,
+                                      NetworkServerConfiguration configuration,
+                                      ILoRaDeviceClient loRaDeviceClient)
+            : base(configuration ?? new NetworkServerConfiguration { GatewayID = MessageProcessorTestBase.ServerGatewayID },
+                   requestHandler,
+                   connectionManager,
+                   deviceCache)
         {
-            this.configuration = configuration;
-            this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
-            this.deduplicationFactory = deduplicationFactory;
-            this.adrStrategyProvider = adrStrategyProvider;
-            this.adrManagerFactory = adrManagerFactory;
-            this.functionBundlerProvider = functionBundlerProvider;
-            this.connectionManager = connectionManager;
-        }
-
-        public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
-        {
-            if (!this.deviceClientMap.TryGetValue(deviceInfo.DevEUI, out var deviceClientToAssign))
-            {
-                deviceClientToAssign = this.loRaDeviceClient;
-            }
-
-            var loRaDevice = new LoRaDevice(
-                deviceInfo.DevAddr,
-                deviceInfo.DevEUI,
-                this.connectionManager)
-            {
-                GatewayID = deviceInfo.GatewayId
-            };
-
-            this.connectionManager.Register(loRaDevice, deviceClientToAssign);
-
-            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider));
-
-            this.deviceMap[deviceInfo.DevEUI] = loRaDevice;
-
-            return loRaDevice;
+            this.loRaDeviceClient = loRaDeviceClient;
         }
 
         public bool TryGetLoRaDevice(string devEUI, out LoRaDevice device) => this.deviceMap.TryGetValue(devEUI, out device);
 
         public void SetClient(string devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
 
-        public void Dispose() => this.memoryCache.Dispose();
-
-        public ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey) =>
+        public override ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey) =>
             this.deviceClientMap.TryGetValue(eui, out var deviceClientToAssign) ? deviceClientToAssign : this.loRaDeviceClient;
     }
 }

@@ -80,8 +80,9 @@ namespace LoRaWan.Tests.Integration
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
 
-            using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var cache = EmptyMemoryCache();
+            using var loraDeviceCache = CreateDeviceCache(cachedDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             using var messageDispatcher = new MessageDispatcher(
                 ServerConfiguration,
@@ -147,8 +148,9 @@ namespace LoRaWan.Tests.Integration
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
 
-            using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var cache = EmptyMemoryCache();
+            using var loraDeviceCache = CreateDeviceCache(cachedDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             using var messageDispatcher = new MessageDispatcher(
                 ServerConfiguration,
@@ -220,8 +222,9 @@ namespace LoRaWan.Tests.Integration
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
 
-            using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var cache = EmptyMemoryCache();
+            using var loraDeviceCache = CreateDeviceCache(cachedDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             using var messageDispatcher = new MessageDispatcher(
                 ServerConfiguration,
@@ -266,7 +269,7 @@ namespace LoRaWan.Tests.Integration
                 { TwinProperty.KeepAliveTimeout, 3 }
             });
 
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync())
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             // message will be sent
@@ -290,7 +293,7 @@ namespace LoRaWan.Tests.Integration
                 .Returns(true);
 
             using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             using var messageDispatcher = new MessageDispatcher(
                 ServerConfiguration,
@@ -351,8 +354,9 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.SetFcntDown(cachedDevice.FCntDown + Constants.MaxFcntUnsavedDelta - 1);
             cachedDevice.SetLastProcessingStationEui(new StationEui(ulong.MaxValue));
 
-            using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var cache = EmptyMemoryCache();
+            using var loraDeviceCache = CreateDeviceCache(cachedDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             var target = new DefaultClassCDevicesMessageSender(
                 ServerConfiguration,

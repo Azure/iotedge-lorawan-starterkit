@@ -104,24 +104,46 @@ namespace LoRaWan.NetworkServer
         public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            if (this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
+            return GetClient(loRaDevice.DevEUI);
+        }
+
+        public ILoRaDeviceClient GetClient(string devEUI)
+        {
+            if (devEUI is null) throw new ArgumentNullException(nameof(devEUI));
+
+            if (this.managedConnections.TryGetValue(GetConnectionCacheKey(devEUI), out var managedConnection))
                 return managedConnection.DeviceClient;
 
-            throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");
+            throw new ManagedConnectionException($"Connection for device {devEUI} was not found");
         }
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
-            this.managedConnections[GetConnectionCacheKey(loRaDevice.DevEUI)] = new ManagedConnection(loRaDevice, loraDeviceClient);
+            var key = GetConnectionCacheKey(loRaDevice.DevEUI);
+            lock (this.managedConnections)
+            {
+                if (this.managedConnections.ContainsKey(key))
+                {
+                    throw new InvalidOperationException($"existing connection for device {loRaDevice.DevEUI}");
+                }
+
+                this.managedConnections[GetConnectionCacheKey(loRaDevice.DevEUI)] = new ManagedConnection(loRaDevice, loraDeviceClient);
+            }
         }
 
         public void Release(LoRaDevice loRaDevice)
         {
-            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            Release(loRaDevice.DevEUI);
+        }
 
-            if (this.managedConnections.TryRemove(GetConnectionCacheKey(loRaDevice.DevEUI), out var removedItem))
+        public void Release(string devEUI)
+        {
+            _ = devEUI ?? throw new ArgumentNullException(nameof(devEUI));
+
+            if (this.managedConnections.TryRemove(GetConnectionCacheKey(devEUI), out var removedItem))
             {
                 removedItem.Dispose();
             }

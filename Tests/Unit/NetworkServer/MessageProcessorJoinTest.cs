@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.LoRaMessage;
     using global::LoRaTools.Utils;
@@ -67,18 +68,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(It.IsNotNull<string>(), devEUI, devNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123") { GatewayId = ServerConfiguration.GatewayID }.AsList()));
 
             // Ensure that the device twin was updated
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.Is<TwinCollection>((t) =>
                 t.Contains(TwinProperty.DevAddr) && t.Contains(TwinProperty.FCntDown))))
                 .ReturnsAsync(true);
 
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync())
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simulatedDevice.CreateOTAATwin());
 
             using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
@@ -97,9 +98,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(pktFwdMessage.Txpk.Data), simulatedDevice.AppKey);
 
             var joinedDeviceDevAddr = ConversionHelper.ByteArrayToString(joinAccept.DevAddr);
-            var cachedDevices = deviceRegistry.InternalGetCachedDevicesForDevAddr(joinedDeviceDevAddr);
-            Assert.Single(cachedDevices);
-            Assert.True(cachedDevices.TryGetValue(devEUI, out var loRaDevice));
+            Assert.Equal(1, DeviceCache.RegistrationCount(joinedDeviceDevAddr));
+            Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
             Assert.Equal(joinAccept.DevAddr.ToArray(), ByteArray(loRaDevice.DevAddr).ToArray());
 
             // Device properties were set with the computes values of the join operation
@@ -144,10 +144,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devNonce = ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
-            var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
+            var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>(MockBehavior.Loose);
             loRaDeviceRegistryMock.Setup(x => x.RegisterDeviceInitializer(It.IsNotNull<ILoRaDeviceInitializer>()));
             loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, devNonce))
-                .Returns(Task.Delay(TimeSpan.FromSeconds(7)).ContinueWith((_) => loRaDevice, TaskScheduler.Default));
+                .ReturnsAsync(loRaDevice);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
@@ -155,7 +155,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.FromSeconds(7));
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -171,7 +171,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loRaDeviceRegistryMock.VerifyAll();
             LoRaDeviceApi.VerifyAll();
 
-            loRaDeviceRegistryMock.Setup(dr => dr.Dispose());
             LoRaDeviceClient.Setup(ldc => ldc.Dispose());
         }
 
@@ -332,7 +331,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(twin);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             // Device twin will be updated
             string afterJoinAppSKey = null;
@@ -351,10 +350,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            using var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object);
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
@@ -372,8 +371,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             // check that the device is in cache
-            Assert.True(memoryCache.TryGetValue<DevEUIToLoRaDeviceDictionary>(afterJoinDevAddr, out var cachedDevices));
-            Assert.True(cachedDevices.TryGetValue(devEUI, out var cachedDevice));
+            Assert.True(DeviceCache.HasRegistrations(afterJoinDevAddr));
+            Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var cachedDevice));
             Assert.Equal(afterJoinAppSKey, cachedDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, cachedDevice.NwkSKey);
             Assert.Equal(afterJoinDevAddr, cachedDevice.DevAddr);
@@ -406,7 +405,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(new SearchDevicesResult() { IsDevNonceAlreadyUsed = true });
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
@@ -450,7 +449,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             twin.Properties.Desired[TwinProperty.RX1DROffset] = rx1DROffset;
             twin.Properties.Desired[TwinProperty.RX2DataRate] = rx2datarate;
 
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(twin);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
@@ -459,10 +458,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            using var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object);
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
@@ -531,7 +530,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             twin.Properties.Desired[TwinProperty.RX2DataRate] = rx2datarate;
             twin.Properties.Desired[TwinProperty.PreferredWindow] = 2;
 
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(twin);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
              .Callback<TwinCollection>((updatedTwin) =>
@@ -548,10 +547,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            using var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object);
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
@@ -647,7 +646,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             twin.Properties.Desired[TwinProperty.RX2DataRate] = afterJoinValues;
             twin.Properties.Desired[TwinProperty.RX1DROffset] = afterJoinValues;
             twin.Properties.Desired[TwinProperty.RXDelay] = afterJoinValues;
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(twin);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
              .Callback<TwinCollection>((updatedTwin) =>
@@ -677,8 +676,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await LoRaDeviceClient.Object.UpdateReportedPropertiesAsync(startingTwin);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory);
-            using var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
                 ServerConfiguration,
@@ -759,7 +758,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             twin.Properties.Desired[TwinProperty.RX1DROffset] = rx1offset;
             twin.Properties.Desired[TwinProperty.PreferredWindow] = 1;
 
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(twin);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
              .Callback<TwinCollection>((updatedTwin) =>
@@ -776,10 +775,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            using var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object);
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
@@ -886,7 +885,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             twin.Properties.Desired[TwinProperty.RXDelay] = rxDelay;
             twin.Properties.Desired[TwinProperty.PreferredWindow] = 1;
 
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(twin);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
              .Callback<TwinCollection>((updatedTwin) =>
@@ -903,10 +902,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            using var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object);
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(

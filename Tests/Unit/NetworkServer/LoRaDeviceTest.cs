@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
@@ -20,11 +21,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     public class LoRaDeviceTest
     {
         private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
+        private readonly NetworkServerConfiguration configuration;
 
         public LoRaDeviceTest()
         {
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.loRaDeviceClient.Setup(ldc => ldc.Dispose());
+            this.configuration = new NetworkServerConfiguration { GatewayID = "test-gateway" };
         }
 
         [Fact]
@@ -116,12 +119,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "$version", 1 },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice(string.Empty, "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
             Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
@@ -161,12 +164,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "DevAddr", "0000AABB" },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
             Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
@@ -188,7 +191,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
                     { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
+                    { "GatewayID", this.configuration.GatewayID },
                     { "SensorDecoder", "DecoderValueSensor" },
                     { "$version", 1 },
                 },
@@ -200,15 +203,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "DevAddr", "0000AABB" },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Empty(loRaDevice.AppEUI ?? string.Empty);
             Assert.Empty(loRaDevice.AppKey ?? string.Empty);
-            Assert.Equal("mygateway", loRaDevice.GatewayID);
+            Assert.Equal(this.configuration.GatewayID, loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
             Assert.True(loRaDevice.IsABP);
             Assert.True(loRaDevice.IsOurDevice);
@@ -251,12 +254,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "DevAddr", "0000AABB" },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.False(loRaDevice.DownlinkEnabled);
         }
 
@@ -287,12 +290,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "DevAddr", "0000AABB" },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.True(loRaDevice.DownlinkEnabled);
         }
 
@@ -317,12 +320,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "DevAddr", "0000AABB" },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.True(loRaDevice.DownlinkEnabled);
         }
 
@@ -353,12 +356,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "DevAddr", "0000AABB" },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(1, loRaDevice.PreferredWindow);
         }
 
@@ -387,12 +390,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "DevAddr", "0000AABB" },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(2, loRaDevice.PreferredWindow);
         }
 
@@ -417,12 +420,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "DevAddr", "0000AABB" },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(1, loRaDevice.PreferredWindow);
         }
 
@@ -445,12 +448,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "CN470JoinChannel", 2 }
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(2, loRaDevice.ReportedCN470JoinChannel); // check that reported property is prioritized
         }
 
@@ -606,7 +609,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
                     { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
+                    { "GatewayID", this.configuration.GatewayID },
                     { "SensorDecoder", "DecoderValueSensor" },
                     { "$version", 1 },
                 },
@@ -620,12 +623,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "FCntUp", 20 },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.True(loRaDevice.IsOurDevice);
             Assert.Equal(10U, loRaDevice.FCntDown);
             Assert.Equal(10U, loRaDevice.LastSavedFCntDown);
@@ -663,12 +666,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "Region", regionValue }
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal("gateway1", loRaDevice.PreferredGatewayID);
 
             if (string.Equals(LoRaRegionType.EU868.ToString(), regionValue, StringComparison.OrdinalIgnoreCase))
@@ -706,12 +709,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "DevAddr", "0000AABB" }
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(expectedKeepAliveTimeout, loRaDevice.KeepAliveTimeout);
         }
 
@@ -840,12 +843,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { "Region", "US915" },
                 });
 
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
-            await loRaDevice.InitializeAsync();
+            await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(LoRaDeviceClassType.C, loRaDevice.ClassType);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal(9u, loRaDevice.FCntDown);

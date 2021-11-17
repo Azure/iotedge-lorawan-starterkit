@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.CommonAPI;
     using global::LoRaTools.LoRaMessage;
@@ -29,6 +30,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
+        private readonly LoRaDeviceCache deviceCache = LoRaDeviceCacheDefault.CreateDefault();
         private readonly IMemoryCache cache;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
@@ -43,10 +45,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             this.packetForwarder = new Mock<IPacketForwarder>(MockBehavior.Strict);
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object);
+            this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
+            
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, new LoRaDeviceClientConnectionManager(this.cache));
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory, this.deviceCache);
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration, this.deviceApi.Object);
         }
 
@@ -83,7 +88,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
                 });
 
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             if (string.IsNullOrEmpty(deviceGatewayID))
@@ -132,7 +137,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simDevice.CreateABPTwin());
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
@@ -188,7 +193,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simDevice.CreateOTAATwin());
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
@@ -205,7 +210,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider);
 
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => target.SendAsync(c2dToDeviceMessage));
+            Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();
@@ -227,7 +232,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
                 });
 
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
@@ -338,7 +343,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
                 });
 
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
@@ -403,7 +408,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { TwinProperty.NwkSKey, nwkSKey },
                 });
 
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
@@ -431,7 +436,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.loRaDeviceRegistry.Dispose();
             this.cache.Dispose();
-            this.loRaDeviceFactory.Dispose();
+            this.deviceCache.Dispose();
         }
     }
 }
