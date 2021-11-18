@@ -92,6 +92,8 @@ namespace LoRaWan.NetworkServer
         {
             var managedConnection = (ManagedConnection)value;
 
+            using var scope = this.logger.BeginDeviceScope(managedConnection.LoRaDevice.DevEUI);
+
             if (!managedConnection.LoRaDevice.TryDisconnect())
             {
                 this.logger.LogInformation("scheduled device disconnection has been postponed. Device client connection is active");
