@@ -323,7 +323,10 @@ jobs:
 
     # Builds and runs E2E tests
     - name: Build E2E tests
-      run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
+      run: |
+        echo "killing process listening on TCP 6000"
+        kill -9 $(lsof -t -i:6000)
+        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
     - name:  Runs SensorDecoding E2E tests
       if: always() && contains(env.TestsToRun, 'SensorDecodingTest')
