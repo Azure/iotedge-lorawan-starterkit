@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
+    using System;
     using System.Globalization;
     using LoRaTools.ADR;
     using LoRaWan;
@@ -40,7 +41,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
             _ = services.AddLogging(loggingBuilder =>
                         {
                             _ = loggingBuilder.ClearProviders();
-                            var logLevel = (LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture);
+                            var logLevel = int.TryParse(NetworkServerConfiguration.LogLevel, out var logLevelNum)
+                                ? (LogLevel)logLevelNum
+                                : Enum.Parse<LogLevel>(NetworkServerConfiguration.LogLevel, true);
+
                             _ = loggingBuilder.SetMinimumLevel(logLevel);
                             _ = loggingBuilder.AddLoRaConsoleLogger(c => c.LogLevel = logLevel);
 
