@@ -75,22 +75,12 @@ namespace LoRaWan.NetworkServer
         {
             _ = message ?? throw new ArgumentNullException(nameof(message));
 
-            if (message.GetType() == typeof(UpstreamDataFrame))
+            return message switch
             {
-                var updf = message as UpstreamDataFrame;
-                _ = updf ?? throw new ArgumentException($"Data frame {updf} not well formed");
-                return CreateCacheKeyCore(updf);
-            }
-
-            if (message.GetType() == typeof(JoinRequestFrame))
-
-            {
-                var joinReq = message as JoinRequestFrame;
-                _ = joinReq ?? throw new ArgumentException($"Join request {joinReq} not well formed");
-                return CreateCacheKeyCore(joinReq);
-            }
-
-            throw new ArgumentException($"{message} not of proper type");
+                UpstreamDataFrame asDataFrame => CreateCacheKeyCore(asDataFrame),
+                JoinRequestFrame asJoinRequestFrame => CreateCacheKeyCore(asJoinRequestFrame),
+                _ => throw new ArgumentException($"{message} not of proper type")
+            };
         }
 
         private static string CreateCacheKeyCore(UpstreamDataFrame updf)
