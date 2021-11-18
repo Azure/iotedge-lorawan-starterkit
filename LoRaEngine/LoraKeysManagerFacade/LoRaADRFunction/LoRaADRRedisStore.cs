@@ -106,7 +106,6 @@ namespace LoraKeysManagerFacade
                 }
             }
 
-            using var scope = this.logger.BeginDeviceScope(devEUI);
             this.logger.LogError("Failed to acquire ADR redis lock. Can't deliver ADR Table");
             return null;
         }
