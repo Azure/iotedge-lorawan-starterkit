@@ -134,14 +134,6 @@ namespace LoRaTools.Regions
         public abstract bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>
-        /// Implements logic to get the correct downstream transmission frequency for the given region based on the upstream channel frequency.
-        /// </summary>
-        /// <param name="upstreamFrequency">Frequency of the upstream message.</param>
-        /// <param name="dataRate">Ustream data rate.</param>
-        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null);
-
-        /// <summary>
         /// Returns downstream data rate based on the upstream channel and RX1 DR offset.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
@@ -298,26 +290,6 @@ namespace LoRaTools.Regions
 
             return true;
         }
-
-        /// <summary>
-        /// This method checks that a received message is within the correct frenquency range and has a valid datarate.
-        /// </summary>
-        /// <param name="frequency">Frequency on which the message was transmitted.</param>
-        /// <param name="dataRate">Data rate with which the message was transmitted.</param>
-        protected bool IsValidUpstreamFrequencyAndDataRate(double frequency, ushort dataRate)
-        {
-            if (!IsValidUpstreamFrequency(frequency) || !IsValidUpstreamDataRate(dataRate))
-            {
-#pragma warning disable CS0618 // Type or member is obsolete (https://github.com/Azure/iotedge-lorawan-starterkit/issues/456)
-                StaticLogger.Log("A upstream message not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
-#pragma warning restore CS0618 // Type or member is obsolete
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool IsValidUpstreamFrequency(double frequency) => RegionLimits.FrequencyRange.min <= frequency && frequency <= RegionLimits.FrequencyRange.max;
 
         private bool IsValidUpstreamDataRate(ushort dataRate) => RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(dataRate);
 
