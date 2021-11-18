@@ -80,17 +80,17 @@ In addition to this, we will support Application Insights metrics on an opt-in b
 | DeviceLoadRequests         | Number of device load requests                               | LNS    | LoRaWan   | Gateway Id                 |
 | JoinRequests               | Number of join requests                                      | LNS    | LoRaWan   | Gateway Id                 |
 | StationConnectivityLost    | Connection to LBS lost                                       | LNS    | LoRaWan   | Gateway Id                 |
-| D2CMessagesReceived        | Number of messages received from device                      | LNS    | LoRaWan   | Gateway Id, Device Id      |
+| D2CMessagesReceived        | Number of messages received from device                      | LNS    | LoRaWan   | Gateway Id                 |
 | D2CMessageDeliveryLatency  | Time from when we received the message from the concentrator until we are done processing it | LNS    | LoRaWan   | Gateway Id                 |
-| D2CMessagesDelivered       | Number of messages sent to upstream                          | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
-| D2CMessagesError           | Number of errors in sending messages to upstream             | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
-| D2CMessagesProcessingError | Number of errors processing (decoding, decrypting) messages  | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
-| D2CMessageSize             | Message size in bytes received from device                   | LNS    | LoRaWan   | Gateway Id, Device Id      |
-| D2CMessageSizeUpstream     | Message size in bytes sent upstream                          | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
-| C2DMessagesAbandoned       | Number of C2D messages abandoned                             | LNS    | LoRaWan   | Gateway Id, Device Id      |
-| C2DMessagesDelivered       | Number of messages sent downstream                           | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
-| C2DMessagesError           | Number of errors in sending messages to downstream           | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
-| C2DMessageSizeDownstream   | Message size in bytes sent downstream                        | LNS    | LoRaWan   | Gateway Id, Device Id, To  |
+| D2CMessagesDelivered       | Number of messages sent to upstream                          | LNS    | LoRaWan   | Gateway Id, To             |
+| D2CMessagesError           | Number of errors in sending messages to upstream             | LNS    | LoRaWan   | Gateway Id,  To            |
+| D2CMessagesProcessingError | Number of errors processing (decoding, decrypting) messages  | LNS    | LoRaWan   | Gateway Id,  To            |
+| D2CMessageSize             | Message size in bytes received from device                   | LNS    | LoRaWan   | Gateway Id                 |
+| D2CMessageSizeUpstream     | Message size in bytes sent upstream                          | LNS    | LoRaWan   | Gateway Id,  To            |
+| C2DMessagesAbandoned       | Number of C2D messages abandoned                             | LNS    | LoRaWan   | Gateway Id                 |
+| C2DMessagesDelivered       | Number of messages sent downstream                           | LNS    | LoRaWan   | Gateway Id, To             |
+| C2DMessagesError           | Number of errors in sending messages to downstream           | LNS    | LoRaWan   | Gateway Id, To             |
+| C2DMessageSizeDownstream   | Message size in bytes sent downstream                        | LNS    | LoRaWan   | Gateway Id, To             |
 
 ### Alerts
 
