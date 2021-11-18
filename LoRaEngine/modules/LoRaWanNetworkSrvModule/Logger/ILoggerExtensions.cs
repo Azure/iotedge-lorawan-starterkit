@@ -16,6 +16,9 @@ namespace LoRaWan
         public static IDisposable BeginDeviceScope(this ILogger logger, string devEUI) =>
             logger?.BeginScope(new Dictionary<string, object> { [DevEUIKey] = devEUI });
 
+        public static IDisposable BeginDeviceAddressScope(this ILogger logger, DevAddr devAddr) =>
+            logger?.BeginDeviceAddressScope(devAddr.ToString());
+
         public static IDisposable BeginDeviceAddressScope(this ILogger logger, string deviceAddress) =>
             logger?.BeginScope(new Dictionary<string, object> { [DeviceAddressKey] = deviceAddress });
 

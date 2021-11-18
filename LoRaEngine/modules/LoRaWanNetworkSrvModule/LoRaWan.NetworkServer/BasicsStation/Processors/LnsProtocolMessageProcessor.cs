@@ -217,6 +217,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                             break;
                         }
 
+                        using var scope = this.logger.BeginDeviceAddressScope(updf.DevAddr);
+
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
 
@@ -228,7 +230,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                                       updf.Options,
                                                                       updf.Payload,
                                                                       updf.Port,
-                                                                      updf.Mic));
+                                                                      updf.Mic,
+                                                                      this.logger));
                         loraRequest.SetRegion(routerRegion);
                         loraRequest.SetStationEui(stationEui);
                         this.messageDispatcher.DispatchRequest(loraRequest);

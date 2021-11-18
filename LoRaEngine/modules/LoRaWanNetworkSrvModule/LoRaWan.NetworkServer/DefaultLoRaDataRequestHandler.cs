@@ -192,7 +192,7 @@ namespace LoRaWan.NetworkServer
                     {
                         if (decryptedPayloadData?.Length > 0)
                         {
-                            loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(loRaDevice.DevEUI, decryptedPayloadData);
+                            loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
                         }
 
                         if (loraPayload.IsMacAnswerRequired)

@@ -44,7 +44,7 @@ namespace LoRaTools
         /// <summary>
         /// Create a List of Mac commands from client based on a sequence of bytes.
         /// </summary>
-        public static IList<MacCommand> CreateMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
+        public static IList<MacCommand> CreateMacCommandFromBytes(ReadOnlyMemory<byte> input, ILogger logger = null)
         {
             var pointer = 0;
             var macCommands = new List<MacCommand>(3);
@@ -105,19 +105,17 @@ namespace LoRaTools
                         case Cid.Zero:
                         case Cid.One:
                         default:
-#pragma warning disable CS0618 // Type or member is obsolete (https://github.com/Azure/iotedge-lorawan-starterkit/issues/456)
-                            StaticLogger.Log(deviceId, $"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
+                            logger?.LogError($"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing");
                             return null;
                     }
 
                     var addedMacCommand = macCommands[^1];
-                    StaticLogger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
+                    logger?.LogDebug($"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}");
                 }
             }
-            catch (MacCommandException ex)
+            catch (MacCommandException ex) when (ExceptionFilterUtility.True(() => logger?.LogError(ex.ToString())))
             {
-                StaticLogger.Log(deviceId, ex.ToString(), LogLevel.Error);
-#pragma warning restore CS0618 // Type or member is obsolete
+                // continue
             }
 
             return macCommands;
