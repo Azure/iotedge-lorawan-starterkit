@@ -3,7 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
-    public interface IConcentratorDeduplication<T>
+    public interface IConcentratorDeduplication<T> where T : class
     {
         /// <summary>
         /// Detects messages that should be dropped based on whether

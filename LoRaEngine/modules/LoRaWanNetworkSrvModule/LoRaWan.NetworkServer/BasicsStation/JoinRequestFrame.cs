@@ -3,7 +3,7 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    public class JoinRequestFrame
+    public sealed class JoinRequestFrame
     {
         public JoinRequestFrame(MacHeader mHdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce, Mic mic, RadioMetadata radioMetadata)
         {

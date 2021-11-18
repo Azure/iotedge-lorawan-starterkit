@@ -13,7 +13,9 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
-    internal sealed class ConcentratorDeduplication<T> : IConcentratorDeduplication<T>, IDisposable
+    internal sealed class ConcentratorDeduplication<T> :
+        IConcentratorDeduplication<T>, IDisposable
+        where T : class
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
