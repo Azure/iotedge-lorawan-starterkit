@@ -24,6 +24,12 @@ namespace LoRaWan.Tests.Integration
     /// </summary>
     public sealed class LnsProtocolMessageProcessorConcentratorDeduplicationIntegrationTests
     {
+        private const string TestDataFrame =
+            @"{""msgtype"": ""updf"",""MHdr"": 128,""DevAddr"": 58772467,""FCtrl"": 0,""FCnt"": 164,""FOpts"": """", ""FPort"": 8,""FRMPayload"": ""5ABBBA"",""MIC"": -1943282916,""RefTime"": 0.0,""DR"": 4,""Freq"": 868100000,""upinfo"": {""rctx"": 0,""xtime"": 40250921680313459, ""gpstime"": 0, ""fts"": -1, ""rssi"": -60, ""snr"": 9, ""rxtime"": 1635347491.917289}}";
+
+        private const string TestJoinRequest =
+            @"{""msgtype"":""jreq"",""MHdr"":0,""JoinEui"":""47-62-78-C8-E5-D2-C4-B5"",""DevEui"":""85-27-C1-DF-EE-A4-16-9E"",""DevNonce"":54360,""MIC"":-1056607131,""RefTime"":0.000000,""DR"":5,""Freq"":868500000,""upinfo"":{ ""rctx"":0,""xtime"":68116944372333395,""gpstime"":0,""fts"":-1,""rssi"":-54,""snr"":7.25,""rxtime"":1636131668.725738}}";
+
         private static async Task<TestServer> TestServerAsyncFactory(Mock<IMessageDispatcher> messageDispatcherMock)
         {
             var host = await new HostBuilder()
@@ -46,9 +52,11 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task When_Same_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(bool isSameStation)
+        [InlineData(true, TestDataFrame)]
+        [InlineData(false, TestDataFrame)]
+        [InlineData(true, TestJoinRequest)]
+        [InlineData(false, TestJoinRequest)]
+        public async Task When_Same_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(bool isSameStation, string message)
         {
             // arrange
             var dispatcherCounter = 0;
@@ -69,30 +77,6 @@ namespace LoRaWan.Tests.Integration
             {
                 Scheme = "ws"
             }.Uri;
-
-            var message = @"{
-                ""msgtype"": ""updf"",
-                ""MHdr"": 128,
-                ""DevAddr"": 58772467,
-                ""FCtrl"": 0,
-                ""FCnt"": 164,
-                ""FOpts"": """",
-                ""FPort"": 8,
-                ""FRMPayload"": ""5ABBBA"",
-                ""MIC"": -1943282916,
-                ""RefTime"": 0.0,
-                ""DR"": 4,
-                ""Freq"": 868100000,
-                ""upinfo"": {
-                    ""rctx"": 0,
-                    ""xtime"": 40250921680313459,
-                    ""gpstime"": 0,
-                    ""fts"": -1,
-                    ""rssi"": -60,
-                    ""snr"": 9,
-                    ""rxtime"": 1635347491.917289
-                }
-            }";
 
             // act
             var socket1 = await wsClient.ConnectAsync(wsUri1, CancellationToken.None);

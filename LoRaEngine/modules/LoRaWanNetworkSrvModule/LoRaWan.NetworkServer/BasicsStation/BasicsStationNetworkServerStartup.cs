@@ -75,7 +75,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>();
+                        .AddSingleton<IConcentratorDeduplication<UpstreamDataFrame>, ConcentratorDeduplication<UpstreamDataFrame>>()
+                        .AddSingleton<IConcentratorDeduplication<JoinRequestFrame>, ConcentratorDeduplication<JoinRequestFrame>>();
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);

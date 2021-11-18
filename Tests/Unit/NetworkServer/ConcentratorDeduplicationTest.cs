@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
     {
-        private readonly ConcentratorDeduplication concentratorDeduplication;
+        private readonly ConcentratorDeduplication<UpstreamDataFrame> concentratorDeduplication;
         private static readonly UpstreamDataFrame defaultUpdf = new UpstreamDataFrame(default, new DevAddr(1), default, 2, default, default, "payload", new Mic(4), default);
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
@@ -28,10 +28,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.cache = new MemoryCache(new MemoryCacheOptions());
             this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
 
-            this.concentratorDeduplication = new ConcentratorDeduplication(
+            this.concentratorDeduplication = new ConcentratorDeduplication<UpstreamDataFrame>(
                 this.cache,
                 this.socketRegistry,
-                NullLogger<IConcentratorDeduplication>.Instance);
+                NullLogger<IConcentratorDeduplication<UpstreamDataFrame>>.Instance);
         }
 
         [Theory]
@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.False(result);
-            var key = ConcentratorDeduplication.CreateCacheKey(defaultUpdf);
+            var key = ConcentratorDeduplication<UpstreamDataFrame>.CreateCacheKey(defaultUpdf);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(stationEui, addedStation);
         }
@@ -82,7 +82,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // act/assert
             Assert.Equal(expectedResult, this.concentratorDeduplication.ShouldDrop(defaultUpdf, anotherStation));
             Assert.Equal(1, this.cache.Count);
-            var key = ConcentratorDeduplication.CreateCacheKey(defaultUpdf);
+            var key = ConcentratorDeduplication<UpstreamDataFrame>.CreateCacheKey(defaultUpdf);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(expectedResult ? stationEui : anotherStation, addedStation);
         }
@@ -94,7 +94,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var expectedKey = "43-E3-69-8D-70-E2-50-77-06-01-63-D1-DD-74-ED-E0-B5-BA-3B-54-09-FB-88-B3-B9-DB-6D-97-68-01-97-52";
 
             // act/assert
-            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(defaultUpdf));
+            Assert.Equal(expectedKey, ConcentratorDeduplication<UpstreamDataFrame>.CreateCacheKey(defaultUpdf));
         }
 
         public void Dispose() => this.concentratorDeduplication.Dispose();

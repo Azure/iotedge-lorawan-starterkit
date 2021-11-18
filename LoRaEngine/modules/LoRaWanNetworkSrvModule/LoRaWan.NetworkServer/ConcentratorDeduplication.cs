@@ -9,17 +9,17 @@ namespace LoRaWan.NetworkServer
     using System.Buffers.Binary;
     using System.Security.Cryptography;
     using System.Text;
-    using LoRaWan.NetworkServer.BasicsStation;
+    using BasicsStation;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
-    internal sealed class ConcentratorDeduplication : IConcentratorDeduplication, IDisposable
+    internal sealed class ConcentratorDeduplication<T> : IConcentratorDeduplication<T>, IDisposable
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
         private readonly IMemoryCache cache;
         private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
-        private readonly ILogger<IConcentratorDeduplication> logger;
+        private readonly ILogger<IConcentratorDeduplication<T>> logger;
 
         [ThreadStatic]
         private static SHA256? sha256;
@@ -29,18 +29,18 @@ namespace LoRaWan.NetworkServer
         public ConcentratorDeduplication(
             IMemoryCache cache,
             WebSocketWriterRegistry<StationEui, string> socketRegistry,
-            ILogger<IConcentratorDeduplication> logger)
+            ILogger<IConcentratorDeduplication<T>> logger)
         {
             this.cache = cache;
             this.socketRegistry = socketRegistry;
             this.logger = logger;
         }
 
-        public bool ShouldDrop(UpstreamDataFrame updf, StationEui stationEui)
+        public bool ShouldDrop(T frame, StationEui stationEui)
         {
-            if (updf == null) throw new ArgumentNullException(nameof(updf));
+            if (frame == null) throw new ArgumentNullException(nameof(frame));
 
-            var key = CreateCacheKey(updf);
+            var key = CreateCacheKey(frame);
 
             StationEui previousStation;
             lock (this.cache)
@@ -71,7 +71,29 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        internal static string CreateCacheKey(UpstreamDataFrame updf)
+        internal static string CreateCacheKey(T message)
+        {
+            _ = message ?? throw new ArgumentNullException(nameof(message));
+
+            if (message.GetType() == typeof(UpstreamDataFrame))
+            {
+                var updf = message as UpstreamDataFrame;
+                _ = updf ?? throw new ArgumentException($"Data frame {updf} not well formed");
+                return CreateCacheKeyCore(updf);
+            }
+
+            if (message.GetType() == typeof(JoinRequestFrame))
+
+            {
+                var joinReq = message as JoinRequestFrame;
+                _ = joinReq ?? throw new ArgumentException($"Join request {joinReq} not well formed");
+                return CreateCacheKeyCore(joinReq);
+            }
+
+            throw new ArgumentException($"{message} not of proper type");
+        }
+
+        private static string CreateCacheKeyCore(UpstreamDataFrame updf)
         {
             var totalBufferLength = DevAddr.Size + Mic.Size + updf.Payload.Length + sizeof(ushort);
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
@@ -86,12 +108,29 @@ namespace LoRaWan.NetworkServer
             return BitConverter.ToString(key);
         }
 
+        private static string CreateCacheKeyCore(JoinRequestFrame joinReq)
+        {
+            var totalBufferLength = JoinEui.Size + DevEui.Size + DevNonce.Size;
+            Span<byte> buffer = stackalloc byte[totalBufferLength];
+            var head = buffer; // keeps a view pointing at the start of the buffer
+            buffer = joinReq.JoinEui.Write(buffer);
+            buffer = joinReq.DevEui.Write(buffer);
+            buffer = joinReq.DevNonce.Write(buffer);
+
+            var key = Sha256.ComputeHash(head.ToArray());
+
+            return BitConverter.ToString(key);
+        }
+
         private void AddToCache(string key, StationEui stationEui)
             => this.cache.Set(key, stationEui, new MemoryCacheEntryOptions()
             {
                 SlidingExpiration = DefaultExpiration
             });
 
-        public void Dispose() => this.cache.Dispose();
+        public void Dispose()
+        {
+            this.cache.Dispose();
+        }
     }
 }
