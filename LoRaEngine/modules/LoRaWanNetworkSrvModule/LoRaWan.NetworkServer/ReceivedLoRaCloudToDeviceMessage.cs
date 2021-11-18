@@ -36,12 +36,9 @@ namespace LoRaWan.NetworkServer
                 {
                     return Convert.FromBase64String(RawPayload);
                 }
-                catch (FormatException ex)
+                catch (FormatException)
                 {
                     // Invalid base64 string, return empty payload
-#pragma warning disable CS0618 // Type or member is obsolete (https://github.com/Azure/iotedge-lorawan-starterkit/issues/456)
-                    StaticLogger.Log($"Payload '{RawPayload}' is not a valid base64 value: {ex.Message}", LogLevel.Error);
-#pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
 

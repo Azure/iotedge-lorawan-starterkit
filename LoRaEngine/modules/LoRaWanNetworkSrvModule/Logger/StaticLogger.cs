@@ -13,9 +13,6 @@ namespace LoRaWan
 
         private static readonly ILogSink sink = new ConsoleLogSink(LogLevel.Error);
 
-        public static void Log(string message, LogLevel logLevel) =>
-            sink?.Log(message, logLevel);
-
         public static void Log(string deviceId, string message, LogLevel logLevel) =>
             sink?.Log(deviceId, message, logLevel);
     }
