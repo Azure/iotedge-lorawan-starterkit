@@ -1279,13 +1279,6 @@
 </thead>
 <tbody>
 <tr>
-<td>MessageDeliveryLatency</td>
-<td>Time from when we received the message from the concentrator until we are done processing it - including downstream send.</td>
-<td>LNS</td>
-<td>LoRaWan</td>
-<td>Gateway Id</td>
-</tr>
-<tr>
 <td>RxWndRate</td>
 <td>Number of times we hit the different receive windows.</td>
 <td>LNS</td>
@@ -1321,50 +1314,98 @@
 <td>Gateway Id</td>
 </tr>
 <tr>
+<td>StationConnectivityLost</td>
+<td>Connection to LBS lost</td>
+<td>LNS</td>
+<td>LoRaWan</td>
+<td>Gateway Id</td>
+</tr>
+<tr>
+<td>ActiveStationConnections</td>
+<td>Active connections to stations</td>
+<td>LNS</td>
+<td>LoRaWan</td>
+<td>Gateway Id</td>
+</tr>
+<tr>
 <td>D2CMessagesReceived</td>
 <td>Number of messages received from device</td>
 <td>LNS</td>
 <td>LoRaWan</td>
-<td>Gateway Id, Device Id</td>
+<td>Gateway Id</td>
+</tr>
+<tr>
+<td>D2CMessageDeliveryLatency</td>
+<td>Time from when we received the message from the concentrator until we are done processing it</td>
+<td>LNS</td>
+<td>LoRaWan</td>
+<td>Gateway Id</td>
 </tr>
 <tr>
 <td>D2CMessagesDelivered</td>
 <td>Number of messages sent to upstream</td>
 <td>LNS</td>
 <td>LoRaWan</td>
-<td>Gateway Id, Device Id, To</td>
+<td>Gateway Id, To</td>
 </tr>
 <tr>
 <td>D2CMessagesError</td>
 <td>Number of errors in sending messages to upstream</td>
 <td>LNS</td>
 <td>LoRaWan</td>
-<td>Gateway Id, Device Id, To</td>
+<td>Gateway Id, To</td>
 </tr>
 <tr>
 <td>D2CMessagesProcessingError</td>
 <td>Number of errors processing (decoding, decrypting) messages</td>
 <td>LNS</td>
 <td>LoRaWan</td>
-<td>Gateway Id, Device Id, To</td>
+<td>Gateway Id, To</td>
 </tr>
 <tr>
 <td>D2CMessageSize</td>
 <td>Message size in bytes received from device</td>
 <td>LNS</td>
 <td>LoRaWan</td>
-<td>Gateway Id, Device Id</td>
+<td>Gateway Id</td>
 </tr>
 <tr>
 <td>D2CMessageSizeUpstream</td>
 <td>Message size in bytes sent upstream</td>
 <td>LNS</td>
 <td>LoRaWan</td>
-<td>Gateway Id, Device Id, To</td>
+<td>Gateway Id, To</td>
+</tr>
+<tr>
+<td>C2DMessagesAbandoned</td>
+<td>Number of C2D messages abandoned</td>
+<td>LNS</td>
+<td>LoRaWan</td>
+<td>Gateway Id</td>
+</tr>
+<tr>
+<td>C2DMessagesDelivered</td>
+<td>Number of messages sent downstream</td>
+<td>LNS</td>
+<td>LoRaWan</td>
+<td>Gateway Id, To</td>
+</tr>
+<tr>
+<td>C2DMessagesError</td>
+<td>Number of errors in sending messages to downstream</td>
+<td>LNS</td>
+<td>LoRaWan</td>
+<td>Gateway Id, To</td>
+</tr>
+<tr>
+<td>C2DMessageSizeDownstream</td>
+<td>Message size in bytes sent downstream</td>
+<td>LNS</td>
+<td>LoRaWan</td>
+<td>Gateway Id, To</td>
 </tr>
 </tbody>
 </table>
-<p>Equivalent metrics should be added for cloud to device messages.</p>
 <h3 id="alerts">Alerts</h3>
 <p>We support the following alerts when the user opts in to use Application Insights.</p>
 <table>
@@ -1378,33 +1419,39 @@
 </thead>
 <tbody>
 <tr>
-<td>HighDeviceLastSeenTime</td>
-<td>Alerts when high device last seen time (coverage/availability, freshness). Might not be easy due to throttling of logs, maybe omit in the beginning.</td>
-<td>D2CMessagesReceived metric</td>
-<td>Dynamic</td>
-</tr>
-<tr>
-<td>LowDeviceUpstreamMessageFrequency</td>
-<td>Alerts when low device upstream message frequency detected (messages per min) (freshness, throughput)</td>
-<td>D2CMessagesDelivered metric</td>
-<td>Dynamic</td>
-</tr>
-<tr>
-<td>HighDeviceMessageLatency</td>
+<td>HighUpstreamMessageLatency</td>
 <td>High device message processing time (throughput)</td>
-<td>MessageDeliveryLatency</td>
+<td>D2CMessageDeliveryLatency</td>
 <td>Dynamic</td>
 </tr>
 <tr>
-<td>HighDeviceMessageErrorRatio</td>
+<td>HighUpstreamMessageErrorRatio</td>
 <td>High device messages error ratio (correctness)</td>
 <td>D2CMessagesError</td>
 <td>Dynamic</td>
 </tr>
 <tr>
-<td>HighDeviceMessagesLostRatio</td>
+<td>HighUpstreamMessagesLostRatio</td>
 <td>High device messages lost ratio (correctness, throughput)</td>
 <td>D2CMessagesReceived/D2CMessagesDelivered</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td>HighDownstreamMessageLatency</td>
+<td>High device message processing time (throughput)</td>
+<td>RxWndMiss</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td>HighDownstreamMessageErrorRatio</td>
+<td>High device messages error ratio (correctness)</td>
+<td>D2CMessagesError</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td>HighDownstreamMessagesLostRatio</td>
+<td>High device messages lost ratio (correctness, throughput)</td>
+<td>C2DMessagesAbandoned</td>
 <td>Dynamic</td>
 </tr>
 </tbody>
