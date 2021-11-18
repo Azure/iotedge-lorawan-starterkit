@@ -19,10 +19,10 @@ namespace Logger
     {
         private readonly ConcurrentDictionary<string, TcpLogger> loggers = new();
         private readonly ILogSink logSink;
-        private readonly LoggerConfiguration configuration;
+        private readonly TcpLoggerConfiguration configuration;
         private readonly IExternalScopeProvider externalScopeProvider = new LoggerExternalScopeProvider();
 
-        public TcpLoggerProvider(ILogSink logSink, LoggerConfiguration loggerConfiguration)
+        public TcpLoggerProvider(ILogSink logSink, TcpLoggerConfiguration loggerConfiguration)
         {
             this.configuration = loggerConfiguration;
             this.logSink = logSink;
@@ -53,11 +53,11 @@ namespace Logger
     {
         private readonly string categoryName;
         private readonly ILogSink logSink;
-        private readonly LoggerConfiguration loggerConfiguration;
+        private readonly TcpLoggerConfiguration loggerConfiguration;
 
         public TcpLogger(string categoryName,
                          ILogSink logSink,
-                         LoggerConfiguration loggerConfiguration)
+                         TcpLoggerConfiguration loggerConfiguration)
         {
             this.categoryName = categoryName;
             this.logSink = logSink;
@@ -90,7 +90,7 @@ namespace Logger
 
     public static class LoRaConsoleLoggerExtensions
     {
-        public static ILoggingBuilder AddTcpLogger(this ILoggingBuilder builder, LoggerConfiguration configuration)
+        public static ILoggingBuilder AddTcpLogger(this ILoggingBuilder builder, TcpLoggerConfiguration configuration)
         {
             _ = builder ?? throw new ArgumentNullException(nameof(builder));
 
@@ -101,15 +101,14 @@ namespace Logger
             return builder;
         }
 
-        private static ILogSink Init(LoggerConfiguration configuration, ILogger<TcpLogSink>? tcpLogSinkLogger = null)
+        private static ILogSink Init(TcpLoggerConfiguration configuration, ILogger<TcpLogSink>? tcpLogSinkLogger = null)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             IPEndPoint? endPoint = null;
 
 #pragma warning disable format
-            if (configuration is { LogToTcp       : true,
-                                   LogToTcpAddress: { Length: > 0 } address,
+            if (configuration is { LogToTcpAddress: { Length: > 0 } address,
                                    LogToTcpPort   : var port and > 0 })
 #pragma warning restore format
             {

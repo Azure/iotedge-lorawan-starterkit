@@ -7,30 +7,29 @@ namespace LoRaWan
     using Microsoft.Extensions.Logging;
 
     // Defines the logger configuration
-    public class LoggerConfiguration
+    public class TcpLoggerConfiguration
     {
-        // Gets/sets if logging to console is enabled
-        // Default: true
-        public bool LogToConsole { get; set; } = true;
+        public TcpLoggerConfiguration(LogLevel logLevel, string logToTcpAddress, int logToTcpPort, string gatewayId)
+        {
+            LogLevel = logLevel;
+            LogToTcpAddress = logToTcpAddress;
+            LogToTcpPort = logToTcpPort;
+            GatewayId = gatewayId;
+        }
 
-        // Gets/sets the logging level
-        // Default: 4 (Error)
-        public LogLevel LogLevel { get; set; } = LogLevel.Error;
+        // Gets the logging level
+        public LogLevel LogLevel { get; }
 
-        // Gets/sets if logging to TCP is enabled (used for integration tests mainly)
-        // Default: false
-        public bool LogToTcp { get; set; }
-
-        // Gets/sets TCP address to send log
-        public string LogToTcpAddress { get; set; }
+        // Gets TCP address to send log
+        public string LogToTcpAddress { get; }
 
         // Gets/sets TCP port to send logs
-        public int LogToTcpPort { get; set; } = 6000;
+        public int LogToTcpPort { get; }
 
         /// <summary>
         /// Gets or sets the id of the gateway running the logger.
         /// </summary>
-        public string GatewayId { get; set; }
+        public string GatewayId { get; }
 
         public static LogLevel InitLogLevel(string logLevelIn)
         {

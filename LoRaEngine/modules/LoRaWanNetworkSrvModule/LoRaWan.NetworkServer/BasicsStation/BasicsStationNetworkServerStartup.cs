@@ -47,15 +47,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
                             if (NetworkServerConfiguration.LogToTcp)
                             {
-                                _ = loggingBuilder.AddTcpLogger(new LoggerConfiguration
-                                {
-                                    LogLevel = LoggerConfiguration.InitLogLevel(NetworkServerConfiguration.LogLevel),
-                                    LogToConsole = NetworkServerConfiguration.LogToConsole,
-                                    LogToTcp = NetworkServerConfiguration.LogToTcp,
-                                    LogToTcpPort = NetworkServerConfiguration.LogToTcpPort,
-                                    LogToTcpAddress = NetworkServerConfiguration.LogToTcpAddress,
-                                    GatewayId = NetworkServerConfiguration.GatewayID
-                                });
+                                _ = loggingBuilder.AddTcpLogger(new TcpLoggerConfiguration(TcpLoggerConfiguration.InitLogLevel(NetworkServerConfiguration.LogLevel),
+                                                                                           NetworkServerConfiguration.LogToTcpAddress,
+                                                                                           NetworkServerConfiguration.LogToTcpPort,
+                                                                                           NetworkServerConfiguration.GatewayID));
                             }
 
                             if (useApplicationInsights)

@@ -6,7 +6,6 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
-    using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using StackExchange.Redis;
