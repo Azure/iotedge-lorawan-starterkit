@@ -293,9 +293,6 @@ namespace LoRaTools.Regions
                 rxpk.Freq > RegionLimits.FrequencyRange.max ||
                 !RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
             {
-#pragma warning disable CS0618 // Type or member is obsolete (https://github.com/Azure/iotedge-lorawan-starterkit/issues/456)
-                StaticLogger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
-#pragma warning restore CS0618 // Type or member is obsolete
                 return false;
             }
 
