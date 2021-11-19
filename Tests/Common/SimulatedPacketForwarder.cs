@@ -94,14 +94,14 @@ namespace LoRaWan.Tests.Common
             this.listenerTask = Task.Run(async () => await ListenAsync(this.cancellationTokenSource.Token));
         }
 
-        private async Task ListenAsync(CancellationToken cts)
+        private async Task ListenAsync(CancellationToken cancellationToken)
         {
             try
             {
                 var currentToken = new byte[2];
-                while (!cts.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    var receivedResults = await this.udpClient.ReceiveAsync(cts);
+                    var receivedResults = await this.udpClient.ReceiveAsync(cancellationToken);
 
                     // If 4, it may mean we received a confirmation
                     if (receivedResults.Buffer.Length >= 4)
