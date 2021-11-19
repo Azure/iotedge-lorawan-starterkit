@@ -97,7 +97,10 @@ namespace LoRaWan.NetworkServer
             var loRaPayload = (LoRaPayloadData)request.Payload;
             if (!IsValidNetId(loRaPayload))
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})", LogLevel.Debug);
+                if (Logger.LoggerLevel <= LogLevel.Debug)
+                {
+                    Logger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})", LogLevel.Debug);
+                }
                 request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidNetId);
                 return;
             }

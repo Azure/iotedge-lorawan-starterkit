@@ -320,7 +320,10 @@ namespace LoRaWan.NetworkServer
             switch (failedReason)
             {
                 case LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck:
-                    Logger.Log(deviceId, $"with devAddr {ConversionHelper.ByteArrayToString(request.Payload.DevAddr)} check MIC failed", LogLevel.Debug);
+                    if (Logger.LoggerLevel <= LogLevel.Debug)
+                    {
+                        Logger.Log(deviceId, $"with devAddr {ConversionHelper.ByteArrayToString(request.Payload.DevAddr)} check MIC failed", LogLevel.Debug);
+                    }
                     break;
 
                 case LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr:
