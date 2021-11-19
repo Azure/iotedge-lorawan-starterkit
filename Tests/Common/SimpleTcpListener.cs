@@ -37,8 +37,8 @@ namespace LoRaWan.Tests.Common
                                               ILogger<SimpleTcpListener>? logger = null)
         {
             var listener = TcpListener.Create(port);
-            if (backlog is { } someBackLog)
-                listener.Start(someBackLog);
+            if (backlog is { } someBacklog)
+                listener.Start(someBacklog);
             else
                 listener.Start();
             _ = ListenAsync();
