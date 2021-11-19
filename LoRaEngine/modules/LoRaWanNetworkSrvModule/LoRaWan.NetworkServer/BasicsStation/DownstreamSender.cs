@@ -15,7 +15,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
     internal class DownstreamSender : IPacketForwarder
     {
-        private static readonly Action<ILogger, StationEui, string, Exception> logSendingMessage =
+        private static readonly Action<ILogger, StationEui, string, Exception> LogSendingMessage =
             LoggerMessage.Define<StationEui, string>(LogLevel.Debug, default,
                                                      "Sending message to station with EUI '{StationEui}'. Payload '{Payload}'.");
 
@@ -44,7 +44,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             {
                 var region = await this.basicsStationConfigurationService.GetRegionAsync(message.StationEui, CancellationToken.None);
                 var payload = Message(message, region);
-                logSendingMessage(this.logger, message.StationEui, message.Txpk.Data, null);
+                LogSendingMessage(this.logger, message.StationEui, message.Txpk.Data, null);
                 await webSocketWriterHandle.SendAsync(payload, CancellationToken.None);
             }
             else

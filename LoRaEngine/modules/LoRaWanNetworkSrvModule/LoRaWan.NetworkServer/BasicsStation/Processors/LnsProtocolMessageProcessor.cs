@@ -22,7 +22,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
     internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
-        private static readonly Action<ILogger, string, string, Exception> logReceivedMessage =
+        private static readonly Action<ILogger, string, string, Exception> LogReceivedMessage =
             LoggerMessage.Define<string, string>(LogLevel.Information, default, "Received '{Type}' message: '{Json}'.");
 
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
@@ -184,7 +184,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     await socket.SendAsync(routerConfigResponse, cancellationToken);
                     break;
                 case LnsMessageType.JoinRequest:
-                    logReceivedMessage(this.logger, "jreq", json, null);
+                    LogReceivedMessage(this.logger, "jreq", json, null);
                     try
                     {
                         var jreq = LnsData.JoinRequestFrameReader.Read(json);
@@ -208,7 +208,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     }
                     break;
                 case LnsMessageType.UplinkDataFrame:
-                    logReceivedMessage(this.logger, "updf", json, null);
+                    LogReceivedMessage(this.logger, "updf", json, null);
                     try
                     {
                         var updf = LnsData.UpstreamDataFrameReader.Read(json);
@@ -240,7 +240,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     }
                     break;
                 case LnsMessageType.TransmitConfirmation:
-                    logReceivedMessage(this.logger, "dntxed", json, null);
+                    LogReceivedMessage(this.logger, "dntxed", json, null);
                     break;
                 case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
                     throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
