@@ -50,9 +50,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             {
                 LogLevel = LoggerConfiguration.InitLogLevel(networkServerConfiguration.LogLevel),
                 LogToConsole = networkServerConfiguration.LogToConsole,
-                LogToUdp = networkServerConfiguration.LogToUdp,
-                LogToUdpPort = networkServerConfiguration.LogToUdpPort,
-                LogToUdpAddress = networkServerConfiguration.LogToUdpAddress,
+                LogToTcp = networkServerConfiguration.LogToTcp,
+                LogToTcpPort = networkServerConfiguration.LogToTcpPort,
+                LogToTcpAddress = networkServerConfiguration.LogToTcpAddress,
                 GatewayId = networkServerConfiguration.GatewayID
             });
 

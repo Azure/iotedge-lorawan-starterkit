@@ -16,6 +16,7 @@
       <MicrosoftAzureFunctionsExtensionsVersion>1.0.0</MicrosoftAzureFunctionsExtensionsVersion>
       <MicrosoftExtensionsDependencyInjectionVersion>3.1.5</MicrosoftExtensionsDependencyInjectionVersion>
       <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>3.1.5</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+      <MicrosoftExtensionsPrimitivesVersion>3.1.21</MicrosoftExtensionsPrimitivesVersion>
       <MicrosoftNETSdkFunctionsVersion>3.0.13</MicrosoftNETSdkFunctionsVersion>
       <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
       <PortableBouncyCastleVersion>1.8.10</PortableBouncyCastleVersion>

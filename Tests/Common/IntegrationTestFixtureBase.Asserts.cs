@@ -103,19 +103,13 @@ namespace LoRaWan.Tests.Common
                 new SearchLogOptions(string.Concat(logMessageStart1, " or ", logMessageStart2)));
         }
 
-        public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null)
-        {
-            SearchLogResult searchResult;
-            if (this.udpLogListener != null)
-                searchResult = await SearchUdpLogs(predicate, options);
-            else
-                searchResult = await SearchIoTHubLogs(predicate, options);
-
-            return searchResult;
-        }
+        public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null) =>
+            this.tcpLogListener != null
+                ? await SearchTcpLogs(predicate, options)
+                : await SearchIoTHubLogs(predicate, options);
 
         /// <summary>
-        /// Searches the UDP log, matching the passed in predicate to
+        /// Searches the TCP log, matching the passed in predicate to
         /// ensure a particular message got reported by all gateways.
         /// The number of gateways can be driven by configuration.
         /// <see cref="TestConfiguration.NumberOfGateways"/>.
@@ -135,7 +129,7 @@ namespace LoRaWan.Tests.Common
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in this.udpLogListener.Events)
+                foreach (var item in this.tcpLogListener.Events)
                 {
                     var (message, sourceId) = SearchLogEvent.Parse(item);
                     if (predicate(message))
@@ -168,7 +162,7 @@ namespace LoRaWan.Tests.Common
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in this.udpLogListener.Events)
+                foreach (var item in this.tcpLogListener.Events)
                 {
                     var (message, sourceId) = SearchLogEvent.Parse(item);
                     if (predicate(message))
@@ -234,11 +228,9 @@ namespace LoRaWan.Tests.Common
             if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
                 return null;
 
-            SearchLogResult searchResult;
-            if (this.udpLogListener != null)
-                searchResult = await SearchUdpLogs(predicate, options);
-            else
-                searchResult = await SearchIoTHubLogs(predicate, options);
+            var searchResult = this.tcpLogListener != null
+                ? await SearchTcpLogs(predicate, options)
+                : await SearchIoTHubLogs(predicate, options);
 
             if (!searchResult.Found)
             {
@@ -292,7 +284,7 @@ namespace LoRaWan.Tests.Common
             }
             else
             {
-                log = await SearchUdpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchTcpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
             }
 
             var timeIndexStart = log.FoundLogResult.IndexOf(token, StringComparison.Ordinal) + token.Length;
@@ -314,7 +306,7 @@ namespace LoRaWan.Tests.Common
             };
         }
 
-        private async Task<SearchLogResult> SearchUdpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchTcpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
@@ -325,11 +317,11 @@ namespace LoRaWan.Tests.Common
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
                     if (!string.IsNullOrEmpty(options?.Description))
                     {
-                        TestLogger.Log($"UDP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"TCP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     else
                     {
-                        TestLogger.Log($"UDP log message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"TCP log message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
@@ -337,7 +329,7 @@ namespace LoRaWan.Tests.Common
 
                 var sourceIdFilter = options?.SourceIdFilter;
 
-                foreach (var item in this.udpLogListener.Events)
+                foreach (var item in this.tcpLogListener.Events)
                 {
                     var searchLogEvent = new SearchLogEvent(item);
                     processedEvents.Add(searchLogEvent);
@@ -359,9 +351,9 @@ namespace LoRaWan.Tests.Common
             return new SearchLogResult(false, processedEvents);
         }
 
-        private async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchTcpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
         {
-            return await SearchUdpLogs(evt => predicate(evt.Message), options);
+            return await SearchTcpLogs(evt => predicate(evt.Message), options);
         }
 
         private async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
