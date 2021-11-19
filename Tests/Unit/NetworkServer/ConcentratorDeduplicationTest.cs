@@ -88,13 +88,32 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void CreateKeyMethod_Should_Produce_Expected_Key()
+        public void CreateKeyMethod_Should_Produce_Expected_Key_For_UpstreamDataFrames()
         {
             // arrange
             var expectedKey = "43-E3-69-8D-70-E2-50-77-06-01-63-D1-DD-74-ED-E0-B5-BA-3B-54-09-FB-88-B3-B9-DB-6D-97-68-01-97-52";
 
             // act/assert
             Assert.Equal(expectedKey, ConcentratorDeduplication<UpstreamDataFrame>.CreateCacheKey(defaultUpdf));
+        }
+
+        [Fact]
+        public void CreateKeyMethod_Should_Produce_Expected_Key_For_JoinRequests()
+        {
+            // arrange
+            var joinReq = new JoinRequestFrame(default, default, default, default, default, default);
+
+            var expectedKey = "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4";
+
+            // act/assert
+            Assert.Equal(expectedKey, ConcentratorDeduplication<JoinRequestFrame>.CreateCacheKey(joinReq));
+        }
+
+        [Fact]
+        public void CreateKeyMethod_Should_Throw_When_Used_With_Wrong_Type()
+        {
+            // act/assert
+            Assert.Throws<ArgumentException>(() => ConcentratorDeduplication<object>.CreateCacheKey(new object()));
         }
 
         public void Dispose() => this.concentratorDeduplication.Dispose();
