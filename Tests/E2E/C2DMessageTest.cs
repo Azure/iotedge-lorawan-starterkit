@@ -513,10 +513,10 @@ namespace LoRaWan.Tests.E2E
             var foundC2DMessageCount = 0;
             var foundReceivePacketCount = 0;
             var expectedRxSerial = $"+MSG: PORT: 1; RX: \"{ToHexString(c2dMessageBody)}\"";
-            var expectedUDPMessageV1 = $"{device.DevAddr}: ConfirmedDataDown";
-            var expectedUDPMessageV2 = $"{device.DeviceID}: cloud to device message: {ToHexString(c2dMessageBody)}, id: {msgId}, fport: 1, confirmed: True";
+            var expectedTcpMessageV1 = $"{device.DevAddr}: ConfirmedDataDown";
+            var expectedTcpMessageV2 = $"{device.DeviceID}: cloud to device message: {ToHexString(c2dMessageBody)}, id: {msgId}, fport: 1, confirmed: True";
             Log($"Expected C2D received log is: {expectedRxSerial}");
-            Log($"Expected UDP log starting with: {expectedUDPMessageV1} or {expectedUDPMessageV2}");
+            Log($"Expected TCP log starting with: {expectedTcpMessageV1} or {expectedTcpMessageV2}");
 
             // Sends 8x unconfirmed messages, stopping if C2D message is found
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
@@ -533,11 +533,11 @@ namespace LoRaWan.Tests.E2E
                 var searchResults = await TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) =>
                     {
-                        return messageBody.StartsWith(expectedUDPMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedUDPMessageV2, StringComparison.OrdinalIgnoreCase);
+                        return messageBody.StartsWith(expectedTcpMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedTcpMessageV2, StringComparison.OrdinalIgnoreCase);
                     },
                     new SearchLogOptions
                     {
-                        Description = $"{expectedUDPMessageV1} or {expectedUDPMessageV2}",
+                        Description = $"{expectedTcpMessageV1} or {expectedTcpMessageV2}",
                         MaxAttempts = 1
                     });
 
@@ -562,7 +562,7 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
 
-            Assert.True(foundC2DMessageCount > 0, $"Did not find {expectedUDPMessageV1} or {expectedUDPMessageV2} in logs");
+            Assert.True(foundC2DMessageCount > 0, $"Did not find {expectedTcpMessageV1} or {expectedTcpMessageV2} in logs");
 
             // checks if log arrived
             if (foundReceivePacketCount == 0)
@@ -630,10 +630,10 @@ namespace LoRaWan.Tests.E2E
             var foundReceivePacketInRX2Count = 0;
             var expectedRxSerial1 = $"+MSG: PORT: 1; RX: \"{ToHexString(c2dMessageBody)}\"";
             var expectedRxSerial2 = $"+MSG: RXWIN2";
-            var expectedUDPMessageV1 = $"{device.DevAddr}: ConfirmedDataDown";
-            var expectedUDPMessageV2 = $"{device.DeviceID}: cloud to device message: {ToHexString(c2dMessageBody)}, id: {msgId}, fport: 1, confirmed: True";
+            var expectedTcpMessageV1 = $"{device.DevAddr}: ConfirmedDataDown";
+            var expectedTcpMessageV2 = $"{device.DeviceID}: cloud to device message: {ToHexString(c2dMessageBody)}, id: {msgId}, fport: 1, confirmed: True";
             Log($"Expected C2D received log is: {expectedRxSerial1} and {expectedRxSerial2}");
-            Log($"Expected UDP log starting with: {expectedUDPMessageV1} or {expectedUDPMessageV2}");
+            Log($"Expected TCP log starting with: {expectedTcpMessageV1} or {expectedTcpMessageV2}");
 
             // Sends 8x confirmed messages, stopping if C2D message is found
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
@@ -650,11 +650,11 @@ namespace LoRaWan.Tests.E2E
                 var searchResults = await TestFixture.SearchNetworkServerModuleAsync(
                     (messageBody) =>
                     {
-                        return messageBody.StartsWith(expectedUDPMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedUDPMessageV2, StringComparison.OrdinalIgnoreCase);
+                        return messageBody.StartsWith(expectedTcpMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedTcpMessageV2, StringComparison.OrdinalIgnoreCase);
                     },
                     new SearchLogOptions
                     {
-                        Description = $"{expectedUDPMessageV1} or {expectedUDPMessageV2}",
+                        Description = $"{expectedTcpMessageV1} or {expectedTcpMessageV2}",
                         MaxAttempts = 1,
                     });
 
@@ -691,7 +691,7 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
 
-            Assert.True(foundC2DMessageCount > 0, $"Did not find {expectedUDPMessageV1} or {expectedUDPMessageV2} in logs");
+            Assert.True(foundC2DMessageCount > 0, $"Did not find {expectedTcpMessageV1} or {expectedTcpMessageV2} in logs");
 
             // checks if serial received the message
             if (foundReceivePacketCount == 0)
