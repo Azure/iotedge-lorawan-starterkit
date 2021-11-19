@@ -46,7 +46,7 @@ Configure LoRa Basics Station and Network Server to run on your concentrator:
         ```bash
         NET_SRV_LOG_LEVEL=1
         NET_SRV_LOGTO_HUB=true
-        NET_SRV_LOGTO_TCP=true
+        NET_SRV_LOG_TO_TCP=true
         NET_SRV_LOG_TO_TCP_ADDRESS=<your-local-ip-address>
         ```
 
