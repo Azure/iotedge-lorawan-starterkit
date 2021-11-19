@@ -74,16 +74,12 @@ namespace LoRaWan.NetworkServer
         }
 
         internal static string CreateCacheKey(T message)
-        {
-            _ = message ?? throw new ArgumentNullException(nameof(message));
-
-            return message switch
+            => message switch
             {
                 UpstreamDataFrame asDataFrame => CreateCacheKeyCore(asDataFrame),
                 JoinRequestFrame asJoinRequestFrame => CreateCacheKeyCore(asJoinRequestFrame),
                 _ => throw new ArgumentException($"{message} not of proper type")
             };
-        }
 
         private static string CreateCacheKeyCore(UpstreamDataFrame updf)
         {
@@ -107,7 +103,10 @@ namespace LoRaWan.NetworkServer
             var head = buffer; // keeps a view pointing at the start of the buffer
             buffer = joinReq.JoinEui.Write(buffer);
             buffer = joinReq.DevEui.Write(buffer);
-            buffer = joinReq.DevNonce.Write(buffer);
+#pragma warning disable IDE0058
+            // assigning to a discard results in compilation error CS8347
+            joinReq.DevNonce.Write(buffer);
+#pragma warning restore
 
             var key = Sha256.ComputeHash(head.ToArray());
 
@@ -120,9 +119,6 @@ namespace LoRaWan.NetworkServer
                 SlidingExpiration = DefaultExpiration
             });
 
-        public void Dispose()
-        {
-            this.cache.Dispose();
-        }
+        public void Dispose() => this.cache.Dispose();
     }
 }
