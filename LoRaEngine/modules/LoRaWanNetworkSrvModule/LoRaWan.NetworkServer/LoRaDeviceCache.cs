@@ -111,11 +111,11 @@ namespace LoRaWan.NetworkServer
         {
             lock (this.syncLock)
             {
-                return TryGetByDevEui(devEui, out var device) && Remove(device!);
+                return TryGetByDevEui(devEui, out var device) && Remove(device);
             }
         }
 
-        public bool Remove(LoRaDevice loRaDevice)
+        public virtual bool Remove(LoRaDevice loRaDevice)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 

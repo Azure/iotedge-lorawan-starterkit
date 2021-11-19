@@ -38,11 +38,6 @@ namespace LoRaWan.NetworkServer
 
                 try
                 {
-                    if (this.deviceCache.TryGetByDevEui(this.ioTHubDevice.DevEUI, out var cachedDevice))
-                    {
-                        return cachedDevice;
-                    }
-
                     return await this.deviceFactory.CreateAndRegisterAsync(this.ioTHubDevice, CancellationToken.None);
                 }
                 finally

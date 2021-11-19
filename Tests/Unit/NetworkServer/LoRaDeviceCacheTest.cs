@@ -34,11 +34,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await Assert.ThrowsAsync<OperationCanceledException>(() => cache.WaitForRefreshAsync(cts.Token));
         }
 
+
+        [Fact]
+        public async Task When_Device_Inactive_It_Is_Removed()
+        {
+            var options = this.quickRefreshOptions;
+            options.MaxUnobservedLifetime = TimeSpan.FromMilliseconds(1);
+
+            using var cache = new TestDeviceCache(this.quickRefreshOptions);
+            using var device = new LoRaDevice("abc", "123", null) { LastSeen = DateTime.UtcNow };
+            cache.Register(device);
+            using var cts = new CancellationTokenSource(this.quickRefreshOptions.ValidationInterval * 2);
+            await cache.WaitForRemoveAsync(cts.Token);
+
+            Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
+        }
+
         private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
 
         private class TestDeviceCache : LoRaDeviceCache
         {
             private readonly SemaphoreSlim refreshTick = new SemaphoreSlim(0);
+            private readonly SemaphoreSlim removeTick = new SemaphoreSlim(0);
             private readonly Action<LoRaDevice> onRefreshDevice;
 
             public int RefreshCount { get; private set; }
@@ -63,10 +80,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
             }
 
-            internal async Task WaitForRefreshAsync(CancellationToken cancellationToken)
-            {
+            internal async Task WaitForRefreshAsync(CancellationToken cancellationToken) => 
                 await this.refreshTick.WaitAsync(cancellationToken);
-            }
+
+            internal async Task WaitForRemoveAsync(CancellationToken cancellationToken) =>
+                await this.removeTick.WaitAsync(cancellationToken);
+
 
             protected override Task RefreshDeviceAsync(LoRaDevice device, CancellationToken cancellationToken)
             {
@@ -79,11 +98,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 return Task.CompletedTask;
             }
 
+            public override bool Remove(LoRaDevice loRaDevice)
+            {
+                if (this.removeTick.CurrentCount == 0)
+                    this.removeTick.Release();
+
+                var ret = base.Remove(loRaDevice);
+
+                return ret;
+            }
+
             protected override void Dispose(bool dispose)
             {
                 if (dispose)
                 {
                     this.refreshTick.Dispose();
+                    this.removeTick.Dispose();
                 }
                 base.Dispose(dispose);
             }

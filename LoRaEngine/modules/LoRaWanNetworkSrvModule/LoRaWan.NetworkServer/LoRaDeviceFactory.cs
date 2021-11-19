@@ -42,7 +42,6 @@ namespace LoRaWan.NetworkServer
 
         private async Task<LoRaDevice> RegisterCoreAsync(IoTHubDeviceInfo deviceInfo, CancellationToken cancellationToken)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope, ownership is transferred to the cache
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
@@ -60,7 +59,6 @@ namespace LoRaWan.NetworkServer
                 // changes.
                 // Ownership is transferred to connection manager.
                 this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
-#pragma warning restore CA2000 // Dispose objects before losing scope
 
                 loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
