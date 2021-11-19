@@ -22,9 +22,12 @@ namespace LoRaWan.Tests.Integration
     /// <summary>
     /// These tests test the integration between <see cref="LnsProtocolMessageProcessor"/> and <see cref="ConcentratorDeduplication"/>.
     /// </summary>
-    public sealed class LnsProtocolMessageProcessorConcentratorDeduplicationIntegrationTests : IDisposable
+    public sealed class LnsProtocolMessageProcessorConcentratorDeduplicationIntegrationTests
+        : IAsyncLifetime
     {
         private IHost testHost;
+
+        public Task InitializeAsync() => Task.CompletedTask;
 
         private async Task CreateTestHostAsync(Mock<IMessageDispatcher> messageDispatcherMock)
         {
@@ -109,9 +112,9 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(expected, dispatcherCounter);
         }
 
-        public void Dispose()
+        public async Task DisposeAsync()
         {
-            _ = this.testHost?.StopAsync();
+            await this.testHost?.StopAsync();
             this.testHost?.Dispose();
         }
     }
