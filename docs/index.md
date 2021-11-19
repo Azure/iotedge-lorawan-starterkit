@@ -93,7 +93,7 @@ and deploy the kit in your dev environment. We also support a
 developed the LoRaWAN starter kit agnostic of a device manufacturer
 implementation and focussed on the specifics on underlying architectures
 (arm, x86). However, we understand that device manufacturers can have specific
-requirements; these could be specific to a gateway and the packet forwarders
+requirements; these could be specific to a gateway and the basic station
 they use or to the LoRa nodes and the decoders the device may use. We have
 provided specific instructions on making these specialized hardware compatible
 with our kit. You can follow these [instructions](user-guide/partner.md) depending on

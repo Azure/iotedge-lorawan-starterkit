@@ -11,7 +11,7 @@ If you'd rather deploy it manually please jump directly into the [do it yourself
 
 The template supports x86 and ARM architectures and will automatically deploy the correct version to your gateway. Make sure to provide your gateway's reset pin in the dialog before the deployment.
 
-Additionally, if your gateway use SPI_DEV version 1 the packet forwarder module will not work out-of-the-box. To fix this, simply add an environment variable 'SPI_DEV' set to the value 1 to the LoRaWanPktFwdModule module (SPI_DEV is set to 2 by default).
+However, your gateway might use a different SPI_DEV or SPI_SPEED, and the Basics Station module could not work out-of-the-box. To fix this, refer to the [Basics Station Module Configuration](user-guide/station-module-configuration.md) page.
 
 The LoRa device demo code in the Arduino folder is built only for Seeduino LoRaWan board and was not test with other Arduino LoRa boards.
 
@@ -57,9 +57,9 @@ By using the `docker ps` command, you should see the Edge containers being deplo
 
 ### What does the template do?
 
-The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template).
+The template provision an IoT Hub with a [LoRa Basics™ Station](https://github.com/lorabasics/basicstation) and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template).
 
-If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in the LoRaWanPktFwdRAK833USB [submodule](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Docs/).
+If you are using the the RAK833-USB, you'll need to build a different LoRa Basics™ Station image. You can find a fork of the official Basic Station repository with support for RAK833-USB [here](https://github.com/danigian/basicstation).
 
 ## Using a Proxy Server to connect your Concentrator to Azure
 
@@ -272,7 +272,7 @@ You can control logging with the following environment variables in the **LoRaWa
 
 | Variable  | Value                | Explanation                                                                              |
 |-----------|----------------------|------------------------------------------------------------------------------------------|
-| LOG_LEVEL | "1" or "Debug"       | Everything is logged, including the up- and downstream messages to the packet forwarder. |
+| LOG_LEVEL | "1" or "Debug"       | Everything is logged, including the up- and downstream messages to the basic station.    |
 |           | "2" or "Information" | Errors and information are logged.                                                       |
 |           | "3" or "Error"       | Only errors are logged. (default if omitted)                                             |
 
