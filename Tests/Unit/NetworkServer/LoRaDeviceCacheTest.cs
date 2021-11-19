@@ -34,7 +34,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await Assert.ThrowsAsync<OperationCanceledException>(() => cache.WaitForRefreshAsync(cts.Token));
         }
 
-
         [Fact]
         public async Task When_Device_Inactive_It_Is_Removed()
         {
@@ -42,12 +41,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             options.MaxUnobservedLifetime = TimeSpan.FromMilliseconds(1);
 
             using var cache = new TestDeviceCache(this.quickRefreshOptions);
-            using var device = new LoRaDevice("abc", "123", null) { LastSeen = DateTime.UtcNow };
+            var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
+
+            using var device = new LoRaDevice("abc", "123", connectionManager.Object) { LastSeen = DateTime.UtcNow };
+
             cache.Register(device);
             using var cts = new CancellationTokenSource(this.quickRefreshOptions.ValidationInterval * 2);
             await cache.WaitForRemoveAsync(cts.Token);
 
             Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
+            connectionManager.Verify(x => x.Release(device), Times.Once);
         }
 
         private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
