@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Integration
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Common;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
@@ -25,10 +26,10 @@ namespace LoRaWan.Tests.Integration
     public sealed class LnsProtocolMessageProcessorConcentratorDeduplicationIntegrationTests
     {
         private const string TestDataFrame =
-            @"{""msgtype"": ""updf"",""MHdr"": 128,""DevAddr"": 58772467,""FCtrl"": 0,""FCnt"": 164,""FOpts"": """", ""FPort"": 8,""FRMPayload"": ""5ABBBA"",""MIC"": -1943282916,""RefTime"": 0.0,""DR"": 4,""Freq"": 868100000,""upinfo"": {""rctx"": 0,""xtime"": 40250921680313459, ""gpstime"": 0, ""fts"": -1, ""rssi"": -60, ""snr"": 9, ""rxtime"": 1635347491.917289}}";
+            @"{msgtype: 'updf', MHdr: 128, DevAddr: 58772467, FCtrl: 0, FCnt: 164, FOpts: '', FPort: 8, FRMPayload: '5ABBBA', MIC: -1943282916, RefTime: 0.0, DR: 4, Freq: 868100000, upinfo: {rctx: 0, xtime: 40250921680313459, gpstime: 0, fts: -1, rssi: -60, snr: 9, rxtime: 1635347491.917289}}";
 
         private const string TestJoinRequest =
-            @"{""msgtype"":""jreq"",""MHdr"":0,""JoinEui"":""47-62-78-C8-E5-D2-C4-B5"",""DevEui"":""85-27-C1-DF-EE-A4-16-9E"",""DevNonce"":54360,""MIC"":-1056607131,""RefTime"":0.000000,""DR"":5,""Freq"":868500000,""upinfo"":{ ""rctx"":0,""xtime"":68116944372333395,""gpstime"":0,""fts"":-1,""rssi"":-54,""snr"":7.25,""rxtime"":1636131668.725738}}";
+            @"{msgtype: 'jreq', MHdr:0, JoinEui: '47-62-78-C8-E5-D2-C4-B5', DevEui:'85-27-C1-DF-EE-A4-16-9E', DevNonce: 54360, MIC: -1056607131, RefTime: 0.000000, DR: 5, Freq: 868500000, upinfo: { rctx: 0, xtime: 68116944372333395, gpstime: 0, fts: -1, rssi: -54, snr: 7.25, rxtime: 1636131668.725738}}";
 
         private static async Task<TestServer> TestServerAsyncFactory(Mock<IMessageDispatcher> messageDispatcherMock)
         {
@@ -79,11 +80,12 @@ namespace LoRaWan.Tests.Integration
             }.Uri;
 
             // act
+            var validJsonMessage = JsonUtil.Strictify(message);
             var socket1 = await wsClient.ConnectAsync(wsUri1, CancellationToken.None);
             var socket2 = await wsClient.ConnectAsync(wsUri2, CancellationToken.None);
 
-            await socket1.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, default);
-            await socket2.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, default);
+            await socket1.SendAsync(Encoding.UTF8.GetBytes(validJsonMessage), WebSocketMessageType.Text, true, default);
+            await socket2.SendAsync(Encoding.UTF8.GetBytes(validJsonMessage), WebSocketMessageType.Text, true, default);
 
             await Task.Delay(10); // adding a small delay to ensure messages are sent before closing the socket
             await socket1.CloseAsync(WebSocketCloseStatus.NormalClosure, "Byebye", default);
