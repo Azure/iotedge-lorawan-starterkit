@@ -7,7 +7,7 @@ namespace LoRaWan
     using Microsoft.Extensions.Logging;
 
     // Defines the logger configuration
-    public class TcpLoggerConfiguration
+    public sealed class TcpLoggerConfiguration
     {
         public TcpLoggerConfiguration(LogLevel logLevel, string logToTcpAddress, int logToTcpPort, string gatewayId)
         {

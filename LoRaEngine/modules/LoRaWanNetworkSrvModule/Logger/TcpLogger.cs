@@ -15,7 +15,7 @@ namespace Logger
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Configuration;
 
-    internal class TcpLoggerProvider : ILoggerProvider
+    internal sealed class TcpLoggerProvider : ILoggerProvider
     {
         private readonly ConcurrentDictionary<string, TcpLogger> loggers = new();
         private readonly ILogSink logSink;
@@ -34,26 +34,14 @@ namespace Logger
                 ExternalScopeProvider = this.externalScopeProvider
             });
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this.loggers.Clear();
-            }
-        }
+        public void Dispose() => this.loggers.Clear();
     }
 
     /// <summary>
     /// TcpLogger logs to a TCP endpoint that is listening on this endpoint. This is used only for E2E tests.
     /// TcpLogger does not support category names or event IDs.
     /// </summary>
-    internal class TcpLogger : ILogger
+    internal sealed class TcpLogger : ILogger
     {
         private readonly ILogSink logSink;
         private readonly TcpLoggerConfiguration loggerConfiguration;
@@ -89,14 +77,14 @@ namespace Logger
         }
     }
 
-    public static class TcpLoggerExtensions
+    internal static class TcpLoggerExtensions
     {
-        public static ILoggingBuilder AddTcpLogger(this ILoggingBuilder builder, TcpLoggerConfiguration configuration)
+        public static ILoggingBuilder AddTcpLogger(this ILoggingBuilder builder, TcpLoggerConfiguration configuration, ILogger<TcpLogSink>? tcpLogSinkLogger = null)
         {
             _ = builder ?? throw new ArgumentNullException(nameof(builder));
 
             builder.AddConfiguration();
-            _ = builder.Services.AddSingleton(_ => Init(configuration));
+            _ = builder.Services.AddSingleton(_ => Init(configuration, tcpLogSinkLogger));
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(sp => new TcpLoggerProvider(sp.GetRequiredService<ILogSink>(), configuration)));
 
             return builder;
