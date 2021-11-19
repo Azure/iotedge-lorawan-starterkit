@@ -3,6 +3,8 @@ concurrency: e2e
 on: # rebuild any PRs and main branch changes
   schedule:
     - cron: '59 23 * * 1,2,3,4,5'
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
     inputs:
       RunE2ETestsOnly:
@@ -81,7 +83,7 @@ jobs:
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
-      StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
+      StopFullCi: ${{ steps.e2e_list_step.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
 
   # Build and deploy Facade Azure Function
@@ -92,7 +94,7 @@ jobs:
     - env_var
     name: Build and Deploy Facade Azure Function
     runs-on: ubuntu-latest
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     env:
       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'LoRaEngine/LoraKeysManagerFacade/'
 
@@ -123,7 +125,7 @@ jobs:
     env:
       DEV_IMAGE_TAG: dev
       MASTER_IMAGE_TAG: master
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     steps:
     - uses: actions/checkout@v2
       name: Checkout current branch
@@ -178,12 +180,13 @@ jobs:
 
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
+    timeout-minutes: 20
     environment:
       name: CI_ALL_IN_ONE_ARM_GATEWAY
     needs:
     - env_var
     - build_push_docker_images
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on All-In-One ARM gateway
     env:
@@ -208,12 +211,13 @@ jobs:
 
 # Deploy IoT Edge solution to EFLOW gateway
   deploy_eflow_gw_iot_edge:
+    timeout-minutes: 20
     environment:
       name: CI_EFLOW_AZURE_VM
     needs:
     - env_var
     - build_push_docker_images
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on EFLOW VM gateway
     env:
@@ -242,12 +246,13 @@ jobs:
 
   # Deploy IoT Edge solution to standalone Concentrator
   deploy_eflow_concentrator_iot_edge:
+    timeout-minutes: 20
     needs:
     - env_var
     - build_push_docker_images
     environment:
       name: CI_CONCENTRATOR_EFLOW_ARM32
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on ItestArm2 concentrator
     env:
@@ -276,11 +281,12 @@ jobs:
 
 # Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
   e2e_tests_job :
+    timeout-minutes: 150
     name: Run E2E Tests
     environment:
       name: CI_AZURE_ENVIRONMENT
       url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
-    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success'))
+    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success')) && needs.env_var.outputs.StopFullCi != 'true'
     needs:
       - deploy_arm_gw_iot_edge
       - deploy_eflow_gw_iot_edge
@@ -288,7 +294,6 @@ jobs:
       - deploy_eflow_concentrator_iot_edge
       - env_var
     runs-on: [ self-hosted, x64 ]
-    timeout-minutes: 60
     env:
       E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
       E2ETESTS_IoTHubEventHubConsumerGroup: ${{ secrets.IOTHUB_CI_CONSUMER_GROUP }}
