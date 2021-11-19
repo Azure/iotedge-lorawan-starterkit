@@ -80,12 +80,12 @@ namespace LoRaWan
             this.provider = consoleLoggerProvider;
         }
 
-        public IDisposable? BeginScope<TState>(TState state) =>
-            this.provider.ScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : default;
+        public IDisposable BeginScope<TState>(TState state) =>
+            this.provider.ScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : NoopDisposable.Instance;
 
         public bool IsEnabled(LogLevel logLevel) => logLevel >= this.provider.LogLevel;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             _ = formatter ?? throw new ArgumentNullException(nameof(formatter));
 
