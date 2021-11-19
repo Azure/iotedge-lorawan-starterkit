@@ -29,7 +29,7 @@ namespace Logger
         }
 
         public ILogger CreateLogger(string categoryName) =>
-            this.loggers.GetOrAdd(categoryName, name => new TcpLogger(categoryName, this.logSink, this.configuration)
+            this.loggers.GetOrAdd(categoryName, name => new TcpLogger(this.logSink, this.configuration)
             {
                 ExternalScopeProvider = this.externalScopeProvider
             });
@@ -51,15 +51,12 @@ namespace Logger
 
     internal class TcpLogger : ILogger
     {
-        private readonly string categoryName;
         private readonly ILogSink logSink;
         private readonly TcpLoggerConfiguration loggerConfiguration;
 
-        public TcpLogger(string categoryName,
-                         ILogSink logSink,
+        public TcpLogger(ILogSink logSink,
                          TcpLoggerConfiguration loggerConfiguration)
         {
-            this.categoryName = categoryName;
             this.logSink = logSink;
             this.loggerConfiguration = loggerConfiguration ?? throw new ArgumentNullException(nameof(loggerConfiguration));
         }
