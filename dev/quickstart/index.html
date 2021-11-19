@@ -718,6 +718,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../user-guide/station-module-configuration/" class="md-nav__link">
+        Basics Station IoT Edge Module configuration parameters
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../user-guide/upgrade/" class="md-nav__link">
         Upgrade LoRaWAN to a new version
       </a>
@@ -1384,7 +1398,7 @@
 If you'd rather deploy it manually please jump directly into the <a href="../user-guide/devguide/">do it yourself section</a>.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>The template supports x86 and <abbr title="Azure Resource Manager">ARM</abbr> architectures and will automatically deploy the correct version to your gateway. Make sure to provide your gateway's reset pin in the dialog before the deployment.</p>
-<p>Additionally, if your gateway use SPI_DEV version 1 the packet forwarder module will not work out-of-the-box. To fix this, simply add an environment variable 'SPI_DEV' set to the value 1 to the LoRaWanPktFwdModule module (SPI_DEV is set to 2 by default).</p>
+<p>However, your gateway might use a different SPI_DEV or SPI_SPEED, and the Basics Station module could not work out-of-the-box. To fix this, refer to the <a href="../user-guide/station-module-configuration/">Basics Station Module Configuration</a> page.</p>
 <p>The LoRa device demo code in the Arduino folder is built only for Seeduino LoRaWan board and was not test with other Arduino LoRa boards.</p>
 <h2 id="deployed-azure-infrastructure">Deployed Azure Infrastructure</h2>
 <p>The template will deploy in your Azure subscription the Following resources:</p>
@@ -1431,8 +1445,8 @@ If you'd rather deploy it manually please jump directly into the <a href="../use
 </ol>
 <p>By using the <code>docker ps</code> command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a> to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.</p>
 <h3 id="what-does-the-template-do">What does the template do?</h3>
-<p>The template provision an IoT Hub with a <a href="https://github.com/Lora-net/packet_forwarder">packet forwarder</a> and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template">here</a>.</p>
-<p>If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in the LoRaWanPktFwdRAK833USB <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Docs/">submodule</a>.</p>
+<p>The template provision an IoT Hub with a <a href="https://github.com/lorabasics/basicstation">LoRa Basics™ Station</a> and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template">here</a>.</p>
+<p>If you are using the the RAK833-USB, you'll need to build a different LoRa Basics™ Station image. You can find a fork of the official Basic Station repository with support for RAK833-USB <a href="https://github.com/danigian/basicstation">here</a>.</p>
 <h2 id="using-a-proxy-server-to-connect-your-concentrator-to-azure">Using a Proxy Server to connect your Concentrator to Azure</h2>
 <p>This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.</p>
 <p>Follow <a href="../user-guide/devguide/#use-a-proxy-server-to-connect-your-concentrator-to-azure">this guide</a> to:</p>
@@ -1720,7 +1734,7 @@ To clear the cache and allow the device to connect follow these steps:</p>
 <tr>
 <td>LOG_LEVEL</td>
 <td>"1" or "Debug"</td>
-<td>Everything is logged, including the up- and downstream messages to the packet forwarder.</td>
+<td>Everything is logged, including the up- and downstream messages to the basic station.</td>
 </tr>
 <tr>
 <td></td>

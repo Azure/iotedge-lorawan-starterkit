@@ -698,6 +698,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../station-module-configuration/" class="md-nav__link">
+        Basics Station IoT Edge Module configuration parameters
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../upgrade/" class="md-nav__link">
         Upgrade LoRaWAN to a new version
       </a>
@@ -1359,7 +1373,7 @@
 <p>A <strong>.NET Core 3.1</strong> solution with the following projects:</p>
 <ul>
 <li><strong>modules</strong> - Azure IoT Edge modules.</li>
-<li><strong>LoRaWanPktFwdModule</strong> packages the network forwarder into an IoT Edge compatible docker container. See <a href="https://github.com/Lora-net/packet_forwarder">https://github.com/Lora-net/packet_forwarder</a> and <a href="https://github.com/Lora-net/lora_gateway">https://github.com/Lora-net/lora_gateway</a>. If you are using a RAK833-USB see the <code>LoRaWanPktFwdRAK833USB</code> <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Docs">submodule</a></li>
+<li><strong>LoRaBasicsStationModule</strong> packages the Basics Station into an IoT Edge compatible docker container. See <a href="https://github.com/lorabasics/basicstation">https://github.com/lorabasics/basicstation</a>. If you are using a RAK833-USB you need to build your own Basics Station docker image starting from the fork <a href="https://github.com/danigian/basicstation">at this link</a></li>
 <li><strong>LoRaWanNetworkSrvModule</strong> - is the LoRaWAN network server implementation.</li>
 <li><strong>LoraKeysManagerFacade</strong> - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.</li>
 <li><strong>LoRaDevTools</strong> - library for dev tools (git submodule)</li>
@@ -1369,24 +1383,19 @@
 <p><img alt="schema" src="../../images/detailedschema.jpg" /></p>
 <ol>
 <li>Once the IoT Edge engine start on the Edge device, the code modules are downloaded from the Azure Container Registry.</li>
-<li>The module containing the <code>LoRaWan network server</code> is downloaded on the Edge device</li>
-</ol>
-<blockquote>
-<p>Notes:</p>
-<ul>
-<li>The LoRaWanPktFwdModule can be replaced by the <code>LoRaWan Packet Forwarder for RAK833-USB</code> if you have a RAK833 connected thru USB</li>
-<li>The LoRaWan gateway must implement a UDP server on port 1680 to forward the LoRa commands from/to the <code>LoRaWan Network Server</code> module. In our case it is called <code>LoRaWan Packet Forwarder</code></li>
-</ul>
-</blockquote>
-<ol>
-<li>The LoRaWan Network Server request status for the LoRa devices. The Azure Function <code>LoraKeysManagerFacade</code> is used to aquire the device identity from IoT Hub.</li>
+<li>
+<p>The module containing the <code>LoRaWan network server</code> is downloaded on the Edge device</p>
+</li>
+<li>
+<p>The LoRaWan Network Server request status for the LoRa devices. The Azure Function <code>LoraKeysManagerFacade</code> is used to aquire the device identity from IoT Hub.</p>
+</li>
 <li>In the case you're using the demo device with the automatic deployment Azure Resource Manager (ARM) template: the Azure function <code>LoraKeysManagerFacade</code> will register the device <code>47AAC86800430028</code> into the Azure IoT Hub for you. Otherwise you need to provision a device yourself in IoT Hub: <a href="../../tools/device-provisioning/">device provisioning</a></li>
 <li>The Azure function <code>LoraKeysManagerFacade</code> sends back the device identity to the module</li>
 <li>
 <p>The <code>LoRaWan Network Server</code> module:</p>
 <ul>
 <li>instantiate the device on the LoRa Gateway if needed</li>
-<li>gather the LoRa sensor data from the LoRaWan gateway thru the <code>LoRaWan Packet Forwarder</code></li>
+<li>gather the LoRa sensor data from the LoRaWan gateway thru the <code>LoRa Basics™ Station</code></li>
 <li>decode the LoRa data if requested</li>
 </ul>
 </li>
@@ -1656,7 +1665,7 @@ LOG_ANALYTICS_SHARED_KEY={log_analytics_shared_key}
 <p>Right click on your solution and select properties, select multiple startup projects. Start <code>LoRaWanNetworkSrvModule</code> and <code>LoRaKeysManagerFacade</code>.</p>
 </li>
 <li>
-<p>If you hit start in your VS solution, you will receive messages directly from your packet forwarder. You will be able to debug directly from your computer.</p>
+<p>If you hit start in your VS solution, you will receive messages directly from your LoRa Basics™ Station. You will be able to debug directly from your computer.</p>
 </li>
 </ol>
 <p>Happy Debugging!</p>
