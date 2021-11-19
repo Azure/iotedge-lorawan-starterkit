@@ -49,6 +49,10 @@ namespace Logger
         }
     }
 
+    /// <summary>
+    /// TcpLogger logs to a TCP endpoint that is listening on this endpoint. This is used only for E2E tests.
+    /// TcpLogger does not support category names or event IDs.
+    /// </summary>
     internal class TcpLogger : ILogger
     {
         private readonly ILogSink logSink;
