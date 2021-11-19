@@ -74,7 +74,7 @@ For increased security the server should "require" client authentication and ver
 
 Therefore, in order for Basic Station to connect to the CUPS HTTPS endpoint the following files should be provided to the station:
 
-- cups.uri (i.e. "https://LoRaWanNetworkSrvModule:443")
+- cups.uri
 - cups.crt (including the certificate in PEM format)
 - cups.key (including the EC Private Key for the child certificate)
 - cups.trust (including the chain of trust certificate for the server-side certificate)
@@ -270,7 +270,7 @@ For generating both server and client certificates there are two options.
 
 In this starter kit, we are assuming that the same server certificate is used for both CUPS and LNS endpoints.
 
-Using instructions at ['Basics Station credentials management'](../../user-guide/station-credential-management/) page, copy the certificate so that the LoRaWan Network Server can retrieve it at its startup and use it within Kestrel.
+Using instructions at ['Basics Station credentials management'](../user-guide/station-credential-management.md) page, copy the certificate so that the LoRaWan Network Server can retrieve it at its startup and use it within Kestrel.
 
 For concentrator configuration, it is important to retrieve the chain of trust which is used for signing the CUPS/LNS server certificate.
 
