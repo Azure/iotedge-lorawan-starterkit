@@ -85,6 +85,7 @@ namespace LoRaWan.Tests.Integration
             await socket1.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, default);
             await socket2.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, default);
 
+            await Task.Delay(10); // adding a small delay to ensure messages are sent before closing the socket
             await socket1.CloseAsync(WebSocketCloseStatus.NormalClosure, "Byebye", default);
             await socket2.CloseAsync(WebSocketCloseStatus.NormalClosure, "Byebye", default);
 
