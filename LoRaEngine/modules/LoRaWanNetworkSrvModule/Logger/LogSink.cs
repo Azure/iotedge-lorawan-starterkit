@@ -44,12 +44,6 @@ namespace LoRaWan
 
     public static class LogSinkExtensions
     {
-        public static void LogAlways(this ILogSink logger, string message)
-        {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-            logger.Log(null, message, LogLevel.Critical);
-        }
-
         public static void Log(this ILogSink logger, string message, LogLevel logLevel)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));

@@ -89,9 +89,6 @@ namespace LoRaWan
             }
         }
 
-        public static void LogAlways(string message) =>
-            sink?.LogAlways(message);
-
         public static void Log(string message, LogLevel logLevel) =>
             sink?.Log(message, logLevel);
 
