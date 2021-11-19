@@ -15,28 +15,6 @@ namespace Logger
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Configuration;
 
-    internal sealed class TcpLoggerProvider : ILoggerProvider
-    {
-        private readonly ConcurrentDictionary<string, TcpLogger> loggers = new();
-        private readonly ILogSink logSink;
-        private readonly TcpLoggerConfiguration configuration;
-        private readonly IExternalScopeProvider externalScopeProvider = new LoggerExternalScopeProvider();
-
-        public TcpLoggerProvider(ILogSink logSink, TcpLoggerConfiguration loggerConfiguration)
-        {
-            this.configuration = loggerConfiguration;
-            this.logSink = logSink;
-        }
-
-        public ILogger CreateLogger(string categoryName) =>
-            this.loggers.GetOrAdd(categoryName, name => new TcpLogger(this.logSink, this.configuration)
-            {
-                ExternalScopeProvider = this.externalScopeProvider
-            });
-
-        public void Dispose() => this.loggers.Clear();
-    }
-
     /// <summary>
     /// TcpLogger logs to a TCP endpoint that is listening on this endpoint. This is used only for E2E tests.
     /// TcpLogger does not support category names or event IDs.
@@ -144,6 +122,28 @@ namespace Logger
                     return null;
                 }
             }
+        }
+
+        private sealed class TcpLoggerProvider : ILoggerProvider
+        {
+            private readonly ConcurrentDictionary<string, TcpLogger> loggers = new();
+            private readonly ILogSink logSink;
+            private readonly TcpLoggerConfiguration configuration;
+            private readonly IExternalScopeProvider externalScopeProvider = new LoggerExternalScopeProvider();
+
+            public TcpLoggerProvider(ILogSink logSink, TcpLoggerConfiguration loggerConfiguration)
+            {
+                this.configuration = loggerConfiguration;
+                this.logSink = logSink;
+            }
+
+            public ILogger CreateLogger(string categoryName) =>
+                this.loggers.GetOrAdd(categoryName, name => new TcpLogger(this.logSink, this.configuration)
+                {
+                    ExternalScopeProvider = this.externalScopeProvider
+                });
+
+            public void Dispose() => this.loggers.Clear();
         }
     }
 }
