@@ -25,11 +25,11 @@ This guide helps you to execute and author E2E tests on your local environment.
 * Module LoRaWanNetworkSrvModule logging configured with following environment
   variables:
   * LOG_LEVEL: 1
-  * LOG_TO_UDP: true
-  * LOG_TO_UDP_ADDRESS: development machine IP address (ensure IoT Edge machine
+  * LOG_TO_TCP: true
+  * LOG_TO_TCP_ADDRESS: development machine IP address (ensure IoT Edge machine
     can ping it)
-* E2E test configuration (in file `appsettings.local.json`) has UDP logging
-  enabled `"UdpLog": "true"`
+* E2E test configuration (in file `appsettings.local.json`) has TCP logging
+  enabled `"TcpLog": "true"`
 
 ## Setup
 
@@ -46,8 +46,8 @@ Configure LoRa Basics Station and Network Server to run on your concentrator:
         ```bash
         NET_SRV_LOG_LEVEL=1
         NET_SRV_LOGTO_HUB=true
-        NET_SRV_LOGTO_UDP=true
-        NET_SRV_LOG_TO_UDP_ADDRESS=<your-local-ip-address>
+        NET_SRV_LOGTO_TCP=true
+        NET_SRV_LOG_TO_TCP_ADDRESS=<your-local-ip-address>
         ```
 
     * Update `LBS_TC_URI`:
@@ -115,7 +115,7 @@ can discover them with `ls /dev/ttyACM*`.
     "CreateDevices": true,
     "NetworkServerModuleLogAssertLevel": "Error",
     "DevicePrefix": "your-two-letter-device-prefix",
-    "UdpLog": "true",
+    "TcpLog": "true",
     "FunctionAppBaseUrl": "https://your-function-app.azurewebsites.net/api/",
     "FunctionAppCode": "your-function-code="
   }
@@ -197,7 +197,7 @@ public async Task Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error()
 ## Creating Test Class
 
 E2E tests cannot be parallelized because they all share dependency to Arduino
-device. Those classes also rely on Udp and IoT Event Hub listeners that should
+device. Those classes also rely on TCP and IoT Event Hub listeners that should
 be created once per test execution, not per test.
 
 Therefore, when creating a new test class follow the guidelines:
@@ -250,7 +250,7 @@ tests gets too high. An option is to have the Network server publish events when
 an operation happens and have the test create assertion on them (i.e. `{ "type":
 "otaajoin", "status": "succeeded", "deviceid": "xxx", "time": "a-date" }`).
 
-Module logs can be listened from IoT Hub or UDP (experimental).
+Module logs can be listened from IoT Hub or TCP (experimental).
 
 Validating against the module logs.
 

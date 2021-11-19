@@ -43,7 +43,7 @@ The different log sinks are implemented as `ILoggerProvider`. We will have three
 
 1. Console
 2. IoT Hub
-3. UDP
+3. TCP
 
 The standard logger for Application Insights is added on an opt-in basis. We will adhere to [the recommended logging format](https://docs.microsoft.com/en-gb/azure/iot-edge/how-to-retrieve-iot-edge-logs?view=iotedge-2020-11#recommended-logging-format) for the LNS console logger to comply with the IoT Edge log format and to simplify logs scraping. We will not support a full logs delivery solution, such as [ELMS](https://github.com/Azure-Samples/iotedge-logging-and-monitoring-solution), since it will introduce too many components and too much complexity to the starter kit. This means that we will not support cloud delivery of edgeAgent and edgeHub logs other than what is documented in [Retrieve IoT Edge logs - Azure IoT Edge | Microsoft Docs](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-retrieve-iot-edge-logs?view=iotedge-2020-11).
 
