@@ -55,11 +55,10 @@ namespace Logger
             return message;
 
             static string? GetScopeIfNotInMessage(IDictionary<string, object> dict, string key, string message) =>
-                dict.TryGetValue(key, out var o) &&
-                o is string result &&
+                dict.TryGetValue(key, out var o) && o is string result &&
                 !message.StartsWith(result, StringComparison.OrdinalIgnoreCase)
-                ? result
-                : null;
+                    ? result
+                    : null;
         }
     }
 }
