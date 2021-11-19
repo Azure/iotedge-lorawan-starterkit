@@ -53,11 +53,11 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData(true, TestDataFrame)]
-        [InlineData(false, TestDataFrame)]
-        [InlineData(true, TestJoinRequest)]
-        [InlineData(false, TestJoinRequest)]
-        public async Task When_Same_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(bool isSameStation, string message)
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", TestDataFrame, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", TestDataFrame, 1)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", TestJoinRequest, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", TestJoinRequest, 1)]
+        public async Task When_Same_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(string station1Id, string station2Id, string message, int expectedMessagesUpstream)
         {
             // arrange
             var dispatcherCounter = 0;
@@ -66,8 +66,8 @@ namespace LoRaWan.Tests.Integration
             var testServer = await TestServerAsyncFactory(messageDispatcherMock);
             var wsClient = testServer.CreateWebSocketClient();
 
-            var station1 = StationEui.Parse("a8-27-eb-ff-fe-e1-e3-9a");
-            var station2 = isSameStation ? station1 : StationEui.Parse("b8-27-eb-ff-fe-e1-e3-9a");
+            var station1 = StationEui.Parse(station1Id);
+            var station2 = StationEui.Parse(station2Id);
             var baseUri = $"localhost:5000{BasicsStationNetworkServer.DataEndpoint}";
 
             var wsUri1 = new UriBuilder($"{baseUri}/{station1}")
@@ -92,8 +92,7 @@ namespace LoRaWan.Tests.Integration
             await socket2.CloseAsync(WebSocketCloseStatus.NormalClosure, "Byebye", default);
 
             // assert
-            var expected = isSameStation ? 2 : 1;
-            Assert.Equal(expected, dispatcherCounter);
+            Assert.Equal(expectedMessagesUpstream, dispatcherCounter);
         }
     }
 }
