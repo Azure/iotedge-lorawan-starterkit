@@ -147,6 +147,16 @@ namespace LoRaWan.Tools.CLI
             bool isSuccess = false;
 
             opts = iotDeviceHelper.CleanOptions(opts as object, true) as AddOptions;
+
+            if (opts.Type.ToUpperInvariant().Equals("CONCENTRATOR"))
+            {
+                var isVerified = iotDeviceHelper.VerifyConcentrator(opts);
+                if (!isVerified) return false;
+                Twin twin = iotDeviceHelper.CreateConcentratorTwin(opts);
+                isSuccess = await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
+                return isSuccess;
+            }
+
             opts = iotDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
 
             if (iotDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper, true))

@@ -25,9 +25,9 @@ env:
   IOT_EDGE_DEPLOYMENT_ID: ""
   NET_SRV_LOG_LEVEL: 1
   NET_SRV_LOGTO_HUB: false
-  NET_SRV_LOGTO_UDP: true
+  NET_SRV_LOG_TO_TCP: true
   NET_SRV_IOTEDGE_TIMEOUT: 0
-  NET_SRV_LOG_TO_UDP_ADDRESS: "itestup"
+  NET_SRV_LOG_TO_TCP_ADDRESS: "itestup"
   EDGEHUB_ROUTE: "FROM /* INTO $upstream"
   RESET_PIN: 7
   REGION: "EU"
@@ -218,7 +218,7 @@ jobs:
     name: Deploy IoT Edge on EFLOW VM gateway
     env:
       DEVICE_ID: ${{ secrets.DEVICE_ID }}
-      NET_SRV_LOG_TO_UDP_ADDRESS: ${{ secrets.LOG_TO_UDP_ADDRESS }}
+      NET_SRV_LOG_TO_TCP_ADDRESS: ${{ secrets.LOG_TO_TCP_ADDRESS }}
       IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
       FACADE_SERVER_URL: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
       FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}

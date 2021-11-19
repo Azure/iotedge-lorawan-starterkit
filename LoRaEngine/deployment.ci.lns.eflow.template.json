@@ -89,14 +89,14 @@
               "LOG_LEVEL": {
                 "value": "$NET_SRV_LOG_LEVEL"
               },
-              "LOG_TO_UDP": {
-                "value": "$NET_SRV_LOGTO_UDP"
+              "LOG_TO_TCP": {
+                "value": "$NET_SRV_LOG_TO_TCP"
               },
               "IOTEDGE_TIMEOUT": {
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
               },
-              "LOG_TO_UDP_ADDRESS": {
-                "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
+              "LOG_TO_TCP_ADDRESS": {
+                "value": "$NET_SRV_LOG_TO_TCP_ADDRESS"
               },
               "APPINSIGHTS_INSTRUMENTATIONKEY": {
                 "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
