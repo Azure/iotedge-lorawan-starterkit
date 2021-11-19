@@ -60,8 +60,8 @@ namespace LoraKeysManagerFacade
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", $"Basic {base64Auth}");
-                var result = client.GetAsync(new Uri($"{apiUrl}/functions/admin/token")).Result;
-                jwt = result.Content.ReadAsStringAsync().Result.Trim('"'); // get  JWT for call funtion key
+                var result = await client.GetAsync(new Uri($"{apiUrl}/functions/admin/token"));
+                jwt = (await result.Content.ReadAsStringAsync()).Trim('"'); // get  JWT for call funtion key
             }
 
             var facadeKey = string.Empty;
@@ -69,7 +69,8 @@ namespace LoraKeysManagerFacade
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + jwt);
 
-                var jsonResult = client.GetAsync(new Uri($"{siteUrl}/admin/host/keys")).Result.Content.ReadAsStringAsync().Result;
+                var response = await client.GetAsync(new Uri($"{siteUrl}/admin/host/keys"));
+                var jsonResult = await response.Content.ReadAsStringAsync();
                 dynamic resObject = JsonConvert.DeserializeObject(jsonResult);
                 facadeKey = resObject.keys[0].value;
             }

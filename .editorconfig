@@ -112,3 +112,6 @@ dotnet_diagnostic.IDE1008.severity=suggestion
  # Enforce file header
 dotnet_diagnostic.IDE0073.severity = error
 file_header_template = Copyright (c) Microsoft. All rights reserved.\nLicensed under the MIT license. See LICENSE file in the project root for full license information.
+
+# LoggerMessage.Define for high-performance logging
+dotnet_diagnostic.CA1848.severity = suggestion

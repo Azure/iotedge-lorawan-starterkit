@@ -177,7 +177,7 @@ namespace LoRaWan.NetworkServer
 
                     var prunedKeys = Prune();
 
-                    this.logger?.LogDebug($"Pruned closed WebSocket connections: {string.Join(",", prunedKeys)}");
+                    this.logger?.LogDebug("Pruned closed WebSocket connections: {PrunedKeys}", string.Join(",", prunedKeys));
                 }
             }
         }

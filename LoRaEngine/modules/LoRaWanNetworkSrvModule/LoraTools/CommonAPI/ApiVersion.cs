@@ -240,9 +240,8 @@ namespace LoRaTools.CommonAPI
 
         public int CompareTo(ApiVersion other)
         {
-            if (other is null) throw new ArgumentNullException(nameof(other));
-
             if (Equals(other)) return 0;
+            if (other is null) return 1;
             return string.Compare(Version, other.Version, StringComparison.Ordinal);
         }
 
@@ -254,29 +253,17 @@ namespace LoRaTools.CommonAPI
             Name == version.Name &&
             IsKnown == version.IsKnown;
 
-        public static bool operator <(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-            return value1.CompareTo(value2) < 0;
-        }
+        public static bool operator <(ApiVersion value1, ApiVersion value2) =>
+            value1 is { } v1 ? value1.CompareTo(value2) < 0 : value2 is not null;
 
-        public static bool operator <=(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-            return value1.CompareTo(value2) <= 0;
-        }
+        public static bool operator <=(ApiVersion value1, ApiVersion value2) =>
+            value1 is null || value1.CompareTo(value2) <= 0;
 
-        public static bool operator >=(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-            return value1.CompareTo(value2) >= 0;
-        }
+        public static bool operator >=(ApiVersion value1, ApiVersion value2) =>
+            value1 is { } v1 ? v1.CompareTo(value2) >= 0 : value2 is null;
 
-        public static bool operator >(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-            return value1.CompareTo(value2) > 0;
-        }
+        public static bool operator >(ApiVersion value1, ApiVersion value2) =>
+            value1 is { } v1 && v1.CompareTo(value2) > 0;
 
         public static bool operator ==(ApiVersion left, ApiVersion right) =>
             left is null ? right is null : left.Equals(right);

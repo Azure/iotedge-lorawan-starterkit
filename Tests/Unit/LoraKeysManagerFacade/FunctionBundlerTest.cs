@@ -248,7 +248,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
                 }));
             }
 
-            Task.WaitAll(tasks.ToArray());
+            await Task.WhenAll(tasks);
             // only one request should be winning the race
             var winners = 0;
             var dups = 0;

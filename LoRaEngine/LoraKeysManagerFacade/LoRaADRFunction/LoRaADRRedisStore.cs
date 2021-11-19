@@ -85,7 +85,7 @@ namespace LoraKeysManagerFacade
                     AddEntryToTable(table, entry);
 
                     // update redis store
-                    _ = this.redisCache.StringSet(entryKey, JsonConvert.SerializeObject(table));
+                    _ = await this.redisCache.StringSetAsync(entryKey, JsonConvert.SerializeObject(table));
                 }
             }
 

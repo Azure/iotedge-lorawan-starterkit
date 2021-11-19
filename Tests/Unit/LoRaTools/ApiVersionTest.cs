@@ -61,6 +61,25 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             }
         }
 
+        public static object[][] OperatorData() => new[]
+        {
+            new object[] { ApiVersion.Version_0_2_Or_Earlier, ApiVersion.Version_2018_12_16_Preview, -1 },
+            new object[] { null, ApiVersion.Version_2018_12_16_Preview, -1 },
+            new object[] { ApiVersion.Version_0_2_Or_Earlier, null, 1 },
+            new object[] { ApiVersion.Version_0_2_Or_Earlier, ApiVersion.Version_0_2_Or_Earlier, 0 },
+            new object[] { null, null, 0 }
+        };
+
+        [Theory]
+        [MemberData(nameof(OperatorData))]
+        public void Operator_Success_Cases(ApiVersion left, ApiVersion right, int compareToValue)
+        {
+            Assert.Equal(compareToValue == 1, left > right);
+            Assert.Equal(compareToValue is 1 or 0, left >= right);
+            Assert.Equal(compareToValue is 0 or -1, left <= right);
+            Assert.Equal(compareToValue == -1, left < right);
+        }
+
         [Fact]
         public void Version_02_Should_Be_Older_As_All()
         {

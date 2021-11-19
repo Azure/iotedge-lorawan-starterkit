@@ -110,7 +110,7 @@ namespace LoRaWan.Tests.Integration
             var redisConnectionString = $"localhost:{this.redisPort}";
             try
             {
-                this.redis = ConnectionMultiplexer.Connect(redisConnectionString);
+                this.redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
                 Database = this.redis.GetDatabase();
             }
             catch (Exception ex)
