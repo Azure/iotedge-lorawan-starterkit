@@ -37,8 +37,8 @@ namespace LoRaWan.Tests.Common
                                               ILogger<SimpleTcpListener>? logger = null)
         {
             var listener = TcpListener.Create(port);
-            if (backlog is { } someBackLog)
-                listener.Start(someBackLog);
+            if (backlog is { } someBacklog)
+                listener.Start(someBacklog);
             else
                 listener.Start();
             _ = ListenAsync();
@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Common
         public void Dispose()
         {
             var listener = this.listener;
-            if (listener is null || listener != Interlocked.CompareExchange(ref this.listener, null, listener))
+            if (listener is null || Interlocked.CompareExchange(ref this.listener, null, listener) is null)
                 return;
             listener.Stop();
         }

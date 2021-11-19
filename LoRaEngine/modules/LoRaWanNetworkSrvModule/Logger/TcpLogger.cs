@@ -77,7 +77,7 @@ namespace Logger
         }
     }
 
-    internal static class TcpLoggerExtensions
+    public static class TcpLoggerExtensions
     {
         public static ILoggingBuilder AddTcpLogger(this ILoggingBuilder builder, TcpLoggerConfiguration configuration, ILogger<TcpLogSink>? tcpLogSinkLogger = null)
         {
