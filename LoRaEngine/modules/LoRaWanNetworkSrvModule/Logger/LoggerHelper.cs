@@ -14,12 +14,14 @@ namespace Logger
     {
         /// <summary>
         /// Prefixes the message with predefined scope values.
-        /// Right now we only support DevEUI and DevAddr, but could be extended to
-        /// include others (StationEUI, Gateway, etc).
+        /// Right now we only support DevEUI, DevAddr and Station EUI.
         /// If the message is already prefixed with the DevEUI/DevAddr, we don't
-        /// add it again.
+        /// add it again. Keep in mind that the scopes have a precedence assigned with them -
+        /// if we have multiple active scopes, Dev EUI > Dev Addr > Station EUI.
         /// </summary>
-        /// <param name="message">The already formatted message</param>
+        /// <param name="scopeProvider">The scope provider.</param>
+        /// <param name="message">The already formatted message.</param>
+        /// <param name="euiSeparator">The separator to append after the scope prefix.</param>
         /// <returns></returns>
         public static string AddScopeInformation(IExternalScopeProvider? scopeProvider, string message, string euiSeparator = "")
         {
