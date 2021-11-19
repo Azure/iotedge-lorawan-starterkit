@@ -5,16 +5,19 @@ namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Threading.Tasks;
     using LoRaWan.Tools.CLI.Options;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     public class IoTDeviceHelper
     {
         private static readonly string[] ClassTypes = { "A", "C" };
         private static readonly string[] DeduplicationModes = { "None", "Drop", "Mark" };
+        private static readonly string DefaultRouterConfigFolder = "DefaultRouterConfig";
 
         public async Task<Twin> QueryDeviceTwin(string devEui, ConfigurationHelper configurationHelper)
         {
@@ -896,6 +899,43 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
 
             return isValid;
+        }
+
+        public bool VerifyConcentrator(AddOptions opts)
+        {
+            var isValid = true;
+            if (string.IsNullOrEmpty(opts.StationEui))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "'Concentrator' device type has been specified but StationEui option is missing.");
+                isValid = false;
+            }
+            if (string.IsNullOrEmpty(opts.Region))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "'Concentrator' device type has been specified but Region option is missing.");
+                isValid = false;
+            }
+            else if (!File.Exists(Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json")))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, $"'Concentrator' device type has been specified with Region '{opts.Region.ToUpperInvariant()}' but no default router config file was found.");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        public Twin CreateConcentratorTwin(AddOptions opts)
+        {
+            var twinProperties = new TwinProperties();
+            Console.WriteLine();
+
+            string fileName = Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json");
+            string jsonString = File.ReadAllText(fileName);
+            var propObject = JsonConvert.DeserializeObject<JObject>(jsonString);
+            twinProperties.Desired[TwinProperty.RouterConfig] = propObject;
+            return new Twin
+            {
+                Properties = twinProperties
+            };
         }
 
         public Twin CreateDeviceTwin(AddOptions opts)

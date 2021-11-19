@@ -11,8 +11,20 @@ namespace LoRaWan.Tools.CLI.Options
         [Option(
             "type",
             Required = true,
-            HelpText = "Device type: Must be ABP or OTAA.")]
+            HelpText = "Device type: Must be ABP, OTAA or Concentrator.")]
         public string Type { get; set; }
+
+        [Option(
+            "region",
+            Required = false,
+            HelpText = "Region: Only required for 'Concentrator' type devices. Must be the name of one of the regions in the DefaultRouterConfig folder.")]
+        public string Region { get; set; }
+
+        [Option(
+            "stationeui",
+            Required = false,
+            HelpText = "Station EUI: A 16 bit hex string ('AABBCCDDEEFFGGHH'). Required if 'Concentrator' device.")]
+        public string StationEui { get; set; }
 
         [Option(
             "deveui",
