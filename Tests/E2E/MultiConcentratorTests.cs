@@ -20,26 +20,34 @@ namespace LoRaWan.Tests.E2E
         }
 
         [RetryFact]
-        public async Task Test_Concentrator_Deduplication_ABP()
+        public async Task Test_Concentrator_Deduplication_OTAA()
         {
-            var device = TestFixtureCi.GetDeviceByPropertyName("Device31_ABP");
+            var device = TestFixtureCi.GetDeviceByPropertyName("Device31_OTAA");
             LogTestStart(device);
 
-            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
-            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
+            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
+
+            var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            Assert.True(joinSucceeded, "Join failed");
+
+            // wait 1 second after joined
+            await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
             const int MESSAGE_COUNT = 5;
 
             for (var i = 0; i < MESSAGE_COUNT; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
+                Console.WriteLine($"Starting sending OTAA confirmed message {i + 1}/{MESSAGE_COUNT}");
+                TestFixtureCi.ClearLogs();
 
-                Log($"{device.DeviceID}: Sending confirmed '{msg}' {i + 1}/{MESSAGE_COUNT}");
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
-                await Task.Delay(2 * Constants.DELAY_BETWEEN_MESSAGES);
+                await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received

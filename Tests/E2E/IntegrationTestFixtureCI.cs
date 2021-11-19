@@ -122,9 +122,9 @@ namespace LoRaWan.Tests.E2E
         public TestDeviceInfo Device30_OTAA { get; private set; }
 
         /// <summary>
-        /// Gets Device31_ABP: used for concentrator deduplication testing in a single gateway scenario.
+        /// Gets Device31_OTAA: used for concentrator deduplication testing in a single gateway scenario.
         /// </summary>
-        public TestDeviceInfo Device31_ABP { get; private set; }
+        public TestDeviceInfo Device31_OTAA { get; private set; }
 
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice { get; private set; }
@@ -561,12 +561,11 @@ namespace LoRaWan.Tests.E2E
                 IsIoTHubDevice = true
             };
 
-            Device31_ABP = new TestDeviceInfo()
+            Device31_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000031",
-                AppSKey = "00000000000000000000000000000031",
-                NwkSKey = "00000000000000000000000000000031",
-                DevAddr = "00000031",
+                AppEUI = "0000000000000031",
+                AppKey = "00000000000000000000000000000031",
                 IsIoTHubDevice = true
             };
         }
