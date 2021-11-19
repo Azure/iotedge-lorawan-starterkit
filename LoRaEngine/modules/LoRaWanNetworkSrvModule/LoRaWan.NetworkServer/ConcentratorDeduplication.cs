@@ -68,17 +68,17 @@ namespace LoRaWan.NetworkServer
                 return true;
             }
 
-            this.logger.LogInformation($"Connectivity to previous station with EUI {previousStation}, was lost, will not drop and will use station with EUI {stationEui} from now onwards.");
+            this.logger.LogInformation($"Connectivity to previous station with EUI {previousStation}, was lost, will not drop message and will use station with EUI {stationEui} from now onwards.");
             AddToCache(key, stationEui);
             return false;
         }
 
-        internal static string CreateCacheKey(T message)
-            => message switch
+        internal static string CreateCacheKey(T frame)
+            => frame switch
             {
                 UpstreamDataFrame asDataFrame => CreateCacheKeyCore(asDataFrame),
                 JoinRequestFrame asJoinRequestFrame => CreateCacheKeyCore(asJoinRequestFrame),
-                _ => throw new ArgumentException($"{message} not of proper type")
+                _ => throw new ArgumentException($"{frame} with invalid type.")
             };
 
         private static string CreateCacheKeyCore(UpstreamDataFrame updf)
