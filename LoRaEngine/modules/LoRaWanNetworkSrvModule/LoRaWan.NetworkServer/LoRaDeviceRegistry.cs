@@ -73,11 +73,12 @@ namespace LoRaWan.NetworkServer
                         ce.ExpirationTokens.Add(new CancellationChangeToken(cts.Token));
 
                         var loader = new DeviceLoaderSynchronizer(
-                            devAddr,
-                            this.loRaDeviceAPIService,
-                            this.deviceFactory,
-                            this.deviceCache,
-                            this.initializers);
+                                                    devAddr,
+                                                    this.loRaDeviceAPIService,
+                                                    this.deviceFactory,
+                                                    this.configuration,
+                                                    this.deviceCache,
+                                                    this.initializers);
 
                         _ = loader.LoadAsync().ContinueWith((t) =>
                         {
@@ -201,6 +202,9 @@ namespace LoRaWan.NetworkServer
 
             if (deviceCache.TryGetByDevEui(matchingDeviceInfo.DevEUI, out var cachedDevice))
             {
+                // if we already have the device in the cache, then it is either from a previous
+                // join rquest or it's a re-join. Both scenarios are ok, and we can use the cached
+                // informatio.
                 return cachedDevice;
             }
 

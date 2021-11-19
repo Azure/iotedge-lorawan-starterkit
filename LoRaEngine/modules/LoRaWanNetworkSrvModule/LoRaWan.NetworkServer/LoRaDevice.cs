@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
-    public sealed class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
+    public class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
     {
         /// <summary>
         /// Defines the maximum amount of times an ack resubmit will be sent.
@@ -220,7 +220,7 @@ namespace LoRaWan.NetworkServer
         /// Initializes the device from twin properties
         /// Throws InvalidLoRaDeviceException if the device does contain require properties.
         /// </summary>
-        public async Task<bool> InitializeAsync(NetworkServerConfiguration configuration, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> InitializeAsync(NetworkServerConfiguration configuration, CancellationToken cancellationToken = default)
         {
             _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
@@ -1148,10 +1148,18 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                this.connectionManager?.Release(this);
+                this.syncSave.Dispose();
+            }
+        }
+
         public void Dispose()
         {
-            this.connectionManager?.Release(this);
-            this.syncSave.Dispose();
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 

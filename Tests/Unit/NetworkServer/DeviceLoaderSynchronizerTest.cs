@@ -66,6 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 devAddr,
                 apiService.Object,
                 deviceFactory.Object,
+                new NetworkServerConfiguration(),
                 deviceCache,
                 null);
 
@@ -106,6 +107,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 devAddr,
                 apiService.Object,
                 deviceFactory.Object,
+                new NetworkServerConfiguration(),
                 deviceCache,
                 null);
 
@@ -151,6 +153,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 simulatedDevice.DevAddr,
                 apiService.Object,
                 deviceFactory,
+                new NetworkServerConfiguration(),
                 deviceCache,
                 null);
 
@@ -195,6 +198,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 simulatedDevice.DevAddr,
                 apiService.Object,
                 deviceFactory,
+                new NetworkServerConfiguration(),
                 deviceCache,
                 null);
 
@@ -242,6 +246,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 simulatedDevice.DevAddr,
                 apiService.Object,
                 deviceFactory,
+                new NetworkServerConfiguration(),
                 deviceCache,
                 null);
 
@@ -341,10 +346,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             request.Verify(x => x.NotifyFailed(reason, It.IsAny<Exception>()), Times.Once);
 
         private static TestDeviceLoaderSynchronizer CreateDefaultLoader(LoRaDeviceCache deviceCache) => 
-            new TestDeviceLoaderSynchronizer(string.Empty,
-                                                      Mock.Of<LoRaDeviceAPIServiceBase>(),
-                                                      Mock.Of<ILoRaDeviceFactory>(),
-                                                      deviceCache);
+            new TestDeviceLoaderSynchronizer(Mock.Of<LoRaDeviceAPIServiceBase>(),
+                                             Mock.Of<ILoRaDeviceFactory>(),
+                                             deviceCache);
 
 
         private static Mock<LoRaRequest> CreateVerifyableRequest()
@@ -356,16 +360,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             return loraRequest;
         }
 
-
         private class TestDeviceLoaderSynchronizer : DeviceLoaderSynchronizer
         {
-            internal TestDeviceLoaderSynchronizer(string devAddr,
-                                                LoRaDeviceAPIServiceBase loRaDeviceAPIService,
-                                                ILoRaDeviceFactory deviceFactory,
-                                                LoRaDeviceCache deviceCache = null,
-                                                HashSet<ILoRaDeviceInitializer> initializers = null)
+            internal TestDeviceLoaderSynchronizer(LoRaDeviceAPIServiceBase loRaDeviceAPIService,
+                                                  ILoRaDeviceFactory deviceFactory,
+                                                  LoRaDeviceCache deviceCache)
 #pragma warning disable CA2000 // ownership transferred
-                : base(devAddr, loRaDeviceAPIService, deviceFactory, deviceCache ?? LoRaDeviceCacheDefault.CreateDefault(), initializers)
+                : base(null, loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache, null)
 #pragma warning restore CA2000
             { }
 
@@ -375,6 +376,62 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             internal void UpdateLoadingDevicesFailed(bool value) => LoadingDevicesFailed = value;
+        }
+    }
+
+    public class DeviceLoaderSynchronizerCreateDevicesTest
+    {
+        [Fact]
+        public async Task When_Cache_Contains_Join_Device_It_Is_Reloaded()
+        {
+            using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+
+            const string devEUI = "123";
+            var loRaDevice = new Mock<LoRaDevice>(null, devEUI, null);
+            loRaDevice.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None))
+                .ReturnsAsync(true);
+            deviceCache.Register(loRaDevice.Object);
+
+            var deviceLoader = new TestDeviceLoaderSynchronizer(null, null, null, deviceCache);
+
+            await deviceLoader.ExecuteCreateDevicesAsync(new List<IoTHubDeviceInfo> { new IoTHubDeviceInfo { DevAddr = "456",  DevEUI = devEUI} });
+
+            loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
+        }
+
+        [Fact]
+        public async Task When_Reload_Fails_Loader_Updates_State()
+        {
+            using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+
+            const string devEUI = "123";
+            var loRaDevice = new Mock<LoRaDevice>(null, devEUI, null);
+            loRaDevice.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None))
+                .ThrowsAsync(new LoRaProcessingException(string.Empty, LoRaProcessingErrorCode.DeviceInitializationFailed));
+            deviceCache.Register(loRaDevice.Object);
+
+            var deviceLoader = new TestDeviceLoaderSynchronizer(null, null, null, deviceCache);
+
+            await deviceLoader.ExecuteCreateDevicesAsync(new List<IoTHubDeviceInfo> { new IoTHubDeviceInfo { DevAddr = "456", DevEUI = devEUI } });
+
+            loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
+
+            Assert.True(deviceLoader.HasLoadingDeviceError);
+        }
+
+        private class TestDeviceLoaderSynchronizer : DeviceLoaderSynchronizer
+        {
+            internal TestDeviceLoaderSynchronizer(string devAddr,
+                                                  LoRaDeviceAPIServiceBase loRaDeviceAPIService,
+                                                  ILoRaDeviceFactory deviceFactory,
+                                                  LoRaDeviceCache deviceCache = null,
+                                                  HashSet<ILoRaDeviceInitializer> initializers = null)
+#pragma warning disable CA2000 // ownership transferred
+                : base(devAddr, loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache ?? LoRaDeviceCacheDefault.CreateDefault(), initializers)
+#pragma warning restore CA2000
+            { }
+
+            internal Task ExecuteCreateDevicesAsync(IReadOnlyList<IoTHubDeviceInfo> devices) => CreateDevicesAsync(devices);
         }
     }
 }

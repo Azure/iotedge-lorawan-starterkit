@@ -280,13 +280,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             using var loRaDevice = CreateLoRaDevice(simulatedDevice);
+            loRaDevice.IsOurDevice = false;
             loRaDevice.SetFcntDown(10);
             loRaDevice.SetFcntUp(20);
 
-            var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
+            var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>();
             loRaDeviceRegistryMock.Setup(x => x.RegisterDeviceInitializer(It.IsNotNull<ILoRaDeviceInitializer>()));
             loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, devNonce))
-                .ReturnsAsync(() => loRaDevice);
+                .ReturnsAsync(loRaDevice);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
@@ -304,9 +305,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Device frame counts did not changed
             Assert.Equal(10U, loRaDevice.FCntDown);
             Assert.Equal(20U, loRaDevice.FCntUp);
-
-            loRaDeviceRegistryMock.Setup(dr => dr.Dispose());
-            LoRaDeviceClient.Setup(ldc => ldc.Dispose());
         }
 
         [Theory]

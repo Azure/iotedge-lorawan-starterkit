@@ -22,9 +22,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             cache.Register(device);
             await cache.WaitForRefreshAsync(CancellationToken.None);
             moqCallback.Verify(x => x.Invoke(device));
-            var count = cache.RefreshCount;
-            await cache.WaitForRefreshAsync(CancellationToken.None);
-            Assert.True(count < cache.RefreshCount);
         }
 
         [Fact]

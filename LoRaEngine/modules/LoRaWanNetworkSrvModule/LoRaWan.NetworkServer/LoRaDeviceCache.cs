@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
         private readonly ConcurrentDictionary<string, LoRaDevice> euiCache;
         private readonly object syncLock = new object();
         private readonly NetworkServerConfiguration configuration;
-        private readonly CancellationTokenSource ctsDispose;
+        private CancellationTokenSource? ctsDispose;
         private Task currentRefreshTask;
         private readonly StatisticsTracker statisticsTracker = new StatisticsTracker();
 
@@ -307,8 +307,9 @@ namespace LoRaWan.NetworkServer
             {
                 lock (this.syncLock)
                 {
-                    this.ctsDispose.Cancel();
-                    this.ctsDispose.Dispose();
+                    this.ctsDispose?.Cancel();
+                    this.ctsDispose?.Dispose();
+                    this.ctsDispose = null;
                     CleanupAllDevices();
                 }
             }

@@ -40,6 +40,7 @@ namespace LoRaWan.NetworkServer
 
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
+        private readonly NetworkServerConfiguration configuration;
         private readonly string devAddr;
         private readonly LoRaDeviceCache loraDeviceCache;
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
@@ -53,11 +54,13 @@ namespace LoRaWan.NetworkServer
             string devAddr,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
             ILoRaDeviceFactory deviceFactory,
+            NetworkServerConfiguration configuration,
             LoRaDeviceCache deviceCache,
             HashSet<ILoRaDeviceInitializer> initializers)
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
+            this.configuration = configuration;
             this.devAddr = devAddr;
             this.loraDeviceCache = deviceCache;
             this.initializers = initializers;
@@ -111,10 +114,11 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private async Task CreateDevicesAsync(IReadOnlyList<IoTHubDeviceInfo> devices)
+        protected async Task CreateDevicesAsync(IReadOnlyList<IoTHubDeviceInfo> devices)
         {
             List<Task<LoRaDevice>> initTasks = null;
             List<LoRaDevice> createdDevices = null;
+            List<Task<bool>> refreshTasks = null;
 
             if (devices?.Count > 0)
             {
@@ -124,19 +128,36 @@ namespace LoRaWan.NetworkServer
                 foreach (var foundDevice in devices)
                 {
                     // Only create devices that does not exist in the cache
-                    if (!this.loraDeviceCache.TryGetByDevEui(foundDevice.DevEUI, out _))
+                    if (!this.loraDeviceCache.TryGetByDevEui(foundDevice.DevEUI, out var cachedDevice))
                     {
                         initTasks.Add(this.deviceFactory.CreateAndRegisterAsync(foundDevice, CancellationToken.None));
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(cachedDevice.DevAddr))
+                        {
+                            // device in cache from a previous join that we didn't complete
+                            // (lost race with another gw) - refresh the twins now and keep it
+                            // in the cache
+                            refreshTasks ??= new List<Task<bool>>();
+                            refreshTasks.Add(cachedDevice.InitializeAsync(this.configuration, CancellationToken.None));
+                            Logger.Log(foundDevice.DevEUI, "refreshing device to fetch DevAddr", LogLevel.Debug);
+                        }
                     }
                 }
 
                 try
                 {
                     _ = await Task.WhenAll(initTasks);
+                    if (refreshTasks != null)
+                    {
+                        _ = await Task.WhenAll(refreshTasks);
+                    }
                 }
                 catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.DeviceInitializationFailed)
                 {
                     Logger.Log(this.devAddr, $"one or more device initializations failed: {ex}", LogLevel.Error);
+                    HasLoadingDeviceError = true;
                 }
             }
 
@@ -147,22 +168,9 @@ namespace LoRaWan.NetworkServer
                     if (deviceTask.IsCompletedSuccessfully)
                     {
                         var device = deviceTask.Result;
-
-                        if (device != null)
-                        {
-                            // run initializers
-                            InitializeDevice(device);
-                            createdDevices.Add(device);
-                        }
-                        else
-                        {
-                            // if device twin load fails, error will be logged and device will be null
-                            HasLoadingDeviceError = true;
-                        }
-                    }
-                    else
-                    {
-                        HasLoadingDeviceError = true;
+                        // run initializers
+                        InitializeDevice(device);
+                        createdDevices.Add(device);
                     }
                 }
             }
