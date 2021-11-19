@@ -1276,11 +1276,11 @@
 <li>Module LoRaWanNetworkSrvModule logging configured with following environment
   variables:</li>
 <li>LOG_LEVEL: 1</li>
-<li>LOG_TO_UDP: true</li>
-<li>LOG_TO_UDP_ADDRESS: development machine IP address (ensure IoT Edge machine
+<li>LOG_TO_TCP: true</li>
+<li>LOG_TO_TCP_ADDRESS: development machine IP address (ensure IoT Edge machine
     can ping it)</li>
-<li>E2E test configuration (in file <code>appsettings.local.json</code>) has UDP logging
-  enabled <code>"UdpLog": "true"</code></li>
+<li>E2E test configuration (in file <code>appsettings.local.json</code>) has TCP logging
+  enabled <code>"TcpLog": "true"</code></li>
 </ul>
 <h2 id="setup">Setup</h2>
 <h3 id="lora-basics-station-and-network-server-setup">LoRa Basics Station and Network Server setup</h3>
@@ -1295,8 +1295,8 @@
 <p>Update LoRaWanNetworkSrvModule settings:</p>
 <div class="highlight"><pre><span></span><code><span class="nv">NET_SRV_LOG_LEVEL</span><span class="o">=</span><span class="m">1</span>
 <span class="nv">NET_SRV_LOGTO_HUB</span><span class="o">=</span><span class="nb">true</span>
-<span class="nv">NET_SRV_LOGTO_UDP</span><span class="o">=</span><span class="nb">true</span>
-<span class="nv">NET_SRV_LOG_TO_UDP_ADDRESS</span><span class="o">=</span>&lt;your-local-ip-address&gt;
+<span class="nv">NET_SRV_LOG_TO_TCP</span><span class="o">=</span><span class="nb">true</span>
+<span class="nv">NET_SRV_LOG_TO_TCP_ADDRESS</span><span class="o">=</span>&lt;your-local-ip-address&gt;
 </code></pre></div>
 </li>
 <li>
@@ -1360,7 +1360,7 @@ can discover them with <code>ls /dev/ttyACM*</code>.</p>
     <span class="nt">&quot;CreateDevices&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
     <span class="nt">&quot;NetworkServerModuleLogAssertLevel&quot;</span><span class="p">:</span> <span class="s2">&quot;Error&quot;</span><span class="p">,</span>
     <span class="nt">&quot;DevicePrefix&quot;</span><span class="p">:</span> <span class="s2">&quot;your-two-letter-device-prefix&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;UdpLog&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;TcpLog&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
     <span class="nt">&quot;FunctionAppBaseUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-function-app.azurewebsites.net/api/&quot;</span><span class="p">,</span>
     <span class="nt">&quot;FunctionAppCode&quot;</span><span class="p">:</span> <span class="s2">&quot;your-function-code=&quot;</span>
   <span class="p">}</span>
@@ -1435,7 +1435,7 @@ regulations. Additionally, it makes it easier to track logs for each test.</p>
 </code></pre></div>
 <h2 id="creating-test-class">Creating Test Class</h2>
 <p>E2E tests cannot be parallelized because they all share dependency to Arduino
-device. Those classes also rely on Udp and IoT Event Hub listeners that should
+device. Those classes also rely on TCP and IoT Event Hub listeners that should
 be created once per test execution, not per test.</p>
 <p>Therefore, when creating a new test class follow the guidelines:</p>
 <ul>
@@ -1474,7 +1474,7 @@ validation creates a tight dependency between tests and logging.</p>
 tests gets too high. An option is to have the Network server publish events when
 an operation happens and have the test create assertion on them (i.e. <code>{ "type":
 "otaajoin", "status": "succeeded", "deviceid": "xxx", "time": "a-date" }</code>).</p>
-<p>Module logs can be listened from IoT Hub or UDP (experimental).</p>
+<p>Module logs can be listened from IoT Hub or TCP (experimental).</p>
 <p>Validating against the module logs.</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Ensures that the message 0000000000000004: message &#39;{&quot;value&quot;: 51}&#39; sent to hub is logged</span>
 <span class="c1">// It contains retries to account for i/o delays</span>
