@@ -24,14 +24,12 @@ namespace LoraKeysManagerFacade
             private readonly string lockKey;
             private readonly string owner;
             private readonly IDatabase redisCache;
-            private readonly ILogger logger;
             private bool ownsLock;
 
-            internal RedisLockWrapper(string devEUI, IDatabase redisCache, ILogger logger, string owner = ":LoRaRedisStore")
+            internal RedisLockWrapper(string devEUI, IDatabase redisCache, string owner = ":LoRaRedisStore")
             {
                 this.lockKey = GetEntryKey(devEUI) + LockToken;
                 this.redisCache = redisCache;
-                this.logger = logger;
                 this.owner = owner;
             }
 
@@ -66,7 +64,7 @@ namespace LoraKeysManagerFacade
 
         public async Task UpdateADRTable(string devEUI, LoRaADRTable table)
         {
-            using var redisLock = new RedisLockWrapper(devEUI, this.redisCache, this.logger);
+            using var redisLock = new RedisLockWrapper(devEUI, this.redisCache);
             if (await redisLock.TakeLockAsync())
             {
                 _ = await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
@@ -78,7 +76,7 @@ namespace LoraKeysManagerFacade
             if (entry is null) throw new ArgumentNullException(nameof(entry));
 
             LoRaADRTable table = null;
-            using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache, this.logger))
+            using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache))
             {
                 if (await redisLock.TakeLockAsync())
                 {
@@ -97,7 +95,7 @@ namespace LoraKeysManagerFacade
 
         public async Task<LoRaADRTable> GetADRTable(string devEUI)
         {
-            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache, this.logger))
+            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
             {
                 if (await redisLock.TakeLockAsync())
                 {
@@ -111,7 +109,7 @@ namespace LoraKeysManagerFacade
 
         public async Task<bool> Reset(string devEUI)
         {
-            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache, this.logger))
+            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
             {
                 if (await redisLock.TakeLockAsync())
                 {
