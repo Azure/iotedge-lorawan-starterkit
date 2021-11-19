@@ -28,18 +28,25 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
-
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
 
-            for (var i = 0; i < 10; i++)
+            const int MESSAGE_COUNT = 5;
+
+            for (var i = 0; i < MESSAGE_COUNT; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
-                await ArduinoDevice.transferPacketAsync(msg, 10);
-                await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
-                // After transferPacket: Expectation from serial
-                // +MSG: Done
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                Log($"{device.DeviceID}: Sending confirmed '{msg}' {i + 1}/{MESSAGE_COUNT}");
+                await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
+
+                await Task.Delay(2 * Constants.DELAY_BETWEEN_MESSAGES);
+
+                // After transferPacketWithConfirmed: Expectation from serial
+                // +CMSG: ACK Received
+                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
+
+                // 0000000000000031: message '{"value": 101}' sent to hub
+                await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
                 var logMsg = $"Duplicate message received from station with EUI";
                 var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.IndexOf(logMsg, StringComparison.Ordinal) != -1);
