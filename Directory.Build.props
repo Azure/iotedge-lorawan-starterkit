@@ -7,6 +7,7 @@
       <LangVersion>9.0</LangVersion>
       <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+      <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
     <PropertyGroup>
       <DockerDotNetX509Version>3.125.2</DockerDotNetX509Version>

@@ -88,16 +88,16 @@ namespace LoraKeysManagerFacade
                 _ = await this.registryManager.AddDeviceAsync(edgeGatewayDevice);
                 _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
 
-                static ConfigurationContent GetConfigurationContent(string configLocation, IDictionary<string, string> tokenReplacements)
+                static async Task<ConfigurationContent> GetConfigurationContentAsync(Uri configLocation, IDictionary<string, string> tokenReplacements)
                 {
-                    using var wc = new WebClient();
-                    var json = wc.DownloadString(configLocation);
+                    using var httpClient = new HttpClient();
+                    var json = await httpClient.GetStringAsync(configLocation);
                     foreach (var r in tokenReplacements)
                         json = json.Replace(r.Key, r.Value, StringComparison.Ordinal);
                     return JsonConvert.DeserializeObject<ConfigurationContent>(json);
                 }
 
-                var deviceConfigurationContent = GetConfigurationContent(Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION"), new Dictionary<string, string>
+                var deviceConfigurationContent = await GetConfigurationContentAsync(new Uri(Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION")), new Dictionary<string, string>
                 {
                     ["[$region]"] = region,
                     ["[$reset_pin]"] = resetPin,
@@ -112,7 +112,7 @@ namespace LoraKeysManagerFacade
                     log.LogDebug("Opted-in to use Azure Monitor on the edge. Deploying the observability layer.");
                     // If Appinsights Key is set this means that user opted in to use Azure Monitor.
                     _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "IotHubMetricsCollectorModule"));
-                    var observabilityConfigurationContent = GetConfigurationContent(Environment.GetEnvironmentVariable("OBSERVABILITY_CONFIG_LOCATION"), new Dictionary<string, string>
+                    var observabilityConfigurationContent = await GetConfigurationContentAsync(new Uri(Environment.GetEnvironmentVariable("OBSERVABILITY_CONFIG_LOCATION")), new Dictionary<string, string>
                     {
                         ["[$iot_hub_resource_id]"] = Environment.GetEnvironmentVariable("IOT_HUB_RESOURCE_ID"),
                         ["[$log_analytics_workspace_id]"] = Environment.GetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_ID"),

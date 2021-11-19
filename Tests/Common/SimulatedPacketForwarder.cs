@@ -72,7 +72,7 @@ namespace LoRaWan.Tests.Common
 
         private readonly UdpClient udpClient;
         private readonly IPEndPoint networkServerIPEndpoint;
-        private static readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator RndKeysGenerator = RandomNumberGenerator.Create();
         private CancellationTokenSource cancellationTokenSource;
         private Task pushDataTask;
         private Task pullDataTask;
@@ -101,7 +101,7 @@ namespace LoRaWan.Tests.Common
                 var currentToken = new byte[2];
                 while (!cts.IsCancellationRequested)
                 {
-                    var receivedResults = await this.udpClient.ReceiveAsync();
+                    var receivedResults = await this.udpClient.ReceiveAsync(cts);
 
                     // If 4, it may mean we received a confirmation
                     if (receivedResults.Buffer.Length >= 4)

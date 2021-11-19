@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal static class DownlinkMessageBuilder
     {
-        private static readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator RndKeysGenerator = RandomNumberGenerator.Create();
 
         /// <summary>
         /// Creates downlink message with ack for confirmation or cloud to device message.

@@ -10,7 +10,7 @@ namespace LoRaWan.Tests.Common
     /// </summary>
     public static class RandomTokenGenerator
     {
-        private static readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator RndKeysGenerator = RandomNumberGenerator.Create();
 
         /// <summary>
         /// Gets a new token.
