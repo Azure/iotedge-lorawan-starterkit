@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Integration
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", TestDataFrame, 1)]
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", TestJoinRequest, 2)]
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", TestJoinRequest, 1)]
-        public async Task When_Same_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(string station1Id, string station2Id, string message, int expectedMessagesUpstream)
+        public async Task When_Same_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(string station1, string station2, string message, int expectedMessagesUpstream)
         {
             // arrange
             var dispatcherCounter = 0;
@@ -66,18 +66,9 @@ namespace LoRaWan.Tests.Integration
             var testServer = await TestServerAsyncFactory(messageDispatcherMock);
             var wsClient = testServer.CreateWebSocketClient();
 
-            var station1 = StationEui.Parse(station1Id);
-            var station2 = StationEui.Parse(station2Id);
-            var baseUri = $"localhost:5000{BasicsStationNetworkServer.DataEndpoint}";
-
-            var wsUri1 = new UriBuilder($"{baseUri}/{station1}")
-            {
-                Scheme = "ws"
-            }.Uri;
-            var wsUri2 = new UriBuilder($"{baseUri}/{station2}")
-            {
-                Scheme = "ws"
-            }.Uri;
+            var baseUri = new Uri(new Uri("ws://localhost:5000/"), BasicsStationNetworkServer.DataEndpoint + "/");
+            var wsUri1 = new Uri(baseUri, station1);
+            var wsUri2 = new Uri(baseUri, station2);
 
             // act
             var validJsonMessage = JsonUtil.Strictify(message);
