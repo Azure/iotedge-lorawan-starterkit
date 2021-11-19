@@ -4,7 +4,7 @@
       <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
       <AnalysisMode>AllEnabledByDefault</AnalysisMode>
       <AnalysisLevel>5.0</AnalysisLevel>
-      <LangVersion>9.0</LangVersion>
+      <LangVersion>10.0</LangVersion>
       <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
       <TargetFramework>net6.0</TargetFramework>
