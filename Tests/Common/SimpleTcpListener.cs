@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Common
         public void Dispose()
         {
             var listener = this.listener;
-            if (listener is null || listener != Interlocked.CompareExchange(ref this.listener, null, listener))
+            if (listener is null || Interlocked.CompareExchange(ref this.listener, null, listener) is null)
                 return;
             listener.Stop();
         }
