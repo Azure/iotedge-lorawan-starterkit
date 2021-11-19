@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Unit.Logger
         [InlineData("EUI", null, 1, "EUI foo")]
         [InlineData("EUI", "ADDR", null, "EUI foo")]
         [InlineData(null, "ADDR", 1, "ADDR foo")]
-        public void When_DevEUI_And_DevAddr_Scope_Set_DevEUI_Scope_Is_Set(string devEuiScope, string devAddrScope, int? stationEuiScope, string expected)
+        public void When_Multiple_Scopes_Set_DevEUI_Preferred_Over_DevAddr_Preferred_Over_StationEUI(string devEuiScope, string devAddrScope, int? stationEuiScope, string expected)
         {
             // arrange
             var options = CreateLoggerConfigMonitor();
