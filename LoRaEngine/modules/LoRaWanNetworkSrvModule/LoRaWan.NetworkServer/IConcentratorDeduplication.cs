@@ -3,17 +3,15 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using LoRaWan.NetworkServer.BasicsStation;
-
-    public interface IConcentratorDeduplication
+    public interface IConcentratorDeduplication<T> where T : class
     {
         /// <summary>
-        /// Detects data frames that should be dropped based on whether
+        /// Detects frames (messages) that should be dropped based on whether
         /// they were encountered from the same or a different concentrator before.
         /// </summary>
-        /// <param name="updf">The received message.</param>
-        /// <param name="stationEui">The current station that the message was sent from.</param>
-        /// <returns>True, if dataframe has been encountered in the past and should be dropped.</returns>
-        public bool ShouldDrop(UpstreamDataFrame updf, StationEui stationEui);
+        /// <param name="frame">The received frame.</param>
+        /// <param name="stationEui">The current station that the frame was sent from.</param>
+        /// <returns><code>true</code>, if the frame has been encountered in the past and should be dropped.</returns>
+        public bool ShouldDrop(T frame, StationEui stationEui);
     }
 }
