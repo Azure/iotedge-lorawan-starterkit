@@ -169,6 +169,63 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
+        /// Logic to get the correct downstream transmission frequency for region CN470.
+        /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
+        /// <param name="dataRate">The upstream data rate.</param>
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        /// </summary>
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo)
+        {
+            downstreamFrequency = 0;
+
+            if (deviceJoinInfo == null)
+                return false;
+
+            // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
+            // over desired twin properties (set for APB devices).
+            var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
+
+            if (joinChannelIndex == null)
+                return false;
+
+            if (!IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
+                return false;
+
+            int channelNumber;
+
+            // 20 MHz plan A
+            if (joinChannelIndex <= 7)
+            {
+                channelNumber = upstreamFrequency < 500 ? GetChannelNumber(upstreamFrequency, 470.3) : GetChannelNumber(upstreamFrequency, 503.5, 32);
+                downstreamFrequency = this.downstreamFrequenciesByPlanType[0][channelNumber];
+                return true;
+            }
+            // 20 MHz plan B
+            if (joinChannelIndex <= 9)
+            {
+                channelNumber = upstreamFrequency < 490 ? GetChannelNumber(upstreamFrequency, 476.9) : GetChannelNumber(upstreamFrequency, 496.9, 32);
+                downstreamFrequency = this.downstreamFrequenciesByPlanType[1][channelNumber];
+                return true;
+            }
+            // 26 MHz plan A
+            if (joinChannelIndex <= 14)
+            {
+                channelNumber = GetChannelNumber(upstreamFrequency, 470.3);
+                downstreamFrequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24];
+                return true;
+            }
+            // 26 MHz plan B
+            if (joinChannelIndex <= 19)
+            {
+                channelNumber = GetChannelNumber(upstreamFrequency, 480.3);
+                downstreamFrequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
@@ -246,5 +303,7 @@ namespace LoRaTools.Regions
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         private static int GetChannelNumber(Rxpk upstreamChannel, double startUpstreamFreq, int startChannelNumber = 0) =>
             startChannelNumber + (int)Math.Round((upstreamChannel.Freq - startUpstreamFreq) / FrequencyIncrement, 0, MidpointRounding.AwayFromZero);
+        private static int GetChannelNumber(double upstreamChannelFrequency, double startUpstreamFreq, int startChannelNumber = 0) =>
+            startChannelNumber + (int)Math.Round((upstreamChannelFrequency - startUpstreamFreq) / FrequencyIncrement, 0, MidpointRounding.AwayFromZero);
     }
 }
