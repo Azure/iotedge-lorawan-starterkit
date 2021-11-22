@@ -117,6 +117,7 @@ namespace LoRaTools.Regions
 
         /// <summary>
         /// Returns join channel index matching the frequency of the join request.
+        /// This default implementation is used by all regions which do not have the concept of join channels.
         /// </summary>
         /// <param name="joinChannel">Channel on which the join request was received.</param>
         public virtual bool TryGetJoinChannelIndex(double frequency, out int channelIndex)
@@ -137,9 +138,9 @@ namespace LoRaTools.Regions
         /// Implements logic to get the correct downstream transmission frequency for the given region based on the upstream channel frequency.
         /// </summary>
         /// <param name="upstreamFrequency">Frequency of the upstream message.</param>
-        /// <param name="dataRate">Ustream data rate.</param>
+        /// <param name="upstreamDataRate">Ustream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null);
+        public abstract bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>
         /// Returns downstream data rate based on the upstream channel and RX1 DR offset.
@@ -164,7 +165,7 @@ namespace LoRaTools.Regions
                 }
             }
 
-            throw new LoRaProcessingException($"Invalid upstream data rate {upstreamChannel.Datr}", LoRaProcessingErrorCode.InvalidDataRate);
+            throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
         }
 
         /// <summary>
@@ -333,32 +334,16 @@ namespace LoRaTools.Regions
                 rxpk.Freq > RegionLimits.FrequencyRange.max ||
                 !RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
             {
-                Logger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
+                Logger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Warning);
                 return false;
             }
 
             return true;
         }
 
-        /// <summary>
-        /// This method checks that a received message is within the correct frenquency range and has a valid datarate.
-        /// </summary>
-        /// <param name="frequency">Frequency on which the message was transmitted.</param>
-        /// <param name="dataRate">Data rate with which the message was transmitted.</param>
-        protected bool IsValidUpstreamFrequencyAndDataRate(double frequency, ushort dataRate)
-        {
-            if (!IsValidUpstreamFrequency(frequency) || !IsValidUpstreamDataRate(dataRate))
-            {
-                Logger.Log("A upstream message not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
-                return false;
-            }
+        protected bool IsValidUpstreamFrequency(double frequency) => RegionLimits.FrequencyRange.min <= frequency && frequency <= RegionLimits.FrequencyRange.max;
 
-            return true;
-        }
-
-        private bool IsValidUpstreamFrequency(double frequency) => RegionLimits.FrequencyRange.min <= frequency && frequency <= RegionLimits.FrequencyRange.max;
-
-        private bool IsValidUpstreamDataRate(ushort dataRate) => RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(dataRate);
+        protected bool IsValidUpstreamDataRate(ushort dataRate) => RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(dataRate);
 
         /// <summary>
         /// Get Datarate number from SF#BW# string.

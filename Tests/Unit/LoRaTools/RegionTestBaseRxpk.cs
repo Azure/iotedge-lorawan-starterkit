@@ -48,9 +48,10 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         protected void TestRegionLimitRxpk(double freq, string datarate, DeviceJoinInfo deviceJoinInfo = null)
         {
             var rxpk = GenerateRxpk(datarate, freq);
-            Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _, deviceJoinInfo));
-            var ex = Assert.Throws<LoRaProcessingException>(() => Region.GetDownstreamDataRate(rxpk[0]));
-            Assert.Equal(LoRaProcessingErrorCode.InvalidDataRate, ex.ErrorCode);
+            var ex = Assert.Throws<LoRaProcessingException>(() => Region.TryGetDownstreamChannelFrequency(rxpk[0], out _, deviceJoinInfo));
+            Assert.Contains("Invalid upstream channel", ex.Message, StringComparison.InvariantCulture);
+            ex = Assert.Throws<LoRaProcessingException>(() => Region.GetDownstreamDataRate(rxpk[0]));
+            Assert.Contains("Invalid upstream channel", ex.Message, StringComparison.InvariantCulture);
         }
 
         protected static IList<Rxpk> GenerateRxpk(string dr, double freq)
