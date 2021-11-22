@@ -3,7 +3,6 @@
 
 namespace LoRaWan
 {
-    using System;
     using Microsoft.Extensions.Logging;
 
     // Defines the logger configuration
@@ -30,26 +29,5 @@ namespace LoRaWan
         /// Gets or sets the id of the gateway running the logger.
         /// </summary>
         public string GatewayId { get; }
-
-        public static LogLevel InitLogLevel(string logLevelIn)
-        {
-            LogLevel logLevelOut;
-
-            if (logLevelIn == "1" || string.Equals(logLevelIn, "debug", StringComparison.OrdinalIgnoreCase))
-            {
-                logLevelOut = LogLevel.Debug;
-            }
-            else if (logLevelIn == "2" || string.Equals(logLevelIn, "information", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(logLevelIn, "info", StringComparison.OrdinalIgnoreCase))
-            {
-                logLevelOut = LogLevel.Information;
-            }
-            else
-            {
-                logLevelOut = LogLevel.Error;
-            }
-
-            return logLevelOut;
-        }
     }
 }
