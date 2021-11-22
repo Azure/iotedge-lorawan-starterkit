@@ -70,6 +70,51 @@ namespace LoRaWan.Tests.Unit.Logger
         }
 
         [Theory]
+        [InlineData("EUI", null, null, "EUI foo")]
+        [InlineData(null, "ADDR", null, "ADDR foo")]
+        [InlineData(null, null, 1, "0000000000000001 foo")]
+        [InlineData("EUI", null, 1, "EUI foo")]
+        [InlineData("EUI", "ADDR", null, "EUI foo")]
+        [InlineData(null, "ADDR", 1, "ADDR foo")]
+        public void When_Multiple_Scopes_Set_DevEUI_Preferred_Over_DevAddr_Preferred_Over_StationEUI(string devEuiScope, string devAddrScope, int? stationEuiScope, string expected)
+        {
+            // arrange
+            var options = CreateLoggerConfigMonitor();
+            var moqInfo = new Mock<Action<string>>();
+            var provider = new Mock<LoRaConsoleLoggerProvider>(options);
+            var logger = new TestLoRaConsoleLogger(moqInfo.Object, null, provider.Object);
+
+            // act
+            using var euiScope = devEuiScope is null ? default : logger.BeginDeviceScope(devEuiScope);
+            using var addrScope = devAddrScope is null ? default : logger.BeginDeviceAddressScope(devAddrScope);
+            using var statScope = stationEuiScope is { } s ? logger.BeginEuiScope(new StationEui((ulong)s)) : default;
+            logger.LogInformation("foo");
+
+            // assert
+            moqInfo.Verify(x => x.Invoke(expected), Times.Once);
+        }
+
+        [Fact]
+        public void DevAddr_Scope_Set_In_Message()
+        {
+            // arrange
+            var options = CreateLoggerConfigMonitor();
+            var moqInfo = new Mock<Action<string>>();
+            var provider = new Mock<LoRaConsoleLoggerProvider>(options);
+            var logger = new TestLoRaConsoleLogger(moqInfo.Object, null, provider.Object);
+            const string devAddr = "12345678ADDR";
+            const string message = "foo";
+
+            // act
+            using var scope = logger.BeginDeviceAddressScope(devAddr);
+            logger.LogInformation(message);
+
+            // assert
+            var expected = string.Concat(devAddr, " ", message);
+            moqInfo.Verify(x => x.Invoke(expected), Times.Once);
+        }
+
+        [Theory]
         [InlineData(0, 0, true)]
         [InlineData(0, 1, true)]
         [InlineData(1, 1, true)]

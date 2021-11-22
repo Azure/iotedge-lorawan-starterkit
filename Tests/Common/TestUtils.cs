@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Common
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
 
     public static class TestUtils
@@ -198,7 +199,7 @@ namespace LoRaWan.Tests.Common
         public LoraDeviceClientConnectionManagerWrapper()
         {
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
-            Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
+            Value = new LoRaDeviceClientConnectionManager(this.memoryCache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
         }
 
         public LoRaDeviceClientConnectionManager Value { get; }

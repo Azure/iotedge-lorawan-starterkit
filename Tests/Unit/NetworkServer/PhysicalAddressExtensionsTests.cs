@@ -6,7 +6,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Net.NetworkInformation;
     using LoRaWan.NetworkServer;
-    using NetworkServer;
     using Xunit;
 
     public class PhysicalAddressExtensionsTests

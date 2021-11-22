@@ -20,7 +20,7 @@ namespace LoRaWan.Tests.Common
 
         internal static (string Message, string SourceId) Parse(string rawMessage)
         {
-            string message = null;
+            var message = string.Empty;
             string sourceId = null;
 
             if (!string.IsNullOrEmpty(rawMessage))

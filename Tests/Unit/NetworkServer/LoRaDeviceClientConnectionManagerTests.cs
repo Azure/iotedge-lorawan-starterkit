@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -20,7 +21,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var connectionManager = new LoRaDeviceClientConnectionManager(cache);
+            using var connectionManager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
 
             var deviceRegistrations =
                 Enumerable.Range(0, numberOfDevices)
