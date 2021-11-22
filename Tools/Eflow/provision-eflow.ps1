@@ -3,6 +3,8 @@
 .DESCRIPTION
     This script automatically install Edge For Linux On Windows (EFLOW) on a new Windows Server VM
     The script might trigger a restart and might need to be rerun after a restart
+    The script expect an environment variable name IOT_EDGE_DEVICE_CONNECTION_STRING to be set
+        with the connection string of the iot edge device we plan to use
 .NOTES
      Author     :
         Mikhail Chatillon       - chmikhai@microft.com
@@ -13,7 +15,9 @@ param
 (
     [string]$switchName="EFLOW Switch",
     [string]$startEflowIpRange=100,
-    [string]$endEflowIpRange=200
+    [string]$endEflowIpRange=200,
+    [int]$internalPort=5000,
+    [int]$externalPort=5000
 )
 
 # Enable Windows Features
@@ -54,9 +58,24 @@ $netAdapterIfIndex=(Get-NetAdapter -Name "*$switchName*").ifIndex
 $netAdapterIpAddress=Get-NetIPAddress -AddressFamily IPv4  -InterfaceIndex $netAdapterIfIndex
 $netAdapterIp=$netAdapterIpAddress.IPAddress
 $ipAddressFamily=$netAdapterIp.Substring(0, $netAdapterIp.lastIndexOf('.')+1)
-$gwIp=$ipAddressFamily+1
+$gwIpCounter=1
+$gwIp=$ipAddressFamily+$gwIpCounter
+
+while(!(get-NetIPAddress -IpAddress $gwIp -ErrorAction SilentlyContinue))
+{
+    $gwIpCounter++
+    $gwIp=$ipAddressFamily+$gwIpCounter
+}
+
 $natIp=$ipAddressFamily+0
+
 New-NetIPAddress -IPAddress $gwIp -PrefixLength 24 -InterfaceIndex $netAdapterIfIndex
+
+if(Get-NetNat -Name "$switchName" -ErrorAction SilentlyContinue)
+{
+    throw "Net Nat with name $switchName already existing";
+}
+
 New-NetNat -Name "$switchName" -InternalIPInterfaceAddressPrefix "$natIp/24"
 #Install DHCP
 netsh dhcp add securitygroups
@@ -73,5 +92,5 @@ $ProgressPreference = 'SilentlyContinue'
 Invoke-WebRequest "https://aka.ms/AzEflowMSI" -OutFile $msiPath
 Start-Process -Wait msiexec -ArgumentList "/i","$([io.Path]::Combine($env:TEMP, 'AzureIoTEdge.msi'))","/qn"
 Deploy-Eflow  -acceptEula 'yes' -acceptOptionalTelemetry 'yes' -vswitchName $switchName -ip4Address $startIp -ip4GatewayAddress $gwIp -vswitchType 'Internal'
-Provision-EflowVm -provisioningType ManualConnectionString -devConnString ''
-Add-NetNatStaticMapping -ExternalIPAddress "0.0.0.0/0" -ExternalPort 5000 -Protocol TCP -InternalIPAddress "$startip" -InternalPort 5000 -NatName $switchName
+Provision-EflowVm -provisioningType ManualConnectionString -devConnString "$env:IOT_EDGE_DEVICE_CONNECTION_STRING"
+Add-NetNatStaticMapping -ExternalIPAddress "0.0.0.0/0" -ExternalPort $externalPort -Protocol TCP -InternalIPAddress "$startip" -InternalPort $internalPort -NatName $switchName
