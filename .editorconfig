@@ -115,3 +115,7 @@ file_header_template = Copyright (c) Microsoft. All rights reserved.\nLicensed u
 
 # LoggerMessage.Define for high-performance logging
 dotnet_diagnostic.CA1848.severity = suggestion
+
+# Logging template should not vary between calls. To be revisited as part of
+# https://github.com/Azure/iotedge-lorawan-starterkit/issues/829
+dotnet_diagnostic.CA2254.severity = suggestion

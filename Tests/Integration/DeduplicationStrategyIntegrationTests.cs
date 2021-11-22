@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -20,7 +21,7 @@ namespace LoRaWan.Tests.Integration
 
         public DeduplicationStrategyIntegrationTests() : base()
         {
-            this.factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object);
+            this.factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
         }
 

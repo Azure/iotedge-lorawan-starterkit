@@ -6,8 +6,8 @@ namespace LoRaWan
 {
     using System;
     using System.Collections.Concurrent;
-    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using Logger;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Logging;
@@ -99,7 +99,7 @@ namespace LoRaWan
             if (configuredEventId == 0 || configuredEventId == eventId)
             {
                 var formattedMessage = formatter(state, exception);
-                formattedMessage = AddScopeInformation(formattedMessage);
+                formattedMessage = LoggerHelper.AddScopeInformation(this.provider.ScopeProvider, formattedMessage);
 
                 if (logLevel == LogLevel.Error)
                 {
@@ -110,34 +110,6 @@ namespace LoRaWan
                     ConsoleWrite(formattedMessage);
                 }
             }
-        }
-
-        /// <summary>
-        /// Prefixes the message with predefined scope values.
-        /// Right now we only support DevEUI, but could be extended to
-        /// include others (StationEUI, Gateway, DevAddr etc).
-        /// If the message is already prefixed with the DevEUI, we don't
-        /// add it again.
-        /// </summary>
-        /// <param name="message">The already formatted message</param>
-        /// <returns></returns>
-        private string AddScopeInformation(string message)
-        {
-            if (this.provider.ScopeProvider is { } scopeProvider)
-            {
-                scopeProvider.ForEachScope<object?>((activeScope, _) =>
-                {
-                    if (activeScope is IDictionary<string, object> activeScopeDictionary &&
-                        activeScopeDictionary.TryGetValue(ILoggerExtensions.DevEUIKey, out var obj) &&
-                        obj is string devEUI &&
-                        !message.StartsWith(devEUI, StringComparison.OrdinalIgnoreCase))
-                    {
-                        message = string.Concat(devEUI, " ", message);
-                    }
-                }, null);
-            }
-
-            return message;
         }
 
         protected virtual void ConsoleWriteError(string message) =>

@@ -15,6 +15,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -112,7 +113,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
@@ -147,7 +149,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
@@ -170,7 +173,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
@@ -203,7 +207,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             _ = await Assert.ThrowsAsync<ArgumentNullException>(() => target.SendAsync(c2dToDeviceMessage));
 
@@ -246,7 +251,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             _ = await Assert.ThrowsAsync<TimeoutException>(() => target.SendAsync(c2dToDeviceMessage));
 
@@ -273,7 +279,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
@@ -300,7 +307,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
@@ -364,7 +372,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
@@ -418,7 +427,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 

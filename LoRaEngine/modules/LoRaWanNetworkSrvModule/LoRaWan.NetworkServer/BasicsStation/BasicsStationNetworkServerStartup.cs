@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
     using System.Globalization;
+    using Logger;
     using LoRaTools.ADR;
     using LoRaWan;
     using LoRaWan.NetworkServer.ADR;
@@ -47,6 +48,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
                             _ = loggingBuilder.SetMinimumLevel(logLevel);
                             _ = loggingBuilder.AddLoRaConsoleLogger(c => c.LogLevel = logLevel);
+
+                            if (NetworkServerConfiguration.LogToTcp)
+                            {
+                                _ = loggingBuilder.AddTcpLogger(new TcpLoggerConfiguration(logLevel, NetworkServerConfiguration.LogToTcpAddress,
+                                                                                           NetworkServerConfiguration.LogToTcpPort,
+                                                                                           NetworkServerConfiguration.GatewayID));
+                            }
 
                             if (useApplicationInsights)
                             {

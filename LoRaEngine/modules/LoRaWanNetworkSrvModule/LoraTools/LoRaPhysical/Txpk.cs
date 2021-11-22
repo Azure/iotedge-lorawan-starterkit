@@ -4,7 +4,6 @@
 namespace LoRaTools.LoRaPhysical
 {
     using System.Text;
-    using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -47,9 +46,9 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used as part of Simulated device for testing purposes.
         /// </summary>
         /// <param name="inputMessage">The Input Message bytes.</param>
-        public static Txpk CreateTxpk(byte[] inputMessage)
+        public static Txpk CreateTxpk(byte[] inputMessage, ILogger logger = null)
         {
-            var physicalPayload = new PhysicalPayload(inputMessage, true);
+            var physicalPayload = new PhysicalPayload(inputMessage, true, logger);
             var payload = Encoding.UTF8.GetString(physicalPayload.Message);
 
             // deserialize for a downlink message
@@ -63,7 +62,7 @@ namespace LoRaTools.LoRaPhysical
                 }
                 else
                 {
-                    Logger.Log("Error: " + payloadDownObject.Txpk, LogLevel.Error);
+                    logger?.LogError("Error: " + payloadDownObject.Txpk);
                 }
             }
 

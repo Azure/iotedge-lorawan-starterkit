@@ -5,18 +5,19 @@ namespace LoRaTools.ADR
 {
     using System;
     using System.Threading.Tasks;
-    using LoRaWan;
     using Microsoft.Extensions.Logging;
 
     public class LoRaADRManagerBase : ILoRaADRManager
     {
         private readonly ILoRaADRStore store;
         private readonly ILoRaADRStrategyProvider strategyProvider;
+        private readonly ILogger<LoRaADRManagerBase> logger;
 
-        public LoRaADRManagerBase(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider)
+        public LoRaADRManagerBase(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider, ILogger<LoRaADRManagerBase> logger)
         {
             this.store = store;
             this.strategyProvider = strategyProvider;
+            this.logger = logger;
         }
 
         protected virtual void UpdateState(LoRaADRResult loRaADRResult)
@@ -87,7 +88,7 @@ namespace LoRaTools.ADR
             }
 
             result.NumberOfFrames = table.Entries.Count;
-            Logger.Log(devEUI, $"calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
+            this.logger.LogDebug($"calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}");
             return result;
         }
 

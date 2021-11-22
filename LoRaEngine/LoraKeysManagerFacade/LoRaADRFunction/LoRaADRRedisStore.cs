@@ -6,7 +6,6 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
-    using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using StackExchange.Redis;
@@ -16,6 +15,7 @@ namespace LoraKeysManagerFacade
         private const string CacheToken = ":ADR";
         private const string LockToken = ":lock";
         private readonly IDatabase redisCache;
+        private readonly ILogger<LoRaADRRedisStore> logger;
 
         private sealed class RedisLockWrapper : IDisposable
         {
@@ -56,9 +56,10 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public LoRaADRRedisStore(IDatabase redisCache)
+        public LoRaADRRedisStore(IDatabase redisCache, ILogger<LoRaADRRedisStore> logger)
         {
             this.redisCache = redisCache;
+            this.logger = logger;
         }
 
         public async Task UpdateADRTable(string devEUI, LoRaADRTable table)
@@ -102,7 +103,7 @@ namespace LoraKeysManagerFacade
                 }
             }
 
-            Logger.Log(devEUI, "Failed to acquire ADR redis lock. Can't deliver ADR Table", LogLevel.Error);
+            this.logger.LogError("Failed to acquire ADR redis lock. Can't deliver ADR Table");
             return null;
         }
 

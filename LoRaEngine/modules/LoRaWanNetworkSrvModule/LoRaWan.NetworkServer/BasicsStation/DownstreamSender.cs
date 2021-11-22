@@ -38,8 +38,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (message is null) throw new ArgumentNullException(nameof(message));
             if (message.StationEui == default) throw new ArgumentException($"A proper StationEui needs to be set. Received '{message.StationEui}'.");
 
-            using var scope = this.logger.BeginDeviceScope(message.DevEui);
-
             if (this.socketWriterRegistry.TryGetHandle(message.StationEui, out var webSocketWriterHandle))
             {
                 var region = await this.basicsStationConfigurationService.GetRegionAsync(message.StationEui, CancellationToken.None);
