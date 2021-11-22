@@ -36,10 +36,8 @@ namespace LoRaWan.NetworkServer
         {
             var result = await this.deviceApi.ExecuteFunctionBundlerAsync(this.devEui, this.request);
 
-            for (var i = 0; i < this.executionItems.Count; i++)
-            {
-                this.executionItems[i].ProcessResult(this.executionContext, result);
-            }
+            foreach (var item in this.executionItems)
+                item.ProcessResult(this.executionContext, result);
 
             if (this.logger.IsEnabled(LogLevel.Debug))
                 this.logger.LogDebug($"FunctionBundler result: {JsonSerializer.Serialize(result)}");
