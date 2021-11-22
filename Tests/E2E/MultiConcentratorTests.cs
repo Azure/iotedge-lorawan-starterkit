@@ -34,7 +34,7 @@ namespace LoRaWan.Tests.E2E
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
 
-            var logMsg = $"Duplicate message received from station with EUI";
+            var logMsg = "Duplicate message received from station with EUI";
             var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.IndexOf(logMsg, StringComparison.Ordinal) != -1);
             Assert.NotNull(droppedLog.MatchedEvent);
 
