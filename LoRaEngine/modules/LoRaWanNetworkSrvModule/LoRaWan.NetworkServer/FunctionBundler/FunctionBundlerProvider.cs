@@ -45,16 +45,8 @@ namespace LoRaWan.NetworkServer
                 return null;
             }
 
-            var context = new FunctionBundlerExecutionContext
-            {
-                DeduplicationFactory = deduplicationFactory,
-                FCntDown = loRaDevice.FCntDown,
-                FCntUp = loRaPayload.GetFcnt(),
-                GatewayId = gatewayId,
-                LoRaDevice = loRaDevice,
-                LoRaPayload = loRaPayload,
-                Request = request
-            };
+            var context = new FunctionBundlerExecutionContext(gatewayId, loRaPayload.GetFcnt(), loRaDevice.FCntDown,
+                                                              loRaPayload, loRaDevice, deduplicationFactory, request);
 
             var qualifyingExecutionItems = new List<IFunctionBundlerExecutionItem>(functionItems.Count);
             for (var i = 0; i < functionItems.Count; i++)
