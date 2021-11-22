@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 #pragma warning restore CA1508 // Avoid dead conditional code
                 {
                     // This can happen if the basic station client is losing connectivity
-                    this.logger.LogDebug(ex, "{Message}", ex.Message);
+                    this.logger.LogDebug(ex, ex.Message);
                 }
             }
             catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex)))
