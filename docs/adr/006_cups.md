@@ -102,15 +102,15 @@ There is no need to copy/paste manually these files in the Basic Station; the CU
 
 There are multiple options of where to store the `cups.{trust,cert,key}` and `tc.{trust,cert,key}` bundle files.
 
-#### a. IoT Hub linked Azure Storage Account
+#### a. Azure Storage Account
 
 This is the easiest option for a new user of the Starter Kit, even though it's not the safest one.
 
-When deploying the Starter Kit, an Azure Storage Account is linked to the IoT Hub being created for the devices.
+When deploying the Starter Kit, an Azure Storage Account is provisioned for Azure Functions.
 
-LoRa Device Provisioning tool is capable of uploading the CLI provided bundle files and properly update the twin for the concentrator device being created in IoT Hub.
+LoRa Device Provisioning tool should be capable of uploading the CLI provided bundle files and properly update the twin for the concentrator device being created in IoT Hub.
 
-When using this option, the 'Facade' Azure Function will retrieve certificate files from such storage account by using a Managed Identity.
+When using this option, the 'Facade' Azure Function will retrieve certificate files from such storage account.
 
 #### b. Azure Key Vault secret
 
@@ -175,15 +175,7 @@ LoRa Device Provisioning tool is not uploading the credential bundle files to th
 
 ### IoT Hub related changes
 
-Two changes are expected for IoT Hub.
-
-First one is related to the ability to associate an Azure storage account with IoT Hub.
-
-One of the possible 'sinks' of where the credential files are going to be stored is the IoT Hub linked Azure Blob Storage.
-
-For this option to work, you must [associate an Azure Storage account to IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-file-upload#associate-an-azure-storage-account-to-iot-hub). Any LoRaWan Starter Kit IoT Hub, should have this option enabled by default, therefore some changes are required in the way the template is deployed.
-
-Second change is related to the concentrator device twin.
+Only change is related to the concentrator device twin.
 
 The following "desired" properties should be properly set:
 
@@ -230,10 +222,7 @@ Note right of LoRaWanNetworkSrvModule: Response should be a json including base6
 
 In addition to this, the Azure Function must be able to properly authenticate to target sink via Managed Identity (when using Azure Blob Storage or KeyVault).
 
-Considering that the default sink for the starter kit should be an Azure Storage Account linked to the IoT Hub, the template for the starter kit should be changed in such a way that:
-
-- a managed identity is created for the Azure Function
-- a proper [RBAC](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader-and-data-access) built-in role assignment is created for allowing the Function to access the above mentioned Storage Account
+Considering that the default sink for the starter kit should be an Azure Storage Account, the template for the starter kit should be changed in such a way that a new Blob Container is created for uploading credential blob files.
 
 If using KeyVault secrets instead of Blob Storage, instructions on how to create a role assignment should be provided.  
 
@@ -256,7 +245,7 @@ The CLI should be changed in order to:
   - accept as input a clientThumbprint string (for client certificate validation)
   - compute the CRC32 of above mentioned files
   - create a device for the concentrator
-  - upload, via IoT Hub C# SDK, the credential files to the Blob Storage
+  - upload, via Azure Blob Storage C# SDK, the credential files to the Blob Storage
   - update the Twin for the concentrator device accordingly
 - In case a device being created is not making use of CUPS, tool should provide a `--no-cups` option, allowing to just specify a `clientThumbprint` (for client certificate validation on LNS endpoint)
 
