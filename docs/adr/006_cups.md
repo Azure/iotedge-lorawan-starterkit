@@ -70,7 +70,7 @@ In order to keep the starter kit simple, the same set of server and client crede
 
 The CUPS endpoint should support mutual TLS authentication between client (basic station) and server (network server IoT Edge module).
 
-For increased security the server should "require" client authentication and verify the provided credentials.
+If not manually disabled via flags, for increased security, the server has to "require" client authentication and verify the provided credentials.
 
 Therefore, in order for Basic Station to connect to the CUPS HTTPS endpoint the following files should be provided to the station:
 
