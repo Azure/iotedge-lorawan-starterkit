@@ -35,7 +35,7 @@ docker pull squidfunk/mkdocs-material
 docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
 ```
 
-Now you can see the site running locally on <http://localhost:8080>. You can change
+Now you can see the site running locally on <http://localhost:8000>. You can change
 the port in the `docker run` command.
 
 ### Alternate approach
