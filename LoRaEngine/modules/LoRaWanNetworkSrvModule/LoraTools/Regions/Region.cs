@@ -154,7 +154,7 @@ namespace LoRaTools.Regions
             if (IsValidUpstreamRxpk(upstreamChannel))
             {
                 // If the rx1 offset is a valid value we use it, otherwise we throw an exception
-                if (rx1DrOffset <= RX1DROffsetTable[0].Count - 1)
+                if (IsValidRX1DROffset(rx1DrOffset))
                 {
                     return DRtoConfiguration[(ushort)RX1DROffsetTable[GetDRFromFreqAndChan(upstreamChannel.Datr)][rx1DrOffset]].configuration;
                 }
@@ -178,7 +178,7 @@ namespace LoRaTools.Regions
             if (IsValidUpstreamDataRate(dataRate))
             {
                 // If the rx1 offset is a valid value we use it, otherwise we throw an exception
-                if (rx1DrOffset <= RX1DROffsetTable[0].Count - 1)
+                if (IsValidRX1DROffset(rx1DrOffset))
                 {
                     return (ushort)RX1DROffsetTable[dataRate][rx1DrOffset];
                 }
@@ -354,7 +354,7 @@ namespace LoRaTools.Regions
             return DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
         }
 
-        public bool IsValidRX1DROffset(uint rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= RX1DROffsetTable[0].Count - 1;
+        public bool IsValidRX1DROffset(int rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= RX1DROffsetTable[0].Count - 1;
 
         public static bool IsValidRXDelay(ushort desiredRXDelay) => desiredRXDelay is >= 0 and <= MAX_RX_DELAY;
     }
