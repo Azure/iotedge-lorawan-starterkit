@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
 
@@ -17,6 +16,7 @@ namespace LoRaWan.NetworkServer
     public class LoggingLoRaRequest : LoRaRequest
     {
         private readonly LoRaRequest wrappedRequest;
+        private readonly ILogger<LoggingLoRaRequest> logger;
 
         public override IPacketForwarder PacketForwarder => this.wrappedRequest.PacketForwarder;
 
@@ -30,27 +30,30 @@ namespace LoRaWan.NetworkServer
 
         public override StationEui StationEui => this.wrappedRequest.StationEui;
 
-        public LoggingLoRaRequest(LoRaRequest wrappedRequest)
+        public LoggingLoRaRequest(LoRaRequest wrappedRequest, ILogger<LoggingLoRaRequest> logger)
         {
             this.wrappedRequest = wrappedRequest;
+            this.logger = logger;
         }
 
         public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {
             this.wrappedRequest.NotifyFailed(deviceId, reason, exception);
-            LogProcessingTime(deviceId);
+            LogProcessingTime();
         }
 
         public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkPktFwdMessage downlink)
         {
             this.wrappedRequest.NotifySucceeded(loRaDevice, downlink);
-            LogProcessingTime(loRaDevice?.DevEUI);
+            LogProcessingTime();
         }
 
-        private void LogProcessingTime(string deviceId)
+        private void LogProcessingTime()
         {
-            deviceId ??= ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
-            Logger.Log(deviceId, $"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}", LogLevel.Debug);
+            if (!this.logger.IsEnabled(LogLevel.Debug))
+                return;
+
+            this.logger.LogDebug($"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}");
         }
 
         public override LoRaOperationTimeWatcher GetTimeWatcher() => this.wrappedRequest.GetTimeWatcher();

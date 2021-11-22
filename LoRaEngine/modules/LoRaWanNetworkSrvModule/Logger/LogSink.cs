@@ -26,108 +26,7 @@ namespace LoRaWan
         void Log(LogLevel logLevel, string message);
     }
 
-    public abstract class LogSink : ILogSink
-    {
-        protected LogSink(LogLevel logLevel) => LogLevel = logLevel;
-
-        public LogLevel LogLevel { get; }
-
-        public virtual void Log(LogLevel logLevel, string message)
-        {
-            if (LogLevel > logLevel)
-                return;
-            CoreLog(logLevel, message);
-        }
-
-        protected abstract void CoreLog(LogLevel logLevel, string message);
-    }
-
-    public static class LogSinkExtensions
-    {
-        public static void Log(this ILogSink logger, string message, LogLevel logLevel)
-        {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-            logger.Log(null, message, logLevel);
-        }
-
-        public static void Log(this ILogSink logger, string? deviceId, string message, LogLevel logLevel)
-        {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-            logger.Log(logLevel, deviceId is { Length: > 0 } ? $"{deviceId}: {message}" : message);
-        }
-
-        /// <summary>
-        /// Use this if you want to serialize an object to JSON and
-        /// append it to the message. The serialization will only take place
-        /// if the logLevel is larger or equal to the configured level.
-        /// </summary>
-        public static void Log(this ILogSink logger, string deviceId, string message, object toJson, LogLevel logLevel)
-        {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-
-            if (logLevel < logger.LogLevel)
-                return;
-
-            var serializedObj = Newtonsoft.Json.JsonConvert.SerializeObject(toJson);
-            logger.Log(deviceId, string.Concat(message, serializedObj), logLevel);
-        }
-    }
-
-    public static class CompositeLogSink
-    {
-        public static ILogSink Create(ILogSink first, ILogSink second) =>
-            new LogSink(first ?? throw new ArgumentNullException(nameof(first)),
-                        second ?? throw new ArgumentNullException(nameof(second)));
-
-        public static ILogSink? Choose(ILogSink? first, ILogSink? second) =>
-            (first, second) switch
-            {
-                ({ } fst, null) => fst,
-                (null, { } snd) => snd,
-                ({ } fst, { } snd) => Create(fst, snd),
-                _ => null
-            };
-
-        private sealed class LogSink : ILogSink, IDisposable
-        {
-            private readonly ILogSink first;
-            private readonly ILogSink second;
-
-            public LogSink(ILogSink first, ILogSink second)
-            {
-                this.first = first;
-                this.second = second;
-                LogLevel = (LogLevel)Math.Min((int)first.LogLevel, (int)second.LogLevel);
-            }
-
-            public LogLevel LogLevel { get; }
-
-            public void Log(LogLevel logLevel, string message)
-            {
-                this.first.Log(logLevel, message);
-                this.second.Log(logLevel, message);
-            }
-
-            public void Dispose()
-            {
-                (this.first as IDisposable)?.Dispose();
-                (this.second as IDisposable)?.Dispose();
-            }
-        }
-    }
-
-    public sealed class ConsoleLogSink : LogSink
-    {
-        public ConsoleLogSink(LogLevel logLevel) : base(logLevel) { }
-
-        protected override void CoreLog(LogLevel logLevel, string message)
-        {
-            var writer = logLevel == LogLevel.Error ? Console.Error : Console.Out;
-            writer.WriteLine(FormattableString.Invariant($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}"));
-        }
-    }
-
-    public sealed class TcpLogSink : LogSink, IDisposable
+    public sealed class TcpLogSink : IDisposable, ILogSink
     {
         private readonly ILogger? logger;
         private readonly IPEndPoint serverEndpoint;
@@ -152,9 +51,9 @@ namespace LoRaWan
         private TcpLogSink(IPEndPoint serverEndpoint, LogLevel logLevel,
                            int? maxRetryAttempts, TimeSpan? retryDelay, int? backlogCapacity,
                            Func<string, string>? formatter,
-                           ILogger? logger) :
-            base(logLevel)
+                           ILogger? logger)
         {
+            LogLevel = logLevel;
             this.serverEndpoint = serverEndpoint;
             this.formatter = formatter;
             this.maxRetryAttempts = maxRetryAttempts ?? 6;
@@ -166,6 +65,8 @@ namespace LoRaWan
             });
             this.logger = logger;
         }
+
+        public LogLevel LogLevel { get; }
 
         public void Dispose()
         {
@@ -265,9 +166,12 @@ namespace LoRaWan
 
         private static readonly char[] NewLineChars = { '\n', '\r' };
 
-        protected override void CoreLog(LogLevel logLevel, string message)
+        public void Log(LogLevel logLevel, string message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
+
+            if (LogLevel > logLevel)
+                return;
 
             // NOTE! The following will induce an "ObjectDisposedException" in two ways.
             // When this object is disposed, it cancels the cancellation token source then proceeds

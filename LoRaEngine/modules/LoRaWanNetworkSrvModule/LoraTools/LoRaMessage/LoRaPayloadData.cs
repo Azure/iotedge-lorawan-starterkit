@@ -10,7 +10,6 @@ namespace LoRaTools.LoRaMessage
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
-    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
@@ -162,7 +161,7 @@ namespace LoRaTools.LoRaMessage
             // Populate the MacCommands present in the payload.
             if (foptsSize > 0)
             {
-                MacCommands = MacCommand.CreateMacCommandFromBytes(ConversionHelper.ByteArrayToString(DevAddr), Fopts);
+                MacCommands = MacCommand.CreateMacCommandFromBytes(Fopts);
             }
 
             Mic = new Memory<byte>(inputMessage, inputMessage.Length - 4, 4);
@@ -293,22 +292,7 @@ namespace LoRaTools.LoRaMessage
             }
 
             SetMic(nwkSKey);
-            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEUI, tmst, lnsRxDelay, rfch, time, stationEui);
-            if (Logger.LoggerLevel < LogLevel.Information)
-            {
-                var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
-
-                if (devEUI.Length != 0)
-                {
-                    Logger.Log(devEUI, $"{(LoRaMessageType)Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
-                }
-                else
-                {
-                    Logger.Log(ConversionHelper.ByteArrayToString(DevAddr.Span.ToArray()), $"{(LoRaMessageType)Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
-                }
-            }
-
-            return downlinkPktFwdMessage;
+            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEUI, tmst, lnsRxDelay, rfch, time, stationEui);
         }
 
         /// <summary>

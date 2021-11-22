@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
 
     /// <summary>
     /// Message dispatcher.
@@ -19,12 +20,16 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private volatile Region loraRegion;
         private readonly IJoinRequestMessageHandler joinRequestHandler;
+        private readonly ILoggerFactory loggerFactory;
+        private readonly ILogger<MessageDispatcher> logger;
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry deviceRegistry,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-            IJoinRequestMessageHandler joinRequestHandler = null)
+            IJoinRequestMessageHandler joinRequestHandler,
+            ILoggerFactory loggerFactory,
+            ILogger<MessageDispatcher> logger)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.deviceRegistry = deviceRegistry;
@@ -34,8 +39,22 @@ namespace LoRaWan.NetworkServer
             // It will take care of seeding ABP devices created here for single gateway scenarios
             this.deviceRegistry.RegisterDeviceInitializer(new FrameCounterLoRaDeviceInitializer(configuration.GatewayID, frameCounterUpdateStrategyProvider));
 
-            this.joinRequestHandler = joinRequestHandler ?? new JoinRequestMessageHandler(this.configuration, this.deviceRegistry);
+            this.joinRequestHandler = joinRequestHandler;
+            this.loggerFactory = loggerFactory;
+            this.logger = logger;
         }
+
+        /// <summary>
+        /// Use this constructor only for tests.
+        /// </summary>
+        internal MessageDispatcher(NetworkServerConfiguration configuration,
+                                   ILoRaDeviceRegistry deviceRegistry,
+                                   ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
+            : this(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
+                   new JoinRequestMessageHandler(configuration, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance),
+                   NullLoggerFactory.Instance,
+                   NullLogger<MessageDispatcher>.Instance)
+        { }
 
         /// <summary>
         /// Dispatches a request.
@@ -50,7 +69,7 @@ namespace LoRaWan.NetworkServer
                 // Any LoRaRequest generated from LNS protocol 'updf' or 'jreq' messages already has the payload set.
                 if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out var loRaPayload))
                 {
-                    Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
+                    this.logger.LogError("There was a problem in decoding the Rxpk");
                     request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRxpk);
                     return;
                 }
@@ -74,7 +93,7 @@ namespace LoRaWan.NetworkServer
 
             request.SetRegion(this.loraRegion);
 
-            var loggingRequest = new LoggingLoRaRequest(request);
+            var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>());
 
             if (request.Payload.LoRaMessageType == LoRaMessageType.JoinRequest)
             {
@@ -86,7 +105,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                Logger.Log("Unknwon message type in rxpk, message ignored", LogLevel.Error);
+                this.logger.LogError("Unknwon message type in rxpk, message ignored");
             }
         }
 
@@ -95,9 +114,10 @@ namespace LoRaWan.NetworkServer
         private void DispatchLoRaDataMessage(LoRaRequest request)
         {
             var loRaPayload = (LoRaPayloadData)request.Payload;
+            using var scope = this.logger.BeginDeviceAddressScope(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr));
             if (!IsValidNetId(loRaPayload))
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})", LogLevel.Debug);
+                this.logger.LogDebug($"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})");
                 request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidNetId);
                 return;
             }

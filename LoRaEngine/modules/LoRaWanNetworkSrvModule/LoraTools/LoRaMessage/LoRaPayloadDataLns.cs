@@ -5,8 +5,8 @@ namespace LoRaTools.LoRaMessage
 {
     using System;
     using System.Buffers.Binary;
-    using LoRaTools.Utils;
     using LoRaWan;
+    using Microsoft.Extensions.Logging;
 
     public class LoRaPayloadDataLns : LoRaPayloadData
     {
@@ -17,7 +17,8 @@ namespace LoRaTools.LoRaMessage
                                   string options,
                                   string payload,
                                   FramePort port,
-                                  Mic mic)
+                                  Mic mic,
+                                  ILogger logger)
         {
             if (string.IsNullOrEmpty(payload)) throw new ArgumentNullException(nameof(payload));
 
@@ -65,7 +66,7 @@ namespace LoRaTools.LoRaMessage
             // Populate the MacCommands present in the payload.
             if (foptsSize > 0)
             {
-                MacCommands = MacCommand.CreateMacCommandFromBytes(ConversionHelper.ByteArrayToString(DevAddr), Fopts);
+                MacCommands = MacCommand.CreateMacCommandFromBytes(Fopts, logger);
             }
 
             // Setting FRMPayload

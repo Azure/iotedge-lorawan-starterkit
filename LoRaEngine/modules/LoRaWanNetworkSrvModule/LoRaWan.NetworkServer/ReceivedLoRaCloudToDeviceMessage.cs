@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
-    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Defines a <see cref="LoRaCloudToDeviceMessage"/> that was received by the network server allowing it to abandon, reject and complete.
@@ -36,10 +35,9 @@ namespace LoRaWan.NetworkServer
                 {
                     return Convert.FromBase64String(RawPayload);
                 }
-                catch (FormatException ex)
+                catch (FormatException)
                 {
                     // Invalid base64 string, return empty payload
-                    Logger.Log($"Payload '{RawPayload}' is not a valid base64 value: {ex.Message}", LogLevel.Error);
                 }
             }
 

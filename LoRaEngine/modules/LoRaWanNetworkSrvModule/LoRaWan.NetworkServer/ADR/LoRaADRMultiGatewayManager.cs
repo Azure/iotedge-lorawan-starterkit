@@ -5,13 +5,14 @@ namespace LoRaWan.NetworkServer.ADR
 {
     using System.Threading.Tasks;
     using LoRaTools.ADR;
+    using Microsoft.Extensions.Logging;
 
     public class LoRaADRMultiGatewayManager : LoRaADRDefaultManager
     {
         private readonly LoRaDeviceAPIServiceBase deviceApi;
 
-        public LoRaADRMultiGatewayManager(LoRaDevice loRaDevice, LoRaDeviceAPIServiceBase deviceApi)
-            : base(null, null, null, loRaDevice)
+        public LoRaADRMultiGatewayManager(LoRaDevice loRaDevice, LoRaDeviceAPIServiceBase deviceApi, ILogger<LoRaADRMultiGatewayManager> logger)
+            : base(null, null, null, loRaDevice, logger)
         {
             this.deviceApi = deviceApi;
         }
