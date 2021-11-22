@@ -145,7 +145,7 @@ LoRa Device Provisioning tool is not uploading the credential bundle files to th
     Concentrator->>CUPS Server: POST /update-info
     CUPS Server->>IoT Hub: Retrieve 'Concentrator' twin
     CUPS Server->>CUPS Server: Verifies 'Concentrator' client certificate
-    Note right of CUPS Server: Logic for client certificate validation to be defined. First version including a 'cupsClientThumbprint' to verify against.
+    Note right of CUPS Server: Logic for client certificate validation to be defined. First version including a 'cupsClientThumbprint' to verify against. The client certificate thumbprint should be reported as a property.
     alt client certificate not valid
         CUPS Server->>Concentrator: Return forbidden
     else client certificate valid
@@ -189,14 +189,14 @@ The following "desired" properties should be properly set:
     "tcCredentialUrl": "https://..."
 },
 // Following field to be used for first version client certificate validation
-"clientThumbprint": "Client certificate thumbprint"
+"clientThumbprint": [ "Client certificate thumbprint" ]
 ```
 
 - **'cupsCredCrc'**: should be computed as CRC32 checksum calculated over the concatenated credentials files `cups.{trust,cert,key}`
 - **'tcCredCrc'**: should be computed as CRC32 checksum calculated over the concatenated credentials files `tc.{trust,cert,key}`
 - **'cupsCredentialUrl'**: should point to the blob/secret containing the concatenated credentials `cups.{trust,cert,key}`
 - **'tcCredentialUrl'**: should point to the blob/secret containing the concatenated credentials `tc.{trust,cert,key}`
-- **'cupsClientThumbprint'**: should include the thumbprint of the client certificate used for authenticating against the CUPS server
+- **'clientThumbprint'**: should include the thumbprint of the client certificate used for authenticating against the CUPS server. It is an array for allowing an old thumbprint to be accepted until the rotation mechanism completes
 
 ### Facade Azure Function related changes
 
@@ -248,6 +248,18 @@ The CLI should be changed in order to:
   - upload, via Azure Blob Storage C# SDK, the credential files to the Blob Storage
   - update the Twin for the concentrator device accordingly
 - In case a device being created is not making use of CUPS, tool should provide a `--no-cups` option, allowing to just specify a `clientThumbprint` (for client certificate validation on LNS endpoint)
+- In case a device is already created and a credential rotation is required, the tool should:
+  - provide a "update" mechanism that:
+    - accept as input a cupsCredentials file (being the concatenation of `cups.{trust,cert,key}`)
+    - accept as input a tcCredentials file (being the concatenation of `tc.{trust,cert,key}`)
+    - accept as input a clientThumbprint string (for client certificate validation). New thumbprint is appended to the existing one.
+    - compute the CRC32 of above mentioned files
+    - create a device for the concentrator
+    - upload, via Azure Blob Storage C# SDK, the credential files to the Blob Storage
+    - update the Twin for the concentrator device accordingly
+  - provide a "revoke" mechanism that:
+    - accept as input an old clientThumbprint to be removed from the twin
+    - check that reported thumbprint property is not equal to the thumbprint that we want to remove (this means that the basic station has not rotated certificate yet)
 
 ## Appendix
 
