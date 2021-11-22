@@ -34,6 +34,10 @@ namespace LoRaWan.Tests.E2E
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
 
+            var logMsg = $"Duplicate message received from station with EUI";
+            var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.IndexOf(logMsg, StringComparison.Ordinal) != -1);
+            Assert.NotNull(droppedLog.MatchedEvent);
+
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
@@ -41,8 +45,7 @@ namespace LoRaWan.Tests.E2E
 
             for (var i = 0; i < MESSAGE_COUNT; ++i)
             {
-                Console.WriteLine($"Starting sending OTAA confirmed message {i + 1}/{MESSAGE_COUNT}");
-                TestFixtureCi.ClearLogs();
+                Log($"{device.DeviceID}: Sending OTAA confirmed message {i + 1}/{MESSAGE_COUNT}");
 
                 var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
@@ -56,8 +59,7 @@ namespace LoRaWan.Tests.E2E
                 // 0000000000000031: message '{"value": 101}' sent to hub
                 await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
-                var logMsg = $"Duplicate message received from station with EUI";
-                var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.IndexOf(logMsg, StringComparison.Ordinal) != -1);
+                droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.IndexOf(logMsg, StringComparison.Ordinal) != -1);
                 Assert.NotNull(droppedLog.MatchedEvent);
 
                 TestFixtureCi.ClearLogs();
