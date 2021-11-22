@@ -102,6 +102,28 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
+        /// Logic to get the correct downstream transmission frequency for region US915.
+        /// </summary>
+        /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
+        /// <param name="dataRate">Data rate at which the message was transmitted.</param>
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null)
+        {
+            downstreamFrequency = 0;
+
+            if (IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
+            {
+                int upstreamChannelNumber;
+                upstreamChannelNumber = dataRate == 4 ? 64 + (int)Math.Round((upstreamFrequency - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
+                                                      : (int)Math.Round((upstreamFrequency - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
+                downstreamFrequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>

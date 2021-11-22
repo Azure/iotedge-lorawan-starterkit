@@ -81,6 +81,26 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
+        /// Logic to get the correct downstream transmission frequency for region EU868.
+        /// </summary>
+        /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
+        /// <param name="dataRate">Data rate at which the message was transmitted.</param>
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null)
+        {
+            downstreamFrequency = 0;
+
+            if (IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
+            {
+                // in case of EU, you respond on same frequency as you sent data.
+                downstreamFrequency = upstreamFrequency;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
