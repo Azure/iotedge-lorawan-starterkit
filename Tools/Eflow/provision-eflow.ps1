@@ -81,7 +81,12 @@ if(Get-NetNat -Name "$switchName" -ErrorAction SilentlyContinue)
 }
 
 New-NetNat -Name "$switchName" -InternalIPInterfaceAddressPrefix "$natIp/24"
-Add-NetNatStaticMapping -ExternalIPAddress "0.0.0.0/0" -ExternalPort $externalPort -Protocol TCP -InternalIPAddress "$startip" -InternalPort $internalPort -NatName $switchName
+
+if(!(Get-NetNatStaticMapping -NatName "$switchName" -ErrorAction SilentlyContinue))
+{
+    Add-NetNatStaticMapping -ExternalIPAddress "0.0.0.0/0" -ExternalPort $externalPort -Protocol TCP -InternalIPAddress "$startip" -InternalPort $internalPort -NatName $switchName
+}
+
 
 #Install DHCP
 netsh dhcp add securitygroups
