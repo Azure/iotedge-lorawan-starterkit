@@ -63,5 +63,10 @@ namespace LoRaWan.NetworkServer
 
         public const string FacadeServerAuthCodeKey = "FacadeAuthCode";
 
+        /// <summary>
+        /// Log message used to indicate that the same upstream massage has already been received by another station.
+        /// </summary>
+        public const string DuplicateMessageFromAnotherStationMsg = "Duplicate message received from station";
+
     }
 }
