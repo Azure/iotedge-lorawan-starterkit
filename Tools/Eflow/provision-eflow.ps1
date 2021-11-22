@@ -3,8 +3,6 @@
 .DESCRIPTION
     This script automatically install Edge For Linux On Windows (EFLOW) on a new Windows Server VM
     The script might trigger a restart and might need to be rerun after a restart
-    The script expect an environment variable name IOT_EDGE_DEVICE_CONNECTION_STRING to be set
-        with the connection string of the iot edge device we plan to use
 .NOTES
      Author     :
         Mikhail Chatillon       - chmikhai@microft.com
@@ -16,6 +14,7 @@ param
     [string]$switchName="EFLOW Switch",
     [string]$startEflowIpRange=100,
     [string]$endEflowIpRange=200,
+    [string]$iotEdgeDeviceConnectionString,
     [int]$internalPort=5000,
     [int]$externalPort=5000
 )
@@ -64,6 +63,11 @@ $gwIp=$ipAddressFamily+$gwIpCounter
 while(!(get-NetIPAddress -IpAddress $gwIp -ErrorAction SilentlyContinue))
 {
     $gwIpCounter++
+    if($gwIpCounter>9)
+    {
+        throw "All the IPs in the subnet range 1-9 on $ipAddressFamily were already taken";
+    }
+
     $gwIp=$ipAddressFamily+$gwIpCounter
 }
 
@@ -77,6 +81,8 @@ if(Get-NetNat -Name "$switchName" -ErrorAction SilentlyContinue)
 }
 
 New-NetNat -Name "$switchName" -InternalIPInterfaceAddressPrefix "$natIp/24"
+Add-NetNatStaticMapping -ExternalIPAddress "0.0.0.0/0" -ExternalPort $externalPort -Protocol TCP -InternalIPAddress "$startip" -InternalPort $internalPort -NatName $switchName
+
 #Install DHCP
 netsh dhcp add securitygroups
 Restart-Service dhcpserver
@@ -85,6 +91,7 @@ $endIp=$ipAddressFamily+$endEflowIpRange
 Add-DhcpServerV4Scope -Name "AzureIoTEdgeScope" -StartRange $startIp -EndRange $endIp -SubnetMask 255.255.255.0 -State Active
 Set-DhcpServerV4OptionValue -ScopeID $natIp -Router $gwIp
 Restart-Service dhcpserver
+
 # install Eflow
 Set-ExecutionPolicy -ExecutionPolicy AllSigned -Force
 $msiPath = $([io.Path]::Combine($env:TEMP, 'AzureIoTEdge.msi'))
@@ -92,5 +99,6 @@ $ProgressPreference = 'SilentlyContinue'
 Invoke-WebRequest "https://aka.ms/AzEflowMSI" -OutFile $msiPath
 Start-Process -Wait msiexec -ArgumentList "/i","$([io.Path]::Combine($env:TEMP, 'AzureIoTEdge.msi'))","/qn"
 Deploy-Eflow  -acceptEula 'yes' -acceptOptionalTelemetry 'yes' -vswitchName $switchName -ip4Address $startIp -ip4GatewayAddress $gwIp -vswitchType 'Internal'
-Provision-EflowVm -provisioningType ManualConnectionString -devConnString "$env:IOT_EDGE_DEVICE_CONNECTION_STRING"
-Add-NetNatStaticMapping -ExternalIPAddress "0.0.0.0/0" -ExternalPort $externalPort -Protocol TCP -InternalIPAddress "$startip" -InternalPort $internalPort -NatName $switchName
+if($iotEdgeDeviceConnectionString){
+    Provision-EflowVm -provisioningType ManualConnectionString -devConnString "$iotEdgeDeviceConnectionString"
+}
