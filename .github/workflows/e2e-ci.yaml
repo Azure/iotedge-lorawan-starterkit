@@ -330,6 +330,9 @@ jobs:
     - name: Build E2E tests
       run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
+    # The tests need to run if:
+    # - In PRs, when DON'T have the matchin test label
+    # - In other runs, all the tests present in env.TestsToRun
     - name:  Runs SensorDecoding E2E tests
       if: always() && contains(env.TestsToRun, 'SensorDecodingTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'SensorDecodingTest'))
       uses: ./.github/actions/rune2etest
