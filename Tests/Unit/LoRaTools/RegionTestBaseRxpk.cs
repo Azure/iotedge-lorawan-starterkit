@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Text;
     using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
 
     public abstract class RegionTestBaseRxpk
@@ -96,8 +97,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 
         protected void TestDownstreamRX2Frequency(double? nwksrvrx2freq, double expectedFreq, DeviceJoinInfo deviceJoinInfo = null)
         {
-            var devEui = "testDevice";
-            var freq = Region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq, deviceJoinInfo);
+            var freq = Region.GetDownstreamRX2Freq(nwksrvrx2freq, NullLogger.Instance, deviceJoinInfo);
             Assert.Equal(expectedFreq, freq);
         }
 
@@ -105,7 +105,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         protected void TestDownstreamRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
         {
             var devEui = "testDevice";
-            var datr = Region.GetDownstreamRX2DataRate(devEui, nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo);
+            var datr = Region.GetDownstreamRX2DataRate(devEui, nwksrvrx2dr, rx2drfromtwins, NullLogger.Instance, deviceJoinInfo);
             Assert.Equal(expectedDr, datr);
         }
 

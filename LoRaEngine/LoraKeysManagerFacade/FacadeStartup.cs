@@ -12,6 +12,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
     using StackExchange.Redis;
 
     public class FacadeStartup : FunctionsStartup
@@ -45,7 +46,10 @@ namespace LoraKeysManagerFacade
             _ = builder.Services
                     .AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)))
                     .AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore)
-                    .AddSingleton<ILoRaADRManager>(new LoRaADRServerManager(new LoRaADRRedisStore(redisCache), new LoRaADRStrategyProvider(), deviceCacheStore))
+                    .AddSingleton<ILoRaADRManager>(sp => new LoRaADRServerManager(new LoRaADRRedisStore(redisCache, sp.GetRequiredService<ILogger<LoRaADRRedisStore>>()),
+                                                                                  new LoRaADRStrategyProvider(sp.GetRequiredService<ILoggerFactory>()),
+                                                                                  deviceCacheStore,
+                                                                                  sp.GetRequiredService<ILogger<LoRaADRServerManager>>()))
                     .AddSingleton<CreateEdgeDevice>()
                     .AddSingleton<DeviceGetter>()
                     .AddSingleton<FCntCacheCheck>()

@@ -5,13 +5,14 @@ namespace LoraKeysManagerFacade
 {
     using System.Threading.Tasks;
     using LoRaTools.ADR;
+    using Microsoft.Extensions.Logging;
 
     public class LoRaADRServerManager : LoRaADRManagerBase
     {
         private readonly ILoRaDeviceCacheStore deviceCacheStore;
 
-        public LoRaADRServerManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceCacheStore deviceCacheStore)
-            : base(store, strategyProvider)
+        public LoRaADRServerManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceCacheStore deviceCacheStore, ILogger<LoRaADRServerManager> logger)
+            : base(store, strategyProvider, logger)
         {
             this.deviceCacheStore = deviceCacheStore;
         }

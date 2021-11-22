@@ -26,8 +26,9 @@ namespace LoRaWan.NetworkServer
         // Http client used by decoders
         // Decoder calls don't need proxy since they will never leave the IoT Edge device
         private readonly Lazy<HttpClient> decodersHttpClient;
+        private readonly ILogger<LoRaPayloadDecoder> logger;
 
-        public LoRaPayloadDecoder()
+        public LoRaPayloadDecoder(ILogger<LoRaPayloadDecoder> logger)
         {
             this.decodersHttpClient = new Lazy<HttpClient>(() =>
             {
@@ -36,6 +37,7 @@ namespace LoRaWan.NetworkServer
                 client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
                 return client;
             });
+            this.logger = logger;
         }
 
         /// <summary>
@@ -94,11 +96,11 @@ namespace LoRaWan.NetworkServer
                 var url = new Uri($"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport}&payload={payloadEncoded}");
 
                 // Call SensorDecoderModule
-                return await CallSensorDecoderModule(devEUI, url);
+                return await CallSensorDecoderModule(url);
             }
         }
 
-        private async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, Uri sensorDecoderModuleUrl)
+        private async Task<DecodePayloadResult> CallSensorDecoderModule(Uri sensorDecoderModuleUrl)
         {
             try
             {
@@ -152,10 +154,8 @@ namespace LoRaWan.NetworkServer
                     }
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"error in decoder handling: {ex.Message}")))
             {
-                Logger.Log(devEUI, $"error in decoder handling: {ex.Message}", LogLevel.Error);
-
                 return new DecodePayloadResult()
                 {
                     Error = $"Call to SensorDecoderModule '{sensorDecoderModuleUrl}' failed.",
