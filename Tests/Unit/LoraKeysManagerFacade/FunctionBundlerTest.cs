@@ -237,7 +237,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
                 req.ClientFCntDown = req.AdrRequest.FCntDown;
             }
 
-            var tasks = new List<Task>(requests.Length);
             var functionBundlerResults = await Task.WhenAll(from req in requests select ExecuteRequest(devEUI, req));
 
             // only one request should be winning the race
