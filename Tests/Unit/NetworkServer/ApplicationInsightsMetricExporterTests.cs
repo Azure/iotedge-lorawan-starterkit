@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Linq;
     using LoRaWan.NetworkServer;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Channel;
@@ -15,26 +16,35 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class ApplicationInsightsMetricExporterTests : IDisposable
     {
-        private const string ExistingMetricName = "SomeCounter";
-
+        private readonly CustomMetric[] registry;
         private readonly TelemetryConfiguration telemetryConfiguration;
-        private readonly Mock<Action<Metric, object, string[]>> trackValueMock;
-
+        private readonly Mock<Action<Metric, double, string[]>> trackValueMock;
         private readonly ApplicationInsightsMetricExporter applicationInsightsMetricExporter;
+        private CustomMetric CounterMetric => this.registry.First(m => m.Type == MetricType.Counter);
 
         public ApplicationInsightsMetricExporterTests()
         {
+            this.registry = new[]
+            {
+                new CustomMetric("SomeCounter", "Counter", MetricType.Counter, new[] { MetricExporter.GatewayIdTagName }),
+                new CustomMetric("SomeHistogram", "Histogram", MetricType.Histogram, new[] { MetricExporter.GatewayIdTagName })
+            };
             this.telemetryConfiguration = new TelemetryConfiguration { TelemetryChannel = new Mock<ITelemetryChannel>().Object };
-            this.trackValueMock = new Mock<Action<Metric, object, string[]>>();
-            this.applicationInsightsMetricExporter = new TestableApplicationInsightsExporter(new TelemetryClient(this.telemetryConfiguration), this.trackValueMock.Object);
+            this.trackValueMock = new Mock<Action<Metric, double, string[]>>();
+            this.applicationInsightsMetricExporter = new TestableApplicationInsightsExporter(new TelemetryClient(this.telemetryConfiguration),
+                                                                                             this.trackValueMock.Object,
+                                                                                             this.registry.ToDictionary(m => m.Name, m => m));
         }
 
-        [Theory]
-        [InlineData(ExistingMetricName)]
-        public void When_Metric_Raised_Exports_Supported_Int_Metrics(string metricId) =>
-            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(metricId, 5);
+        [Fact]
+        public void When_Metric_Raised_Exports_Supported_Int_Metrics() =>
+            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, 5, 5.0);
 
-        private void ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics<T>(string metricId, T metricValue)
+        [Fact]
+        public void When_Metric_Raised_Exports_Supported_Double_Metrics() =>
+            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, 5.0, 5.0);
+
+        private void ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics<T>(string metricId, T metricValue, double expectedReportedValue)
             where T : struct
         {
             // arrange
@@ -49,14 +59,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // assert
             this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricExporter.Namespace
                                                                           && m.Identifier.MetricId == metricId),
-                                                                     metricValue,
+                                                                     expectedReportedValue,
                                                                      new[] { gateway }),
                                                        Times.Once);
         }
 
         [Theory]
         [InlineData("LoRaWan", "foometric")]
-        [InlineData("foo", ExistingMetricName)]
+        [InlineData("foo", "SomeCounter")]
         public void When_Raising_Unknown_Metric_Does_Not_Export_To_Application_Insights(string @namespace, string metricName)
         {
             // arrange
@@ -68,7 +78,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             counter.Add(1);
 
             // assert
-            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), 1, It.IsAny<string[]>()), Times.Never);
+            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), It.IsAny<double>(), It.IsAny<string[]>()), Times.Never);
         }
 
         [Fact]
@@ -76,14 +86,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             using var instrument = new Meter(MetricExporter.Namespace, MetricExporter.MetricsVersion);
-            var counter = instrument.CreateCounter<int>(ExistingMetricName);
+            var counter = instrument.CreateCounter<int>(CounterMetric.Name);
 
             // act
             applicationInsightsMetricExporter.Start();
             counter.Add(1);
 
             // assert
-            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), 1, new[] { string.Empty }), Times.Once);
+            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), It.IsAny<double>(), new[] { string.Empty }), Times.Once);
         }
 
         [Fact]
@@ -92,7 +102,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             const string gateway = "foogateway";
             using var meter = new Meter(MetricExporter.Namespace, MetricExporter.MetricsVersion);
-            var counter = meter.CreateCounter<int>(ExistingMetricName);
+            var counter = meter.CreateCounter<int>(CounterMetric.Name);
 
             // act
             applicationInsightsMetricExporter.Start();
@@ -110,15 +120,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         private sealed class TestableApplicationInsightsExporter : ApplicationInsightsMetricExporter
         {
-            private readonly Action<Metric, object, string[]> trackValue;
+            private readonly Action<Metric, double, string[]> trackValue;
 
-            public TestableApplicationInsightsExporter(TelemetryClient telemetryClient, Action<Metric, object, string[]> trackValue)
-                : base(telemetryClient)
+            public TestableApplicationInsightsExporter(TelemetryClient telemetryClient,
+                                                       Action<Metric, double, string[]> trackValue,
+                                                       IDictionary<string, CustomMetric> registryLookup)
+                : base(telemetryClient, registryLookup)
             {
                 this.trackValue = trackValue;
             }
 
-            internal override void TrackValue<T>(Metric metric, T measurement, params string[] dimensions) =>
+            internal override void TrackValue(Metric metric, double measurement, params string[] dimensions) =>
                 this.trackValue(metric, measurement, dimensions);
         }
     }

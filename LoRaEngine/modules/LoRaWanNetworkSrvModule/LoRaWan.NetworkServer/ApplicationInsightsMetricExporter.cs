@@ -20,10 +20,13 @@ namespace LoRaWan.NetworkServer
         private MeterListener? listener;
         private bool disposedValue;
 
-        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient)
+        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient) : this(telemetryClient, MetricExporter.RegistryLookup)
+        { }
+
+        internal ApplicationInsightsMetricExporter(TelemetryClient telemetryClient, IDictionary<string, CustomMetric> registryLookup)
         {
             this.telemetryClient = telemetryClient;
-            this.metricRegistry = MetricExporter.RegistryLookup.ToDictionary(m => m.Key, m => ToMetricIdentifier(m.Value));
+            this.metricRegistry = registryLookup.ToDictionary(m => m.Key, m => ToMetricIdentifier(m.Value));
             static MetricIdentifier ToMetricIdentifier(CustomMetric customMetric) =>
                 customMetric.Tags.Length switch
                 {
@@ -48,7 +51,7 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                this.listener.SetMeasurementEventCallback<int>(TrackValue);
+                this.listener.SetMeasurementEventCallback<int>((i, m, t, s) => TrackValue(i, m, t, s));
                 this.listener.SetMeasurementEventCallback<double>(TrackValue);
                 this.listener.Start();
             }
@@ -58,7 +61,7 @@ namespace LoRaWan.NetworkServer
                 throw;
             }
 
-            void TrackValue<T>(Instrument instrument, T measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
+            void TrackValue(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
             {
                 if (metricRegistry.TryGetValue(instrument.Name, out var metricIdentifier))
                 {
@@ -69,7 +72,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        internal virtual void TrackValue<T>(Metric metric, T measurement, params string[] dimensions)
+        internal virtual void TrackValue(Metric metric, double measurement, params string[] dimensions)
         {
             switch (dimensions.Length)
             {
