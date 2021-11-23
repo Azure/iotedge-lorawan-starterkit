@@ -70,32 +70,52 @@ namespace Logger
             _ = builder ?? throw new ArgumentNullException(nameof(builder));
 
             builder.AddConfiguration();
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(_ => new TcpLoggerProvider(configuration.LogLevel, Init(configuration, loggerFactory?.CreateLogger(typeof(TcpLogSink).FullName!)))));
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(_ =>
+                TcpLoggerProvider.Start(configuration, loggerFactory?.CreateLogger<TcpLoggerProvider>())));
             return builder;
 
-            static TcpLogSink Init(TcpLoggerConfiguration configuration, ILogger? tcpLogSinkLogger = null)
+        }
+
+        private sealed class TcpLoggerProvider : ILoggerProvider
+        {
+            private readonly ConcurrentDictionary<string, TcpLogger> loggers = new();
+            private readonly IExternalScopeProvider externalScopeProvider = new LoggerExternalScopeProvider();
+            private readonly LogLevel logLevel;
+            private readonly ILogger? logger;
+            private readonly IPEndPoint serverEndpoint;
+            private readonly Func<string, string>? formatter;
+            private readonly int maxRetryAttempts;
+            private readonly TimeSpan retryDelay;
+            private readonly CancellationTokenSource cancellationTokenSource = new();
+            private readonly Channel<string> channel;
+
+            public static TcpLoggerProvider Start(TcpLoggerConfiguration configuration, ILogger<TcpLoggerProvider>? logger = null)
             {
                 if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
                 IPEndPoint? endPoint = null;
 
 #pragma warning disable format
-            if (configuration is { LogToTcpAddress: { Length: > 0 } address,
-                                   LogToTcpPort   : var port and > 0 })
+                if (configuration is { LogToTcpAddress: { Length: > 0 } address,
+                                       LogToTcpPort   : var port and > 0 })
 #pragma warning restore format
-            {
+                {
                     endPoint = Resolve(address) is { } someAddress
                              ? new IPEndPoint(someAddress, port)
                              : null;
                 }
 
-                return endPoint is { } someEndPoint
-                    ? TcpLogSink.Start(someEndPoint,
-                                       formatter: string.IsNullOrEmpty(configuration.GatewayId)
-                                                  ? null
-                                                  : msg => $"[{configuration.GatewayId}] {msg}",
-                                       logger: tcpLogSinkLogger)
-                    : throw new InvalidOperationException($"TCP endpoint is incorrectly configured. Address is '{configuration.LogToTcpAddress}' and port is '{configuration.LogToTcpPort}'");
+                if (endPoint is null)
+                    throw new InvalidOperationException($"TCP endpoint is incorrectly configured. Address is '{configuration.LogToTcpAddress}' and port is '{configuration.LogToTcpPort}'");
+
+                var provider = new TcpLoggerProvider(configuration.LogLevel, endPoint, logger: logger,
+                                                     formatter: string.IsNullOrEmpty(configuration.GatewayId)
+                                                                ? null
+                                                                : msg => $"[{configuration.GatewayId}] {msg}");
+
+                _ = Task.Run(() => provider.SendAllLogMessagesAsync(provider.cancellationTokenSource.Token));
+
+                return provider;
 
                 IPAddress? Resolve(string address)
                 {
@@ -124,65 +144,17 @@ namespace Logger
                         message = $"'{address}' is an invalid IP address. {ex.Message}";
                     }
 
-                    tcpLogSinkLogger?.LogError(message);
+                    logger?.LogError(message);
                     return null;
                 }
             }
-        }
 
-        private sealed class TcpLoggerProvider : ILoggerProvider
-        {
-            private readonly ConcurrentDictionary<string, TcpLogger> loggers = new();
-            private readonly LogLevel logLevel;
-            private readonly TcpLogSink logSink;
-            private readonly IExternalScopeProvider externalScopeProvider = new LoggerExternalScopeProvider();
-
-            public TcpLoggerProvider(LogLevel logLevel, TcpLogSink logSink)
+            private TcpLoggerProvider(LogLevel logLevel, IPEndPoint serverEndpoint,
+                                      int? maxRetryAttempts = null, TimeSpan? retryDelay = null, int? backlogCapacity = null,
+                                      Func<string, string>? formatter = null,
+                                      ILogger? logger = null)
             {
                 this.logLevel = logLevel;
-                this.logSink = logSink;
-            }
-
-            public ILogger CreateLogger(string categoryName) =>
-                this.loggers.GetOrAdd(categoryName, _ => new TcpLogger(this.logLevel, this.logSink.Log)
-                {
-                    ExternalScopeProvider = this.externalScopeProvider
-                });
-
-            public void Dispose()
-            {
-                this.logSink.Dispose();
-                this.loggers.Clear();
-            }
-        }
-
-        private sealed class TcpLogSink : IDisposable
-        {
-            private readonly ILogger? logger;
-            private readonly IPEndPoint serverEndpoint;
-            private readonly Func<string, string>? formatter;
-            private readonly int maxRetryAttempts;
-            private readonly TimeSpan retryDelay;
-            private readonly CancellationTokenSource cancellationTokenSource = new();
-            private readonly Channel<string> channel;
-
-            public static TcpLogSink Start(IPEndPoint serverEndPoint,
-                                           int? maxRetryAttempts = null,
-                                           TimeSpan? retryDelay = null,
-                                           int? backlogCapacity = null,
-                                           Func<string, string>? formatter = null,
-                                           ILogger? logger = null)
-            {
-                var sink = new TcpLogSink(serverEndPoint, maxRetryAttempts, retryDelay, backlogCapacity, formatter, logger);
-                _ = Task.Run(() => sink.SendAllLogMessagesAsync(sink.cancellationTokenSource.Token));
-                return sink;
-            }
-
-            private TcpLogSink(IPEndPoint serverEndpoint,
-                               int? maxRetryAttempts, TimeSpan? retryDelay, int? backlogCapacity,
-                               Func<string, string>? formatter,
-                               ILogger? logger)
-            {
                 this.serverEndpoint = serverEndpoint;
                 this.formatter = formatter;
                 this.maxRetryAttempts = maxRetryAttempts ?? 6;
@@ -194,6 +166,12 @@ namespace Logger
                 });
                 this.logger = logger;
             }
+
+            public ILogger CreateLogger(string categoryName) =>
+                this.loggers.GetOrAdd(categoryName, _ => new TcpLogger(this.logLevel, Log)
+                {
+                    ExternalScopeProvider = this.externalScopeProvider
+                });
 
             public void Dispose()
             {
@@ -216,6 +194,8 @@ namespace Logger
                 }
 
                 this.cancellationTokenSource.Dispose();
+
+                this.loggers.Clear();
             }
 
             private async Task SendAllLogMessagesAsync(CancellationToken cancellationToken)
@@ -293,7 +273,7 @@ namespace Logger
 
             private static readonly char[] NewLineChars = { '\n', '\r' };
 
-            public void Log(string message)
+            private void Log(string message)
             {
                 if (message == null) throw new ArgumentNullException(nameof(message));
 
@@ -308,7 +288,7 @@ namespace Logger
                 // the channel, which is harmless.
 
                 if (this.cancellationTokenSource.Token.IsCancellationRequested)
-                    throw new ObjectDisposedException(nameof(TcpLogSink));
+                    throw new ObjectDisposedException(nameof(TcpLoggerProvider));
 
                 _ = this.channel.Writer.TryWrite(this.formatter?.Invoke(message) ?? message);
             }
