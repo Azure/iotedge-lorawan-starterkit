@@ -3,6 +3,8 @@ concurrency: e2e
 on: # rebuild any PRs and main branch changes
   schedule:
     - cron: '59 23 * * 1,2,3,4,5'
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
     inputs:
       RunE2ETestsOnly:
@@ -53,7 +55,7 @@ jobs:
           echo "::set-output name=E2ETestsToRun::${{ github.event.inputs.TestsToRun }}"
         elif [ ${{ github.event_name }} == 'pull_request' ]; then
           echo "Set up for pull request"
-          echo "::set-output name=E2ETestsToRun::${{ github.event.pull_request.labels.*.name }}"
+          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest]"
         else
           echo "Set up for cron trigger"
           echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest]"
@@ -92,7 +94,7 @@ jobs:
     - env_var
     name: Build and Deploy Facade Azure Function
     runs-on: ubuntu-latest
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     env:
       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'LoRaEngine/LoraKeysManagerFacade/'
 
@@ -127,7 +129,7 @@ jobs:
     env:
       DEV_IMAGE_TAG: dev
       MASTER_IMAGE_TAG: master
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     steps:
     - uses: actions/checkout@v2
       name: Checkout current branch
@@ -182,12 +184,13 @@ jobs:
 
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
+    timeout-minutes: 20
     environment:
       name: CI_ALL_IN_ONE_ARM_GATEWAY
     needs:
     - env_var
     - build_push_docker_images
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on All-In-One ARM gateway
     env:
@@ -212,12 +215,13 @@ jobs:
 
 # Deploy IoT Edge solution to EFLOW gateway
   deploy_eflow_gw_iot_edge:
+    timeout-minutes: 20
     environment:
       name: CI_EFLOW_AZURE_VM
     needs:
     - env_var
     - build_push_docker_images
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on EFLOW VM gateway
     env:
@@ -246,12 +250,13 @@ jobs:
 
   # Deploy IoT Edge solution to standalone Concentrator
   deploy_eflow_concentrator_iot_edge:
+    timeout-minutes: 20
     needs:
     - env_var
     - build_push_docker_images
     environment:
       name: CI_CONCENTRATOR_EFLOW_ARM32
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true'
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on ItestArm2 concentrator
     env:
@@ -280,11 +285,12 @@ jobs:
 
 # Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
   e2e_tests_job :
+    timeout-minutes: 150
     name: Run E2E Tests
     environment:
       name: CI_AZURE_ENVIRONMENT
       url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
-    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success'))
+    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success')) && needs.env_var.outputs.StopFullCi != 'true'
     needs:
       - deploy_arm_gw_iot_edge
       - deploy_eflow_gw_iot_edge
@@ -292,7 +298,6 @@ jobs:
       - deploy_eflow_concentrator_iot_edge
       - env_var
     runs-on: [ self-hosted, x64 ]
-    timeout-minutes: 60
     env:
       E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
       E2ETESTS_IoTHubEventHubConsumerGroup: ${{ secrets.IOTHUB_CI_CONSUMER_GROUP }}
@@ -332,57 +337,60 @@ jobs:
         sudo lsof -i:6000 -t | xargs -r sudo kill
         dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
+    # The tests need to run if:
+    # - In PRs, when DON'T have the matchin test label
+    # - In other runs, all the tests present in env.TestsToRun
     - name:  Runs SensorDecoding E2E tests
-      if: always() && contains(env.TestsToRun, 'SensorDecodingTest')
+      if: always() && contains(env.TestsToRun, 'SensorDecodingTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'SensorDecodingTest'))
       uses: ./.github/actions/rune2etest
       id: e2e_tests_sensordecoding
       with:
         test_name: 'SensorDecodingTest'
 
     - name:  Runs OTAAJoin E2E tests
-      if: always() && contains(env.TestsToRun, 'OTAAJoinTest')
+      if: always() && contains(env.TestsToRun, 'OTAAJoinTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'OTAAJoinTest'))
       uses: ./.github/actions/rune2etest
       id: e2e_tests_otaajointest
       with:
         test_name: 'OTAAJoinTest'
 
     - name:  Runs ABP E2E tests
-      if: always() && contains(env.TestsToRun, 'ABPTest')
+      if: always() && contains(env.TestsToRun, 'ABPTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ABPTest'))
       uses: ./.github/actions/rune2etest
       id: e2e_tests_abptest
       with:
         test_name: 'ABPTest'
 
     - name:  Runs OTAA E2E tests
-      if: always() && contains(env.TestsToRun, 'OTAATest')
+      if: always() && contains(env.TestsToRun, 'OTAATest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'OTAATest'))
       uses: ./.github/actions/rune2etest
       id: e2e_tests_otaatest
       with:
         test_name: 'OTAATest'
 
     - name:  Runs MacTest E2E tests
-      if: always() && contains(env.TestsToRun, 'MacTest')
+      if: always() && contains(env.TestsToRun, 'MacTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MacTest'))
       uses: ./.github/actions/rune2etest
       id: e2e_tests_mactest
       with:
         test_name: 'MacTest'
 
     - name:  Runs ClassC E2E tests
-      if: always() && contains(env.TestsToRun, 'ClassCTest')
+      if: always() && contains(env.TestsToRun, 'ClassCTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ClassCTest'))
       uses: ./.github/actions/rune2etest
       id: e2e_tests_classctest
       with:
         test_name: 'ClassCTest'
 
     - name:  Runs C2D E2E tests
-      if: always() && contains(env.TestsToRun, 'C2DMessageTest')
+      if: always() && contains(env.TestsToRun, 'C2DMessageTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'C2DMessageTest'))
       uses: ./.github/actions/rune2etest
       id: e2e_tests_c2dctest
       with:
         test_name: 'C2DMessageTest'
 
     - name:  Runs MultiGatewayTest E2E tests
-      if: always() && contains(env.TestsToRun, 'MultiGatewayTest')
+      if: always() && contains(env.TestsToRun, 'MultiGatewayTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MultiGatewayTest'))
       uses: ./.github/actions/rune2etest
       id: e2e_tests_multigwtest
       with:

@@ -8,7 +8,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Runs SensorDecoding E2E tests
+  - name: Runs ${{ inputs.test_name }} E2E tests
     id: run_e2e_tests
     shell: bash
     run: |
@@ -18,7 +18,7 @@ runs:
 
   - name: Add ${{ inputs.test_name }} Test Label
     uses: buildsville/add-remove-label@v1
-    if: github.event_name == 'pull_request' && steps.run_e2e_tests.conclusion == 'Success'
+    if: github.event_name == 'pull_request' && success()
     with:
       token: ${{ github.token }}
       label: '${{ inputs.test_name }}'
