@@ -12,22 +12,9 @@ namespace LoRaWan.NetworkServer
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Metrics;
 
-    internal static class MetricsExporter
+    internal class ApplicationInsightsMetricExporter : IMetricExporter
     {
-        public const string Namespace = "LoRaWan";
-        public const string MetricsVersion = "1.0";
-
-        public const string GatewayIdTagName = "GatewayId";
-    }
-
-    internal class ApplicationInsightsMetricExporter : IDisposable
-    {
-        private static readonly IDictionary<string, MetricIdentifier> MetricRegistry = new Dictionary<string, MetricIdentifier>
-        {
-            ["SomeCounter"] = new MetricIdentifier(MetricsExporter.Namespace, "SomeCounter", MetricsExporter.GatewayIdTagName)
-        };
-
-        // private static readonly MetricIdentifier SomeCounter = new MetricIdentifier(MetricsExporter.Namespace, "SomeCounter", MetricsExporter.GatewayIdTagName);
+        private readonly IDictionary<string, MetricIdentifier> metricRegistry;
 
         private readonly TelemetryClient telemetryClient;
         private MeterListener? listener;
@@ -36,6 +23,16 @@ namespace LoRaWan.NetworkServer
         public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient)
         {
             this.telemetryClient = telemetryClient;
+            this.metricRegistry = MetricExporter.RegistryLookup.ToDictionary(m => m.Key, m => ToMetricIdentifier(m.Value));
+            static MetricIdentifier ToMetricIdentifier(CustomMetric customMetric) =>
+                customMetric.Tags.Length switch
+                {
+                    0 => new MetricIdentifier(MetricExporter.Namespace, customMetric.Name),
+                    1 => new MetricIdentifier(MetricExporter.Namespace, customMetric.Name, customMetric.Tags[0]),
+                    2 => new MetricIdentifier(MetricExporter.Namespace, customMetric.Name, customMetric.Tags[0], customMetric.Tags[1]),
+                    3 => new MetricIdentifier(MetricExporter.Namespace, customMetric.Name, customMetric.Tags[0], customMetric.Tags[1], customMetric.Tags[2]),
+                    _ => throw new NotImplementedException()
+                };
         }
 
         public void Start()
@@ -46,10 +43,8 @@ namespace LoRaWan.NetworkServer
                 {
                     InstrumentPublished = (instrument, meterListener) =>
                     {
-                        if (instrument.Meter.Name == MetricsExporter.Namespace && MetricRegistry.ContainsKey(instrument.Name))
+                        if (instrument.Meter.Name == MetricExporter.Namespace && metricRegistry.ContainsKey(instrument.Name))
                             meterListener.EnableMeasurementEvents(instrument);
-
-                        // TODO: create static method to get metric identifiers
                     }
                 };
 
@@ -65,16 +60,11 @@ namespace LoRaWan.NetworkServer
 
             void TrackValue<T>(Instrument instrument, T measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
             {
-                if (MetricRegistry.TryGetValue(instrument.Name, out var metricIdentifier))
+                if (metricRegistry.TryGetValue(instrument.Name, out var metricIdentifier))
                 {
                     var m = this.telemetryClient.GetMetric(metricIdentifier);
-                    var dimensionNames = metricIdentifier.GetDimensionNames().ToArray() ?? Array.Empty<string>();
-                    var t = new Dictionary<string, object?>(tags.ToArray(), StringComparer.OrdinalIgnoreCase);
-
-                    var dimensions =
-                        dimensionNames.Select(dn => t.TryGetValue(dn, out var v) ? (v?.ToString() ?? string.Empty) : string.Empty).ToArray();
-
-                    this.TrackValue(m, measurement, dimensions);
+                    var tagNames = metricIdentifier.GetDimensionNames().ToArray() ?? Array.Empty<string>();
+                    this.TrackValue(m, measurement, MetricExporterHelper.GetTagsInOrder(tagNames, tags));
                 }
             }
         }

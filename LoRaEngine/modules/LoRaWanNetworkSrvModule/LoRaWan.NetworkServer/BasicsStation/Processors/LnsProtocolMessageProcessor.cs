@@ -8,6 +8,8 @@ using System.Runtime.CompilerServices;
 namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Net.NetworkInformation;
     using System.Net.WebSockets;
@@ -55,6 +57,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                                      CancellationToken cancellationToken)
         {
             if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
+
+            using var meter = new Meter("LoRaWan", "1.0");
+            var counter = meter.CreateCounter<int>("SomeCounter");
+            counter.Add(3, new[] { KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object)"somegatwasdfa") });
 
             if (!httpContext.WebSockets.IsWebSocketRequest)
             {

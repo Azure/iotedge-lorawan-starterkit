@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
+    using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Azure.Devices.Client;
@@ -87,7 +88,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>));
+                        .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>))
+                        .AddHostedService(sp =>
+                            new MetricExporterHostedService(
+                                new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>()) : null,
+                                                            new PrometheusMetricExporter())));
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);

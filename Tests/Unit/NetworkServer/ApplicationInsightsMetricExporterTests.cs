@@ -44,10 +44,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // act
             applicationInsightsMetricExporter.Start();
-            counter.Add(metricValue, KeyValuePair.Create(MetricsExporter.GatewayIdTagName, (object)gateway));
+            counter.Add(metricValue, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object)gateway));
 
             // assert
-            this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricsExporter.Namespace
+            this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricExporter.Namespace
                                                                           && m.Identifier.MetricId == metricId),
                                                                      metricValue,
                                                                      new[] { gateway }),
@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_Raising_Unknown_Metric_Does_Not_Export_To_Application_Insights(string @namespace, string metricName)
         {
             // arrange
-            using var instrument = new Meter(@namespace, MetricsExporter.MetricsVersion);
+            using var instrument = new Meter(@namespace, MetricExporter.MetricsVersion);
             var counter = instrument.CreateCounter<int>(metricName);
 
             // act
@@ -75,7 +75,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_Raising_Metric_And_Missing_Dimensions_Should_Report_Empty_String()
         {
             // arrange
-            using var instrument = new Meter(MetricsExporter.Namespace, MetricsExporter.MetricsVersion);
+            using var instrument = new Meter(MetricExporter.Namespace, MetricExporter.MetricsVersion);
             var counter = instrument.CreateCounter<int>(ExistingMetricName);
 
             // act
@@ -91,12 +91,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             const string gateway = "foogateway";
-            using var instrument = new Meter(MetricsExporter.Namespace, MetricsExporter.MetricsVersion);
-            var counter = instrument.CreateCounter<int>(ExistingMetricName);
+            using var meter = new Meter(MetricExporter.Namespace, MetricExporter.MetricsVersion);
+            var counter = meter.CreateCounter<int>(ExistingMetricName);
 
             // act
             applicationInsightsMetricExporter.Start();
-            counter.Add(1, new KeyValuePair<string, object>(MetricsExporter.GatewayIdTagName.ToUpperInvariant(), gateway));
+            counter.Add(1, new KeyValuePair<string, object>(MetricExporter.GatewayIdTagName.ToUpperInvariant(), gateway));
 
             // assert
             this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), 1, new[] { gateway }), Times.Once);
