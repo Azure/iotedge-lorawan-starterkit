@@ -1,6 +1,13 @@
 # Upgrade LoRaWAN to a new version
 <!-- allow github to generate 'copy' buttons for coded URLs -->
 <!-- markdownlint-disable MD040 -->
+
+## Release 2.0.0-alpha (not released yet)
+
+With release 2.0.0 we will use .NET 6 for the starter kit. Our docker images will be based on Debian 11 (Bullseye). Please make sure that if you plan to use our Docker images, you use Debian 11 instead of Debian 10. If you plan to use a Debian 10-based OS, you will need to build a custom Docker image.
+
+To support .NET 6 you will need to upgrade the Azure Functions runtime to v4. To update, you can set `FUNCTIONS_EXTENSION_VERSION` to `~4` in your Function configuration.
+
 ## Release 1.0.7
 
 To update from version 1.0.6, 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
