@@ -66,6 +66,8 @@ Driving this decision is the willing of increasing the overall security of the s
 
 In order to keep the starter kit simple, the same set of server and client credentials are to be used for both CUPS and LNS protocol endpoints.
 
+For the same simplicity reason, credential bundles are going to be stored in an Azure Storage Account.
+
 ### Authentication to CUPS endpoint
 
 The CUPS endpoint should support mutual TLS authentication between client (basic station) and server (network server IoT Edge module).
@@ -101,6 +103,8 @@ There is no need to copy/paste manually these files in the Basic Station; the CU
 ### Where to store certificates
 
 There are multiple options of where to store the `cups.{trust,cert,key}` and `tc.{trust,cert,key}` bundle files.
+
+As stated above, for the same simplicity reason, credential bundles are going to be stored in an Azure Storage Account.
 
 #### a. Azure Storage Account
 
