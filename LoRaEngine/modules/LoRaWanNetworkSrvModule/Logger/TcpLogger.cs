@@ -167,12 +167,6 @@ namespace Logger
                 this.logger = logger;
             }
 
-            public ILogger CreateLogger(string categoryName) =>
-                this.loggers.GetOrAdd(categoryName, _ => new TcpLogger(this.logLevel, Log)
-                {
-                    ExternalScopeProvider = this.externalScopeProvider
-                });
-
             public void Dispose()
             {
                 try
@@ -197,6 +191,12 @@ namespace Logger
 
                 this.loggers.Clear();
             }
+
+            public ILogger CreateLogger(string categoryName) =>
+                this.loggers.GetOrAdd(categoryName, _ => new TcpLogger(this.logLevel, Log)
+                {
+                    ExternalScopeProvider = this.externalScopeProvider
+                });
 
             private void Log(string message)
             {
