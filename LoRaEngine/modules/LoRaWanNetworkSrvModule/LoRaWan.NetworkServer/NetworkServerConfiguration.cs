@@ -76,20 +76,20 @@ namespace LoRaWan.NetworkServer
         public string LogLevel { get; set; } = "4";
 
         /// <summary>
-        /// Gets or sets a value indicating whether logging to udp is enabled (used for integration tests mainly).
+        /// Gets or sets a value indicating whether logging to TCP is enabled (used for integration tests mainly).
         /// Default is false.
         /// </summary>
-        public bool LogToUdp { get; set; }
+        public bool LogToTcp { get; set; }
 
         /// <summary>
-        /// Gets or sets udp address to send log to.
+        /// Gets or sets TCP address to send log to.
         /// </summary>
-        public string LogToUdpAddress { get; set; }
+        public string LogToTcpAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets udp port to send logs to.
+        /// Gets or sets TCP port to send logs to.
         /// </summary>
-        public int LogToUdpPort { get; set; } = 6000;
+        public int LogToTcpPort { get; set; } = 6000;
 
         /// <summary>
         /// Gets or sets the gateway netword id.
@@ -135,9 +135,9 @@ namespace LoRaWan.NetworkServer
             config.FacadeAuthCode = envVars.GetEnvVar("FACADE_AUTH_CODE", string.Empty);
             config.LogLevel = envVars.GetEnvVar("LOG_LEVEL", config.LogLevel);
             config.LogToConsole = envVars.GetEnvVar("LOG_TO_CONSOLE", config.LogToConsole);
-            config.LogToUdp = envVars.GetEnvVar("LOG_TO_UDP", config.LogToUdp);
-            config.LogToUdpAddress = envVars.GetEnvVar("LOG_TO_UDP_ADDRESS", string.Empty);
-            config.LogToUdpPort = envVars.GetEnvVar("LOG_TO_UDP_PORT", config.LogToUdpPort);
+            config.LogToTcp = envVars.GetEnvVar("LOG_TO_TCP", config.LogToTcp);
+            config.LogToTcpAddress = envVars.GetEnvVar("LOG_TO_TCP_ADDRESS", string.Empty);
+            config.LogToTcpPort = envVars.GetEnvVar("LOG_TO_TCP_PORT", config.LogToTcpPort);
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
             config.LnsServerPfxPath = envVars.GetEnvVar("LNS_SERVER_PFX_PATH", string.Empty);

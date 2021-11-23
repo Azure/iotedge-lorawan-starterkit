@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
 
     public class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
     {
@@ -89,6 +90,7 @@ namespace LoRaWan.NetworkServer
 
         private readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
+        private readonly ILogger<LoRaDevice> logger;
 
         public int TxPower => this.txPower.Get();
 
@@ -203,11 +205,11 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
-        public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
+        public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger)
         {
             this.connectionManager = connectionManager;
             this.queuedRequests = new Queue<LoRaRequest>();
-
+            this.logger = logger;
             DevAddr = devAddr;
             DevEUI = devEUI;
             DownlinkEnabled = true;
@@ -215,6 +217,13 @@ namespace LoRaWan.NetworkServer
             PreferredWindow = 1;
             ClassType = LoRaDeviceClassType.A;
         }
+
+        /// <summary>
+        /// Use constructor for test code only.
+        /// </summary>
+        internal LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
+            : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance)
+        { }
 
         /// <summary>
         /// Initializes the device from twin properties
@@ -397,11 +406,11 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                if (LoRaRegion == LoRaRegionType.NotSet)
-                {
-                    Logger.Log(DevEUI, $"invalid region value: {regionValue}", LogLevel.Error);
+                    if (LoRaRegion == LoRaRegionType.NotSet)
+                    {
+                        this.logger.LogError($"invalid region value: {regionValue}");
+                    }
                 }
-            }
 
             //  We are prioritizing the choice of the join channel from reported properties (set for OTAA devices)
             //  over the manually provisioned channel (set in desired properties for ABP devices).
@@ -506,7 +515,7 @@ namespace LoRaWan.NetworkServer
                 toReport ??= new TwinCollection();
                 toReport[propertyNameStart] = newfCnt.Value;
                 this.hasFrameCountChanges = true;
-                Logger.Log(DevEUI, $"set {fcntPropertyName} from {propertyNameStart} with {newfCnt.Value}, reset: {reset}", LogLevel.Debug);
+                this.logger.LogDebug($"set {fcntPropertyName} from {propertyNameStart} with {newfCnt.Value}, reset: {reset}");
             }
             else
             {
@@ -516,7 +525,7 @@ namespace LoRaWan.NetworkServer
             return newfCnt;
         }
 
-        private static uint? GetUintFromTwin(TwinCollection collection, string propertyName)
+        private uint? GetUintFromTwin(TwinCollection collection, string propertyName)
         {
             if (!collection.Contains(propertyName))
             {
@@ -555,7 +564,7 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        private static uint GetTwinPropertyUIntValue(dynamic value)
+        private uint GetTwinPropertyUIntValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -574,13 +583,13 @@ namespace LoRaWan.NetworkServer
             {
                 return Convert.ToUInt32(value);
             }
-            catch (OverflowException)
+            catch (OverflowException) when (ExceptionFilterUtility.True(() => this.logger.LogError("value represents a number that is less than MinValue or greater than MaxValue.")))
             {
-                Logger.Log("value represents a number that is less than MinValue or greater than MaxValue.", LogLevel.Error);
+                // continue
             }
-            catch (FormatException)
+            catch (FormatException) when (ExceptionFilterUtility.True(() => this.logger.LogError("value does not consist of an optional sign followed by a sequence of digits (0 through 9).")))
             {
-                Logger.Log("value does not consist of an optional sign followed by a sequence of digits (0 through 9).", LogLevel.Error);
+                // continue
             }
 
             return 0;
@@ -660,7 +669,7 @@ namespace LoRaWan.NetworkServer
                     if (deviceClientActivityScope == null)
                     {
                         // Logging as information because the real error was logged as error
-                        Logger.Log(DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
+                        this.logger.LogDebug("failed to save twin, could not reconnect");
                         return false;
                     }
 
@@ -935,7 +944,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                Logger.Log(DevEUI, "the region provided in the device twin is not a valid value", LogLevel.Error);
+                this.logger.LogError("the region provided in the device twin is not a valid value");
             }
 
             if (updateProperties.SavePreferredGateway)
@@ -959,7 +968,7 @@ namespace LoRaWan.NetworkServer
             if (activityScope == null)
             {
                 // Logging as information because the real error was logged as error
-                Logger.Log(DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
+                this.logger.LogDebug("failed to update twin after join, could not reconnect");
                 return false;
             }
 
@@ -982,7 +991,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
+                    this.logger.LogError("the provided RX1DROffset is not valid");
                 }
 
                 if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate))
@@ -991,7 +1000,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
+                    this.logger.LogError("the provided RX2DataRate is not valid");
                 }
 
                 if (Region.IsValidRXDelay(DesiredRXDelay))
@@ -1000,7 +1009,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
+                    this.logger.LogError("the provided RXDelay is not valid");
                 }
 
                 this.region.AcceptChanges();
@@ -1117,10 +1126,12 @@ namespace LoRaWan.NetworkServer
         private Task RunAndQueueNext(LoRaRequest request)
         {
             return TaskUtil.RunOnThreadPool(() => CoreAsync(),
-                                            ex => Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error));
+                                            ex => this.logger.LogError($"error processing request: {ex.Message}"));
 
             async Task CoreAsync()
             {
+                using var scope = this.logger.BeginDeviceScope(DevEUI);
+
                 LoRaDeviceRequestProcessResult result = null;
 
                 try

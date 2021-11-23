@@ -15,13 +15,14 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// Helper class to create <see cref="DownlinkPktFwdMessage"/>.
     /// </summary>
     internal static class DownlinkMessageBuilder
     {
-        private static readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator RndKeysGenerator = RandomNumberGenerator.Create();
 
         /// <summary>
         /// Creates downlink message with ack for confirmation or cloud to device message.
@@ -34,7 +35,8 @@ namespace LoRaWan.NetworkServer
             IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage,
             bool fpending,
             uint fcntDown,
-            LoRaADRResult loRaADRResult)
+            LoRaADRResult loRaADRResult,
+            ILogger logger)
         {
             var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
 
@@ -77,9 +79,9 @@ namespace LoRaWan.NetworkServer
             {
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
                 tmst = rxpk.Tmst + (timeWatcher.GetReceiveWindow2Delay(loRaDevice) * Constants.ConvertToPktFwdTime);
-                freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency, deviceJoinInfo);
+                freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo);
+                datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
             else
@@ -89,7 +91,7 @@ namespace LoRaWan.NetworkServer
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (datr == null)
                 {
-                    Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the data rate in the downstream message packet forwarder settings", LogLevel.Error);
+                    logger.LogError("there was a problem in setting the data rate in the downstream message packet forwarder settings");
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
 
@@ -98,7 +100,7 @@ namespace LoRaWan.NetworkServer
                 if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq, deviceJoinInfo))
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 {
-                    Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the frequency in the downstream message packet forwarder settings", LogLevel.Error);
+                    logger.LogError("there was a problem in setting the frequency in the downstream message packet forwarder settings");
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
 
@@ -127,7 +129,7 @@ namespace LoRaWan.NetworkServer
             if (cloudToDeviceMessage != null)
             {
                 // Get C2D Mac coomands
-                var macCommandsC2d = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage.MacCommands, rxpk, null);
+                var macCommandsC2d = PrepareMacCommandAnswer(null, cloudToDeviceMessage.MacCommands, rxpk, null, logger);
 
                 // Calculate total C2D payload size
                 var totalC2dSize = cloudToDeviceMessage.GetPayload()?.Length ?? 0;
@@ -162,19 +164,19 @@ namespace LoRaWan.NetworkServer
                         fport = cloudToDeviceMessage.Fport;
                     }
 
-                    Logger.Log(loRaDevice.DevEUI, $"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}", LogLevel.Information);
+                    logger.LogInformation($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}");
                     Array.Reverse(frmPayload);
                 }
                 else
                 {
-                    // Flag message to be abandoned and log
-                    Logger.Log(loRaDevice.DevEUI, $"cloud to device message: empty, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: 0, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Debug);
+                    // Flag message to be abandoned and log`
+                    logger.LogDebug($"cloud to device message: empty, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: 0, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.");
                     isMessageTooLong = true;
                 }
             }
 
             // Get request Mac commands
-            var macCommandsRequest = PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload.MacCommands, null, rxpk, loRaADRResult);
+            var macCommandsRequest = PrepareMacCommandAnswer(upstreamPayload.MacCommands, null, rxpk, loRaADRResult, logger);
 
             // Calculate request Mac commands size
             var macCommandsRequestSize = macCommandsRequest?.Sum(x => x.Length) ?? 0;
@@ -221,10 +223,14 @@ namespace LoRaWan.NetworkServer
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
-            Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);
-            return new DownlinkMessageBuilderResponse(
-                ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, lnsRxDelay, rxpk.Rfch, rxpk.Time, request.StationEui),
-                isMessageTooLong);
+            logger.LogInformation($"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}");
+
+            var downlinkPktFwdMessage = ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, lnsRxDelay, rxpk.Rfch, rxpk.Time, request.StationEui);
+
+            if (logger.IsEnabled(LogLevel.Debug))
+                logger.LogDebug($"{(LoRaMessageType)ackLoRaMessage.Mhdr.Span[0]} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+
+            return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong);
         }
 
         private static ushort ValidateAndConvert16bitFCnt(uint fcntDown)
@@ -242,7 +248,8 @@ namespace LoRaWan.NetworkServer
             LoRaDevice loRaDevice,
             Region loRaRegion,
             IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage,
-            uint fcntDown)
+            uint fcntDown,
+            ILogger logger)
         {
             var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
 
@@ -262,9 +269,9 @@ namespace LoRaWan.NetworkServer
             ushort rxDelay = 0; // Class C sends immediately
 
             // Class C always use RX2
-            freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
+            freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate);
+            datr = loRaRegion.GetDownstreamRX2DataRate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             // get max. payload size based on data rate from LoRaRegion
@@ -277,7 +284,7 @@ namespace LoRaWan.NetworkServer
 
             var availablePayloadSize = maxPayloadSize;
 
-            var macCommands = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage.MacCommands, null, null);
+            var macCommands = PrepareMacCommandAnswer(null, cloudToDeviceMessage.MacCommands, null, null, logger);
 
             // Calculate total C2D payload size
             var totalC2dSize = cloudToDeviceMessage.GetPayload()?.Length ?? 0;
@@ -302,10 +309,10 @@ namespace LoRaWan.NetworkServer
 
             var frmPayload = cloudToDeviceMessage.GetPayload();
 
-            if (Logger.LoggerLevel <= LogLevel.Information)
+            if (logger.IsEnabled(LogLevel.Information))
             {
-                Logger.Log(loRaDevice.DevEUI, $"cloud to device message: {ConversionHelper.ByteArrayToString(frmPayload)}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {cloudToDeviceMessage.Fport}, confirmed: {cloudToDeviceMessage.Confirmed}, cidType: {macCommandType}", LogLevel.Information);
-                Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);
+                logger.LogInformation($"cloud to device message: {ConversionHelper.ByteArrayToString(frmPayload)}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {cloudToDeviceMessage.Fport}, confirmed: {cloudToDeviceMessage.Confirmed}, cidType: {macCommandType}");
+                logger.LogInformation($"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}");
             }
 
             Array.Reverse(frmPayload);
@@ -329,7 +336,7 @@ namespace LoRaWan.NetworkServer
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
-            return new DownlinkMessageBuilderResponse(
+            var downlinkPktFwdMessage =
                 ackLoRaMessage.Serialize(loRaDevice.AppSKey,
                                          loRaDevice.NwkSKey,
                                          datr,
@@ -337,19 +344,23 @@ namespace LoRaWan.NetworkServer
                                          tmst,
                                          loRaDevice.DevEUI,
                                          rxDelay,
-                                         stationEui: loRaDevice.LastProcessingStationEui),
-                isMessageTooLong);
+                                         stationEui: loRaDevice.LastProcessingStationEui);
+
+            if (logger.IsEnabled(LogLevel.Debug))
+                logger.LogDebug($"{(LoRaMessageType)ackLoRaMessage.Mhdr.Span[0]} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+
+            return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong);
         }
 
         /// <summary>
         /// Prepare the Mac Commands to be sent in the downstream message.
         /// </summary>
         private static ICollection<MacCommand> PrepareMacCommandAnswer(
-            string devEUI,
             IEnumerable<MacCommand> requestedMacCommands,
             IEnumerable<MacCommand> serverMacCommands,
             Rxpk rxpk,
-            LoRaADRResult loRaADRResult)
+            LoRaADRResult loRaADRResult,
+            ILogger logger)
         {
             var macCommands = new Dictionary<int, MacCommand>();
 
@@ -366,7 +377,7 @@ namespace LoRaWan.NetworkServer
                                 var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
                                 if (macCommands.TryAdd((int)Cid.LinkCheckCmd, linkCheckAnswer))
                                 {
-                                    Logger.Log(devEUI, $"answering to a MAC command request {linkCheckAnswer}", LogLevel.Information);
+                                    logger.LogInformation($"answering to a MAC command request {linkCheckAnswer}");
                                 }
                             }
 
@@ -396,14 +407,14 @@ namespace LoRaWan.NetworkServer
                         {
                             if (!macCommands.TryAdd((int)macCmd.Cid, macCmd))
                             {
-                                Logger.Log(devEUI, $"could not send the cloud to device MAC command {macCmd.Cid}, as such a property was already present in the message. Please resend the cloud to device message", LogLevel.Error);
+                                logger.LogError($"could not send the cloud to device MAC command {macCmd.Cid}, as such a property was already present in the message. Please resend the cloud to device message");
                             }
 
-                            Logger.Log(devEUI, $"cloud to device MAC command {macCmd.Cid} received {macCmd}", LogLevel.Information);
+                            logger.LogInformation($"cloud to device MAC command {macCmd.Cid} received {macCmd}");
                         }
-                        catch (MacCommandException ex)
+                        catch (MacCommandException ex) when (ExceptionFilterUtility.True(() => logger.LogError(ex.ToString())))
                         {
-                            Logger.Log(devEUI, ex.ToString(), LogLevel.Error);
+                            // continue
                         }
                     }
                 }
@@ -416,7 +427,7 @@ namespace LoRaWan.NetworkServer
                 const int placeholderChannel = 25;
                 var linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
                 macCommands.Add((int)Cid.LinkADRCmd, linkADR);
-                Logger.Log(devEUI, $"performing a rate adaptation: DR {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
+                logger.LogInformation($"performing a rate adaptation: DR {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetition {loRaADRResult.NbRepetition}");
             }
 
             return macCommands.Values;

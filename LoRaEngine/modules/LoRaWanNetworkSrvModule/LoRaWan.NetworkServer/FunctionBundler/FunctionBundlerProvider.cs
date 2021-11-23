@@ -4,13 +4,15 @@
 namespace LoRaWan.NetworkServer
 {
     using System.Collections.Generic;
+    using System.Text.Json;
     using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Logging;
 
     public class FunctionBundlerProvider : IFunctionBundlerProvider
     {
         private readonly LoRaDeviceAPIServiceBase deviceApi;
-
+        private readonly ILoggerFactory loggerFactory;
+        private readonly ILogger<FunctionBundlerProvider> logger;
         private static readonly List<IFunctionBundlerExecutionItem> functionItems = new List<IFunctionBundlerExecutionItem>
         {
             new FunctionBundlerDeduplicationExecutionItem(),
@@ -19,9 +21,13 @@ namespace LoRaWan.NetworkServer
             new FunctionBundlerPreferredGatewayExecutionItem(),
         };
 
-        public FunctionBundlerProvider(LoRaDeviceAPIServiceBase deviceApi)
+        public FunctionBundlerProvider(LoRaDeviceAPIServiceBase deviceApi,
+                                       ILoggerFactory loggerFactory,
+                                       ILogger<FunctionBundlerProvider> logger)
         {
             this.deviceApi = deviceApi;
+            this.loggerFactory = loggerFactory;
+            this.logger = logger;
         }
 
         public FunctionBundler CreateIfRequired(
@@ -76,11 +82,13 @@ namespace LoRaWan.NetworkServer
             for (var i = 0; i < qualifyingExecutionItems.Count; i++)
             {
                 qualifyingExecutionItems[i].Prepare(context, bundlerRequest);
+                this.logger.LogDebug("FunctionBundler request finished preparing.");
             }
 
-            Logger.Log(loRaDevice.DevEUI, "FunctionBundler request: ", bundlerRequest, LogLevel.Debug);
+            if (this.logger.IsEnabled(LogLevel.Debug))
+                this.logger.LogDebug($"FunctionBundler request: {JsonSerializer.Serialize(bundlerRequest)}");
 
-            return new FunctionBundler(loRaDevice.DevEUI, this.deviceApi, bundlerRequest, qualifyingExecutionItems, context);
+            return new FunctionBundler(loRaDevice.DevEUI, this.deviceApi, bundlerRequest, qualifyingExecutionItems, context, loggerFactory.CreateLogger<FunctionBundler>());
         }
     }
 }

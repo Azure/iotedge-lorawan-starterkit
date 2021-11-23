@@ -44,7 +44,7 @@ namespace LoRaTools
         /// <summary>
         /// Create a List of Mac commands from client based on a sequence of bytes.
         /// </summary>
-        public static IList<MacCommand> CreateMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
+        public static IList<MacCommand> CreateMacCommandFromBytes(ReadOnlyMemory<byte> input, ILogger logger = null)
         {
             var pointer = 0;
             var macCommands = new List<MacCommand>(3);
@@ -105,17 +105,17 @@ namespace LoRaTools
                         case Cid.Zero:
                         case Cid.One:
                         default:
-                            Logger.Log(deviceId, $"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
+                            logger?.LogError($"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing");
                             return null;
                     }
 
                     var addedMacCommand = macCommands[^1];
-                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
+                    logger?.LogDebug($"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}");
                 }
             }
-            catch (MacCommandException ex)
+            catch (MacCommandException ex) when (ExceptionFilterUtility.True(() => logger?.LogError(ex.ToString())))
             {
-                Logger.Log(deviceId, ex.ToString(), LogLevel.Error);
+                // continue
             }
 
             return macCommands;
@@ -124,10 +124,12 @@ namespace LoRaTools
         /// <summary>
         /// Create a List of Mac commands from server based on a sequence of bytes.
         /// </summary>
-        public static IList<MacCommand> CreateServerMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
+        public static IList<MacCommand> CreateServerMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input, ILogger logger = null)
         {
             var pointer = 0;
             var macCommands = new List<MacCommand>(3);
+
+            using var scope = logger?.BeginDeviceScope(deviceId);
 
             while (pointer < input.Length)
             {
@@ -154,16 +156,16 @@ namespace LoRaTools
                         case Cid.NewChannelCmd:
                         case Cid.RXTimingCmd:
                         default:
-                            Logger.Log(deviceId, $"a Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
+                            logger?.LogError($"a Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing");
                             return null;
                     }
 
                     var addedMacCommand = macCommands[^1];
-                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
+                    logger?.LogDebug($"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}");
                 }
                 catch (MacCommandException ex)
                 {
-                    Logger.Log(deviceId, ex.ToString(), LogLevel.Error);
+                    logger?.LogError(ex.ToString());
                 }
             }
 

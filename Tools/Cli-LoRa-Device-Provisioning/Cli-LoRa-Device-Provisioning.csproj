@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>$(TargetFramework)</TargetFramework>
     <RootNamespace>LoRaWan.Tools.CLI</RootNamespace>
     <AssemblyName>loradeviceprovisioning</AssemblyName>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     <Authors>Sascha Corti (saschac@microsoft.com)</Authors>
-    <Version>1.1.0.0</Version>
+    <Version>2.0.0-alpha</Version>
     <Company>Microsoft</Company>
     <Product>Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Utility.</Product>
     <Description>This tool complements http://aka.ms/lora</Description>
@@ -23,13 +26,15 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="DefaultRouterConfig\**"> 
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
+    </Content> 
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.Targets" Version="3.1.0" PrivateAssets="all" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.22.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 

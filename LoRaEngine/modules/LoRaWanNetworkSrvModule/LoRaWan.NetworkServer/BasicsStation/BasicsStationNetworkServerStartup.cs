@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
     using System.Globalization;
+    using Logger;
     using LoRaTools.ADR;
     using LoRaWan;
     using LoRaWan.NetworkServer.ADR;
@@ -41,9 +42,19 @@ namespace LoRaWan.NetworkServer.BasicsStation
             _ = services.AddLogging(loggingBuilder =>
                         {
                             _ = loggingBuilder.ClearProviders();
-                            var logLevel = (LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture);
+                            var logLevel = int.TryParse(NetworkServerConfiguration.LogLevel, NumberStyles.Integer, CultureInfo.InvariantCulture, out var logLevelNum)
+                                ? (LogLevel)logLevelNum is var level && Enum.IsDefined(typeof(LogLevel), level) ? level : throw new InvalidCastException()
+                                : Enum.Parse<LogLevel>(NetworkServerConfiguration.LogLevel, true);
+
                             _ = loggingBuilder.SetMinimumLevel(logLevel);
                             _ = loggingBuilder.AddLoRaConsoleLogger(c => c.LogLevel = logLevel);
+
+                            if (NetworkServerConfiguration.LogToTcp)
+                            {
+                                _ = loggingBuilder.AddTcpLogger(new TcpLoggerConfiguration(logLevel, NetworkServerConfiguration.LogToTcpAddress,
+                                                                                           NetworkServerConfiguration.LogToTcpPort,
+                                                                                           NetworkServerConfiguration.GatewayID));
+                            }
 
                             if (useApplicationInsights)
                             {
@@ -78,7 +89,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<LoRaDeviceCache>()
                         .AddSingleton(x => new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>();
+                        .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>));
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);

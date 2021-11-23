@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Common
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
 
     public static class TestUtils
@@ -182,31 +183,6 @@ namespace LoRaWan.Tests.Common
         public static TimeSpan GetStartTimeOffsetForSecondWindow()
         {
             return TimeSpan.FromMilliseconds(1000 - LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage.TotalMilliseconds + 1);
-        }
-
-        /// <summary>
-        /// Helper method for testing.
-        /// </summary>
-        public static LoraDeviceClientConnectionManagerWrapper CreateConnectionManager() =>
-            new LoraDeviceClientConnectionManagerWrapper();
-    }
-
-    public sealed class LoraDeviceClientConnectionManagerWrapper : IDisposable
-    {
-        private readonly IMemoryCache memoryCache;
-
-        public LoraDeviceClientConnectionManagerWrapper()
-        {
-            this.memoryCache = new MemoryCache(new MemoryCacheOptions());
-            Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
-        }
-
-        public LoRaDeviceClientConnectionManager Value { get; }
-
-        public void Dispose()
-        {
-            this.memoryCache.Dispose();
-            Value.Dispose();
         }
     }
 }

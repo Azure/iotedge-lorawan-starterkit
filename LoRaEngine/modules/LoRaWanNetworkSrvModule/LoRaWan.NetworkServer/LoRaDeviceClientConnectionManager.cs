@@ -38,11 +38,13 @@ namespace LoRaWan.NetworkServer
         }
 
         private readonly IMemoryCache cache;
+        private readonly ILogger<LoRaDeviceClientConnectionManager> logger;
         private readonly ConcurrentDictionary<string, ManagedConnection> managedConnections = new ConcurrentDictionary<string, ManagedConnection>();
 
-        public LoRaDeviceClientConnectionManager(IMemoryCache cache)
+        public LoRaDeviceClientConnectionManager(IMemoryCache cache, ILogger<LoRaDeviceClientConnectionManager> logger)
         {
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public bool EnsureConnected(LoRaDevice loRaDevice)
@@ -80,7 +82,7 @@ namespace LoRaWan.NetworkServer
                         ce.SlidingExpiration = TimeSpan.FromSeconds(managedConnection.LoRaDevice.KeepAliveTimeout);
                         _ = ce.RegisterPostEvictionCallback(OnScheduledDisconnect);
 
-                        Logger.Log(managedConnection.LoRaDevice.DevEUI, $"client connection timeout set to {managedConnection.LoRaDevice.KeepAliveTimeout} seconds (sliding expiration)", LogLevel.Debug);
+                        this.logger.LogDebug($"client connection timeout set to {managedConnection.LoRaDevice.KeepAliveTimeout} seconds (sliding expiration)");
 
                         return managedConnection;
                     });
@@ -90,9 +92,11 @@ namespace LoRaWan.NetworkServer
         {
             var managedConnection = (ManagedConnection)value;
 
+            using var scope = this.logger.BeginDeviceScope(managedConnection.LoRaDevice.DevEUI);
+
             if (!managedConnection.LoRaDevice.TryDisconnect())
             {
-                Logger.Log(managedConnection.LoRaDevice.DevEUI, $"scheduled device disconnection has been postponed. Device client connection is active", LogLevel.Information);
+                this.logger.LogInformation("scheduled device disconnection has been postponed. Device client connection is active");
                 SetupSchedule(managedConnection);
             }
         }

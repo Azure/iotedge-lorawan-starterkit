@@ -5,7 +5,10 @@ namespace LoRaWan.Tests.Common
 {
     using System.Collections.Generic;
     using LoRaWan.NetworkServer;
-    
+    using LoRaWan.NetworkServer.ADR;
+    using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
+
     public sealed class TestLoRaDeviceFactory : LoRaDeviceFactory
     {
         private readonly ILoRaDeviceClient loRaDeviceClient;

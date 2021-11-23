@@ -204,19 +204,19 @@ namespace LoRaTools.Regions
         /// <param name="nwkSrvRx2Freq">the value of the rx2freq env var on the nwk srv.</param>
         /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
         /// <returns>rx2 freq.</returns>
-        public double GetDownstreamRX2Freq(string devEUI, double? nwkSrvRx2Freq, DeviceJoinInfo deviceJoinInfo = null)
+        public double GetDownstreamRX2Freq(double? nwkSrvRx2Freq, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
         {
             // resolve frequency to gateway if set to region's default
             if (nwkSrvRx2Freq.HasValue)
             {
-                Logger.Log(devEUI, $"using custom gateway RX2 frequency {nwkSrvRx2Freq}", LogLevel.Debug);
+                logger.LogDebug($"using custom gateway RX2 frequency {nwkSrvRx2Freq}", LogLevel.Debug);
                 return nwkSrvRx2Freq.Value;
             }
             else
             {
                 // default frequency
                 var rx2ReceiveWindow = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
-                Logger.Log(devEUI, $"using standard region RX2 frequency {rx2ReceiveWindow.Frequency}", LogLevel.Debug);
+                logger.LogDebug($"using standard region RX2 frequency {rx2ReceiveWindow.Frequency}");
                 return rx2ReceiveWindow.Frequency;
             }
         }
@@ -230,7 +230,7 @@ namespace LoRaTools.Regions
         /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
         /// <returns>the rx2 datarate.</returns>
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        public string GetDownstreamRX2DataRate(string devEUI, string nwkSrvRx2Dr, ushort? rx2DrFromTwins, DeviceJoinInfo deviceJoinInfo = null)
+        public string GetDownstreamRX2DataRate(string devEUI, string nwkSrvRx2Dr, ushort? rx2DrFromTwins, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
         {
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
@@ -238,12 +238,12 @@ namespace LoRaTools.Regions
                 if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
                 {
                     var datr = DRtoConfiguration[rx2DrFromTwins.Value].configuration;
-                    Logger.Log(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
+                    logger.LogDebug($"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}");
                     return datr;
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
+                    logger.LogError($"device twins rx2 ({rx2DrFromTwins.Value}) is invalid");
                 }
             }
             else
@@ -252,7 +252,7 @@ namespace LoRaTools.Regions
                 if (!string.IsNullOrEmpty(nwkSrvRx2Dr))
                 {
                     var datr = nwkSrvRx2Dr;
-                    Logger.Log(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
+                    logger.LogDebug($"using custom gateway RX2 datarate {datr}");
                     return datr;
                 }
             }
@@ -260,47 +260,7 @@ namespace LoRaTools.Regions
             // if no settings was set we use region default.
             var rx2ReceiveWindow = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
             var defaultDatr = DRtoConfiguration[rx2ReceiveWindow.DataRate].configuration;
-            Logger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
-            return defaultDatr;
-        }
-
-        /// <summary>
-        /// Get downstream RX2 datarate.
-        /// </summary>
-        /// <param name="devEUI">the device id.</param>
-        /// <param name="nwkSrvRx2Dr">the network server rx2 datarate.</param>
-        /// <param name="rx2DrFromTwins">rx2 datarate value from twins.</param>
-        /// <returns>the rx2 datarate.</returns>
-        public ushort GetDownstreamRX2DataRate(string devEUI, ushort? nwkSrvRx2Dr, ushort? rx2DrFromTwins, DeviceJoinInfo deviceJoinInfo = null)
-        {
-            // If the rx2 datarate property is in twins, we take it from there
-            if (rx2DrFromTwins.HasValue)
-            {
-                if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
-                {
-                    var datr = rx2DrFromTwins.Value;
-                    Logger.Log(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
-                    return datr;
-                }
-                else
-                {
-                    Logger.Log(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
-                }
-            }
-            else
-            {
-                // Otherwise we check if we have some properties set on the server (server Specific)
-                if (nwkSrvRx2Dr.HasValue)
-                {
-                    var datr = nwkSrvRx2Dr.Value;
-                    Logger.Log(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
-                    return datr;
-                }
-            }
-
-            // if no settings was set we use region default.
-            var defaultDatr = GetDefaultRX2ReceiveWindow(deviceJoinInfo).DataRate;
-            Logger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
+            logger.LogDebug($"using standard region RX2 datarate {defaultDatr}");
             return defaultDatr;
         }
 
@@ -333,7 +293,6 @@ namespace LoRaTools.Regions
                 rxpk.Freq > RegionLimits.FrequencyRange.max ||
                 !RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
             {
-                Logger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
                 return false;
             }
 
@@ -349,7 +308,6 @@ namespace LoRaTools.Regions
         {
             if (!IsValidUpstreamFrequency(frequency) || !IsValidUpstreamDataRate(dataRate))
             {
-                Logger.Log("A upstream message not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
                 return false;
             }
 

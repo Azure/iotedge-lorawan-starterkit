@@ -55,12 +55,6 @@
               "mqttSettings__enabled": {
                 "value": "$EDGEHUB_MQTTSETTINGS_ENABLED"
               },
-              "httpSettings__enabled": {
-                "value": "$EDGEHUB_HTTPSETTINGS_ENABLED"
-              },
-              "LORA_BUILD_ID": {
-                "value": "$BUILD_BUILDID"
-              },
               "AuthenticationMode": {
                 "value": "CloudAndScope"
               }
@@ -74,14 +68,13 @@
               "image": "${MODULES.LoRaWanNetworkSrvModule}",
               "createOptions": {
                 "ExposedPorts": {
-                  "1680/udp": {}
+                  "5000/tcp": {}
                 },
                 "HostConfig": {
                   "PortBindings": {
-                    "1680/udp": [
+                    "5000/tcp": [
                       {
-                        "HostPort": "1680",
-                        "HostIp": "172.17.0.1"
+                        "HostPort": "5000"
                       }
                     ]
                   }
@@ -96,47 +89,19 @@
               "LOG_LEVEL": {
                 "value": "$NET_SRV_LOG_LEVEL"
               },
-              "LOG_TO_UDP": {
-                "value": "$NET_SRV_LOGTO_UDP"
+              "LOG_TO_TCP": {
+                "value": "$NET_SRV_LOG_TO_TCP"
               },
               "IOTEDGE_TIMEOUT": {
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
               },
-              "LOG_TO_UDP_ADDRESS": {
-                "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
-              }
-            },
-            "status": "running",
-            "restartPolicy": "always"
-          },
-          "LoRaWanPktFwdModule": {
-            "type": "docker",
-            "settings": {
-              "image": "${MODULES.LoRaWanPktFwdModule}",
-              "createOptions": {
-                "HostConfig": {
-                  "NetworkMode": "host",
-                  "Privileged": true
-                },
-                "NetworkingConfig": {
-                  "EndpointsConfig": {
-                    "host": {}
-                  }
-                }
-              }
-            },
-            "env": {
-              "RESET_PIN": {
-                "value": "$RESET_PIN"
+              "LOG_TO_TCP_ADDRESS": {
+                "value": "$NET_SRV_LOG_TO_TCP_ADDRESS"
               },
-              "REGION": {
-                "value": "$REGION"
-              },
-              "PKT_FWD_SPI_DEV":{
-                "value":"$SPI_DEV"
+              "APPINSIGHTS_INSTRUMENTATIONKEY": {
+                "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
               }
             },
-            "version": "1.0",
             "status": "running",
             "restartPolicy": "always"
           },
@@ -173,3 +138,4 @@
     }
   }
 }
+

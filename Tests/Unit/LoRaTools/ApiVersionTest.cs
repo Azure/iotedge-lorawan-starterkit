@@ -62,13 +62,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
         }
 
         [Fact]
-        public void Version_02_Should_Be_Older_As_All()
-        {
-            Assert.True(ApiVersion.Version_0_2_Or_Earlier < ApiVersion.Version_2018_12_16_Preview);
-            Assert.True(ApiVersion.Version_0_2_Or_Earlier < ApiVersion.Version_2019_02_12_Preview);
-        }
-
-        [Fact]
         public void Empty_String_Should_Parse_To_Version_02()
         {
             var actual = ApiVersion.Parse(string.Empty);
@@ -154,7 +147,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 if (v != latest)
                 {
-                    Assert.True(latest > v);
+                    Assert.False(v.SupportsVersion(latest));
                 }
             });
         }

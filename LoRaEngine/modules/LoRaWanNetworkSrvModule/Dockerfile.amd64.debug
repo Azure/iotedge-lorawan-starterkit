@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:3.1-buster-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim AS base
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends unzip procps && \
@@ -9,7 +9,7 @@ USER moduleuser
 RUN curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l ~/vsdbg
 
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS build-env
 
 WORKDIR /build
 COPY Directory.Build.props ./

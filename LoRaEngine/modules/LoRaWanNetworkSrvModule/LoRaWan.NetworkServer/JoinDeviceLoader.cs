@@ -19,14 +19,16 @@ namespace LoRaWan.NetworkServer
         private readonly LoRaDeviceCache deviceCache;
         private volatile bool canCache;
         private SemaphoreSlim joinLock = new SemaphoreSlim(1);
+        private readonly ILogger<JoinDeviceLoader> logger;
 
         internal bool CanCache => this.canCache;
 
-        internal JoinDeviceLoader(IoTHubDeviceInfo ioTHubDevice, ILoRaDeviceFactory deviceFactory, LoRaDeviceCache deviceCache)
+        internal JoinDeviceLoader(IoTHubDeviceInfo ioTHubDevice, ILoRaDeviceFactory deviceFactory, LoRaDeviceCache deviceCache, ILogger<JoinDeviceLoader> logger)
         {
             this.ioTHubDevice = ioTHubDevice;
             this.deviceFactory = deviceFactory;
             this.deviceCache = deviceCache;
+            this.logger = logger;
             this.canCache = true;
         }
 
@@ -47,7 +49,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (LoRaProcessingException ex)
             {
-                Logger.Log(this.ioTHubDevice.DevEUI, $"join refused: Failed to load: {ex}", LogLevel.Error);
+                this.logger.LogError(ex, "join refused: error initializing OTAA device, getting twin failed");
                 this.canCache = false;
                 return null;
             }

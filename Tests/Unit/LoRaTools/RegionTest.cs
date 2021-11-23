@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Text;
     using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
 
     public class RegionTest
@@ -77,23 +78,9 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionAS923TestData.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionAS923TestData))]
         public void TestDownstreamRX2Frequency(Region region, double? nwksrvrx2freq, double expectedFreq, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
-            var devEui = "testDevice";
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            var freq = region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq, deviceJoinInfo);
+            var freq = region.GetDownstreamRX2Freq(nwksrvrx2freq, NullLogger.Instance, deviceJoinInfo);
             Assert.Equal(expectedFreq, freq);
-        }
-
-        [Theory]
-        [MemberData(nameof(RegionEU868TestData.TestDownstreamRX2DataRateData), MemberType = typeof(RegionEU868TestData))]
-        [MemberData(nameof(RegionUS915TestData.TestDownstreamRX2DataRateData), MemberType = typeof(RegionUS915TestData))]
-        [MemberData(nameof(RegionCN470TestData.TestDownstreamRX2DataRateData), MemberType = typeof(RegionCN470TestData))]
-        [MemberData(nameof(RegionAS923TestData.TestDownstreamRX2DataRateData), MemberType = typeof(RegionAS923TestData))]
-        public void TestDownstreamRX2DataRate(Region region, ushort? nwksrvrx2dr, ushort? rx2drfromtwins, ushort expectedDr, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
-        {
-            var devEui = "testDevice";
-            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            var datr = region.GetDownstreamRX2DataRate(devEui, nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo);
-            Assert.Equal(expectedDr, datr);
         }
 
         [Theory]

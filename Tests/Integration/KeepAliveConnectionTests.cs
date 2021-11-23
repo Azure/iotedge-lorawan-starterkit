@@ -15,6 +15,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -362,7 +363,8 @@ namespace LoRaWan.Tests.Integration
                 ServerConfiguration,
                 deviceRegistry,
                 PacketForwarder,
-                FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
             Assert.Single(PacketForwarder.DownlinkMessages);

@@ -21,7 +21,7 @@
           "edgeAgent": {
             "type": "docker",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-agent:1.2.2",
+              "image": "mcr.microsoft.com/azureiotedge-agent:$EDGE_AGENT_VERSION",
               "createOptions": ""
             }
           },
@@ -30,7 +30,7 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-hub:1.2.2",
+              "image": "mcr.microsoft.com/azureiotedge-hub:$EDGE_HUB_VERSION",
               "createOptions": {
                 "HostConfig": {
                   "PortBindings": {
@@ -50,10 +50,10 @@
             },
             "env": {
               "OptimizeForPerformance": {
-                "value": "false"
+                "value": "$EDGEHUB_OPTIMIZEFORPERFORMANCE"
               },
               "mqttSettings__enabled": {
-                "value": "false"
+                "value": "$EDGEHUB_MQTTSETTINGS_ENABLED"
               },
               "AuthenticationMode": {
                 "value": "CloudAndScope"
@@ -68,13 +68,13 @@
               "image": "${MODULES.LoRaWanNetworkSrvModule}",
               "createOptions": {
                 "ExposedPorts": {
-                  "1680/udp": {}
+                  "5000/tcp": {}
                 },
                 "HostConfig": {
                   "PortBindings": {
-                    "1680/udp": [
+                    "5000/tcp": [
                       {
-                        "HostPort": "1680",
+                        "HostPort": "5000",
                         "HostIp": "172.17.0.1"
                       }
                     ]
@@ -90,23 +90,26 @@
               "LOG_LEVEL": {
                 "value": "$NET_SRV_LOG_LEVEL"
               },
-              "LOG_TO_UDP": {
-                "value": "$NET_SRV_LOGTO_UDP"
+              "LOG_TO_TCP": {
+                "value": "$NET_SRV_LOG_TO_TCP"
               },
               "IOTEDGE_TIMEOUT": {
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
               },
-              "LOG_TO_UDP_ADDRESS": {
-                "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
+              "LOG_TO_TCP_ADDRESS": {
+                "value": "$NET_SRV_LOG_TO_TCP_ADDRESS"
+              },
+              "APPINSIGHTS_INSTRUMENTATIONKEY": {
+                "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
               }
             },
             "status": "running",
             "restartPolicy": "always"
           },
-          "LoRaWanPktFwdModule": {
+          "LoRaBasicsStationModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanPktFwdModule}",
+              "image": "${MODULES.LoRaBasicsStationModule}",
               "createOptions": {
                 "HostConfig": {
                   "NetworkMode": "host",
@@ -120,23 +123,33 @@
               }
             },
             "env": {
-              "RESET_PIN": {
-                "value": "$RESET_PIN"
-              },
-              "REGION": {
-                "value": "$REGION"
-              },
               "SPI_DEV":{
-                "value":"$PKT_FWD_SPI_DEV"
+                "value":"$LBS_SPI_DEV"
               },
               "SPI_SPEED":
               {
-               "value":"$PKT_FWD_SPI_SPEED"
+               "value":"$LBS_SPI_SPEED"
+              },
+              "TC_URI":{
+                "value": "$LBS_TC_URI"
+              },
+              "RESET_PIN":{
+                "value": "$RESET_PIN"
               }
             },
             "version": "1.0",
             "status": "running",
             "restartPolicy": "always"
+          },
+          "sensordecodermodule": {
+            "type": "docker",
+            "settings": {
+              "image": "$CONTAINER_REGISTRY_ADDRESS/decodersample:2.0",
+              "createOptions": {}
+            },
+            "status": "running",
+            "restartPolicy": "always",
+            "version": "1.0"
           }
         }
       }
@@ -161,3 +174,4 @@
     }
   }
 }
+

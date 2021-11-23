@@ -115,19 +115,17 @@ namespace LoRaTools.LoRaMessage
 
             var type = new byte[1];
             type[0] = (byte)keyType;
-            using Aes aes = new AesManaged
-            {
-                Key = appKey,
+            using var aes = Aes.Create("AesManaged");
+            aes.Key = appKey;
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
-                // Cipher is part of the LoRaWAN specification
-                Mode = CipherMode.ECB,
+            // Cipher is part of the LoRaWAN specification
+            aes.Mode = CipherMode.ECB;
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
-                Padding = PaddingMode.None
-            };
+            aes.Padding = PaddingMode.None;
+            aes.IV = new byte[16];
 
             var pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
 
-            aes.IV = new byte[16];
             ICryptoTransform cipher;
 #pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
             // Part of the LoRaWAN specification

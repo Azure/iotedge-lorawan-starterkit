@@ -17,6 +17,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -125,7 +126,8 @@ namespace LoRaWan.Tests.Integration
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 PacketForwarder,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             // Expectations
             // Verify that C2D message is sent
@@ -209,7 +211,8 @@ namespace LoRaWan.Tests.Integration
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 PacketForwarder,
-                this.frameCounterStrategyProvider);
+                this.frameCounterStrategyProvider,
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
 
             // Expectations
             // Verify that C2D message is sent

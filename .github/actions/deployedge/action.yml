@@ -1,0 +1,65 @@
+name: 'Deploy IoT Edge'
+description: 'Prepare an IoT Edge Deployment'
+inputs:
+  deployment_file_name:
+    description: 'edge deployment file name'
+    required: true
+  architecture:
+    description: 'architecture of the deployment'
+    required: true
+  iot_edge_deployment_id:
+    description: 'architecture of the deployment'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+  - run: |
+      if [ ${{ github.ref	}} = "refs/heads/dev" ]; then
+       echo "dev"
+       IMAGE_TAG="$DEV_IMAGE_TAG"
+      elif [ ${{ github.ref	}} = "refs/heads/master" ]; then
+       echo "master"
+       IMAGE_TAG="$MASTER_IMAGE_TAG"
+      elif [ ${{ github.event_name }} == "pull_request" ]; then
+       echo "pull request"
+       IMAGE_TAG="pr-${{ github.event.number}}"
+      else
+       echo "all others"
+       IMAGE_TAG="custom-${GITHUB_REF##*/}"
+      fi
+      echo "Using image tag prefix $IMAGE_TAG"
+      IMAGE_TAG="$IMAGE_TAG-${{ github.run_number }}"
+      echo "Using image tag $IMAGE_TAG"
+      echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
+    shell: bash
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+  # Replacement need to occur to be compliant with the IoT Edge tool, we should remove in the future.
+  - run: |
+      $LBS_IMAGE_TAG=$(az acr repository show-tags --username ${{ env.CONTAINER_REGISTRY_USERNAME }} --password "${{ env.CONTAINER_REGISTRY_PASSWORD }}" --name ${{ env.CONTAINER_REGISTRY_ADDRESS }} --repository lorabasicsstation --orderby time_desc -o json | ConvertFrom-Json)[0]
+      echo $LBS_IMAGE_TAG
+      $LBS_IMAGE_TAG=$LBS_IMAGE_TAG.replace("-${{ inputs.architecture }}",'')
+      echo $LBS_IMAGE_TAG
+      echo "::set-env name=LBS_VERSION::$LBS_IMAGE_TAG"
+    shell: pwsh
+    name: Compute latest LBS build
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+  - name: Iot Edge Deploy
+    uses: ./.github/actions/iotedgedev
+    id: edgedev_deploy
+    env:
+      IOTHUB_CONNECTION_STRING: ${{ env.IOTHUB_CONNECTION_STRING }}
+    with:
+      folder_path: 'LoRaEngine'
+      deployment_file_name: ${{ inputs.deployment_file_name }}
+      architecture: ${{ inputs.architecture }}
+
+  - name: Wait for IoT Edge Deployment
+    shell: bash
+    run: |
+      az extension add --name azure-iot
+      until `az iot edge deployment show-metric --deployment-id $IOT_EDGE_DEPLOYMENT_ID --metric-id reportedSuccessfulCount --metric-type system --login $IOTHUB_CONNECTION_STRING | grep -q $DEVICE_ID`; do sleep 10 && echo wait; done

@@ -44,6 +44,7 @@ namespace LoRaWan.NetworkServer
         private readonly string devAddr;
         private readonly LoRaDeviceCache loraDeviceCache;
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
+        private readonly ILogger<DeviceLoaderSynchronizer> logger;
         private volatile LoaderState state;
         private readonly object queueLock;
         private volatile List<LoRaRequest> queuedRequests;
@@ -56,7 +57,8 @@ namespace LoRaWan.NetworkServer
             ILoRaDeviceFactory deviceFactory,
             NetworkServerConfiguration configuration,
             LoRaDeviceCache deviceCache,
-            HashSet<ILoRaDeviceInitializer> initializers)
+            HashSet<ILoRaDeviceInitializer> initializers,
+            ILogger<DeviceLoaderSynchronizer> logger)
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
@@ -64,6 +66,7 @@ namespace LoRaWan.NetworkServer
             this.devAddr = devAddr;
             this.loraDeviceCache = deviceCache;
             this.initializers = initializers;
+            this.logger = logger;
             this.state = LoaderState.QueryingDevices;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
@@ -74,7 +77,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 // If device was not found, search in the device API, updating local cache
-                Logger.Log(this.devAddr, "querying the registry for device", LogLevel.Debug);
+                this.logger.LogDebug("querying the registry for device");
 
                 SearchDevicesResult searchDeviceResult = null;
                 try
@@ -82,7 +85,7 @@ namespace LoRaWan.NetworkServer
                     searchDeviceResult = await this.loRaDeviceAPIService.SearchByDevAddrAsync(this.devAddr);
 
                     // If device was not found, search in the device API, updating local cache
-                    Logger.Log(this.devAddr, $"querying the registry for devices by devAddr {this.devAddr} found {searchDeviceResult.Devices?.Count ?? 0} devices", LogLevel.Debug);
+                    this.logger.LogDebug($"querying the registry for devices by devAddr {this.devAddr} found {searchDeviceResult.Devices?.Count ?? 0} devices");
                 }
                 catch (Exception ex)
                 {
@@ -154,10 +157,10 @@ namespace LoRaWan.NetworkServer
                         _ = await Task.WhenAll(refreshTasks);
                     }
                 }
-                catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.DeviceInitializationFailed)
+                catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.DeviceInitializationFailed
+                                                         && ExceptionFilterUtility.True(() => this.logger.LogError($"one or more device initializations failed: {ex}")))
                 {
-                    Logger.Log(this.devAddr, $"one or more device initializations failed: {ex}", LogLevel.Error);
-                    HasLoadingDeviceError = true;
+                    // continue
                 }
             }
 
@@ -273,27 +276,23 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private static void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
+        private void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
         {
-            var deviceId = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
-
             switch (failedReason)
             {
                 case LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck:
-                    Logger.Log(deviceId, $"with devAddr {ConversionHelper.ByteArrayToString(request.Payload.DevAddr)} check MIC failed", LogLevel.Debug);
-                    break;
-
-                case LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr:
-                    Logger.Log(deviceId, $"device is not our device, ignore message", LogLevel.Debug);
-                    break;
-
-                case LoRaDeviceRequestFailedReason.ApplicationError:
-                    Logger.Log(deviceId, "problem resolving device", LogLevel.Error);
+                    this.logger.LogDebug($"with devAddr {ConversionHelper.ByteArrayToString(request.Payload.DevAddr)} check MIC failed");
                     break;
 
                 case LoRaDeviceRequestFailedReason.BelongsToAnotherGateway:
-                    Logger.Log(deviceId, "device is not our device, ignore message", LogLevel.Debug);
+                case LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr:
+                    this.logger.LogDebug("device is not our device, ignore message");
                     break;
+
+                case LoRaDeviceRequestFailedReason.ApplicationError:
+                    this.logger.LogError("problem resolving device");
+                    break;
+
                 case LoRaDeviceRequestFailedReason.InvalidNetId:
                 case LoRaDeviceRequestFailedReason.InvalidRxpk:
                 case LoRaDeviceRequestFailedReason.InvalidRegion:
@@ -309,7 +308,7 @@ namespace LoRaWan.NetworkServer
                 case LoRaDeviceRequestFailedReason.DeduplicationDrop:
                 case LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed:
                 default:
-                    Logger.Log(deviceId, "device request failed", LogLevel.Debug);
+                    this.logger.LogDebug("device request failed");
                     break;
             }
         }

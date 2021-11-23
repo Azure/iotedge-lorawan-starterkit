@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -29,12 +30,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 GatewayID = "test-gateway",
                 LogLevel = "Debug",
             };
-
-            LoRaWan.Logger.Init(new LoggerConfiguration()
-            {
-                LogLevel = LogLevel.Debug,
-            });
-
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
             this.connectionManager = new LoRaDeviceClientConnectionManager(this.memoryCache);
         }
@@ -68,7 +63,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceFactory.Object,
                 new NetworkServerConfiguration(),
                 deviceCache,
-                null);
+                null,
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             var ex = await Assert.ThrowsAsync<LoRaProcessingException>(async () => await target.LoadAsync());
             Assert.IsType<InvalidOperationException>(ex.InnerException);
@@ -109,7 +105,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceFactory.Object,
                 new NetworkServerConfiguration(),
                 deviceCache,
-                null);
+                null,
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             _ = target.LoadAsync();
 
@@ -155,7 +152,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceFactory,
                 new NetworkServerConfiguration(),
                 deviceCache,
-                null);
+                null,
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             _ = target.LoadAsync();
 
@@ -200,7 +198,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceFactory,
                 new NetworkServerConfiguration(),
                 deviceCache,
-                null);
+                null,
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             _ = target.LoadAsync();
 
@@ -248,7 +247,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceFactory,
                 new NetworkServerConfiguration(),
                 deviceCache,
-                null);
+                null,
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             _ = target.LoadAsync();
 
