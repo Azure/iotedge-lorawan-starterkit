@@ -23,13 +23,13 @@ namespace LoRaWan.NetworkServer
         private MeterListener? listener;
         private bool disposedValue;
 
-        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient) : this(telemetryClient, MetricExporter.RegistryLookup)
+        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient) : this(telemetryClient, MetricRegistry.RegistryLookup)
         { }
 
         internal ApplicationInsightsMetricExporter(TelemetryClient telemetryClient, IDictionary<string, CustomMetric> registryLookup)
         {
             this.telemetryClient = telemetryClient;
-            this.metricRegistry = registryLookup.ToDictionary(m => m.Key, m => new MetricIdentifier(MetricExporter.Namespace, m.Value.Name, m.Value.Tags));
+            this.metricRegistry = registryLookup.ToDictionary(m => m.Key, m => new MetricIdentifier(MetricRegistry.Namespace, m.Value.Name, m.Value.Tags));
         }
 
         public void Start()
@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer
             {
                 InstrumentPublished = (instrument, meterListener) =>
                 {
-                    if (instrument.Meter.Name == MetricExporter.Namespace && this.metricRegistry.ContainsKey(instrument.Name))
+                    if (instrument.Meter.Name == MetricRegistry.Namespace && this.metricRegistry.ContainsKey(instrument.Name))
                         meterListener.EnableMeasurementEvents(instrument);
                 }
             };

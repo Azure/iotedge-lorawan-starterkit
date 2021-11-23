@@ -27,8 +27,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.registry = new[]
             {
-                new CustomMetric("SomeCounter", "Counter", MetricType.Counter, new[] { MetricExporter.GatewayIdTagName }),
-                new CustomMetric("SomeHistogram", "Histogram", MetricType.Histogram, new[] { MetricExporter.GatewayIdTagName })
+                new CustomMetric("SomeCounter", "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
+                new CustomMetric("SomeHistogram", "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName })
             };
             this.incCounterMock = new Mock<Action<string, string[], double>>();
             this.recordHistogramMock = new Mock<Action<string, string[], double>>();
@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var meter = new Meter("LoRaWan", "1.0");
             var counter = meter.CreateCounter<T>(Counter.Name);
             foreach (var value in values)
-                counter.Add(value, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object?)gatewayId));
+                counter.Add(value, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object?)gatewayId));
 
             // assert
             foreach (var value in expectedReportedValues)
@@ -80,7 +80,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var meter = new Meter("LoRaWan", "1.0");
             var histogram = meter.CreateHistogram<int>(Histogram.Name);
             foreach (var value in values)
-                histogram.Record(value, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object?)gatewayId));
+                histogram.Record(value, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object?)gatewayId));
 
             // assert
             foreach (var value in values)

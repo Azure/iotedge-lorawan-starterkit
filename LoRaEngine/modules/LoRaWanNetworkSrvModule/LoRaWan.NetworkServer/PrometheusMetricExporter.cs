@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
         private readonly IDictionary<string, CustomMetric> registryLookup;
 
         public PrometheusMetricExporter()
-            : this(MetricExporter.RegistryLookup)
+            : this(MetricRegistry.RegistryLookup)
         { }
 
         internal PrometheusMetricExporter(IDictionary<string, CustomMetric> registryLookup)
@@ -44,7 +44,7 @@ namespace LoRaWan.NetworkServer
             {
                 InstrumentPublished = (instrument, meterListener) =>
                 {
-                    if (instrument.Meter.Name == MetricExporter.Namespace && this.registryLookup.ContainsKey(instrument.Name))
+                    if (instrument.Meter.Name == MetricRegistry.Namespace && this.registryLookup.ContainsKey(instrument.Name))
                         meterListener.EnableMeasurementEvents(instrument);
                 }
             };

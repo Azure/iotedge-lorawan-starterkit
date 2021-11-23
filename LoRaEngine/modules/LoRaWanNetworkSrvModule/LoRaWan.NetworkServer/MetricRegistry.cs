@@ -9,15 +9,16 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Linq;
 
-    internal static class MetricExporter
+    internal static class MetricRegistry
     {
         public const string Namespace = "LoRaWan";
         public const string MetricsVersion = "1.0";
         public const string GatewayIdTagName = "GatewayId";
 
+        public static readonly CustomMetric JoinRequests = new CustomMetric("JoinRequests", "Number of join requests", MetricType.Counter, new[] { GatewayIdTagName });
         private static readonly ICollection<CustomMetric> Registry = new[]
         {
-            new CustomMetric("SomeCounter", "Test Metric", MetricType.Counter, new[] { GatewayIdTagName })
+            JoinRequests
         };
 
         public static readonly IDictionary<string, CustomMetric> RegistryLookup = new Dictionary<string, CustomMetric>(Registry.ToDictionary(m => m.Name, m => m), StringComparer.OrdinalIgnoreCase);

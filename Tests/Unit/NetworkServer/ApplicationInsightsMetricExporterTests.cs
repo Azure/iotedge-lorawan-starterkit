@@ -26,8 +26,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.registry = new[]
             {
-                new CustomMetric("SomeCounter", "Counter", MetricType.Counter, new[] { MetricExporter.GatewayIdTagName }),
-                new CustomMetric("SomeHistogram", "Histogram", MetricType.Histogram, new[] { MetricExporter.GatewayIdTagName })
+                new CustomMetric("SomeCounter", "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
+                new CustomMetric("SomeHistogram", "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName })
             };
             this.telemetryConfiguration = new TelemetryConfiguration { TelemetryChannel = new Mock<ITelemetryChannel>().Object };
             this.trackValueMock = new Mock<Action<Metric, double, string[]>>();
@@ -59,12 +59,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // act
             applicationInsightsMetricExporter.Start();
             foreach (var val in metricValues)
-                counter.Add(val, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object)gateway));
+                counter.Add(val, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)gateway));
 
             // assert
             foreach (var expectedReportedValue in expectedReportedValues)
             {
-                this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricExporter.Namespace
+                this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricRegistry.Namespace
                                                                               && m.Identifier.MetricId == metricId),
                                                            expectedReportedValue,
                                                            new[] { gateway }),
@@ -79,7 +79,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_Raising_Unknown_Metric_Does_Not_Export_To_Application_Insights(string @namespace, string metricName)
         {
             // arrange
-            using var instrument = new Meter(@namespace, MetricExporter.MetricsVersion);
+            using var instrument = new Meter(@namespace, MetricRegistry.MetricsVersion);
             var counter = instrument.CreateCounter<int>(metricName);
 
             // act
@@ -94,7 +94,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_Raising_Metric_And_Missing_Dimensions_Should_Report_Empty_String()
         {
             // arrange
-            using var instrument = new Meter(MetricExporter.Namespace, MetricExporter.MetricsVersion);
+            using var instrument = new Meter(MetricRegistry.Namespace, MetricRegistry.MetricsVersion);
             var counter = instrument.CreateCounter<int>(CounterMetric.Name);
 
             // act
@@ -110,12 +110,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             const string gateway = "foogateway";
-            using var meter = new Meter(MetricExporter.Namespace, MetricExporter.MetricsVersion);
+            using var meter = new Meter(MetricRegistry.Namespace, MetricRegistry.MetricsVersion);
             var counter = meter.CreateCounter<int>(CounterMetric.Name);
 
             // act
             applicationInsightsMetricExporter.Start();
-            counter.Add(1, new KeyValuePair<string, object>(MetricExporter.GatewayIdTagName.ToUpperInvariant(), gateway));
+            counter.Add(1, new KeyValuePair<string, object>(MetricRegistry.GatewayIdTagName.ToUpperInvariant(), gateway));
 
             // assert
             this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), 1, new[] { gateway }), Times.Once);
