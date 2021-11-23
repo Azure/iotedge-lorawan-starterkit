@@ -43,21 +43,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_Counter_Series_Is_Recorded_Should_Export_To_Prometheus()
+        public void When_Int_Counter_Series_Is_Recorded_Should_Export_To_Prometheus() =>
+            When_Counter_Series_Is_Recorded_Should_Export_To_Prometheus(new[] { 1, 3 }, new[] { 1.0, 3.0 });
+
+        [Fact]
+        public void When_Double_Counter_Series_Is_Recorded_Should_Export_To_Prometheus() =>
+            When_Counter_Series_Is_Recorded_Should_Export_To_Prometheus(new[] { 1.0, 3.0 }, new[] { 1.0, 3.0 });
+
+        private void When_Counter_Series_Is_Recorded_Should_Export_To_Prometheus<T>(T[] values, double[] expectedReportedValues)
+            where T : struct
         {
             // arrange
             const string gatewayId = "fooGateway";
-            var values = new[] { 1, 3, -1 };
             this.prometheusMetricExporter.Start();
 
             // act
             using var meter = new Meter("LoRaWan", "1.0");
-            var counter = meter.CreateCounter<int>(Counter.Name);
+            var counter = meter.CreateCounter<T>(Counter.Name);
             foreach (var value in values)
                 counter.Add(value, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object?)gatewayId));
 
             // assert
-            foreach (var value in values)
+            foreach (var value in expectedReportedValues)
                 this.incCounterMock.Verify(c => c.Invoke(Counter.Name, new[] { gatewayId }, value), Times.Once);
         }
 

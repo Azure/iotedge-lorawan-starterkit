@@ -12,6 +12,9 @@ namespace LoRaWan.NetworkServer
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Metrics;
 
+    /// <summary>
+    /// Exports metrics to Application Insights that are registered in MetricExporter and which have values of type int or double.
+    /// </summary>
     internal class ApplicationInsightsMetricExporter : IMetricExporter
     {
         private readonly IDictionary<string, MetricIdentifier> metricRegistry;

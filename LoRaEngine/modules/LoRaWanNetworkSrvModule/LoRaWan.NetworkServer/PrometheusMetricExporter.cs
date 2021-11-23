@@ -11,6 +11,9 @@ namespace LoRaWan.NetworkServer
     using System.Linq;
     using Prometheus;
 
+    /// <summary>
+    /// Exposes metrics that have values of type int or double on a Prometheus endpoint.
+    /// </summary>
     internal class PrometheusMetricExporter : IMetricExporter
     {
         private MeterListener? listener;
