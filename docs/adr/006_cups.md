@@ -48,7 +48,7 @@ LoRa Basics™ Station supports four different authentication modes:
 - TLS Server and Client Authentication
 - TLS Server Authentication and Client Token
 
-An authentication mode can be set by configuring some files in the device where Basics Station is going to be executed.
+An authentication mode can be set by configuring some files in the device where Basics Station is going to be executed. More documentation [here](https://doc.sm.tc/station/credentials.html)
 
 Basics Station can either use two different sets of credentials for achieving client authentication to the CUPS endpoint and to the LNS endpoint or re-use the same set of credentials for both.
 
