@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class LoRaDeviceCache : IDisposable, IAsyncDisposable
+    public class LoRaDeviceCache : IDisposable
     {
         private readonly LoRaDeviceCacheOptions options;
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, LoRaDevice>> devAddrCache;
@@ -22,18 +22,25 @@ namespace LoRaWan.NetworkServer
         private readonly object syncLock = new object();
         private readonly NetworkServerConfiguration configuration;
         private CancellationTokenSource? ctsDispose;
-        private Task currentRefreshTask;
         private readonly StatisticsTracker statisticsTracker = new StatisticsTracker();
 
-        public LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration)
+        protected LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, CancellationToken externalRefreshCancellationToken)
         {
             this.options = options;
             this.devAddrCache = new ConcurrentDictionary<string, ConcurrentDictionary<string, LoRaDevice>>();
             this.euiCache = new ConcurrentDictionary<string, LoRaDevice>();
-            this.ctsDispose = new CancellationTokenSource();
-            this.currentRefreshTask = RefreshCacheAsync(this.ctsDispose.Token);
+            this.ctsDispose = externalRefreshCancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(externalRefreshCancellationToken) : new CancellationTokenSource();
+
+            _ = RefreshCacheAsync(this.ctsDispose.Token);
+
             this.configuration = configuration;
         }
+
+        public LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration)
+            : this(options, configuration, CancellationToken.None)
+        { }
+
+        protected virtual void OnRefresh() { }
 
         private async Task RefreshCacheAsync(CancellationToken cancellationToken)
         {
@@ -46,13 +53,12 @@ namespace LoRaWan.NetworkServer
                 return;
             }
 
+            OnRefresh();
+
             RemoveExpiredDevices();
             await RefreshDevicesAsync(cancellationToken);
 
-            if (!cancellationToken.IsCancellationRequested)
-            {
-                currentRefreshTask = RefreshCacheAsync(cancellationToken);
-            }
+            _ = RefreshCacheAsync(cancellationToken);
         }
 
         private void RemoveExpiredDevices()
@@ -127,11 +133,13 @@ namespace LoRaWan.NetworkServer
 
                 if (!string.IsNullOrEmpty(loRaDevice.DevAddr))
                 {
-                    var devicesByDevAddr = this.devAddrCache[loRaDevice.DevAddr];
-                    result &= devicesByDevAddr.Remove(loRaDevice.DevEUI, out _);
-                    if (devicesByDevAddr.IsEmpty)
+                    if (this.devAddrCache.TryGetValue(loRaDevice.DevAddr, out var devicesByDevAddr))
                     {
-                        result &= this.devAddrCache.Remove(loRaDevice.DevAddr, out _);
+                        result &= devicesByDevAddr.Remove(loRaDevice.DevEUI, out _);
+                        if (devicesByDevAddr.IsEmpty)
+                        {
+                            result &= this.devAddrCache.Remove(loRaDevice.DevAddr, out _);
+                        }
                     }
                 }
             }
@@ -313,17 +321,6 @@ namespace LoRaWan.NetworkServer
                     CleanupAllDevices();
                 }
             }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            Dispose(true);
-
-            try
-            {
-                await currentRefreshTask;
-            }
-            catch (TaskCanceledException) { }
         }
     }
 

@@ -18,17 +18,32 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var moqCallback = new Mock<Action<LoRaDevice>>();
             using var cache = new TestDeviceCache(moqCallback.Object, this.quickRefreshOptions);
-            using var device = new LoRaDevice("abc", "123", null);
+            using var device = CreateTestDevice();
             cache.Register(device);
             await cache.WaitForRefreshAsync(CancellationToken.None);
             moqCallback.Verify(x => x.Invoke(device));
         }
 
         [Fact]
+        public async Task When_Cache_Is_Disposed_While_Waiting_For_Refresh_Refresh_Stops()
+        {
+            var options = this.quickRefreshOptions;
+            options.RefreshInterval = TimeSpan.FromSeconds(250);
+            var cache = new TestDeviceCache(this.quickRefreshOptions);
+            cache.Dispose();
+
+            var count = cache.RefreshOperationsCount;
+            await Task.Delay(700);
+            Assert.Equal(count, cache.RefreshOperationsCount);
+        }
+
+        [Fact]
         public async Task When_Device_Is_Fresh_No_Refresh_Is_Triggered()
         {
             using var cache = new TestDeviceCache(this.quickRefreshOptions);
-            using var device = new LoRaDevice("abc", "123", null) { LastUpdate = DateTime.UtcNow + TimeSpan.FromMinutes(1) };
+            using var device = CreateTestDevice();
+            device.LastUpdate = DateTime.UtcNow + TimeSpan.FromMinutes(1);
+
             cache.Register(device);
             using var cts = new CancellationTokenSource(this.quickRefreshOptions.ValidationInterval * 2);
             await Assert.ThrowsAsync<OperationCanceledException>(() => cache.WaitForRefreshAsync(cts.Token));
@@ -53,7 +68,109 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             connectionManager.Verify(x => x.Release(device), Times.Once);
         }
 
+        [Fact]
+        public async Task When_Cache_Is_Diposed_Pending_Refreshes_Are_Aborted()
+        {
+            var config = new NetworkServerConfiguration();
+            using var cache = new LoRaDeviceCache(this.quickRefreshOptions, config);
+
+            var deviceMock = new Mock<LoRaDevice>("abc", "123", null);
+
+            using var sync = new SemaphoreSlim(0);
+            deviceMock.Setup(x => x.InitializeAsync(config, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((NetworkServerConfiguration config, CancellationToken token) => {
+                    // signaling that we are in the InitializeAsync
+                    sync.Release();
+                    try
+                    {
+                        // wait for the token to fire
+                        sync.Wait(token);
+                        Assert.True(false, $"Expecting to see a {nameof(TaskCanceledException)}");
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        throw;
+                    }
+                    return false;
+            });
+
+            var device = deviceMock.Object;
+            device.LastUpdate = DateTime.UtcNow - TimeSpan.FromSeconds(1);
+
+            cache.Register(device);
+            // wait for the callback in InitializeAsync
+            await sync.WaitAsync();
+
+            // dispose will signal the cancellation token
+            cache.Dispose();
+
+            // give time for the thread switch
+            await Task.Delay(50);
+        }
+
+        [Fact]
+        public void Trying_To_Remove_Device_That_Was_Not_Registered_Fails()
+        {
+            using var cache = new LoRaDeviceCache(this.noRefreshOptions, null);
+            using var device = CreateTestDevice();
+            Assert.False(cache.Remove(device));
+        }
+
+        [Fact]
+        public void Remove_Registered_Device_Succeeds()
+        {
+            using var cache = new LoRaDeviceCache(this.noRefreshOptions, null);
+            using var device = CreateTestDevice();
+            cache.Register(device);
+            Assert.True(cache.Remove(device));
+            Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
+        }
+
+        [Fact]
+        public void Adding_And_Removing_Join_Device_Succeeds()
+        {
+            using var cache = new LoRaDeviceCache(this.noRefreshOptions, null);
+            using var device = CreateTestDevice();
+            device.DevAddr = null;
+            cache.Register(device);
+
+            Assert.True(cache.TryGetByDevEui(device.DevEUI, out _));
+            Assert.True(cache.Remove(device));
+            Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
+        }
+
+        [Fact]
+        public void Registering_And_Unregistering_Multiple_Devices_With_Matching_DevAddr_Succeeds()
+        {
+            using var cache = new LoRaDeviceCache(this.noRefreshOptions, null);
+            using var device1 = CreateTestDevice();
+            using var device2 = CreateTestDevice();
+            device2.DevEUI = "AAA";
+
+            Assert.Equal(device1.DevAddr, device2.DevAddr);
+
+            var devAddr = device1.DevAddr;
+
+            cache.Register(device1);
+            cache.Register(device2);
+
+            Assert.True(cache.HasRegistrations(devAddr));
+            Assert.Equal(2, cache.RegistrationCount(devAddr));
+
+            Assert.True(cache.Remove(device1));
+            Assert.True(cache.HasRegistrations(devAddr));
+            Assert.Equal(1, cache.RegistrationCount(devAddr));
+
+            Assert.True(cache.Remove(device2));
+            Assert.False(cache.HasRegistrations(devAddr));
+            Assert.Equal(0, cache.RegistrationCount(devAddr));
+        }
+
+
+        private static LoRaDevice CreateTestDevice() => new LoRaDevice("123", "456", null);
+
         private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
+        private readonly LoRaDeviceCacheOptions noRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue };
 
         private class TestDeviceCache : LoRaDeviceCache
         {
@@ -61,7 +178,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             private readonly SemaphoreSlim removeTick = new SemaphoreSlim(0);
             private readonly Action<LoRaDevice> onRefreshDevice;
 
-            public int RefreshCount { get; private set; }
+            public int RefreshOperationsCount { get; private set; }
+            public int DeviceRefreshCount { get; private set; }
 
             private TestDeviceCache(Action<LoRaDevice> onRefreshDevice, LoRaDeviceCacheOptions options, NetworkServerConfiguration networkServerConfiguration) : base(options, networkServerConfiguration)
             {
@@ -89,16 +207,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             internal async Task WaitForRemoveAsync(CancellationToken cancellationToken) =>
                 await this.removeTick.WaitAsync(cancellationToken);
 
-
             protected override Task RefreshDeviceAsync(LoRaDevice device, CancellationToken cancellationToken)
             {
                 this.onRefreshDevice?.Invoke(device);
-                if(this.refreshTick.CurrentCount == 0)
+                if (this.refreshTick.CurrentCount == 0)
                     this.refreshTick.Release();
 
-                RefreshCount++;
+                DeviceRefreshCount++;
 
                 return Task.CompletedTask;
+            }
+
+            protected override void OnRefresh()
+            {
+                RefreshOperationsCount++;
             }
 
             public override bool Remove(LoRaDevice loRaDevice)
