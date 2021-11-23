@@ -73,7 +73,6 @@ namespace Logger
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(_ =>
                 TcpLoggerProvider.Start(configuration, loggerFactory?.CreateLogger<TcpLoggerProvider>())));
             return builder;
-
         }
 
         private sealed class TcpLoggerProvider : ILoggerProvider
