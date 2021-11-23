@@ -64,7 +64,7 @@ namespace LoRaWan.NetworkServer
             // received from a different station
             if (this.socketRegistry.IsSocketWriterOpen(previousStation))
             {
-                this.logger.LogInformation("Duplicate message received from station with EUI {StationEui}, will drop.", stationEui);
+                this.logger.LogInformation($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {stationEui}, will drop.");
                 return true;
             }
 
