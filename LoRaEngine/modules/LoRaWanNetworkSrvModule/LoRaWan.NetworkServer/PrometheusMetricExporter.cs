@@ -40,26 +40,18 @@ namespace LoRaWan.NetworkServer
 
         public void Start()
         {
-            try
+            this.listener = new MeterListener
             {
-                this.listener = new MeterListener
+                InstrumentPublished = (instrument, meterListener) =>
                 {
-                    InstrumentPublished = (instrument, meterListener) =>
-                    {
-                        if (instrument.Meter.Name == MetricExporter.Namespace && this.registryLookup.ContainsKey(instrument.Name))
-                            meterListener.EnableMeasurementEvents(instrument);
-                    }
-                };
+                    if (instrument.Meter.Name == MetricExporter.Namespace && this.registryLookup.ContainsKey(instrument.Name))
+                        meterListener.EnableMeasurementEvents(instrument);
+                }
+            };
 
-                this.listener.SetMeasurementEventCallback<int>((i, m, t, s) => TrackValue(i, m, t, s));
-                this.listener.SetMeasurementEventCallback<double>(TrackValue);
-                this.listener.Start();
-            }
-            catch (Exception)
-            {
-                this.listener?.Dispose();
-                throw;
-            }
+            this.listener.SetMeasurementEventCallback<int>((i, m, t, s) => TrackValue(i, m, t, s));
+            this.listener.SetMeasurementEventCallback<double>(TrackValue);
+            this.listener.Start();
 
             void TrackValue(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
             {
