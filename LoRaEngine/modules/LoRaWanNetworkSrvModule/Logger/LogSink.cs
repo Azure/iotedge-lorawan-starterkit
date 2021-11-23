@@ -20,13 +20,7 @@ namespace LoRaWan
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Primitives;
 
-    public interface ILogSink
-    {
-        LogLevel LogLevel { get; }
-        void Log(LogLevel logLevel, string message);
-    }
-
-    public sealed class TcpLogSink : IDisposable, ILogSink
+    public sealed class TcpLogSink : IDisposable
     {
         private readonly ILogger? logger;
         private readonly IPEndPoint serverEndpoint;

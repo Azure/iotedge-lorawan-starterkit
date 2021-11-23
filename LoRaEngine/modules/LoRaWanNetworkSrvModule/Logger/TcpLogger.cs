@@ -21,10 +21,10 @@ namespace Logger
     /// </summary>
     internal sealed class TcpLogger : ILogger
     {
-        private readonly ILogSink logSink;
+        private readonly TcpLogSink logSink;
         private readonly TcpLoggerConfiguration loggerConfiguration;
 
-        public TcpLogger(ILogSink logSink,
+        public TcpLogger(TcpLogSink logSink,
                          TcpLoggerConfiguration loggerConfiguration)
         {
             this.logSink = logSink;
@@ -62,12 +62,10 @@ namespace Logger
             _ = builder ?? throw new ArgumentNullException(nameof(builder));
 
             builder.AddConfiguration();
-            _ = builder.Services.AddSingleton(_ => Init(configuration, tcpLogSinkLogger));
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(sp => new TcpLoggerProvider(sp.GetRequiredService<ILogSink>(), configuration)));
-
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(_ => new TcpLoggerProvider(Init(configuration, tcpLogSinkLogger), configuration)));
             return builder;
 
-            static ILogSink Init(TcpLoggerConfiguration configuration, ILogger<TcpLogSink>? tcpLogSinkLogger = null)
+            static TcpLogSink Init(TcpLoggerConfiguration configuration, ILogger<TcpLogSink>? tcpLogSinkLogger = null)
             {
                 if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
@@ -127,11 +125,11 @@ namespace Logger
         private sealed class TcpLoggerProvider : ILoggerProvider
         {
             private readonly ConcurrentDictionary<string, TcpLogger> loggers = new();
-            private readonly ILogSink logSink;
+            private readonly TcpLogSink logSink;
             private readonly TcpLoggerConfiguration configuration;
             private readonly IExternalScopeProvider externalScopeProvider = new LoggerExternalScopeProvider();
 
-            public TcpLoggerProvider(ILogSink logSink, TcpLoggerConfiguration loggerConfiguration)
+            public TcpLoggerProvider(TcpLogSink logSink, TcpLoggerConfiguration loggerConfiguration)
             {
                 this.configuration = loggerConfiguration;
                 this.logSink = logSink;
