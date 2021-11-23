@@ -10,7 +10,7 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        private static readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator RndKeysGenerator = RandomNumberGenerator.Create();
 
         public static string GetNwkId(byte[] netId)
         {
@@ -28,16 +28,13 @@ namespace LoRaTools
         // don't work with CFLIST atm
         public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
-            using Aes aes = new AesManaged
-            {
-                Key = appKey,
-
+            using var aes = Aes.Create("AesManaged");
+            aes.Key = appKey;
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
-                // Cipher is part of the LoRaWAN specification
-                Mode = CipherMode.ECB,
+            // Cipher is part of the LoRaWAN specification
+            aes.Mode = CipherMode.ECB;
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
-                Padding = PaddingMode.None
-            };
+            aes.Padding = PaddingMode.None;
 
             var pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
 
@@ -59,15 +56,14 @@ namespace LoRaTools
             if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
             if (netid is null) throw new ArgumentNullException(nameof(netid));
 
-            using Aes aes = new AesManaged
-            {
-                Key = appKey,
+            using var aes = Aes.Create("AesManaged");
+            aes.Key = appKey;
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
-                // Cipher is part of the LoRaWAN specification
-                Mode = CipherMode.ECB,
+            // Cipher is part of the LoRaWAN specification
+            aes.Mode = CipherMode.ECB;
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
-                Padding = PaddingMode.None
-            };
+            aes.Padding = PaddingMode.None;
+
             var pt = new byte[type.Length + appnonce.Length + netid.Length + devnonce.Length + 7];
             var destIndex = 0;
             Array.Copy(type, 0, pt, destIndex, type.Length);

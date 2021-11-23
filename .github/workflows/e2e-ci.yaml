@@ -100,6 +100,10 @@ jobs:
     - uses: actions/checkout@v2
       name: Checkout current branch
 
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
     - name: 'Resolve Project Dependencies Using Dotnet'
       shell: bash
       run: |
@@ -310,7 +314,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1.8.2
       with:
-        dotnet-version: '3.1.x' # SDK Version to use.
+        dotnet-version: '6.0.x' # SDK Version to use.
 
     - name: .NET SDK Information
       run:
@@ -325,7 +329,7 @@ jobs:
     - name: Build E2E tests
       run: |
         echo "killing process listening on TCP 6000"
-        kill -9 $(lsof -t -i:6000)
+        sudo lsof -i:6000 -t | xargs -r sudo kill
         dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
     - name:  Runs SensorDecoding E2E tests

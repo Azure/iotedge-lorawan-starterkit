@@ -113,7 +113,7 @@ namespace LoRaWan
                             {
                                 if (!client.Connected)
                                 {
-                                    this.logger?.LogDebug($"Connecting to log server at (attempt {attempt}/{this.maxRetryAttempts}): " + this.serverEndpoint);
+                                    this.logger?.LogDebug("Connecting to log server at (attempt {Attempt}/{MaxRetryAttempts}): {ServerEndpoint}", attempt, this.maxRetryAttempts, this.serverEndpoint);
                                     await client.ConnectAsync(this.serverEndpoint.Address, this.serverEndpoint.Port);
                                 }
 
@@ -141,10 +141,10 @@ namespace LoRaWan
                                 client = new TcpClient();
                                 if (attempt == this.maxRetryAttempts)
                                 {
-                                    this.logger?.LogWarning("Dropping message after all attempts failed: " + line);
+                                    this.logger?.LogWarning("Dropping message after all attempts failed: {Line}", line);
                                     break;
                                 }
-                                this.logger?.LogDebug($"Waiting (delay = {this.retryDelay}) before retrying to connecting to logging server.");
+                                this.logger?.LogDebug("Waiting (delay = {RetryDelay}) before retrying to connecting to logging server.", this.retryDelay);
                                 await Task.Delay(this.retryDelay, cancellationToken);
                             }
                         }

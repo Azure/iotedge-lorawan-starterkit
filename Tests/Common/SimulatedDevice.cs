@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.Common
             var devNonce = new byte[2];
             if (string.IsNullOrEmpty(DevNonce) || (!this.isFirstJoinRequest))
             {
-                using var random = new RNGCryptoServiceProvider();
+                using var random = RandomNumberGenerator.Create();
                 // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
                 random.GetBytes(devNonce);
                 DevNonce = BitConverter.ToString(devNonce).Replace("-", string.Empty, StringComparison.Ordinal);

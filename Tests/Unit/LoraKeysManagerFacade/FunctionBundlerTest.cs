@@ -237,18 +237,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
                 req.ClientFCntDown = req.AdrRequest.FCntDown;
             }
 
-            var tasks = new List<Task>(requests.Length);
-            var functionBundlerResults = new List<FunctionBundlerResult>(requests.Length);
+            var functionBundlerResults = await Task.WhenAll(from req in requests select ExecuteRequest(devEUI, req));
 
-            foreach (var req in requests)
-            {
-                tasks.Add(Task.Run(async () =>
-                {
-                    functionBundlerResults.Add(await ExecuteRequest(devEUI, req));
-                }));
-            }
-
-            Task.WaitAll(tasks.ToArray());
             // only one request should be winning the race
             var winners = 0;
             var dups = 0;
@@ -273,7 +263,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             }
 
             Assert.Equal(1, winners);
-            Assert.Equal(functionBundlerResults.Count - 1, dups);
+            Assert.Equal(functionBundlerResults.Length - 1, dups);
         }
 
         private async Task<FunctionBundlerResult> ExecuteRequest(string devEUI, FunctionBundlerRequest req)

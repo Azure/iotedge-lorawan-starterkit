@@ -12,7 +12,7 @@ namespace LoRaTools.CommonAPI
     /// <summary>
     /// Defines an API version.
     /// </summary>
-    public sealed class ApiVersion : IComparable<ApiVersion>
+    public sealed class ApiVersion
     {
         /// <summary>
         /// Defines the request query string containing the requested api version.
@@ -229,22 +229,18 @@ namespace LoRaTools.CommonAPI
         /// <returns>True if the <paramref name="other"/> is supported by the current version.</returns>
         public bool SupportsVersion(ApiVersion other)
         {
-            return other != null &&
-                other.IsKnown &&
-                IsKnown &&
-                this >= other &&
-                (MinCompatibleVersion == null || MinCompatibleVersion <= other);
+            // Unknown versions are never suported.
+            if (other == null || !other.IsKnown || !IsKnown)
+                return false;
+
+            // Older versions never support newer versions.
+            if (string.Compare(Version, other.Version, StringComparison.OrdinalIgnoreCase) < 0)
+                return false;
+
+            return MinCompatibleVersion == null || string.Compare(MinCompatibleVersion.Version, other.Version, StringComparison.OrdinalIgnoreCase) <= 0;
         }
 
         public override int GetHashCode() => Version.GetHashCode(StringComparison.Ordinal);
-
-        public int CompareTo(ApiVersion other)
-        {
-            if (other is null) throw new ArgumentNullException(nameof(other));
-
-            if (Equals(other)) return 0;
-            return string.Compare(Version, other.Version, StringComparison.Ordinal);
-        }
 
         public override string ToString() => Version.ToString();
 
@@ -253,30 +249,6 @@ namespace LoRaTools.CommonAPI
             Version == version.Version &&
             Name == version.Name &&
             IsKnown == version.IsKnown;
-
-        public static bool operator <(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-            return value1.CompareTo(value2) < 0;
-        }
-
-        public static bool operator <=(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-            return value1.CompareTo(value2) <= 0;
-        }
-
-        public static bool operator >=(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-            return value1.CompareTo(value2) >= 0;
-        }
-
-        public static bool operator >(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-            return value1.CompareTo(value2) > 0;
-        }
 
         public static bool operator ==(ApiVersion left, ApiVersion right) =>
             left is null ? right is null : left.Equals(right);

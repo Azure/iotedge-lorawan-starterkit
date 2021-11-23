@@ -22,6 +22,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
     internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
+        private static readonly Action<ILogger, string, string, Exception> LogReceivedMessage =
+            LoggerMessage.Define<string, string>(LogLevel.Information, default, "Received '{Type}' message: '{Json}'.");
+
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IPacketForwarder downstreamSender;
@@ -62,7 +65,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             try
             {
                 using var socket = await httpContext.WebSockets.AcceptWebSocketAsync();
-                this.logger.Log(LogLevel.Debug, $"WebSocket connection from {httpContext.Connection.RemoteIpAddress} established");
+                this.logger.Log(LogLevel.Debug, "WebSocket connection from {RemoteIpAddress} established", httpContext.Connection.RemoteIpAddress);
 
                 try
                 {
@@ -78,7 +81,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     this.logger.LogDebug(ex, ex.Message);
                 }
             }
-            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred while processing requests: {ex}.")))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex)))
             {
                 throw;
             }
@@ -106,7 +109,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             {
                 var json = message.Current;
                 var stationEui = LnsDiscovery.QueryReader.Read(json);
-                this.logger.LogInformation($"Received discovery request from: {stationEui}");
+                this.logger.LogInformation("Received discovery request from: {StationEui}", stationEui);
 
                 try
                 {
@@ -181,12 +184,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             {
                 case LnsMessageType.Version:
                     var stationVersion = LnsData.VersionMessageReader.Read(json);
-                    this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
+                    this.logger.LogInformation("Received 'version' message for station '{StationVersion}'.", stationVersion);
                     var routerConfigResponse = await this.basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
                     await socket.SendAsync(routerConfigResponse, cancellationToken);
                     break;
                 case LnsMessageType.JoinRequest:
-                    this.logger.LogInformation($"Received 'jreq' message: {json}.");
+                    LogReceivedMessage(this.logger, "jreq", json, null);
                     try
                     {
                         var jreq = LnsData.JoinRequestFrameReader.Read(json);
@@ -212,11 +215,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     }
                     catch (JsonException)
                     {
-                        this.logger.LogInformation($"Received unexpected 'jreq' message: {json}.");
+                        this.logger.LogInformation("Received unexpected 'jreq' message: {Json}.", json);
                     }
                     break;
                 case LnsMessageType.UplinkDataFrame:
-                    this.logger.LogInformation($"Received 'updf' message: {json}.");
+                    LogReceivedMessage(this.logger, "updf", json, null);
                     try
                     {
                         var updf = LnsData.UpstreamDataFrameReader.Read(json);
@@ -247,11 +250,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     }
                     catch (JsonException)
                     {
-                        this.logger.LogError($"Received unexpected 'updf' message: {json}.");
+                        this.logger.LogError("Received unexpected 'updf' message: {Json}.", json);
                     }
                     break;
                 case LnsMessageType.TransmitConfirmation:
-                    this.logger.LogInformation($"Received 'dntxed' message: {json}.");
+                    LogReceivedMessage(this.logger, "dntxed", json, null);
                     break;
                 case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
                     throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
@@ -260,7 +263,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                           or LnsMessageType.TimeSync
                                           or LnsMessageType.RunCommand
                                           or LnsMessageType.RemoteShell):
-                    this.logger.LogWarning($"'{messageType}' ({messageType.ToBasicStationString()}) is not handled in current LoRaWan Network Server implementation.");
+                    this.logger.LogWarning("'{MessageType}' ({MessageTypeBasicStationString}) is not handled in current LoRaWan Network Server implementation.", messageType, messageType.ToBasicStationString());
                     break;
                 default:
                     throw new SwitchExpressionException();

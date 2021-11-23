@@ -184,30 +184,5 @@ namespace LoRaWan.Tests.Common
         {
             return TimeSpan.FromMilliseconds(1000 - LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage.TotalMilliseconds + 1);
         }
-
-        /// <summary>
-        /// Helper method for testing.
-        /// </summary>
-        public static LoraDeviceClientConnectionManagerWrapper CreateConnectionManager() =>
-            new LoraDeviceClientConnectionManagerWrapper();
-    }
-
-    public sealed class LoraDeviceClientConnectionManagerWrapper : IDisposable
-    {
-        private readonly IMemoryCache memoryCache;
-
-        public LoraDeviceClientConnectionManagerWrapper()
-        {
-            this.memoryCache = new MemoryCache(new MemoryCacheOptions());
-            Value = new LoRaDeviceClientConnectionManager(this.memoryCache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-        }
-
-        public LoRaDeviceClientConnectionManager Value { get; }
-
-        public void Dispose()
-        {
-            this.memoryCache.Dispose();
-            Value.Dispose();
-        }
     }
 }

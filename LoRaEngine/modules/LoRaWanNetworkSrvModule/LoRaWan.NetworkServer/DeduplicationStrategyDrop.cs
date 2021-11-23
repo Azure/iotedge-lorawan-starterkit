@@ -34,12 +34,5 @@ namespace LoRaWan.NetworkServer
 
             return result;
         }
-
-        public async Task<DeduplicationResult> ResolveDeduplication(uint fctUp, uint fcntDown, string gatewayId)
-        {
-            var result = await this.loRaDeviceAPIService.CheckDuplicateMsgAsync(this.loRaDevice.DevEUI, fctUp, gatewayId, fcntDown);
-
-            return Process(result, fctUp);
-        }
     }
 }
