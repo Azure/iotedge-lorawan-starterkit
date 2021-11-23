@@ -25,43 +25,16 @@ namespace Logger
     using Microsoft.Extensions.Logging.Configuration;
     using Microsoft.Extensions.Primitives;
 
-    /// <summary>
-    /// TcpLogger logs to a TCP endpoint that is listening on this endpoint. This is used only for E2E tests.
-    /// TcpLogger does not support category names or event IDs.
-    /// </summary>
-    internal sealed class TcpLogger : ILogger
-    {
-        private readonly LogLevel logLevel;
-        private readonly IExternalScopeProvider externalScopeProvider;
-        private readonly Action<string> logger;
-
-        public TcpLogger(LogLevel logLevel, IExternalScopeProvider externalScopeProvider, Action<string> logger)
-        {
-            this.externalScopeProvider = externalScopeProvider;
-            this.logLevel = logLevel;
-            this.logger = logger;
-        }
-
-        public IDisposable BeginScope<TState>(TState state) =>
-            this.externalScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : NoopDisposable.Instance;
-
-        public bool IsEnabled(LogLevel logLevel) => logLevel >= this.logLevel;
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-        {
-            _ = formatter ?? throw new ArgumentNullException(nameof(formatter));
-
-            if (!IsEnabled(logLevel))
-                return;
-
-            var formattedMessage = LoggerHelper.AddScopeInformation(this.externalScopeProvider, formatter(state, exception), ":");
-
-            this.logger(formattedMessage);
-        }
-    }
 
     public static class TcpLoggerExtensions
     {
+        /// <summary>
+        /// Adds logging support for logging to TCP endpoint where a server is listening
+        /// (see <c>TcpLogListener</c>).
+        /// </summary>
+        /// <remarks>
+        /// This is used only for E2E tests. It does not support category names or event IDs.
+        /// </remarks>
         public static ILoggingBuilder AddTcpLogger(this ILoggingBuilder builder, TcpLoggerConfiguration configuration, ILoggerFactory? loggerFactory = null)
         {
             _ = builder ?? throw new ArgumentNullException(nameof(builder));
@@ -70,6 +43,37 @@ namespace Logger
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(_ =>
                 TcpLoggerProvider.Start(configuration, loggerFactory?.CreateLogger<TcpLoggerProvider>())));
             return builder;
+        }
+
+        private sealed class TcpLogger : ILogger
+        {
+            private readonly LogLevel logLevel;
+            private readonly IExternalScopeProvider externalScopeProvider;
+            private readonly Action<string> logger;
+
+            public TcpLogger(LogLevel logLevel, IExternalScopeProvider externalScopeProvider, Action<string> logger)
+            {
+                this.externalScopeProvider = externalScopeProvider;
+                this.logLevel = logLevel;
+                this.logger = logger;
+            }
+
+            public IDisposable BeginScope<TState>(TState state) =>
+                this.externalScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : NoopDisposable.Instance;
+
+            public bool IsEnabled(LogLevel logLevel) => logLevel >= this.logLevel;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                _ = formatter ?? throw new ArgumentNullException(nameof(formatter));
+
+                if (!IsEnabled(logLevel))
+                    return;
+
+                var formattedMessage = LoggerHelper.AddScopeInformation(this.externalScopeProvider, formatter(state, exception), ":");
+
+                this.logger(formattedMessage);
+            }
         }
 
         private sealed class TcpLoggerProvider : ILoggerProvider
