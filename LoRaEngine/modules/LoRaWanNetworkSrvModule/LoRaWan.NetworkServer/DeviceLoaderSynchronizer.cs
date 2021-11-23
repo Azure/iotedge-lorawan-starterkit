@@ -177,7 +177,7 @@ namespace LoRaWan.NetworkServer
                 {
                     if (deviceTask.IsCompletedSuccessfully)
                     {
-                        var device = deviceTask.Result;
+                        var device = await deviceTask;
 
                         if (device != null)
                         {

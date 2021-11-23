@@ -49,7 +49,7 @@ namespace LoRaWan.Tests.Integration
             foreach (var reqAndPipeline in new[] { (t1, pipeline1), (t2, pipeline2), (t3, pipeline3) })
             {
                 Assert.True(reqAndPipeline.Item1.IsCompletedSuccessfully);
-                var res = reqAndPipeline.Item1.Result;
+                var res = await reqAndPipeline.Item1;
                 var pipeline = reqAndPipeline.Item2;
                 Assert.Equal(FunctionBundlerExecutionState.Continue, res);
                 Assert.NotNull(pipeline.Result.PreferredGatewayResult);
@@ -109,7 +109,7 @@ namespace LoRaWan.Tests.Integration
             foreach (var resAndPipeline in new[] { (t1, pipeline1), (t2, pipeline2) })
             {
                 Assert.True(resAndPipeline.Item1.IsCompletedSuccessfully);
-                var res = resAndPipeline.Item1.Result;
+                var res = await resAndPipeline.Item1;
                 var pipeline = resAndPipeline.Item2;
 
                 Assert.Equal(FunctionBundlerExecutionState.Continue, res);

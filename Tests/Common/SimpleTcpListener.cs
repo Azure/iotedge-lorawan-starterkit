@@ -20,8 +20,8 @@ namespace LoRaWan.Tests.Common
 
             public Context(TcpClient client) => this.client = client;
 
-            public EndPoint RemoteEndPoint => this.client.Client.RemoteEndPoint;
-            public EndPoint LocalEndPoint => this.client.Client.LocalEndPoint;
+            public EndPoint? RemoteEndPoint => this.client.Client.RemoteEndPoint;
+            public EndPoint? LocalEndPoint => this.client.Client.LocalEndPoint;
         }
 
         private TcpListener? listener;

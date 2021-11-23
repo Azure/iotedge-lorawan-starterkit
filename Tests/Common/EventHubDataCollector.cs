@@ -107,11 +107,8 @@ namespace LoRaWan.Tests.Common
             return Task.FromResult(0);
         }
 
-        public Task ProcessErrorAsync(Exception error)
-        {
-            Console.Error.WriteLine(error.ToString());
-            return Task.FromResult(0);
-        }
+        public Task ProcessErrorAsync(Exception error) =>
+            Console.Error.WriteLineAsync(error.ToString());
 
         public int MaxBatchSize { get; set; } = 32;
 

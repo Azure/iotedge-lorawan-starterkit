@@ -110,16 +110,14 @@ namespace LoRaTools.LoRaMessage
             var aesEngine = new AesEngine();
             var key = ConversionHelper.StringToByteArray(appKey);
             aesEngine.Init(true, new KeyParameter(key));
-            using Aes aes = new AesManaged
-            {
-                Key = key,
-                IV = new byte[16],
+            using var aes = Aes.Create("AesManaged");
+            aes.Key = key;
+            aes.IV = new byte[16];
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
-                // Cipher is part of the LoRaWAN specification
-                Mode = CipherMode.ECB,
+            // Cipher is part of the LoRaWAN specification
+            aes.Mode = CipherMode.ECB;
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
-                Padding = PaddingMode.None
-            };
+            aes.Padding = PaddingMode.None;
 
             ICryptoTransform cipher;
 
@@ -176,16 +174,14 @@ namespace LoRaTools.LoRaMessage
                 pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).Concat(Mic.ToArray()).ToArray();
             }
 
-            using Aes aes = new AesManaged
-            {
-                Key = ConversionHelper.StringToByteArray(appSkey),
-                IV = new byte[16],
+            using var aes = Aes.Create("AesManaged");
+            aes.Key = ConversionHelper.StringToByteArray(appSkey);
+            aes.IV = new byte[16];
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
-                // Cipher is part of the LoRaWAN specification
-                Mode = CipherMode.ECB,
+            // Cipher is part of the LoRaWAN specification
+            aes.Mode = CipherMode.ECB;
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
-                Padding = PaddingMode.None
-            };
+            aes.Padding = PaddingMode.None;
 
             ICryptoTransform cipher;
 

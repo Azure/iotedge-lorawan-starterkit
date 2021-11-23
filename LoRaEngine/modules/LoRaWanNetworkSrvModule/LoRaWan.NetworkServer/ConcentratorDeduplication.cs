@@ -57,18 +57,19 @@ namespace LoRaWan.NetworkServer
             if (previousStation == stationEui)
             {
                 // considered as a resubmit
-                this.logger.LogDebug($"Message received from the same EUI {stationEui} as before, will not drop.");
+                this.logger.LogDebug("Message received from the same EUI {StationEui} as before, will not drop.", stationEui);
                 return false;
             }
 
             // received from a different station
             if (this.socketRegistry.IsSocketWriterOpen(previousStation))
             {
-                this.logger.LogInformation($"Duplicate message received from station with EUI {stationEui}, will drop.");
+                this.logger.LogInformation("Duplicate message received from station with EUI {StationEui}, will drop.", stationEui);
                 return true;
             }
 
-            this.logger.LogInformation($"Connectivity to previous station with EUI {previousStation}, was lost, will not drop message and will use station with EUI {stationEui} from now onwards.");
+            this.logger.LogInformation("Connectivity to previous station with EUI {PreviousStation}, was lost, will not drop and will use station with EUI {StationEui} from now onwards.",
+                                       previousStation, stationEui);
             AddToCache(key, stationEui);
             return false;
         }

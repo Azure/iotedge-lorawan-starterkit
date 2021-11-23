@@ -36,13 +36,13 @@ namespace Logger
         /// </summary>
         internal IExternalScopeProvider? ExternalScopeProvider { get; set; }
 
-        public IDisposable? BeginScope<TState>(TState state) =>
-            ExternalScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : default;
+        public IDisposable BeginScope<TState>(TState state) =>
+            ExternalScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : NoopDisposable.Instance;
 
         public bool IsEnabled(LogLevel logLevel) =>
             logLevel >= this.loggerConfiguration.LogLevel;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             _ = formatter ?? throw new ArgumentNullException(nameof(formatter));
 
