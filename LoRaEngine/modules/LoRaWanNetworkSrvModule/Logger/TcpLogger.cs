@@ -139,7 +139,11 @@ namespace Logger
                     ExternalScopeProvider = this.externalScopeProvider
                 });
 
-            public void Dispose() => this.loggers.Clear();
+            public void Dispose()
+            {
+                this.logSink.Dispose();
+                this.loggers.Clear();
+            }
         }
     }
 }
