@@ -3,7 +3,10 @@
 usage() {
   programName=${0##*/}
   echo "
-Certificate Generation CLI
+Basics Station Certificate Generation CLI
+
+This CLI tool is helping Azure IoT Edge LoRaWAN Starter Kit users to generate LoRaWAN Network Server certificates and Basics Station certificates for testing secure communication between a Basics Station client and the CUPS/LNS Protocol Endpoint in Network Server.
+
 Usage: $programName [type] commonName [pfxPassword]
 
 Type:
@@ -11,8 +14,8 @@ Type:
   client       Generates a client certificate
 
 Arguments:
-  commonName   Common name for generating certificate (REQUIRED)
-  pfxPassword  Passwor for .pfx file (OPTIONAL - SERVER CERTIFICATE ONLY)
+  commonName   (REQUIRED) Common name for generating certificate
+  pfxPassword  (OPTIONAL) Password for .pfx file (server certificate only)
 "
   exit 1
 }
