@@ -43,37 +43,41 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_Counter_Is_Recorded_Should_Export_To_Prometheus()
+        public void When_Counter_Series_Is_Recorded_Should_Export_To_Prometheus()
         {
             // arrange
             const string gatewayId = "fooGateway";
-            const int value = 1;
+            var values = new[] { 1, 3, -1 };
             this.prometheusMetricExporter.Start();
 
             // act
             using var meter = new Meter("LoRaWan", "1.0");
             var counter = meter.CreateCounter<int>(Counter.Name);
-            counter.Add(value, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object?)gatewayId));
+            foreach (var value in values)
+                counter.Add(value, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object?)gatewayId));
 
             // assert
-            this.incCounterMock.Verify(c => c.Invoke(Counter.Name, new[] { gatewayId }, value), Times.Once);
+            foreach (var value in values)
+                this.incCounterMock.Verify(c => c.Invoke(Counter.Name, new[] { gatewayId }, value), Times.Once);
         }
 
         [Fact]
-        public void When_Histogram_Is_Recorded_Should_Export_To_Prometheus()
+        public void When_Histogram_Series_Is_Recorded_Should_Export_To_Prometheus()
         {
             // arrange
             const string gatewayId = "fooGateway";
-            const int value = 1;
+            var values = new[] { 1, 3, 10, -2 };
             this.prometheusMetricExporter.Start();
 
             // act
             using var meter = new Meter("LoRaWan", "1.0");
             var histogram = meter.CreateHistogram<int>(Histogram.Name);
-            histogram.Record(value, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object?)gatewayId));
+            foreach (var value in values)
+                histogram.Record(value, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object?)gatewayId));
 
             // assert
-            this.recordHistogramMock.Verify(c => c.Invoke(Histogram.Name, new[] { gatewayId }, value), Times.Once);
+            foreach (var value in values)
+                this.recordHistogramMock.Verify(c => c.Invoke(Histogram.Name, new[] { gatewayId }, value), Times.Once);
         }
 
         [Theory]
