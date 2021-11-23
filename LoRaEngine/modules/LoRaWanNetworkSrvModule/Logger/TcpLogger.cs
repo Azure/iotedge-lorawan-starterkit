@@ -119,9 +119,7 @@ namespace Logger
                 IPAddress? Resolve(string address)
                 {
                     if (IPAddress.TryParse(address, out var ipAddress))
-                    {
                         return ipAddress;
-                    }
 
                     string message;
 
