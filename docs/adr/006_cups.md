@@ -94,7 +94,7 @@ Therefore, in order for Basic Station to connect to the LNS WSS endpoint the fol
 - tc.key (including the EC Private Key for the child certificate)
 - tc.trust (including the chain of trust certificate for the server-side certificate)
 
-Same certificate files as above are expected to be used for the Starter Kit, even though you might want to consider increasing security of the solution by generating different certificates for this endpoint.
+As stated in the decision section above, same certificate files as CUPS certificates above are expected to be used for the Starter Kit.
 
 There is no need to copy/paste manually these files in the Basic Station; the CUPS Protocol Implementation later described in this document will retrieve the needed credentials from a centralized repository and update the Basic Station configuration when it starts. This option is also providing an option to rotate certificates when these are near the expiration.
 
