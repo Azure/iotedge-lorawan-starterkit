@@ -134,7 +134,7 @@ namespace Logger
             }
 
             public ILogger CreateLogger(string categoryName) =>
-                this.loggers.GetOrAdd(categoryName, name => new TcpLogger(this.logLevel, this.logSink)
+                this.loggers.GetOrAdd(categoryName, _ => new TcpLogger(this.logLevel, this.logSink)
                 {
                     ExternalScopeProvider = this.externalScopeProvider
                 });
