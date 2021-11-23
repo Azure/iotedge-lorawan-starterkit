@@ -121,8 +121,6 @@ namespace Logger
                     if (IPAddress.TryParse(address, out var ipAddress))
                         return ipAddress;
 
-                    string message;
-
                     try
                     {
                         // try to parse the address as dns
@@ -130,18 +128,17 @@ namespace Logger
                         if (addresses.Length > 0)
                             return addresses[0];
 
-                        message = $"Could not resolve IP address of '{address}'";
+                        logger?.LogError("Could not resolve IP address of '{Address}'", address);
                     }
                     catch (SocketException ex)
                     {
-                        message = $"An error occurred trying to resolve '{address}'. {ex.Message}";
+                        logger?.LogError(ex, "An error occurred trying to resolve '{Address}'.", address);
                     }
                     catch (ArgumentException ex)
                     {
-                        message = $"'{address}' is an invalid IP address. {ex.Message}";
+                        logger?.LogError(ex, "'{Address}' is an invalid IP address.", address);
                     }
 
-                    logger?.LogError(message);
                     return null;
                 }
             }
