@@ -198,6 +198,28 @@ namespace Logger
                 this.loggers.Clear();
             }
 
+            private void Log(string message)
+            {
+                if (message == null) throw new ArgumentNullException(nameof(message));
+
+                // NOTE! The following will induce an "ObjectDisposedException" in two ways.
+                // When this object is disposed, it cancels the cancellation token source then proceeds
+                // to dispose it. If the cancellation token source is disposed then accessing its token
+                // will "ObjectDisposedException". If it's been cancelled but not yet disposed then the
+                // cancellation token query will return true and we'll throw "ObjectDisposedException".
+                // Either way, if the object is being disposed while we end up here then an
+                // "ObjectDisposedException" will get thrown. If by chance it gets disposed past the
+                // following gate, then the worst that can happen is that another message can end up on
+                // the channel, which is harmless.
+
+                if (this.cancellationTokenSource.Token.IsCancellationRequested)
+                    throw new ObjectDisposedException(nameof(TcpLoggerProvider));
+
+                _ = this.channel.Writer.TryWrite(this.formatter?.Invoke(message) ?? message);
+            }
+
+            private static readonly char[] NewLineChars = { '\n', '\r' };
+
             private async Task SendAllLogMessagesAsync(CancellationToken cancellationToken)
             {
                 var encoding = Encoding.UTF8;
@@ -269,28 +291,6 @@ namespace Logger
                     while (reader.ReadLine() is { } line)
                         yield return line;
                 }
-            }
-
-            private static readonly char[] NewLineChars = { '\n', '\r' };
-
-            private void Log(string message)
-            {
-                if (message == null) throw new ArgumentNullException(nameof(message));
-
-                // NOTE! The following will induce an "ObjectDisposedException" in two ways.
-                // When this object is disposed, it cancels the cancellation token source then proceeds
-                // to dispose it. If the cancellation token source is disposed then accessing its token
-                // will "ObjectDisposedException". If it's been cancelled but not yet disposed then the
-                // cancellation token query will return true and we'll throw "ObjectDisposedException".
-                // Either way, if the object is being disposed while we end up here then an
-                // "ObjectDisposedException" will get thrown. If by chance it gets disposed past the
-                // following gate, then the worst that can happen is that another message can end up on
-                // the channel, which is harmless.
-
-                if (this.cancellationTokenSource.Token.IsCancellationRequested)
-                    throw new ObjectDisposedException(nameof(TcpLoggerProvider));
-
-                _ = this.channel.Writer.TryWrite(this.formatter?.Invoke(message) ?? message);
             }
         }
     }
