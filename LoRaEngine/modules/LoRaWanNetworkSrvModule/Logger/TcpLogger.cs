@@ -32,21 +32,18 @@ namespace Logger
     internal sealed class TcpLogger : ILogger
     {
         private readonly LogLevel logLevel;
+        private readonly IExternalScopeProvider externalScopeProvider;
         private readonly Action<string> logger;
 
-        public TcpLogger(LogLevel logLevel, Action<string> logger)
+        public TcpLogger(LogLevel logLevel, IExternalScopeProvider externalScopeProvider, Action<string> logger)
         {
+            this.externalScopeProvider = externalScopeProvider;
             this.logLevel = logLevel;
             this.logger = logger;
         }
 
-        /// <summary>
-        /// Gets or sets the external scope provider.
-        /// </summary>
-        internal IExternalScopeProvider? ExternalScopeProvider { get; set; }
-
         public IDisposable BeginScope<TState>(TState state) =>
-            ExternalScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : NoopDisposable.Instance;
+            this.externalScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : NoopDisposable.Instance;
 
         public bool IsEnabled(LogLevel logLevel) => logLevel >= this.logLevel;
 
@@ -57,7 +54,7 @@ namespace Logger
             if (!IsEnabled(logLevel))
                 return;
 
-            var formattedMessage = LoggerHelper.AddScopeInformation(ExternalScopeProvider, formatter(state, exception), ":");
+            var formattedMessage = LoggerHelper.AddScopeInformation(this.externalScopeProvider, formatter(state, exception), ":");
 
             this.logger(formattedMessage);
         }
@@ -187,10 +184,7 @@ namespace Logger
             }
 
             public ILogger CreateLogger(string categoryName) =>
-                this.loggers.GetOrAdd(categoryName, _ => new TcpLogger(this.logLevel, Log)
-                {
-                    ExternalScopeProvider = this.externalScopeProvider
-                });
+                this.loggers.GetOrAdd(categoryName, _ => new TcpLogger(this.logLevel, this.externalScopeProvider, Log));
 
             private void Log(string message)
             {
