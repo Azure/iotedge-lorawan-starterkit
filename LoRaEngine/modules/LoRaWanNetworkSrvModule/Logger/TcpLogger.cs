@@ -237,7 +237,7 @@ namespace Logger
                                     if (!client.Connected)
                                     {
                                         this.logger?.LogDebug("Connecting to log server at (attempt {Attempt}/{MaxRetryAttempts}): {ServerEndpoint}", attempt, this.maxRetryAttempts, this.serverEndpoint);
-                                        await client.ConnectAsync(this.serverEndpoint.Address, this.serverEndpoint.Port);
+                                        await client.ConnectAsync(this.serverEndpoint.Address, this.serverEndpoint.Port, cancellationToken);
                                     }
 
                                     var size = encoding.GetByteCount(line) + 2;
