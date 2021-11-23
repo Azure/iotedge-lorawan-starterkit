@@ -82,7 +82,7 @@ namespace Logger
                 }
 
                 return endPoint is { } someEndPoint
-                    ? TcpLogSink.Start(someEndPoint, configuration.LogLevel,
+                    ? TcpLogSink.Start(someEndPoint,
                                        formatter: string.IsNullOrEmpty(configuration.GatewayId)
                                                   ? null
                                                   : msg => $"[{configuration.GatewayId}] {msg}",
@@ -173,24 +173,23 @@ namespace Logger
         private readonly CancellationTokenSource cancellationTokenSource = new();
         private readonly Channel<string> channel;
 
-        public static TcpLogSink Start(IPEndPoint serverEndPoint, LogLevel logLevel,
+        public static TcpLogSink Start(IPEndPoint serverEndPoint,
                                        int? maxRetryAttempts = null,
                                        TimeSpan? retryDelay = null,
                                        int? backlogCapacity = null,
                                        Func<string, string>? formatter = null,
                                        ILogger<TcpLogSink>? logger = null)
         {
-            var sink = new TcpLogSink(serverEndPoint, logLevel, maxRetryAttempts, retryDelay, backlogCapacity, formatter, logger);
+            var sink = new TcpLogSink(serverEndPoint, maxRetryAttempts, retryDelay, backlogCapacity, formatter, logger);
             _ = Task.Run(() => sink.SendAllLogMessagesAsync(sink.cancellationTokenSource.Token));
             return sink;
         }
 
-        private TcpLogSink(IPEndPoint serverEndpoint, LogLevel logLevel,
+        private TcpLogSink(IPEndPoint serverEndpoint,
                            int? maxRetryAttempts, TimeSpan? retryDelay, int? backlogCapacity,
                            Func<string, string>? formatter,
                            ILogger? logger)
         {
-            LogLevel = logLevel;
             this.serverEndpoint = serverEndpoint;
             this.formatter = formatter;
             this.maxRetryAttempts = maxRetryAttempts ?? 6;
@@ -202,8 +201,6 @@ namespace Logger
             });
             this.logger = logger;
         }
-
-        public LogLevel LogLevel { get; }
 
         public void Dispose()
         {
@@ -306,9 +303,6 @@ namespace Logger
         public void Log(LogLevel logLevel, string message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
-
-            if (LogLevel > logLevel)
-                return;
 
             // NOTE! The following will induce an "ObjectDisposedException" in two ways.
             // When this object is disposed, it cancels the cancellation token source then proceeds
