@@ -167,6 +167,7 @@ LoRa Device Provisioning tool is not uploading the credential bundle files to th
             else equal cupsUri
                 alt different cupsCredCrc
                     CUPS Server->>Facade Function: Retrieve CUPS Credential Blob
+                    Note right of CUPS Server: Different CRC is an indication of a credential rotation, therefore retrieval is needed.
                     Facade Function->>CUPS Server: CUPS Credential Blob
                     CUPS Server->>Concentrator: Updated cupsCred
                 else equal cupsCredCrc
