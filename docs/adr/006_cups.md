@@ -154,7 +154,7 @@ LoRa Device Provisioning tool is not uploading the credential bundle files to th
         CUPS Server->>Concentrator: Return forbidden
     else client certificate valid
         alt no cups config available
-            CUPS Server->>Concentrator: Return no updates
+            CUPS Server->>CUPS Server: Throw as this is an indication of misconfiguration
         else cups config available
             alt different cupsUri
                 alt different cupsCredCrc
