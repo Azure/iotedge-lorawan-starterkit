@@ -49,7 +49,7 @@ namespace Logger
 
             var formattedMessage = LoggerHelper.AddScopeInformation(ExternalScopeProvider, formatter(state, exception), ":");
 
-            this.logSink.Log(logLevel, formattedMessage);
+            this.logSink.Log(formattedMessage);
         }
     }
 
@@ -302,7 +302,7 @@ namespace Logger
 
         private static readonly char[] NewLineChars = { '\n', '\r' };
 
-        public void Log(LogLevel logLevel, string message)
+        public void Log(string message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
