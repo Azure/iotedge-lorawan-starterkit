@@ -15,15 +15,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class LoRaCloudToDeviceMessageWrapperTest : IDisposable
     {
-        private readonly LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
+        private readonly SingleDeviceConnectionManager connectionManager;
         private readonly LoRaDevice sampleDevice;
-        private LoRaDeviceClientConnectionManager ConnectionManager => this.connectionManagerWrapper.Value;
 
         public LoRaCloudToDeviceMessageWrapperTest()
         {
-            this.connectionManagerWrapper = TestUtils.CreateConnectionManager();
-            this.sampleDevice = new LoRaDevice("123131", "1231231232132", ConnectionManager);
-            ConnectionManager.Register(this.sampleDevice, new Mock<ILoRaDeviceClient>().Object);
+            this.connectionManager = new SingleDeviceConnectionManager(new Mock<ILoRaDeviceClient>().Object);
+            this.sampleDevice = new LoRaDevice("123131", "1231231232132", this.connectionManager);
         }
 
         [Fact]
@@ -102,7 +100,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void Dispose()
         {
             this.sampleDevice.Dispose();
-            this.connectionManagerWrapper.Dispose();
+            this.connectionManager.Dispose();
         }
     }
 }
