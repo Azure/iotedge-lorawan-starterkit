@@ -49,23 +49,6 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown)
-        {
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = GetFullUri($"DuplicateMsgCheck/{devEUI}?code={AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}");
-
-            var response = await client.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-            {
-                this.logger.LogError($"error calling the DuplicateMsgCheck function, check the function log. {response.ReasonPhrase}");
-                return null;
-            }
-
-            var payload = await response.Content.ReadAsStringAsync();
-            this.logger.LogDebug($"deduplication response: '{payload}'");
-            return JsonConvert.DeserializeObject<DeduplicationResult>(payload);
-        }
-
         public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
