@@ -21,14 +21,13 @@ namespace Logger
     /// </summary>
     internal sealed class TcpLogger : ILogger
     {
+        private readonly LogLevel logLevel;
         private readonly TcpLogSink logSink;
-        private readonly TcpLoggerConfiguration loggerConfiguration;
 
-        public TcpLogger(TcpLogSink logSink,
-                         TcpLoggerConfiguration loggerConfiguration)
+        public TcpLogger(LogLevel logLevel, TcpLogSink logSink)
         {
+            this.logLevel = logLevel;
             this.logSink = logSink;
-            this.loggerConfiguration = loggerConfiguration ?? throw new ArgumentNullException(nameof(loggerConfiguration));
         }
 
         /// <summary>
@@ -39,8 +38,7 @@ namespace Logger
         public IDisposable BeginScope<TState>(TState state) =>
             ExternalScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : NoopDisposable.Instance;
 
-        public bool IsEnabled(LogLevel logLevel) =>
-            logLevel >= this.loggerConfiguration.LogLevel;
+        public bool IsEnabled(LogLevel logLevel) => logLevel >= this.logLevel;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
@@ -62,7 +60,7 @@ namespace Logger
             _ = builder ?? throw new ArgumentNullException(nameof(builder));
 
             builder.AddConfiguration();
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(_ => new TcpLoggerProvider(Init(configuration, tcpLogSinkLogger), configuration)));
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, TcpLoggerProvider>(_ => new TcpLoggerProvider(configuration.LogLevel, Init(configuration, tcpLogSinkLogger))));
             return builder;
 
             static TcpLogSink Init(TcpLoggerConfiguration configuration, ILogger<TcpLogSink>? tcpLogSinkLogger = null)
@@ -125,18 +123,18 @@ namespace Logger
         private sealed class TcpLoggerProvider : ILoggerProvider
         {
             private readonly ConcurrentDictionary<string, TcpLogger> loggers = new();
+            private readonly LogLevel logLevel;
             private readonly TcpLogSink logSink;
-            private readonly TcpLoggerConfiguration configuration;
             private readonly IExternalScopeProvider externalScopeProvider = new LoggerExternalScopeProvider();
 
-            public TcpLoggerProvider(TcpLogSink logSink, TcpLoggerConfiguration loggerConfiguration)
+            public TcpLoggerProvider(LogLevel logLevel, TcpLogSink logSink)
             {
-                this.configuration = loggerConfiguration;
+                this.logLevel = logLevel;
                 this.logSink = logSink;
             }
 
             public ILogger CreateLogger(string categoryName) =>
-                this.loggers.GetOrAdd(categoryName, name => new TcpLogger(this.logSink, this.configuration)
+                this.loggers.GetOrAdd(categoryName, name => new TcpLogger(this.logLevel, this.logSink)
                 {
                     ExternalScopeProvider = this.externalScopeProvider
                 });
