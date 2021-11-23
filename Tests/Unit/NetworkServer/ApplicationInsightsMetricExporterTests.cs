@@ -37,14 +37,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_Metric_Raised_Exports_Supported_Int_Metrics() =>
-            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, 5, 5.0);
+        public void When_Metric_Raised_Exports_Supported_Int_Counter() =>
+            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, new[] { 5 }, new[] { 5.0 });
 
         [Fact]
-        public void When_Metric_Raised_Exports_Supported_Double_Metrics() =>
-            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, 5.0, 5.0);
+        public void When_Metric_Raised_Exports_Int_Counter_Series() =>
+            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, new[] { 5, 6, 1 }, new[] { 5.0, 6.0, 1.0 });
 
-        private void ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics<T>(string metricId, T metricValue, double expectedReportedValue)
+        [Fact]
+        public void When_Metric_Raised_Exports_Supported_Double_Counter() =>
+            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, new[] { 5.0 }, new[] { 5.0 });
+
+        private void ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics<T>(string metricId, T[] metricValues, double[] expectedReportedValues)
             where T : struct
         {
             // arrange
@@ -54,14 +58,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // act
             applicationInsightsMetricExporter.Start();
-            counter.Add(metricValue, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object)gateway));
+            foreach (var val in metricValues)
+                counter.Add(val, KeyValuePair.Create(MetricExporter.GatewayIdTagName, (object)gateway));
 
             // assert
-            this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricExporter.Namespace
-                                                                          && m.Identifier.MetricId == metricId),
-                                                                     expectedReportedValue,
-                                                                     new[] { gateway }),
-                                                       Times.Once);
+            foreach (var expectedReportedValue in expectedReportedValues)
+            {
+                this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricExporter.Namespace
+                                                                              && m.Identifier.MetricId == metricId),
+                                                           expectedReportedValue,
+                                                           new[] { gateway }),
+                                           Times.Once);
+            }
+            
         }
 
         [Theory]
