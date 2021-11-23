@@ -6,14 +6,24 @@
 namespace Logger
 {
     using System;
+    using System.Buffers;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
     using System.Net;
     using System.Net.Sockets;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Channels;
+    using System.Threading.Tasks;
     using LoRaWan;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Configuration;
+    using Microsoft.Extensions.Primitives;
 
     /// <summary>
     /// TcpLogger logs to a TCP endpoint that is listening on this endpoint. This is used only for E2E tests.
@@ -146,24 +156,6 @@ namespace Logger
             }
         }
     }
-}
-
-namespace Logger
-{
-    using System;
-    using System.Buffers;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Sockets;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Channels;
-    using System.Threading.Tasks;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Primitives;
 
     public sealed class TcpLogSink : IDisposable
     {
