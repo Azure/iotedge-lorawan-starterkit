@@ -1435,16 +1435,14 @@ If you'd rather deploy it manually please jump directly into the <a href="../use
 </li>
 <li>
 <p>You will get to a page asking you to fill the following fields :</p>
-<ul>
-<li><strong>Resource Group</strong> - A logical "folder" where all the template resource would be put into, just choose a meaningful name.</li>
-<li><strong>Location</strong> - In which DataCenter the resources should be deployed. Make sure to choose a location where <a href="https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&amp;regions=all">IoT Hub is available</a></li>
-<li><strong>Unique Solution Prefix</strong> - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage">naming restrictions of Storage</a> apply here.</li>
-<li><strong>Edge gateway name</strong> - the name of your LoRa Gateway node in the IoT Hub.</li>
-<li><strong>Deploy Device</strong> - Do you want demo end devices to be already provisioned (one using <abbr title="Over The Air Activation">OTAA</abbr> and one using <abbr title="Activation By Personalization">ABP</abbr>)? If yes set this to true, the code located in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a> would be ready to use immediately.</li>
-<li><strong>Reset pin</strong> - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)</li>
-<li><strong>Region</strong> - In what region are you operating your device (currently only EU868 and US915 is supported)</li>
-<li><strong>useAzureMonitorOnEdge</strong> - You can opt out of using Azure Monitor services for observability on IoT Edge.</li>
-</ul>
+<p>- <strong>Resource Group</strong> - A logical "folder" where all the template resource would be put into, just choose a meaningful name.
+  - <strong>Location</strong> - In which DataCenter the resources should be deployed. Make sure to choose a location where <a href="https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&amp;regions=all">IoT Hub is available</a>
+  - <strong>Unique Solution Prefix</strong> - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage">naming restrictions of Storage</a> apply here.
+  - <strong>Edge gateway name</strong> - the name of your LoRa Gateway node in the IoT Hub.
+  - <strong>Deploy Device</strong> - Do you want demo end devices to be already provisioned (one using <abbr title="Over The Air Activation">OTAA</abbr> and one using <abbr title="Activation By Personalization">ABP</abbr>)? If yes set this to true, the code located in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a> would be ready to use immediately.
+  - <strong>Reset pin</strong> - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
+  - <strong>Region</strong> - In what region are you operating your device (currently only EU868 and US915 is supported)
+  - <strong>useAzureMonitorOnEdge</strong> - You can opt out of using Azure Monitor services for observability on IoT Edge.</p>
 <p>The deployment would take c.a. 10 minutes to complete.</p>
 </li>
 <li>
@@ -1481,12 +1479,10 @@ If you'd rather deploy it manually please jump directly into the <a href="../use
 <li>Login in to the Azure portal go to IoT Hub -&gt; IoT devices -&gt; Add</li>
 <li>Use the DeviceEUI as DeviceID -&gt; Save</li>
 <li>Click on the newly created device</li>
-<li>
-<p>Click on Device Twin menu</p>
-</li>
-<li>
-<p>Add the followings desired properties for <abbr title="Over The Air Activation">OTAA</abbr>:</p>
-</li>
+<li>Click on Device Twin menu</li>
+</ul>
+<ul>
+<li>Add the followings desired properties for <abbr title="Over The Air Activation">OTAA</abbr>:</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span> <span class="s2">&quot;App EUI&quot;</span><span class="p">,</span>

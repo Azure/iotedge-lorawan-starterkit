@@ -1333,8 +1333,10 @@ this approach.</p>
 <li>The centralization of configuration complicates the changes needed to connect to other or multiple
   LNSs (for dynamic discovery or resiliency purposes)</li>
 <li>The limit of ~30 LBSs per LNS is considered enough for now (initially we considered 4-5 LBSs per
-  LNS) but could be limiting in the future especially if the twins grow.</li>
+  LNS) but could be limiting in the future especially if the twins grow.<ul>
 <li>Workarounds can be considered e.g. use this space only for non-default LBSs or potentially compress.</li>
+</ul>
+</li>
 </ul>
 <h3 id="option-3-track-each-lbs-as-separate-iot-hub-device">Option 3: Track each LBS as separate IoT Hub device</h3>
 <p>In this option, we create IoT Hub devices (not edge-enabled) for every LBS. The configuration of LBS

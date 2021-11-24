@@ -1070,7 +1070,7 @@
 </li>
 <li>
 <p>The LBS configuration needs to be stored as a desired twin property of the newly created LBS device. Make sure to store the configuration under <code>properties.desired.routerConfig</code>.</p>
-</li>
+<ol>
 <li>The configuration follows the <code>router_config</code> format from the LNS protocol as closely as possible. However, since device twins encode numbers as 32-bit values and given some configuration properties (such as EUIs) are 64-bit numbers, there are some minor differences.</li>
 <li>The <code>JoinEui</code> nested array must consist of hexadecimal-encoded strings. The property should look similar to: <code>"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]</code></li>
 <li>
@@ -1182,6 +1182,8 @@
 </li>
 <li>
 <p>A more thorough description of <code>sx1301_conf</code> can be found at <a href="https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message">The LNS Protocol</a> specification.</p>
+</li>
+</ol>
 </li>
 </ol>
 <p>By saving the configuration per LBS in its device twin, the LBS will be able to successfully connect to the LNS and it can start sending frames.</p>

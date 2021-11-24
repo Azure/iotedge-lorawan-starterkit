@@ -1334,9 +1334,9 @@ deactivate LoRaDevice
 </li>
 <li>
 <p>The <code>LoRaDeviceRegistry</code> is asking the functions API to lookup the device using the DevEUI, AppEUI and the DevNonce. Also the Gateway Id is sent to allow locking the join request.  see the <a href="#function-GetDevice---OTAA">GetDevice flow</a></p>
-</li>
-<li>
-<p>Q: why do we send the <strong>AppEUI</strong>? It looks like that's not used for the OTAA join?</p>
+<ol>
+<li>Q: why do we send the <strong>AppEUI</strong>? It looks like that's not used for the OTAA join?</li>
+</ol>
 </li>
 <li>
 <p><code>LoRaDeviceRegistry</code> creates a new <code>JoinDeviceLoader</code> (unless the loader is still in the cache - valid for 30min) passing in the <code>IoTHubDeviceInfo</code>.</p>

@@ -1509,9 +1509,11 @@
 <h2 id="in-scope">In-scope</h2>
 <p>This document focuses on:</p>
 <ul>
-<li>Defining a flow diagram for common credential management scenarios:</li>
+<li>Defining a flow diagram for common credential management scenarios:<ul>
 <li>First connection</li>
 <li>Certificate rotation process</li>
+</ul>
+</li>
 <li>Defining the changes needed in IoT Hub for handling Basics Station specific information</li>
 <li>Defining the changes needed in 'Facade' Azure Function for handling updated credential retrieval</li>
 <li>Defining the changes needed in LoRaWan Network Server for handling above mentioned flows</li>
@@ -1678,7 +1680,7 @@ Note right of LoRaWanNetworkSrvModule: Response should be a json including base6
 <p>The CLI should be changed in order to:</p>
 <ul>
 <li>Specify if the device being created is making use of CUPS or not</li>
-<li>In case a device being created is making use of CUPS, the tool should:</li>
+<li>In case a device being created is making use of CUPS, the tool should:<ul>
 <li>accept as input a cupsCredentials file (being the concatenation of <code>cups.{trust,cert,key}</code>)</li>
 <li>accept as input a tcCredentials file (being the concatenation of <code>tc.{trust,cert,key}</code>)</li>
 <li>accept as input a clientThumbprint string (for client certificate validation)</li>
@@ -1686,8 +1688,10 @@ Note right of LoRaWanNetworkSrvModule: Response should be a json including base6
 <li>create a device for the concentrator</li>
 <li>upload, via Azure Blob Storage C# SDK, the credential files to the Blob Storage</li>
 <li>update the Twin for the concentrator device accordingly</li>
+</ul>
+</li>
 <li>In case a device being created is not making use of CUPS, tool should provide a <code>--no-cups</code> option, allowing to just specify a <code>clientThumbprint</code> (for client certificate validation on LNS endpoint)</li>
-<li>In case a device is already created and a credential rotation is required, the tool should:</li>
+<li>In case a device is already created and a credential rotation is required, the tool should:<ul>
 <li>provide a "update" mechanism that:<ul>
 <li>accept as input a cupsCredentials file (being the concatenation of <code>cups.{trust,cert,key}</code>)</li>
 <li>accept as input a tcCredentials file (being the concatenation of <code>tc.{trust,cert,key}</code>)</li>
@@ -1701,6 +1705,8 @@ Note right of LoRaWanNetworkSrvModule: Response should be a json including base6
 <li>provide a "revoke" mechanism that:<ul>
 <li>accept as input an old clientThumbprint to be removed from the twin</li>
 <li>check that reported thumbprint property is not equal to the thumbprint that we want to remove (this means that the basic station has not rotated certificate yet)</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -1718,20 +1724,20 @@ Note right of LoRaWanNetworkSrvModule: Response should be a json including base6
 </ul>
 <p>Regarding client authentication instead, to generate a concentrator specific certificate, you have two options:</p>
 <ul>
-<li>If your device is powerful enough to run OpenSSL:</li>
+<li>If your device is powerful enough to run OpenSSL:<ul>
 <li>Generate a key and a certificate sign request</li>
 <li>Sign the request by using the PKI</li>
 <li>'Install' the cups.cert/key and tc.cert/key on the concentrator</li>
-<li>
-<p>Populate cupsCredCrc and tcCredCrc of the concentrator twin:</p>
-<ul>
+<li>Populate cupsCredCrc and tcCredCrc of the concentrator twin:<ul>
 <li>either by manually calculating the CRC32 checksum of the concatenation of <code>cups.{trust,cert,key}</code> and <code>tc.{trust,cert,key}</code> (same file is expected for both cups and tc in the starter kit)</li>
 <li>by using the device provisioning tool</li>
 </ul>
 </li>
-<li>
-<p>If the device is not powerful enough and it's only providing you the ability to upload the .crt/.key bundle, you will have to execute the steps from previous option while generating the key and the certificate sign request on a different device</p>
+</ul>
 </li>
+</ul>
+<ul>
+<li>If the device is not powerful enough and it's only providing you the ability to upload the .crt/.key bundle, you will have to execute the steps from previous option while generating the key and the certificate sign request on a different device</li>
 </ul>
 <h4 id="b-without-an-external-pki">b) Without an external PKI</h4>
 <p>In this starter kit, we are providing some bash scripts to generate a self-signed root certificate and certificates for server/client authentication.</p>

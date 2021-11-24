@@ -1288,11 +1288,13 @@
 <li>Seeeduino LoRaWan device (leaf test device) connected via USB to a computer
   where the LoRaWan.Tests.E2E will run.</li>
 <li>Module LoRaWanNetworkSrvModule logging configured with following environment
-  variables:</li>
+  variables:<ul>
 <li>LOG_LEVEL: 1</li>
 <li>LOG_TO_TCP: true</li>
 <li>LOG_TO_TCP_ADDRESS: development machine IP address (ensure IoT Edge machine
-    can ping it)</li>
+  can ping it)</li>
+</ul>
+</li>
 <li>E2E test configuration (in file <code>appsettings.local.json</code>) has TCP logging
   enabled <code>"TcpLog": "true"</code></li>
 </ul>
@@ -1302,33 +1304,30 @@
 <ol>
 <li>
 <p>Copy <code>LoRaEngine/example.env</code> file and name it <code>.env</code>.</p>
-<ul>
-<li>Update Container Registry settings and facade function app section with
-  details of your created registry and function app.</li>
-<li>
-<p>Update LoRaWanNetworkSrvModule settings:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">NET_SRV_LOG_LEVEL</span><span class="o">=</span><span class="m">1</span>
-<span class="nv">NET_SRV_LOGTO_HUB</span><span class="o">=</span><span class="nb">true</span>
-<span class="nv">NET_SRV_LOG_TO_TCP</span><span class="o">=</span><span class="nb">true</span>
-<span class="nv">NET_SRV_LOG_TO_TCP_ADDRESS</span><span class="o">=</span>&lt;your-local-ip-address&gt;
+<p>* Update Container Registry settings and facade function app section with
+    details of your created registry and function app.
+  * Update LoRaWanNetworkSrvModule settings:</p>
+<div class="highlight"><pre><span></span><code>  ```bash
+  NET_SRV_LOG_LEVEL=1
+  NET_SRV_LOGTO_HUB=true
+  NET_SRV_LOG_TO_TCP=true
+  NET_SRV_LOG_TO_TCP_ADDRESS=&lt;your-local-ip-address&gt;
+  ```
 </code></pre></div>
-</li>
-<li>
-<p>Update <code>LBS_TC_URI</code>:</p>
-<p><code>LBS_TC_URI=ws://172.17.0.1:5000</code></p>
-</li>
-</ul>
+<p>* Update <code>LBS_TC_URI</code>:</p>
+<div class="highlight"><pre><span></span><code>  `LBS_TC_URI=ws://172.17.0.1:5000`
+</code></pre></div>
 </li>
 <li>
 <p>Build and push IoT Edge solution to your container registry using
    <code>LoRaEngine/deployment.lbs.template.json</code> file.</p>
 <p>In VS Code: Ctrl+Shift+P -&gt; Azure IoT Edge: Bild and Push IoT Edge Solution
--&gt; select template file.</p>
+  -&gt; select template file.</p>
 </li>
 <li>
 <p>Create deployment for a single device using generated deployment template.</p>
 <p>In VS Code, right-click on <code>LoRaEngine/config/deployment.lbs.json</code> and
-select Create Deployment for Single Device.</p>
+  select Create Deployment for Single Device.</p>
 </li>
 <li>
 <p>Provision a device in your IoT Hub by following the <a href="../../user-guide/station-configuration/">Basics Station

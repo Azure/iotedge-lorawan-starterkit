@@ -1369,26 +1369,32 @@
 <h2 id="directory-structure">Directory Structure</h2>
 <p>The code is organized into three sections:</p>
 <ul>
-<li><strong>LoRaEngine</strong> - a .NET core 3.1 solution with the following folders:</li>
+<li><strong>LoRaEngine</strong> - a .NET core 3.1 solution with the following folders:<ul>
 <li><strong>modules</strong> - Azure IoT Edge modules.</li>
 <li><strong>LoraKeysManagerFacade</strong> - An Azure function handling device provisioning
-  (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.</li>
+(e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.</li>
 <li><strong>LoRaDevTools</strong> - library for dev tools (git submodule)</li>
+</ul>
+</li>
 <li><strong>Arduino</strong> - Examples and references for LoRa Arduino based devices.</li>
 <li><strong>Template</strong> - Contain code useful for the "deploy to Azure button"</li>
-<li><strong>Tools</strong> - Contains tools that support the LoRaWan Gateway project</li>
+<li><strong>Tools</strong> - Contains tools that support the LoRaWan Gateway project<ul>
 <li><strong>Cli-LoRa-Device-Provisioning</strong> - .NET Core 2.1 Command Line tool that
-  allows to list, query, verify, insert, edit, update and delete LoRa leaf
-  device configurations into IoT Hub</li>
+allows to list, query, verify, insert, edit, update and delete LoRa leaf
+device configurations into IoT Hub</li>
+</ul>
+</li>
 <li><strong>Samples</strong> - Contains sample decoders</li>
 <li><strong>Docs</strong> - Additional modules, pictures and documentations</li>
 </ul>
 <h2 id="loraengine">LoRaEngine</h2>
 <p>A <strong>.NET Core 3.1</strong> solution with the following projects:</p>
 <ul>
-<li><strong>modules</strong> - Azure IoT Edge modules.</li>
+<li><strong>modules</strong> - Azure IoT Edge modules.<ul>
 <li><strong>LoRaBasicsStationModule</strong> packages the Basics Station into an IoT Edge compatible docker container. See <a href="https://github.com/lorabasics/basicstation">https://github.com/lorabasics/basicstation</a>. If you are using a RAK833-USB you need to build your own Basics Station docker image starting from the fork <a href="https://github.com/danigian/basicstation">at this link</a></li>
 <li><strong>LoRaWanNetworkSrvModule</strong> - is the LoRaWAN network server implementation.</li>
+</ul>
+</li>
 <li><strong>LoraKeysManagerFacade</strong> - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.</li>
 <li><strong>LoRaDevTools</strong> - library for dev tools (git submodule)</li>
 </ul>
@@ -1407,11 +1413,9 @@
 <li>The Azure function <code>LoraKeysManagerFacade</code> sends back the device identity to the module</li>
 <li>
 <p>The <code>LoRaWan Network Server</code> module:</p>
-<ul>
-<li>instantiate the device on the LoRa Gateway if needed</li>
-<li>gather the LoRa sensor data from the LoRaWan gateway thru the <code>LoRa Basics™ Station</code></li>
-<li>decode the LoRa data if requested</li>
-</ul>
+<p>- instantiate the device on the LoRa Gateway if needed
+  - gather the LoRa sensor data from the LoRaWan gateway thru the <code>LoRa Basics™ Station</code>
+  - decode the LoRa data if requested</p>
 </li>
 <li>
 <p>Publish the LoRa sensor data to Azure IoT Hub</p>
@@ -1450,12 +1454,10 @@
 <img alt="Deploy to Azure Function from Visual Studio" src="../../images/vsdeploytoazurefunc.PNG" /></p>
 <h4 id="deploy-manually-using-visual-studio-code">Deploy manually using Visual Studio Code</h4>
 <ul>
-<li>
-<p>Open the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">Azure function folder</a> with Visual Studio Code with the <a href="https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions">Azure Functions Plugin</a> installed. Now run the command <code>Azure Functions: Deploy to function app...</code> and provide the name of the Azure function to deploy to. If prompted, select  environment <code>C#</code> and  version <code>V3</code>.</p>
-</li>
-<li>
-<p>If you want to just deploy the function from Visual Studio Code with the root project folder <code>iotedge-lorawan-starterkit</code> open (of which the Function is a subfolder <code>/LoRaEngine/LoraKeysManagerFacade</code>), you need to run the Visual Studio Command <code>Azure Functions: Deploy to function app...</code> and then <strong>manually</strong> choose the folder <code>LoraKeysManagerFacade/bin/Release/netcoreapp3.1/publish</code>. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.</p>
-</li>
+<li>Open the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">Azure function folder</a> with Visual Studio Code with the <a href="https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions">Azure Functions Plugin</a> installed. Now run the command <code>Azure Functions: Deploy to function app...</code> and provide the name of the Azure function to deploy to. If prompted, select  environment <code>C#</code> and  version <code>V3</code>.</li>
+</ul>
+<ul>
+<li>If you want to just deploy the function from Visual Studio Code with the root project folder <code>iotedge-lorawan-starterkit</code> open (of which the Function is a subfolder <code>/LoRaEngine/LoraKeysManagerFacade</code>), you need to run the Visual Studio Command <code>Azure Functions: Deploy to function app...</code> and then <strong>manually</strong> choose the folder <code>LoraKeysManagerFacade/bin/Release/netcoreapp3.1/publish</code>. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.</li>
 </ul>
 <h4 id="if-you-choose-to-create-an-empty-azure-function-pointing-to-our-zipped-code">If you choose to create an empty Azure Function pointing to our Zipped code</h4>
 <ul>
@@ -1524,12 +1526,10 @@ FACADE_AUTH_CODE=yourfunctionpassword
 </blockquote>
 <h3 id="setup-concentrator-with-azure-iot-edge">Setup concentrator with Azure IoT Edge</h3>
 <ul>
-<li>
-<p>Note: if your LoRa chip set is connected by SPI on raspberry PI bus don't forget to <a href="https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/">enable it</a>, (You need to restart your pi).</p>
-</li>
-<li>
-<p>Build and deploy Azure IoT Edge solution</p>
-</li>
+<li>Note: if your LoRa chip set is connected by SPI on raspberry PI bus don't forget to <a href="https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/">enable it</a>, (You need to restart your pi).</li>
+</ul>
+<ul>
+<li>Build and deploy Azure IoT Edge solution</li>
 </ul>
 <p>We will use <a href="https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge">Azure IoT Edge for Visual Studio Code</a> extension to build, push and deploy our solution.</p>
 <p>Make sure you are logged in to the Azure Container Registry you are using. Run <code>docker login &lt;mycontainerregistry&gt;.azurecr.io</code> on your development machine.</p>
@@ -1651,13 +1651,11 @@ LOG_ANALYTICS_SHARED_KEY={log_analytics_shared_key}
 </li>
 <li>
 <p>Open the properties of the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule">LoRaWanNetworkServerModule</a> and set the following Environment Variables under the Debug tab:</p>
-<ul>
-<li>IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)</li>
-<li>ENABLE_GATEWAY : false</li>
-<li>LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)</li>
-<li>FACADE_SERVER_URL : <a href="http://localhost:7071/api/">http://localhost:7071/api/</a> (when debugging locally or any other URL of the Azure function you want to use)</li>
-<li>IOTEDGE_DEVICEID : The Name of your PC</li>
-</ul>
+<p>- IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
+  - ENABLE_GATEWAY : false
+  - LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)
+  - FACADE_SERVER_URL : <a href="http://localhost:7071/api/">http://localhost:7071/api/</a> (when debugging locally or any other URL of the Azure function you want to use)
+  - IOTEDGE_DEVICEID : The Name of your PC</p>
 </li>
 <li>
 <p>Add a <code>local.settings.json</code> file to the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">LoRaKeysManagerFacade</a> containing:</p>
