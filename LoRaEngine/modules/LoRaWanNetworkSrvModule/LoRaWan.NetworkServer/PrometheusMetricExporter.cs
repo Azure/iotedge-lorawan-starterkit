@@ -29,12 +29,12 @@ namespace LoRaWan.NetworkServer
         {
             this.counters = GetMetricsFromRegistry(MetricType.Counter, m => Metrics.CreateCounter(m.Name, m.Description, m.Tags));
             this.histograms = GetMetricsFromRegistry(MetricType.Histogram, m => Metrics.CreateHistogram(m.Name, m.Description, m.Tags));
-        }
 
-        private IDictionary<string, T> GetMetricsFromRegistry<T>(MetricType metricType, Func<CustomMetric, T> factory) =>
-            this.registryLookup.Values.Where(m => m.Type == metricType)
-                                      .Select(m => KeyValuePair.Create(m.Name, factory(m)))
-                                      .ToDictionary(m => m.Key, m => m.Value);
+            IDictionary<string, T> GetMetricsFromRegistry<T>(MetricType metricType, Func<CustomMetric, T> factory) =>
+                this.registryLookup.Values.Where(m => m.Type == metricType)
+                                          .Select(m => KeyValuePair.Create(m.Name, factory(m)))
+                                          .ToDictionary(m => m.Key, m => m.Value);
+        }
 
         protected override void TrackValue(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
         {
