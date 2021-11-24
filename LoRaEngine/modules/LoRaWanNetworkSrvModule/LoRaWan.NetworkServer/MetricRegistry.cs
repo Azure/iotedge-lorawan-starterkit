@@ -7,12 +7,14 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Linq;
+    using Prometheus;
 
     internal static class MetricRegistry
     {
         public const string Namespace = "LoRaWan";
-        public const string MetricsVersion = "1.0";
+        public const string Version = "1.0";
         public const string GatewayIdTagName = "GatewayId";
 
         public static readonly CustomMetric JoinRequests = new CustomMetric("JoinRequests", "Number of join requests", MetricType.Counter, new[] { GatewayIdTagName });
@@ -75,5 +77,18 @@ namespace LoRaWan.NetworkServer
             var tagLookup = new Dictionary<string, object?>(tags.ToArray(), StringComparer.OrdinalIgnoreCase);
             return tagNames.Select(t => tagLookup.TryGetValue(t, out var v) ? (v?.ToString() ?? string.Empty) : string.Empty).ToArray();
         }
+    }
+
+    internal static class MetricsExtensions
+    {
+        public static Counter<T> CreateCounter<T>(this Meter meter, CustomMetric customMetric) where T : struct =>
+            customMetric.Type == MetricType.Counter
+            ? meter.CreateCounter<T>(customMetric.Name, description: customMetric.Description)
+            : throw new ArgumentException("Custom metric must of type Counter", nameof(customMetric));
+
+        public static Histogram<T> CreateHistogram<T>(this Meter meter, CustomMetric customMetric) where T : struct =>
+            customMetric.Type == MetricType.Histogram
+            ? meter.CreateHistogram<T>(customMetric.Name, description: customMetric.Description)
+            : throw new ArgumentException("Custom metric must of type Histogram", nameof(customMetric));
     }
 }

@@ -125,7 +125,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_Raising_Unknown_Metric_Does_Not_Export_To_Application_Insights(string @namespace, string metricName)
         {
             // arrange
-            using var instrument = new Meter(@namespace, MetricRegistry.MetricsVersion);
+            using var instrument = new Meter(@namespace, MetricRegistry.Version);
             var counter = instrument.CreateCounter<int>(metricName);
 
             // act
@@ -140,7 +140,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_Raising_Metric_And_Missing_Dimensions_Should_Report_Empty_String()
         {
             // arrange
-            using var instrument = new Meter(MetricRegistry.Namespace, MetricRegistry.MetricsVersion);
+            using var instrument = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
             var counter = instrument.CreateCounter<int>(CounterMetric.Name);
 
             // act
@@ -156,7 +156,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             const string gateway = "foogateway";
-            using var meter = new Meter(MetricRegistry.Namespace, MetricRegistry.MetricsVersion);
+            using var meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
             var counter = meter.CreateCounter<int>(CounterMetric.Name);
 
             // act

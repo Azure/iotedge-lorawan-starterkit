@@ -26,9 +26,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     {
         private static readonly Action<ILogger, string, string, Exception> LogReceivedMessage =
             LoggerMessage.Define<string, string>(LogLevel.Information, default, "Received '{Type}' message: '{Json}'.");
-        private static readonly Meter Meter = new Meter(MetricRegistry.Namespace, MetricRegistry.MetricsVersion);
-        private static readonly Counter<int> JoinRequestCounter = Meter.CreateCounter<int>(MetricRegistry.JoinRequests.Name,
-                                                                                           description: MetricRegistry.JoinRequests.Description);
+        private static readonly Meter Meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
+        private static readonly Counter<int> JoinRequestCounter = Meter.CreateCounter<int>(MetricRegistry.JoinRequests);
 
 
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
