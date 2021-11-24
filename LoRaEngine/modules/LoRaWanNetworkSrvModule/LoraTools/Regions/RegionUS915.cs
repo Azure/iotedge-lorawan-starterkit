@@ -7,6 +7,7 @@ namespace LoRaTools.Regions
     using System.Collections.Generic;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using LoRaWan;
 
     public class RegionUS915 : Region
     {
@@ -77,50 +78,47 @@ namespace LoRaTools.Regions
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
 
-            frequency = 0;
+            if (!IsValidUpstreamRxpk(upstreamChannel))
+                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
 
-            if (IsValidUpstreamRxpk(upstreamChannel))
+            int upstreamChannelNumber;
+            // if DR4 the coding are different.
+            if (upstreamChannel.Datr == "SF8BW500")
             {
-                int upstreamChannelNumber;
-                // if DR4 the coding are different.
-                if (upstreamChannel.Datr == "SF8BW500")
-                {
-                    // ==DR4
-                    upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0, MidpointRounding.AwayFromZero);
-                }
-                else
-                {
-                    // if not DR4 other encoding
-                    upstreamChannelNumber = (int)Math.Round((upstreamChannel.Freq - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
-                }
-
-                frequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
-                return true;
+                // ==DR4
+                upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0, MidpointRounding.AwayFromZero);
+            }
+            else
+            {
+                // if not DR4 other encoding
+                upstreamChannelNumber = (int)Math.Round((upstreamChannel.Freq - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
             }
 
-            return false;
+            frequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
+            return true;
         }
 
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region US915.
         /// </summary>
         /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
-        /// <param name="dataRate">Data rate at which the message was transmitted.</param>
+        /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate, DeviceJoinInfo deviceJoinInfo = null)
         {
-            downstreamFrequency = 0;
+            if (upstreamDataRate is null) throw new ArgumentNullException(nameof(upstreamDataRate));
 
-            if (IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
-            {
-                int upstreamChannelNumber;
-                upstreamChannelNumber = dataRate == 4 ? 64 + (int)Math.Round((upstreamFrequency - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
-                                                      : (int)Math.Round((upstreamFrequency - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
-                downstreamFrequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
-                return true;
-            }
+            if (!IsValidUpstreamFrequency(upstreamFrequency))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
-            return false;
+            if (!IsValidUpstreamDataRate((ushort)upstreamDataRate))
+                throw new LoRaProcessingException($"Invalid upstream data rate {upstreamDataRate}", LoRaProcessingErrorCode.InvalidDataRate);
+
+            int upstreamChannelNumber;
+            upstreamChannelNumber = upstreamDataRate == 4 ? 64 + (int)Math.Round((upstreamFrequency - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
+                                                    : (int)Math.Round((upstreamFrequency - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
+            downstreamFrequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
+            return true;
         }
 
         /// <summary>
