@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Server.Kestrel.Https;
     using Microsoft.Extensions.DependencyInjection;
 
     public static class BasicsStationNetworkServer
@@ -18,8 +19,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
         internal const string DiscoveryEndpoint = "/router-info";
         internal const string RouterIdPathParameterName = "routerId";
         internal const string DataEndpoint = "/router-data";
-        private const int SecurePort = 5001;
-        private const int Port = 5000;
+        private const int LnsSecurePort = 5001;
+        private const int LnsPort = 5000;
 
         public static async Task RunServerAsync(NetworkServerConfiguration configuration, CancellationToken cancellationToken)
         {
@@ -27,8 +28,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             var shouldUseCertificate = !string.IsNullOrEmpty(configuration.LnsServerPfxPath);
             using var webHost = WebHost.CreateDefaultBuilder()
-                                       .UseUrls(shouldUseCertificate ? FormattableString.Invariant($"https://0.0.0.0:{SecurePort}")
-                                                                     : FormattableString.Invariant($"http://0.0.0.0:{Port}"))
+                                       .UseUrls(shouldUseCertificate ? FormattableString.Invariant($"https://0.0.0.0:{LnsSecurePort}")
+                                                                     : FormattableString.Invariant($"http://0.0.0.0:{LnsPort}"))
                                        .UseStartup<BasicsStationNetworkServerStartup>()
                                        .UseKestrel(config =>
                                        {
@@ -41,6 +42,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                                              : new X509Certificate2(configuration.LnsServerPfxPath,
                                                                                                     configuration.LnsServerPfxPassword,
                                                                                                     X509KeyStorageFlags.DefaultKeySet);
+                                                   var clientCertValidator = config.ApplicationServices.GetRequiredService<ClientCertificateValidator>();
+                                                   //TO DO: Sync with Atif for understanding if following validation can be done in a better async way
+                                                   https.ClientCertificateValidation = (cert, chain, sslPolicyErrors) => clientCertValidator.ValidateAsync(cert, chain, sslPolicyErrors, default).Result;
+                                                   //TO DO: Set environment variable to either fully disable or require client certificates
+                                                   https.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
                                                });
                                            }
                                        })
