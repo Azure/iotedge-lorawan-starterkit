@@ -126,36 +126,28 @@ namespace LoRaTools.Regions
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
 
-            frequency = 0;
+            if (!IsValidUpstreamRxpk(upstreamChannel))
+                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
 
-            if (IsValidUpstreamRxpk(upstreamChannel))
-            {
-                // Use the same frequency as the upstream.
-                frequency = upstreamChannel.Freq;
-                return true;
-            }
-
-            return false;
+            // Use the same frequency as the upstream.
+            frequency = upstreamChannel.Freq;
+            return true;
         }
 
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region CN470.
         /// </summary>
         /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
-        /// <param name="dataRate">The upstream data rate.</param>
+        /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo)
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
-            downstreamFrequency = 0;
+            if (!IsValidUpstreamFrequency(upstreamFrequency))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
-            if (IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
-            {
-                // Use the same frequency as the upstream.
-                downstreamFrequency = upstreamFrequency;
-                return true;
-            }
-
-            return false;
+            // Use the same frequency as the upstream.
+            downstreamFrequency = upstreamFrequency;
+            return true;
         }
 
         /// <summary>

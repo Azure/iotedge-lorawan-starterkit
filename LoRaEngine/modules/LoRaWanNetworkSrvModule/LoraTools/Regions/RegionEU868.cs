@@ -5,6 +5,7 @@ namespace LoRaTools.Regions
 {
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using LoRaWan;
     using System;
     using System.Collections.Generic;
 
@@ -68,36 +69,28 @@ namespace LoRaTools.Regions
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
 
-            frequency = 0;
+            if (!IsValidUpstreamRxpk(upstreamChannel))
+                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
 
-            if (IsValidUpstreamRxpk(upstreamChannel))
-            {
-                // in case of EU, you respond on same frequency as you sent data.
-                frequency = upstreamChannel.Freq;
-                return true;
-            }
-
-            return false;
+            // in case of EU, you respond on same frequency as you sent data.
+            frequency = upstreamChannel.Freq;
+            return true;
         }
 
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region EU868.
         /// </summary>
         /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
-        /// <param name="dataRate">Data rate at which the message was transmitted.</param>
+        /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
-            downstreamFrequency = 0;
+            if (!IsValidUpstreamFrequency(upstreamFrequency))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
-            if (IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
-            {
-                // in case of EU, you respond on same frequency as you sent data.
-                downstreamFrequency = upstreamFrequency;
-                return true;
-            }
-
-            return false;
+            // in case of EU, you respond on same frequency as you sent data.
+            downstreamFrequency = upstreamFrequency;
+            return true;
         }
 
         /// <summary>
