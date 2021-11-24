@@ -20,19 +20,16 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IDictionary<string, (Metric, MetricIdentifier)> metricRegistry;
 
-        private readonly TelemetryClient telemetryClient;
-
         public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient) : this(telemetryClient, MetricRegistry.RegistryLookup)
         { }
 
         internal ApplicationInsightsMetricExporter(TelemetryClient telemetryClient, IDictionary<string, CustomMetric> registryLookup)
             : base(registryLookup)
         {
-            this.telemetryClient = telemetryClient;
             this.metricRegistry = registryLookup.ToDictionary(m => m.Key, m =>
             {
                 var id = new MetricIdentifier(MetricRegistry.Namespace, m.Value.Name, m.Value.Tags);
-                return (this.telemetryClient.GetMetric(id), id);
+                return (telemetryClient.GetMetric(id), id);
             });
         }
 
