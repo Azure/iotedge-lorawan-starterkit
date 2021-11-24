@@ -55,16 +55,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetAuthCode(string value) => AuthCode = value;
 
-        /// <summary>
-        /// Validates if the specified message from the device
-        /// was already processed by any gateway in the system.
-        /// </summary>
-        /// <param name="devEUI">Device identifier.</param>
-        /// <param name="fcntUp">frame count of the message we received.</param>
-        /// <param name="gatewayId">The current processing gateway.</param>
-        /// <param name="fcntDown">The frame count down of the client.</returns>
-        public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown);
-
         public abstract Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request);
 
         protected LoRaDeviceAPIServiceBase()

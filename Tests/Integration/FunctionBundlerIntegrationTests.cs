@@ -8,21 +8,11 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
     public class FunctionBundlerIntegrationTests : MessageProcessorTestBase
     {
-        private readonly DeduplicationStrategyFactory factory;
-        private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
-
-        public FunctionBundlerIntegrationTests()
-        {
-            this.factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
-            this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-        }
-
         [Fact]
         public async Task Validate_Function_Bundler_Execution()
         {

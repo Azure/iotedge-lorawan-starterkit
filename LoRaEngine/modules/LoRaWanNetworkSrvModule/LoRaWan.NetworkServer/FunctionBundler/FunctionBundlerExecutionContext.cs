@@ -7,18 +7,31 @@ namespace LoRaWan.NetworkServer
 
     public class FunctionBundlerExecutionContext
     {
-        public string GatewayId { get; set; }
+        public FunctionBundlerExecutionContext(string gatewayId, uint fCntUp, uint fCntDown,
+                                               LoRaPayloadData loRaPayload, LoRaDevice loRaDevice,
+                                               IDeduplicationStrategyFactory deduplicationFactory, LoRaRequest request)
+        {
+            GatewayId = gatewayId;
+            FCntUp = fCntUp;
+            FCntDown = fCntDown;
+            LoRaPayload = loRaPayload;
+            LoRaDevice = loRaDevice;
+            DeduplicationFactory = deduplicationFactory;
+            Request = request;
+        }
 
-        public uint FCntUp { get; set; }
+        public string GatewayId { get; }
 
-        public uint FCntDown { get; set; }
+        public uint FCntUp { get; }
 
-        public LoRaPayloadData LoRaPayload { get; set; }
+        public uint FCntDown { get; }
 
-        public LoRaDevice LoRaDevice { get; set; }
+        public LoRaPayloadData LoRaPayload { get; }
 
-        public IDeduplicationStrategyFactory DeduplicationFactory { get; set; }
+        public LoRaDevice LoRaDevice { get; }
 
-        public LoRaRequest Request { get; set; }
+        public IDeduplicationStrategyFactory DeduplicationFactory { get; }
+
+        public LoRaRequest Request { get; }
     }
 }
