@@ -4,18 +4,12 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
     public class DeduplicationStrategyMark : ILoRaDeviceMessageDeduplicationStrategy
     {
-        private readonly LoRaDevice loRaDevice;
-        private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
-
-        public DeduplicationStrategyMark(LoRaDeviceAPIServiceBase loRaDeviceAPIService, LoRaDevice loRaDevice, ILogger<DeduplicationStrategyMark> logger)
+        public DeduplicationStrategyMark(ILogger<DeduplicationStrategyMark> logger)
         {
-            this.loRaDeviceAPIService = loRaDeviceAPIService;
-            this.loRaDevice = loRaDevice;
             logger.LogDebug("deduplication Strategy: Mark");
         }
 
@@ -25,12 +19,6 @@ namespace LoRaWan.NetworkServer
 
             result.CanProcess = true; // can always process. Message is marked if it is a duplicate
             return result;
-        }
-
-        public async Task<DeduplicationResult> ResolveDeduplication(uint fctUp, uint fcntDown, string gatewayId)
-        {
-            var result = await this.loRaDeviceAPIService.CheckDuplicateMsgAsync(this.loRaDevice.DevEUI, fctUp, gatewayId, fcntDown);
-            return Process(result, fctUp);
         }
     }
 }

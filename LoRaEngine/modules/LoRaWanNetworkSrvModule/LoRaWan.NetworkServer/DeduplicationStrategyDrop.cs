@@ -4,19 +4,14 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
     public class DeduplicationStrategyDrop : ILoRaDeviceMessageDeduplicationStrategy
     {
-        private readonly LoRaDevice loRaDevice;
         private readonly ILogger<DeduplicationStrategyDrop> logger;
-        private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
 
-        public DeduplicationStrategyDrop(LoRaDeviceAPIServiceBase loRaDeviceAPIService, LoRaDevice loRaDevice, ILogger<DeduplicationStrategyDrop> logger)
+        public DeduplicationStrategyDrop(ILogger<DeduplicationStrategyDrop> logger)
         {
-            this.loRaDeviceAPIService = loRaDeviceAPIService;
-            this.loRaDevice = loRaDevice;
             this.logger = logger;
             this.logger.LogDebug("deduplication Strategy: Drop");
         }
@@ -33,13 +28,6 @@ namespace LoRaWan.NetworkServer
             }
 
             return result;
-        }
-
-        public async Task<DeduplicationResult> ResolveDeduplication(uint fctUp, uint fcntDown, string gatewayId)
-        {
-            var result = await this.loRaDeviceAPIService.CheckDuplicateMsgAsync(this.loRaDevice.DevEUI, fctUp, gatewayId, fcntDown);
-
-            return Process(result, fctUp);
         }
     }
 }

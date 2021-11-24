@@ -3,12 +3,8 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System.Threading.Tasks;
-
     public interface ILoRaDeviceMessageDeduplicationStrategy
     {
-        Task<DeduplicationResult> ResolveDeduplication(uint fctUp, uint fcntDown, string gatewayId);
-
         DeduplicationResult Process(DeduplicationResult result, uint fCntUp);
     }
 }
