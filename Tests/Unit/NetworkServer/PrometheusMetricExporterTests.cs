@@ -27,13 +27,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.registry = new[]
             {
-                new CustomMetric("SomeCounter", "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
-                new CustomMetric("SomeHistogram", "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName })
+                new CustomMetric($"counter{Guid.NewGuid():N}", "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
+                new CustomMetric($"histogram{Guid.NewGuid():N}", "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName })
             };
             this.incCounterMock = new Mock<Action<string, string[], double>>();
             this.recordHistogramMock = new Mock<Action<string, string[], double>>();
-            this.prometheusMetricExporter = new TestablePrometheusMetricExporter(incCounterMock.Object,
-                                                                                 recordHistogramMock.Object,
+            this.prometheusMetricExporter = new TestablePrometheusMetricExporter(this.incCounterMock.Object,
+                                                                                 this.recordHistogramMock.Object,
                                                                                  this.registry.ToDictionary(m => m.Name, m => m));
         }
 
@@ -43,14 +43,41 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_Int_Counter_Series_Is_Recorded_Should_Export_To_Prometheus() =>
-            When_Counter_Series_Is_Recorded_Should_Export_To_Prometheus(new[] { 1, 3 }, new[] { 1.0, 3.0 });
+        public void When_Int_Counter_Is_Recorded_Should_Export_To_Prometheus() =>
+            When_Counter_Is_Recorded_Should_Export_To_Prometheus(1, 1.0);
+
+        [Fact]
+        public void When_Byte_Counter_Is_Recorded_Should_Export_To_Prometheus() =>
+            When_Counter_Is_Recorded_Should_Export_To_Prometheus((byte)0, 0);
+
+        [Fact]
+        public void When_Short_Counter_Is_Recorded_Should_Export_To_Prometheus() =>
+            When_Counter_Is_Recorded_Should_Export_To_Prometheus((short)1, 1);
+
+        [Fact]
+        public void When_Long_Counter_Is_Recorded_Should_Export_To_Prometheus() =>
+            When_Counter_Is_Recorded_Should_Export_To_Prometheus((long)1, 1);
+
+        [Fact]
+        public void When_Float_Counter_Is_Recorded_Should_Export_To_Prometheus() =>
+            When_Counter_Is_Recorded_Should_Export_To_Prometheus((float)1.0, 1.0);
+
+        [Fact]
+        public void When_Double_Counter_Is_Recorded_Should_Export_To_Prometheus() =>
+            When_Counter_Is_Recorded_Should_Export_To_Prometheus(1.0, 1.0);
+
+        [Fact]
+        public void When_Decimal_Counter_Is_Recorded_Should_Export_To_Prometheus() =>
+            When_Counter_Is_Recorded_Should_Export_To_Prometheus((decimal)1, 1.0);
 
         [Fact]
         public void When_Double_Counter_Series_Is_Recorded_Should_Export_To_Prometheus() =>
-            When_Counter_Series_Is_Recorded_Should_Export_To_Prometheus(new[] { 1.0, 3.0 }, new[] { 1.0, 3.0 });
+            When_Counter_Is_Recorded_Should_Export_To_Prometheus(new[] { 1.0, 3.0 }, new[] { 1.0, 3.0 });
 
-        private void When_Counter_Series_Is_Recorded_Should_Export_To_Prometheus<T>(T[] values, double[] expectedReportedValues)
+        private void When_Counter_Is_Recorded_Should_Export_To_Prometheus<T>(T value, double expectedReportedValue)
+            where T : struct => When_Counter_Is_Recorded_Should_Export_To_Prometheus(new[] { value }, new[] { expectedReportedValue });
+
+        private void When_Counter_Is_Recorded_Should_Export_To_Prometheus<T>(T[] values, double[] expectedReportedValues)
             where T : struct
         {
             // arrange

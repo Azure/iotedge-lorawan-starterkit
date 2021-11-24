@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer
     using Prometheus;
 
     /// <summary>
-    /// Exposes metrics that have values of type int or double on a Prometheus endpoint.
+    /// Exposes metrics raised via System.Diagnostics.Metrics and which are registered in MetricRegistry on a Prometheus endpoint.
     /// </summary>
     internal class PrometheusMetricExporter : IMetricExporter
     {
@@ -49,8 +49,13 @@ namespace LoRaWan.NetworkServer
                 }
             };
 
+            this.listener.SetMeasurementEventCallback<byte>((i, m, t, s) => TrackValue(i, m, t, s));
+            this.listener.SetMeasurementEventCallback<short>((i, m, t, s) => TrackValue(i, m, t, s));
             this.listener.SetMeasurementEventCallback<int>((i, m, t, s) => TrackValue(i, m, t, s));
+            this.listener.SetMeasurementEventCallback<long>((i, m, t, s) => TrackValue(i, m, t, s));
+            this.listener.SetMeasurementEventCallback<float>((i, m, t, s) => TrackValue(i, m, t, s));
             this.listener.SetMeasurementEventCallback<double>(TrackValue);
+            this.listener.SetMeasurementEventCallback<decimal>((i, m, t, s) => TrackValue(i, checked((double)m), t, s));
             this.listener.Start();
 
             void TrackValue(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
@@ -58,9 +63,15 @@ namespace LoRaWan.NetworkServer
 #pragma warning disable format
                 Action<string, string[], double> trackMetric = instrument switch
                 {
-                    Counter<double> or Counter<int>     => IncCounter,
-                    Histogram<double> or Histogram<int> => RecordHistogram,
-                    _                                   => throw new NotImplementedException()
+                    Counter<double> or Counter<int> or
+                    Counter<short> or Counter<byte> or
+                    Counter<long> or Counter<decimal> or
+                    Counter<float>                              => IncCounter,
+                    Histogram<double> or Histogram<int> or
+                    Histogram<short> or Histogram<byte> or
+                    Histogram<long> or Histogram<decimal> or
+                    Histogram<float>                            => RecordHistogram,
+                    _                                           => throw new NotImplementedException()
                 };
 #pragma warning restore format
 

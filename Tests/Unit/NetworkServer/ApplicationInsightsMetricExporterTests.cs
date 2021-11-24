@@ -26,8 +26,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.registry = new[]
             {
-                new CustomMetric("SomeCounter", "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
-                new CustomMetric("SomeHistogram", "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName })
+                new CustomMetric(Guid.NewGuid().ToString(), "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
+                new CustomMetric(Guid.NewGuid().ToString(), "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName })
             };
             this.telemetryConfiguration = new TelemetryConfiguration { TelemetryChannel = new Mock<ITelemetryChannel>().Object };
             this.trackValueMock = new Mock<Action<Metric, double, string[]>>();
@@ -38,23 +38,47 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Fact]
         public void When_Metric_Raised_Exports_Supported_Int_Counter() =>
-            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, new[] { 5 }, new[] { 5.0 });
+            ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics(5, 5.0);
 
         [Fact]
-        public void When_Metric_Raised_Exports_Int_Counter_Series() =>
-            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, new[] { 5, 6, 1 }, new[] { 5.0, 6.0, 1.0 });
+        public void When_Metric_Raised_Exports_Supported_Byte_Counter() =>
+            ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics((byte)0, 0);
+
+        [Fact]
+        public void When_Metric_Raised_Exports_Supported_Short_Counter() =>
+            ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics((short)5, 5);
+
+        [Fact]
+        public void When_Metric_Raised_Exports_Supported_Long_Counter() =>
+            ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics((long)5, 5);
+
+        [Fact]
+        public void When_Metric_Raised_Exports_Supported_Float_Counter() =>
+            ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics((float)5, 5.0);
 
         [Fact]
         public void When_Metric_Raised_Exports_Supported_Double_Counter() =>
-            ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics(CounterMetric.Name, new[] { 5.0 }, new[] { 5.0 });
+            ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics(5.0, 5.0);
 
-        private void ApplicationInsights_Metrics_Collection_Raises_Supported_Metrics<T>(string metricId, T[] metricValues, double[] expectedReportedValues)
+        [Fact]
+        public void When_Metric_Raised_Exports_Supported_Decimal_Counter() =>
+            ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics((decimal)5.0, 5.0);
+
+        [Fact]
+        public void When_Metric_Raised_Exports_Int_Counter_Series() =>
+            ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics(new[] { 5, 6, 1 }, new[] { 5.0, 6.0, 1.0 });
+
+        private void ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics<T>(T metricValue, double expectedReportedValue)
+            where T : struct =>
+            ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics(new[] { metricValue }, new[] { expectedReportedValue });
+
+        private void ApplicationInsights_Metrics_Collection_Raises_Counter_Metrics<T>(T[] metricValues, double[] expectedReportedValues)
             where T : struct
         {
             // arrange
             const string gateway = "foogateway";
             using var meter = new Meter("LoRaWan", "1.0");
-            var counter = meter.CreateCounter<T>(metricId);
+            var counter = meter.CreateCounter<T>(CounterMetric.Name);
 
             // act
             applicationInsightsMetricExporter.Start();
@@ -65,12 +89,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             foreach (var expectedReportedValue in expectedReportedValues)
             {
                 this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricRegistry.Namespace
-                                                                              && m.Identifier.MetricId == metricId),
+                                                                              && m.Identifier.MetricId == CounterMetric.Name),
                                                            expectedReportedValue,
                                                            new[] { gateway }),
                                            Times.Once);
             }
-            
+
         }
 
         [Theory]

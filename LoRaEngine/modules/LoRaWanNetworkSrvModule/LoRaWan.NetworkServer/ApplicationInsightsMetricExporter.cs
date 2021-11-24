@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.ApplicationInsights.Metrics;
 
     /// <summary>
-    /// Exports metrics to Application Insights that are registered in MetricExporter and which have values of type int or double.
+    /// Exports System.Diagnostics.Metrics metrics which are registered in MetricRegistry to Application Insights.
     /// </summary>
     internal class ApplicationInsightsMetricExporter : IMetricExporter
     {
@@ -43,8 +43,13 @@ namespace LoRaWan.NetworkServer
                 }
             };
 
+            this.listener.SetMeasurementEventCallback<byte>((i, m, t, s) => TrackValue(i, m, t, s));
+            this.listener.SetMeasurementEventCallback<short>((i, m, t, s) => TrackValue(i, m, t, s));
             this.listener.SetMeasurementEventCallback<int>((i, m, t, s) => TrackValue(i, m, t, s));
+            this.listener.SetMeasurementEventCallback<long>((i, m, t, s) => TrackValue(i, m, t, s));
+            this.listener.SetMeasurementEventCallback<float>((i, m, t, s) => TrackValue(i, m, t, s));
             this.listener.SetMeasurementEventCallback<double>(TrackValue);
+            this.listener.SetMeasurementEventCallback<decimal>((i, m, t, s) => TrackValue(i, checked((double)m), t, s));
             this.listener.Start();
 
             void TrackValue(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
