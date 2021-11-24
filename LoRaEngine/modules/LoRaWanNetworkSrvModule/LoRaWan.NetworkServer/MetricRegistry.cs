@@ -25,29 +25,17 @@ namespace LoRaWan.NetworkServer
             new Dictionary<string, CustomMetric>(Registry.ToDictionary(m => m.Name, m => m), StringComparer.OrdinalIgnoreCase);
     }
 
-    internal interface IMetricExporter : IDisposable
-    {
-        void Start();
-    }
-
     internal record CustomMetric(string Name, string Description, MetricType Type, string[] Tags);
-
-    internal static class MetricExporterHelper
-    {
-        /// <summary>
-        /// Gets the tags ordered by the original order of the tags.
-        /// </summary>
-        public static string[] GetTagsInOrder(IEnumerable<string> tagNames, ReadOnlySpan<KeyValuePair<string, object?>> tags)
-        {
-            var tagLookup = new Dictionary<string, object?>(tags.ToArray(), StringComparer.OrdinalIgnoreCase);
-            return tagNames.Select(t => tagLookup.TryGetValue(t, out var v) ? (v?.ToString() ?? string.Empty) : string.Empty).ToArray();
-        }
-    }
 
     internal enum MetricType
     {
         Counter,
         Histogram
+    }
+
+    internal interface IMetricExporter : IDisposable
+    {
+        void Start();
     }
 
     internal sealed class CompositeMetricExporter : IMetricExporter
@@ -74,6 +62,18 @@ namespace LoRaWan.NetworkServer
 
             if (this.second is { } s)
                 s.Start();
+        }
+    }
+
+    internal static class MetricExporterHelper
+    {
+        /// <summary>
+        /// Gets the tags ordered by the original order of the tags.
+        /// </summary>
+        public static string[] GetTagsInOrder(IEnumerable<string> tagNames, ReadOnlySpan<KeyValuePair<string, object?>> tags)
+        {
+            var tagLookup = new Dictionary<string, object?>(tags.ToArray(), StringComparer.OrdinalIgnoreCase);
+            return tagNames.Select(t => tagLookup.TryGetValue(t, out var v) ? (v?.ToString() ?? string.Empty) : string.Empty).ToArray();
         }
     }
 }
