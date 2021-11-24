@@ -46,7 +46,7 @@ Install Python and pip, and then the required packages:
 pip install mkdocs
 pip install mkdocs-material
 pip install mike
-pip install mkdocs-git-revision-date-localized-plugin #optional plugin
+pip install mdx_truly_sane_lists #required plugin
 ```
 
 ## Deployment
@@ -56,7 +56,7 @@ is used. This tool allows us to deploy multiple versions of the documentation.
 There is a [manual GitHub Action](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/publish-docs-new-version.yml)
 to deploy a specific version.
 
-## configuration
+## Configuration
 
 The file `mkdocs.yml` provides the main configuration for the website, such as
 color and themes, plugins and extension. The `TOC` is also defined in the config
