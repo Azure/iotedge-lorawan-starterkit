@@ -21,6 +21,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<Action<Metric, double, string[]>> trackValueMock;
         private readonly ApplicationInsightsMetricExporter applicationInsightsMetricExporter;
         private CustomMetric CounterMetric => this.registry.First(m => m.Type == MetricType.Counter);
+        private CustomMetric HistogramMetric => this.registry.First(m => m.Type == MetricType.Histogram);
 
         public ApplicationInsightsMetricExporterTests()
         {
@@ -95,6 +96,27 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                            Times.Once);
             }
 
+        }
+
+        [Fact]
+        public void ApplicationInsights_Metrics_Collection_Raises_Histogram_Metrics()
+        {
+            // arrange
+            const string gateway = "foogateway";
+            using var meter = new Meter("LoRaWan", "1.0");
+            const int value = 1;
+            var histogram = meter.CreateHistogram<int>(HistogramMetric.Name);
+
+            // act
+            this.applicationInsightsMetricExporter.Start();
+            histogram.Record(value, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)gateway));
+
+            // assert
+            this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricRegistry.Namespace
+                                                                          && m.Identifier.MetricId == HistogramMetric.Name),
+                                                       value,
+                                                       new[] { gateway }),
+                                       Times.Once);
         }
 
         [Theory]
