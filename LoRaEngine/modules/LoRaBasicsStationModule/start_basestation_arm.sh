@@ -16,6 +16,15 @@ if [[ -z "$SPI_DEV" ]] || [[ $SPI_DEV == '$LBS_SPI_DEV' ]]; then
     SPI_DEV=0
 fi
 
+if [[ -z "$FIXED_STATION_EUI" ]] || [[ $FIXED_STATION_EUI == '$LBS_FIXED_STATION_EUI' ]]; then
+    echo "No custom station EUI is set, the basic station will select an EUI"
+    sed -i 's/\"placeholder\": \"placeholder\",//g' station.conf
+else
+    echo "Basic station will start with custom EUI: $FIXED_STATION_EUI"
+    sed -i "s/\"placeholder\": \"placeholder\",/\"routerid\":\"$FIXED_STATION_EUI\",/g" station.conf
+fi
+
+
 if [[ -z "$TC_TRUST_PATH" ]]; then
     echo "No TC_TRUST_PATH detected in environment variables. Trying to check for default location."
     if [ -z "$(ls -A $DEFAULT_TC_TRUST_PATH 2> /dev/null)" ]; then
