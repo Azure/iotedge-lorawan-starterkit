@@ -8,6 +8,7 @@ namespace LoRaTools.Regions
     using System.Linq;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using LoRaWan;
 
     public class RegionCN470 : Region
     {
@@ -119,19 +120,18 @@ namespace LoRaTools.Regions
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo)
         {
-            frequency = 0;
+            if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
 
-            if (deviceJoinInfo == null)
-                return false;
+            if (!IsValidUpstreamRxpk(upstreamChannel))
+                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
+
+            frequency = 0;
 
             // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
             // over desired twin properties (set for APB devices).
             var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
 
             if (joinChannelIndex == null)
-                return false;
-
-            if (!IsValidUpstreamRxpk(upstreamChannel))
                 return false;
 
             int channelNumber;
@@ -171,24 +171,23 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region CN470.
         /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
-        /// <param name="dataRate">The upstream data rate.</param>
+        /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         /// </summary>
-        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo)
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = default)
         {
-            downstreamFrequency = 0;
+            if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
 
-            if (deviceJoinInfo == null)
-                return false;
+            if (!IsValidUpstreamFrequency(upstreamFrequency))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
+
+            downstreamFrequency = 0;
 
             // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
             // over desired twin properties (set for APB devices).
             var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
 
             if (joinChannelIndex == null)
-                return false;
-
-            if (!IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
                 return false;
 
             int channelNumber;
