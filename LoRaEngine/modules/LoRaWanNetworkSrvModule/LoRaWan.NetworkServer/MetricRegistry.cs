@@ -21,7 +21,8 @@ namespace LoRaWan.NetworkServer
             JoinRequests
         };
 
-        public static readonly IDictionary<string, CustomMetric> RegistryLookup = new Dictionary<string, CustomMetric>(Registry.ToDictionary(m => m.Name, m => m), StringComparer.OrdinalIgnoreCase);
+        public static readonly IDictionary<string, CustomMetric> RegistryLookup =
+            new Dictionary<string, CustomMetric>(Registry.ToDictionary(m => m.Name, m => m), StringComparer.OrdinalIgnoreCase);
     }
 
     internal interface IMetricExporter : IDisposable
