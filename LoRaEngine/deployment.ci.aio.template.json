@@ -135,6 +135,9 @@
               },
               "RESET_PIN":{
                 "value": "$RESET_PIN"
+              },
+              "FIXED_STATION_EUI":{
+                "value": "$LBS_FIXED_STATION_EUI"
               }
             },
             "version": "1.0",
