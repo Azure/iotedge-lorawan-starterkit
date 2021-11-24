@@ -9,7 +9,6 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Linq;
-    using Prometheus;
 
     internal static class MetricRegistry
     {
