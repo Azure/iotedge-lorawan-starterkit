@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer
 
     /// <summary>
     /// Exposes metrics raised via System.Diagnostics.Metrics and which are registered in MetricRegistry on a Prometheus endpoint.
+    /// Only non-observable metrics are currently supported.
     /// </summary>
     internal class PrometheusMetricExporter : RegistryMetricExporter
     {

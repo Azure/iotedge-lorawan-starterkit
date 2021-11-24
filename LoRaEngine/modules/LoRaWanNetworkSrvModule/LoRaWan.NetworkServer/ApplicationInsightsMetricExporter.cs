@@ -14,6 +14,7 @@ namespace LoRaWan.NetworkServer
 
     /// <summary>
     /// Exports System.Diagnostics.Metrics metrics which are registered in MetricRegistry to Application Insights.
+    /// Only non-observable metrics are currently supported.
     /// </summary>
     internal class ApplicationInsightsMetricExporter : RegistryMetricExporter
     {
