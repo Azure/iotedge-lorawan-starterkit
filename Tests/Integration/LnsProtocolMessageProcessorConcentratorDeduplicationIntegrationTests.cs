@@ -32,7 +32,6 @@ namespace LoRaWan.Tests.Integration
             @"{msgtype: 'jreq', MHdr:0, JoinEui: '47-62-78-C8-E5-D2-C4-B5', DevEui:'85-27-C1-DF-EE-A4-16-9E', DevNonce: 54360, MIC: -1056607131, RefTime: 0.000000, DR: 5, Freq: 868500000, upinfo: { rctx: 0, xtime: 68116944372333395, gpstime: 0, fts: -1, rssi: -54, snr: 7.25, rxtime: 1636131668.725738}}";
 
         private IHost testHost;
-        private WebSocket socket1, socket2;
 
         public Task InitializeAsync() => Task.CompletedTask;
 
@@ -75,15 +74,15 @@ namespace LoRaWan.Tests.Integration
 
             // act
             var validJsonMessage = JsonUtil.Strictify(message);
-            this.socket1 = await wsClient.ConnectAsync(wsUri1, CancellationToken.None);
-            this.socket2 = await wsClient.ConnectAsync(wsUri2, CancellationToken.None);
+            using var socket1 = await wsClient.ConnectAsync(wsUri1, CancellationToken.None);
+            using var socket2 = await wsClient.ConnectAsync(wsUri2, CancellationToken.None);
 
-            await this.socket1.SendAsync(Encoding.UTF8.GetBytes(validJsonMessage), WebSocketMessageType.Text, true, default);
-            await this.socket2.SendAsync(Encoding.UTF8.GetBytes(validJsonMessage), WebSocketMessageType.Text, true, default);
+            await socket1.SendAsync(Encoding.UTF8.GetBytes(validJsonMessage), WebSocketMessageType.Text, true, default);
+            await socket2.SendAsync(Encoding.UTF8.GetBytes(validJsonMessage), WebSocketMessageType.Text, true, default);
 
             await Task.Delay(10); // adding a small delay to ensure messages are sent before closing the socket
-            await this.socket1.CloseAsync(WebSocketCloseStatus.NormalClosure, "Byebye", default);
-            await this.socket2.CloseAsync(WebSocketCloseStatus.NormalClosure, "Byebye", default);
+            await socket1.CloseAsync(WebSocketCloseStatus.NormalClosure, "Byebye", default);
+            await socket2.CloseAsync(WebSocketCloseStatus.NormalClosure, "Byebye", default);
 
             // assert
             Assert.Equal(expectedMessagesUpstream, dispatcherCounter);
@@ -91,9 +90,6 @@ namespace LoRaWan.Tests.Integration
 
         public async Task DisposeAsync()
         {
-            this.socket1?.Dispose();
-            this.socket2?.Dispose();
-
             await this.testHost?.StopAsync();
             this.testHost?.Dispose();
         }
