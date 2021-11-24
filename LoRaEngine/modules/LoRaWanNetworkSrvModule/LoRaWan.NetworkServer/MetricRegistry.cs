@@ -74,7 +74,17 @@ namespace LoRaWan.NetworkServer
         public static string[] GetTagsInOrder(IEnumerable<string> tagNames, ReadOnlySpan<KeyValuePair<string, object?>> tags)
         {
             var tagLookup = new Dictionary<string, object?>(tags.ToArray(), StringComparer.OrdinalIgnoreCase);
-            return tagNames.Select(t => tagLookup.TryGetValue(t, out var v) ? (v?.ToString() ?? string.Empty) : string.Empty).ToArray();
+            return tagNames.Select(t => GetNonEmptyTagValue(t, tagLookup)).ToArray();
+            static string GetNonEmptyTagValue(string tag, IDictionary<string, object?> tagLookup)
+            {
+                if (tagLookup.TryGetValue(tag, out var tagValue))
+                {
+                    var tagString = tagValue?.ToString();
+                    if (!string.IsNullOrEmpty(tagString)) return tagString;
+                }
+
+                throw new LoRaProcessingException($"Tag '{tag}' is not defined.", LoRaProcessingErrorCode.TagNotSet);
+            }
         }
     }
 
