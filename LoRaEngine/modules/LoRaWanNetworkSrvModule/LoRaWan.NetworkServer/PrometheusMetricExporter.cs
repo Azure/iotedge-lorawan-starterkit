@@ -26,8 +26,8 @@ namespace LoRaWan.NetworkServer
         internal PrometheusMetricExporter(IDictionary<string, CustomMetric> registryLookup)
             : base(registryLookup)
         {
-            this.counters = GetMetricsFromRegistry(MetricType.Counter, m => Metrics.CreateCounter(m.Name, m.Description));
-            this.histograms = GetMetricsFromRegistry(MetricType.Histogram, m => Metrics.CreateHistogram(m.Name, m.Description));
+            this.counters = GetMetricsFromRegistry(MetricType.Counter, m => Metrics.CreateCounter(m.Name, m.Description, m.Tags));
+            this.histograms = GetMetricsFromRegistry(MetricType.Histogram, m => Metrics.CreateHistogram(m.Name, m.Description, m.Tags));
         }
 
         private IDictionary<string, T> GetMetricsFromRegistry<T>(MetricType metricType, Func<CustomMetric, T> factory) =>
