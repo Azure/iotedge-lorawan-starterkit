@@ -195,7 +195,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     break;
                 case LnsMessageType.JoinRequest:
                     LogReceivedMessage(this.logger, "jreq", json, null);
-                    JoinRequestCounter.Add(1, new[] { KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)stationEui) });
                     try
                     {
                         var jreq = LnsData.JoinRequestFrameReader.Read(json);
@@ -204,6 +203,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         {
                             break;
                         }
+
+                        JoinRequestCounter.Add(1, new[] { KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)stationEui) });
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
