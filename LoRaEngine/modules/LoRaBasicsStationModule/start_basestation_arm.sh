@@ -18,10 +18,10 @@ fi
 
 if [[ -z "$FIXED_STATION_EUI" ]] || [[ $FIXED_STATION_EUI == '$LBS_FIXED_STATION_EUI' ]]; then
     echo "No custom station EUI is set, the basic station will select an EUI"
-    sed -i 's/\"placeholder\": \"placeholder\",//g' station.conf
+    sed -i 's/\"routerIdPlaceholder\": \"routerIdPlaceholder\",//g' station.conf
 else
     echo "Basic station will start with custom EUI: $FIXED_STATION_EUI"
-    sed -i "s/\"placeholder\": \"placeholder\",/\"routerid\":\"$FIXED_STATION_EUI\",/g" station.conf
+    sed -i "s/\"routerIdPlaceholder\": \"routerIdPlaceholder\",/\"routerid\":\"$FIXED_STATION_EUI\",/g" station.conf
 fi
 
 
