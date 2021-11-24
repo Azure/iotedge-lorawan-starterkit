@@ -203,6 +203,7 @@ jobs:
         uses: ./.github/actions/deployedge
         id: deploy_edge
         env:
+          LBS_FIXED_STATION_EUI: ${{ secrets.LBS_FIXED_STATION_EUI }}
           IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
           DEVICE_ID: ${{ secrets.DEVICE_ID }}
           IOT_EDGE_DEPLOYMENT_ID: ${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}
@@ -278,6 +279,7 @@ jobs:
           IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
           DEVICE_ID: ${{ secrets.DEVICE_ID }}
           IOT_EDGE_DEPLOYMENT_ID: ${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}
+          LBS_FIXED_STATION_EUI: ${{ secrets.LBS_FIXED_STATION_EUI }}
         with:
           deployment_file_name: '${{ secrets.DEPLOYMENT_FILE_NAME }}'
           architecture: '${{ secrets.ARCHITECTURE }}'

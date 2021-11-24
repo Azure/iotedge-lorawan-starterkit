@@ -11,6 +11,14 @@ else
     echo "Finished resetting the pin"
 fi
 
+if [[ -z "$FIXED_STATION_EUI" ]] || [[ $FIXED_STATION_EUI == '$LBS_FIXED_STATION_EUI' ]]; then
+    echo "No custom station EUI is set, the basic station will select an EUI"
+    sed -i 's/\"routerIdPlaceholder\": \"routerIdPlaceholder\",//g' station.conf
+else
+    echo "Basic station will start with custom EUI: $FIXED_STATION_EUI"
+    sed -i "s/\"routerIdPlaceholder\": \"routerIdPlaceholder\",/\"routerid\":\"$FIXED_STATION_EUI\",/g" station.conf
+fi
+
 
 if [[ -z "$SPI_DEV" ]] || [[ $SPI_DEV == '$LBS_SPI_DEV' ]]; then
     echo "No custom SPI dev set up, defaulting to spi dev 0"
