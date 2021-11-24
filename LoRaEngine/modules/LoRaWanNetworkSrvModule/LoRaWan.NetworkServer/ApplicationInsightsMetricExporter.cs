@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal class ApplicationInsightsMetricExporter : RegistryMetricExporter
     {
-        private readonly IDictionary<string, MetricIdentifier> metricRegistry;
+        private readonly IDictionary<string, (Metric, MetricIdentifier)> metricRegistry;
 
         private readonly TelemetryClient telemetryClient;
 
@@ -28,16 +28,20 @@ namespace LoRaWan.NetworkServer
             : base(registryLookup)
         {
             this.telemetryClient = telemetryClient;
-            this.metricRegistry = registryLookup.ToDictionary(m => m.Key, m => new MetricIdentifier(MetricRegistry.Namespace, m.Value.Name, m.Value.Tags));
+            this.metricRegistry = registryLookup.ToDictionary(m => m.Key, m =>
+            {
+                var id = new MetricIdentifier(MetricRegistry.Namespace, m.Value.Name, m.Value.Tags);
+                return (this.telemetryClient.GetMetric(id), id);
+            });
         }
 
         protected override void TrackValue(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
         {
-            if (this.metricRegistry.TryGetValue(instrument.Name, out var metricIdentifier))
+            if (this.metricRegistry.TryGetValue(instrument.Name, out var value))
             {
-                var m = this.telemetryClient.GetMetric(metricIdentifier);
-                var tagNames = metricIdentifier.GetDimensionNames().ToArray() ?? Array.Empty<string>();
-                TrackValue(m, measurement, MetricExporterHelper.GetTagsInOrder(tagNames, tags));
+                var (metric, identifier) = value;
+                var tagNames = identifier.GetDimensionNames().ToArray() ?? Array.Empty<string>();
+                TrackValue(metric, measurement, MetricExporterHelper.GetTagsInOrder(tagNames, tags));
             }
         }
 
