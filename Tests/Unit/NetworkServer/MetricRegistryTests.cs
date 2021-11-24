@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Linq;
     using LoRaWan.NetworkServer;
     using Moq;
     using Xunit;
@@ -19,6 +20,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public MetricRegistryTests()
         {
             this.meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
+        }
+
+        [Fact]
+        public void CustomMetric_Field_Must_Be_Registered_In_Registry()
+        {
+            var customMetricFields = typeof(MetricRegistry).GetFields().Where(f => f.FieldType == typeof(CustomMetric)).Select(f => f.Name).ToList();
+            Assert.Equal(customMetricFields.Count, customMetricFields.Intersect(MetricRegistry.RegistryLookup.Keys).Count());
         }
 
         [Fact]
