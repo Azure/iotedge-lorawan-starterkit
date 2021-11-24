@@ -16,7 +16,7 @@ namespace LoRaWan
     /// previously used DevNonce, the network server rejects the Join-request and does not allow the
     /// end device to register with the network.
     /// </remarks>
-    public readonly struct DevNonce : IEquatable<DevNonce>, IComparable<DevNonce>
+    public readonly record struct DevNonce : IComparable<DevNonce>
     {
         public const int Size = sizeof(ushort);
 
@@ -28,14 +28,7 @@ namespace LoRaWan
         public ushort AsUInt16 => this.value;
 #pragma warning restore IDE0032 // Use auto property
 
-        public bool Equals(DevNonce other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is DevNonce other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
-
-        public static bool operator ==(DevNonce left, DevNonce right) => left.Equals(right);
-        public static bool operator !=(DevNonce left, DevNonce right) => !left.Equals(right);
 
         public int CompareTo(DevNonce other) => this.value.CompareTo(other.value);
 

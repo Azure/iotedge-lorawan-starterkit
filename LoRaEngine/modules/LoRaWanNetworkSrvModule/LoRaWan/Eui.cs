@@ -18,7 +18,7 @@ namespace LoRaWan
     /// <para>
     /// EUI are 8 bytes multi-octet fields and are transmitted as little endian.</para>
     /// </remarks>
-    public partial struct DevEui { }
+    public partial record struct DevEui { }
 
     /// <summary>
     /// Global application ID in IEEE EUI-64 (64-bit Extended Unique Identifier) address space
@@ -32,7 +32,7 @@ namespace LoRaWan
     /// <para>
     /// EUI are 8 bytes multi-octet fields and are transmitted as little endian.</para>
     /// </remarks>
-    public partial struct JoinEui { }
+    public partial record struct JoinEui { }
 
     /// <summary>
     /// ID in IEEE EUI-64 (64-bit Extended Unique Identifier) address space that uniquely identifies
@@ -41,7 +41,7 @@ namespace LoRaWan
     /// <remarks>
     /// EUI are 8 bytes multi-octet fields and are transmitted as little endian.
     /// </remarks>
-    public partial struct StationEui { }
+    public partial record struct StationEui { }
 
     internal static class Eui
     {

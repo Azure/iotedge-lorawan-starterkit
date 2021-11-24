@@ -12,7 +12,7 @@ namespace LoRaWan
 {
     using System;
 
-    readonly partial struct AppKey : IEquatable<AppKey>
+    readonly partial record struct AppKey
     {
         public const int Size = Data128.Size;
 
@@ -20,14 +20,7 @@ namespace LoRaWan
 
         AppKey(Data128 value) => this.value = value;
 
-        public bool Equals(AppKey other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is AppKey other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString();
-
-        public static bool operator ==(AppKey left, AppKey right) => left.Equals(right);
-        public static bool operator !=(AppKey left, AppKey right) => !left.Equals(right);
 
         public static AppKey Parse(ReadOnlySpan<char> input) =>
             TryParse(input, out var result) ? result : throw new FormatException();
@@ -55,7 +48,7 @@ namespace LoRaWan
         public Span<byte> Write(Span<byte> buffer) => this.value.Write(buffer);
     }
 
-    readonly partial struct AppSessionKey : IEquatable<AppSessionKey>
+    readonly partial record struct AppSessionKey
     {
         public const int Size = Data128.Size;
 
@@ -63,14 +56,7 @@ namespace LoRaWan
 
         AppSessionKey(Data128 value) => this.value = value;
 
-        public bool Equals(AppSessionKey other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is AppSessionKey other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString();
-
-        public static bool operator ==(AppSessionKey left, AppSessionKey right) => left.Equals(right);
-        public static bool operator !=(AppSessionKey left, AppSessionKey right) => !left.Equals(right);
 
         public static AppSessionKey Parse(ReadOnlySpan<char> input) =>
             TryParse(input, out var result) ? result : throw new FormatException();
@@ -98,7 +84,7 @@ namespace LoRaWan
         public Span<byte> Write(Span<byte> buffer) => this.value.Write(buffer);
     }
 
-    readonly partial struct NetworkSessionKey : IEquatable<NetworkSessionKey>
+    readonly partial record struct NetworkSessionKey
     {
         public const int Size = Data128.Size;
 
@@ -106,14 +92,7 @@ namespace LoRaWan
 
         NetworkSessionKey(Data128 value) => this.value = value;
 
-        public bool Equals(NetworkSessionKey other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is NetworkSessionKey other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString();
-
-        public static bool operator ==(NetworkSessionKey left, NetworkSessionKey right) => left.Equals(right);
-        public static bool operator !=(NetworkSessionKey left, NetworkSessionKey right) => !left.Equals(right);
 
         public static NetworkSessionKey Parse(ReadOnlySpan<char> input) =>
             TryParse(input, out var result) ? result : throw new FormatException();

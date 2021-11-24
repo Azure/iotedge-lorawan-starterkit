@@ -36,58 +36,6 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Fact]
-        public void Equals_Returns_True_When_Value_Equals()
-        {
-            var other = new MacHeader(128);
-            Assert.True(this.confirmedDataDown.Equals(other));
-        }
-
-        [Fact]
-        public void Equals_Returns_False_When_Value_Is_Different()
-        {
-            var other = this.unconfirmedDataUp;
-            Assert.False(this.confirmedDataDown.Equals(other));
-        }
-
-        [Fact]
-        public void Equals_Returns_False_When_Other_Type_Is_Different()
-        {
-            Assert.False(this.confirmedDataDown.Equals(new object()));
-        }
-
-        [Fact]
-        public void Equals_Returns_False_When_Other_Type_Is_Null()
-        {
-            Assert.False(this.confirmedDataDown.Equals(null));
-        }
-
-        [Fact]
-        public void Op_Equality_Returns_True_When_Values_Equal()
-        {
-            var other = new MacHeader(128);
-            Assert.True(this.confirmedDataDown == other);
-        }
-
-        [Fact]
-        public void Op_Equality_Returns_False_When_Values_Differ()
-        {
-            Assert.False(this.confirmedDataDown == this.unconfirmedDataUp);
-        }
-
-        [Fact]
-        public void Op_Inequality_Returns_False_When_Values_Equal()
-        {
-            var other = new MacHeader(128);
-            Assert.False(this.confirmedDataDown != other);
-        }
-
-        [Fact]
-        public void Op_Inequality_Returns_True_When_Values_Differ()
-        {
-            Assert.True(this.confirmedDataDown != this.unconfirmedDataUp);
-        }
-
-        [Fact]
         public void ToString_Returns_Hex_String()
         {
             Assert.Equal("80", this.confirmedDataDown.ToString());
