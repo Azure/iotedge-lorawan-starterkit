@@ -67,8 +67,8 @@ namespace LoRaWan.NetworkServer
         internal LoRaDeviceRegistry(NetworkServerConfiguration configuration,
                                     IMemoryCache cache,
                                     LoRaDeviceAPIServiceBase loRaDeviceAPIService,
-                                    ILoRaDeviceFactory deviceFactory)
-            : this(configuration, cache, loRaDeviceAPIService, deviceFactory,
+                                    ILoRaDeviceFactory deviceFactory, LoRaDeviceCache deviceCache)
+            : this(configuration, cache, loRaDeviceAPIService, deviceFactory, deviceCache,
                    NullLoggerFactory.Instance, NullLogger<LoRaDeviceRegistry>.Instance)
         { }
 

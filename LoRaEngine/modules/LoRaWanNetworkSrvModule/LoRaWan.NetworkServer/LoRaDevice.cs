@@ -406,11 +406,11 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                    if (LoRaRegion == LoRaRegionType.NotSet)
-                    {
-                        this.logger.LogError($"invalid region value: {regionValue}");
-                    }
+                if (LoRaRegion == LoRaRegionType.NotSet)
+                {
+                    this.logger.LogError($"invalid region value: {regionValue}");
                 }
+            }
 
             //  We are prioritizing the choice of the join channel from reported properties (set for OTAA devices)
             //  over the manually provisioned channel (set in desired properties for ABP devices).

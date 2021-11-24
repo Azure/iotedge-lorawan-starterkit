@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
@@ -31,7 +30,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 LogLevel = "Debug",
             };
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
-            this.connectionManager = new LoRaDeviceClientConnectionManager(this.memoryCache);
+            this.connectionManager = new LoRaDeviceClientConnectionManager(this.memoryCache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
         }
 
         public void Dispose()
@@ -340,7 +339,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             VerifyFailedReason(loraRequestMock, reason);
         }
 
-        private static Mock<LoRaDeviceCache> CreateDeviceCacheMock() => new Mock<LoRaDeviceCache>(new LoRaDeviceCacheOptions { ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration());
+        private static Mock<LoRaDeviceCache> CreateDeviceCacheMock() => new Mock<LoRaDeviceCache>(new LoRaDeviceCacheOptions { ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration(), NullLogger<LoRaDeviceCache>.Instance);
 
         private static void VerifyFailedReason(Mock<LoRaRequest> request, LoRaDeviceRequestFailedReason reason) =>
             request.Verify(x => x.NotifyFailed(reason, It.IsAny<Exception>()), Times.Once);
@@ -366,7 +365,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                   ILoRaDeviceFactory deviceFactory,
                                                   LoRaDeviceCache deviceCache)
 #pragma warning disable CA2000 // ownership transferred
-                : base(null, loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache, null)
+                : base(null, loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache, null, NullLogger<DeviceLoaderSynchronizer>.Instance)
 #pragma warning restore CA2000
             { }
 
@@ -427,7 +426,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                   LoRaDeviceCache deviceCache = null,
                                                   HashSet<ILoRaDeviceInitializer> initializers = null)
 #pragma warning disable CA2000 // ownership transferred
-                : base(devAddr, loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache ?? LoRaDeviceCacheDefault.CreateDefault(), initializers)
+                : base(devAddr, loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache ?? LoRaDeviceCacheDefault.CreateDefault(), initializers, NullLogger<DeviceLoaderSynchronizer>.Instance)
 #pragma warning restore CA2000
             { }
 

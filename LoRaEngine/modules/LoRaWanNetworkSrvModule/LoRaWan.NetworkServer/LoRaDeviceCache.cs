@@ -21,10 +21,11 @@ namespace LoRaWan.NetworkServer
         private readonly ConcurrentDictionary<string, LoRaDevice> euiCache;
         private readonly object syncLock = new object();
         private readonly NetworkServerConfiguration configuration;
+        private readonly ILogger<LoRaDeviceCache> logger;
         private CancellationTokenSource? ctsDispose;
         private readonly StatisticsTracker statisticsTracker = new StatisticsTracker();
 
-        protected LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, CancellationToken externalRefreshCancellationToken)
+        protected LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, ILogger<LoRaDeviceCache> logger, CancellationToken externalRefreshCancellationToken)
         {
             this.options = options;
             this.devAddrCache = new ConcurrentDictionary<string, ConcurrentDictionary<string, LoRaDevice>>();
@@ -34,10 +35,11 @@ namespace LoRaWan.NetworkServer
             _ = RefreshCacheAsync(this.ctsDispose.Token);
 
             this.configuration = configuration;
+            this.logger = logger;
         }
 
-        public LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration)
-            : this(options, configuration, CancellationToken.None)
+        public LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, ILogger<LoRaDeviceCache> logger)
+            : this(options, configuration, logger, CancellationToken.None)
         { }
 
         protected virtual void OnRefresh() { }
@@ -102,7 +104,7 @@ namespace LoRaWan.NetworkServer
                 catch (LoRaProcessingException ex)
                 {
                     // retry on next iteration
-                    Logger.Log("Failed to refresh device." + ex.ToString(), LogLevel.Error);
+                    this.logger.LogError(ex, "Failed to refresh device.");
                 }
             }
         }
@@ -287,7 +289,7 @@ namespace LoRaWan.NetworkServer
                 }
                 this.euiCache.Clear();
                 this.devAddrCache.Clear();
-                Logger.Log($"{nameof(LoRaDeviceCache)} cleared.", LogLevel.Information);
+                this.logger.LogInformation($"{nameof(LoRaDeviceCache)} cleared.");
             }
         }
 

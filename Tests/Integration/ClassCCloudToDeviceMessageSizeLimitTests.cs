@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Integration
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
 
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache);
+            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, this.connectionManager);
 
             this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory, this.deviceCache);

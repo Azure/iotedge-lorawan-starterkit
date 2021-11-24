@@ -130,6 +130,7 @@ namespace LoRaWan.NetworkServer
 
                 foreach (var foundDevice in devices)
                 {
+                    using var scope = this.logger.BeginDeviceScope(foundDevice.DevEUI);
                     // Only create devices that does not exist in the cache
                     if (!this.loraDeviceCache.TryGetByDevEui(foundDevice.DevEUI, out var cachedDevice))
                     {
@@ -144,7 +145,7 @@ namespace LoRaWan.NetworkServer
                             // in the cache
                             refreshTasks ??= new List<Task<bool>>();
                             refreshTasks.Add(cachedDevice.InitializeAsync(this.configuration, CancellationToken.None));
-                            Logger.Log(foundDevice.DevEUI, "refreshing device to fetch DevAddr", LogLevel.Debug);
+                            this.logger.LogDebug("refreshing device to fetch DevAddr");
                         }
                     }
                 }
@@ -161,6 +162,7 @@ namespace LoRaWan.NetworkServer
                                                          && ExceptionFilterUtility.True(() => this.logger.LogError($"one or more device initializations failed: {ex}")))
                 {
                     // continue
+                    HasLoadingDeviceError = true;
                 }
             }
 
@@ -170,7 +172,7 @@ namespace LoRaWan.NetworkServer
                 {
                     if (deviceTask.IsCompletedSuccessfully)
                     {
-                        var device = deviceTask.Result;
+                        var device = await deviceTask;
                         // run initializers
                         InitializeDevice(device);
                         createdDevices.Add(device);

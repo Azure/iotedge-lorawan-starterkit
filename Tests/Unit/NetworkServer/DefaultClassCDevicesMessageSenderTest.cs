@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             
             this.cache = new MemoryCache(new MemoryCacheOptions());
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, new LoRaDeviceClientConnectionManager(this.cache));
+            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance));
 #pragma warning restore CA2000 // Dispose objects before losing scope
             this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory, this.deviceCache);
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration, this.deviceApi.Object);

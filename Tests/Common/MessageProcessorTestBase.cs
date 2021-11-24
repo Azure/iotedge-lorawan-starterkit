@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Common
 
         protected LoRaDeviceClientConnectionManager ConnectionManager { get; }
 
-        protected LoRaDeviceCache DeviceCache { get; } = new LoRaDeviceCache(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration { GatewayID = MessageProcessorTestBase.ServerGatewayID });
+        protected LoRaDeviceCache DeviceCache { get; } = new LoRaDeviceCache(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration { GatewayID = MessageProcessorTestBase.ServerGatewayID }, NullLogger<LoRaDeviceCache>.Instance);
 
         public MessageProcessorTestBase()
         {
@@ -72,7 +72,7 @@ namespace LoRaWan.Tests.Common
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
             ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
 
-            var requestHandler = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
+            var requestHandler = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance);
 
             LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, LoRaDeviceClient.Object, ConnectionManager, DeviceCache, requestHandler);
         }

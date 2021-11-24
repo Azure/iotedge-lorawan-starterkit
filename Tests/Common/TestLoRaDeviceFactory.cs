@@ -40,7 +40,9 @@ namespace LoRaWan.Tests.Common
             : base(configuration ?? new NetworkServerConfiguration { GatewayID = MessageProcessorTestBase.ServerGatewayID },
                    requestHandler,
                    connectionManager,
-                   deviceCache)
+                   deviceCache,
+                   NullLoggerFactory.Instance,
+                   NullLogger<LoRaDeviceFactory>.Instance)
         {
             this.loRaDeviceClient = loRaDeviceClient;
         }

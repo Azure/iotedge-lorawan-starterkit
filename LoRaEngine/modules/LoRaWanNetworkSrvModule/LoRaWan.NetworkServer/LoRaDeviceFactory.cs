@@ -73,8 +73,6 @@ namespace LoRaWan.NetworkServer
                 {
                     if (!await loRaDevice.InitializeAsync(this.configuration, cancellationToken))
                     {
-                        Logger.Log(loRaDevice.DevEUI, "Failed to initialize device twins. Releaseing resources and not caching the device", LogLevel.Error);
-
                         throw new LoRaProcessingException("Failed to initialize device twins.", LoRaProcessingErrorCode.DeviceInitializationFailed);
                     }
                 }
