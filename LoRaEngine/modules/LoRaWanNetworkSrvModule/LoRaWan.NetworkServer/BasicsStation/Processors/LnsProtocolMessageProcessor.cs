@@ -27,6 +27,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private static readonly Action<ILogger, string, string, Exception> LogReceivedMessage =
             LoggerMessage.Define<string, string>(LogLevel.Information, default, "Received '{Type}' message: '{Json}'.");
         private static readonly Meter Meter = new Meter(MetricRegistry.Namespace, MetricRegistry.MetricsVersion);
+        private static readonly Counter<int> JoinRequestCounter = Meter.CreateCounter<int>(MetricRegistry.JoinRequests.Name,
+                                                                                           description: MetricRegistry.JoinRequests.Description);
+
 
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
@@ -193,8 +196,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     break;
                 case LnsMessageType.JoinRequest:
                     LogReceivedMessage(this.logger, "jreq", json, null);
-                    var counter = Meter.CreateCounter<int>(MetricRegistry.JoinRequests.Name, description: MetricRegistry.JoinRequests.Description);
-                    counter.Add(1, new[] { KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)stationEui) });
+                    JoinRequestCounter.Add(1, new[] { KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)stationEui) });
                     try
                     {
                         var jreq = LnsData.JoinRequestFrameReader.Read(json);
