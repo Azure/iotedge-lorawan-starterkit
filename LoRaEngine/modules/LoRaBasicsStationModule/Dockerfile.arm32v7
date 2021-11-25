@@ -27,5 +27,6 @@ COPY --from=build /basicstation/deps/lgw/platform-rpi/reset_lgw.sh .
 COPY --from=build2 /basicstation/build-rpi-std/bin/station /bin/station.spispeed2
 COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basestation_arm.sh .
+COPY LICENSE .
 RUN chmod +x ./start_basestation_arm.sh
 ENTRYPOINT ["./start_basestation_arm.sh"]
