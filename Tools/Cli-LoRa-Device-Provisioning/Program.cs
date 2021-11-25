@@ -174,7 +174,7 @@ namespace LoRaWan.Tools.CLI
                 }
                 catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"Uploading certificate bundle failed because bundle already exists. Please use the 'update' verb to update an existing certificate.");
+                    StatusConsole.WriteLogLine(MessageType.Error, $"Uploading certificate bundle failed because bundle already exists. Please use the 'update' verb to update existing concentrator configuration.");
                     return false;
                 }
                 catch (RequestFailedException ex)
