@@ -939,7 +939,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return isValid;
         }
 
-        public Twin CreateConcentratorTwin(AddOptions opts, int crcChecksum, Uri certificateBundleLocation)
+        public Twin CreateConcentratorTwin(AddOptions opts, uint crcChecksum, Uri certificateBundleLocation)
         {
             var twinProperties = new TwinProperties();
             Console.WriteLine();

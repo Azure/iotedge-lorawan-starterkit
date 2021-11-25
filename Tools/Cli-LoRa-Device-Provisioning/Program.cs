@@ -4,6 +4,7 @@
 namespace LoRaWan.Tools.CLI
 {
     using System;
+    using System.Buffers.Binary;
     using System.IO;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -185,7 +186,7 @@ namespace LoRaWan.Tools.CLI
                 try
                 {
                     var crc = new Force.Crc32.Crc32Algorithm();
-                    var crcHash = BitConverter.ToInt32(crc.ComputeHash(Encoding.UTF8.GetBytes(certificateContent)));
+                    var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(Encoding.UTF8.GetBytes(certificateContent)));
                     var twin = iotDeviceHelper.CreateConcentratorTwin(opts, crcHash, blobClient.Uri);
                     return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
                 }
