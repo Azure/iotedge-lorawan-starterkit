@@ -57,9 +57,13 @@ namespace LoRaWan.NetworkServer
 
             OnRefresh();
 
+            // remove any devices that were not seen for the configured amount of time
             RemoveExpiredDevices();
+
+            // refresh the devices that were not refreshed within the configured time window
             await RefreshDevicesAsync(cancellationToken);
 
+            // re-schedule
             _ = RefreshCacheAsync(cancellationToken);
         }
 
@@ -229,15 +233,23 @@ namespace LoRaWan.NetworkServer
                 if (this.devAddrCache.TryGetValue(devAddr, out var devices))
                 {
                     loRaDevice = devices.Values.FirstOrDefault(x => !string.IsNullOrEmpty(x.NwkSKey) && ValidateMic(x, payload));
-                    if (loRaDevice is { })
-                        TrackHit(loRaDevice);
-                }
-                else
-                {
-                    TrackMiss();
                 }
             }
+
+            TrackCacheStats(loRaDevice);
             return loRaDevice != null;
+        }
+
+        private void TrackCacheStats(LoRaDevice? device)
+        {
+            if (device is { })
+            {
+                TrackHit(device);
+            }
+            else
+            {
+                TrackMiss();
+            }
         }
 
         protected virtual bool ValidateMic(LoRaDevice loRaDevice, LoRaPayload loRaPayload)
@@ -251,15 +263,10 @@ namespace LoRaWan.NetworkServer
         {
             lock (this.syncLock)
             {
-                if (this.euiCache.TryGetValue(devEUI, out loRaDevice))
-                {
-                    TrackHit(loRaDevice);
-                }
+                _ = this.euiCache.TryGetValue(devEUI, out loRaDevice);
             }
 
-            if (loRaDevice == null)
-                TrackMiss();
-
+            TrackCacheStats(loRaDevice);
             return loRaDevice != null;
         }
 
