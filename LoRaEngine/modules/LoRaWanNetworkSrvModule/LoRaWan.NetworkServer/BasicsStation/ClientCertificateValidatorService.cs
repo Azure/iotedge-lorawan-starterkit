@@ -39,19 +39,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
             StationEui stationEui;
             if (Regex.Match(commonName, "([a-fA-F0-9]{2}[-:]?){8}") is { } regex && regex.Success)
             {
-                try
-                {
-                    stationEui = StationEui.Parse(regex.Value);
-                }
-                catch (FormatException)
-                {
-                    this.logger.LogError("{Class}: Tried to parse {RegexValue}, but it is not a proper StationEui field.", nameof(ClientCertificateValidatorService), commonName);
-                    return false;
-                }
+                stationEui = StationEui.Parse(regex.Value);
             }
             else
             {
-                this.logger.LogError("{Class}: Did not find a possible StationEui in '{CommonName}'.", nameof(ClientCertificateValidatorService), commonName);
+                this.logger.LogError("{Class}: Could not find a possible StationEui in '{CommonName}'.", nameof(ClientCertificateValidatorService), commonName);
                 return false;
             }
 
