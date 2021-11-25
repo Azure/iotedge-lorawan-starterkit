@@ -111,6 +111,12 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public string LnsServerPfxPassword { get; private set; }
 
+        /// <summary>
+        /// Specifies the client certificate mode with which the server should be run
+        /// Allowed values can be found at https://docs.microsoft.com/dotnet/api/microsoft.aspnetcore.server.kestrel.https.clientcertificatemode?view=aspnetcore-6.0
+        /// </summary>
+        public string ClientCertificateMode { get; private set; }
+
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
         {
@@ -142,6 +148,7 @@ namespace LoRaWan.NetworkServer
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
             config.LnsServerPfxPath = envVars.GetEnvVar("LNS_SERVER_PFX_PATH", string.Empty);
             config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
+            config.ClientCertificateMode = envVars.GetEnvVar("CLIENT_CERTIFICATE_MODE", string.Empty);
 
             return config;
         }

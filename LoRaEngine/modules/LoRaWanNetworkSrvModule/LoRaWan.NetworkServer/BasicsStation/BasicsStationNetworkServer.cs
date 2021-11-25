@@ -43,10 +43,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                                                                     configuration.LnsServerPfxPassword,
                                                                                                     X509KeyStorageFlags.DefaultKeySet);
                                                    var clientCertValidator = config.ApplicationServices.GetRequiredService<ClientCertificateValidator>();
-                                                   // Following ClientCertificateValidation is synchronous in ASP.NET Core
-                                                   https.ClientCertificateValidation = clientCertValidator.Validate;
-                                                   //TO DO: Set environment variable to either fully disable or require client certificates
-                                                   https.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
+
+                                                   if (Enum.TryParse<ClientCertificateMode>(configuration.ClientCertificateMode, out var requiredClientCertificateMode)
+                                                       && requiredClientCertificateMode is not ClientCertificateMode.NoCertificate)
+                                                   {
+                                                       https.ClientCertificateMode = requiredClientCertificateMode;
+                                                       https.ClientCertificateValidation = clientCertValidator.Validate;
+                                                   }
                                                });
                                            }
                                        })
