@@ -58,22 +58,19 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Indicates if the payload is an confirmation message acknowledgement.
         /// </summary>
-        public bool IsUpwardAck() => (Fctrl.Span[0] & (byte)LoRaMessage.Fctrl.Ack) == 32;
+        public bool IsUpwardAck() => FrameControl.Ack;
 
         /// <summary>
         /// Gets a value indicating whether indicates if the payload is an confirmation message acknowledgement.
         /// </summary>
-        public bool IsAdrReq => (Fctrl.Span[0] & 0b01000000) > 0;
+        public bool IsAdrReq => FrameControl.AdrAckRequested;
 
         /// <summary>
         /// Gets a value indicating whether the device has ADR enabled.
         /// </summary>
-        public bool IsAdrEnabled => (Fctrl.Span[0] & 0b10000000) > 0;
+        public bool IsAdrEnabled => FrameControl.Adr;
 
-        /// <summary>
-        /// Gets or sets frame control octet.
-        /// </summary>
-        public Memory<byte> Fctrl { get; set; }
+        public FrameControl FrameControl { get; set; }
 
         /// <summary>
         /// Gets or sets frame Counter.
@@ -140,8 +137,8 @@ namespace LoRaTools.LoRaMessage
 
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // Fctrl Frame Control Octet
-            Fctrl = new Memory<byte>(inputMessage, 5, 1);
-            var foptsSize = Fctrl.Span[0] & 0x0f;
+            FrameControl = new FrameControl(inputMessage[5]);
+            var foptsSize = FrameControl.OptionsLength;
             // Fcnt
             Fcnt = new Memory<byte>(inputMessage, 6, 2);
             // FOpts
@@ -218,8 +215,8 @@ namespace LoRaTools.LoRaMessage
                 fctrl[0] = BitConverter.GetBytes(fctrl[0] + fOpts.Length)[0];
             }
 
-            Fctrl = new Memory<byte>(RawMessage, 5, 1);
             Array.Copy(fctrl, 0, RawMessage, 5, 1);
+            FrameControl = new FrameControl(RawMessage[5]);
             Fcnt = new Memory<byte>(RawMessage, 6, 2);
             Array.Copy(fcnt, 0, RawMessage, 6, 2);
             if (fOpts != null)
@@ -445,7 +442,7 @@ namespace LoRaTools.LoRaMessage
             DevAddr.Span.Reverse();
             messageArray.AddRange(DevAddr.ToArray());
             DevAddr.Span.Reverse();
-            messageArray.AddRange(Fctrl.ToArray());
+            messageArray.Add((byte)FrameControl);
             messageArray.AddRange(Fcnt.ToArray());
             if (!Fopts.Span.IsEmpty)
             {

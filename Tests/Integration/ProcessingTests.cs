@@ -379,7 +379,7 @@ namespace LoRaWan.Tests.Integration
 
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
             unconfirmedMessagePayload.Fopts = ConversionHelper.StringToByteArray(macCommand);
-            unconfirmedMessagePayload.Fctrl = new byte[1] { (byte)unconfirmedMessagePayload.Fopts.Length };
+            unconfirmedMessagePayload.FrameControl = new FrameControl(FCtrlFlags.None, unconfirmedMessagePayload.Fopts.Length);
             // only use nwkskey
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.NwkSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var request = CreateWaitableRequest(rxpk);

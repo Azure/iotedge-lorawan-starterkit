@@ -39,6 +39,8 @@ namespace LoRaWan
                                          | (optionsLength is >= 0 and <= 15 ? optionsLength : throw new ArgumentOutOfRangeException(nameof(optionsLength), optionsLength, null)))))
         { }
 
+        public static explicit operator byte(FrameControl frameControl) => frameControl.value;
+
         private bool HasFlags(FCtrlFlags flags) => ((FCtrlFlags)this.value & flags) == flags;
 
         /// <summary>
