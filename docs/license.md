@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 
---- For the LoRa Basics™ Station related code ---
+--- For the LoRa Basics™ Station related binaries ---
 
 --- Revised 3-Clause BSD License ---
 Copyright Semtech Corporation 2020. All rights reserved.
