@@ -13,9 +13,7 @@ namespace LoRaWan.Tools.CLI
     using CommandLine;
     using LoRaWan.Tools.CLI.Helpers;
     using LoRaWan.Tools.CLI.Options;
-    using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json.Linq;
 
     public class Program
     {

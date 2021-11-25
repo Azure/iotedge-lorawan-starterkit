@@ -909,51 +909,48 @@ namespace LoRaWan.Tools.CLI.Helpers
             var isValid = true;
             if (string.IsNullOrEmpty(opts.StationEui))
             {
-                StatusConsole.WriteLogLine(MessageType.Error, "'Concentrator' device type has been specified but StationEui option is missing.");
-                isValid = false;
+                TrackError("'Concentrator' device type has been specified but StationEui option is missing.");
             }
             if (string.IsNullOrEmpty(opts.Region))
             {
-                StatusConsole.WriteLogLine(MessageType.Error, "'Concentrator' device type has been specified but Region option is missing.");
-                isValid = false;
+                TrackError("'Concentrator' device type has been specified but Region option is missing.");
             }
             else if (!File.Exists(Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json")))
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"'Concentrator' device type has been specified with Region '{opts.Region.ToUpperInvariant()}' but no default router config file was found.");
-                isValid = false;
+                TrackError($"'Concentrator' device type has been specified with Region '{opts.Region.ToUpperInvariant()}' but no default router config file was found.");
             }
             if (!opts.NoCups)
             {
                 if (!File.Exists(opts.CertificateBundleLocation))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but no certificate bundle was found at the specified location.");
-                    isValid = false;
+                    TrackError("CUPS is enabled but no certificate bundle was found at the specified location.");
                 }
                 if (!opts.ClientCertificateThumbprints.Any())
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but no client certificate thumbprints were specified.");
-                    isValid = false;
+                    TrackError("CUPS is enabled but no client certificate thumbprints were specified.");
                 }
                 if (opts.TcUri is null)
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but TC URI is not defined.");
-                    isValid = false;
+                    TrackError("CUPS is enabled but TC URI is not defined.");
                 }
                 else if (!opts.TcUri.Scheme.Equals("wss", StringComparison.OrdinalIgnoreCase))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but TC URI is not in wss:// protocol.");
-                    isValid = false;
+                    TrackError("CUPS is enabled but TC URI is not in wss:// protocol.");
                 }
                 if (opts.CupsUri is null)
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but CUPS URI is not defined.");
-                    isValid = false;
+                    TrackError($"CUPS is enabled but CUPS URI is not defined.");
                 }
                 else if (!opts.CupsUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but CUPS URI is not in https:// protocol.");
-                    isValid = false;
+                    TrackError("CUPS is enabled but CUPS URI is not in https:// protocol.");
                 }
+            }
+
+            void TrackError(string message)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, message);
+                isValid = false;
             }
 
             return isValid;
