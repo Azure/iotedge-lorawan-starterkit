@@ -283,12 +283,6 @@ namespace LoRaWan.Tools.CLI
 
             bool isSuccess = false;
 
-            if (string.IsNullOrEmpty(opts.DevEui))
-            {
-                StatusConsole.WriteLogLine(MessageType.Error, "Dev EUI must be defined.");
-                return false;
-            }
-
             opts = iotDeviceHelper.CleanOptions(opts as object, false) as UpdateOptions;
             opts = iotDeviceHelper.CompleteMissingUpdateOptions(opts, configurationHelper);
 
