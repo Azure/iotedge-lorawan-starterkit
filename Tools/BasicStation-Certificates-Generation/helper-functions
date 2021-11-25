@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Helper functions "ecdsaKey", "rootCA", "serverCert" and "clientcert" were inspired by following example
-# in BasicsStation official GitHub repository (https://github.com/lorabasics/basicstation/blob/master/examples/cups/prep.sh)
+# in BasicsStation official GitHub repository (https://github.com/lorabasics/basicstation/blob/v2.0.5/examples/cups/prep.sh)
 
 # --- Revised 3-Clause BSD License ---
 # Copyright Semtech Corporation 2020. All rights reserved.
