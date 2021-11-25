@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -505,6 +506,37 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.False(target.HasFrameCountChanges);
             Assert.Equal(0U, target.LastSavedFCntDown);
             Assert.Equal(0U, target.LastSavedFCntUp);
+        }
+
+        [Fact]
+        public async Task When_Updating_LastUpdate_Is_Updated()
+        {
+            var twin = TestUtils.CreateTwin(
+                desired: new Dictionary<string, object>
+                {
+                    { "AppEUI", "ABC0200000000009" },
+                    { "AppKey", "ABC02000000000000000000000000009" },
+                });
+
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
+                .ReturnsAsync(twin);
+
+            using var loRaDevice = CreateDefaultDevice();
+            var lastUpdate = loRaDevice.LastUpdate = DateTime.UtcNow - TimeSpan.FromDays(1);
+            await loRaDevice.InitializeAsync(this.configuration);
+            Assert.True(loRaDevice.LastUpdate > lastUpdate);
+        }
+
+        [Fact]
+        public async Task When_Update_Fails_LastUpdate_Is_Not_Changed()
+        {
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
+                .ThrowsAsync(new IotHubException());
+
+            using var loRaDevice = CreateDefaultDevice();
+            var lastUpdate = loRaDevice.LastUpdate = DateTime.UtcNow - TimeSpan.FromDays(1);
+            await Assert.ThrowsAsync<LoRaProcessingException>(async () => await loRaDevice.InitializeAsync(this.configuration));
+            Assert.Equal(lastUpdate, loRaDevice.LastUpdate);
         }
 
         [Fact]
