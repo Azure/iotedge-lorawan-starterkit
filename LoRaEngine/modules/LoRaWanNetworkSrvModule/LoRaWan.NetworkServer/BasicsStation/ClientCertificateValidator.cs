@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Linq;
     using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -25,35 +26,45 @@ namespace LoRaWan.NetworkServer.BasicsStation
             this.logger = logger;
         }
 
-        public async Task<bool> ValidateAsync(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors _, CancellationToken token)
+        // Following synchronous implementation is needed for ASP.NET Core ClientCertificateValidation
+        public bool Validate(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
+            ValidateAsync(certificate, chain, sslPolicyErrors, default).GetAwaiter().GetResult();
+
+        public async Task<bool> ValidateAsync(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors, CancellationToken token)
         {
             if (certificate is null) throw new ArgumentNullException(nameof(certificate));
             if (chain is null) throw new ArgumentNullException(nameof(chain));
-            var sslErrors = false;
 
             var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
             StationEui stationEui;
-            try
+            if (Regex.Match(commonName, "([a-fA-F0-9]{2}[-:]?){8}") is { } regex && regex.Success)
             {
-                stationEui = StationEui.Parse(commonName);
+                try
+                {
+                    stationEui = StationEui.Parse(regex.Value);
+                }
+                catch (FormatException)
+                {
+                    this.logger.LogError("{Class}: Tried to parse {RegexValue}, but it is not a proper StationEui field.", nameof(ClientCertificateValidator), commonName);
+                    return false;
+                }
             }
-            catch (FormatException)
+            else
             {
-                this.logger.LogError("'{CommonName}' is not a proper StationEui field.", commonName);
+                this.logger.LogError("{Class}: Did not find a possible StationEui in '{CommonName}'.", nameof(ClientCertificateValidator), commonName);
                 return false;
             }
 
-            // TO DO: We should check chain properly
+            // Logging any chain related issue, but not failing on it.
             foreach (var status in chain.ChainStatus)
             {
                 using var scope = this.logger.BeginEuiScope(stationEui);
-                this.logger.LogWarning("{Class} {Status} {StatusInformation}", nameof(ClientCertificateValidator), status.Status, status.StatusInformation);
+                this.logger.LogDebug("{Class}: {Status} {StatusInformation}", nameof(ClientCertificateValidator), status.Status, status.StatusInformation);
             }
 
-            // TO DO: Following parsing of stationEui is only working if a certificate is specifying the station eui as CN
-            var thumbprints = await this.stationConfigurationService.GetAllowedClientThumbprints(stationEui, token);
-            sslErrors = sslErrors || !thumbprints.Any(t => t.Equals(certificate.Thumbprint, StringComparison.OrdinalIgnoreCase));
-            return !sslErrors;
+            // Only validation is currently done on thumprint
+            var thumbprints = await this.stationConfigurationService.GetAllowedClientThumbprintsAsync(stationEui, token);
+            return thumbprints.Any(t => t.Equals(certificate.Thumbprint, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
