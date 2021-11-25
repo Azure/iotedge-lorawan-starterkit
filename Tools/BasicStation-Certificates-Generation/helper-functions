@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# Helper functions "ecdsaKey", "rootCA", "serverCert" and "clientcert" were inspired by following example
+# in BasicsStation official GitHub repository (https://github.com/lorabasics/basicstation/blob/v2.0.5/examples/cups/prep.sh)
+
+# --- Revised 3-Clause BSD License ---
+# Copyright Semtech Corporation 2020. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met:
+#
+#     * Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright notice,
+#       this list of conditions and the following disclaimer in the documentation
+#       and/or other materials provided with the distribution.
+#     * Neither the name of the Semtech corporation nor the names of its
+#       contributors may be used to endorse or promote products derived from this
+#       software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION. BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+usage() {
+  programName=${0##*/}
+  echo "
+Basics Station Certificate Generation CLI
+
+This CLI tool is helping Azure IoT Edge LoRaWAN Starter Kit users to generate LoRaWAN Network Server certificates and Basics Station certificates for testing secure communication between a Basics Station client and the CUPS/LNS Protocol Endpoint in Network Server.
+
+Usage: $programName type commonName [pfxPassword]
+
+Type:
+  server       Generates a server certificate
+  client       Generates a client certificate
+
+Arguments:
+  commonName   (REQUIRED) Common name for generating certificate
+  pfxPassword  (OPTIONAL) Password for .pfx file (server certificate only)
+"
+  exit 1
+}
+
+ecdsaKey() {
+    openssl ecparam -name prime256v1 -genkey | openssl ec -out $1 > /dev/null 2>&1
+}
+
+rootCA() {
+    mkdir -p $2
+    ecdsaKey $2/"${1,,}"-ca.key
+    # When using git bash, any argument starting with a forward slash is interpreted as a path.
+    # Prefixing with "//" escapes that, but openssl will then skip the first segment interpreted as '/OU'
+    # That's why first segment is '/SKIP=X'
+    openssl req -new -key $2/"${1,,}"-ca.key -out $2/"${1,,}"-ca.csr -subj "//SKIP=X/OU=StarterKit/O=StarterKit/C=CH/CN=$1 Root CA" > /dev/null 2>&1
+    openssl x509 -req -set_serial 1 -days 365 -in $2/"${1,,}"-ca.csr -signkey $2/"${1,,}"-ca.key -out $2/"${1,,}"-ca.crt > /dev/null 2>&1
+    rm $2/"${1,,}"-ca.csr
+}
+
+servercert() {
+    mkdir -p $3
+    ecdsaKey $3/$1.key
+    # When using git bash, any argument starting with a forward slash is interpreted as a path.
+    # Prefixing with "//" escapes that, but openssl will then skip the first segment interpreted as '/OU'
+    # That's why first segment is '/SKIP=X'
+    openssl req -new -key $3/$1.key -out $3/$1.csr -subj "//SKIP=X/OU=StarterKit/O=StarterKit/C=CH/CN=$1" > /dev/null 2>&1
+    openssl x509 -req -set_serial 1 -days 365 -CA $2-ca.crt -CAkey $2-ca.key -in $3/$1.csr -out $3/$1.crt > /dev/null 2>&1
+    openssl verify -CAfile $2-ca.crt $3/$1.crt && rm $3/$1.csr
+    openssl pkcs12 -export -out $3/$1.pfx -inkey $3/$1.key -in $3/$1.crt -passout pass:$5
+    rm $3/$1.key $3/$1.crt
+}
+
+clientcert() {
+    mkdir -p $3
+    ecdsaKey $3/$1.key
+    # When using git bash, any argument starting with a forward slash is interpreted as a path.
+    # Prefixing with "//" escapes that, but openssl will then skip the first segment interpreted as '/OU'
+    # That's why first segment is '/SKIP=X'
+    openssl req -new -key $3/$1.key -out $3/$1.csr -subj "//SKIP=X/OU=StarterKit/O=StarterKit/C=CH/CN=$1" > /dev/null 2>&1
+    openssl x509 -req -set_serial 1 -days 365 -CA $2-ca.crt -CAkey $2-ca.key -in $3/$1.csr -out $3/$1.crt > /dev/null 2>&1
+    openssl verify -CAfile $2-ca.crt $3/$1.crt && rm $3/$1.csr
+    cp $2-ca.crt $3/$1.trust
+    cat $3/$1.trust $3/$1.crt $3/$1.key > $3/$1.bundle
+}
