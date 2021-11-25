@@ -73,6 +73,7 @@
         "hostingPlanName": "[concat(parameters('uniqueSolutionPrefix'), 'plan')]",
         "storageAccountName": "[concat(parameters('uniqueSolutionPrefix'), 'storage')]",
         "storageAccountType": "Standard_LRS",
+        "credentialsContainerName": "stationcredentials",
         "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
         "gitUsername": "Azure",
         "functionZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.5/function-1.0.5.zip",
@@ -117,6 +118,14 @@
                 "accountType": "[variables('storageAccountType')]"
             },
             "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-06-01",
+            "name": "[format('{0}/default/{1}', variables('storageAccountName'), variables('credentialsContainerName'))]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ]
         },
         {
             "apiVersion": "2016-08-01",

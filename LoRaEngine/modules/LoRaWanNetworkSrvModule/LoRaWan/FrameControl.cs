@@ -25,7 +25,7 @@ namespace LoRaWan
     /// Frame control octet (FCtrl) found in a frame header (FHDR) for either uplink or downlink
     /// frames.
     /// </summary>
-    public readonly struct FrameControl : IEquatable<FrameControl>
+    public readonly record struct FrameControl
     {
         private const byte FOptsLenMask = 0xf;
 
@@ -72,14 +72,7 @@ namespace LoRaWan
         /// </summary>
         public int OptionsLength => this.value & 0x0f;
 
-        public bool Equals(FrameControl other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is FrameControl other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString("X2", CultureInfo.InvariantCulture);
-
-        public static bool operator ==(FrameControl left, FrameControl right) => left.Equals(right);
-        public static bool operator !=(FrameControl left, FrameControl right) => !left.Equals(right);
 
         public Span<byte> Write(Span<byte> buffer)
         {
