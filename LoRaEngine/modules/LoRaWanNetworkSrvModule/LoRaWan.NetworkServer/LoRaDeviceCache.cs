@@ -263,10 +263,7 @@ namespace LoRaWan.NetworkServer
             return loRaDevice != null;
         }
 
-        public CacheStatistics CalculateStatistics()
-        {
-            return new CacheStatistics(this.statisticsTracker.Hit, this.statisticsTracker.Miss, this.euiCache.Count);
-        }
+        public CacheStatistics CalculateStatistics() => new CacheStatistics(this.statisticsTracker.Hit, this.statisticsTracker.Miss, this.euiCache.Count);
 
         private void TrackMiss()
         {
@@ -326,20 +323,9 @@ namespace LoRaWan.NetworkServer
         }
     }
 
-    public class CacheStatistics
-    {
-        public CacheStatistics(int hit, int miss, int count)
-        {
-            Hit = hit;
-            Miss = miss;
-            Count = count;
-        }
+    public record CacheStatistics(int Hit, int Miss, int Count);
 
-        public int Hit { get; }
-        public int Miss { get; }
-        public int Count { get; }
-    }
-    public class LoRaDeviceCacheOptions
+    public record LoRaDeviceCacheOptions
     {
         public TimeSpan ValidationInterval { get; set; }
         public TimeSpan MaxUnobservedLifetime { get; set; }
