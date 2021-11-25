@@ -40,14 +40,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         [Fact]
         public async Task ValidateAsync_Throws_WithoutChain()
         {
-            using var cert = new X509Certificate2(clientCertificateWithEuiPath);
+            using var cert = new X509Certificate2(this.clientCertificateWithEuiPath);
             await Assert.ThrowsAsync<ArgumentNullException>(() => this.clientCertValidatorSvc.ValidateAsync(cert, null, System.Net.Security.SslPolicyErrors.None, default));
         }
 
         [Fact]
         public async Task ValidateAsync_ReturnsTrue_WithExpectedThumbprint()
         {
-            using var cert = new X509Certificate2(clientCertificateWithEuiPath);
+            using var cert = new X509Certificate2(this.clientCertificateWithEuiPath);
             using var chain = X509Chain.Create();
 
             stationConfigService.Setup(x => x.GetAllowedClientThumbprintsAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         [Fact]
         public async Task ValidateAsync_ReturnsFalse_WithNonExpectedThumbprint()
         {
-            using var cert = new X509Certificate2(clientCertificateWithEuiPath);
+            using var cert = new X509Certificate2(this.clientCertificateWithEuiPath);
             using var chain = X509Chain.Create();
 
             stationConfigService.Setup(x => x.GetAllowedClientThumbprintsAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
@@ -75,7 +75,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         [Fact]
         public async Task ValidateAsync_ReturnsFalse_WithInvalidCNCertificate()
         {
-            using var cert = new X509Certificate2(clientCertificateWithInvalidEuiPath);
+            using var cert = new X509Certificate2(this.clientCertificateWithInvalidEuiPath);
             using var chain = X509Chain.Create();
 
             stationConfigService.Setup(x => x.GetAllowedClientThumbprintsAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
@@ -90,7 +90,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         [Fact]
         public async Task ValidateAsync_ReturnsTrue_WithUntrustedRoot()
         {
-            using var cert = new X509Certificate2(clientCertificateWithEuiPath);
+            using var cert = new X509Certificate2(this.clientCertificateWithEuiPath);
             using var chain = X509Chain.Create();
             chain.Build(cert);
 
