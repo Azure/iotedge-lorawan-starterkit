@@ -8,9 +8,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Threading;
 
-    public readonly record struct DisposableCancellationTokenPair :
-        IEquatable<DisposableCancellationTokenPair>,
-        IDisposable
+    public readonly record struct DisposableCancellationTokenPair : IDisposable
     {
         private readonly IDisposable? disposable;
         private readonly CancellationToken cancellationToken;
