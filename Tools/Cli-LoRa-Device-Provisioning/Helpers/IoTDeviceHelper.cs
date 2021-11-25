@@ -7,9 +7,7 @@ namespace LoRaWan.Tools.CLI.Helpers
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
-    using Azure.Storage.Blobs;
     using LoRaWan.Tools.CLI.Options;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
