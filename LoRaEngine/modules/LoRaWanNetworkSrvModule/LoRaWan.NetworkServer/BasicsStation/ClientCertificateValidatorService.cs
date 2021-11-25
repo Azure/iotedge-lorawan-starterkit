@@ -27,10 +27,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
         // Following synchronous implementation is needed for ASP.NET Core ClientCertificateValidation
-        public bool Validate(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
+        public virtual bool Validate(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
             ValidateAsync(certificate, chain, sslPolicyErrors, default).GetAwaiter().GetResult();
 
-        public async Task<bool> ValidateAsync(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors, CancellationToken token)
+        public virtual async Task<bool> ValidateAsync(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors, CancellationToken token)
         {
             if (certificate is null) throw new ArgumentNullException(nameof(certificate));
             if (chain is null) throw new ArgumentNullException(nameof(chain));

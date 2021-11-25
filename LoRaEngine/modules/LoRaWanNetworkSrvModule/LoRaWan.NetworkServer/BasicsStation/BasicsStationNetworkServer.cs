@@ -35,22 +35,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                        {
                                            if (shouldUseCertificate)
                                            {
-                                               config.ConfigureHttpsDefaults(https =>
-                                               {
-                                                   https.ServerCertificate = string.IsNullOrEmpty(configuration.LnsServerPfxPassword)
-                                                                             ? new X509Certificate2(configuration.LnsServerPfxPath)
-                                                                             : new X509Certificate2(configuration.LnsServerPfxPath,
-                                                                                                    configuration.LnsServerPfxPassword,
-                                                                                                    X509KeyStorageFlags.DefaultKeySet);
-
-                                                   if (Enum.TryParse<ClientCertificateMode>(configuration.ClientCertificateMode, out var requiredClientCertificateMode)
-                                                       && requiredClientCertificateMode is not ClientCertificateMode.NoCertificate)
-                                                   {
-                                                       var clientCertificateValidatorService = config.ApplicationServices.GetRequiredService<ClientCertificateValidatorService>();
-                                                       https.ClientCertificateMode = requiredClientCertificateMode;
-                                                       https.ClientCertificateValidation = clientCertificateValidatorService.Validate;
-                                                   }
-                                               });
+                                               config.ConfigureHttpsDefaults(https => ConfigureHttpsSettings(configuration, config.ApplicationServices, https));
                                            }
                                        })
                                        .Build();
@@ -73,6 +58,24 @@ namespace LoRaWan.NetworkServer.BasicsStation
             {
                 telemetryClient?.Flush();
                 await Task.Delay(TimeSpan.FromSeconds(5), CancellationToken.None);
+            }
+        }
+
+        internal static void ConfigureHttpsSettings(NetworkServerConfiguration configuration,
+                                                    IServiceProvider serviceProvider,
+                                                    HttpsConnectionAdapterOptions https)
+        {
+            https.ServerCertificate = string.IsNullOrEmpty(configuration.LnsServerPfxPassword) ? new X509Certificate2(configuration.LnsServerPfxPath)
+                                                                                               : new X509Certificate2(configuration.LnsServerPfxPath,
+                                                                                                                      configuration.LnsServerPfxPassword,
+                                                                                                                      X509KeyStorageFlags.DefaultKeySet);
+
+            if (Enum.TryParse<ClientCertificateMode>(configuration.ClientCertificateMode, out var requiredClientCertificateMode)
+                && requiredClientCertificateMode is not ClientCertificateMode.NoCertificate)
+            {
+                var clientCertificateValidatorService = serviceProvider.GetRequiredService<ClientCertificateValidatorService>();
+                https.ClientCertificateMode = requiredClientCertificateMode;
+                https.ClientCertificateValidation = clientCertificateValidatorService.Validate;
             }
         }
     }
