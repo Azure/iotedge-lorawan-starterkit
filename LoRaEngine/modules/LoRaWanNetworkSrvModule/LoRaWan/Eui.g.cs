@@ -13,7 +13,7 @@ namespace LoRaWan
     using System;
     using System.Buffers.Binary;
 
-    readonly partial struct DevEui : IEquatable<DevEui>, IFormattable
+    readonly partial record struct DevEui : IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -23,14 +23,7 @@ namespace LoRaWan
 
         public ulong AsUInt64 => this.value;
 
-        public bool Equals(DevEui other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is DevEui other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => ToString(null, null);
-
-        public static bool operator ==(DevEui left, DevEui right) => left.Equals(right);
-        public static bool operator !=(DevEui left, DevEui right) => !left.Equals(right);
 
         public static DevEui Read(ReadOnlySpan<byte> buffer) =>
             new(BinaryPrimitives.ReadUInt64LittleEndian(buffer));
@@ -68,7 +61,7 @@ namespace LoRaWan
         public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
     }
 
-    readonly partial struct JoinEui : IEquatable<JoinEui>, IFormattable
+    readonly partial record struct JoinEui : IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -78,14 +71,7 @@ namespace LoRaWan
 
         public ulong AsUInt64 => this.value;
 
-        public bool Equals(JoinEui other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is JoinEui other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => ToString(null, null);
-
-        public static bool operator ==(JoinEui left, JoinEui right) => left.Equals(right);
-        public static bool operator !=(JoinEui left, JoinEui right) => !left.Equals(right);
 
         public static JoinEui Read(ReadOnlySpan<byte> buffer) =>
             new(BinaryPrimitives.ReadUInt64LittleEndian(buffer));
@@ -123,7 +109,7 @@ namespace LoRaWan
         public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
     }
 
-    readonly partial struct StationEui : IEquatable<StationEui>, IFormattable
+    readonly partial record struct StationEui : IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -133,14 +119,7 @@ namespace LoRaWan
 
         public ulong AsUInt64 => this.value;
 
-        public bool Equals(StationEui other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is StationEui other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => ToString(null, null);
-
-        public static bool operator ==(StationEui left, StationEui right) => left.Equals(right);
-        public static bool operator !=(StationEui left, StationEui right) => !left.Equals(right);
 
         public static StationEui Read(ReadOnlySpan<byte> buffer) =>
             new(BinaryPrimitives.ReadUInt64LittleEndian(buffer));

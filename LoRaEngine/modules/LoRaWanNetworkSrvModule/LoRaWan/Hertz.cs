@@ -3,13 +3,12 @@
 
 namespace LoRaWan
 {
-    using System;
     using System.Globalization;
 
     /// <summary>
     /// Represents a frequency in Hertz.
     /// </summary>
-    public readonly struct Hertz : IEquatable<Hertz>
+    public readonly record struct Hertz
     {
 #pragma warning disable IDE0032 // Use auto property
         private readonly ulong value;
@@ -27,13 +26,6 @@ namespace LoRaWan
 
         public static Hertz FromMega(double value) => new Hertz(checked((ulong)(value * 1e6)));
 
-        public bool Equals(Hertz other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is Hertz other && Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
-
-        public static bool operator ==(Hertz left, Hertz right) => left.Equals(right);
-        public static bool operator !=(Hertz left, Hertz right) => !left.Equals(right);
     }
 }
