@@ -14,13 +14,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
-    internal class ClientCertificateValidator
+    internal class ClientCertificateValidatorService
     {
         private readonly IBasicsStationConfigurationService stationConfigurationService;
-        private readonly ILogger<ClientCertificateValidator> logger;
+        private readonly ILogger<ClientCertificateValidatorService> logger;
 
-        public ClientCertificateValidator(IBasicsStationConfigurationService stationConfigurationService,
-                                          ILogger<ClientCertificateValidator> logger)
+        public ClientCertificateValidatorService(IBasicsStationConfigurationService stationConfigurationService,
+                                                 ILogger<ClientCertificateValidatorService> logger)
         {
             this.stationConfigurationService = stationConfigurationService;
             this.logger = logger;
@@ -45,13 +45,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 }
                 catch (FormatException)
                 {
-                    this.logger.LogError("{Class}: Tried to parse {RegexValue}, but it is not a proper StationEui field.", nameof(ClientCertificateValidator), commonName);
+                    this.logger.LogError("{Class}: Tried to parse {RegexValue}, but it is not a proper StationEui field.", nameof(ClientCertificateValidatorService), commonName);
                     return false;
                 }
             }
             else
             {
-                this.logger.LogError("{Class}: Did not find a possible StationEui in '{CommonName}'.", nameof(ClientCertificateValidator), commonName);
+                this.logger.LogError("{Class}: Did not find a possible StationEui in '{CommonName}'.", nameof(ClientCertificateValidatorService), commonName);
                 return false;
             }
 
@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             foreach (var status in chain.ChainStatus)
             {
                 using var scope = this.logger.BeginEuiScope(stationEui);
-                this.logger.LogDebug("{Class}: {Status} {StatusInformation}", nameof(ClientCertificateValidator), status.Status, status.StatusInformation);
+                this.logger.LogDebug("{Class}: {Status} {StatusInformation}", nameof(ClientCertificateValidatorService), status.Status, status.StatusInformation);
             }
 
             // Only validation is currently done on thumprint

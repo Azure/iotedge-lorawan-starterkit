@@ -42,13 +42,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                                              : new X509Certificate2(configuration.LnsServerPfxPath,
                                                                                                     configuration.LnsServerPfxPassword,
                                                                                                     X509KeyStorageFlags.DefaultKeySet);
-                                                   var clientCertValidator = config.ApplicationServices.GetRequiredService<ClientCertificateValidator>();
 
                                                    if (Enum.TryParse<ClientCertificateMode>(configuration.ClientCertificateMode, out var requiredClientCertificateMode)
                                                        && requiredClientCertificateMode is not ClientCertificateMode.NoCertificate)
                                                    {
+                                                       var clientCertificateValidatorService = config.ApplicationServices.GetRequiredService<ClientCertificateValidatorService>();
                                                        https.ClientCertificateMode = requiredClientCertificateMode;
-                                                       https.ClientCertificateValidation = clientCertValidator.Validate;
+                                                       https.ClientCertificateValidation = clientCertificateValidatorService.Validate;
                                                    }
                                                });
                                            }
