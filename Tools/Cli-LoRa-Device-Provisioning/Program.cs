@@ -4,12 +4,17 @@
 namespace LoRaWan.Tools.CLI
 {
     using System;
+    using System.Buffers.Binary;
+    using System.IO;
+    using System.Text;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using Azure;
+    using Azure.Storage.Blobs.Models;
     using CommandLine;
     using LoRaWan.Tools.CLI.Helpers;
     using LoRaWan.Tools.CLI.Options;
     using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json.Linq;
 
     public class Program
     {
@@ -152,9 +157,49 @@ namespace LoRaWan.Tools.CLI
             {
                 var isVerified = iotDeviceHelper.VerifyConcentrator(opts);
                 if (!isVerified) return false;
-                Twin twin = iotDeviceHelper.CreateConcentratorTwin(opts);
-                isSuccess = await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
-                return isSuccess;
+                if (configurationHelper.CertificateStorageContainerClient is null)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, "Storage account is not correctly configured.");
+                    return false;
+                }
+
+                // renormalize to Unix line endings
+                var certificateBundleBlobName = opts.StationEui;
+                var blobClient = configurationHelper.CertificateStorageContainerClient.GetBlobClient(certificateBundleBlobName);
+                var certificateContent = Regex.Replace(File.ReadAllText(opts.CertificateBundleLocation), @"\r\n|\n\r|\n|\r", "\n");
+
+                try
+                {
+                    _ = await blobClient.UploadAsync(new BinaryData(Encoding.UTF8.GetBytes(certificateContent)), overwrite: false);
+                }
+                catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"Uploading certificate bundle failed because bundle already exists. Please use the 'update' verb to update existing concentrator configuration.");
+                    return false;
+                }
+                catch (RequestFailedException ex)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"Uploading certificate bundle failed with error: '{ex.Message}'.");
+                    return false;
+                }
+
+                try
+                {
+                    var crc = new Force.Crc32.Crc32Algorithm();
+                    var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(Encoding.UTF8.GetBytes(certificateContent)));
+                    var twin = iotDeviceHelper.CreateConcentratorTwin(opts, crcHash, blobClient.Uri);
+                    var success = await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
+                    if (!success) await CleanupAsync();
+                    return success;
+                }
+                catch (Exception)
+                {
+                    // If the twin was not successfully created, remove the uploaded certificate bundle.
+                    await CleanupAsync();
+                    throw;
+                }
+
+                Task CleanupAsync() => blobClient.DeleteIfExistsAsync();
             }
 
             opts = iotDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
