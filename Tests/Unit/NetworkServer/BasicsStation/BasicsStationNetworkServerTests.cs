@@ -64,10 +64,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
         }
 
-        private static async Task<string> CreatePfxCertificate(bool passwordProtected)
+        internal static async Task<string> CreatePfxCertificate(bool passwordProtected, string stationEui = "001122FFFEAABBCC")
         {
             using var ecdsa = ECDsa.Create();
-            var req = new CertificateRequest("cn=foobar", ecdsa, HashAlgorithmName.SHA256);
+            var req = new CertificateRequest($"cn={stationEui}", ecdsa, HashAlgorithmName.SHA256);
             var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
 
             var tempFileName = Path.GetTempFileName();
