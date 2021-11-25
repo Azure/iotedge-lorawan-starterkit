@@ -907,50 +907,33 @@ namespace LoRaWan.Tools.CLI.Helpers
         public bool VerifyConcentrator(AddOptions opts)
         {
             var isValid = true;
-            if (string.IsNullOrEmpty(opts.StationEui))
+            TrackErrorIf(string.IsNullOrEmpty(opts.StationEui), "'Concentrator' device type has been specified but StationEui option is missing.");
+            TrackErrorIf(string.IsNullOrEmpty(opts.Region), "'Concentrator' device type has been specified but Region option is missing.");
+            TrackErrorIf(opts.Region is { } region && !File.Exists(Path.Combine(DefaultRouterConfigFolder, $"{region.ToUpperInvariant()}.json")),
+                         $"'Concentrator' device type has been specified with Region '{opts.Region.ToUpperInvariant()}' but no default router config file was found.");
+            if (opts.NoCups)
             {
-                TrackError("'Concentrator' device type has been specified but StationEui option is missing.");
+                TrackErrorIf(opts.TcUri is not null, "TC URI must not be defined if --no-cups is set.");
+                TrackErrorIf(opts.CupsUri is not null, "CUPS URI must not be defined if --no-cups is set.");
+                TrackErrorIf(!string.IsNullOrEmpty(opts.CertificateBundleLocation), "Certificate bundle location must not be defined if --no-cups is set.");
             }
-            if (string.IsNullOrEmpty(opts.Region))
+            else
             {
-                TrackError("'Concentrator' device type has been specified but Region option is missing.");
-            }
-            else if (!File.Exists(Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json")))
-            {
-                TrackError($"'Concentrator' device type has been specified with Region '{opts.Region.ToUpperInvariant()}' but no default router config file was found.");
-            }
-            if (!opts.NoCups)
-            {
-                if (!File.Exists(opts.CertificateBundleLocation))
-                {
-                    TrackError("CUPS is enabled but no certificate bundle was found at the specified location.");
-                }
-                if (!opts.ClientCertificateThumbprints.Any())
-                {
-                    TrackError("CUPS is enabled but no client certificate thumbprints were specified.");
-                }
-                if (opts.TcUri is null)
-                {
-                    TrackError("CUPS is enabled but TC URI is not defined.");
-                }
-                else if (!opts.TcUri.Scheme.Equals("wss", StringComparison.OrdinalIgnoreCase))
-                {
-                    TrackError("CUPS is enabled but TC URI is not in wss:// protocol.");
-                }
-                if (opts.CupsUri is null)
-                {
-                    TrackError($"CUPS is enabled but CUPS URI is not defined.");
-                }
-                else if (!opts.CupsUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
-                {
-                    TrackError("CUPS is enabled but CUPS URI is not in https:// protocol.");
-                }
+                TrackErrorIf(!File.Exists(opts.CertificateBundleLocation), "CUPS is enabled but no certificate bundle was found at the specified location.");
+                TrackErrorIf(!opts.ClientCertificateThumbprints.Any(), "CUPS is enabled but no client certificate thumbprints were specified.");
+                TrackErrorIf(opts.TcUri is null, "CUPS is enabled but TC URI is not defined.");
+                TrackErrorIf(opts.TcUri is { } tcUri && !tcUri.Scheme.Equals("wss", StringComparison.OrdinalIgnoreCase), "CUPS is enabled but TC URI is not in wss:// protocol.");
+                TrackErrorIf(opts.CupsUri is null, "CUPS is enabled but CUPS URI is not defined");
+                TrackErrorIf(opts.CupsUri is { } cupsUri && !cupsUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase), "CUPS is enabled but CUPS URI is not in https:// protocol.");
             }
 
-            void TrackError(string message)
+            void TrackErrorIf(bool hasError, string message)
             {
-                StatusConsole.WriteLogLine(MessageType.Error, message);
-                isValid = false;
+                if (hasError)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, message);
+                    isValid = false;
+                }
             }
 
             return isValid;
