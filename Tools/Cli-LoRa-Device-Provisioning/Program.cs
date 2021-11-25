@@ -188,14 +188,18 @@ namespace LoRaWan.Tools.CLI
                     var crc = new Force.Crc32.Crc32Algorithm();
                     var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(Encoding.UTF8.GetBytes(certificateContent)));
                     var twin = iotDeviceHelper.CreateConcentratorTwin(opts, crcHash, blobClient.Uri);
-                    return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
+                    var success = await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
+                    if (!success) await CleanupAsync();
+                    return success;
                 }
                 catch (Exception)
                 {
                     // If the twin was not successfully created, remove the uploaded certificate bundle.
-                    _ = await blobClient.DeleteIfExistsAsync();
+                    await CleanupAsync();
                     throw;
                 }
+
+                Task CleanupAsync() => blobClient.DeleteIfExistsAsync();
             }
 
             opts = iotDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
