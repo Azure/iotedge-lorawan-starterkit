@@ -24,9 +24,6 @@ namespace LoRaWan.Tests.Unit
         protected abstract T Parse(string input);
         protected abstract bool TryParse(string input, out T result);
 
-        private static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
-        private static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
-
         [Fact]
         public void Size_Returns_Width_In_Bytes()
         {
@@ -34,61 +31,9 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Fact]
-        public void Equals_Returns_True_When_Value_Equals()
-        {
-            var other = this.Subject; // assignment = value copy semantics
-            Assert.True(this.Subject.Equals(other));
-        }
-
-        [Fact]
-        public void Equals_Returns_False_When_Value_Is_Different()
-        {
-            var other = this.Other;
-            Assert.False(this.Subject.Equals(other));
-        }
-
-        [Fact]
-        public void Equals_Returns_False_When_Other_Type_Is_Different()
-        {
-            Assert.False(this.Subject.Equals(new object()));
-        }
-
-        [Fact]
-        public void Equals_Returns_False_When_Other_Type_Is_Null()
-        {
-            Assert.False(this.Subject.Equals(null));
-        }
-
-        [Fact]
-        public void Op_Equality_Returns_True_When_Values_Equal()
-        {
-            var other = this.Subject; // assignment = value copy semantics
-            Assert.True(Equal(this.Subject, other));
-        }
-
-        [Fact]
-        public void Op_Equality_Returns_False_When_Values_Differ()
-        {
-            Assert.False(Equal(this.Subject, this.Other));
-        }
-
-        [Fact]
-        public void Op_Inequality_Returns_False_When_Values_Equal()
-        {
-            var other = this.Subject; // assignment = value copy semantics
-            Assert.False(NotEqual(this.Subject, other));
-        }
-
-        [Fact]
-        public void Op_Inequality_Returns_True_When_Values_Differ()
-        {
-            Assert.True(NotEqual(this.Subject, this.Other));
-        }
-
-        [Fact]
         public void ToString_Returns_Hexadecimal_String()
         {
-            Assert.Equal("01-23-45-67-89-AB-CD-EF", this.Subject.ToString());
+            Assert.Equal("01-23-45-67-89-AB-CD-EF", Subject.ToString());
         }
 
         [Theory]

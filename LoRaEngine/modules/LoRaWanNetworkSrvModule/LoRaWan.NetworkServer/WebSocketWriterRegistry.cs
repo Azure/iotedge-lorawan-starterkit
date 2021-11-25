@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
     public partial class WebSocketWriterRegistry<TKey, TMessage>
     {
         [DebuggerDisplay("{" + nameof(key) + "}")]
-        private sealed class Handle : IWebSocketWriterHandle<TMessage>
+        private sealed record Handle : IWebSocketWriterHandle<TMessage>
         {
             private readonly WebSocketWriterRegistry<TKey, TMessage> registry;
             private readonly TKey key;
@@ -39,15 +39,6 @@ namespace LoRaWan.NetworkServer
 
             bool IEquatable<IWebSocketWriterHandle<TMessage>>.Equals(IWebSocketWriterHandle<TMessage>? other) =>
                 Equals(other as Handle);
-
-            public override bool Equals(object? obj) =>
-                ReferenceEquals(this, obj) || Equals(obj as Handle);
-
-            private bool Equals(Handle? other) =>
-                other is not null && this.registry == other.registry
-                                  && EqualityComparer<TKey>.Default.Equals(this.key, other.key);
-
-            public override int GetHashCode() => HashCode.Combine(this.registry, this.key);
         }
     }
 

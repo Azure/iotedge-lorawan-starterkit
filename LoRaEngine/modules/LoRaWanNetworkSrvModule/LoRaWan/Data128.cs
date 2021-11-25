@@ -9,20 +9,14 @@ namespace LoRaWan
     /// <summary>
     /// Represents byte data of 128 bits as a single unit.
     /// </summary>
-    internal readonly struct Data128 : IEquatable<Data128>
+    internal readonly record struct Data128
     {
         public const int Size = sizeof(ulong) * 2;
+
         private readonly ulong lo;
         private readonly ulong hi;
 
         public Data128(ulong hi, ulong lo) => (this.hi, this.lo) = (hi, lo);
-
-        public bool Equals(Data128 other) => this.lo == other.lo && this.hi == other.hi;
-        public override bool Equals(object? obj) => obj is Data128 other && this.Equals(other);
-        public override int GetHashCode() => HashCode.Combine(this.lo, this.hi);
-
-        public static bool operator ==(Data128 left, Data128 right) => left.Equals(right);
-        public static bool operator !=(Data128 left, Data128 right) => !left.Equals(right);
 
         public override string ToString()
         {

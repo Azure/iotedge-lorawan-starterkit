@@ -12,7 +12,7 @@ namespace LoRaWan
     /// assigned during the join process for devices that join a network using the (preferred)
     /// over-the-air activation (OTAA) technique.
     /// </summary>
-    public readonly struct DevAddr : IEquatable<DevAddr>
+    public readonly record struct DevAddr
     {
         /* +--------|---------+
            | 31..25 |  24..0  |
@@ -21,6 +21,7 @@ namespace LoRaWan
            +--------|---------+ */
 
         public const int Size = sizeof(uint);
+
         private const uint NetworkAddressMask = 0x01ff_ffff;
         private readonly uint value;
 
@@ -36,14 +37,7 @@ namespace LoRaWan
         /// </summary>
         public int NetworkAddress => unchecked((int)(this.value & NetworkAddressMask));
 
-        public bool Equals(DevAddr other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is DevAddr other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString("X8", CultureInfo.InvariantCulture);
-
-        public static bool operator ==(DevAddr left, DevAddr right) => left.Equals(right);
-        public static bool operator !=(DevAddr left, DevAddr right) => !left.Equals(right);
 
         public Span<byte> Write(Span<byte> buffer)
         {
