@@ -43,8 +43,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                                                                     configuration.LnsServerPfxPassword,
                                                                                                     X509KeyStorageFlags.DefaultKeySet);
                                                    var clientCertValidator = config.ApplicationServices.GetRequiredService<ClientCertificateValidator>();
-                                                   //TO DO: Sync with Atif for understanding if following validation can be done in a better async way
-                                                   https.ClientCertificateValidation = (cert, chain, sslPolicyErrors) => clientCertValidator.ValidateAsync(cert, chain, sslPolicyErrors, default).Result;
+                                                   // Following ClientCertificateValidation is synchronous in ASP.NET Core
+                                                   https.ClientCertificateValidation = clientCertValidator.Validate;
                                                    //TO DO: Set environment variable to either fully disable or require client certificates
                                                    https.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
                                                });
