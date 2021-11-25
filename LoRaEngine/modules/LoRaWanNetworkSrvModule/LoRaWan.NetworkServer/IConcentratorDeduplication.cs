@@ -3,15 +3,15 @@
 
 namespace LoRaWan.NetworkServer
 {
-    public interface IConcentratorDeduplication<T> where T : class
+    public interface IConcentratorDeduplication
     {
         /// <summary>
-        /// Detects frames (messages) that should be dropped based on whether
+        /// Detects requests that should be dropped based on whether
         /// they were encountered from the same or a different concentrator before.
         /// </summary>
-        /// <param name="frame">The received frame.</param>
-        /// <param name="stationEui">The current station that the frame was sent from.</param>
-        /// <returns><code>true</code>, if the frame has been encountered in the past and should be dropped.</returns>
-        public bool ShouldDrop(T frame, StationEui stationEui);
+        /// <param name="loRaRequest">The received request.</param>
+        /// <param name="loRaDevice">The device it was sent from.</param>
+        /// <returns><code>True</code>, if the request has been encountered in the past and should be dropped.</returns>
+        public bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice loRaDevice);
     }
 }

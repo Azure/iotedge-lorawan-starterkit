@@ -85,6 +85,10 @@ namespace LoRaWan.NetworkServer
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
             var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
+            // TODO Drop if request encountered before
+            //if (this.deduplicationFactory.Create(loRaDevice) is DeduplicationStrategyDrop)
+            //    Console.WriteLine(1);
+
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
             // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
@@ -715,6 +719,17 @@ namespace LoRaWan.NetworkServer
             return loRaADRResult;
         }
 
+        /// <summary>
+        /// Checks if a request is valid and flags whether it's a confirmation resubmit.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="isFrameCounterFromNewlyStartedDevice"></param>
+        /// <param name="payloadFcnt"></param>
+        /// <param name="loRaDevice"></param>
+        /// <param name="requiresConfirmation"></param>
+        /// <param name="isConfirmedResubmit"><code>True</code> when it's a confirmation resubmit.</param>
+        /// <param name="result">When request is not valid, indicates the reason.</param>
+        /// <returns><code>True</code> when the provided request is valid, false otherwise.</returns>
         private bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, bool requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
         {
             isConfirmedResubmit = false;

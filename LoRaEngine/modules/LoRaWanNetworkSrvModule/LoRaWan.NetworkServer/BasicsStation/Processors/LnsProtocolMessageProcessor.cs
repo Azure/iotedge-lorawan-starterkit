@@ -29,16 +29,16 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IPacketForwarder downstreamSender;
         private readonly IMessageDispatcher messageDispatcher;
-        private readonly IConcentratorDeduplication<UpstreamDataFrame> upstreamDeduplication;
-        private readonly IConcentratorDeduplication<JoinRequestFrame> joinRequestDeduplication;
+        private readonly IConcentratorDeduplication upstreamDeduplication;
+        private readonly IConcentratorDeduplication joinRequestDeduplication;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                            IPacketForwarder packetForwarder,
                                            IMessageDispatcher messageDispatcher,
-                                           IConcentratorDeduplication<UpstreamDataFrame> upstreamDeduplication,
-                                           IConcentratorDeduplication<JoinRequestFrame> joinRequestDeduplication,
+                                           IConcentratorDeduplication upstreamDeduplication,
+                                           IConcentratorDeduplication joinRequestDeduplication,
                                            ILogger<LnsProtocolMessageProcessor> logger)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
@@ -194,10 +194,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     {
                         var jreq = LnsData.JoinRequestFrameReader.Read(json);
 
-                        if (this.joinRequestDeduplication.ShouldDrop(jreq, stationEui))
-                        {
-                            break;
-                        }
+                        //if (this.joinRequestDeduplication.ShouldDrop(jreq, stationEui))
+                        //{
+                        //    break;
+                        //}
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
@@ -224,10 +224,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     {
                         var updf = LnsData.UpstreamDataFrameReader.Read(json);
 
-                        if (this.upstreamDeduplication.ShouldDrop(updf, stationEui))
-                        {
-                            break;
-                        }
+                        //if (this.upstreamDeduplication.ShouldDrop(updf, stationEui))
+                        //{
+                        //    break;
+                        //}
 
                         using var scope = this.logger.BeginDeviceAddressScope(updf.DevAddr);
 
