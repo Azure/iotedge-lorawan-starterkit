@@ -3,6 +3,8 @@
 
 namespace LoRaWan.Tools.CLI.Options
 {
+    using System;
+    using System.Collections.Generic;
     using CommandLine;
 
     [Verb("add", HelpText = "Add a new device to IoT Hub.")]
@@ -17,14 +19,44 @@ namespace LoRaWan.Tools.CLI.Options
         [Option(
             "region",
             Required = false,
-            HelpText = "Region: Only required for 'Concentrator' type devices. Must be the name of one of the regions in the DefaultRouterConfig folder.")]
+            HelpText = "Region: Required for 'Concentrator' type devices. Must be the name of one of the regions in the DefaultRouterConfig folder.")]
         public string Region { get; set; }
 
         [Option(
             "stationeui",
             Required = false,
-            HelpText = "Station EUI: A 16 bit hex string ('AABBCCDDEEFFGGHH'). Required if 'Concentrator' device.")]
+            HelpText = "Station EUI: Required for 'Concentrator' type devices. A 16 bit hex string ('AABBCCDDEEFFGGHH').")]
         public string StationEui { get; set; }
+
+        [Option(
+            "no-cups",
+            Required = false,
+            HelpText = "No CUPS: Only applicable to 'Concentrator' type devices. If set to true indicates that the concentrator does not use CUPS.")]
+        public bool NoCups { get; set; }
+
+        [Option(
+            "certificate-bundle-location",
+            Required = false,
+            HelpText = "Certificate bundle location: Required if --no-cups set to false. Points to the location of the (UTF-8-encoded) certificate bundle file.")]
+        public string CertificateBundleLocation { get; set; }
+
+        [Option(
+            "client-certificate-thumbprint",
+            Required = false,
+            HelpText = "Client certificate thumbprint: Required if --no-cups set to false. A list of client certificate thumbprints (separated by a space) that should be accepted by the CUPS/LNS endpoints.")]
+        public IEnumerable<string> ClientCertificateThumbprints { get; set; }
+
+        [Option(
+            "tc-uri",
+            Required = false,
+            HelpText = "LoRaWAN Network Server URI: Required if --no-cups set to false. The URI of the LNS endpoint. Protocol must be set to wss://")]
+        public Uri TcUri { get; set; }
+
+        [Option(
+           "cups-uri",
+           Required = false,
+           HelpText = "LoRaWAN Network Server URI: Required if --no-cups set to false. The URI of the CUPS endpoint. Protocol must be set to https://")]
+        public Uri CupsUri { get; set; }
 
         [Option(
             "deveui",

@@ -6,7 +6,10 @@ namespace LoRaWan.Tools.CLI.Helpers
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
+    using Azure.Storage.Blobs;
     using LoRaWan.Tools.CLI.Options;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -919,19 +922,68 @@ namespace LoRaWan.Tools.CLI.Helpers
                 StatusConsole.WriteLogLine(MessageType.Error, $"'Concentrator' device type has been specified with Region '{opts.Region.ToUpperInvariant()}' but no default router config file was found.");
                 isValid = false;
             }
+            if (!opts.NoCups)
+            {
+                if (!File.Exists(opts.CertificateBundleLocation))
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but no certificate bundle was found at the specified location.");
+                    isValid = false;
+                }
+                if (!opts.ClientCertificateThumbprints.Any())
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but no client certificate thumbprints were specified.");
+                    isValid = false;
+                }
+                if (opts.TcUri is null)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but TC URI is not defined.");
+                    isValid = false;
+                }
+                else if (!opts.TcUri.Scheme.Equals("wss", StringComparison.OrdinalIgnoreCase))
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but TC URI is not in wss:// protocol.");
+                    isValid = false;
+                }
+                if (opts.CupsUri is null)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but CUPS URI is not defined.");
+                    isValid = false;
+                }
+                else if (!opts.CupsUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"CUPS is enabled but CUPS URI is not in https:// protocol.");
+                    isValid = false;
+                }
+            }
 
             return isValid;
         }
 
-        public Twin CreateConcentratorTwin(AddOptions opts)
+        public Twin CreateConcentratorTwin(AddOptions opts, int crcChecksum, Uri certificateBundleLocation)
         {
             var twinProperties = new TwinProperties();
             Console.WriteLine();
 
+            // Add routerConfig configuration
             string fileName = Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json");
             string jsonString = File.ReadAllText(fileName);
             var propObject = JsonConvert.DeserializeObject<JObject>(jsonString);
             twinProperties.Desired[TwinProperty.RouterConfig] = propObject;
+
+            // Add CUPS configuration
+            twinProperties.Desired[TwinProperty.Cups] = new JObject
+            {
+                [TwinProperty.TcCredentialUrl] = certificateBundleLocation,
+                [TwinProperty.TcCredentialCrc] = crcChecksum,
+                [TwinProperty.CupsCredentialUrl] = certificateBundleLocation,
+                [TwinProperty.CupsCredentialCrc] = crcChecksum,
+                [TwinProperty.CupsUri] = opts.CupsUri,
+                [TwinProperty.TcUri] = opts.TcUri,
+            };
+
+            // Add client certificate thumbprints
+            twinProperties.Desired[TwinProperty.ClientThumbprint] = new JArray(opts.ClientCertificateThumbprints);
+
             return new Twin
             {
                 Properties = twinProperties

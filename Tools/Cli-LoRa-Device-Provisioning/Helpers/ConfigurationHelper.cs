@@ -5,6 +5,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.IO;
+    using Azure.Storage.Blobs;
     using Microsoft.Azure.Devices;
     using Microsoft.Extensions.Configuration;
 
@@ -13,10 +14,11 @@ namespace LoRaWan.Tools.CLI.Helpers
         public string NetId { get; set; }
 
         public RegistryManager RegistryManager { get; set; }
+        public BlobContainerClient CertificateStorageContainerClient { get; set; }
 
         public bool ReadConfig()
         {
-            string connectionString, netId;
+            string connectionString, netId, credentialStorageConnectionString, credentialStorageContainerName;
 
             Console.WriteLine("Reading configuration file \"appsettings.json\"...");
 
@@ -30,6 +32,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                     .Build();
 
                 connectionString = configurationBuilder["IoTHubConnectionString"];
+                credentialStorageConnectionString = configurationBuilder["CredentialStorageConnectionString"];
+                credentialStorageContainerName = configurationBuilder["CredentialStorageContainerName"];
                 netId = configurationBuilder["NetId"];
             }
             catch (Exception ex)
@@ -95,6 +99,15 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 StatusConsole.WriteLogLine(MessageType.Error, $"Can not connect to IoT Hub (possible error in connection string): {ex.Message}.");
                 return false;
+            }
+
+            try
+            {
+                CertificateStorageContainerClient = new BlobContainerClient(credentialStorageConnectionString, credentialStorageContainerName);
+            }
+            catch (FormatException)
+            {
+                StatusConsole.WriteLogLine(MessageType.Info, "Credentials storage account is incorrectly configured.");
             }
 
             Console.WriteLine("done.");
