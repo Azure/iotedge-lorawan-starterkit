@@ -86,7 +86,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             return LnsStationConfiguration.GetRegion(config);
         }
 
-        public async Task<string[]> GetAllowedClientThumbprints(StationEui stationEui, CancellationToken cancellationToken)
+        public async Task<string[]> GetAllowedClientThumbprintsAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var twin = await GetTwinAsync(stationEui, cancellationToken);
             try
