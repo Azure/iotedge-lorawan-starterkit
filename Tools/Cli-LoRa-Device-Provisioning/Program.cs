@@ -34,7 +34,7 @@ namespace LoRaWan.Tools.CLI
             Console.ResetColor();
             Console.WriteLine();
 
-            var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions>(args)
+            var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions>(args)
                 .MapResult(
                     (ListOptions opts) => RunListAndReturnExitCode(opts),
                     (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
@@ -44,6 +44,7 @@ namespace LoRaWan.Tools.CLI
                     (UpdateOptions opts) => RunUpdateAndReturnExitCode(opts),
                     (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
                     (RotateCertificateOptions opts) => RunRotateCertificateAndReturnExitCodeAsync(opts),
+                    (RevokeOptions opts) => RunRevokeAndReturnExitCodeAsync(opts),
                     errs => Task.FromResult(false));
 
             if (success)
@@ -252,6 +253,27 @@ namespace LoRaWan.Tools.CLI
             }
 
             return success;
+        }
+
+        private static async Task<bool> RunRevokeAndReturnExitCodeAsync(RevokeOptions opts)
+        {
+            if (!configurationHelper.ReadConfig())
+                return false;
+
+            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
+
+            if (twin is null)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Device was not found in IoT Hub. Please create it first.");
+                return false;
+            }
+
+            var twinJObject = JsonConvert.DeserializeObject<JObject>(twin.Properties.Desired.ToJson());
+            var clientThumprints = twinJObject[TwinProperty.ClientThumbprint];
+            var t = clientThumprints.FirstOrDefault(t => t.ToString().Equals(opts.ClientCertificateThumbprint, StringComparison.OrdinalIgnoreCase));
+            t?.Remove();
+            twin.Properties.Desired[TwinProperty.ClientThumbprint] = clientThumprints;
+            return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
         }
 
         private static async Task<bool> RunUpdateAndReturnExitCode(UpdateOptions opts)
