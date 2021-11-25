@@ -11,6 +11,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
     public class ConfigurationHelper
     {
+        private const string CredentialsStorageContainerName = "stationcredentials";
         public string NetId { get; set; }
 
         public RegistryManager RegistryManager { get; set; }
@@ -18,7 +19,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
         public bool ReadConfig()
         {
-            string connectionString, netId, credentialStorageConnectionString, credentialStorageContainerName;
+            string connectionString, netId, credentialStorageConnectionString;
 
             Console.WriteLine("Reading configuration file \"appsettings.json\"...");
 
@@ -33,7 +34,6 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 connectionString = configurationBuilder["IoTHubConnectionString"];
                 credentialStorageConnectionString = configurationBuilder["CredentialStorageConnectionString"];
-                credentialStorageContainerName = configurationBuilder["CredentialStorageContainerName"];
                 netId = configurationBuilder["NetId"];
             }
             catch (Exception ex)
@@ -103,7 +103,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             try
             {
-                CertificateStorageContainerClient = new BlobContainerClient(credentialStorageConnectionString, credentialStorageContainerName);
+                CertificateStorageContainerClient = new BlobContainerClient(credentialStorageConnectionString, CredentialsStorageContainerName);
             }
             catch (FormatException)
             {
