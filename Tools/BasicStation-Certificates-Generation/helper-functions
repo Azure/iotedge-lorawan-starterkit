@@ -36,7 +36,7 @@ Basics Station Certificate Generation CLI
 
 This CLI tool is helping Azure IoT Edge LoRaWAN Starter Kit users to generate LoRaWAN Network Server certificates and Basics Station certificates for testing secure communication between a Basics Station client and the CUPS/LNS Protocol Endpoint in Network Server.
 
-Usage: $programName [type] commonName [pfxPassword]
+Usage: $programName type commonName [pfxPassword]
 
 Type:
   server       Generates a server certificate
