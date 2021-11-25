@@ -48,7 +48,6 @@ if(Get-VMSwitch -Name $switchName -ErrorAction SilentlyContinue)
     throw "Switch already existing";
 }
 
-# TODO: We should ideally add more checks before continuing.
 New-VMSwitch -Name $switchName -SwitchType internal
 Write-Host "Sleeping for 30sec before continuing for propagating the VMSwitch"
 Start-Sleep -Seconds 30
@@ -82,12 +81,6 @@ if(Get-NetNat -Name "$switchName" -ErrorAction SilentlyContinue)
 
 New-NetNat -Name "$switchName" -InternalIPInterfaceAddressPrefix "$natIp/24"
 
-if(!(Get-NetNatStaticMapping -NatName "$switchName" -ErrorAction SilentlyContinue))
-{
-    Add-NetNatStaticMapping -ExternalIPAddress "0.0.0.0/0" -ExternalPort $externalPort -Protocol TCP -InternalIPAddress "$startip" -InternalPort $internalPort -NatName $switchName
-}
-
-
 #Install DHCP
 netsh dhcp add securitygroups
 Restart-Service dhcpserver
@@ -106,4 +99,9 @@ Start-Process -Wait msiexec -ArgumentList "/i","$([io.Path]::Combine($env:TEMP, 
 Deploy-Eflow  -acceptEula 'yes' -acceptOptionalTelemetry 'yes' -vswitchName $switchName -ip4Address $startIp -ip4GatewayAddress $gwIp -vswitchType 'Internal'
 if($iotEdgeDeviceConnectionString){
     Provision-EflowVm -provisioningType ManualConnectionString -devConnString "$iotEdgeDeviceConnectionString"
+}
+
+if(!(Get-NetNatStaticMapping -NatName "$switchName" -ErrorAction SilentlyContinue))
+{
+    Add-NetNatStaticMapping -ExternalIPAddress "0.0.0.0/0" -ExternalPort $externalPort -Protocol TCP -InternalIPAddress "$startip" -InternalPort $internalPort -NatName $switchName
 }
