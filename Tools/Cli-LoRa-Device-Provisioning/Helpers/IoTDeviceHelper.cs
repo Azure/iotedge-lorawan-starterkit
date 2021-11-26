@@ -907,8 +907,12 @@ namespace LoRaWan.Tools.CLI.Helpers
             var isValid = true;
             TrackErrorIf(string.IsNullOrEmpty(opts.StationEui), "'Concentrator' device type has been specified but StationEui option is missing.");
             TrackErrorIf(string.IsNullOrEmpty(opts.Region), "'Concentrator' device type has been specified but Region option is missing.");
-            TrackErrorIf(opts.Region is { } region && !File.Exists(Path.Combine(DefaultRouterConfigFolder, $"{region.ToUpperInvariant()}.json")),
-                         $"'Concentrator' device type has been specified with Region '{opts.Region.ToUpperInvariant()}' but no default router config file was found.");
+            if (opts.Region is { } region)
+            {
+                TrackErrorIf(!File.Exists(Path.Combine(DefaultRouterConfigFolder, $"{region.ToUpperInvariant()}.json")),
+                             $"'Concentrator' device type has been specified with Region '{region.ToUpperInvariant()}' but no default router config file was found.");
+            }
+
             if (opts.NoCups)
             {
                 TrackErrorIf(opts.TcUri is not null, "TC URI must not be defined if --no-cups is set.");
