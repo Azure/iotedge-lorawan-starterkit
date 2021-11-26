@@ -92,8 +92,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
           {
                new object[] { region, 700, 5 },
                new object[] { region, 1024, 10 },
-               new object[] { region, 915, 90 },
-               new object[] { region, 920, 100 },
+               new object[] { region, 901.2, 90 },
+               new object[] { region, 928.5, 100 },
           };
 
         public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>

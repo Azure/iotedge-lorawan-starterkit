@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestDownstreamFrequency(Region region, double inputFrequency, ushort inputDataRate, double outputFreq, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
-            Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, inputDataRate, out var frequency, deviceJoinInfo));
+            Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, out var frequency, inputDataRate, deviceJoinInfo));
             Assert.Equal(frequency, outputFreq);
         }
 
@@ -53,11 +53,12 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionUS915TestData.TestRegionLimitData), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470TestData.TestRegionLimitData), MemberType = typeof(RegionCN470TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionLimitData), MemberType = typeof(RegionAS923TestData))]
-        public void TestRegionLimits(Region region, double inputFrequency, ushort datarate, int? joinChannel = null)
+        public void TestRegionLimit(Region region, double inputFrequency, ushort datarate, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
-            Assert.False(region.TryGetDownstreamChannelFrequency(inputFrequency, datarate, out _, deviceJoinInfo));
-            var ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(datarate));
+            var ex = Assert.Throws<LoRaProcessingException>(() => region.TryGetDownstreamChannelFrequency(inputFrequency, out _, datarate, deviceJoinInfo));
+            Assert.Equal(LoRaProcessingErrorCode.InvalidFrequency, ex.ErrorCode);
+             ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(datarate));
             Assert.Equal(LoRaProcessingErrorCode.InvalidDataRate, ex.ErrorCode);
         }
 
@@ -110,7 +111,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionUS915TestData.TestIsValidRX1DROffsetData), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470TestData.TestIsValidRX1DROffsetData), MemberType = typeof(RegionCN470TestData))]
         [MemberData(nameof(RegionAS923TestData.TestIsValidRX1DROffsetData), MemberType = typeof(RegionAS923TestData))]
-        public void TestIsValidRX1DROffset(Region region, uint offset, bool isValid)
+        public void TestIsValidRX1DROffset(Region region, int offset, bool isValid)
         {
             Assert.Equal(isValid, region.IsValidRX1DROffset(offset));
         }

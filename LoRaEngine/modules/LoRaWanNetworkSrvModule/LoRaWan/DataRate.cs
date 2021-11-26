@@ -10,7 +10,7 @@ namespace LoRaWan
     /// An integer value between 0 and 15 that influences modulation (LoRa or FSK), the spreading
     /// factor (SF) and the bandwidth (BW).
     /// </summary>
-    public readonly struct DataRate : IEquatable<DataRate>
+    public readonly record struct DataRate
     {
         private readonly byte value;
 
@@ -21,13 +21,6 @@ namespace LoRaWan
 
         public int AsInt32 => this.value;
 
-        public bool Equals(DataRate other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is DataRate other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
-
-        public static bool operator ==(DataRate left, DataRate right) => left.Equals(right);
-        public static bool operator !=(DataRate left, DataRate right) => !left.Equals(right);
     }
 }

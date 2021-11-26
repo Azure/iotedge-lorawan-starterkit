@@ -5,19 +5,12 @@ namespace LoRaWan
 {
     using System;
 
-    public readonly struct FramePort : IEquatable<FramePort>
+    public readonly record struct FramePort
     {
         public const int Size = sizeof(byte);
         private readonly byte value;
 
         public FramePort(byte value) => this.value = value;
-
-        public bool Equals(FramePort other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is FramePort other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
-        public static bool operator ==(FramePort left, FramePort right) => left.Equals(right);
-        public static bool operator !=(FramePort left, FramePort right) => !left.Equals(right);
 
         public bool IsMacCommandFPort => this.value == 0;
         public bool IsMacLayerTestFPort => this.value == 224;
