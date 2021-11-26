@@ -21,7 +21,7 @@ namespace LoRaWan.Tools.CLI.CommandLineOptions
 
         [Option("client-certificate-thumbprint",
                 Required = true,
-                HelpText = "Client certificate thumbprint: A client certificate thumbprint that should be accepted by the CUPS/LNS endpoints.")]
+                HelpText = "Client certificate thumbprint: A client certificate thumbprint that should be revoked and not accepted anymore by the CUPS/LNS endpoints.")]
         public string ClientCertificateThumbprint { get; }
     }
 }
