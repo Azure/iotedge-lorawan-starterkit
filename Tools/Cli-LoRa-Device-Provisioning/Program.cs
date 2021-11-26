@@ -174,11 +174,19 @@ namespace LoRaWan.Tools.CLI
                     return false;
                 }
 
-                return await UploadCertificateBundleAsync(opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
+                if (opts.NoCups)
                 {
-                    var twin = iotDeviceHelper.CreateConcentratorTwin(opts, crcHash, bundleStorageUri);
+                    var twin = iotDeviceHelper.CreateConcentratorTwin(opts, 0, null);
                     return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
-                });
+                }
+                else
+                {
+                    return await UploadCertificateBundleAsync(opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
+                    {
+                        var twin = iotDeviceHelper.CreateConcentratorTwin(opts, crcHash, bundleStorageUri);
+                        return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
+                    });
+                }
             }
 
             opts = iotDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);

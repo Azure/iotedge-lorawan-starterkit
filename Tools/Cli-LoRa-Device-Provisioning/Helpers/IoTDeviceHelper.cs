@@ -954,19 +954,22 @@ namespace LoRaWan.Tools.CLI.Helpers
             var propObject = JsonConvert.DeserializeObject<JObject>(jsonString);
             twinProperties.Desired[TwinProperty.RouterConfig] = propObject;
 
-            // Add CUPS configuration
-            twinProperties.Desired[TwinProperty.Cups] = new JObject
+            if (!opts.NoCups)
             {
-                [TwinProperty.TcCredentialUrl] = certificateBundleLocation,
-                [TwinProperty.TcCredentialCrc] = crcChecksum,
-                [TwinProperty.CupsCredentialUrl] = certificateBundleLocation,
-                [TwinProperty.CupsCredentialCrc] = crcChecksum,
-                [TwinProperty.CupsUri] = opts.CupsUri,
-                [TwinProperty.TcUri] = opts.TcUri,
-            };
+                // Add CUPS configuration
+                twinProperties.Desired[TwinProperty.Cups] = new JObject
+                {
+                    [TwinProperty.TcCredentialUrl] = certificateBundleLocation,
+                    [TwinProperty.TcCredentialCrc] = crcChecksum,
+                    [TwinProperty.CupsCredentialUrl] = certificateBundleLocation,
+                    [TwinProperty.CupsCredentialCrc] = crcChecksum,
+                    [TwinProperty.CupsUri] = opts.CupsUri,
+                    [TwinProperty.TcUri] = opts.TcUri,
+                };
 
-            // Add client certificate thumbprints
-            twinProperties.Desired[TwinProperty.ClientThumbprint] = new JArray(opts.ClientCertificateThumbprints);
+                // Add client certificate thumbprints
+                twinProperties.Desired[TwinProperty.ClientThumbprint] = new JArray(opts.ClientCertificateThumbprints);
+            }
 
             return new Twin
             {
