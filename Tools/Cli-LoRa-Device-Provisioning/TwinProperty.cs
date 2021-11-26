@@ -39,7 +39,16 @@ namespace LoRaWan.Tools.CLI
 
         public const string RXDelay = "RXDelay";
 
+        // Station twin
         public const string RouterConfig = "routerConfig";
+        public const string ClientThumbprint = "clientThumbprint";
+        public const string Cups = "cups";
+        public const string CupsUri = "cupsUri";
+        public const string TcUri = "tcUri";
+        public const string CupsCredentialCrc = "cupsCredCrc";
+        public const string TcCredentialCrc = "tcCredCrc";
+        public const string TcCredentialUrl = "tcCredentialUrl";
+        public const string CupsCredentialUrl = "cupsCredentialUrl";
 
         /// <summary>
         /// Defines the connection keep alive timeout
