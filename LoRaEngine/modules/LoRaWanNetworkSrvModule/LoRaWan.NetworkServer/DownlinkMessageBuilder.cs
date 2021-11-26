@@ -198,7 +198,7 @@ namespace LoRaWan.NetworkServer
                 fctrl |= (int)Fctrl.FpendingOrClassB;
             }
 
-            if (upstreamPayload.IsAdrEnabled)
+            if (upstreamPayload.FrameControl.AdrAckRequested)
             {
                 fctrl |= (byte)Fctrl.ADR;
             }

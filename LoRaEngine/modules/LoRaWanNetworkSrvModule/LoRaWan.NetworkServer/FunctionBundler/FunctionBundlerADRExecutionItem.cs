@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
                 FCntUp = context.FCntUp,
                 GatewayId = context.GatewayId,
                 MinTxPowerIndex = context.Request.Region.TXPowertoMaxEIRP.Count - 1,
-                PerformADRCalculation = context.LoRaPayload.IsAdrReq,
+                PerformADRCalculation = context.LoRaPayload.FrameControl.AdrAckRequested,
                 RequiredSnr = (float)context.Request.Rxpk.RequiredSnr
             };
 
@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
         public bool RequiresExecution(FunctionBundlerExecutionContext context)
         {
             if (context is null) throw new ArgumentNullException(nameof(context));
-            return context.LoRaPayload.IsAdrEnabled;
+            return context.LoRaPayload.FrameControl.Adr;
         }
     }
 }

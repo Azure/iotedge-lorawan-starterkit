@@ -55,21 +55,6 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public bool IsMacAnswerRequired => MacCommands?.FirstOrDefault(x => x.Cid == Cid.LinkCheckCmd) != null;
 
-        /// <summary>
-        /// Indicates if the payload is an confirmation message acknowledgement.
-        /// </summary>
-        public bool IsUpwardAck() => FrameControl.Ack;
-
-        /// <summary>
-        /// Gets a value indicating whether indicates if the payload is an confirmation message acknowledgement.
-        /// </summary>
-        public bool IsAdrReq => FrameControl.AdrAckRequested;
-
-        /// <summary>
-        /// Gets a value indicating whether the device has ADR enabled.
-        /// </summary>
-        public bool IsAdrEnabled => FrameControl.Adr;
-
         public FrameControl FrameControl { get; set; }
 
         /// <summary>
