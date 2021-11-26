@@ -222,7 +222,7 @@ namespace LoRaWan.NetworkServer
             {
                 // if we already have the device in the cache, then it is either from a previous
                 // join rquest or it's a re-join. Both scenarios are ok, and we can use the cached
-                // informatio.
+                // information.
                 return cachedDevice;
             }
 
