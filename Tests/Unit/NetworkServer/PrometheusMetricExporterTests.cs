@@ -132,7 +132,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_Tag_Is_Missing_Should_Report_Empty_String()
+        public void When_Tag_Is_Missing_Should_Fail()
         {
             // arrange
             const int value = 1;
@@ -141,10 +141,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // act
             using var meter = new Meter("LoRaWan", "1.0");
             var counter = meter.CreateCounter<int>(Counter.Name);
-            counter.Add(value);
 
             // assert
-            this.incCounterMock.Verify(c => c.Invoke(Counter.Name, new[] { string.Empty }, value), Times.Once);
+            Assert.Throws<LoRaProcessingException>(() => counter.Add(value));
         }
 
         private class TestablePrometheusMetricExporter : PrometheusMetricExporter

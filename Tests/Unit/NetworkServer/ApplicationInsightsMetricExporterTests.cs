@@ -137,7 +137,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_Raising_Metric_And_Missing_Dimensions_Should_Report_Empty_String()
+        public void When_Raising_Metric_And_Missing_Dimensions_Should_Fail()
         {
             // arrange
             using var instrument = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
@@ -145,10 +145,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // act
             applicationInsightsMetricExporter.Start();
-            counter.Add(1);
 
             // assert
-            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), It.IsAny<double>(), new[] { string.Empty }), Times.Once);
+            Assert.Throws<LoRaProcessingException>(() => counter.Add(1));
         }
 
         [Fact]
