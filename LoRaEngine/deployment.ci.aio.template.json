@@ -74,8 +74,7 @@
                   "PortBindings": {
                     "5000/tcp": [
                       {
-                        "HostPort": "5000",
-                        "HostIp": "172.17.0.1"
+                        "HostPort": "5000"
                       }
                     ]
                   }
@@ -123,20 +122,19 @@
               }
             },
             "env": {
-              "SPI_DEV":{
-                "value":"$LBS_SPI_DEV"
+              "SPI_DEV": {
+                "value": "$LBS_SPI_DEV"
               },
-              "SPI_SPEED":
-              {
-               "value":"$LBS_SPI_SPEED"
+              "SPI_SPEED": {
+                "value": "$LBS_SPI_SPEED"
               },
-              "TC_URI":{
-                "value": "ws://172.17.0.1:5000"
+              "TC_URI": {
+                "value": "ws://localhost:5000"
               },
-              "RESET_PIN":{
+              "RESET_PIN": {
                 "value": "$RESET_PIN"
               },
-              "FIXED_STATION_EUI":{
+              "FIXED_STATION_EUI": {
                 "value": "$LBS_FIXED_STATION_EUI"
               }
             },
@@ -177,4 +175,3 @@
     }
   }
 }
-
