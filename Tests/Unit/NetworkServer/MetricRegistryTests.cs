@@ -15,10 +15,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class MetricRegistryTests : IDisposable
     {
+        private readonly RegistryMetricTagBag metricTagBag;
         private readonly Meter meter;
 
         public MetricRegistryTests()
         {
+            this.metricTagBag = new RegistryMetricTagBag();
             this.meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
         }
 
@@ -85,7 +87,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var tagValues = new[] { KeyValuePair.Create("foo", (object?)"foovalue"), KeyValuePair.Create("bar", (object?)"barvalue") };
 
             // act
-            var result = MetricExporterHelper.GetTagsInOrder(tags, tagValues);
+            var result = MetricExporterHelper.GetTagsInOrder(tags, tagValues, this.metricTagBag);
 
             // assert
             Assert.Equal(new[] { "foovalue", "barvalue" }, result);
@@ -99,7 +101,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var tagValues = new[] { KeyValuePair.Create("bar", (object?)"barvalue"), KeyValuePair.Create("foo", (object?)"foovalue") };
 
             // act
-            var result = MetricExporterHelper.GetTagsInOrder(tags, tagValues);
+            var result = MetricExporterHelper.GetTagsInOrder(tags, tagValues, this.metricTagBag);
 
             // assert
             Assert.Equal(new[] { "foovalue", "barvalue" }, result);
@@ -108,7 +110,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public void GetTagsInOrder_Throws_When_Tag_Not_Found()
         {
-            var result = Assert.Throws<LoRaProcessingException>(() => MetricExporterHelper.GetTagsInOrder(new[] { "foo" }, Array.Empty<KeyValuePair<string, object?>>()));
+            var result = Assert.Throws<LoRaProcessingException>(() => MetricExporterHelper.GetTagsInOrder(new[] { "foo" }, Array.Empty<KeyValuePair<string, object?>>(), this.metricTagBag));
             Assert.Equal(LoRaProcessingErrorCode.TagNotSet, result.ErrorCode);
         }
 
@@ -116,8 +118,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void GetTagsInOrder_Throws_When_Tag_Is_Empty()
         {
             const string tagName = "foo";
-            var result = Assert.Throws<LoRaProcessingException>(() => MetricExporterHelper.GetTagsInOrder(new[] { tagName }, new[] { KeyValuePair.Create(tagName, (object?)string.Empty) }));
+            var result = Assert.Throws<LoRaProcessingException>(() => MetricExporterHelper.GetTagsInOrder(new[] { tagName }, new[] { KeyValuePair.Create(tagName, (object?)string.Empty) }, this.metricTagBag));
             Assert.Equal(LoRaProcessingErrorCode.TagNotSet, result.ErrorCode);
+        }
+
+        [Fact]
+        public void GetTagsInOrder_Should_Fall_Back_To_Tag_Bag_For_Station_Eui()
+        {
+            // arrange
+            var stationEui = new StationEui(1);
+            this.metricTagBag.StationEui.Value = stationEui;
+
+            // act
+            var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.GatewayIdTagName }, Array.Empty<KeyValuePair<string, object?>>(), this.metricTagBag);
+
+            // assert
+            Assert.Equal(new[] { stationEui.ToString() }, result);
         }
 
         [Fact]

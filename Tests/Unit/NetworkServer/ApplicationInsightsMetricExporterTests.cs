@@ -19,6 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly CustomMetric[] registry;
         private readonly TelemetryConfiguration telemetryConfiguration;
         private readonly Mock<Action<Metric, double, string[]>> trackValueMock;
+        private readonly RegistryMetricTagBag registryMetricTagBag;
         private readonly ApplicationInsightsMetricExporter applicationInsightsMetricExporter;
         private CustomMetric CounterMetric => this.registry.First(m => m.Type == MetricType.Counter);
         private CustomMetric HistogramMetric => this.registry.First(m => m.Type == MetricType.Histogram);
@@ -32,9 +33,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
             this.telemetryConfiguration = new TelemetryConfiguration { TelemetryChannel = new Mock<ITelemetryChannel>().Object };
             this.trackValueMock = new Mock<Action<Metric, double, string[]>>();
+            this.registryMetricTagBag = new RegistryMetricTagBag();
             this.applicationInsightsMetricExporter = new TestableApplicationInsightsExporter(new TelemetryClient(this.telemetryConfiguration),
                                                                                              this.trackValueMock.Object,
-                                                                                             this.registry.ToDictionary(m => m.Name, m => m));
+                                                                                             this.registry.ToDictionary(m => m.Name, m => m),
+                                                                                             this.registryMetricTagBag);
         }
 
         [Fact]
@@ -166,6 +169,24 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), 1, new[] { gateway }), Times.Once);
         }
 
+        [Fact]
+        public void When_Tag_Not_Specified_Should_Fallback_To_Tag_Bag()
+        {
+            // arrange
+            using var instrument = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
+            var stationEui = new StationEui(1);
+            this.registryMetricTagBag.StationEui.Value = stationEui;
+            const int value = 1;
+            var counter = instrument.CreateCounter<int>(CounterMetric.Name);
+
+            // act
+            applicationInsightsMetricExporter.Start();
+            counter.Add(value);
+
+            // assert
+            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), value, new[] { stationEui.ToString() }), Times.Once);
+        }
+
         public void Dispose()
         {
             this.telemetryConfiguration.Dispose();
@@ -178,8 +199,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             public TestableApplicationInsightsExporter(TelemetryClient telemetryClient,
                                                        Action<Metric, double, string[]> trackValue,
-                                                       IDictionary<string, CustomMetric> registryLookup)
-                : base(telemetryClient, registryLookup)
+                                                       IDictionary<string, CustomMetric> registryLookup,
+                                                       RegistryMetricTagBag metricTagBag)
+                : base(telemetryClient, registryLookup, metricTagBag)
             {
                 this.trackValue = trackValue;
             }

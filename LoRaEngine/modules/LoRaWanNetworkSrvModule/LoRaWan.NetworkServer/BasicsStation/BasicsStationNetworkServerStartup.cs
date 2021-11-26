@@ -90,10 +90,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
                         .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>))
+                        .AddSingleton(new RegistryMetricTagBag())
+                        .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
                         .AddHostedService(sp =>
                             new MetricExporterHostedService(
-                                new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>()) : null,
-                                                            new PrometheusMetricExporter())))
+                                new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>(),
+                                                                                                                           sp.GetRequiredService<RegistryMetricTagBag>()) : null,
+                                                            new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>()))))
                         .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version));
 
             if (useApplicationInsights)

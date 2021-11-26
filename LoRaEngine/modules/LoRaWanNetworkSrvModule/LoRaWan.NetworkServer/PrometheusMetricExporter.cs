@@ -19,12 +19,13 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IDictionary<string, Counter> counters;
         private readonly IDictionary<string, Histogram> histograms;
+        private readonly RegistryMetricTagBag metricTagBag;
 
-        public PrometheusMetricExporter()
-            : this(MetricRegistry.RegistryLookup)
+        public PrometheusMetricExporter(RegistryMetricTagBag metricTagBag)
+            : this(MetricRegistry.RegistryLookup, metricTagBag)
         { }
 
-        internal PrometheusMetricExporter(IDictionary<string, CustomMetric> registryLookup)
+        internal PrometheusMetricExporter(IDictionary<string, CustomMetric> registryLookup, RegistryMetricTagBag metricTagBag)
             : base(registryLookup)
         {
             this.counters = GetMetricsFromRegistry(MetricType.Counter, m => Metrics.CreateCounter(m.Name, m.Description, m.Tags));
@@ -34,6 +35,7 @@ namespace LoRaWan.NetworkServer
                 this.registryLookup.Values.Where(m => m.Type == metricType)
                                           .Select(m => KeyValuePair.Create(m.Name, factory(m)))
                                           .ToDictionary(m => m.Key, m => m.Value);
+            this.metricTagBag = metricTagBag;
         }
 
         protected override void TrackValue(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
@@ -53,7 +55,7 @@ namespace LoRaWan.NetworkServer
             };
 #pragma warning restore format
 
-            var inOrderTags = MetricExporterHelper.GetTagsInOrder(this.registryLookup[instrument.Name].Tags, tags);
+            var inOrderTags = MetricExporterHelper.GetTagsInOrder(this.registryLookup[instrument.Name].Tags, tags, this.metricTagBag);
             trackMetric(instrument.Name, inOrderTags, measurement);
         }
 

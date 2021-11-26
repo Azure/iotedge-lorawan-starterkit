@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Linq;
+    using System.Threading;
 
     internal static class MetricRegistry
     {
@@ -66,21 +67,35 @@ namespace LoRaWan.NetworkServer
         }
     }
 
+    /// <summary>
+    /// Container for station EUI tags that are used as a tag when raising metrics.
+    /// This helps us avoiding passing the station EUI down the stack.
+    /// </summary>
+    internal sealed class RegistryMetricTagBag
+    {
+        public AsyncLocal<StationEui?> StationEui { get; } = new AsyncLocal<StationEui?>();
+    }
+
     internal static class MetricExporterHelper
     {
         /// <summary>
         /// Gets the tags ordered by the original order of the tags.
+        /// Falls back to common tags that are present in the RegistryMetricTagBag.
         /// </summary>
-        public static string[] GetTagsInOrder(IEnumerable<string> tagNames, ReadOnlySpan<KeyValuePair<string, object?>> tags)
+        public static string[] GetTagsInOrder(IEnumerable<string> tagNames, ReadOnlySpan<KeyValuePair<string, object?>> tags, RegistryMetricTagBag metricTagBag)
         {
             var tagLookup = new Dictionary<string, object?>(tags.ToArray(), StringComparer.OrdinalIgnoreCase);
-            return tagNames.Select(t => GetNonEmptyTagValue(t, tagLookup)).ToArray();
-            static string GetNonEmptyTagValue(string tag, IDictionary<string, object?> tagLookup)
+            return tagNames.Select(t => GetNonEmptyTagValue(t, tagLookup, metricTagBag)).ToArray();
+            static string GetNonEmptyTagValue(string tag, IDictionary<string, object?> tagLookup, RegistryMetricTagBag registryMetricTagBag)
             {
                 if (tagLookup.TryGetValue(tag, out var tagValue))
                 {
                     var tagString = tagValue?.ToString();
                     if (!string.IsNullOrEmpty(tagString)) return tagString;
+                }
+                else if (tag.Equals(MetricRegistry.GatewayIdTagName, StringComparison.OrdinalIgnoreCase) && registryMetricTagBag.StationEui.Value is { } stationEui)
+                {
+                    return stationEui.ToString();
                 }
 
                 throw new LoRaProcessingException($"Tag '{tag}' is not defined.", LoRaProcessingErrorCode.TagNotSet);

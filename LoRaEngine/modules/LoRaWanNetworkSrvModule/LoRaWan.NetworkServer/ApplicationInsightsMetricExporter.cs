@@ -19,11 +19,15 @@ namespace LoRaWan.NetworkServer
     internal class ApplicationInsightsMetricExporter : RegistryMetricExporter
     {
         private readonly IDictionary<string, (Metric, MetricIdentifier)> metricRegistry;
+        private readonly RegistryMetricTagBag metricTagBag;
 
-        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient) : this(telemetryClient, MetricRegistry.RegistryLookup)
+        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient, RegistryMetricTagBag metricTagBag)
+            : this(telemetryClient, MetricRegistry.RegistryLookup, metricTagBag)
         { }
 
-        internal ApplicationInsightsMetricExporter(TelemetryClient telemetryClient, IDictionary<string, CustomMetric> registryLookup)
+        internal ApplicationInsightsMetricExporter(TelemetryClient telemetryClient,
+                                                   IDictionary<string, CustomMetric> registryLookup,
+                                                   RegistryMetricTagBag metricTagBag)
             : base(registryLookup)
         {
             this.metricRegistry = registryLookup.ToDictionary(m => m.Key, m =>
@@ -31,6 +35,7 @@ namespace LoRaWan.NetworkServer
                 var id = new MetricIdentifier(MetricRegistry.Namespace, m.Value.Name, m.Value.Tags);
                 return (telemetryClient.GetMetric(id), id);
             });
+            this.metricTagBag = metricTagBag;
         }
 
         protected override void TrackValue(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
@@ -39,7 +44,7 @@ namespace LoRaWan.NetworkServer
             {
                 var (metric, identifier) = value;
                 var tagNames = identifier.GetDimensionNames().ToArray() ?? Array.Empty<string>();
-                TrackValue(metric, measurement, MetricExporterHelper.GetTagsInOrder(tagNames, tags));
+                TrackValue(metric, measurement, MetricExporterHelper.GetTagsInOrder(tagNames, tags, this.metricTagBag));
             }
         }
 

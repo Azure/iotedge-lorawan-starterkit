@@ -52,8 +52,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                            this.messageDispatcher.Object,
                                                                            upstreamDeduplicationMock.Object,
                                                                            joinRequestDeduplicationMock.Object,
-                                                                           loggerMock,
-                                                                           TestMeter.Instance);
+                                                                           loggerMock, new RegistryMetricTagBag(),
+                                                                           // Do not pass meter since metric testing will be unreliable due to interference from test classes running in parallel.
+                                                                           null);
         }
 
         [Fact]

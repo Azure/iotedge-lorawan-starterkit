@@ -17,6 +17,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     {
         private readonly Mock<Action<string, string[], double>> incCounterMock;
         private readonly Mock<Action<string, string[], double>> recordHistogramMock;
+        private readonly RegistryMetricTagBag metricTagBag;
         private readonly TestablePrometheusMetricExporter prometheusMetricExporter;
         private readonly ICollection<CustomMetric> registry;
 
@@ -32,9 +33,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
             this.incCounterMock = new Mock<Action<string, string[], double>>();
             this.recordHistogramMock = new Mock<Action<string, string[], double>>();
+            this.metricTagBag = new RegistryMetricTagBag();
             this.prometheusMetricExporter = new TestablePrometheusMetricExporter(this.incCounterMock.Object,
                                                                                  this.recordHistogramMock.Object,
-                                                                                 this.registry.ToDictionary(m => m.Name, m => m));
+                                                                                 this.registry.ToDictionary(m => m.Name, m => m),
+                                                                                 this.metricTagBag);
         }
 
         public void Dispose()
@@ -146,6 +149,24 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Throws<LoRaProcessingException>(() => counter.Add(value));
         }
 
+        [Fact]
+        public void When_Tag_Not_Specified_Should_Fallback_To_Tag_Bag()
+        {
+            // arrange
+            using var instrument = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
+            var stationEui = new StationEui(1);
+            this.metricTagBag.StationEui.Value = stationEui;
+            const int value = 1;
+            var counter = instrument.CreateCounter<int>(Counter.Name);
+
+            // act
+            this.prometheusMetricExporter.Start();
+            counter.Add(value);
+
+            // assert
+            this.incCounterMock.Verify(me => me.Invoke(Counter.Name, new[] { stationEui.ToString() }, value), Times.Once);
+        }
+
         private class TestablePrometheusMetricExporter : PrometheusMetricExporter
         {
             private readonly Action<string, string[], double> incCounter;
@@ -153,7 +174,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             public TestablePrometheusMetricExporter(Action<string, string[], double> incCounter,
                                                     Action<string, string[], double> recordHistogram,
-                                                    IDictionary<string, CustomMetric> registryLookup) : base(registryLookup)
+                                                    IDictionary<string, CustomMetric> registryLookup,
+                                                    RegistryMetricTagBag registryMetricTagBag) : base(registryLookup, registryMetricTagBag)
             {
                 this.incCounter = incCounter;
                 this.observeHistogram = recordHistogram;
