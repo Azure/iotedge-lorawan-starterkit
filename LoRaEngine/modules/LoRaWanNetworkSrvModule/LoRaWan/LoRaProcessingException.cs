@@ -61,6 +61,7 @@ namespace LoRaWan
         DeviceInitializationFailed,
         InvalidDataRate,
         InvalidDataRateOffset,
+        TagNotSet,
         InvalidFrequency
     }
 }

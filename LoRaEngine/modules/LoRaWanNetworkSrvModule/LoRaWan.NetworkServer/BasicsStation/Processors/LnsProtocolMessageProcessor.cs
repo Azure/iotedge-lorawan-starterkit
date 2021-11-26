@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
+    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Net.NetworkInformation;
     using System.Net.WebSockets;
@@ -32,6 +33,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly IConcentratorDeduplication<UpstreamDataFrame> upstreamDeduplication;
         private readonly IConcentratorDeduplication<JoinRequestFrame> joinRequestDeduplication;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
+        private readonly RegistryMetricTagBag registryMetricTagBag;
+        private readonly Counter<int> joinRequestCounter;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
@@ -39,7 +42,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                            IMessageDispatcher messageDispatcher,
                                            IConcentratorDeduplication<UpstreamDataFrame> upstreamDeduplication,
                                            IConcentratorDeduplication<JoinRequestFrame> joinRequestDeduplication,
-                                           ILogger<LnsProtocolMessageProcessor> logger)
+                                           ILogger<LnsProtocolMessageProcessor> logger,
+                                           RegistryMetricTagBag registryMetricTagBag,
+                                           Meter meter)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.socketWriterRegistry = socketWriterRegistry;
@@ -48,6 +53,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.upstreamDeduplication = upstreamDeduplication;
             this.joinRequestDeduplication = joinRequestDeduplication;
             this.logger = logger;
+            this.registryMetricTagBag = registryMetricTagBag;
+            this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
@@ -144,6 +151,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");
 
             using var scope = this.logger.BeginEuiScope(stationEui);
+            this.registryMetricTagBag.StationEui.Value = stationEui;
 
             var channel = new WebSocketTextChannel(socket, sendTimeout: TimeSpan.FromSeconds(3));
             var handle = this.socketWriterRegistry.Register(stationEui, channel);
@@ -198,6 +206,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         {
                             break;
                         }
+
+                        this.joinRequestCounter?.Add(1);
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
