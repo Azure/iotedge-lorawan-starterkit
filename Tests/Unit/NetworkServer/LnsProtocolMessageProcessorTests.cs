@@ -52,7 +52,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                            this.messageDispatcher.Object,
                                                                            upstreamDeduplicationMock.Object,
                                                                            joinRequestDeduplicationMock.Object,
-                                                                           loggerMock);
+                                                                           loggerMock,
+                                                                           TestMeter.Instance);
         }
 
         [Fact]

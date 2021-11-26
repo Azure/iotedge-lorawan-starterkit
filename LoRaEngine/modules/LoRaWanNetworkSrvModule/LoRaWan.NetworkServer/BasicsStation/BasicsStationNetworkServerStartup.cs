@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Diagnostics.Metrics;
     using System.Globalization;
     using Logger;
     using LoRaTools.ADR;
@@ -92,7 +93,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddHostedService(sp =>
                             new MetricExporterHostedService(
                                 new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>()) : null,
-                                                            new PrometheusMetricExporter())));
+                                                            new PrometheusMetricExporter())))
+                        .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version));
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);

@@ -26,9 +26,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     {
         private static readonly Action<ILogger, string, string, Exception> LogReceivedMessage =
             LoggerMessage.Define<string, string>(LogLevel.Information, default, "Received '{Type}' message: '{Json}'.");
-        private static readonly Meter Meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
-        private static readonly Counter<int> JoinRequestCounter = Meter.CreateCounter<int>(MetricRegistry.JoinRequests);
-
 
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
@@ -37,6 +34,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly IConcentratorDeduplication<UpstreamDataFrame> upstreamDeduplication;
         private readonly IConcentratorDeduplication<JoinRequestFrame> joinRequestDeduplication;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
+        private readonly Counter<int> joinRequestCounter;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
@@ -44,7 +42,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                            IMessageDispatcher messageDispatcher,
                                            IConcentratorDeduplication<UpstreamDataFrame> upstreamDeduplication,
                                            IConcentratorDeduplication<JoinRequestFrame> joinRequestDeduplication,
-                                           ILogger<LnsProtocolMessageProcessor> logger)
+                                           ILogger<LnsProtocolMessageProcessor> logger,
+                                           Meter meter)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.socketWriterRegistry = socketWriterRegistry;
@@ -53,6 +52,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.upstreamDeduplication = upstreamDeduplication;
             this.joinRequestDeduplication = joinRequestDeduplication;
             this.logger = logger;
+            this.joinRequestCounter = meter.CreateCounter<int>(MetricRegistry.JoinRequests);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
@@ -204,7 +204,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                             break;
                         }
 
-                        JoinRequestCounter.Add(1, new[] { KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)stationEui) });
+                        joinRequestCounter.Add(1, new[] { KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)stationEui) });
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
