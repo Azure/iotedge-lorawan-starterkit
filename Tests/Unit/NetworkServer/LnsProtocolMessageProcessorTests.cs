@@ -43,8 +43,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                           .Returns(Task.FromResult(RegionManager.EU868));
             this.messageDispatcher = new Mock<IMessageDispatcher>();
             this.packetForwarder = new Mock<IPacketForwarder>();
-            var upstreamDeduplicationMock = new Mock<IConcentratorDeduplication<UpstreamDataFrame>>();
-            var joinRequestDeduplicationMock = new Mock<IConcentratorDeduplication<JoinRequestFrame>>();
+            var upstreamDeduplicationMock = new Mock<IConcentratorDeduplication>();
+            var joinRequestDeduplicationMock = new Mock<IConcentratorDeduplication>();
 
             this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(this.basicsStationConfigurationMock.Object,
                                                                            new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>()),

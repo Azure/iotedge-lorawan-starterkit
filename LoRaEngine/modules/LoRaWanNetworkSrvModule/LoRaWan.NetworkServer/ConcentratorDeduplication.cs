@@ -6,7 +6,9 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Buffers.Binary;
     using System.Security.Cryptography;
+    using DotNetty.Buffers;
     using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
@@ -17,6 +19,7 @@ namespace LoRaWan.NetworkServer
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
         private readonly IMemoryCache cache;
+        private readonly IDeduplicationStrategyFactory deduplicationStrategy;
         private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
         private readonly ILogger<IConcentratorDeduplication> logger;
 
@@ -27,16 +30,31 @@ namespace LoRaWan.NetworkServer
 
         public ConcentratorDeduplication(
             IMemoryCache cache,
+            IDeduplicationStrategyFactory deduplicationStrategy,
             WebSocketWriterRegistry<StationEui, string> socketRegistry,
             ILogger<IConcentratorDeduplication> logger)
         {
             this.cache = cache;
+            this.deduplicationStrategy = deduplicationStrategy;
             this.socketRegistry = socketRegistry;
             this.logger = logger;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="loRaRequest"></param>
+        /// <param name="loRaDevice"></param>
+        /// <returns><code>True</code> if this service should process this request and decide to drop or not.</returns>
+        internal bool ShouldProcess(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
+            => (loRaRequest.Payload is LoRaPayloadData && this.deduplicationStrategy.Create(loRaDevice) is DeduplicationStrategyDrop)
+               || loRaRequest.Payload is LoRaPayloadJoinRequest;
+
         public bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
         {
+            if (!ShouldProcess(loRaRequest, loRaDevice))
+                return false;
+
             var key = CreateCacheKey(loRaRequest);
             var stationEui = loRaRequest.StationEui;
 
@@ -80,23 +98,26 @@ namespace LoRaWan.NetworkServer
 
         private static string CreateCacheKeyCore(LoRaPayloadData payload)
         {
-            var totalBufferLength = DevAddr.Size + Mic.Size + payload.RawMessage.Length + sizeof(uint);
+            var totalBufferLength = payload.DevAddr.Length + payload.Mic.Length + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
-            var head = buffer; // keeps a view pointing at the start of the buffer
 
-            //buffer = payload.DevAddr.Write(buffer);
-            //buffer = updf.Mic.Write(buffer);
-            //_ = Encoding.UTF8.GetBytes(updf.Payload, buffer);
-            //BinaryPrimitives.WriteUInt16LittleEndian(buffer[updf.Payload.Length..], updf.Counter);
+            var index = 0;
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer, BinaryPrimitives.ReadUInt32LittleEndian(payload.DevAddr.Span));
+            index += payload.DevAddr.Length;
+            //BinaryPrimitives.WriteUInt32LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt32LittleEndian(payload.Mic.Span));
+            //index += payload.Mic.Length;
+            payload.RawMessage?.CopyTo(buffer[index..]);
+            index += payload.RawMessage?.Length ?? 0;
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
 
-            var key = Sha256.ComputeHash(head.ToArray());
+            var key = Sha256.ComputeHash(buffer.ToArray());
 
             return BitConverter.ToString(key);
         }
 
         private static string CreateCacheKeyCore(LoRaPayloadJoinRequest payload)
         {
-            return payload.DevAddr.ToString();
+            throw new NotImplementedException();
         }
 
         private void AddToCache(string key, StationEui stationEui)
