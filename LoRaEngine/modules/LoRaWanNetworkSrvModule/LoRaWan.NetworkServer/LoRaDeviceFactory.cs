@@ -48,15 +48,7 @@ namespace LoRaWan.NetworkServer
 
         private async Task<LoRaDevice> RegisterCoreAsync(IoTHubDeviceInfo deviceInfo, CancellationToken cancellationToken)
         {
-            var loRaDevice = new LoRaDevice(
-                deviceInfo.DevAddr,
-                deviceInfo.DevEUI,
-                this.connectionManager,
-                this.loggerFactory.CreateLogger<LoRaDevice>())
-            {
-                GatewayID = deviceInfo.GatewayId,
-                NwkSKey = deviceInfo.NwkSKey,
-            };
+            var loRaDevice = CreateDevice(deviceInfo);
             try
             {
                 // we always want to register the connection if we have a key.
@@ -85,6 +77,20 @@ namespace LoRaWan.NetworkServer
                 loRaDevice.Dispose();
                 throw;
             }
+        }
+
+        protected virtual LoRaDevice CreateDevice(IoTHubDeviceInfo deviceInfo)
+        {
+            return deviceInfo == null
+                    ? throw new ArgumentNullException(nameof(deviceInfo))
+                    : new LoRaDevice(deviceInfo.DevAddr,
+                                     deviceInfo.DevEUI,
+                                     this.connectionManager,
+                                     this.loggerFactory.CreateLogger<LoRaDevice>())
+                    {
+                        GatewayID = deviceInfo.GatewayId,
+                        NwkSKey = deviceInfo.NwkSKey,
+                    };
         }
 
         private string CreateIoTHubConnectionString()
