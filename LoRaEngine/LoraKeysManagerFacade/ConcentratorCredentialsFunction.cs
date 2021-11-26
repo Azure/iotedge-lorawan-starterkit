@@ -16,6 +16,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
+    using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Primitives;
     using Newtonsoft.Json.Linq;
@@ -26,15 +27,13 @@ namespace LoraKeysManagerFacade
         internal const string CupsCredentialsUrlPropertyName = "cupsCredentialUrl";
         internal const string LnsCredentialsUrlPropertyName = "tcCredentialUrl";
         private readonly RegistryManager registryManager;
-        private readonly BlobServiceClient blobServiceClient;
+        private readonly IAzureClientFactory<BlobServiceClient> azureClientFactory;
 
-        public ConcentratorCredentialsFunction(RegistryManager registryManager)
+        public ConcentratorCredentialsFunction(RegistryManager registryManager,
+                                               IAzureClientFactory<BlobServiceClient> azureClientFactory)
         {
             this.registryManager = registryManager;
-
-            var connectionStringVariableName = "AzureWebJobsStorage";
-            var connectionString = Environment.GetEnvironmentVariable(connectionStringVariableName);
-            this.blobServiceClient = new BlobServiceClient(connectionString);
+            this.azureClientFactory = azureClientFactory;
         }
 
         [FunctionName(nameof(FetchConcentratorCredentials))]
@@ -57,7 +56,7 @@ namespace LoraKeysManagerFacade
             return await RunFetchConcentratorCredentials(req, log, cancellationToken);
         }
 
-        private async Task<IActionResult> RunFetchConcentratorCredentials(HttpRequest req, ILogger log, CancellationToken cancellationToken)
+        internal async Task<IActionResult> RunFetchConcentratorCredentials(HttpRequest req, ILogger log, CancellationToken cancellationToken)
         {
             var stationEui = req.Query["StationEui"];
             if (StringValues.IsNullOrEmpty(stationEui))
@@ -96,12 +95,13 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        internal async Task<string> GetBase64EncodedBlobAsync(string blobUrl, CancellationToken cancellationToken)
+        internal virtual async Task<string> GetBase64EncodedBlobAsync(string blobUrl, CancellationToken cancellationToken)
         {
+            var blobServiceClient = this.azureClientFactory.CreateClient(FacadeStartup.WebJobsStorageClientName);
             var blobUri = new BlobUriBuilder(new Uri(blobUrl));
-            using var blobStream = await this.blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
-                                                               .GetBlobClient(blobUri.BlobName)
-                                                               .OpenReadAsync(new BlobOpenReadOptions(false), cancellationToken);
+            using var blobStream = await blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
+                                                          .GetBlobClient(blobUri.BlobName)
+                                                          .OpenReadAsync(new BlobOpenReadOptions(false), cancellationToken);
             using var base64transform = new ToBase64Transform();
             using var base64Stream = new CryptoStream(blobStream, base64transform, CryptoStreamMode.Read);
             using var memoryStream = new MemoryStream();
