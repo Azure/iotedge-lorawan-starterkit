@@ -34,24 +34,24 @@ namespace LoRaWan.NetworkServer
 
         internal async Task<LoRaDevice> LoadAsync()
         {
+            await this.joinLock.WaitAsync();
             try
             {
-                await this.joinLock.WaitAsync();
-
-                try
+                if (this.deviceCache.TryGetByDevEui(this.ioTHubDevice.DevEUI, out var cachedDevice))
                 {
-                    return await this.deviceFactory.CreateAndRegisterAsync(this.ioTHubDevice, CancellationToken.None);
+                    return cachedDevice;
                 }
-                finally
-                {
-                    _ = this.joinLock.Release();
-                }
+                return await this.deviceFactory.CreateAndRegisterAsync(this.ioTHubDevice, CancellationToken.None);
             }
             catch (LoRaProcessingException ex)
             {
                 this.logger.LogError(ex, "join refused: error initializing OTAA device, getting twin failed");
                 this.canCache = false;
                 return null;
+            }
+            finally
+            {
+                _ = this.joinLock.Release();
             }
         }
 
