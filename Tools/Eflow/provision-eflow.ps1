@@ -1,6 +1,8 @@
 <# .SYNOPSIS
     EFLOW Windows Server provisioning Script
 .DESCRIPTION
+    THIS SCRIPT IS NOT RECOMMENDED TO BE USED AS IS, BUT SHOULD BE SEEN AS A COLLECTION OF STEPS TO BE RUN MANUALLY
+    TO GET EFLOW UP AND RUNNING.
     This script automatically install Edge For Linux On Windows (EFLOW) on a new Windows Server VM
     The script might trigger a restart and might need to be rerun after a restart
 .NOTES
