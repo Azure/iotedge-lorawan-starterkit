@@ -209,6 +209,9 @@ jobs:
           IOT_EDGE_DEPLOYMENT_ID: ${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}
           FACADE_SERVER_URL: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
           FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
+          IOT_HUB_RESOURCE_ID: ${{ secret.IOT_HUB_RESOURCE_ID }}
+          LOG_ANALYTICS_WORKSPACE_ID: ${{ secret.LOG_ANALYTICS_WORKSPACE_ID }}
+          LOG_ANALYTICS_SHARED_KEY: ${{ secret.LOG_ANALYTICS_SHARED_KEY }}
         with:
           deployment_file_name: '${{ secrets.DEPLOYMENT_FILE_NAME }}'
           architecture: '${{ secrets.ARCHITECTURE }}'
@@ -233,6 +236,10 @@ jobs:
       FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
       EDGE_AGENT_VERSION: 1.1.8
       EDGE_HUB_VERSION: 1.1.8
+      IOT_HUB_RESOURCE_ID: ${{ secret.IOT_HUB_RESOURCE_ID }}
+      LOG_ANALYTICS_WORKSPACE_ID: ${{ secret.LOG_ANALYTICS_WORKSPACE_ID }}
+      LOG_ANALYTICS_SHARED_KEY: ${{ secret.LOG_ANALYTICS_SHARED_KEY }}
+
     steps:
       - uses: actions/checkout@v2
         name: Checkout current branch
@@ -280,6 +287,9 @@ jobs:
           DEVICE_ID: ${{ secrets.DEVICE_ID }}
           IOT_EDGE_DEPLOYMENT_ID: ${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}
           LBS_FIXED_STATION_EUI: ${{ secrets.LBS_FIXED_STATION_EUI }}
+          IOT_HUB_RESOURCE_ID: ${{ secret.IOT_HUB_RESOURCE_ID }}
+          LOG_ANALYTICS_WORKSPACE_ID: ${{ secret.LOG_ANALYTICS_WORKSPACE_ID }}
+          LOG_ANALYTICS_SHARED_KEY: ${{ secret.LOG_ANALYTICS_SHARED_KEY }}
         with:
           deployment_file_name: '${{ secrets.DEPLOYMENT_FILE_NAME }}'
           architecture: '${{ secrets.ARCHITECTURE }}'
