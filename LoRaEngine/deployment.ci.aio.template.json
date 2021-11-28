@@ -57,6 +57,9 @@
               },
               "AuthenticationMode": {
                 "value": "CloudAndScope"
+              },
+              "NestedEdgeEnabled": {
+                "value": "false"
               }
             }
           }
@@ -85,9 +88,6 @@
             "env": {
               "ENABLE_GATEWAY": {
                 "value": "true"
-              },
-              "NestedEdgeEnabled":{
-                "value": "false"
               },
               "LOG_LEVEL": {
                 "value": "$NET_SRV_LOG_LEVEL"
