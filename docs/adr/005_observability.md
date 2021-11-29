@@ -83,10 +83,8 @@ In addition to this, we will support Application Insights metrics on an opt-in b
 | ActiveStationConnections   | Active connections to stations                               | LNS    | LoRaWan   | Gateway Id                 |
 | D2CMessagesReceived        | Number of messages received from device                      | LNS    | LoRaWan   | Gateway Id                 |
 | D2CMessageDeliveryLatency  | Time from when we received the message from the concentrator until we are done processing it | LNS    | LoRaWan   | Gateway Id                 |
-| D2CMessagesError | Number of errors processing downstream messages | LNS    | LoRaWan   | Gateway Id            |
 | D2CMessageSize             | Message size in bytes received from device                   | LNS    | LoRaWan   | Gateway Id                 |
 | C2DMessagesAbandoned       | Number of C2D messages abandoned                             | LNS    | LoRaWan   | Gateway Id                 |
-| C2DMessagesError           | Number of errors in sending messages to downstream           | LNS    | LoRaWan   | Gateway Id, To             |
 | C2DMessageSizeDownstream   | Message size in bytes sent downstream                        | LNS    | LoRaWan   | Gateway Id, To             |
 
 ### Alerts
