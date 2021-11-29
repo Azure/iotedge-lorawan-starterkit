@@ -29,6 +29,7 @@ namespace LoRaWan.NetworkServer
         private readonly Counter<int> receiveWindowMissed;
         private readonly Counter<int> receiveWindowHits;
         private readonly Histogram<int> c2dPayloadSizeHistogram;
+        private readonly Histogram<int> d2cPayloadSizeHistogram;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
 
         public DefaultLoRaDataRequestHandler(
@@ -53,6 +54,7 @@ namespace LoRaWan.NetworkServer
             this.receiveWindowMissed = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowMisses);
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
             this.c2dPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.C2DMessageSize);
+            this.d2cPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.D2CMessageSize);
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
@@ -68,6 +70,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var loraPayload = (LoRaPayloadData)request.Payload;
+            this.d2cPayloadSizeHistogram?.Record(loraPayload.Frmpayload.Length);
 
             var payloadFcnt = loraPayload.GetFcnt();
 
