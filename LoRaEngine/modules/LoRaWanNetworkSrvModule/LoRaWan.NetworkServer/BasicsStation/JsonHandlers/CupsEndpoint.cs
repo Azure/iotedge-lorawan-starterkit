@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 JsonReader.Property("tcCredCrc", JsonReader.UInt32());
         }
 
-        internal static readonly IJsonReader<CupsUpdateRequest> UpdateRequestReader =
+        internal static readonly IJsonReader<CupsUpdateInfo> UpdateRequestReader =
             //TBD if to split or not
             JsonReader.Object(JsonReader.Property("router", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
                                                             select string.IsNullOrEmpty(s) ? (StationEui?)null : StationEui.Parse(s)),
@@ -47,6 +47,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               CommonCupsProperties.TcUri,
                               CommonCupsProperties.CupsCredCrc,
                               CommonCupsProperties.TcCredCrc,
-                              (r, c, t, cc, tc) => new CupsUpdateRequest(r, c, t, cc, tc));
+                              (r, c, t, cc, tc) => new CupsUpdateInfo(r, c, t, cc, tc));
     }
 }
