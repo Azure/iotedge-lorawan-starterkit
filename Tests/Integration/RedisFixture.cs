@@ -25,6 +25,7 @@ namespace LoRaWan.Tests.Integration
         private const string ImageName = "redis";
         private const string ImageTag = "5.0.4-alpine";
         private const int RedisPort = 6001;
+        private static readonly string TestContainerName = ContainerName + RedisPort;
 
         private ConnectionMultiplexer redis;
 
@@ -76,7 +77,7 @@ namespace LoRaWan.Tests.Integration
                 var response = await client.Containers.CreateContainerAsync(new CreateContainerParameters(config)
                 {
                     Image = ImageName + ":" + ImageTag,
-                    Name = GetContainerName(RedisPort),
+                    Name = TestContainerName,
                     Tty = false,
                     HostConfig = hostConfig
                 });
@@ -94,7 +95,7 @@ namespace LoRaWan.Tests.Integration
             }
             catch (DockerApiException e) when (e.StatusCode == HttpStatusCode.Conflict)
             {
-                var container = containers.FirstOrDefault(c => c.Names.Contains("/" + GetContainerName(RedisPort)));
+                var container = containers.FirstOrDefault(c => c.Names.Contains("/" + TestContainerName));
                 if (container is { } c && c.State.Equals("exited", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine("Starting existing container.");
@@ -110,8 +111,6 @@ namespace LoRaWan.Tests.Integration
                 Console.WriteLine(ex);
                 throw;
             }
-
-            static string GetContainerName(int port) => ContainerName + port;
         }
 
         public async Task InitializeAsync()
