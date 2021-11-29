@@ -54,6 +54,30 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.False(joinDeviceLoader.CanCache);
         }
 
+        [Fact]
+        public async Task When_One_Load_Is_Pending_Other_Is_Waiting()
+        {
+            using var cache = LoRaDeviceCacheDefault.CreateDefault();
+            var factory = new Mock<ILoRaDeviceFactory>();
+
+            using var device = new LoRaDevice(DefaultDeviceInfo.DevAddr, DefaultDeviceInfo.DevEUI, null);
+
+            factory.Setup(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(() =>
+                    {
+                        cache.Register(device);
+                        return device;
+                    });
+
+            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
+
+            var t1 = joinDeviceLoader.LoadAsync();
+            var t2 = joinDeviceLoader.LoadAsync();
+
+            Assert.All(await Task.WhenAll(t1, t2), x => Assert.Equal(device, x));
+            factory.Verify(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
         private readonly IoTHubDeviceInfo DefaultDeviceInfo = new IoTHubDeviceInfo() { DevEUI = "0000000000000000", PrimaryKey = "AAAA", DevAddr = "FFFFFFFF" };
     }
 }
