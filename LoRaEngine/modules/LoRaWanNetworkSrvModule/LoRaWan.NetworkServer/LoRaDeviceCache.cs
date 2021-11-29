@@ -334,8 +334,28 @@ namespace LoRaWan.NetworkServer
 
     public record LoRaDeviceCacheOptions
     {
+        /// <summary>
+        /// How often the validation of the device cache is run.
+        /// The local device cache will be evaluated after the specified
+        /// time and all devices that need to be removed or
+        /// refreshed are processed.
+        /// </summary>
         public TimeSpan ValidationInterval { get; set; }
+
+        /// <summary>
+        /// The time we allow a device to be not sending any
+        /// messages, before we consider it stale and remove
+        /// it from the cache. This should be a high value,
+        /// as LoRa sensors are optimized for saving power and
+        /// might only send a message, once a week for example.
+        /// </summary>
         public TimeSpan MaxUnobservedLifetime { get; set; }
+
+        /// <summary>
+        /// If a device is in cache and it exeeds this time
+        /// since the last refresh, a twin refresh is triggered
+        /// and the cached data is updated.
+        /// </summary>
         public TimeSpan RefreshInterval { get; set; }
     }
 }
