@@ -15,6 +15,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Server.Kestrel.Https;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -101,6 +102,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
+
+            if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
+                _ = services.AddSingleton<IClientCertificateValidatorService, ClientCertificateValidatorService>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
