@@ -6,15 +6,18 @@ namespace LoRaWan.Tools.CLI
     using System;
     using System.Buffers.Binary;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using Azure;
-    using Azure.Storage.Blobs.Models;
     using CommandLine;
+    using LoRaWan.Tools.CLI.CommandLineOptions;
     using LoRaWan.Tools.CLI.Helpers;
     using LoRaWan.Tools.CLI.Options;
     using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     public class Program
     {
@@ -31,7 +34,7 @@ namespace LoRaWan.Tools.CLI
             Console.ResetColor();
             Console.WriteLine();
 
-            var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions>(args)
+            var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions>(args)
                 .MapResult(
                     (ListOptions opts) => RunListAndReturnExitCode(opts),
                     (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
@@ -40,6 +43,8 @@ namespace LoRaWan.Tools.CLI
                     (AddOptions opts) => RunAddAndReturnExitCode(opts),
                     (UpdateOptions opts) => RunUpdateAndReturnExitCode(opts),
                     (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
+                    (RotateCertificateOptions opts) => RunRotateCertificateAndReturnExitCodeAsync(opts),
+                    (RevokeOptions opts) => RunRevokeAndReturnExitCodeAsync(opts),
                     errs => Task.FromResult(false));
 
             if (success)
@@ -163,43 +168,25 @@ namespace LoRaWan.Tools.CLI
                     return false;
                 }
 
-                // renormalize to Unix line endings
-                var certificateBundleBlobName = opts.StationEui;
-                var blobClient = configurationHelper.CertificateStorageContainerClient.GetBlobClient(certificateBundleBlobName);
-                var certificateContent = Regex.Replace(File.ReadAllText(opts.CertificateBundleLocation), @"\r\n|\n\r|\n|\r", "\n");
-
-                try
+                if (await iotDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper) is not null)
                 {
-                    _ = await blobClient.UploadAsync(new BinaryData(Encoding.UTF8.GetBytes(certificateContent)), overwrite: false);
-                }
-                catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"Uploading certificate bundle failed because bundle already exists. Please use the 'update' verb to update existing concentrator configuration.");
-                    return false;
-                }
-                catch (RequestFailedException ex)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"Uploading certificate bundle failed with error: '{ex.Message}'.");
+                    StatusConsole.WriteLogLine(MessageType.Error, "Station was already created, please use the 'update' verb to update an existing station.");
                     return false;
                 }
 
-                try
+                if (opts.NoCups)
                 {
-                    var crc = new Force.Crc32.Crc32Algorithm();
-                    var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(Encoding.UTF8.GetBytes(certificateContent)));
-                    var twin = iotDeviceHelper.CreateConcentratorTwin(opts, crcHash, blobClient.Uri);
-                    var success = await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
-                    if (!success) await CleanupAsync();
-                    return success;
+                    var twin = iotDeviceHelper.CreateConcentratorTwin(opts, 0, null);
+                    return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
                 }
-                catch (Exception)
+                else
                 {
-                    // If the twin was not successfully created, remove the uploaded certificate bundle.
-                    await CleanupAsync();
-                    throw;
+                    return await UploadCertificateBundleAsync(opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
+                    {
+                        var twin = iotDeviceHelper.CreateConcentratorTwin(opts, crcHash, bundleStorageUri);
+                        return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
+                    });
                 }
-
-                Task CleanupAsync() => blobClient.DeleteIfExistsAsync();
             }
 
             opts = iotDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
@@ -221,6 +208,84 @@ namespace LoRaWan.Tools.CLI
             }
 
             return isSuccess;
+        }
+
+        private static async Task<bool> RunRotateCertificateAndReturnExitCodeAsync(RotateCertificateOptions opts)
+        {
+            if (!configurationHelper.ReadConfig())
+                return false;
+
+            if (!File.Exists(opts.CertificateBundleLocation))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Certificate bundle does not exist at defined location.");
+                return false;
+            }
+
+            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
+
+            if (twin is null)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Device was not found in IoT Hub. Please create it first.");
+                return false;
+            }
+
+            var twinJObject = JsonConvert.DeserializeObject<JObject>(twin.Properties.Desired.ToJson());
+            var cupsProperties = twinJObject[TwinProperty.Cups];
+            var oldCupsCredentialBundleLocation = new Uri(cupsProperties[TwinProperty.CupsCredentialUrl].ToString());
+            var oldTcCredentialBundleLocation = new Uri(cupsProperties[TwinProperty.TcCredentialUrl].ToString());
+
+            // Upload new certificate bundle
+            var success = await UploadCertificateBundleAsync(opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
+            {
+                var thumbprints = (JArray)twinJObject[TwinProperty.ClientThumbprint];
+                if (!thumbprints.Any(t => string.Equals(t.ToString(), opts.ClientCertificateThumbprint, StringComparison.OrdinalIgnoreCase)))
+                    thumbprints.Add(JToken.Parse($"\"{opts.ClientCertificateThumbprint}\""));
+
+                twin.Properties.Desired[TwinProperty.ClientThumbprint] = thumbprints;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.CupsCredentialCrc] = crcHash;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.TcCredentialCrc] = crcHash;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.CupsCredentialUrl] = bundleStorageUri;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.TcCredentialUrl] = bundleStorageUri;
+
+                return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
+            });
+
+            // Clean up old certificate bundles
+            try
+            {
+                _ = await configurationHelper.CertificateStorageContainerClient.DeleteBlobIfExistsAsync(oldCupsCredentialBundleLocation.Segments.Last());
+            }
+            finally
+            {
+                _ = await configurationHelper.CertificateStorageContainerClient.DeleteBlobIfExistsAsync(oldTcCredentialBundleLocation.Segments.Last());
+            }
+
+            return success;
+        }
+
+        private static async Task<bool> RunRevokeAndReturnExitCodeAsync(RevokeOptions opts)
+        {
+            if (!configurationHelper.ReadConfig())
+                return false;
+
+            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
+
+            if (twin is null)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Device was not found in IoT Hub. Please create it first.");
+                return false;
+            }
+
+            var twinJObject = JsonConvert.DeserializeObject<JObject>(twin.Properties.Desired.ToJson());
+            var clientThumprints = twinJObject[TwinProperty.ClientThumbprint];
+            var t = clientThumprints.FirstOrDefault(t => t.ToString().Equals(opts.ClientCertificateThumbprint, StringComparison.OrdinalIgnoreCase));
+
+            if (t is null)
+                StatusConsole.WriteLogLine(MessageType.Error, "Specified thumbprint not found.");
+
+            t?.Remove();
+            twin.Properties.Desired[TwinProperty.ClientThumbprint] = clientThumprints;
+            return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
         }
 
         private static async Task<bool> RunUpdateAndReturnExitCode(UpdateOptions opts)
@@ -268,6 +333,40 @@ namespace LoRaWan.Tools.CLI
             }
 
             return isSuccess;
+        }
+
+        private static async Task<bool> UploadCertificateBundleAsync(string certificateBundleLocation, string stationEui, Func<uint, Uri, Task<bool>> uploadSuccessActionAsync)
+        {
+            var certificateBundleBlobName = $"{stationEui}-{Guid.NewGuid():N}";
+            var blobClient = configurationHelper.CertificateStorageContainerClient.GetBlobClient(certificateBundleBlobName);
+            var fileContent = await File.ReadAllTextAsync(certificateBundleLocation);
+            var certificateContent = Regex.Replace(fileContent, @"\r\n|\n\r|\n|\r", "\n");
+
+            try
+            {
+                _ = await blobClient.UploadAsync(new BinaryData(Encoding.UTF8.GetBytes(certificateContent)), overwrite: false);
+            }
+            catch (RequestFailedException ex)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, $"Uploading certificate bundle failed with error: '{ex.Message}'.");
+                return false;
+            }
+
+            try
+            {
+                var crc = new Force.Crc32.Crc32Algorithm();
+                var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(Encoding.UTF8.GetBytes(certificateContent)));
+                if (!await uploadSuccessActionAsync(crcHash, blobClient.Uri))
+                    await CleanupAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await CleanupAsync();
+                throw;
+            }
+
+            Task CleanupAsync() => blobClient.DeleteIfExistsAsync();
         }
 
         private static async Task<bool> RunRemoveAndReturnExitCode(RemoveOptions opts)
