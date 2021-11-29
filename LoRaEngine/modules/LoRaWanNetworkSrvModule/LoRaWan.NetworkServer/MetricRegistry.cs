@@ -22,6 +22,7 @@ namespace LoRaWan.NetworkServer
         public static readonly CustomMetric StationConnectivityLost = new CustomMetric("StationConnectivityLost", "Counts the number of station connectivities that were lost", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric ReceiveWindowHits = new CustomMetric("ReceiveWindowHits", "Receive window hits", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric ReceiveWindowMisses = new CustomMetric("ReceiveWindowMisses", "Receive window misses", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric D2CMessagesReceived = new CustomMetric("D2CMessagesReceived", "Number of D2C messages received", MetricType.Counter, new[] { GatewayIdTagName });
 
         private static readonly ICollection<CustomMetric> Registry = new[]
         {
@@ -29,7 +30,8 @@ namespace LoRaWan.NetworkServer
             ActiveStationConnections,
             StationConnectivityLost,
             ReceiveWindowHits,
-            ReceiveWindowMisses
+            ReceiveWindowMisses,
+            D2CMessagesReceived
         };
 
         public static readonly IDictionary<string, CustomMetric> RegistryLookup =
