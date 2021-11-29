@@ -279,6 +279,10 @@ namespace LoRaWan.Tools.CLI
             var twinJObject = JsonConvert.DeserializeObject<JObject>(twin.Properties.Desired.ToJson());
             var clientThumprints = twinJObject[TwinProperty.ClientThumbprint];
             var t = clientThumprints.FirstOrDefault(t => t.ToString().Equals(opts.ClientCertificateThumbprint, StringComparison.OrdinalIgnoreCase));
+
+            if (t is null)
+                StatusConsole.WriteLogLine(MessageType.Error, "Specified thumbprint not found.");
+
             t?.Remove();
             twin.Properties.Desired[TwinProperty.ClientThumbprint] = clientThumprints;
             return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
