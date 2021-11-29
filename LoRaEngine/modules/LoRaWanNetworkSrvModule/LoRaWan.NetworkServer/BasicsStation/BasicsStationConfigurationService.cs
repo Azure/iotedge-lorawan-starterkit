@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
-    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
