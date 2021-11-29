@@ -6,7 +6,7 @@
 
 **Author**: Daniele Antonio Maggio
 
-**Status**: Proposed
+**Status**: Accepted
 
 __________
 
@@ -209,8 +209,8 @@ The Azure Function should implement a new endpoint 'FetchConcentratorCredentials
 
 ```mermaid
 sequenceDiagram
-LoRaWanNetworkSrvModule->>Function: POST /fetchConcentratorCredentials
-Note right of LoRaWanNetworkSrvModule: Request includes 'stationEui' and 'credentialsType' (cups/tc/both)
+LoRaWanNetworkSrvModule->>Function: GET /fetchConcentratorCredentials
+Note right of LoRaWanNetworkSrvModule: Request includes 'stationEui' and 'credentialsType' (cups/tc) as query params
 Function->>IoT Hub: Retrieve Concentrator device Twin
 Function->>Function: Parse *CredentialUrl string to understand credentials location
 alt *CredentialUrl is a KeyVault Secret
@@ -221,11 +221,13 @@ else *CredentialUrl is plain Url
     Function->>HTTPS Endpoint: Get Blob with HTTP GET Request
 end
 Function->>LoRaWanNetworkSrvModule: Return credential blob
-Note right of LoRaWanNetworkSrvModule: Response should be a json including base64 encoded credential
+Note right of LoRaWanNetworkSrvModule: Response should be a base64 encoded credential sent as plaintext
 
 ```
 
 In addition to this, the Azure Function must be able to properly authenticate to target sink via Managed Identity (when using Azure Blob Storage or KeyVault).
+
+For the very first version of the implementation, only Azure Storage Account should be implemented and only connection string authentication is going to be supported.
 
 Considering that the default sink for the starter kit should be an Azure Storage Account, the template for the starter kit should be changed in such a way that a new Blob Container is created for uploading credential blob files.
 
