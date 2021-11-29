@@ -137,15 +137,13 @@ namespace LoRaWan.NetworkServer
             {
                 result &= this.euiCache.Remove(loRaDevice.DevEUI, out _);
 
-                if (!string.IsNullOrEmpty(loRaDevice.DevAddr))
+                if (!string.IsNullOrEmpty(loRaDevice.DevAddr) &&
+                     this.devAddrCache.TryGetValue(loRaDevice.DevAddr, out var devicesByDevAddr))
                 {
-                    if (this.devAddrCache.TryGetValue(loRaDevice.DevAddr, out var devicesByDevAddr))
+                    result &= devicesByDevAddr.Remove(loRaDevice.DevEUI, out _);
+                    if (devicesByDevAddr.IsEmpty)
                     {
-                        result &= devicesByDevAddr.Remove(loRaDevice.DevEUI, out _);
-                        if (devicesByDevAddr.IsEmpty)
-                        {
-                            result &= this.devAddrCache.Remove(loRaDevice.DevAddr, out _);
-                        }
+                        result &= this.devAddrCache.Remove(loRaDevice.DevAddr, out _);
                     }
                 }
             }
