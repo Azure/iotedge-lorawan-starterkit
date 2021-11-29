@@ -45,6 +45,12 @@ namespace LoRaWan.NetworkServer
         public abstract Task<SearchDevicesResult> SearchByEuiAsync(StationEui eui);
 
         /// <summary>
+        /// Fetch station credentials in IoT Hub.
+        /// </summary>
+        /// <param name="eui">EUI of the station.</param>
+        public abstract Task<string> FetchStationCredentialsAsync(StationEui eui, string credentialtype);
+
+        /// <summary>
         /// Searches LoRa devices in IoT Hub.
         /// </summary>
         /// <param name="eui">EUI of the LoRa device.</param>

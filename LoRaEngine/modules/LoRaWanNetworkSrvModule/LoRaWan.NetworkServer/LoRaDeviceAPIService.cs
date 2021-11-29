@@ -197,5 +197,31 @@ namespace LoRaWan.NetworkServer
 
             return new Uri(baseUrl, queryParameterSb.ToString());
         }
+
+        public override async Task<string> FetchStationCredentialsAsync(StationEui eui, string credentialtype)
+        {
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
+            {
+                ["code"] = AuthCode,
+                ["StationEui"] = eui.ToString("N", null),
+                ["CredentialType"] = credentialtype
+            });
+
+            var response = await client.GetAsync(new Uri(url.ToString()));
+            if (!response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return string.Empty;
+                }
+
+                this.logger.LogError($"error calling fetch station credentials api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
+
+                return string.Empty;
+            }
+
+            return await response.Content.ReadAsStringAsync();
+        }
     }
 }
