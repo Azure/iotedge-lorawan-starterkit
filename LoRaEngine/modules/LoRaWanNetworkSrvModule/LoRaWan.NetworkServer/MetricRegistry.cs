@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer
         public const string Namespace = "LoRaWan";
         public const string Version = "1.0";
         public const string GatewayIdTagName = "GatewayId";
+        public const string DataMessageTypeTagName = "MessageType";
 
         public static readonly CustomMetric JoinRequests = new CustomMetric("JoinRequests", "Number of join requests", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric ActiveStationConnections = new CustomMetric("ActiveStationConnections", "Number of active station connections", MetricType.Histogram, Array.Empty<string>());
@@ -25,6 +26,8 @@ namespace LoRaWan.NetworkServer
         public static readonly CustomMetric D2CMessagesReceived = new CustomMetric("D2CMessagesReceived", "Number of D2C messages received", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric D2CMessageSize = new CustomMetric("D2CMessageSize", "Size of D2C messages (in bytes)", MetricType.Histogram, new[] { GatewayIdTagName });
         public static readonly CustomMetric C2DMessageSize = new CustomMetric("C2DMessageSize", "Size of C2D messages (in bytes)", MetricType.Histogram, new[] { GatewayIdTagName });
+        public static readonly CustomMetric DataMessageDispatchLatency = new CustomMetric("DataMessageDispatchLatency", "Indicates how long it took to dispatch the message", MetricType.Histogram, new[] { GatewayIdTagName, DataMessageTypeTagName });
+        public static readonly CustomMetric DataMessageDeliveryLatency = new CustomMetric("DataMessageDeliveryLatency", "Indicates how long it took to deliver a dispatched message", MetricType.Histogram, new[] { GatewayIdTagName });
 
         private static readonly ICollection<CustomMetric> Registry = new[]
         {
@@ -34,7 +37,9 @@ namespace LoRaWan.NetworkServer
             ReceiveWindowHits,
             ReceiveWindowMisses,
             D2CMessagesReceived,
-            C2DMessageSize
+            D2CMessageSize,
+            C2DMessageSize,
+            DataMessageDispatchLatency
         };
 
         public static readonly IDictionary<string, CustomMetric> RegistryLookup =

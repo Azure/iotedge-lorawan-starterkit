@@ -5,6 +5,8 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -80,6 +82,7 @@ namespace LoRaWan.NetworkServer
         private readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
         private readonly ILogger<LoRaDevice> logger;
+        private readonly Histogram<double> dataMessageDeliveryLatency;
 
         public int TxPower => this.txPower.Get();
 
@@ -194,12 +197,17 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
-        public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger)
+        public LoRaDevice(string devAddr,
+                          string devEUI,
+                          ILoRaDeviceClientConnectionManager connectionManager,
+                          ILogger<LoRaDevice> logger,
+                          Histogram<double> dataMessageDeliveryLatency)
         {
             DevAddr = devAddr;
             DevEUI = devEUI;
             this.connectionManager = connectionManager;
             this.logger = logger;
+            this.dataMessageDeliveryLatency = dataMessageDeliveryLatency;
             DownlinkEnabled = true;
             IsABPRelaxedFrameCounter = true;
             PreferredWindow = 1;
@@ -213,7 +221,7 @@ namespace LoRaWan.NetworkServer
         /// Use constructor for test code only.
         /// </summary>
         internal LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
-            : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance)
+            : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance, null)
         { }
 
         /// <summary>
@@ -1092,6 +1100,7 @@ namespace LoRaWan.NetworkServer
             async Task CoreAsync()
             {
                 using var scope = this.logger.BeginDeviceScope(DevEUI);
+                var stopwatch = Stopwatch.StartNew();
 
                 LoRaDeviceRequestProcessResult result = null;
 
@@ -1106,6 +1115,8 @@ namespace LoRaWan.NetworkServer
                 }
                 finally
                 {
+                    stopwatch.Stop();
+                    this.dataMessageDeliveryLatency?.Record(stopwatch.ElapsedMilliseconds);
                     ProcessNext();
                 }
 
