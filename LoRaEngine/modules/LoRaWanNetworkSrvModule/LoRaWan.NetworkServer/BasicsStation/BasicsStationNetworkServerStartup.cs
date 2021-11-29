@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Server.Kestrel.Https;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -86,12 +87,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
-                        .AddSingleton<ClientCertificateValidatorService>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
                         .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>));
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
+
+            if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
+                _ = services.AddSingleton<ClientCertificateValidatorService>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
