@@ -51,7 +51,7 @@ namespace LoRaWan.NetworkServer
                                    ILoRaDeviceRegistry deviceRegistry,
                                    ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
             : this(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
-                   new JoinRequestMessageHandler(configuration, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance),
+                   new JoinRequestMessageHandler(configuration, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance, null),
                    NullLoggerFactory.Instance,
                    NullLogger<MessageDispatcher>.Instance)
         { }
