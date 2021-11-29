@@ -42,7 +42,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 LnsServerPfxPath = serverPfxPasswordProtected ? this.passwordProtectedPfx : this.notProtectedPfx,
                 LnsServerPfxPassword = serverPfxPasswordProtected ? CertificatePassword : string.Empty,
-                ClientCertificateMode = clientCertificateMode.ToString()
+                ClientCertificateMode = clientCertificateMode
             };
 
             BasicsStationNetworkServer.ConfigureHttpsSettings(networkServerConfiguration, clientCertificateValidatorService.Object, httpsConnectionAdapterOptions);

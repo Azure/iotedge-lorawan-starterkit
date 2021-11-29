@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using Microsoft.AspNetCore.Server.Kestrel.Https;
 
     // Network server configuration
     public class NetworkServerConfiguration
@@ -115,7 +116,7 @@ namespace LoRaWan.NetworkServer
         /// Specifies the client certificate mode with which the server should be run
         /// Allowed values can be found at https://docs.microsoft.com/dotnet/api/microsoft.aspnetcore.server.kestrel.https.clientcertificatemode?view=aspnetcore-6.0
         /// </summary>
-        public string ClientCertificateMode { get; internal set; }
+        public ClientCertificateMode ClientCertificateMode { get; internal set; }
 
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
@@ -148,7 +149,8 @@ namespace LoRaWan.NetworkServer
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
             config.LnsServerPfxPath = envVars.GetEnvVar("LNS_SERVER_PFX_PATH", string.Empty);
             config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
-            config.ClientCertificateMode = envVars.GetEnvVar("CLIENT_CERTIFICATE_MODE", string.Empty);
+            var clientCertificateModeString = envVars.GetEnvVar("CLIENT_CERTIFICATE_MODE", "NoCertificate"); // Defaulting to NoCertificate if missing mode
+            config.ClientCertificateMode = Enum.Parse<ClientCertificateMode>(clientCertificateModeString, true);
 
             return config;
         }

@@ -72,10 +72,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                                                                                       configuration.LnsServerPfxPassword,
                                                                                                                       X509KeyStorageFlags.DefaultKeySet);
 
-            if (Enum.TryParse<ClientCertificateMode>(configuration.ClientCertificateMode, out var requiredClientCertificateMode)
-                && requiredClientCertificateMode is not ClientCertificateMode.NoCertificate)
+            if (configuration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
             {
-                https.ClientCertificateMode = requiredClientCertificateMode;
+                https.ClientCertificateMode = configuration.ClientCertificateMode;
                 https.ClientCertificateValidation = clientCertificateValidatorService.Validate;
             }
         }
