@@ -90,6 +90,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
+                        .AddTransient<ICupsProtocolMessageProcessor, CupsProtocolMessageProcessor>()
                         .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>))
                         .AddSingleton(new RegistryMetricTagBag())
                         .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
@@ -139,6 +140,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
                            {
                                var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
                                await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);
+                           });
+                       _ = endpoints.MapPost(BasicsStationNetworkServer.UpdateInfoEndpoint, async context =>
+                           {
+                               var cupsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ICupsProtocolMessageProcessor>();
+                               await cupsProtocolMessageProcessor.HandleUpdateInfoAsync(context, context.RequestAborted);
                            });
                    });
 
