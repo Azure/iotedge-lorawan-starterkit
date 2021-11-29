@@ -8,7 +8,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Buffers.Binary;
     using System.Security.Cryptography;
-    using DotNetty.Buffers;
     using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
@@ -104,10 +103,14 @@ namespace LoRaWan.NetworkServer
             var index = 0;
             BinaryPrimitives.WriteUInt32LittleEndian(buffer, BinaryPrimitives.ReadUInt32LittleEndian(payload.DevAddr.Span));
             index += payload.DevAddr.Length;
-            //BinaryPrimitives.WriteUInt32LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt32LittleEndian(payload.Mic.Span));
-            //index += payload.Mic.Length;
+
+            if (!payload.Mic.IsEmpty)
+                BinaryPrimitives.WriteUInt32LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt32LittleEndian(payload.Mic.Span));
+            index += payload.Mic.Length;
+
             payload.RawMessage?.CopyTo(buffer[index..]);
             index += payload.RawMessage?.Length ?? 0;
+
             BinaryPrimitives.WriteUInt16LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
 
             var key = Sha256.ComputeHash(buffer.ToArray());
