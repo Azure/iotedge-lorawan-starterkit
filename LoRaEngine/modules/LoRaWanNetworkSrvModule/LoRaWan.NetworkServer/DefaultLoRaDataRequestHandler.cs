@@ -433,7 +433,7 @@ namespace LoRaWan.NetworkServer
 
                 if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                 {
-                    this.receiveWindowHits?.Add(1);
+                    this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)confirmDownlinkMessageBuilderResp.ReceiveWindow));
                     _ = request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
                 }
 

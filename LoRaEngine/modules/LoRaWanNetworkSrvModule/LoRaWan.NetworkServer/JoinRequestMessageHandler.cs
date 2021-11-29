@@ -281,7 +281,7 @@ namespace LoRaWan.NetworkServer
                     var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.Rxpk.Rfch, request.Rxpk.Time, request.StationEui);
                     if (joinAccept != null)
                     {
-                        this.receiveWindowHits?.Add(1);
+                        this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
                         _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);
                         request.NotifySucceeded(loRaDevice, joinAccept);
 

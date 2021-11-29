@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.Metrics;
     using System.Linq;
@@ -288,7 +289,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     throw new SwitchExpressionException();
             }
             stopwatch.Stop();
-            this.dataMessageDispatchLatency?.Record(stopwatch.ElapsedMilliseconds);
+            this.dataMessageDispatchLatency?.Record(stopwatch.ElapsedMilliseconds, KeyValuePair.Create(MetricRegistry.DataMessageTypeTagName, (object)messageType));
         }
 
         internal async Task CloseSocketAsync(WebSocket socket, CancellationToken cancellationToken)
