@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             var twin = await GetTwinAsync(stationEui, cancellationToken);
             try
             {
-                var thumbprintsArrayJson = (string)twin.Properties.Desired[ClientThumbprintPropertyName].ToString();
+                string thumbprintsArrayJson = twin.Properties.Desired[ClientThumbprintPropertyName].ToString();
                 return JsonReader.Array(JsonReader.String()).Read(thumbprintsArrayJson);
             }
             catch (ArgumentOutOfRangeException)
