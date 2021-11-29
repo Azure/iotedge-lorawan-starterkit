@@ -18,9 +18,13 @@ namespace LoRaWan.NetworkServer
         public const string GatewayIdTagName = "GatewayId";
 
         public static readonly CustomMetric JoinRequests = new CustomMetric("JoinRequests", "Number of join requests", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric ActiveStationConnections = new CustomMetric("ActiveStationConnections", "Number of active station connections", MetricType.Histogram, Array.Empty<string>());
+        public static readonly CustomMetric StationConnectivityLost = new CustomMetric("StationConnectivityLost", "Counts the number of station connectivities that were lost", MetricType.Counter, new[] { GatewayIdTagName });
+
         private static readonly ICollection<CustomMetric> Registry = new[]
         {
-            JoinRequests
+            JoinRequests,
+            ActiveStationConnections
         };
 
         public static readonly IDictionary<string, CustomMetric> RegistryLookup =
