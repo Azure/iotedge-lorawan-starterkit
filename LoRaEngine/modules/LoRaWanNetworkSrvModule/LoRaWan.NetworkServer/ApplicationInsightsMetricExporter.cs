@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer
     using System.Linq;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Metrics;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Exports System.Diagnostics.Metrics metrics which are registered in MetricRegistry to Application Insights.
@@ -21,14 +22,15 @@ namespace LoRaWan.NetworkServer
         private readonly IDictionary<string, (Metric, MetricIdentifier)> metricRegistry;
         private readonly RegistryMetricTagBag metricTagBag;
 
-        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient, RegistryMetricTagBag metricTagBag)
-            : this(telemetryClient, MetricRegistry.RegistryLookup, metricTagBag)
+        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient, RegistryMetricTagBag metricTagBag, ILogger<ApplicationInsightsMetricExporter> logger)
+            : this(telemetryClient, MetricRegistry.RegistryLookup, metricTagBag, logger)
         { }
 
         internal ApplicationInsightsMetricExporter(TelemetryClient telemetryClient,
                                                    IDictionary<string, CustomMetric> registryLookup,
-                                                   RegistryMetricTagBag metricTagBag)
-            : base(registryLookup)
+                                                   RegistryMetricTagBag metricTagBag,
+                                                   ILogger<ApplicationInsightsMetricExporter> logger)
+            : base(registryLookup, logger)
         {
             this.metricRegistry = registryLookup.ToDictionary(m => m.Key, m =>
             {

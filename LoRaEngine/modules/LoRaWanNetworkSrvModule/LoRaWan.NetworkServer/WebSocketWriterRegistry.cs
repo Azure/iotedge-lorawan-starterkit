@@ -52,13 +52,13 @@ namespace LoRaWan.NetworkServer
     {
         private readonly Dictionary<TKey, (IWebSocketWriter<TMessage> Object, Handle Handle)> sockets = new();
         private readonly ILogger? logger;
-        private readonly Histogram<int>? activeStationConnectionsHistogram;
+        private readonly ObservableGauge<int>? activeStationConnectionsHistogram;
         private readonly Counter<int>? stationConnectivityLostCounter;
 
         public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<TKey, TMessage>>? logger, Meter? meter)
         {
             this.logger = logger;
-            this.activeStationConnectionsHistogram = meter?.CreateHistogram<int>(MetricRegistry.ActiveStationConnections);
+            this.activeStationConnectionsHistogram = meter?.CreateObservableGauge<int>(MetricRegistry.ActiveStationConnections.Name, () => this.sockets.Count, description: MetricRegistry.ActiveStationConnections.Description);
             this.stationConnectivityLostCounter = meter?.CreateCounter<int>(MetricRegistry.StationConnectivityLost);
         }
 
@@ -106,7 +106,6 @@ namespace LoRaWan.NetworkServer
                 }
 
                 this.sockets[key] = (socketWriter, handle);
-                this.activeStationConnectionsHistogram?.Record(this.sockets.Count);
                 return handle;
             }
         }

@@ -9,7 +9,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Linq;
+    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Common;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -17,25 +20,30 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     {
         private readonly Mock<Action<string, string[], double>> incCounterMock;
         private readonly Mock<Action<string, string[], double>> recordHistogramMock;
+        private readonly Mock<Action<string, string[], double>> recordObservableGaugeMock;
         private readonly RegistryMetricTagBag metricTagBag;
         private readonly TestablePrometheusMetricExporter prometheusMetricExporter;
         private readonly ICollection<CustomMetric> registry;
 
         private CustomMetric Counter => registry.First(m => m.Type == MetricType.Counter);
         private CustomMetric Histogram => registry.First(m => m.Type == MetricType.Histogram);
+        private CustomMetric ObservableGauge => registry.First(m => m.Type == MetricType.ObservableGauge);
 
         public PrometheusMetricExporterTests()
         {
             this.registry = new[]
             {
                 new CustomMetric($"counter{Guid.NewGuid():N}", "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
-                new CustomMetric($"histogram{Guid.NewGuid():N}", "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName })
+                new CustomMetric($"histogram{Guid.NewGuid():N}", "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName }),
+                new CustomMetric($"observablegauge{Guid.NewGuid():N}", "Observable Gauge", MetricType.ObservableGauge, new[] { MetricRegistry.GatewayIdTagName })
             };
             this.incCounterMock = new Mock<Action<string, string[], double>>();
             this.recordHistogramMock = new Mock<Action<string, string[], double>>();
+            this.recordObservableGaugeMock = new Mock<Action<string, string[], double>>();
             this.metricTagBag = new RegistryMetricTagBag();
             this.prometheusMetricExporter = new TestablePrometheusMetricExporter(this.incCounterMock.Object,
                                                                                  this.recordHistogramMock.Object,
+                                                                                 this.recordObservableGaugeMock.Object,
                                                                                  this.registry.ToDictionary(m => m.Name, m => m),
                                                                                  this.metricTagBag);
         }
@@ -117,6 +125,25 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.recordHistogramMock.Verify(c => c.Invoke(Histogram.Name, new[] { gatewayId }, value), Times.Once);
         }
 
+        [Fact]
+        public async void When_ObservableGauge_Is_Recorded_Should_Export_To_Prometheus()
+        {
+            // arrange
+            var observeValue = new Mock<Func<Measurement<int>>>();
+            var stationEui = new StationEui(1);
+            var measurement = new Measurement<int>(1, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object?)stationEui));
+            observeValue.Setup(ov => ov.Invoke()).Returns(measurement);
+            using var meter = new Meter("LoRaWan", "1.0");
+            var observableGauge = meter.CreateObservableGauge(ObservableGauge.Name, observeValue.Object);
+
+            // act
+            this.prometheusMetricExporter.Start();
+
+            // assert
+            await observeValue.RetryVerifyAsync(ov => ov.Invoke(), Times.Once);
+            this.recordObservableGaugeMock.Verify(r => r.Invoke(ObservableGauge.Name, new[] { stationEui.ToString() }, measurement.Value), Times.Once);
+        }
+
         [Theory]
         [InlineData("foo", "SomeCounter")]
         [InlineData("LoRaWan", "foo")]
@@ -171,14 +198,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             private readonly Action<string, string[], double> incCounter;
             private readonly Action<string, string[], double> observeHistogram;
+            private readonly Action<string, string[], double> recordObservableGauge;
 
             public TestablePrometheusMetricExporter(Action<string, string[], double> incCounter,
                                                     Action<string, string[], double> recordHistogram,
+                                                    Action<string, string[], double> recordObservableGauge,
                                                     IDictionary<string, CustomMetric> registryLookup,
-                                                    RegistryMetricTagBag registryMetricTagBag) : base(registryLookup, registryMetricTagBag)
+                                                    RegistryMetricTagBag registryMetricTagBag)
+                : base(registryLookup, registryMetricTagBag, NullLogger<PrometheusMetricExporter>.Instance)
             {
                 this.incCounter = incCounter;
                 this.observeHistogram = recordHistogram;
+                this.recordObservableGauge = recordObservableGauge;
             }
 
             internal override void IncCounter(string metricName, string[] tags, double measurement) =>
@@ -186,6 +217,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             internal override void RecordHistogram(string metricName, string[] tags, double measurement) =>
                 this.observeHistogram(metricName, tags, measurement);
+
+            internal override void RecordObservableGauge(string metricName, string[] tags, double measurement) =>
+                recordObservableGauge(metricName, tags, measurement);
         }
     }
 }

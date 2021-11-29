@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Linq;
+    using Microsoft.Extensions.Logging;
     using Prometheus;
 
     /// <summary>
@@ -19,17 +20,19 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IDictionary<string, Counter> counters;
         private readonly IDictionary<string, Histogram> histograms;
+        private readonly IDictionary<string, Gauge> gauges;
         private readonly RegistryMetricTagBag metricTagBag;
 
-        public PrometheusMetricExporter(RegistryMetricTagBag metricTagBag)
-            : this(MetricRegistry.RegistryLookup, metricTagBag)
+        public PrometheusMetricExporter(RegistryMetricTagBag metricTagBag, ILogger<PrometheusMetricExporter> logger)
+            : this(MetricRegistry.RegistryLookup, metricTagBag, logger)
         { }
 
-        internal PrometheusMetricExporter(IDictionary<string, CustomMetric> registryLookup, RegistryMetricTagBag metricTagBag)
-            : base(registryLookup)
+        internal PrometheusMetricExporter(IDictionary<string, CustomMetric> registryLookup, RegistryMetricTagBag metricTagBag, ILogger<PrometheusMetricExporter> logger)
+            : base(registryLookup, logger)
         {
             this.counters = GetMetricsFromRegistry(MetricType.Counter, m => Metrics.CreateCounter(m.Name, m.Description, m.Tags));
             this.histograms = GetMetricsFromRegistry(MetricType.Histogram, m => Metrics.CreateHistogram(m.Name, m.Description, m.Tags));
+            this.gauges = GetMetricsFromRegistry(MetricType.ObservableGauge, m => Metrics.CreateGauge(m.Name, m.Description, m.Tags));
 
             IDictionary<string, T> GetMetricsFromRegistry<T>(MetricType metricType, Func<CustomMetric, T> factory) =>
                 this.registryLookup.Values.Where(m => m.Type == metricType)
@@ -51,6 +54,10 @@ namespace LoRaWan.NetworkServer
                 Histogram<short> or Histogram<byte> or
                 Histogram<long> or Histogram<decimal> or
                 Histogram<float>                            => RecordHistogram,
+                ObservableGauge<double> or ObservableGauge<int> or
+                ObservableGauge<short> or ObservableGauge<byte> or
+                ObservableGauge<long> or ObservableGauge<decimal> or
+                ObservableGauge<float>                      => RecordObservableGauge,
                 _                                           => throw new NotImplementedException()
             };
 #pragma warning restore format
@@ -64,5 +71,8 @@ namespace LoRaWan.NetworkServer
 
         internal virtual void RecordHistogram(string metricName, string[] tags, double measurement) =>
             this.histograms[metricName].WithLabels(tags).Observe(measurement);
+
+        internal virtual void RecordObservableGauge(string metricName, string[] tags, double measurement) =>
+            this.gauges[metricName].WithLabels(tags).Set(measurement);
     }
 }

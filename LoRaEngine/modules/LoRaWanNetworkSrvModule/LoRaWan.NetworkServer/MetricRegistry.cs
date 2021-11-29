@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer
         public const string ReceiveWindowTagName = "ReceiveWindow";
 
         public static readonly CustomMetric JoinRequests = new CustomMetric("JoinRequests", "Number of join requests", MetricType.Counter, new[] { GatewayIdTagName });
-        public static readonly CustomMetric ActiveStationConnections = new CustomMetric("ActiveStationConnections", "Number of active station connections", MetricType.Histogram, Array.Empty<string>());
+        public static readonly CustomMetric ActiveStationConnections = new CustomMetric("ActiveStationConnections", "Number of active station connections", MetricType.ObservableGauge, Array.Empty<string>());
         public static readonly CustomMetric StationConnectivityLost = new CustomMetric("StationConnectivityLost", "Counts the number of station connectivities that were lost", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric ReceiveWindowHits = new CustomMetric("ReceiveWindowHits", "Receive window hits", MetricType.Counter, new[] { GatewayIdTagName, ReceiveWindowTagName });
         public static readonly CustomMetric ReceiveWindowMisses = new CustomMetric("ReceiveWindowMisses", "Receive window misses", MetricType.Counter, new[] { GatewayIdTagName });
@@ -53,7 +53,8 @@ namespace LoRaWan.NetworkServer
     internal enum MetricType
     {
         Counter,
-        Histogram
+        Histogram,
+        ObservableGauge
     }
 
     internal interface IMetricExporter : IDisposable
@@ -134,6 +135,11 @@ namespace LoRaWan.NetworkServer
         public static Histogram<T> CreateHistogram<T>(this Meter meter, CustomMetric customMetric) where T : struct =>
             customMetric.Type == MetricType.Histogram
             ? meter.CreateHistogram<T>(customMetric.Name, description: customMetric.Description)
+            : throw new ArgumentException("Custom metric must of type Histogram", nameof(customMetric));
+
+        public static ObservableGauge<T> CreateObservableGauge<T>(this Meter meter, CustomMetric customMetric, Func<T> observeValue) where T : struct =>
+            customMetric.Type == MetricType.ObservableGauge
+            ? meter.CreateObservableGauge(customMetric.Name, observeValue, description: customMetric.Description)
             : throw new ArgumentException("Custom metric must of type Histogram", nameof(customMetric));
     }
 }

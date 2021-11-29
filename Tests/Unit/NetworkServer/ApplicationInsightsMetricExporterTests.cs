@@ -7,10 +7,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Linq;
+    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Common;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Channel;
     using Microsoft.ApplicationInsights.Extensibility;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -23,13 +26,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly ApplicationInsightsMetricExporter applicationInsightsMetricExporter;
         private CustomMetric CounterMetric => this.registry.First(m => m.Type == MetricType.Counter);
         private CustomMetric HistogramMetric => this.registry.First(m => m.Type == MetricType.Histogram);
+        private CustomMetric ObservableGaugeMetric => this.registry.First(m => m.Type == MetricType.ObservableGauge);
 
         public ApplicationInsightsMetricExporterTests()
         {
             this.registry = new[]
             {
                 new CustomMetric(Guid.NewGuid().ToString(), "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
-                new CustomMetric(Guid.NewGuid().ToString(), "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName })
+                new CustomMetric(Guid.NewGuid().ToString(), "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName }),
+                new CustomMetric(Guid.NewGuid().ToString(), "ObservableGauge", MetricType.ObservableGauge, new[] { MetricRegistry.GatewayIdTagName })
             };
             this.telemetryConfiguration = new TelemetryConfiguration { TelemetryChannel = new Mock<ITelemetryChannel>().Object };
             this.trackValueMock = new Mock<Action<Metric, double, string[]>>();
@@ -122,6 +127,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                        Times.Once);
         }
 
+        [Fact]
+        public async void When_ObservableGauge_Is_Recorded_Should_Export_To_ApplicationInsights()
+        {
+            // arrange
+            var observeValue = new Mock<Func<Measurement<int>>>();
+            var stationEui = new StationEui(1);
+            var measurement = new Measurement<int>(1, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)stationEui));
+            _ = observeValue.Setup(ov => ov.Invoke()).Returns(measurement);
+            using var meter = new Meter("LoRaWan", "1.0");
+            var observableGauge = meter.CreateObservableGauge(ObservableGaugeMetric.Name, observeValue.Object);
+
+            // act
+            this.applicationInsightsMetricExporter.Start();
+
+            // assert
+            await this.trackValueMock.RetryVerifyAsync(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricRegistry.Namespace
+                                                                                    && m.Identifier.MetricId == ObservableGaugeMetric.Name),
+                                                                       measurement.Value,
+                                                                       new[] { stationEui.ToString() }),
+                                                       Times.Once);
+        }
+
         [Theory]
         [InlineData("LoRaWan", "foometric")]
         [InlineData("foo", "SomeCounter")]
@@ -201,7 +228,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                        Action<Metric, double, string[]> trackValue,
                                                        IDictionary<string, CustomMetric> registryLookup,
                                                        RegistryMetricTagBag metricTagBag)
-                : base(telemetryClient, registryLookup, metricTagBag)
+                : base(telemetryClient, registryLookup, metricTagBag, NullLogger<ApplicationInsightsMetricExporter>.Instance)
             {
                 this.trackValue = trackValue;
             }
