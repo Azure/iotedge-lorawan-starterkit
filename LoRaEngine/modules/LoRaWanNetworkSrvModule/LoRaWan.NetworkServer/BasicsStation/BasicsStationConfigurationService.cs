@@ -34,12 +34,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public void Dispose() => this.cacheSemaphore.Dispose();
 
-        private async Task<Twin> GetTwinAsync(StationEui stationEui, CancellationToken cancellationToken)
+        private async Task<TwinCollection> GetTwinDesiredPropertiesAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var cacheKey = $"{ConcentratorTwinCachePrefixName}{stationEui}";
 
             if (this.cache.TryGetValue(cacheKey, out var result))
-                return (Twin)result;
+                return (TwinCollection)result;
 
             await this.cacheSemaphore.WaitAsync(cancellationToken);
 
@@ -56,7 +56,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                     }
                     var info = queryResult[0];
                     using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
-                    return await client.GetTwinAsync();
+                    var twin = await client.GetTwinAsync();
+                    return twin.Properties.Desired;
                 });
             }
             finally
@@ -67,10 +68,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
-            var twin = await GetTwinAsync(stationEui, cancellationToken);
+            var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
             try
             {
-                var configJson = twin.Properties.Desired[RouterConfigPropertyName].ToString();
+                var configJson = desiredProperties[RouterConfigPropertyName].ToString();
                 return LnsStationConfiguration.GetConfiguration(configJson);
             }
             catch (ArgumentOutOfRangeException)
@@ -87,10 +88,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public async Task<string[]> GetAllowedClientThumbprintsAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
-            var twin = await GetTwinAsync(stationEui, cancellationToken);
+            var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
             try
             {
-                string thumbprintsArrayJson = twin.Properties.Desired[ClientThumbprintPropertyName].ToString();
+                string thumbprintsArrayJson = desiredProperties[ClientThumbprintPropertyName].ToString();
                 return JsonReader.Array(JsonReader.String()).Read(thumbprintsArrayJson);
             }
             catch (ArgumentOutOfRangeException)
