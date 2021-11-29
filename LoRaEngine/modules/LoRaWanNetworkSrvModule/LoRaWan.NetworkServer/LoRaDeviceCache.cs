@@ -158,27 +158,21 @@ namespace LoRaWan.NetworkServer
 
             lock (this.syncLock)
             {
-                if (!this.devAddrCache.TryGetValue(oldDevAddr, out var devicesByDevAddr))
-                {
-                    throw new InvalidOperationException($"The specified {nameof(oldDevAddr)}:{oldDevAddr} does not exist.");
-                }
-
-                if (devicesByDevAddr.TryGetValue(loRaDevice.DevEUI, out var device))
-                {
-                    if (!ReferenceEquals(device, loRaDevice))
-                    {
-                        throw new InvalidOperationException($"Device does not match exist device in cache with this {nameof(oldDevAddr)}:{oldDevAddr} and {nameof(loRaDevice.DevEUI)}:{loRaDevice.DevEUI}");
-                    }
-
-                    _ = devicesByDevAddr.TryRemove(loRaDevice.DevEUI, out _);
-                    if (devicesByDevAddr.IsEmpty)
-                    {
-                        _ = this.devAddrCache.TryRemove(oldDevAddr, out _);
-                    }
-                }
-                else
+                if (!this.devAddrCache.TryGetValue(oldDevAddr, out var devicesByDevAddr) ||
+                    !devicesByDevAddr.TryGetValue(loRaDevice.DevEUI, out var device))
                 {
                     throw new InvalidOperationException($"Device does not exist in cache with this {nameof(oldDevAddr)}:{oldDevAddr} and {nameof(loRaDevice.DevEUI)}:{loRaDevice.DevEUI}");
+                }
+
+                if (!ReferenceEquals(device, loRaDevice))
+                {
+                    throw new InvalidOperationException($"Device does not match exist device in cache with this {nameof(oldDevAddr)}:{oldDevAddr} and {nameof(loRaDevice.DevEUI)}:{loRaDevice.DevEUI}");
+                }
+
+                _ = devicesByDevAddr.TryRemove(loRaDevice.DevEUI, out _);
+                if (devicesByDevAddr.IsEmpty)
+                {
+                    _ = this.devAddrCache.TryRemove(oldDevAddr, out _);
                 }
             }
         }

@@ -249,6 +249,52 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 Assert.Equal(device.LastSeen, lastSeen);
         }
 
+        [Fact]
+        public void When_Trying_To_Cleanup_Same_DevAddress_Fails()
+        {
+            using var cache = CreateNoRefreshCache();
+            using var device = CreateTestDevice();
+
+            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device, device.DevAddr));
+        }
+
+        [Fact]
+        public void When_Trying_To_Cleanup_Non_Existing_Old_Address_Fails()
+        {
+            using var cache = CreateNoRefreshCache();
+            using var device = CreateTestDevice();
+
+            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device, "00FFFFFF"));
+        }
+
+        [Fact]
+        public void When_Trying_To_Cleanup_OldDevAddr_With_Different_Device_Instance_Fails()
+        {
+            using var cache = CreateNoRefreshCache();
+            using var device1 = CreateTestDevice();
+            using var device2 = CreateTestDevice();
+
+            device2.DevAddr = "00FFFFFF";
+            cache.Register(device2);
+
+            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device1, "00FFFFFF"));
+        }
+
+        [Fact]
+        public void When_Cleaning_Up_Old_DevAddr_Entry_Is_Removed()
+        {
+            using var cache = CreateNoRefreshCache();
+            using var device = CreateTestDevice();
+
+            cache.Register(device);
+
+            var oldDevAddr = device.DevAddr;
+            device.DevAddr = "00FFFFFF";
+
+            cache.CleanupOldDevAddrForDevice(device, oldDevAddr);
+            Assert.False(cache.HasRegistrations(oldDevAddr));
+        }
+
         private static LoRaDevice CreateTestDevice() => new LoRaDevice("FFFFFFFF", "0000000000000000", null) { NwkSKey = "AAAAAAAA" };
 
         private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
