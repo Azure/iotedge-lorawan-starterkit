@@ -41,10 +41,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 return false;
             }
 
+            using var scope = this.logger.BeginEuiScope(stationEui);
+
             // Logging any chain related issue, but not failing on it.
             foreach (var status in chain.ChainStatus)
             {
-                using var scope = this.logger.BeginEuiScope(stationEui);
                 this.logger.LogDebug("{Class}: {Status} {StatusInformation}", nameof(ClientCertificateValidatorService), status.Status, status.StatusInformation);
             }
 
