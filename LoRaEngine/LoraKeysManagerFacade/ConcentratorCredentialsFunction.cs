@@ -19,6 +19,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Primitives;
+    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     public class ConcentratorCredentialsFunction
@@ -81,12 +82,20 @@ namespace LoraKeysManagerFacade
             if (twin != null)
             {
                 log.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui.ToString());
-                var cupsProperty = (string)twin.Properties.Desired[CupsPropertyName].ToString();
-                var parsedJson = JObject.Parse(cupsProperty);
-                var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()
-                                                                           : parsedJson[CupsCredentialsUrlPropertyName].ToString();
-                var result = await GetBase64EncodedBlobAsync(url, cancellationToken);
-                return new OkObjectResult(result);
+                try
+                {
+                    var cupsProperty = (string)twin.Properties.Desired[CupsPropertyName].ToString();
+                    var parsedJson = JObject.Parse(cupsProperty);
+                    var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()
+                                                                               : parsedJson[CupsCredentialsUrlPropertyName].ToString();
+                    var result = await GetBase64EncodedBlobAsync(url, cancellationToken);
+                    return new OkObjectResult(result);
+                }
+                catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException)
+                {
+                    log.LogError("'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
+                    throw;
+                }
             }
             else
             {
