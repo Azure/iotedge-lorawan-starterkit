@@ -78,9 +78,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 // TODO: Replace with enum
                 var cupsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui.Value, "Cups");
 
-                BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), (short)cupsCredentials.Length);
+                var cupsCredentialsBytes = Convert.FromBase64String(cupsCredentials);
+                BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), (short)cupsCredentialsBytes.Length);
                 writtenBytes += 2;
-                Convert.FromBase64String(cupsCredentials).CopyTo(GetProgressingSpan());
+                cupsCredentialsBytes.CopyTo(GetProgressingSpan());
                 writtenBytes += cupsCredentials.Length;
             }
             else
@@ -94,9 +95,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 // TODO: Replace with enum
                 var lnsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui.Value, "Lns");
 
-                BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), (short)lnsCredentials.Length);
+                var lnsCredentialsBytes = Convert.FromBase64String(lnsCredentials);
+                BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), (short)lnsCredentialsBytes.Length);
                 writtenBytes += 2;
-                Convert.FromBase64String(lnsCredentials).CopyTo(GetProgressingSpan());
+                lnsCredentialsBytes.CopyTo(GetProgressingSpan());
                 writtenBytes += lnsCredentials.Length;
             }
             else
