@@ -28,6 +28,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<DefaultLoRaDataRequestHandler> logger;
         private readonly Counter<int> receiveWindowMissed;
         private readonly Counter<int> receiveWindowHits;
+        private readonly Histogram<int> c2dPayloadSizeHistogram;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
 
         public DefaultLoRaDataRequestHandler(
@@ -51,6 +52,7 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
             this.receiveWindowMissed = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowMisses);
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
+            this.c2dPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.C2DMessageSize);
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
@@ -297,7 +299,8 @@ namespace LoRaWan.NetworkServer
                         false, // fpending
                         fcntDown.GetValueOrDefault(),
                         loRaADRResult,
-                        this.logger);
+                        this.logger,
+                        this.c2dPayloadSizeHistogram);
 
                     if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                     {
@@ -402,7 +405,8 @@ namespace LoRaWan.NetworkServer
                     fpending,
                     fcntDown.GetValueOrDefault(),
                     loRaADRResult,
-                    this.logger);
+                    this.logger,
+                    this.c2dPayloadSizeHistogram);
 
                 if (cloudToDeviceMessage != null)
                 {

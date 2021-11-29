@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Security.Cryptography;
     using LoRaTools;
@@ -36,7 +37,8 @@ namespace LoRaWan.NetworkServer
             bool fpending,
             uint fcntDown,
             LoRaADRResult loRaADRResult,
-            ILogger logger)
+            ILogger logger,
+            Histogram<int> paylodSizeHistogram)
         {
             var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
 
@@ -164,6 +166,7 @@ namespace LoRaWan.NetworkServer
                         fport = cloudToDeviceMessage.Fport;
                     }
 
+                    paylodSizeHistogram?.Record(frmPayload?.Length ?? 0);
                     logger.LogInformation($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}");
                     Array.Reverse(frmPayload);
                 }
