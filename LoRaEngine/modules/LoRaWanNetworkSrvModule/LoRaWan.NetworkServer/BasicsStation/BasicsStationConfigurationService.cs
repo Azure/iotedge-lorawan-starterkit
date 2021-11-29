@@ -14,6 +14,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable
     {
         private const string RouterConfigPropertyName = "routerConfig";
+        private const string CupsPropertyName = "cups";
         private const string ClientThumbprintPropertyName = "clientThumbprint";
         private const string ConcentratorTwinCachePrefixName = "concentratorTwin:";
 
@@ -93,6 +94,20 @@ namespace LoRaWan.NetworkServer.BasicsStation
             {
                 string thumbprintsArrayJson = desiredProperties[ClientThumbprintPropertyName].ToString();
                 return JsonReader.Array(JsonReader.String()).Read(thumbprintsArrayJson);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+            }
+        }
+
+        public async Task<CupsUpdateRequest> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken)
+        {
+            var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
+            try
+            {
+                string cupsJson = desiredProperties[CupsPropertyName].ToString();
+                return CupsEndpoint.UpdateRequestReader.Read(cupsJson);
             }
             catch (ArgumentOutOfRangeException)
             {
