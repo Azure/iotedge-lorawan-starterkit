@@ -14,11 +14,11 @@ namespace LoRaTools.Regions
     {
         private const double FrequencyIncrement = 0.2;
 
-        private readonly List<double> joinFrequencies;
-
         private readonly List<double> rx2OTAADefaultFrequencies;
 
         private readonly List<List<double>> downstreamFrequenciesByPlanType;
+
+        public IEnumerable<(double, double)> UpstreamAndDownstreamJoinFrequencies { get; }
 
         public RegionCN470()
             : base(LoRaRegionType.CN470)
@@ -69,18 +69,20 @@ namespace LoRaTools.Regions
             MaxADRDataRate = 7;
             RegionLimits = new RegionLimits((min: 470.3, max: 509.7), validDatarates, validDatarates, 0, 0);
 
+            UpstreamAndDownstreamJoinFrequencies = new List<(double, double)>
+            {
+                ( 470.9, 484.5 ), ( 472.5, 486.1 ), ( 474.1, 487.7 ), ( 475.7, 489.3 ), ( 504.1, 490.9 ),
+                ( 505.7, 492.5 ), ( 507.3, 494.1 ), ( 508.9, 495.7 ), ( 479.9, 479.9 ), ( 499.9, 499.9 ),
+                ( 470.3, 492.5 ), ( 472.3, 492.5 ), ( 474.3, 492.5 ), ( 476.3, 492.5 ), ( 478.3, 492.5 ),
+                ( 480.3, 502.5 ), ( 482.3, 502.5 ), ( 484.3, 502.5 ), ( 486.3, 502.5 ), ( 488.3, 502.5 )
+            };
+
             this.downstreamFrequenciesByPlanType = new List<List<double>>
             {
                 BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
                 BuildFrequencyPlanList(476.9, 0, 31).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
                 BuildFrequencyPlanList(490.1, 0, 23),
                 BuildFrequencyPlanList(500.1, 0, 23)
-            };
-
-            this.joinFrequencies = new List<double>
-            {
-                470.9, 472.5, 474.1, 475.7, 504.1, 505.7, 507.3, 508.9, 479.9, 499.9,
-                470.3, 472.3, 474.3, 476.3, 478.3, 480.3, 482.3, 484.3, 486.3, 488.3
             };
 
             this.rx2OTAADefaultFrequencies = new List<double>
@@ -91,7 +93,7 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Returns join channel indexfor region CN470 matching the frequency of the join request.
+        /// Returns join channel index for region CN470 matching the frequency of the join request.
         /// </summary>
         /// <param name="joinChannel">Channel on which the join request was received.</param>
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
@@ -99,16 +101,38 @@ namespace LoRaTools.Regions
         {
             if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
 
-            channelIndex = this.joinFrequencies.IndexOf(joinChannel.Freq);
+            try
+            {
+                channelIndex = UpstreamAndDownstreamJoinFrequencies
+                    .Select((elem, index) => new { elem, index })
+                    .First(x => Math.Abs(x.elem.Item1 - joinChannel.Freq) < EPSILON)
+                    .index;
+            }
+            catch (InvalidOperationException)
+            {
+                channelIndex = -1;
+            }
+
             return channelIndex != -1;
         }
 
         /// <summary>
-        /// Returns join channel indexfor region CN470 matching the frequency of the join request.
+        /// Returns join channel index for region CN470 matching the frequency of the join request.
         /// </summary>
         public override bool TryGetJoinChannelIndex(double frequency, out int channelIndex)
         {
-            channelIndex = this.joinFrequencies.IndexOf(frequency);
+            try
+            {
+                channelIndex = UpstreamAndDownstreamJoinFrequencies
+                    .Select((elem, index) => new { elem, index })
+                    .First(x => Math.Abs(x.elem.Item1 - frequency) < EPSILON)
+                    .index;
+            }
+            catch (InvalidOperationException)
+            {
+                channelIndex = -1;
+            }
+
             return channelIndex != -1;
         }
 

@@ -15,6 +15,8 @@ namespace LoRaTools.Regions
     {
         private const ushort MAX_RX_DELAY = 15;
 
+        protected const double EPSILON = 0.00001;
+
         public LoRaRegionType LoRaRegion { get; set; }
 
         /// <summary>
