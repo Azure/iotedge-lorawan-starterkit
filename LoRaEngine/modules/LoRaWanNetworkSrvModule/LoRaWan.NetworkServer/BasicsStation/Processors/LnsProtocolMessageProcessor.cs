@@ -247,7 +247,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         }
 
                         using var scope = this.logger.BeginDeviceAddressScope(updf.DevAddr);
-                        this.uplinkMessageCounter.Add(1);
+                        this.uplinkMessageCounter?.Add(1);
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
