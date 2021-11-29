@@ -18,7 +18,9 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<JoinRequestMessageHandler> logger;
         private readonly NetworkServerConfiguration configuration;
 
-        public JoinRequestMessageHandler(NetworkServerConfiguration configuration, ILoRaDeviceRegistry deviceRegistry, ILogger<JoinRequestMessageHandler> logger)
+        public JoinRequestMessageHandler(NetworkServerConfiguration configuration,
+                                         ILoRaDeviceRegistry deviceRegistry,
+                                         ILogger<JoinRequestMessageHandler> logger)
         {
             this.configuration = configuration;
             this.deviceRegistry = deviceRegistry;

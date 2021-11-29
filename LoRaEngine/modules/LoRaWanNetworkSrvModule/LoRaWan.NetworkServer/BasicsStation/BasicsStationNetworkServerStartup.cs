@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Diagnostics.Metrics;
     using System.Globalization;
     using Logger;
     using LoRaTools.ADR;
@@ -11,6 +12,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
+    using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Azure.Devices.Client;
@@ -89,7 +91,15 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<LoRaDeviceCache>()
                         .AddSingleton(x => new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>));
+                        .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>))
+                        .AddSingleton(new RegistryMetricTagBag())
+                        .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
+                        .AddHostedService(sp =>
+                            new MetricExporterHostedService(
+                                new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>(),
+                                                                                                                           sp.GetRequiredService<RegistryMetricTagBag>()) : null,
+                                                            new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>()))))
+                        .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version));
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
