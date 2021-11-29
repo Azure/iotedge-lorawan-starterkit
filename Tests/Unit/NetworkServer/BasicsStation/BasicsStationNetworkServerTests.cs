@@ -36,20 +36,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             var logger = Mock.Of<ILogger<ClientCertificateValidatorService>>();
             var clientCertificateValidatorService = new Mock<ClientCertificateValidatorService>(stationConfigurationService, logger);
 
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(x => x.GetService(typeof(ClientCertificateValidatorService)))
-                           .Returns(clientCertificateValidatorService.Object);
-
             var httpsConnectionAdapterOptions = new HttpsConnectionAdapterOptions();
 
             var networkServerConfiguration = new NetworkServerConfiguration
             {
-                LnsServerPfxPath = serverPfxPasswordProtected ? passwordProtectedPfx : notProtectedPfx,
+                LnsServerPfxPath = serverPfxPasswordProtected ? this.passwordProtectedPfx : this.notProtectedPfx,
                 LnsServerPfxPassword = serverPfxPasswordProtected ? CertificatePassword : string.Empty,
                 ClientCertificateMode = clientCertificateMode.ToString()
             };
 
-            BasicsStationNetworkServer.ConfigureHttpsSettings(networkServerConfiguration, serviceProvider.Object, httpsConnectionAdapterOptions);
+            BasicsStationNetworkServer.ConfigureHttpsSettings(networkServerConfiguration, clientCertificateValidatorService.Object, httpsConnectionAdapterOptions);
 
             // assert
             Assert.NotNull(httpsConnectionAdapterOptions.ServerCertificate);

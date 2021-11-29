@@ -35,7 +35,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                        {
                                            if (shouldUseCertificate)
                                            {
-                                               config.ConfigureHttpsDefaults(https => ConfigureHttpsSettings(configuration, config.ApplicationServices, https));
+                                               config.ConfigureHttpsDefaults(https => ConfigureHttpsSettings(configuration,
+                                                                                                             config.ApplicationServices.GetRequiredService<ClientCertificateValidatorService>(),
+                                                                                                             https));
                                            }
                                        })
                                        .Build();
@@ -62,7 +64,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
         internal static void ConfigureHttpsSettings(NetworkServerConfiguration configuration,
-                                                    IServiceProvider serviceProvider,
+                                                    ClientCertificateValidatorService clientCertificateValidatorService,
                                                     HttpsConnectionAdapterOptions https)
         {
             https.ServerCertificate = string.IsNullOrEmpty(configuration.LnsServerPfxPassword) ? new X509Certificate2(configuration.LnsServerPfxPath)
@@ -73,7 +75,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (Enum.TryParse<ClientCertificateMode>(configuration.ClientCertificateMode, out var requiredClientCertificateMode)
                 && requiredClientCertificateMode is not ClientCertificateMode.NoCertificate)
             {
-                var clientCertificateValidatorService = serviceProvider.GetRequiredService<ClientCertificateValidatorService>();
                 https.ClientCertificateMode = requiredClientCertificateMode;
                 https.ClientCertificateValidation = clientCertificateValidatorService.Validate;
             }
