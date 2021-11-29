@@ -94,7 +94,7 @@ namespace LoraKeysManagerFacade
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException)
                 {
                     log.LogError("'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
-                    throw;
+                    return new UnprocessableEntityResult();
                 }
             }
             else
