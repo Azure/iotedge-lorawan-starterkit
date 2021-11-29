@@ -23,6 +23,7 @@ namespace LoRaWan.NetworkServer
         /// <exception cref="ArgumentException">If the deviceInfo is incomplete.</exception>
         Task<LoRaDevice> CreateAndRegisterAsync(IoTHubDeviceInfo deviceInfo, CancellationToken cancellationToken);
 
+        /// <summary>
         /// Creates a device client based on the devEUI and primary key.
         /// </summary>
         /// <param name="eui">Dev EUI of the device.</param>
