@@ -134,7 +134,7 @@
                 "value": "$LOG_ANALYTICS_SHARED_KEY"
               },
               "MetricsEndpointsCSV": {
-                "value": "http://edgeHub:9600/metrics,http://edgeAgent:9600/metrics"
+                "value": "http://edgeHub:9600/metrics,http://edgeAgent:9600/metrics,http://LoRaWanNetworkSrvModule:5000/metrics"
               }
             },
             "status": "running",
