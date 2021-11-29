@@ -92,5 +92,11 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(0, remainingBytes.Length);
             Assert.Equal(new byte[] { 21 }, bytes);
         }
+
+        [Fact]
+        public void Conversion_To_Byte_Returns_Byte_Encoding_Per_Spec()
+        {
+            Assert.Equal(21, (byte)this.subject);
+        }
     }
 }
