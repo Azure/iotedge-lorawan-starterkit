@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                            if (shouldUseCertificate)
                                            {
                                                config.ConfigureHttpsDefaults(https => ConfigureHttpsSettings(configuration,
-                                                                                                             config.ApplicationServices.GetService<ClientCertificateValidatorService>(),
+                                                                                                             config.ApplicationServices.GetService<IClientCertificateValidatorService>(),
                                                                                                              https));
                                            }
                                        })
@@ -66,7 +66,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
         internal static void ConfigureHttpsSettings(NetworkServerConfiguration configuration,
-                                                    ClientCertificateValidatorService? clientCertificateValidatorService,
+                                                    IClientCertificateValidatorService? clientCertificateValidatorService,
                                                     HttpsConnectionAdapterOptions https)
         {
             https.ServerCertificate = string.IsNullOrEmpty(configuration.LnsServerPfxPassword) ? new X509Certificate2(configuration.LnsServerPfxPath)
@@ -79,7 +79,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 if (clientCertificateValidatorService is null)
                     throw new ArgumentNullException(nameof(clientCertificateValidatorService));
                 https.ClientCertificateMode = configuration.ClientCertificateMode;
-                https.ClientCertificateValidation = clientCertificateValidatorService.Validate;
+                https.ClientCertificateValidation = (cert, chain, err) => clientCertificateValidatorService.ValidateAsync(cert, chain, err, default).GetAwaiter().GetResult();
             }
         }
     }

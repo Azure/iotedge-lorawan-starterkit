@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
-    internal class ClientCertificateValidatorService
+    internal sealed class ClientCertificateValidatorService : IClientCertificateValidatorService
     {
         private readonly IBasicsStationConfigurationService stationConfigurationService;
         private readonly ILogger<ClientCertificateValidatorService> logger;
@@ -26,22 +26,16 @@ namespace LoRaWan.NetworkServer.BasicsStation
             this.logger = logger;
         }
 
-        // Following synchronous implementation is needed for ASP.NET Core ClientCertificateValidation
-        public virtual bool Validate(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
-            ValidateAsync(certificate, chain, sslPolicyErrors, default).GetAwaiter().GetResult();
-
-        public virtual async Task<bool> ValidateAsync(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors, CancellationToken token)
+        public async Task<bool> ValidateAsync(X509Certificate2 certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors, CancellationToken token)
         {
             if (certificate is null) throw new ArgumentNullException(nameof(certificate));
             if (chain is null) throw new ArgumentNullException(nameof(chain));
 
             var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
-            StationEui stationEui;
-            if (Regex.Match(commonName, "([a-fA-F0-9]{2}[-:]?){8}") is { } regex && regex.Success)
-            {
-                stationEui = StationEui.Parse(regex.Value);
-            }
-            else
+            var regex = Regex.Match(commonName, "([a-fA-F0-9]{2}[-:]?){8}");
+            var parseSuccess = StationEui.TryParse(regex.Value, out var stationEui);
+
+            if (!parseSuccess)
             {
                 this.logger.LogError("{Class}: Could not find a possible StationEui in '{CommonName}'.", nameof(ClientCertificateValidatorService), commonName);
                 return false;

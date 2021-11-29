@@ -94,7 +94,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
 
             if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
-                _ = services.AddSingleton<ClientCertificateValidatorService>();
+                _ = services.AddSingleton<IClientCertificateValidatorService, ClientCertificateValidatorService>();
         }
 
 #pragma warning disable CA1822 // Mark members as static

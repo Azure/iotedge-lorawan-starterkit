@@ -3,7 +3,7 @@
 
 #nullable enable
 
-namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
+namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.IO;
@@ -13,7 +13,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.AspNetCore.Server.Kestrel.Https;
-    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
 
@@ -32,9 +31,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         [InlineData(false, ClientCertificateMode.RequireCertificate)]
         public void GivenCertificateConfiguration_ConfigureHttpsSettings_Succeeds(bool serverPfxPasswordProtected, ClientCertificateMode clientCertificateMode)
         {
-            var stationConfigurationService = Mock.Of<IBasicsStationConfigurationService>();
-            var logger = Mock.Of<ILogger<ClientCertificateValidatorService>>();
-            var clientCertificateValidatorService = new Mock<ClientCertificateValidatorService>(stationConfigurationService, logger);
+            var clientCertificateValidatorService = Mock.Of<IClientCertificateValidatorService>();
 
             var httpsConnectionAdapterOptions = new HttpsConnectionAdapterOptions();
 
@@ -45,7 +42,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 ClientCertificateMode = clientCertificateMode
             };
 
-            BasicsStationNetworkServer.ConfigureHttpsSettings(networkServerConfiguration, clientCertificateValidatorService.Object, httpsConnectionAdapterOptions);
+            BasicsStationNetworkServer.ConfigureHttpsSettings(networkServerConfiguration, clientCertificateValidatorService, httpsConnectionAdapterOptions);
 
             // assert
             Assert.NotNull(httpsConnectionAdapterOptions.ServerCertificate);
