@@ -13,6 +13,7 @@ namespace LoRaWan.Tests.Integration
     /// <summary>
     /// Tests to run against a real redis instance.
     /// </summary>
+    [Collection(RedisFixture.CollectionName)]
     public class PreferredGatewayTestWithRedis : IClassFixture<RedisFixture>
     {
         private readonly ILoRaDeviceCacheStore cache;

@@ -8,7 +8,6 @@ namespace LoRaWan.Tests.Integration
     using System.Globalization;
     using System.Linq;
     using System.Net;
-    using System.Threading;
     using System.Threading.Tasks;
     using Docker.DotNet;
     using Docker.DotNet.Models;
@@ -21,33 +20,35 @@ namespace LoRaWan.Tests.Integration
     /// </summary>
     public class RedisFixture : IAsyncLifetime
     {
+        public const string CollectionName = "rediscollection";
         private const string ContainerName = "redis";
         private const string ImageName = "redis";
         private const string ImageTag = "5.0.4-alpine";
+        private const int RedisPort = 6001;
 
         private ConnectionMultiplexer redis;
 
-        private int redisPort;
         private string containerId;
-        private static int uniqueRedisPort = 6000;
 
         public IDatabase Database { get; set; }
 
         private async Task StartRedisContainer()
         {
-            try
-            {
-                var dockerConnection = System.Environment.OSVersion.Platform.ToString().Contains("Win", StringComparison.Ordinal) ?
+            IList<ContainerListResponse> containers = new List<ContainerListResponse>();
+            var dockerConnection = Environment.OSVersion.Platform.ToString().Contains("Win", StringComparison.Ordinal) ?
                     "npipe://./pipe/docker_engine" :
                     "unix:///var/run/docker.sock";
-                System.Console.WriteLine("Starting container");
-                using var conf = new DockerClientConfiguration(new Uri(dockerConnection)); // localhost
-                using var client = conf.CreateClient();
-                System.Console.WriteLine("On Premise execution detected");
-                System.Console.WriteLine("Starting container...");
-                var containers = await client.Containers.ListContainersAsync(new ContainersListParameters() { All = true });
-                System.Console.WriteLine("listing container...");
-                var container = containers.FirstOrDefault(c => c.Names.Contains("/" + ContainerName));
+            Console.WriteLine("Starting container");
+            using var conf = new DockerClientConfiguration(new Uri(dockerConnection)); // localhost
+            using var client = conf.CreateClient();
+
+            try
+            {
+                
+                Console.WriteLine("On Premise execution detected");
+                Console.WriteLine("Starting container...");
+                containers = await client.Containers.ListContainersAsync(new ContainersListParameters() { All = true });
+                Console.WriteLine("listing container...");
 
                 // Download image
                 await client.Images.CreateImageAsync(new ImagesCreateParameters() { FromImage = ImageName, Tag = ImageTag }, new AuthConfig(), new Progress<JSONMessage>());
@@ -57,8 +58,7 @@ namespace LoRaWan.Tests.Integration
                 {
                     Hostname = "localhost"
                 };
-                this.redisPort = Interlocked.Increment(ref uniqueRedisPort);
-                System.Console.WriteLine(this.redisPort);
+                Console.WriteLine(RedisPort);
 
                 // Configure the ports to expose
                 var hostConfig = new HostConfig()
@@ -66,23 +66,23 @@ namespace LoRaWan.Tests.Integration
                     PortBindings = new Dictionary<string, IList<PortBinding>>
                         {
                             {
-                                $"6379/tcp", new List<PortBinding> { new PortBinding { HostIP = "127.0.0.1", HostPort = this.redisPort.ToString(CultureInfo.InvariantCulture) } }
+                                $"6379/tcp", new List<PortBinding> { new PortBinding { HostIP = "127.0.0.1", HostPort = RedisPort.ToString(CultureInfo.InvariantCulture) } }
                             }
                         }
                 };
 
-                System.Console.WriteLine("Creating container...");
+                Console.WriteLine("Creating container...");
                 // Create the container
                 var response = await client.Containers.CreateContainerAsync(new CreateContainerParameters(config)
                 {
                     Image = ImageName + ":" + ImageTag,
-                    Name = ContainerName + this.redisPort,
+                    Name = GetContainerName(RedisPort),
                     Tty = false,
                     HostConfig = hostConfig
                 });
                 this.containerId = response.ID;
 
-                System.Console.WriteLine("Starting container...");
+                Console.WriteLine("Starting container...");
 
                 var started = await client.Containers.StartContainerAsync(this.containerId, new ContainerStartParameters());
                 if (!started)
@@ -90,24 +90,35 @@ namespace LoRaWan.Tests.Integration
                     Assert.False(true, "Cannot start the docker container");
                 }
 
-                System.Console.WriteLine("Finish booting sequence container...");
+                Console.WriteLine("Finish booting sequence container...");
             }
             catch (DockerApiException e) when (e.StatusCode == HttpStatusCode.Conflict)
             {
-                Console.WriteLine("Docker container is already running.");
+                var container = containers.FirstOrDefault(c => c.Names.Contains("/" + GetContainerName(RedisPort)));
+                if (container.State.Equals("exited", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("Starting existing container.");
+                    await client.Containers.StartContainerAsync(container.ID, new ContainerStartParameters());
+                }
+                else
+                {
+                    Console.WriteLine("Docker container is already running.");
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
                 throw;
             }
+
+            static string GetContainerName(int port) => ContainerName + port;
         }
 
         public async Task InitializeAsync()
         {
             await StartRedisContainer();
 
-            var redisConnectionString = $"localhost:{this.redisPort}";
+            var redisConnectionString = $"localhost:{RedisPort}";
             try
             {
                 this.redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
