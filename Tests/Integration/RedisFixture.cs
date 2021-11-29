@@ -95,7 +95,7 @@ namespace LoRaWan.Tests.Integration
             catch (DockerApiException e) when (e.StatusCode == HttpStatusCode.Conflict)
             {
                 var container = containers.FirstOrDefault(c => c.Names.Contains("/" + GetContainerName(RedisPort)));
-                if (container.State.Equals("exited", StringComparison.OrdinalIgnoreCase))
+                if (container is { } c && c.State.Equals("exited", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine("Starting existing container.");
                     await client.Containers.StartContainerAsync(container.ID, new ContainerStartParameters());
