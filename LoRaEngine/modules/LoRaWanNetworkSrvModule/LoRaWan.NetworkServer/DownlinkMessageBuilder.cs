@@ -61,7 +61,7 @@ namespace LoRaWan.NetworkServer
             {
                 // No valid receive window. Abandon the message
                 isMessageTooLong = true;
-                return new DownlinkMessageBuilderResponse(null, isMessageTooLong);
+                return new DownlinkMessageBuilderResponse(null, isMessageTooLong, receiveWindow);
             }
 
             var rndToken = new byte[2];
@@ -94,7 +94,7 @@ namespace LoRaWan.NetworkServer
                 if (datr == null)
                 {
                     logger.LogError("there was a problem in setting the data rate in the downstream message packet forwarder settings");
-                    return new DownlinkMessageBuilderResponse(null, false);
+                    return new DownlinkMessageBuilderResponse(null, false, receiveWindow);
                 }
 
                 // The logic for passing CN470 join channel will change as part of #561
@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 {
                     logger.LogError("there was a problem in setting the frequency in the downstream message packet forwarder settings");
-                    return new DownlinkMessageBuilderResponse(null, false);
+                    return new DownlinkMessageBuilderResponse(null, false, receiveWindow);
                 }
 
                 tmst = rxpk.Tmst + (timeWatcher.GetReceiveWindow1Delay(loRaDevice) * Constants.ConvertToPktFwdTime);
@@ -233,7 +233,7 @@ namespace LoRaWan.NetworkServer
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{(LoRaMessageType)ackLoRaMessage.Mhdr.Span[0]} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
 
-            return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong);
+            return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong, receiveWindow);
         }
 
         private static ushort ValidateAndConvert16bitFCnt(uint fcntDown)
@@ -297,7 +297,7 @@ namespace LoRaWan.NetworkServer
             if (availablePayloadSize < totalC2dSize)
             {
                 isMessageTooLong = true;
-                return new DownlinkMessageBuilderResponse(null, isMessageTooLong);
+                return new DownlinkMessageBuilderResponse(null, isMessageTooLong, Constants.ReceiveWindow2);
             }
 
             if (macCommands?.Count > 0)
@@ -352,7 +352,8 @@ namespace LoRaWan.NetworkServer
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{(LoRaMessageType)ackLoRaMessage.Mhdr.Span[0]} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
 
-            return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong);
+            // Class C always uses RX2.
+            return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong, Constants.ReceiveWindow2);
         }
 
         /// <summary>

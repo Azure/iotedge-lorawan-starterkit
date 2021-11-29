@@ -10,11 +10,13 @@ namespace LoRaWan.NetworkServer
         internal DownlinkPktFwdMessage DownlinkPktFwdMessage { get; set; }
 
         internal bool IsMessageTooLong { get; set; }
+        public int ReceiveWindow { get; }
 
-        internal DownlinkMessageBuilderResponse(DownlinkPktFwdMessage downlinkPktFwdMessage, bool isMessageTooLong)
+        internal DownlinkMessageBuilderResponse(DownlinkPktFwdMessage downlinkPktFwdMessage, bool isMessageTooLong, int receiveWindow)
         {
             DownlinkPktFwdMessage = downlinkPktFwdMessage;
             IsMessageTooLong = isMessageTooLong;
+            ReceiveWindow = receiveWindow;
         }
     }
 }
