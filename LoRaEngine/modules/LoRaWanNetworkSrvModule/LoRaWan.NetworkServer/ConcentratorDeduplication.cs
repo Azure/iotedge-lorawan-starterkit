@@ -120,7 +120,20 @@ namespace LoRaWan.NetworkServer
 
         private static string CreateCacheKeyCore(LoRaPayloadJoinRequest payload)
         {
-            throw new NotImplementedException();
+            var joinEui = JoinEui.Read(payload.AppEUI.Span);
+            var devEui = DevEui.Read(payload.DevEUI.Span);
+            var devNonce = DevNonce.Read(payload.DevNonce.Span);
+            var totalBufferLength = JoinEui.Size + DevEui.Size + DevNonce.Size;
+            Span<byte> buffer = stackalloc byte[totalBufferLength];
+            var head = buffer; // keeps a view pointing at the start of the buffer
+
+            buffer = joinEui.Write(buffer);
+            buffer = devEui.Write(buffer);
+            _ = devNonce.Write(buffer);
+
+            var key = Sha256.ComputeHash(head.ToArray());
+
+            return BitConverter.ToString(key);
         }
 
         private void AddToCache(string key, StationEui stationEui)

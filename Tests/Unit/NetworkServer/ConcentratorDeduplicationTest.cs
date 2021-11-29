@@ -114,17 +114,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(this.loraRequest));
         }
 
-        //[Fact]
-        //public void CreateKeyMethod_Should_Produce_Expected_Key_For_JoinRequests()
-        //{
-        //    // arrange
-        //    var joinReq = new JoinRequestFrame(default, default, default, default, default, default);
+        [Fact]
+        public void CreateKeyMethod_Should_Produce_Expected_Key_For_JoinRequests()
+        {
+            // arrange
+            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
+            var joinPayload = simulatedOTAADevice.CreateJoinRequest();
+            joinPayload.DevNonce = new Memory<byte>(new byte[2]);
+            this.loraRequest.SetPayload(joinPayload);
 
-        //    var expectedKey = "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4";
+            var expectedKey = "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4";
 
-        //    // act/assert
-        //    Assert.Equal(expectedKey, ConcentratorDeduplication<JoinRequestFrame>.CreateCacheKey(joinReq));
-        //}
+            // act/assert
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(this.loraRequest));
+        }
 
         [Fact]
         public void CreateKeyMethod_Should_Throw_When_Used_With_Wrong_Type()
