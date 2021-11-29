@@ -37,7 +37,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             if (!parseSuccess)
             {
-                this.logger.LogError("{Class}: Could not find a possible StationEui in '{CommonName}'.", nameof(ClientCertificateValidatorService), commonName);
+                this.logger.LogError("Could not find a possible StationEui in '{CommonName}'.", commonName);
                 return false;
             }
 
@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             // Logging any chain related issue, but not failing on it.
             foreach (var status in chain.ChainStatus)
             {
-                this.logger.LogDebug("{Class}: {Status} {StatusInformation}", nameof(ClientCertificateValidatorService), status.Status, status.StatusInformation);
+                this.logger.LogDebug("{Status} {StatusInformation}", status.Status, status.StatusInformation);
             }
 
             // Only validation is currently done on thumprint
