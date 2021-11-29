@@ -107,7 +107,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             try
             {
                 string cupsJson = desiredProperties[CupsPropertyName].ToString();
-                return CupsEndpoint.UpdateRequestReader.Read(cupsJson);
+                return CupsEndpoint.TwinReader.Read(cupsJson);
             }
             catch (ArgumentOutOfRangeException)
             {
