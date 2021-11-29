@@ -73,6 +73,11 @@ namespace LoRaTools
                     case Cid.One:
                     case Cid.LinkCheckCmd:
                     case Cid.LinkADRCmd:
+                    {
+                        var cmd = new LinkADRRequest((ushort)item["datarate"], (ushort)item["txpower"], (ushort)item["chmask"], (byte)item["chmaskctl"], (byte)item["nbtrans"]);
+                        serializer.Populate(item.CreateReader(), cmd);
+                        return cmd;
+                    }
                     default:
                         throw new JsonReaderException($"Unhandled command identifier: {macCommandType}");
                 }
