@@ -50,14 +50,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             if (clientCertificateMode is not ClientCertificateMode.NoCertificate)
             {
                 Assert.NotNull(httpsConnectionAdapterOptions.ClientCertificateValidation);
-            } else
+            }
+            else
             {
                 Assert.Null(httpsConnectionAdapterOptions.ClientCertificateValidation);
             }
 
         }
 
-        internal static async Task<string> CreatePfxCertificate(bool passwordProtected, string stationEui = "001122FFFEAABBCC")
+        internal static async Task<string> CreatePfxCertificateAsync(bool passwordProtected, string stationEui = "001122FFFEAABBCC")
         {
             using var ecdsa = ECDsa.Create();
             var req = new CertificateRequest($"cn={stationEui}", ecdsa, HashAlgorithmName.SHA256);
@@ -71,8 +72,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         public async Task InitializeAsync()
         {
-            this.passwordProtectedPfx = await CreatePfxCertificate(true);
-            this.notProtectedPfx = await CreatePfxCertificate(false);
+            this.passwordProtectedPfx = await CreatePfxCertificateAsync(true);
+            this.notProtectedPfx = await CreatePfxCertificateAsync(false);
         }
 
         public Task DisposeAsync()

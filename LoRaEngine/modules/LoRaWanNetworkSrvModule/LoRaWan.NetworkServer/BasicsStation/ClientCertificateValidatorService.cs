@@ -6,6 +6,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
@@ -26,7 +27,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             this.logger = logger;
         }
 
-        public async Task<bool> ValidateAsync(X509Certificate2 certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors, CancellationToken token)
+        public async Task<bool> ValidateAsync(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors, CancellationToken token)
         {
             if (certificate is null) throw new ArgumentNullException(nameof(certificate));
             if (chain is null) throw new ArgumentNullException(nameof(chain));
