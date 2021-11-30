@@ -61,12 +61,10 @@ namespace LoRaWan.NetworkServer
 
                 loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
-                if (loRaDevice.UpdateIsOurDevice(this.configuration.GatewayID))
+                if (loRaDevice.UpdateIsOurDevice(this.configuration.GatewayID) &&
+                    !await loRaDevice.InitializeAsync(this.configuration, cancellationToken))
                 {
-                    if (!await loRaDevice.InitializeAsync(this.configuration, cancellationToken))
-                    {
-                        throw new LoRaProcessingException("Failed to initialize device twins.", LoRaProcessingErrorCode.DeviceInitializationFailed);
-                    }
+                    throw new LoRaProcessingException("Failed to initialize device twins.", LoRaProcessingErrorCode.DeviceInitializationFailed);
                 }
                 this.loRaDeviceCache.Register(loRaDevice);
                 return loRaDevice;
