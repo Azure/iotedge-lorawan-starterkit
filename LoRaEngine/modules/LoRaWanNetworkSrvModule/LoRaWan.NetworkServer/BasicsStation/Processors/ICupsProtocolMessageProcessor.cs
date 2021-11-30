@@ -7,8 +7,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
 
-    internal interface ICupsProtocolMessageProcessor
+    public interface ICupsProtocolMessageProcessor
     {
-        internal Task HandleUpdateInfoAsync(HttpContext httpContext, CancellationToken token);
+        public Task HandleUpdateInfoAsync(HttpContext httpContext, CancellationToken token);
     }
 }
