@@ -177,12 +177,12 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public virtual bool HasRegistrations(string devAddr)
+        public bool HasRegistrations(string devAddr)
         {
             return this.devAddrCache.TryGetValue(devAddr, out var items) && items.Any();
         }
 
-        public virtual bool HasRegistrationsForOtherGateways(string devAddr)
+        public bool HasRegistrationsForOtherGateways(string devAddr)
         {
             return this.devAddrCache.TryGetValue(devAddr, out var items) && items.Any(x => !x.Value.IsOurDevice);
         }
@@ -213,7 +213,7 @@ namespace LoRaWan.NetworkServer
             CleanupAllDevices();
         }
 
-        public virtual bool TryGetForPayload(LoRaPayload payload, [MaybeNullWhen(returnValue: false)] out LoRaDevice loRaDevice)
+        public bool TryGetForPayload(LoRaPayload payload, [MaybeNullWhen(returnValue: false)] out LoRaDevice loRaDevice)
         {
             _ = payload ?? throw new ArgumentNullException(nameof(payload));
 
@@ -230,18 +230,6 @@ namespace LoRaWan.NetworkServer
 
             TrackCacheStats(loRaDevice);
             return loRaDevice != null;
-        }
-
-        private void TrackCacheStats(LoRaDevice? device)
-        {
-            if (device is { })
-            {
-                TrackHit(device);
-            }
-            else
-            {
-                TrackMiss();
-            }
         }
 
         protected virtual bool ValidateMic(LoRaDevice loRaDevice, LoRaPayload loRaPayload)
@@ -264,15 +252,17 @@ namespace LoRaWan.NetworkServer
 
         public CacheStatistics CalculateStatistics() => new CacheStatistics(this.statisticsTracker.Hit, this.statisticsTracker.Miss, this.euiCache.Count);
 
-        private void TrackMiss()
+        private void TrackCacheStats(LoRaDevice? device)
         {
-            this.statisticsTracker.IncrementMiss();
-        }
-
-        private void TrackHit(LoRaDevice loRaDevice)
-        {
-            loRaDevice.LastSeen = DateTimeOffset.UtcNow;
-            this.statisticsTracker.IncrementHit();
+            if (device is { })
+            {
+                device.LastSeen = DateTimeOffset.UtcNow;
+                this.statisticsTracker.IncrementHit();
+            }
+            else
+            {
+                this.statisticsTracker.IncrementMiss();
+            }
         }
 
         private void CleanupAllDevices()
