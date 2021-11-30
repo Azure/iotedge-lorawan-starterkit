@@ -20,7 +20,7 @@ namespace LoRaTools.Regions
 
         // Dictionary mapping upstream join frequencies to a tuple containing
         // the corresponding downstream join frequency and the channel index
-        public Dictionary<double, (double, int)> UpstreamJoinFrequenciesToDownstreamAndChannelIndex { get; }
+        public Dictionary<double, (double downstreamFreq, int joinChannelIndex)> UpstreamJoinFrequenciesToDownstreamAndChannelIndex { get; }
 
         public RegionCN470()
             : base(LoRaRegionType.CN470)
@@ -107,7 +107,7 @@ namespace LoRaTools.Regions
 
             if (UpstreamJoinFrequenciesToDownstreamAndChannelIndex.TryGetValue(joinChannel.Freq, out var elem))
             {
-                channelIndex = elem.Item2;
+                channelIndex = elem.joinChannelIndex;
             }
 
             return channelIndex != -1;
@@ -122,7 +122,7 @@ namespace LoRaTools.Regions
 
             if (UpstreamJoinFrequenciesToDownstreamAndChannelIndex.TryGetValue(frequency, out var elem))
             {
-                channelIndex = elem.Item2;
+                channelIndex = elem.joinChannelIndex;
             }
 
             return channelIndex != -1;
