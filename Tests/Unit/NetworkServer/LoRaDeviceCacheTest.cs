@@ -295,6 +295,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.False(cache.HasRegistrations(oldDevAddr));
         }
 
+        [Fact]
+        public void When_Registering_After_Join_With_Different_Device_Throws()
+        {
+            using var cache = CreateNoRefreshCache();
+            using var device = CreateTestDevice();
+
+            device.DevAddr = null;
+            cache.Register(device);
+
+            using var device2 = CreateTestDevice();
+            Assert.Throws<InvalidOperationException>(() => cache.Register(device2));
+        }
+
         private static LoRaDevice CreateTestDevice() => new LoRaDevice("FFFFFFFF", "0000000000000000", null) { NwkSKey = "AAAAAAAA" };
 
         private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };

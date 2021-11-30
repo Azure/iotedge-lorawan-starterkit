@@ -175,6 +175,8 @@ namespace LoRaWan.NetworkServer
                     _ = this.devAddrCache.TryRemove(oldDevAddr, out _);
                 }
             }
+
+            this.logger.LogDebug($"previous device devAddr ({oldDevAddr}) removed from cache.");
         }
 
         public bool HasRegistrations(string devAddr)
@@ -198,13 +200,27 @@ namespace LoRaWan.NetworkServer
 
             lock (this.syncLock)
             {
+                if (this.euiCache.TryGetValue(loraDevice.DevEUI, out var existingDevice))
+                {
+                    // joins do register without DevAddr and then re-register with the DevAddr
+                    // however, the references need to match
+                    if (!ReferenceEquals(existingDevice, loraDevice))
+                    {
+                        throw new InvalidOperationException($"{loraDevice.DevEUI} already registered. We would overwrite a device client");
+                    }
+                }
+                else
+                {
+                    this.euiCache[loraDevice.DevEUI] = loraDevice;
+                }
+
                 if (!string.IsNullOrEmpty(loraDevice.DevAddr))
                 {
                     var devAddrLookup = this.devAddrCache.GetOrAdd(loraDevice.DevAddr, (_) => new ConcurrentDictionary<string, LoRaDevice>());
                     devAddrLookup[loraDevice.DevEUI] = loraDevice;
                 }
-                this.euiCache[loraDevice.DevEUI] = loraDevice;
                 loraDevice.LastSeen = DateTimeOffset.UtcNow;
+                this.logger.LogDebug($"Device registered in cache.");
             }
         }
 
