@@ -48,7 +48,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             var currentPosition = 0;
             if (updateRequest.CupsUri != remoteCupsConfig.CupsUri)
             {
-                var escapedUri = remoteCupsConfig.CupsUri.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
+                var escapedUri = remoteCupsConfig.CupsUri.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort, UriFormat.Unescaped);
 
                 currentPosition += WriteToSpan((byte)escapedUri.Length, response.Memory.Span[currentPosition..]);
                 currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(escapedUri), response.Memory.Span[currentPosition..]);
@@ -60,7 +60,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
             if (updateRequest.TcUri != remoteCupsConfig.TcUri)
             {
-                var escapedUri = remoteCupsConfig.TcUri.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
+                var escapedUri = remoteCupsConfig.TcUri.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort, UriFormat.Unescaped);
 
                 currentPosition += WriteToSpan((byte)escapedUri.Length, response.Memory.Span[currentPosition..]);
                 currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(escapedUri), response.Memory.Span[currentPosition..]);
@@ -108,7 +108,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
 
             var toWrite = response.Memory.Span[..currentPosition].ToArray();
-            httpContext.Response.Clear();
             httpContext.Response.ContentType = "application/octet-stream";
             httpContext.Response.ContentLength = currentPosition;
             _ = await httpContext.Response.BodyWriter.WriteAsync(toWrite, token);
