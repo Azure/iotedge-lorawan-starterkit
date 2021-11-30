@@ -134,7 +134,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var measurement = new Measurement<int>(1, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object?)stationEui));
             observeValue.Setup(ov => ov.Invoke()).Returns(measurement);
             using var meter = new Meter("LoRaWan", "1.0");
-            var observableGauge = meter.CreateObservableGauge(ObservableGauge.Name, observeValue.Object);
+            _ = meter.CreateObservableGauge(ObservableGauge.Name, observeValue.Object);
 
             // act
             this.prometheusMetricExporter.Start();
