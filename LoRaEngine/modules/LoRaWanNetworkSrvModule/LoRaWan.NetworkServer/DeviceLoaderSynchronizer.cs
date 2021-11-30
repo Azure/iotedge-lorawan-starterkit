@@ -164,18 +164,18 @@ namespace LoRaWan.NetworkServer
                     // continue
                     HasLoadingDeviceError = true;
                 }
-            }
 
-            if (initTasks?.Count > 0)
-            {
-                foreach (var deviceTask in initTasks)
+                if (initTasks.Count > 0)
                 {
-                    if (deviceTask.IsCompletedSuccessfully)
+                    foreach (var deviceTask in initTasks)
                     {
-                        var device = await deviceTask;
-                        // run initializers
-                        InitializeDevice(device);
-                        createdDevices.Add(device);
+                        if (deviceTask.IsCompletedSuccessfully)
+                        {
+                            var device = await deviceTask;
+                            // run initializers
+                            InitializeDevice(device);
+                            createdDevices.Add(device);
+                        }
                     }
                 }
             }
