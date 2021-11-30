@@ -130,7 +130,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (this.managedConnections.ContainsKey(key))
                 {
-                    throw new InvalidOperationException($"existing connection for device {loRaDevice.DevEUI}");
+                    throw new InvalidOperationException($"Connection already registered for device {loRaDevice.DevEUI}");
                 }
 
                 this.managedConnections[GetConnectionCacheKey(loRaDevice.DevEUI)] = new ManagedConnection(loRaDevice, loraDeviceClient);
