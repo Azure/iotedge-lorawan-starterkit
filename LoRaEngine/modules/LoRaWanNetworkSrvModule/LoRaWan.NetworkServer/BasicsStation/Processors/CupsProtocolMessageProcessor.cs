@@ -35,105 +35,124 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             using var reader = new StreamReader(httpContext.Request.Body);
             var input = await reader.ReadToEndAsync();
 
+            // reading the request from Basic Station
             var updateRequest = CupsEndpoint.UpdateRequestReader.Read(input);
-            if (updateRequest.StationEui is null)
+            if (updateRequest.StationEui == default)
                 throw new InvalidOperationException(nameof(updateRequest.StationEui));
 
-            var remoteCupsConfig = await this.basicsStationConfigurationService.GetCupsConfigAsync(updateRequest.StationEui.Value, token);
+            // reading the configuration stored in twin
+            var remoteCupsConfig = await this.basicsStationConfigurationService.GetCupsConfigAsync(updateRequest.StationEui, token);
 
-            // TODO: Rent
-            using var response = MemoryPool<byte>.Shared.Rent(8192);
-            var writtenBytes = 0;
+            // checking for disequalities in desired and reported configuration
+            using var response = MemoryPool<byte>.Shared.Rent(2048);
+            var currentPosition = 0;
             if (updateRequest.CupsUri != remoteCupsConfig.CupsUri)
             {
                 var escapedUri = remoteCupsConfig.CupsUri.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
 
-                GetProgressingSpan()[0] = (byte)escapedUri.Length;
-                writtenBytes += 1;
-                Encoding.UTF8.GetBytes(escapedUri).CopyTo(GetProgressingSpan());
-                writtenBytes += escapedUri.Length;
+                currentPosition += WriteToSpan((byte)escapedUri.Length, response.Memory.Span[currentPosition..]);
+                currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(escapedUri), response.Memory.Span[currentPosition..]);
             }
             else
             {
-                GetProgressingSpan()[0] = 0;
-                writtenBytes += 1;
+                currentPosition += WriteToSpan(0, response.Memory.Span[currentPosition..]);
             }
 
             if (updateRequest.TcUri != remoteCupsConfig.TcUri)
             {
                 var escapedUri = remoteCupsConfig.TcUri.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
 
-                GetProgressingSpan()[0] = (byte)escapedUri.Length;
-                writtenBytes += 1;
-                Encoding.UTF8.GetBytes(escapedUri).CopyTo(GetProgressingSpan());
-                writtenBytes += escapedUri.Length;
+                currentPosition += WriteToSpan((byte)escapedUri.Length, response.Memory.Span[currentPosition..]);
+                currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(escapedUri), response.Memory.Span[currentPosition..]);
             }
             else
             {
-                GetProgressingSpan()[0] = 0;
-                writtenBytes += 1;
+                currentPosition += WriteToSpan(0, response.Memory.Span[currentPosition..]);
             }
 
             if (updateRequest.CupsCredentialsChecksum != remoteCupsConfig.CupsCredentialsChecksum)
             {
-                var cupsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui.Value, ConcentratorCredentialType.Cups);
+                var cupsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, ConcentratorCredentialType.Cups);
 
                 var cupsCredentialsBytes = Convert.FromBase64String(cupsCredentials);
-                BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), (short)cupsCredentialsBytes.Length);
-                writtenBytes += 2;
-                cupsCredentialsBytes.CopyTo(GetProgressingSpan());
-                writtenBytes += cupsCredentials.Length;
+                currentPosition += WriteToSpan((ushort)cupsCredentialsBytes.Length, response.Memory.Span[currentPosition..]);
+                currentPosition += WriteToSpan(cupsCredentialsBytes, response.Memory.Span[currentPosition..]);
             }
             else
             {
-                BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), 0);
-                writtenBytes += 2;
+                currentPosition += WriteToSpan((ushort)0, response.Memory.Span[currentPosition..]);
             }
 
             if (updateRequest.TcCredentialsChecksum != remoteCupsConfig.TcCredentialsChecksum)
             {
-                var lnsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui.Value, ConcentratorCredentialType.Lns);
+                var lnsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, ConcentratorCredentialType.Lns);
 
                 var lnsCredentialsBytes = Convert.FromBase64String(lnsCredentials);
-                BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), (short)lnsCredentialsBytes.Length);
-                writtenBytes += 2;
-                lnsCredentialsBytes.CopyTo(GetProgressingSpan());
-                writtenBytes += lnsCredentials.Length;
+                currentPosition += WriteToSpan((ushort)lnsCredentialsBytes.Length, response.Memory.Span[currentPosition..]);
+                currentPosition += WriteToSpan(lnsCredentialsBytes, response.Memory.Span[currentPosition..]);
             }
             else
             {
-                BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), 0);
-                writtenBytes += 2;
+                currentPosition += WriteToSpan((ushort)0, response.Memory.Span[currentPosition..]);
             }
 
             /*
-             * 4 bytes sigLen (sig)
-             * 4 bytes keyCrc
-             * sig sig
-             * 4 bytes updlen (udn)
-             * udn
+             * Following fields are left empty as no firmware update feature is implemented yet
              */
 
-            //sig
-            BinaryPrimitives.WriteUInt32LittleEndian(GetProgressingSpan(), 0);
-            writtenBytes += 4;
-            //keycrc
-            BinaryPrimitives.WriteUInt32LittleEndian(GetProgressingSpan(), 0);
-            writtenBytes += 4;
-            //updlen
-            BinaryPrimitives.WriteUInt32LittleEndian(GetProgressingSpan(), 0);
-            writtenBytes += 4;
+            // Signature length (4bytes)
+            currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
+            // CRC of the Key used for the signature (4bytes)
+            currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
+            // Length of the update data (4bytes)
+            currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
 
-            var toWrite = response.Memory.Span[..writtenBytes].ToArray();
+            var toWrite = response.Memory.Span[..currentPosition].ToArray();
             httpContext.Response.Clear();
             httpContext.Response.ContentType = "application/octet-stream";
-            httpContext.Response.ContentLength = writtenBytes;
+            httpContext.Response.ContentLength = currentPosition;
             _ = await httpContext.Response.BodyWriter.WriteAsync(toWrite, token);
+        }
 
-            Span<byte> GetProgressingSpan()
+        private static int WriteToSpan(Span<byte> value, Span<byte> span)
+        {
+            var length = value.Length;
+            value.CopyTo(span[..length]);
+            return length;
+        }
+
+        private static int WriteToSpan(byte value, Span<byte> span)
+        {
+            span[0] = value;
+            return sizeof(byte);
+        }
+
+        private static int WriteToSpan(ushort value, Span<byte> span, bool littleEndian = true)
+        {
+            var length = sizeof(ushort);
+            if (littleEndian)
             {
-                return response.Memory.Span[writtenBytes..];
+                BinaryPrimitives.WriteUInt16LittleEndian(span[..length], value);
             }
+            else
+            {
+                BinaryPrimitives.WriteUInt16BigEndian(span[..length], value);
+            }
+            return length;
+        }
+
+        private static int WriteToSpan(uint value, Span<byte> span, bool littleEndian = true)
+        {
+            var length = sizeof(uint);
+            if (littleEndian)
+            {
+                BinaryPrimitives.WriteUInt32LittleEndian(span[..length], value);
+            }
+            else
+            {
+                BinaryPrimitives.WriteUInt32BigEndian(span[..length], value);
+            }
+            return length;
         }
     }
 }

@@ -12,6 +12,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
         Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken);
         Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken);
         Task<string[]> GetAllowedClientThumbprintsAsync(StationEui stationEui, CancellationToken cancellationToken);
-        Task<CupsUpdateInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken);
+        Task<CupsTwinInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken);
     }
 }

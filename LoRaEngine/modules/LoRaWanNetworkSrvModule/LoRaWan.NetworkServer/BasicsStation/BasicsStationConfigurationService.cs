@@ -101,7 +101,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             }
         }
 
-        public async Task<CupsUpdateInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken)
+        public async Task<CupsTwinInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
             try
