@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -198,14 +199,14 @@ namespace LoRaWan.NetworkServer
             return new Uri(baseUrl, queryParameterSb.ToString());
         }
 
-        public override async Task<string> FetchStationCredentialsAsync(StationEui eui, string credentialtype)
+        public override async Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
                 ["StationEui"] = eui.ToString("N", null),
-                ["CredentialType"] = credentialtype
+                ["CredentialType"] = credentialtype.ToString()
             });
 
             var response = await client.GetAsync(new Uri(url.ToString()));

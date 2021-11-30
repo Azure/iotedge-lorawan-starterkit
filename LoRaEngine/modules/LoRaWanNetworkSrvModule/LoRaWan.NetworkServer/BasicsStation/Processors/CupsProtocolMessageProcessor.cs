@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
@@ -75,8 +76,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
             if (updateRequest.CupsCredentialsChecksum != remoteCupsConfig.CupsCredentialsChecksum)
             {
-                // TODO: Replace with enum
-                var cupsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui.Value, "Cups");
+                var cupsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui.Value, ConcentratorCredentialType.Cups);
 
                 var cupsCredentialsBytes = Convert.FromBase64String(cupsCredentials);
                 BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), (short)cupsCredentialsBytes.Length);
@@ -92,8 +92,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
             if (updateRequest.TcCredentialsChecksum != remoteCupsConfig.TcCredentialsChecksum)
             {
-                // TODO: Replace with enum
-                var lnsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui.Value, "Lns");
+                var lnsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui.Value, ConcentratorCredentialType.Lns);
 
                 var lnsCredentialsBytes = Convert.FromBase64String(lnsCredentials);
                 BinaryPrimitives.WriteInt16LittleEndian(GetProgressingSpan(), (short)lnsCredentialsBytes.Length);
