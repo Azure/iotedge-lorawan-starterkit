@@ -785,9 +785,6 @@ namespace LoRaWan.Tests.Integration
                 FrmCntUp = 100
             };
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
-
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
 
@@ -848,9 +845,6 @@ namespace LoRaWan.Tests.Integration
             int delayInMs)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
 
             // message will be sent
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))

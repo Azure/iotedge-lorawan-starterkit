@@ -348,8 +348,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
-
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
@@ -545,8 +543,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
-
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
@@ -675,7 +671,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
+
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
                 ServerConfiguration,
@@ -772,8 +768,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
-
-            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -899,8 +893,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
-
-            var loRaDeviceFactory = new TestLoRaDeviceFactory(LoRaDeviceClient.Object, DeviceCache);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);

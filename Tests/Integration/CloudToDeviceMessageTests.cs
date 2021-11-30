@@ -31,8 +31,6 @@ namespace LoRaWan.Tests.Integration
         public async Task When_Device_With_Downlink_Disabled_Received_Unconfirmed_Data_Should_Not_Check_For_C2D(string deviceGatewayID)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
 
             // message will be sent
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
@@ -80,7 +78,6 @@ namespace LoRaWan.Tests.Integration
             const int payloadFcnt = 10;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
 
             // message will be sent
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
