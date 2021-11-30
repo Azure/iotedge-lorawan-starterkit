@@ -9,6 +9,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
     internal interface ICupsProtocolMessageProcessor
     {
-        public Task HandleUpdateInfoAsync(HttpContext httpContext, CancellationToken token);
+        internal Task HandleUpdateInfoAsync(HttpContext httpContext, CancellationToken token);
     }
 }
