@@ -23,6 +23,7 @@ namespace LoRaWan.NetworkServer
         public static readonly CustomMetric StationConnectivityLost = new CustomMetric("StationConnectivityLost", "Counts the number of station connectivities that were lost", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric ReceiveWindowHits = new CustomMetric("ReceiveWindowHits", "Receive window hits", MetricType.Counter, new[] { GatewayIdTagName, ReceiveWindowTagName });
         public static readonly CustomMetric ReceiveWindowMisses = new CustomMetric("ReceiveWindowMisses", "Receive window misses", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric D2CMessageDeliveryLatency = new CustomMetric("D2CMessageDeliveryLatency", "D2C delivery latency", MetricType.Histogram, new[] { GatewayIdTagName });
         public static readonly CustomMetric D2CMessagesReceived = new CustomMetric("D2CMessagesReceived", "Number of D2C messages received", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric D2CMessageSize = new CustomMetric("D2CMessageSize", "Size of D2C messages (in bytes)", MetricType.Histogram, new[] { GatewayIdTagName });
         public static readonly CustomMetric C2DMessageSize = new CustomMetric("C2DMessageSize", "Size of C2D messages (in bytes)", MetricType.Histogram, new[] { GatewayIdTagName });
@@ -34,6 +35,7 @@ namespace LoRaWan.NetworkServer
             StationConnectivityLost,
             ReceiveWindowHits,
             ReceiveWindowMisses,
+            D2CMessageDeliveryLatency,
             D2CMessagesReceived,
             D2CMessageSize,
             C2DMessageSize
