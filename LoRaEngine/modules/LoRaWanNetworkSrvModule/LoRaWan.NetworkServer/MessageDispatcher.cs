@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
 
@@ -22,6 +23,10 @@ namespace LoRaWan.NetworkServer
         private readonly IJoinRequestMessageHandler joinRequestHandler;
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<MessageDispatcher> logger;
+
+        private static readonly IMemoryCache testMemoryCache = new MemoryCache(new MemoryCacheOptions());
+        private static readonly DeduplicationStrategyFactory strategyFactory = new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
+        private static readonly IConcentratorDeduplication concentratorDeduplication = new ConcentratorDeduplication(testMemoryCache, strategyFactory, new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance), NullLogger<IConcentratorDeduplication>.Instance);
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
@@ -51,7 +56,7 @@ namespace LoRaWan.NetworkServer
                                    ILoRaDeviceRegistry deviceRegistry,
                                    ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
             : this(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
-                   new JoinRequestMessageHandler(configuration, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance),
+                   new JoinRequestMessageHandler(configuration, concentratorDeduplication, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance),
                    NullLoggerFactory.Instance,
                    NullLogger<MessageDispatcher>.Instance)
         { }

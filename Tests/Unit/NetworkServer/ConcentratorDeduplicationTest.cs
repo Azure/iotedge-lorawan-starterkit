@@ -4,12 +4,16 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Net.WebSockets;
+    using Bogus;
     using global::LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging.Abstractions;
+    using Microsoft.Extensions.ObjectPool;
     using Moq;
     using Xunit;
 
@@ -25,8 +29,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 #pragma warning disable CA2213 // Disposable fields should be disposed
         // false positive, ownership passed to ConcentratorDeduplication
         private readonly MemoryCache cache;
+        private readonly Mock<DeduplicationStrategyFactory> deduplicationStrategyFactory;
 #pragma warning restore CA2213 // Disposable fields should be disposed
 
+        public static class TheoryMembers
+        {
+            public static IEnumerable<object[]> DeduplicationStrategies()
+            {
+                yield return new object[] { new DeduplicationStrategyMark(NullLogger<DeduplicationStrategyMark>.Instance) };
+                yield return new object[] { null };
+            }
+        }
 
         public ConcentratorDeduplicationTest()
         {
@@ -38,8 +51,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loraRequest = WaitableLoRaRequest.Create(dataPayload);
             this.loRaDevice = new LoRaDevice(this.simulatedDevice.DevAddr, this.simulatedDevice.DevEUI, this.connectionManager);
 
-            var deduplicationStrategyFactory = new Mock<DeduplicationStrategyFactory>(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
-            _ = deduplicationStrategyFactory.Setup(x => x.Create(It.IsAny<LoRaDevice>())).Returns(new DeduplicationStrategyDrop(NullLogger<DeduplicationStrategyDrop>.Instance)); ;
+            this.deduplicationStrategyFactory = new Mock<DeduplicationStrategyFactory>(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
+            this.deduplicationStrategyFactory.Setup(x => x.Create(this.loRaDevice)).Returns(new DeduplicationStrategyDrop(NullLogger<DeduplicationStrategyDrop>.Instance)); ;
             this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
 
             this.concentratorDeduplication = new ConcentratorDeduplication(
@@ -47,6 +60,43 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deduplicationStrategyFactory.Object,
                 this.socketRegistry,
                 NullLogger<IConcentratorDeduplication>.Instance);
+        }
+
+        [Fact]
+        public void ShouldProcess_JoinRequests()
+        {
+            // arrange
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
+            var joinRxpk = simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]; ;
+            using var loraRequest = WaitableLoRaRequest.Create(joinRxpk);
+            loraRequest.SetPayload(new LoRaPayloadJoinRequest());
+
+            // act / assert
+            var shouldProcess = this.concentratorDeduplication.ShouldProcess(loraRequest, this.loRaDevice);
+            Assert.True(shouldProcess);
+        }
+
+        [Theory]
+        [MemberData(nameof(TheoryMembers.DeduplicationStrategies), MemberType = typeof(TheoryMembers))]
+        public void ShouldNotProcess_Mark_And_None_Deduplication_Strategies(ILoRaDeviceMessageDeduplicationStrategy strategy)
+        {
+            // arrange
+            using var otherDevice = new LoRaDevice(this.simulatedDevice.DevAddr, new Faker().Random.String(10), this.connectionManager);
+            this.deduplicationStrategyFactory.Setup(x => x.Create(otherDevice)).Returns(strategy); ;
+
+            using var concentratorDeduplication = new ConcentratorDeduplication(
+                this.cache,
+                deduplicationStrategyFactory.Object,
+                this.socketRegistry,
+                NullLogger<IConcentratorDeduplication>.Instance);
+
+            // act / assert
+            var shouldNotProcess = concentratorDeduplication.ShouldProcess(this.loraRequest, otherDevice);
+            Assert.False(shouldNotProcess);
+
+            // should not affect existing mock
+            var shouldProcess = concentratorDeduplication.ShouldProcess(this.loraRequest, this.loRaDevice);
+            Assert.True(shouldProcess);
         }
 
         [Theory]

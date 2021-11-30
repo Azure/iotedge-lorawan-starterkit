@@ -40,14 +40,11 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// 
+        /// Checks if this class should process the specified request and decide later to drop or not.
         /// </summary>
-        /// <param name="loRaRequest"></param>
-        /// <param name="loRaDevice"></param>
-        /// <returns><code>True</code> if this service should process this request and decide to drop or not.</returns>
         internal bool ShouldProcess(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
             => (loRaRequest.Payload is LoRaPayloadData && this.deduplicationStrategy.Create(loRaDevice) is DeduplicationStrategyDrop)
-               || loRaRequest.Payload is LoRaPayloadJoinRequest;
+             || loRaRequest.Payload is LoRaPayloadJoinRequest;
 
         public bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
         {
