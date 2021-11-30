@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
-    internal sealed class ConcentratorDeduplication :
+    public sealed class ConcentratorDeduplication :
         IConcentratorDeduplication, IDisposable
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
@@ -51,6 +51,8 @@ namespace LoRaWan.NetworkServer
 
         public bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
         {
+            _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
+
             if (!ShouldProcess(loRaRequest, loRaDevice))
                 return false;
 

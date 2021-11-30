@@ -132,7 +132,7 @@ namespace LoRaWan.Tests.Common
 
         private LoRaOperationTimeWatcher fixTimeWacher;
 
-        internal void UseTimeWatcher(LoRaOperationTimeWatcher timeWatcher) => this.fixTimeWacher = timeWatcher;
+        public void UseTimeWatcher(LoRaOperationTimeWatcher timeWatcher) => this.fixTimeWacher = timeWatcher;
 
         public override LoRaOperationTimeWatcher GetTimeWatcher() => this.fixTimeWacher ?? base.GetTimeWatcher();
 

@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// A registry providing virtual handles over WebSocket writer objects.
     /// </summary>
-    public sealed partial class WebSocketWriterRegistry<TKey, TMessage>
+    public partial class WebSocketWriterRegistry<TKey, TMessage>
         where TKey : notnull
         where TMessage : notnull
     {
@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer
         /// <remarks>
         /// Implementation does not throw when key is not present in the underlying dictionary.
         /// </remarks>
-        public bool IsSocketWriterOpen(TKey key)
+        public virtual bool IsSocketWriterOpen(TKey key)
             => TryGetValue(key, out var value) && !value!.Value.Object.IsClosed; // when key found, value will not be null
 
         /// <summary>

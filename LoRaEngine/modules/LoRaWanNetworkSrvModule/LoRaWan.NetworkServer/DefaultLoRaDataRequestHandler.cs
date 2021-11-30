@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
+        private readonly IConcentratorDeduplication concentratorDeduplication;
         private readonly ILoRaPayloadDecoder payloadDecoder;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
         private readonly ILoRaADRStrategyProvider loRaADRStrategyProvider;
@@ -30,6 +31,7 @@ namespace LoRaWan.NetworkServer
         public DefaultLoRaDataRequestHandler(
             NetworkServerConfiguration configuration,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
+            IConcentratorDeduplication concentratorDeduplication,
             ILoRaPayloadDecoder payloadDecoder,
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
@@ -39,6 +41,7 @@ namespace LoRaWan.NetworkServer
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
+            this.concentratorDeduplication = concentratorDeduplication;
             this.payloadDecoder = payloadDecoder;
             this.deduplicationFactory = deduplicationFactory;
             this.loRaADRStrategyProvider = loRaADRStrategyProvider;
@@ -85,9 +88,10 @@ namespace LoRaWan.NetworkServer
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
             var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
-            // TODO Drop if request encountered before
-            //if (this.deduplicationFactory.Create(loRaDevice) is DeduplicationStrategyDrop)
-            //    Console.WriteLine(1);
+            if (this.concentratorDeduplication.ShouldDrop(request, loRaDevice))
+            {
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+            }
 
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
@@ -730,7 +734,7 @@ namespace LoRaWan.NetworkServer
         /// <param name="isConfirmedResubmit"><code>True</code> when it's a confirmation resubmit.</param>
         /// <param name="result">When request is not valid, indicates the reason.</param>
         /// <returns><code>True</code> when the provided request is valid, false otherwise.</returns>
-        private bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, bool requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
+        internal virtual bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, bool requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
         {
             isConfirmedResubmit = false;
             result = null;
@@ -772,8 +776,11 @@ namespace LoRaWan.NetworkServer
             return valid;
         }
 
-        private async Task<bool> DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(LoRaDevice loRaDevice, uint payloadFcnt, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
+        internal virtual async Task<bool> DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(LoRaDevice loRaDevice, uint payloadFcnt, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            _ = frameCounterStrategy ?? throw new ArgumentNullException(nameof(frameCounterStrategy));
+
             var isFrameCounterFromNewlyStartedDevice = false;
             if (payloadFcnt <= 1)
             {

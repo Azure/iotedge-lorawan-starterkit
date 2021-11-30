@@ -84,7 +84,9 @@ namespace LoRaWan.Tests.Common
 
             this.connectionManager.Register(loRaDevice, deviceClientToAssign);
 
-            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance));
+            using var concentratorDeduplication = new ConcentratorDeduplication(this.memoryCache, this.deduplicationFactory, new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance), NullLogger<IConcentratorDeduplication>.Instance);
+
+            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, concentratorDeduplication, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance));
 
             this.deviceMap[deviceInfo.DevEUI] = loRaDevice;
 
