@@ -339,12 +339,11 @@ namespace LoRaWan.Tools.CLI
         {
             var certificateBundleBlobName = $"{stationEui}-{Guid.NewGuid():N}";
             var blobClient = configurationHelper.CertificateStorageContainerClient.GetBlobClient(certificateBundleBlobName);
-            var fileContent = await File.ReadAllTextAsync(certificateBundleLocation);
-            var certificateContent = Regex.Replace(fileContent, @"\r\n|\n\r|\n|\r", "\n");
+            var fileContent = File.ReadAllBytes(certificateBundleLocation);
 
             try
             {
-                _ = await blobClient.UploadAsync(new BinaryData(Encoding.UTF8.GetBytes(certificateContent)), overwrite: false);
+                _ = await blobClient.UploadAsync(new BinaryData(fileContent), overwrite: false);
             }
             catch (RequestFailedException ex)
             {
@@ -355,7 +354,7 @@ namespace LoRaWan.Tools.CLI
             try
             {
                 var crc = new Force.Crc32.Crc32Algorithm();
-                var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(Encoding.UTF8.GetBytes(certificateContent)));
+                var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(fileContent));
                 if (!await uploadSuccessActionAsync(crcHash, blobClient.Uri))
                     await CleanupAsync();
                 return true;
