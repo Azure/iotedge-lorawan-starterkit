@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
     internal class CupsBase
     {
-        public CupsBase(Uri cupsUri,
+        public CupsBase(Uri? cupsUri,
                         Uri? tcUri,
                         uint cupsCredentialsChecksum,
                         uint tcCredentialsChecksum)
@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             TcCredentialsChecksum = tcCredentialsChecksum;
         }
 
-        public Uri CupsUri { get; }
+        public Uri? CupsUri { get; }
         public Uri? TcUri { get; }
         public uint CupsCredentialsChecksum { get; }
         public uint TcCredentialsChecksum { get; }

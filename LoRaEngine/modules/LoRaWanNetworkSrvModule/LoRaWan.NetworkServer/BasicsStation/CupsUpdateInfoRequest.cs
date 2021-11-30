@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     internal class CupsUpdateInfoRequest : CupsBase
     {
         public CupsUpdateInfoRequest(StationEui stationEui,
-                                     Uri cupsUri,
+                                     Uri? cupsUri,
                                      Uri? tcUri,
                                      uint cupsCredentialsChecksum,
                                      uint tcCredentialsChecksum)

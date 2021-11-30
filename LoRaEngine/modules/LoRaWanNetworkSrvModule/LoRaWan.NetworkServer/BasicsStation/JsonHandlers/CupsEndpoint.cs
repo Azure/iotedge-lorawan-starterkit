@@ -12,8 +12,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         internal static class CupsBaseProperties
         {
             internal static readonly IJsonProperty<Uri> CupsUri =
-                JsonReader.Property("cupsUri", from s in JsonReader.String()
-                                               select new Uri(s));
+                JsonReader.Property("cupsUri", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                                               select string.IsNullOrEmpty(s) ? null : new Uri(s));
 
             internal static readonly IJsonProperty<Uri?> TcUri =
                 JsonReader.Property("tcUri", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
