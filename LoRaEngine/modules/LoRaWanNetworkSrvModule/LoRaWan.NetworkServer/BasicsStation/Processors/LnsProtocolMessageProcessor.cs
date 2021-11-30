@@ -32,15 +32,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly IMessageDispatcher messageDispatcher;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
-        private readonly Counter<int> joinRequestCounter;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                            IPacketForwarder packetForwarder,
                                            IMessageDispatcher messageDispatcher,
                                            ILogger<LnsProtocolMessageProcessor> logger,
-                                           RegistryMetricTagBag registryMetricTagBag,
-                                           Meter meter)
+                                           RegistryMetricTagBag registryMetricTagBag)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.socketWriterRegistry = socketWriterRegistry;
@@ -48,7 +46,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.messageDispatcher = messageDispatcher;
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
-            this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
@@ -195,8 +192,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     try
                     {
                         var jreq = LnsData.JoinRequestFrameReader.Read(json);
-
-                        this.joinRequestCounter?.Add(1);
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);

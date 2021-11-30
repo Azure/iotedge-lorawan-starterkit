@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Diagnostics.Metrics;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
@@ -15,6 +16,7 @@ namespace LoRaWan.NetworkServer
     public class JoinRequestMessageHandler : IJoinRequestMessageHandler
     {
         private readonly ILoRaDeviceRegistry deviceRegistry;
+        private readonly Counter<int> joinRequestCounter;
         private readonly ILogger<JoinRequestMessageHandler> logger;
         private readonly NetworkServerConfiguration configuration;
         private readonly IConcentratorDeduplication concentratorDeduplication;
@@ -22,11 +24,13 @@ namespace LoRaWan.NetworkServer
         public JoinRequestMessageHandler(NetworkServerConfiguration configuration,
                                          IConcentratorDeduplication concentratorDeduplication,
                                          ILoRaDeviceRegistry deviceRegistry,
+                                         Meter meter,
                                          ILogger<JoinRequestMessageHandler> logger)
         {
             this.configuration = configuration;
             this.concentratorDeduplication = concentratorDeduplication;
             this.deviceRegistry = deviceRegistry;
+            this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
             this.logger = logger;
         }
 
@@ -76,6 +80,8 @@ namespace LoRaWan.NetworkServer
                         // we do not log here as the concentratorDeduplication service already does more detailed logging
                         return;
                     }
+
+                    this.joinRequestCounter?.Add(1);
 
                     if (loRaDevice.AppEUI != appEUI)
                     {

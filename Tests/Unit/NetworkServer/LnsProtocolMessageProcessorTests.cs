@@ -48,9 +48,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                            new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>()),
                                                                            this.packetForwarder.Object,
                                                                            this.messageDispatcher.Object,
-                                                                           loggerMock, new RegistryMetricTagBag(),
-                                                                           // Do not pass meter since metric testing will be unreliable due to interference from test classes running in parallel.
-                                                                           null);
+                                                                           loggerMock,
+                                                                           new RegistryMetricTagBag());
         }
 
         [Fact]

@@ -56,7 +56,11 @@ namespace LoRaWan.NetworkServer
                                    ILoRaDeviceRegistry deviceRegistry,
                                    ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
             : this(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
-                   new JoinRequestMessageHandler(configuration, concentratorDeduplication, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance),
+                   new JoinRequestMessageHandler(configuration,
+                       concentratorDeduplication,
+                       deviceRegistry,
+                       null, // Do not pass meter since metric testing will be unreliable due to interference from test classes running in parallel.
+                       NullLogger<JoinRequestMessageHandler>.Instance),
                    NullLoggerFactory.Instance,
                    NullLogger<MessageDispatcher>.Instance)
         { }
