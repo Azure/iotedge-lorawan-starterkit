@@ -138,11 +138,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            new List<object[]>
            {
                 new object[] { region, 470.9, 0 },
+                new object[] { region, 472.5, 1 },
                 new object[] { region, 475.7, 3 },
                 new object[] { region, 507.3, 6 },
+                new object[] { region, 479.9, 8 },
                 new object[] { region, 499.9, 9 },
                 new object[] { region, 478.3, 14 },
                 new object[] { region, 482.3, 16 },
+                new object[] { region, 486.3, 18 },
                 new object[] { region, 488.3, 19 },
            };
 
