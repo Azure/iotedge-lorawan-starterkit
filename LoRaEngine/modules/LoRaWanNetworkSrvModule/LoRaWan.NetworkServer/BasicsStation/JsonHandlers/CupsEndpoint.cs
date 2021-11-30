@@ -9,19 +9,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     public static class CupsEndpoint
     {
-        /*
-         * {
-          "router"      : ID6,
-          "cupsUri"     : "URI",
-          "tcUri"       : "URI",
-          "cupsCredCrc" : INT,
-          "tcCredCrc"   : INT,
-          "station"     : STRING,
-          "model"       : STRING,
-          "package"     : STRING,
-          "keys"        : [INT]
-        }*/
-
         internal static class CupsBaseProperties
         {
             internal static readonly IJsonProperty<Uri> CupsUri =
