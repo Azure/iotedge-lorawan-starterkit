@@ -30,6 +30,7 @@ namespace LoRaWan.NetworkServer
         private readonly Counter<int> receiveWindowHits;
         private readonly Histogram<int> c2dPayloadSizeHistogram;
         private readonly Histogram<int> d2cPayloadSizeHistogram;
+        private readonly Counter<int> c2dMessageTooLong;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
 
         public DefaultLoRaDataRequestHandler(
@@ -55,6 +56,7 @@ namespace LoRaWan.NetworkServer
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
             this.c2dPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.C2DMessageSize);
             this.d2cPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.D2CMessageSize);
+            this.c2dMessageTooLong = meter?.CreateCounter<int>(MetricRegistry.C2DMessageTooLong);
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
@@ -313,6 +315,7 @@ namespace LoRaWan.NetworkServer
                         {
                             if (downlinkMessageBuilderResp.IsMessageTooLong)
                             {
+                                this.c2dMessageTooLong?.Add(1);
                                 _ = await cloudToDeviceMessage.AbandonAsync();
                             }
                             else
@@ -421,6 +424,7 @@ namespace LoRaWan.NetworkServer
                     }
                     else if (confirmDownlinkMessageBuilderResp.IsMessageTooLong)
                     {
+                        this.c2dMessageTooLong?.Add(1);
                         this.logger.LogError($"payload will not fit in current receive window, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
                         _ = cloudToDeviceMessage.AbandonAsync();
                     }
