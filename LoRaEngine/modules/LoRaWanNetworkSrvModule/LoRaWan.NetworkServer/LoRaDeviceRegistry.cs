@@ -84,7 +84,7 @@ namespace LoRaWan.NetworkServer
             lock (this.getOrCreateLoadingDevicesRequestQueueLock)
             {
                 return this.cache.GetOrCreate(
-                    $"devaddrloader:{devAddr}",
+                    GetDevLoaderCacheKey(devAddr),
                     (ce) =>
                     {
                         var cts = new CancellationTokenSource();
@@ -124,6 +124,13 @@ namespace LoRaWan.NetworkServer
         {
             if (request is null) throw new ArgumentNullException(nameof(request));
 
+            var devAddr = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
+
+            if (this.cache.TryGetValue<DeviceLoaderSynchronizer>(GetDevLoaderCacheKey(devAddr), out var deviceLoader))
+            {
+                return deviceLoader;
+            }
+
             if (this.deviceCache.TryGetForPayload(request.Payload, out var cachedDevice))
             {
                 this.logger.LogDebug("device in cache");
@@ -136,7 +143,7 @@ namespace LoRaWan.NetworkServer
             }
 
             // not in cache, need to make a single search by dev addr
-            return GetOrCreateLoadingDevicesRequestQueue(ConversionHelper.ByteArrayToString(request.Payload.DevAddr));
+            return GetOrCreateLoadingDevicesRequestQueue(devAddr);
         }
 
         /// <summary>
@@ -167,6 +174,7 @@ namespace LoRaWan.NetworkServer
 
         // Creates cache key for join device loader: "joinloader:{devEUI}"
         private static string GetJoinDeviceLoaderCacheKey(string devEUI) => string.Concat("joinloader:", devEUI);
+        private static string GetDevLoaderCacheKey(string devAddr) => string.Concat("devaddrloader:", devAddr);
 
         // Removes join device loader from cache
         private void RemoveJoinDeviceLoader(string devEUI) => this.cache.Remove(GetJoinDeviceLoaderCacheKey(devEUI));
