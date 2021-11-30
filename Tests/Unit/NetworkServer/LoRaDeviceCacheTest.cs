@@ -308,6 +308,25 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Throws<InvalidOperationException>(() => cache.Register(device2));
         }
 
+        [Fact]
+        public void When_Resetting_Cache_All_Connections_Are_Released()
+        {
+            using var cache = CreateNoRefreshCache();
+            var items = Enumerable.Range(1, 2).Select(x =>
+            {
+                var connectionMgr = new Mock<ILoRaDeviceClientConnectionManager>();
+                var device = new LoRaDevice($"FFFFFFF{x}", $"000000000000000{x}", connectionMgr.Object);
+                cache.Register(device);
+                return (device, connectionMgr);
+            }).ToArray();
+
+            cache.Reset();
+
+            foreach (var (device, connectionMgr) in items)
+            {
+                connectionMgr.Verify(x => x.Release(device), Times.Once);
+            }
+        }
         private static LoRaDevice CreateTestDevice() => new LoRaDevice("FFFFFFFF", "0000000000000000", null) { NwkSKey = "AAAAAAAA" };
 
         private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
