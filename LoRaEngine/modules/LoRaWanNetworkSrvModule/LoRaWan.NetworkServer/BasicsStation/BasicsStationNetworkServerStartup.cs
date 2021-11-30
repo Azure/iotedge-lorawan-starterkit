@@ -96,8 +96,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddHostedService(sp =>
                             new MetricExporterHostedService(
                                 new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>(),
-                                                                                                                           sp.GetRequiredService<RegistryMetricTagBag>()) : null,
-                                                            new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>()))))
+                                                                                                                           sp.GetRequiredService<RegistryMetricTagBag>(),
+                                                                                                                           sp.GetRequiredService<ILogger<ApplicationInsightsMetricExporter>>()) : null,
+                                                            new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>(), sp.GetRequiredService<ILogger<PrometheusMetricExporter>>()))))
                         .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version));
 
             if (useApplicationInsights)

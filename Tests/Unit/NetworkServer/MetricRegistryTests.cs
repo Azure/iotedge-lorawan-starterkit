@@ -80,6 +80,30 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
+        public void CreateObservableGauge_Success_Case()
+        {
+            // arrange
+            var customMetric = new CustomMetric("foo", "bar", MetricType.ObservableGauge, Array.Empty<string>());
+
+            // act
+            var result = this.meter.CreateObservableGauge<int>(customMetric, () => 1);
+
+            // assert
+            Assert.Equal(customMetric.Name, result.Name);
+            Assert.Equal(customMetric.Description, result.Description);
+        }
+
+        [Fact]
+        public void CreateObservableGauge_Throws_When_Argument_Is_Counter()
+        {
+            // arrange
+            var customMetric = new CustomMetric("foo", "bar", MetricType.Counter, Array.Empty<string>());
+
+            // act + assert
+            Assert.Throws<ArgumentException>(() => this.meter.CreateObservableGauge(customMetric, () => 1));
+        }
+
+        [Fact]
         public void GetTagsInOrder_Returns_Tags_When_Invoked_With_Ordered_Tags()
         {
             // arrange

@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Diagnostics.Metrics;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
@@ -17,6 +18,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly LoRaRequest wrappedRequest;
         private readonly ILogger<LoggingLoRaRequest> logger;
+        private readonly Histogram<double> d2cMessageDeliveryLatencyHistogram;
 
         public override IPacketForwarder PacketForwarder => this.wrappedRequest.PacketForwarder;
 
@@ -30,30 +32,33 @@ namespace LoRaWan.NetworkServer
 
         public override StationEui StationEui => this.wrappedRequest.StationEui;
 
-        public LoggingLoRaRequest(LoRaRequest wrappedRequest, ILogger<LoggingLoRaRequest> logger)
+        public LoggingLoRaRequest(LoRaRequest wrappedRequest, ILogger<LoggingLoRaRequest> logger, Histogram<double> d2cMessageDeliveryLatencyHistogram)
         {
             this.wrappedRequest = wrappedRequest;
             this.logger = logger;
+            this.d2cMessageDeliveryLatencyHistogram = d2cMessageDeliveryLatencyHistogram;
         }
 
         public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {
             this.wrappedRequest.NotifyFailed(deviceId, reason, exception);
-            LogProcessingTime();
+            TrackProcessingTime();
         }
 
         public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkPktFwdMessage downlink)
         {
             this.wrappedRequest.NotifySucceeded(loRaDevice, downlink);
-            LogProcessingTime();
+            TrackProcessingTime();
         }
 
-        private void LogProcessingTime()
+        private void TrackProcessingTime()
         {
             if (!this.logger.IsEnabled(LogLevel.Debug))
                 return;
 
-            this.logger.LogDebug($"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}");
+            var elapsedTime = DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime);
+            this.d2cMessageDeliveryLatencyHistogram?.Record(elapsedTime.TotalMilliseconds);
+            this.logger.LogDebug($"processing time: {elapsedTime}");
         }
 
         public override LoRaOperationTimeWatcher GetTimeWatcher() => this.wrappedRequest.GetTimeWatcher();
