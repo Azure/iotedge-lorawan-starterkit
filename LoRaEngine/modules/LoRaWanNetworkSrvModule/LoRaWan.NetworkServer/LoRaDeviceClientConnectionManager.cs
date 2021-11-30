@@ -133,7 +133,7 @@ namespace LoRaWan.NetworkServer
                     throw new InvalidOperationException($"Connection already registered for device {loRaDevice.DevEUI}");
                 }
 
-                this.managedConnections[GetConnectionCacheKey(loRaDevice.DevEUI)] = new ManagedConnection(loRaDevice, loraDeviceClient);
+                this.managedConnections[key] = new ManagedConnection(loRaDevice, loraDeviceClient);
             }
         }
 
