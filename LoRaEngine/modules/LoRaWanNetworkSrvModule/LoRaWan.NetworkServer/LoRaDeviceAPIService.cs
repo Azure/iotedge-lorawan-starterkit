@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using Microsoft.Extensions.Logging;
@@ -199,7 +200,7 @@ namespace LoRaWan.NetworkServer
             return new Uri(baseUrl, queryParameterSb.ToString());
         }
 
-        public override async Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype)
+        public override async Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype, CancellationToken token)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
@@ -209,7 +210,7 @@ namespace LoRaWan.NetworkServer
                 ["CredentialType"] = credentialtype.ToString()
             });
 
-            var response = await client.GetAsync(new Uri(url.ToString()));
+            var response = await client.GetAsync(new Uri(url.ToString()), token);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -222,7 +223,7 @@ namespace LoRaWan.NetworkServer
                 return string.Empty;
             }
 
-            return await response.Content.ReadAsStringAsync();
+            return await response.Content.ReadAsStringAsync(token);
         }
     }
 }

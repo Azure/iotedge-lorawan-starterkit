@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
 
@@ -49,7 +50,7 @@ namespace LoRaWan.NetworkServer
         /// Fetch station credentials in IoT Hub.
         /// </summary>
         /// <param name="eui">EUI of the station.</param>
-        public abstract Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype);
+        public abstract Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype, CancellationToken token);
 
         /// <summary>
         /// Searches LoRa devices in IoT Hub.

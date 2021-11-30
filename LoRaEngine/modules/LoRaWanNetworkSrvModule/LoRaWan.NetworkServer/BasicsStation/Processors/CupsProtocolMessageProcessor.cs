@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
             if (updateRequest.CupsCredentialsChecksum != remoteCupsConfig.CupsCredentialsChecksum)
             {
-                var cupsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, ConcentratorCredentialType.Cups);
+                var cupsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, ConcentratorCredentialType.Cups, token);
 
                 var cupsCredentialsBytes = Convert.FromBase64String(cupsCredentials);
                 currentPosition += WriteToSpan((ushort)cupsCredentialsBytes.Length, response.Memory.Span[currentPosition..]);
@@ -85,7 +85,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
             if (updateRequest.TcCredentialsChecksum != remoteCupsConfig.TcCredentialsChecksum)
             {
-                var lnsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, ConcentratorCredentialType.Lns);
+                var lnsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, ConcentratorCredentialType.Lns, token);
 
                 var lnsCredentialsBytes = Convert.FromBase64String(lnsCredentials);
                 currentPosition += WriteToSpan((ushort)lnsCredentialsBytes.Length, response.Memory.Span[currentPosition..]);
