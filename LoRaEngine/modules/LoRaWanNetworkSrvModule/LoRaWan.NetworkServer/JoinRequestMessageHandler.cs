@@ -17,10 +17,16 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILogger<JoinRequestMessageHandler> logger;
         private readonly NetworkServerConfiguration configuration;
+        private readonly IConcentratorDeduplication concentratorDeduplication;
 
-        public JoinRequestMessageHandler(NetworkServerConfiguration configuration, ILoRaDeviceRegistry deviceRegistry, ILogger<JoinRequestMessageHandler> logger)
+        public JoinRequestMessageHandler(
+            NetworkServerConfiguration configuration,
+            IConcentratorDeduplication concentratorDeduplication,
+            ILoRaDeviceRegistry deviceRegistry,
+            ILogger<JoinRequestMessageHandler> logger)
         {
             this.configuration = configuration;
+            this.concentratorDeduplication = concentratorDeduplication;
             this.deviceRegistry = deviceRegistry;
             this.logger = logger;
         }
@@ -62,6 +68,13 @@ namespace LoRaWan.NetworkServer
                     {
                         this.logger.LogError("join refused: missing AppKey for OTAA device");
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
+                        return;
+                    }
+
+                    if (this.concentratorDeduplication.ShouldDrop(request, loRaDevice))
+                    {
+                        request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+                        // we do not log here as the concentratorDeduplication service already does more detailed logging
                         return;
                     }
 
