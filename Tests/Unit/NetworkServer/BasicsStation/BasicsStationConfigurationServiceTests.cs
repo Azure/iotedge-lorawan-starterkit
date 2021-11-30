@@ -46,7 +46,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                     .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
 
         private void SetupTwinResponse(StationEui stationEui, string primaryKey) =>
-            SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)}, ""clientThumbprint"": [ ""thumbprint"" ] }}");
+            SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)},
+                                                            ""clientThumbprint"": [ ""thumbprint"" ],
+                                                            ""cups"": {{
+                                                                        ""tcCredentialUrl"": ""https://storageurl.net/container/blob"",
+                                                                        ""tcCredCrc"":101938194,
+                                                                        ""cupsCredentialUrl"": ""https://storageurl.net/container/blob"",
+                                                                        ""cupsCredCrc"":101938194,
+                                                                        ""cupsUri"": ""https://cups.local:443"",
+                                                                        ""tcUri"": ""wss://tc.local:5001""
+                                                                      }}
+                                                          }}");
 
         private void SetupTwinResponse(StationEui stationEui, string primaryKey, string json)
         {
@@ -101,6 +111,40 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
                 // act and assert
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));
+                Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, exception.ErrorCode);
+            }
+        }
+
+        public class GetCupsConfigAsync : BasicsStationConfigurationServiceTests
+        {
+            [Fact]
+            public async Task Success()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                SetupDeviceKeyLookup(this.stationEui, primaryKey);
+                SetupTwinResponse(this.stationEui, primaryKey);
+
+                // act
+                var result = await this.sut.GetCupsConfigAsync(this.stationEui, CancellationToken.None);
+
+                // assert
+                Assert.Equal("wss", result.TcUri.GetComponents(UriComponents.Scheme, UriFormat.Unescaped));
+                Assert.Equal("https", result.CupsUri.GetComponents(UriComponents.Scheme, UriFormat.Unescaped));
+                Assert.NotEqual((uint)0, result.TcCredentialsChecksum);
+                Assert.NotEqual((uint)0, result.CupsCredentialsChecksum);
+            }
+
+            [Fact]
+            public async Task Fails_WithoutProperty()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                SetupDeviceKeyLookup(this.stationEui, primaryKey);
+                SetupTwinResponse(this.stationEui, primaryKey, JsonUtil.Strictify("{ 'anotherProp': '1'}"));
+
+                // act and assert
+                var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetCupsConfigAsync(this.stationEui, CancellationToken.None));
                 Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, exception.ErrorCode);
             }
         }
