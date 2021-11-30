@@ -59,6 +59,13 @@ namespace LoRaWan.NetworkServer
                     var devNonce = joinReq.GetDevNonceAsString();
                     this.logger.LogInformation("join request received");
 
+                    if (this.concentratorDeduplication.ShouldDrop(request, loRaDevice))
+                    {
+                        request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+                        // we do not log here as the concentratorDeduplication service already does more detailed logging
+                        return;
+                    }
+
                     loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, devNonce);
                     if (loRaDevice == null)
                     {
@@ -71,13 +78,6 @@ namespace LoRaWan.NetworkServer
                     {
                         this.logger.LogError("join refused: missing AppKey for OTAA device");
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
-                        return;
-                    }
-
-                    if (this.concentratorDeduplication.ShouldDrop(request, loRaDevice))
-                    {
-                        request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.DeduplicationDrop);
-                        // we do not log here as the concentratorDeduplication service already does more detailed logging
                         return;
                     }
 

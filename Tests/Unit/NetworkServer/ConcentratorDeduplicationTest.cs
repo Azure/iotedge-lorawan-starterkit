@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loraRequest.SetPayload(new LoRaPayloadJoinRequest());
 
             // act / assert
-            var shouldProcess = this.concentratorDeduplication.ShouldProcess(loraRequest, this.loRaDevice);
+            var shouldProcess = this.concentratorDeduplication.ShouldProcess(loraRequest, null);
             Assert.True(shouldProcess);
         }
 

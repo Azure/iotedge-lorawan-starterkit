@@ -42,11 +42,11 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Checks if this class should process the specified request and decide later to drop or not.
         /// </summary>
-        internal bool ShouldProcess(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
+        internal bool ShouldProcess(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
             => (loRaRequest.Payload is LoRaPayloadData && this.deduplicationStrategy.Create(loRaDevice) is DeduplicationStrategyDrop)
              || loRaRequest.Payload is LoRaPayloadJoinRequest;
 
-        public bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
+        public bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
         {
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
 
@@ -122,6 +122,7 @@ namespace LoRaWan.NetworkServer
             var joinEui = JoinEui.Read(payload.AppEUI.Span);
             var devEui = DevEui.Read(payload.DevEUI.Span);
             var devNonce = DevNonce.Read(payload.DevNonce.Span);
+
             var totalBufferLength = JoinEui.Size + DevEui.Size + DevNonce.Size;
             Span<byte> buffer = stackalloc byte[totalBufferLength];
             var head = buffer; // keeps a view pointing at the start of the buffer
