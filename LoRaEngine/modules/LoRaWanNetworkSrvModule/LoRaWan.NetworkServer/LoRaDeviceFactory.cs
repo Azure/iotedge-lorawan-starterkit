@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Diagnostics.Metrics;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
@@ -15,21 +14,18 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<LoRaDeviceFactory> logger;
-        private readonly Histogram<double> dataMessageDeliveryLatency;
 
         public LoRaDeviceFactory(NetworkServerConfiguration configuration,
                                  ILoRaDataRequestHandler dataRequestHandler,
                                  ILoRaDeviceClientConnectionManager connectionManager,
                                  ILoggerFactory loggerFactory,
-                                 ILogger<LoRaDeviceFactory> logger,
-                                 Meter meter)
+                                 ILogger<LoRaDeviceFactory> logger)
         {
             this.configuration = configuration;
             this.dataRequestHandler = dataRequestHandler;
             this.connectionManager = connectionManager;
             this.loggerFactory = loggerFactory;
             this.logger = logger;
-            this.dataMessageDeliveryLatency = meter?.CreateHistogram<double>(MetricRegistry.DataMessageDeliveryLatency);
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -40,8 +36,7 @@ namespace LoRaWan.NetworkServer
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
                 this.connectionManager,
-                this.loggerFactory.CreateLogger<LoRaDevice>(),
-                dataMessageDeliveryLatency)
+                this.loggerFactory.CreateLogger<LoRaDevice>())
             {
                 GatewayID = deviceInfo.GatewayId,
                 NwkSKey = deviceInfo.NwkSKey

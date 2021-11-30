@@ -38,7 +38,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly RegistryMetricTagBag registryMetricTagBag;
         private readonly Counter<int> joinRequestCounter;
         private readonly Counter<int> uplinkMessageCounter;
-        private readonly Histogram<double> dataMessageDispatchLatency;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
@@ -60,7 +59,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.registryMetricTagBag = registryMetricTagBag;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
             this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
-            this.dataMessageDispatchLatency = meter?.CreateHistogram<double>(MetricRegistry.DataMessageDispatchLatency);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
@@ -194,9 +192,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                   string json,
                                                   CancellationToken cancellationToken)
         {
-            var messageType = LnsData.MessageTypeReader.Read(json);
-            var stopwatch = Stopwatch.StartNew();
-            switch (messageType)
+            switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:
                     var stationVersion = LnsData.VersionMessageReader.Read(json);
@@ -275,21 +271,18 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 case LnsMessageType.TransmitConfirmation:
                     LogReceivedMessage(this.logger, "dntxed", json, null);
                     break;
-                case LnsMessageType.RouterConfig:
-                case LnsMessageType.DownlinkMessage:
+                case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
                     throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
-                case LnsMessageType.ProprietaryDataFrame:
-                case LnsMessageType.MulticastSchedule:
-                case LnsMessageType.TimeSync:
-                case LnsMessageType.RunCommand:
-                case LnsMessageType.RemoteShell:
+                case var messageType and (LnsMessageType.ProprietaryDataFrame
+                                          or LnsMessageType.MulticastSchedule
+                                          or LnsMessageType.TimeSync
+                                          or LnsMessageType.RunCommand
+                                          or LnsMessageType.RemoteShell):
                     this.logger.LogWarning("'{MessageType}' ({MessageTypeBasicStationString}) is not handled in current LoRaWan Network Server implementation.", messageType, messageType.ToBasicStationString());
                     break;
                 default:
                     throw new SwitchExpressionException();
             }
-            stopwatch.Stop();
-            this.dataMessageDispatchLatency?.Record(stopwatch.ElapsedMilliseconds, KeyValuePair.Create(MetricRegistry.DataMessageTypeTagName, (object)messageType));
         }
 
         internal async Task CloseSocketAsync(WebSocket socket, CancellationToken cancellationToken)
