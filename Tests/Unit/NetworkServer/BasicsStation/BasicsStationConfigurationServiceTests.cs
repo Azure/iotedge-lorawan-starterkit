@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                     .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
 
         private void SetupTwinResponse(StationEui stationEui, string primaryKey) =>
-            SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
+            SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)}, ""clientThumbprint"": [ ""thumbprint"" ] }}");
 
         private void SetupTwinResponse(StationEui stationEui, string primaryKey, string json)
         {
@@ -72,6 +72,36 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
                 // assert
                 Assert.Equal(RegionManager.EU868, result);
+            }
+        }
+        public class GetAllowedClientThumbprintsAsync : BasicsStationConfigurationServiceTests
+        {
+            [Fact]
+            public async Task Success()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                SetupDeviceKeyLookup(this.stationEui, primaryKey);
+                SetupTwinResponse(this.stationEui, primaryKey);
+
+                // act
+                var result = await this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None);
+
+                // assert
+                Assert.Contains("thumbprint", result);
+            }
+
+            [Fact]
+            public async Task Fails_WithoutProperty()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                SetupDeviceKeyLookup(this.stationEui, primaryKey);
+                SetupTwinResponse(this.stationEui, primaryKey, JsonUtil.Strictify("{ 'anotherProp': '1'}"));
+
+                // act and assert
+                var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));
+                Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, exception.ErrorCode);
             }
         }
 
