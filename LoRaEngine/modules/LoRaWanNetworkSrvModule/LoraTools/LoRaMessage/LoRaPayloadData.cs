@@ -153,10 +153,9 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Downstream Constructor (build a LoRa Message).
         /// </summary>
-        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
+        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, FCtrlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
             if (devAddr is null) throw new ArgumentNullException(nameof(devAddr));
-            if (fctrl is null) throw new ArgumentNullException(nameof(fctrl));
             if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
 
             var macBytes = new List<byte>(3);
@@ -186,7 +185,7 @@ namespace LoRaTools.LoRaMessage
                 fPort = new byte[1] { 0 };
             }
 
-            var macPyldSize = devAddr.Length + fctrl.Length + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
+            var macPyldSize = devAddr.Length + FrameControl.Size + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
             RawMessage = new byte[1 + macPyldSize + 4];
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
             RawMessage[0] = (byte)mhdr;
@@ -195,13 +194,8 @@ namespace LoRaTools.LoRaMessage
             Array.Reverse(devAddr);
             DevAddr = new Memory<byte>(RawMessage, 1, 4);
             Array.Copy(devAddr, 0, RawMessage, 1, 4);
-            if (fOpts != null)
-            {
-                fctrl[0] = BitConverter.GetBytes(fctrl[0] + fOpts.Length)[0];
-            }
-
-            Array.Copy(fctrl, 0, RawMessage, 5, 1);
-            FrameControl = new FrameControl(RawMessage[5]);
+            FrameControl = new FrameControl(fctrlFlags, fOpts?.Length ?? 0);
+            RawMessage[5] = (byte)FrameControl;
             Fcnt = new Memory<byte>(RawMessage, 6, 2);
             Array.Copy(fcnt, 0, RawMessage, 6, 2);
             if (fOpts != null)

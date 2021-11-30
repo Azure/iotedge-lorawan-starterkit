@@ -71,7 +71,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             for (var i = 0; i < count; i++)
             {
-                var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (int)Fctrl.ADR);
+                var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: FCtrlFlags.Adr);
                 var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
                 using var requestInt = CreateWaitableRequest(rxpkInt);
                 messageProcessor.DispatchRequest(requestInt);
@@ -79,7 +79,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 payloadFcnt++;
             }
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (int)Fctrl.ADRAckReq + (int)Fctrl.ADR);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: FCtrlFlags.AdrAckReq | FCtrlFlags.Adr);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -190,10 +190,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (int)Fctrl.ADR);
+                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, FCtrlFlags.Adr);
             }
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (int)Fctrl.ADRAckReq + (int)Fctrl.ADR);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: FCtrlFlags.AdrAckReq | FCtrlFlags.Adr);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -295,10 +295,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // todo add case without buffer
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (int)Fctrl.ADR);
+                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, FCtrlFlags.Adr);
             }
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (int)Fctrl.ADRAckReq + (int)Fctrl.ADR);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: FCtrlFlags.AdrAckReq | FCtrlFlags.Adr);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -341,10 +341,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // todo add case without buffer
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (int)Fctrl.ADR);
+                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, FCtrlFlags.Adr);
             }
 
-            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (int)Fctrl.ADRAckReq + (int)Fctrl.ADR);
+            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: FCtrlFlags.AdrAckReq | FCtrlFlags.Adr);
             rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var secondRequest = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(secondRequest);
@@ -432,10 +432,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // send a message with a fcnt every 4.
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt + 3, simulatedDevice, messageProcessor, (int)Fctrl.ADR);
+                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt + 3, simulatedDevice, messageProcessor, FCtrlFlags.Adr);
             }
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (int)Fctrl.ADRAckReq + (int)Fctrl.ADR);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: FCtrlFlags.AdrAckReq | FCtrlFlags.Adr);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -467,10 +467,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // send a message with a fcnt every 1
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (int)Fctrl.ADR);
+                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, FCtrlFlags.Adr);
             }
 
-            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (int)Fctrl.ADRAckReq + (int)Fctrl.ADR);
+            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: FCtrlFlags.AdrAckReq | FCtrlFlags.Adr);
             rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var secondRequest = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(secondRequest);
@@ -509,10 +509,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // send a message with a fcnt every 1
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (int)Fctrl.ADR);
+                payloadFcnt = await SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, FCtrlFlags.Adr);
             }
 
-            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (int)Fctrl.ADRAckReq + (int)Fctrl.ADR);
+            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: FCtrlFlags.AdrAckReq | FCtrlFlags.Adr);
             rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var thirdRequest = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(thirdRequest);
@@ -543,7 +543,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.GetFcnt());
         }
 
-        private async Task<uint> SendMessage(float currentLsnr, string currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, byte fctrl)
+        private async Task<uint> SendMessage(float currentLsnr, string currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, FCtrlFlags fctrl)
         {
             var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: fctrl);
             var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
@@ -556,7 +556,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         private async Task<uint> InitializeCacheToDefaultValuesAsync(uint payloadfcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor)
         {
-            return await SendMessage(0, "SF7BW125", payloadfcnt, simulatedDevice, messageProcessor, (int)Fctrl.ADR + (int)Fctrl.ADRAckReq);
+            return await SendMessage(0, "SF7BW125", payloadfcnt, simulatedDevice, messageProcessor, FCtrlFlags.Adr | FCtrlFlags.AdrAckReq);
         }
     }
 }
