@@ -179,12 +179,12 @@ namespace LoRaWan.NetworkServer
             this.logger.LogDebug($"previous device devAddr ({oldDevAddr}) removed from cache.");
         }
 
-        public bool HasRegistrations(string devAddr)
+        public virtual bool HasRegistrations(string devAddr)
         {
             return this.devAddrCache.TryGetValue(devAddr, out var items) && items.Any();
         }
 
-        public bool HasRegistrationsForOtherGateways(string devAddr)
+        public virtual bool HasRegistrationsForOtherGateways(string devAddr)
         {
             return this.devAddrCache.TryGetValue(devAddr, out var items) && items.Any(x => !x.Value.IsOurDevice);
         }
@@ -229,7 +229,7 @@ namespace LoRaWan.NetworkServer
             CleanupAllDevices();
         }
 
-        public bool TryGetForPayload(LoRaPayload payload, [MaybeNullWhen(returnValue: false)] out LoRaDevice loRaDevice)
+        public virtual bool TryGetForPayload(LoRaPayload payload, [MaybeNullWhen(returnValue: false)] out LoRaDevice loRaDevice)
         {
             _ = payload ?? throw new ArgumentNullException(nameof(payload));
 

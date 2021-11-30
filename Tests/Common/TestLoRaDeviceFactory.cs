@@ -5,15 +5,12 @@ namespace LoRaWan.Tests.Common
 {
     using System.Collections.Generic;
     using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.ADR;
-    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging.Abstractions;
 
     public sealed class TestLoRaDeviceFactory : LoRaDeviceFactory
     {
         private readonly ILoRaDeviceClient loRaDeviceClient;
         private readonly IDictionary<string, ILoRaDeviceClient> deviceClientMap = new Dictionary<string, ILoRaDeviceClient>();
-        private readonly IDictionary<string, LoRaDevice> deviceMap = new Dictionary<string, LoRaDevice>();
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, LoRaDeviceCache deviceCache, ILoRaDeviceClientConnectionManager connectionManager = null)
             : this(null, connectionManager, deviceCache, null, loRaDeviceClient)
@@ -46,8 +43,6 @@ namespace LoRaWan.Tests.Common
         {
             this.loRaDeviceClient = loRaDeviceClient;
         }
-
-        public bool TryGetLoRaDevice(string devEUI, out LoRaDevice device) => this.deviceMap.TryGetValue(devEUI, out device);
 
         public void SetClient(string devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
 
