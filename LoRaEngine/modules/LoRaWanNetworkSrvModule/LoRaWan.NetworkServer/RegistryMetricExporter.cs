@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
 
     internal abstract class RegistryMetricExporter : IMetricExporter
     {
-        private static readonly TimeSpan ObserveInterval = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan ObserveInterval = TimeSpan.FromSeconds(30);
 
         private readonly CancellationTokenSource cancellationTokenSource;
         protected readonly IDictionary<string, CustomMetric> registryLookup;
