@@ -43,15 +43,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                           .Returns(Task.FromResult(RegionManager.EU868));
             this.messageDispatcher = new Mock<IMessageDispatcher>();
             this.packetForwarder = new Mock<IPacketForwarder>();
-            var upstreamDeduplicationMock = new Mock<IConcentratorDeduplication>();
-            var joinRequestDeduplicationMock = new Mock<IConcentratorDeduplication>();
 
             this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(this.basicsStationConfigurationMock.Object,
                                                                            new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>()),
                                                                            this.packetForwarder.Object,
                                                                            this.messageDispatcher.Object,
-                                                                           upstreamDeduplicationMock.Object,
-                                                                           joinRequestDeduplicationMock.Object,
                                                                            loggerMock, new RegistryMetricTagBag(),
                                                                            // Do not pass meter since metric testing will be unreliable due to interference from test classes running in parallel.
                                                                            null);
