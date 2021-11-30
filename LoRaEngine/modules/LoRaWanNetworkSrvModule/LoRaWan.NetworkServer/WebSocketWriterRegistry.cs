@@ -58,7 +58,7 @@ namespace LoRaWan.NetworkServer
         public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<TKey, TMessage>>? logger, Meter? meter)
         {
             this.logger = logger;
-            this.activeStationConnectionsHistogram = meter?.CreateObservableGauge<int>(MetricRegistry.ActiveStationConnections.Name, () => this.sockets.Count, description: MetricRegistry.ActiveStationConnections.Description);
+            this.activeStationConnectionsHistogram = meter?.CreateObservableGauge(MetricRegistry.ActiveStationConnections, () => this.sockets.Count);
             this.stationConnectivityLostCounter = meter?.CreateCounter<int>(MetricRegistry.StationConnectivityLost);
         }
 
