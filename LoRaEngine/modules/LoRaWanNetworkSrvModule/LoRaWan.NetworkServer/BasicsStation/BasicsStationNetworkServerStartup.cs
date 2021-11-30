@@ -133,7 +133,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                    {
                        _ = endpoints.MapGet(BasicsStationNetworkServer.DiscoveryEndpoint, async context =>
                            {
-                               if (context.Connection.LocalPort != BasicsStationNetworkServer.LnsPort)
+                               if (context.Connection.LocalPort is not (BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort))
                                {
                                    context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
                                    return;
@@ -143,7 +143,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                            });
                        _ = endpoints.MapGet($"{BasicsStationNetworkServer.DataEndpoint}/{{{BasicsStationNetworkServer.RouterIdPathParameterName}:required}}", async context =>
                            {
-                               if (context.Connection.LocalPort != BasicsStationNetworkServer.LnsPort)
+                               if (context.Connection.LocalPort is not (BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort))
                                {
                                    context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
                                    return;
@@ -153,7 +153,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                            });
                        _ = endpoints.MapPost(BasicsStationNetworkServer.UpdateInfoEndpoint, async context =>
                            {
-                               if (context.Connection.LocalPort != BasicsStationNetworkServer.CupsPort)
+                               if (context.Connection.LocalPort is not BasicsStationNetworkServer.CupsPort)
                                {
                                    context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
                                    return;
