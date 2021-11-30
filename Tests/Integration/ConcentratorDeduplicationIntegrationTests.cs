@@ -3,11 +3,9 @@
 
 namespace LoRaWan.Tests.Integration
 {
-    using System;
     using System.Threading.Tasks;
     using Common;
     using LoRaTools.ADR;
-    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Caching.Memory;
