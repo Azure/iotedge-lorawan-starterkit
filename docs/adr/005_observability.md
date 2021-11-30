@@ -86,6 +86,7 @@ In addition to this, we will support Application Insights metrics on an opt-in b
 | D2CMessageSize             | Message size in bytes received from device                   | LNS    | LoRaWan   | Gateway Id                 |
 | C2DMessagesAbandoned       | Number of C2D messages abandoned                             | LNS    | LoRaWan   | Gateway Id                 |
 | C2DMessageSizeDownstream   | Message size in bytes sent downstream                        | LNS    | LoRaWan   | Gateway Id                 |
+| C2DMessageTooLong          | Number of C2D messages that were too long to be sent downstream | LNS | LoRaWan 	 | Gateway Id 		      |
 
 ### Alerts
 
