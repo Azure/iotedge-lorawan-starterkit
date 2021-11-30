@@ -28,8 +28,6 @@ namespace LoRaWan.NetworkServer
         public static readonly CustomMetric D2CMessagesReceived = new CustomMetric("D2CMessagesReceived", "Number of D2C messages received", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric D2CMessageSize = new CustomHistogram("D2CMessageSize", "Size of D2C messages (in bytes)", MetricType.Histogram, new[] { GatewayIdTagName },
                                                                                  BucketStart: 5, BucketWidth: 10, BucketCount: 26);
-        public static readonly CustomMetric C2DMessageSize = new CustomHistogram("C2DMessageSize", "Size of C2D messages (in bytes)", MetricType.Histogram, new[] { GatewayIdTagName },
-                                                                                 BucketStart: 5, BucketWidth: 10, BucketCount: 26);
         public static readonly CustomMetric C2DMessageTooLong = new CustomMetric("C2DMessageTooLong", "Number of C2D messages that were too long to be sent downstream", MetricType.Counter, new[] { GatewayIdTagName });
 
         private static readonly ICollection<CustomMetric> Registry = new[]
@@ -42,7 +40,6 @@ namespace LoRaWan.NetworkServer
             D2CMessageDeliveryLatency,
             D2CMessagesReceived,
             D2CMessageSize,
-            C2DMessageSize,
             C2DMessageTooLong
         };
 
