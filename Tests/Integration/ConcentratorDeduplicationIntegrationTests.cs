@@ -36,9 +36,9 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
-            this.loraRequest = WaitableLoRaRequest.Create(dataPayload);
-            this.loraRequest.UseTimeWatcher(new TestLoRaOperationTimeWatcher(new RegionEU868(), new[] { TimeSpan.FromMilliseconds(10) }));
+            this.loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
             this.loraRequest.SetStationEui(StationEui.Parse(station1));
+            this.loraRequest.SetPayload(dataPayload);
 
             this.loRaDevice = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
             {
