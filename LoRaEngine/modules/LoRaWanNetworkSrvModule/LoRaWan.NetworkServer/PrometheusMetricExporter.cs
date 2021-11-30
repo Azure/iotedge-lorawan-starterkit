@@ -31,7 +31,14 @@ namespace LoRaWan.NetworkServer
             : base(registryLookup, logger)
         {
             this.counters = GetMetricsFromRegistry(MetricType.Counter, m => Metrics.CreateCounter(m.Name, m.Description, m.Tags));
-            this.histograms = GetMetricsFromRegistry(MetricType.Histogram, m => Metrics.CreateHistogram(m.Name, m.Description, m.Tags));
+            this.histograms = GetMetricsFromRegistry(MetricType.Histogram, m => m is CustomHistogram customHistogram
+                    ? Metrics.CreateHistogram(customHistogram.Name, customHistogram.Description,
+                                              new HistogramConfiguration
+                                              {
+                                                  Buckets = Histogram.LinearBuckets(customHistogram.BucketStart, customHistogram.BucketWidth, customHistogram.BucketCount),
+                                                  LabelNames = customHistogram.Tags
+                                              })
+                    : Metrics.CreateHistogram(m.Name, m.Description, m.Tags));
             this.gauges = GetMetricsFromRegistry(MetricType.ObservableGauge, m => Metrics.CreateGauge(m.Name, m.Description, m.Tags));
 
             IDictionary<string, T> GetMetricsFromRegistry<T>(MetricType metricType, Func<CustomMetric, T> factory) =>
