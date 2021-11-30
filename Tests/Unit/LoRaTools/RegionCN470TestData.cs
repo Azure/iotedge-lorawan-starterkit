@@ -147,10 +147,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                 new object[] { region, 482.3, 16 },
                 new object[] { region, 486.3, 18 },
                 new object[] { region, 488.3, 19 },
-                new object[] { region, 470.900000000001, 0 },
-                new object[] { region, 499.90000005, 9 },
-                new object[] { region, 472.4999999, 1 },
-                new object[] { region, 488.29999999, 19 },
            };
 
         public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>

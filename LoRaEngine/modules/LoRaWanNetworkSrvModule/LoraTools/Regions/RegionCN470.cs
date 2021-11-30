@@ -18,7 +18,9 @@ namespace LoRaTools.Regions
 
         private readonly List<List<double>> downstreamFrequenciesByPlanType;
 
-        public IEnumerable<(double, double)> UpstreamAndDownstreamJoinFrequencies { get; }
+        // Dictionary mapping upstream join frequencies to a tuple containing
+        // the corresponding downstream join frequency and the channel index
+        public Dictionary<double, (double, int)> UpstreamJoinFrequenciesToDownstreamAndChannelIndex { get; }
 
         public RegionCN470()
             : base(LoRaRegionType.CN470)
@@ -69,12 +71,12 @@ namespace LoRaTools.Regions
             MaxADRDataRate = 7;
             RegionLimits = new RegionLimits((min: 470.3, max: 509.7), validDatarates, validDatarates, 0, 0);
 
-            UpstreamAndDownstreamJoinFrequencies = new List<(double, double)>
+            UpstreamJoinFrequenciesToDownstreamAndChannelIndex = new Dictionary<double, (double, int)>
             {
-                ( 470.9, 484.5 ), ( 472.5, 486.1 ), ( 474.1, 487.7 ), ( 475.7, 489.3 ), ( 504.1, 490.9 ),
-                ( 505.7, 492.5 ), ( 507.3, 494.1 ), ( 508.9, 495.7 ), ( 479.9, 479.9 ), ( 499.9, 499.9 ),
-                ( 470.3, 492.5 ), ( 472.3, 492.5 ), ( 474.3, 492.5 ), ( 476.3, 492.5 ), ( 478.3, 492.5 ),
-                ( 480.3, 502.5 ), ( 482.3, 502.5 ), ( 484.3, 502.5 ), ( 486.3, 502.5 ), ( 488.3, 502.5 )
+                { 470.9, (484.5, 0) }, { 472.5, (486.1, 1) }, { 474.1, (487.7, 2) }, { 475.7, (489.3, 3) }, { 504.1, (490.9, 4) },
+                { 505.7, (492.5, 5) }, { 507.3, (494.1, 6) }, { 508.9, (495.7, 7) }, { 479.9, (479.9, 8) }, { 499.9, (499.9, 9) },
+                { 470.3, (492.5, 10) }, { 472.3, (492.5, 11) }, { 474.3, (492.5, 12) }, { 476.3, (492.5, 13) }, { 478.3, (492.5, 14) },
+                { 480.3, (502.5, 15) }, { 482.3, (502.5, 16) }, { 484.3, (502.5, 17) }, { 486.3, (502.5, 18) }, { 488.3, (502.5, 19) }
             };
 
             this.downstreamFrequenciesByPlanType = new List<List<double>>
@@ -101,16 +103,11 @@ namespace LoRaTools.Regions
         {
             if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
 
-            try
+            channelIndex = -1;
+
+            if (UpstreamJoinFrequenciesToDownstreamAndChannelIndex.TryGetValue(joinChannel.Freq, out var elem))
             {
-                channelIndex = UpstreamAndDownstreamJoinFrequencies
-                    .Select((elem, index) => new { elem, index })
-                    .First(x => Math.Abs(x.elem.Item1 - joinChannel.Freq) < EPSILON)
-                    .index;
-            }
-            catch (InvalidOperationException)
-            {
-                channelIndex = -1;
+                channelIndex = elem.Item2;
             }
 
             return channelIndex != -1;
@@ -121,16 +118,11 @@ namespace LoRaTools.Regions
         /// </summary>
         public override bool TryGetJoinChannelIndex(double frequency, out int channelIndex)
         {
-            try
+            channelIndex = -1;
+
+            if (UpstreamJoinFrequenciesToDownstreamAndChannelIndex.TryGetValue(frequency, out var elem))
             {
-                channelIndex = UpstreamAndDownstreamJoinFrequencies
-                    .Select((elem, index) => new { elem, index })
-                    .First(x => Math.Abs(x.elem.Item1 - frequency) < EPSILON)
-                    .index;
-            }
-            catch (InvalidOperationException)
-            {
-                channelIndex = -1;
+                channelIndex = elem.Item2;
             }
 
             return channelIndex != -1;
