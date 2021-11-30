@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Net.WebSockets;
     using Bogus;
@@ -13,7 +12,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging.Abstractions;
-    using Microsoft.Extensions.ObjectPool;
     using Moq;
     using Xunit;
 
@@ -25,12 +23,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly SimulatedDevice simulatedDevice;
         private readonly WaitableLoRaRequest loraRequest;
         private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
-
-#pragma warning disable CA2213 // Disposable fields should be disposed
-        // false positive, ownership passed to ConcentratorDeduplication
-        private readonly MemoryCache cache;
-        private readonly Mock<DeduplicationStrategyFactory> deduplicationStrategyFactory;
-#pragma warning restore CA2213 // Disposable fields should be disposed
+        private readonly Mock<DeduplicationStrategyFactory> deduplicationStrategyMock;
+        private readonly MemoryCache cache; // ownership passed to ConcentratorDeduplication
 
         public static class TheoryMembers
         {
@@ -51,13 +45,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loraRequest = WaitableLoRaRequest.Create(dataPayload);
             this.loRaDevice = new LoRaDevice(this.simulatedDevice.DevAddr, this.simulatedDevice.DevEUI, this.connectionManager);
 
-            this.deduplicationStrategyFactory = new Mock<DeduplicationStrategyFactory>(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
-            this.deduplicationStrategyFactory.Setup(x => x.Create(this.loRaDevice)).Returns(new DeduplicationStrategyDrop(NullLogger<DeduplicationStrategyDrop>.Instance)); ;
+            this.deduplicationStrategyMock = new Mock<DeduplicationStrategyFactory>(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
+            this.deduplicationStrategyMock.Setup(x => x.Create(this.loRaDevice)).Returns(new DeduplicationStrategyDrop(NullLogger<DeduplicationStrategyDrop>.Instance)); ;
             this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
 
             this.concentratorDeduplication = new ConcentratorDeduplication(
                 this.cache,
-                deduplicationStrategyFactory.Object,
+                this.deduplicationStrategyMock.Object,
                 this.socketRegistry,
                 NullLogger<IConcentratorDeduplication>.Instance);
         }
@@ -82,11 +76,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             using var otherDevice = new LoRaDevice(this.simulatedDevice.DevAddr, new Faker().Random.String(10), this.connectionManager);
-            this.deduplicationStrategyFactory.Setup(x => x.Create(otherDevice)).Returns(strategy); ;
+            _ = this.deduplicationStrategyMock.Setup(x => x.Create(otherDevice)).Returns(strategy); ;
 
             using var concentratorDeduplication = new ConcentratorDeduplication(
                 this.cache,
-                deduplicationStrategyFactory.Object,
+                this.deduplicationStrategyMock.Object,
                 this.socketRegistry,
                 NullLogger<IConcentratorDeduplication>.Instance);
 
@@ -185,7 +179,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             this.loraRequest.SetPayload(Mock.Of<LoRaPayloadJoinAccept>());
 
-            // act / assert
+            // act/assert
             Assert.Throws<ArgumentException>(() => ConcentratorDeduplication.CreateCacheKey(this.loraRequest));
         }
 
@@ -196,6 +190,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             this.connectionManager.Dispose();
             this.concentratorDeduplication.Dispose();
+            this.cache?.Dispose();
         }
     }
 }
