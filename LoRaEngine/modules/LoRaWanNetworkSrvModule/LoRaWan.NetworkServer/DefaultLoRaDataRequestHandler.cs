@@ -421,7 +421,6 @@ namespace LoRaWan.NetworkServer
                     }
                     else if (confirmDownlinkMessageBuilderResp.IsMessageTooLong)
                     {
-                        this.receiveWindowMissed?.Add(1);
                         this.logger.LogError($"payload will not fit in current receive window, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
                         _ = cloudToDeviceMessage.AbandonAsync();
                     }
