@@ -11,71 +11,14 @@ namespace LoRaWan.Tests.Unit
     {
         private T Subject => Parse("0123456789abcdeffedcba9876543210");
 
-        private T Other => Parse("fedcba98765432100123456789abcdef");
-
         protected abstract int Size { get; }
         protected abstract T Parse(string input);
         protected abstract bool TryParse(string input, out T result);
-
-        private static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
-        private static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()
         {
             Assert.Equal(16, Size);
-        }
-
-        [Fact]
-        public void Equals_Returns_True_When_Value_Equals()
-        {
-            var other = this.Subject; // assignment = value copy semantics
-            Assert.True(this.Subject.Equals(other));
-        }
-
-        [Fact]
-        public void Equals_Returns_False_When_Value_Is_Different()
-        {
-            var other = this.Other;
-            Assert.False(this.Subject.Equals(other));
-        }
-
-        [Fact]
-        public void Equals_Returns_False_When_Other_Type_Is_Different()
-        {
-            Assert.False(this.Subject.Equals(new object()));
-        }
-
-        [Fact]
-        public void Equals_Returns_False_When_Other_Type_Is_Null()
-        {
-            Assert.False(this.Subject.Equals(null));
-        }
-
-        [Fact]
-        public void Op_Equality_Returns_True_When_Values_Equal()
-        {
-            var other = this.Subject; // assignment = value copy semantics
-            Assert.True(Equal(this.Subject, other));
-        }
-
-        [Fact]
-        public void Op_Equality_Returns_False_When_Values_Differ()
-        {
-            Assert.False(Equal(this.Subject, this.Other));
-        }
-
-        [Fact]
-        public void Op_Inequality_Returns_False_When_Values_Equal()
-        {
-            var other = this.Subject; // assignment = value copy semantics
-            Assert.False(NotEqual(this.Subject, other));
-        }
-
-        [Fact]
-        public void Op_Inequality_Returns_True_When_Values_Differ()
-        {
-            Assert.True(NotEqual(this.Subject, this.Other));
         }
 
         [Fact]
@@ -129,7 +72,7 @@ namespace LoRaWan.Tests.Unit
         {
             var succeeded = TryParse("foobar", out var result);
             Assert.False(succeeded);
-            Assert.True(Equal(result, default));
+            Assert.Equal(default, result);
         }
     }
 

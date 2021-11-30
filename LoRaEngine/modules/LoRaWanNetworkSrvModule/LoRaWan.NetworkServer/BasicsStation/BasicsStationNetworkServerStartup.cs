@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Diagnostics.Metrics;
     using System.Globalization;
     using Logger;
     using LoRaTools.ADR;
@@ -11,8 +12,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
+    using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Server.Kestrel.Https;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -87,10 +90,21 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>();
+                        .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>()
+                        .AddSingleton(new RegistryMetricTagBag())
+                        .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
+                        .AddHostedService(sp =>
+                            new MetricExporterHostedService(
+                                new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>(),
+                                                                                                                           sp.GetRequiredService<RegistryMetricTagBag>()) : null,
+                                                            new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>()))))
+                        .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version));
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
+
+            if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
+                _ = services.AddSingleton<IClientCertificateValidatorService, ClientCertificateValidatorService>();
         }
 
 #pragma warning disable CA1822 // Mark members as static

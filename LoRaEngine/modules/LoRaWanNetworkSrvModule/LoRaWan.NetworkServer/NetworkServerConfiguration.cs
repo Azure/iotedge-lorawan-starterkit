@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using Microsoft.AspNetCore.Server.Kestrel.Https;
 
     // Network server configuration
     public class NetworkServerConfiguration
@@ -104,12 +105,18 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Path of the .pfx certificate to be used for LNS Server endpoint
         /// </summary>
-        public string LnsServerPfxPath { get; private set; }
+        public string LnsServerPfxPath { get; internal set; }
 
         /// <summary>
         /// Password of the .pfx certificate to be used for LNS Server endpoint
         /// </summary>
-        public string LnsServerPfxPassword { get; private set; }
+        public string LnsServerPfxPassword { get; internal set; }
+
+        /// <summary>
+        /// Specifies the client certificate mode with which the server should be run
+        /// Allowed values can be found at https://docs.microsoft.com/dotnet/api/microsoft.aspnetcore.server.kestrel.https.clientcertificatemode?view=aspnetcore-6.0
+        /// </summary>
+        public ClientCertificateMode ClientCertificateMode { get; internal set; }
 
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
@@ -142,6 +149,8 @@ namespace LoRaWan.NetworkServer
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
             config.LnsServerPfxPath = envVars.GetEnvVar("LNS_SERVER_PFX_PATH", string.Empty);
             config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
+            var clientCertificateModeString = envVars.GetEnvVar("CLIENT_CERTIFICATE_MODE", "NoCertificate"); // Defaulting to NoCertificate if missing mode
+            config.ClientCertificateMode = Enum.Parse<ClientCertificateMode>(clientCertificateModeString, true);
 
             return config;
         }

@@ -19,11 +19,10 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly IConcentratorDeduplication concentratorDeduplication;
 
-        public JoinRequestMessageHandler(
-            NetworkServerConfiguration configuration,
-            IConcentratorDeduplication concentratorDeduplication,
-            ILoRaDeviceRegistry deviceRegistry,
-            ILogger<JoinRequestMessageHandler> logger)
+        public JoinRequestMessageHandler(NetworkServerConfiguration configuration,
+                                         IConcentratorDeduplication concentratorDeduplication,
+                                         ILoRaDeviceRegistry deviceRegistry,
+                                         ILogger<JoinRequestMessageHandler> logger)
         {
             this.configuration = configuration;
             this.concentratorDeduplication = concentratorDeduplication;

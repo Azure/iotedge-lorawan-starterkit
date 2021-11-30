@@ -12,21 +12,15 @@ namespace LoRaWan
     /// <summary>
     /// MIC helpers (Message Integrity Code).
     /// </summary>
-    public readonly struct Mic : IEquatable<Mic>
+    public readonly record struct Mic
     {
         public const int Size = sizeof(uint);
+
         private readonly uint value;
 
         public Mic(uint value) => this.value = value;
 
-        public bool Equals(Mic other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is Mic other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString("X4", CultureInfo.InvariantCulture);
-
-        public static bool operator ==(Mic left, Mic right) => left.Equals(right);
-        public static bool operator !=(Mic left, Mic right) => !left.Equals(right);
 
         public Span<byte> Write(Span<byte> buffer)
         {

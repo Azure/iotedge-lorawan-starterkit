@@ -8,12 +8,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading.Tasks;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
+    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
 
     internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable
     {
         private const string RouterConfigPropertyName = "routerConfig";
-        private const string CachePrefixName = "routerConfig:";
+        private const string ClientThumbprintPropertyName = "clientThumbprint";
+        private const string ConcentratorTwinCachePrefixName = "concentratorTwin:";
 
         private static readonly TimeSpan CacheTimeout = TimeSpan.FromHours(2);
         private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
@@ -32,27 +34,30 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public void Dispose() => this.cacheSemaphore.Dispose();
 
-        public async Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken)
+        private async Task<TwinCollection> GetTwinDesiredPropertiesAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
-            var config = await this.GetRouterConfigMessageAsync(stationEui, cancellationToken);
-            return LnsStationConfiguration.GetRegion(config);
-        }
-
-        public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
-        {
-            var cacheKey = $"{CachePrefixName}{stationEui}";
+            var cacheKey = $"{ConcentratorTwinCachePrefixName}{stationEui}";
 
             if (this.cache.TryGetValue(cacheKey, out var result))
-                return (string)result;
+                return (TwinCollection)result;
 
             await this.cacheSemaphore.WaitAsync(cancellationToken);
 
             try
             {
-                return await this.cache.GetOrCreateAsync(cacheKey, cacheEntry =>
+                return await this.cache.GetOrCreateAsync(cacheKey, async cacheEntry =>
                 {
                     _ = cacheEntry.SetAbsoluteExpiration(CacheTimeout);
-                    return GetRouterConfigMessageInternalAsync(stationEui);
+                    var queryResult = await this.loRaDeviceApiService.SearchByEuiAsync(stationEui);
+                    if (queryResult.Count != 1)
+                    {
+                        throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
+                                                          LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+                    }
+                    var info = queryResult[0];
+                    using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
+                    var twin = await client.GetTwinAsync();
+                    return twin.Properties.Desired;
                 });
             }
             finally
@@ -61,22 +66,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
             }
         }
 
-        private async Task<string> GetRouterConfigMessageInternalAsync(StationEui stationEui)
+        public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
-            var queryResult = await this.loRaDeviceApiService.SearchByEuiAsync(stationEui);
-            if (queryResult.Count != 1)
-            {
-                throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
-                                                  LoRaProcessingErrorCode.InvalidDeviceConfiguration);
-            }
-
-            var info = queryResult[0];
-            using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
-            var twin = await client.GetTwinAsync();
-
+            var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
             try
             {
-                var configJson = ((object)twin.Properties.Desired[RouterConfigPropertyName]).ToString();
+                var configJson = desiredProperties[RouterConfigPropertyName].ToString();
                 return LnsStationConfiguration.GetConfiguration(configJson);
             }
             catch (ArgumentOutOfRangeException)
@@ -84,5 +79,26 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 throw new LoRaProcessingException($"Property '{RouterConfigPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
             }
         }
+
+        public async Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken)
+        {
+            var config = await GetRouterConfigMessageAsync(stationEui, cancellationToken);
+            return LnsStationConfiguration.GetRegion(config);
+        }
+
+        public async Task<string[]> GetAllowedClientThumbprintsAsync(StationEui stationEui, CancellationToken cancellationToken)
+        {
+            var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
+            try
+            {
+                string thumbprintsArrayJson = desiredProperties[ClientThumbprintPropertyName].ToString();
+                return JsonReader.Array(JsonReader.String()).Read(thumbprintsArrayJson);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+            }
+        }
     }
 }
+
