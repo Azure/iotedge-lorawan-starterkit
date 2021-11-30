@@ -22,9 +22,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
         internal const string RouterIdPathParameterName = "routerId";
         internal const string DataEndpoint = "/router-data";
         internal const string UpdateInfoEndpoint = "/update-info";
-        private const int LnsSecurePort = 5001;
-        private const int LnsPort = 5000;
-        private const int CupsPort = 443;
+        internal const int LnsSecurePort = 5001;
+        internal const int LnsPort = 5000;
+        internal const int CupsPort = 443;
 
         public static async Task RunServerAsync(NetworkServerConfiguration configuration, CancellationToken cancellationToken)
         {

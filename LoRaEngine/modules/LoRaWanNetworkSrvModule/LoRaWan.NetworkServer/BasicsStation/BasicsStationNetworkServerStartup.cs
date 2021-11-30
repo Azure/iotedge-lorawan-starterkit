@@ -133,16 +133,31 @@ namespace LoRaWan.NetworkServer.BasicsStation
                    {
                        _ = endpoints.MapGet(BasicsStationNetworkServer.DiscoveryEndpoint, async context =>
                            {
+                               if (context.Connection.LocalPort != BasicsStationNetworkServer.LnsPort)
+                               {
+                                   context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
+                                   return;
+                               }
                                var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
                                await lnsProtocolMessageProcessor.HandleDiscoveryAsync(context, context.RequestAborted);
                            });
                        _ = endpoints.MapGet($"{BasicsStationNetworkServer.DataEndpoint}/{{{BasicsStationNetworkServer.RouterIdPathParameterName}:required}}", async context =>
                            {
+                               if (context.Connection.LocalPort != BasicsStationNetworkServer.LnsPort)
+                               {
+                                   context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
+                                   return;
+                               }
                                var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
                                await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);
                            });
                        _ = endpoints.MapPost(BasicsStationNetworkServer.UpdateInfoEndpoint, async context =>
                            {
+                               if (context.Connection.LocalPort != BasicsStationNetworkServer.CupsPort)
+                               {
+                                   context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
+                                   return;
+                               }
                                var cupsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ICupsProtocolMessageProcessor>();
                                await cupsProtocolMessageProcessor.HandleUpdateInfoAsync(context, context.RequestAborted);
                            });
