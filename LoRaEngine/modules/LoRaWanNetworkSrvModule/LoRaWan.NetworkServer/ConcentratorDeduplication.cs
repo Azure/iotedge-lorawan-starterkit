@@ -128,7 +128,7 @@ namespace LoRaWan.NetworkServer
 
             buffer = joinEui.Write(buffer);
             buffer = devEui.Write(buffer);
-            _ = devNonce.Write(buffer);
+            buffer = devNonce.Write(buffer);
 
             var key = Sha256.ComputeHash(head.ToArray());
 
