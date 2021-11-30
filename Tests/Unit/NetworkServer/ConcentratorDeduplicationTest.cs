@@ -32,11 +32,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
             this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            this.loRaDevice = new LoRaDevice(new DevAddr().ToString(), new DevEui().ToString(), this.connectionManager);
 
             this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload");
             this.loraRequest = WaitableLoRaRequest.Create(dataPayload);
+            this.loRaDevice = new LoRaDevice(this.simulatedDevice.DevAddr, this.simulatedDevice.DevEUI, this.connectionManager);
 
             var deduplicationStrategyFactory = new Mock<DeduplicationStrategyFactory>(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
             _ = deduplicationStrategyFactory.Setup(x => x.Create(It.IsAny<LoRaDevice>())).Returns(new DeduplicationStrategyDrop(NullLogger<DeduplicationStrategyDrop>.Instance)); ;
