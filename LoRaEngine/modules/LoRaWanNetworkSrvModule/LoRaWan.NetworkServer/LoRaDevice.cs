@@ -324,32 +324,32 @@ namespace LoRaWan.NetworkServer
                 // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
                 if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
                 {
-                    DesiredRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
+                    DesiredRX2DataRate = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
                 }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
                 {
-                    DesiredRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
+                    DesiredRX1DROffset = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
                 }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.RXDelay))
                 {
-                    DesiredRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
+                    DesiredRXDelay = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
                 }
 
                 if (twin.Properties.Reported.Contains(TwinProperty.RX2DataRate))
                 {
-                    ReportedRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX2DataRate].Value);
+                    ReportedRX2DataRate = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX2DataRate].Value);
                 }
 
                 if (twin.Properties.Reported.Contains(TwinProperty.RX1DROffset))
                 {
-                    ReportedRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX1DROffset].Value);
+                    ReportedRX1DROffset = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX1DROffset].Value);
                 }
 
                 if (twin.Properties.Reported.Contains(TwinProperty.RXDelay))
                 {
-                    ReportedRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
+                    ReportedRXDelay = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
                 }
             }
 
@@ -384,7 +384,7 @@ namespace LoRaWan.NetworkServer
 
             if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
             {
-                if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
+                if (string.Equals("c", twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
                 {
                     ClassType = LoRaDeviceClassType.C;
                 }
