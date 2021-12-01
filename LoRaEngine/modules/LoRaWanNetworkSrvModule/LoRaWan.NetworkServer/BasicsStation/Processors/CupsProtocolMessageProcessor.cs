@@ -8,7 +8,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System;
     using System.Buffers;
     using System.Buffers.Binary;
-    using System.IO;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
