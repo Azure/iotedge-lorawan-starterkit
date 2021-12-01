@@ -9,16 +9,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     public static class CupsEndpoint
     {
-        internal static class CupsBaseProperties
+        internal static class CommonCupsProperties
         {
-            internal static readonly IJsonProperty<Uri> CupsUri =
-                JsonReader.Property("cupsUri", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
-                                               select string.IsNullOrEmpty(s) ? null : new Uri(s));
-
-            internal static readonly IJsonProperty<Uri?> TcUri =
-                JsonReader.Property("tcUri", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
-                                             select string.IsNullOrEmpty(s) ? null : new Uri(s));
-
             internal static readonly IJsonProperty<uint> CupsCredCrc =
                 JsonReader.Property("cupsCredCrc", JsonReader.UInt32());
 
@@ -29,17 +21,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         internal static readonly IJsonReader<CupsUpdateInfoRequest> UpdateRequestReader =
             JsonReader.Object(JsonReader.Property("router", from s in JsonReader.String()
                                                             select StationEui.Parse(s)),
-                              CupsBaseProperties.CupsUri,
-                              CupsBaseProperties.TcUri,
-                              CupsBaseProperties.CupsCredCrc,
-                              CupsBaseProperties.TcCredCrc,
+                              JsonReader.Property("cupsUri", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                                                             select string.IsNullOrEmpty(s) ? null : new Uri(s)),
+                              JsonReader.Property("tcUri", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                                                           select string.IsNullOrEmpty(s) ? null : new Uri(s)),
+                              CommonCupsProperties.CupsCredCrc,
+                              CommonCupsProperties.TcCredCrc,
                               (r, c, t, cc, tc) => new CupsUpdateInfoRequest(r, c, t, cc, tc));
 
         internal static readonly IJsonReader<CupsTwinInfo> TwinReader =
-            JsonReader.Object(CupsBaseProperties.CupsUri,
-                              CupsBaseProperties.TcUri,
-                              CupsBaseProperties.CupsCredCrc,
-                              CupsBaseProperties.TcCredCrc,
+            JsonReader.Object(JsonReader.Property("cupsUri", from s in JsonReader.String()
+                                                             select new Uri(s)),
+                              JsonReader.Property("tcUri", from s in JsonReader.String()
+                                                           select new Uri(s)),
+                              CommonCupsProperties.CupsCredCrc,
+                              CommonCupsProperties.TcCredCrc,
                               (c, t, cc, tc) => new CupsTwinInfo(c, t, cc, tc));
     }
 }

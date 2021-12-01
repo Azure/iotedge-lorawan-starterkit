@@ -7,18 +7,25 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
 
-    internal record CupsUpdateInfoRequest : CupsBase
+    internal sealed record CupsUpdateInfoRequest
     {
         public CupsUpdateInfoRequest(StationEui stationEui,
                                      Uri? cupsUri,
                                      Uri? tcUri,
                                      uint cupsCredentialsChecksum,
                                      uint tcCredentialsChecksum)
-            : base(cupsUri, tcUri, cupsCredentialsChecksum, tcCredentialsChecksum)
         {
             StationEui = stationEui;
+            CupsUri = cupsUri;
+            TcUri = tcUri;
+            CupsCredentialsChecksum = cupsCredentialsChecksum;
+            TcCredentialsChecksum = tcCredentialsChecksum;
         }
 
         public StationEui StationEui { get; }
+        public Uri? CupsUri { get; }
+        public Uri? TcUri { get; }
+        public uint CupsCredentialsChecksum { get; }
+        public uint TcCredentialsChecksum { get; }
     }
 }
