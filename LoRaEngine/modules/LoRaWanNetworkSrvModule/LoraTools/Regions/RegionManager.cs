@@ -123,7 +123,7 @@ namespace LoRaTools.Regions
             {
                 if (cn470 == null)
                 {
-                    cn470 = new RegionCN470();
+                    cn470 = new RegionCN470RP2();
                 }
 
                 return cn470;
