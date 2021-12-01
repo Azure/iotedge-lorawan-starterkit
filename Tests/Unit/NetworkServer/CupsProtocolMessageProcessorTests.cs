@@ -218,7 +218,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             httpContext = new Mock<HttpContext>();
             var httpRequest = new Mock<HttpRequest>();
             _ = httpRequest.Setup(r => r.ContentLength).Returns(contentLength == -1 ? CupsRequest.Length : contentLength);
-            _ = httpRequest.Setup(r => r.Body).Returns(GetRequestStream(request));
+#pragma warning disable CA2000 // Can't dispose stream before losing scope
+            var requestStream = GetRequestStream(request);
+#pragma warning restore CA2000 // Can't dispose stream before losing scope
+            _ = httpRequest.Setup(r => r.Body).Returns(requestStream);
             _ = httpContext.Setup(m => m.Request).Returns(httpRequest.Object);
             var httpResponse = new Mock<HttpResponse>();
             var bodyWriter = new Mock<PipeWriter>();
@@ -239,14 +242,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                   'tcCredCrc':{CredentialsChecksum},'station':'2.0.5(corecell/std)',
                                                                   'model':'corecell','package':null,'keys':[]}}");
 
-        private static Stream GetRequestStream(string request = null)
-        {
-            var stream = new MemoryStream();
-            using var writer = new StreamWriter(stream, leaveOpen: true);
-            writer.Write(request is null ? CupsRequest : request);
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
-        }
+        private static Stream GetRequestStream(string request = null) =>
+            new MemoryStream(Encoding.UTF8.GetBytes(request is null ? JsonSerializer.Serialize(new
+            {
+                router = StationEui,
+                cupsUri = CupsUri,
+                tcUri = TcUri,
+                cupsCredCrc = CredentialsChecksum,
+                tcCredCrc = CredentialsChecksum,
+                station = "2.0.5(corecell/std)",
+                model = "corecell",
+                package = (string)null,
+                keys = Array.Empty<int>()
+            }) : request));
     }
 }
