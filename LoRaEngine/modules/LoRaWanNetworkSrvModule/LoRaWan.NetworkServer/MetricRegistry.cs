@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
         public static readonly CustomMetric StationConnectivityLost = new CustomMetric("StationConnectivityLost", "Counts the number of station connectivities that were lost", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric ReceiveWindowHits = new CustomMetric("ReceiveWindowHits", "Receive window hits", MetricType.Counter, new[] { GatewayIdTagName, ReceiveWindowTagName });
         public static readonly CustomMetric ReceiveWindowMisses = new CustomMetric("ReceiveWindowMisses", "Receive window misses", MetricType.Counter, new[] { GatewayIdTagName });
-        public static readonly CustomMetric ProcessingErrors = new CustomMetric("ProcessingErrors", "Number of processing errors", MetricType.Counter, Array.Empty<string>());
+        public static readonly CustomMetric UnhandledExceptions = new CustomMetric("UnhandledExceptions", "Number of unhandled exceptions", MetricType.Counter, Array.Empty<string>());
         public static readonly CustomMetric D2CMessageDeliveryLatency = new CustomHistogram("D2CMessageDeliveryLatency", "D2C delivery latency (in milliseconds)", MetricType.Histogram, new[] { GatewayIdTagName },
                                                                                             BucketStart: 100, BucketWidth: 50, BucketCount: 45);
         public static readonly CustomMetric D2CMessagesReceived = new CustomMetric("D2CMessagesReceived", "Number of D2C messages received", MetricType.Counter, new[] { GatewayIdTagName });
@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer
             StationConnectivityLost,
             ReceiveWindowHits,
             ReceiveWindowMisses,
-            ProcessingErrors,
+            UnhandledExceptions,
             D2CMessageDeliveryLatency,
             D2CMessagesReceived,
             D2CMessageSize,

@@ -22,7 +22,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILogger<ModuleConnectionHost> logger;
-        private readonly Counter<int> processingErrorCounter;
+        private readonly Counter<int> unhandledExceptionCount;
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             this.loRaDeviceAPIService = loRaDeviceAPIService ?? throw new ArgumentNullException(nameof(loRaDeviceAPIService));
             this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.processingErrorCounter = meter.CreateCounter<int>(MetricRegistry.ProcessingErrors);
+            this.unhandledExceptionCount = (meter ?? throw new ArgumentNullException(nameof(meter))).CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         public async Task CreateAsync(CancellationToken cancellationToken)
@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
             catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred on a direct method call: {ex}"),
-                                                                    () => this.processingErrorCounter.Add(1)))
+                                                                    () => this.unhandledExceptionCount.Add(1)))
             {
                 throw;
             }
@@ -162,7 +162,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 this.logger.LogWarning($"A desired properties update was detected but the parameters are out of range with exception :  {ex}");
             }
             catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred on desired property update: {ex}"),
-                                                                    () => this.processingErrorCounter.Add(1)))
+                                                                    () => this.unhandledExceptionCount.Add(1)))
             {
                 throw;
             }

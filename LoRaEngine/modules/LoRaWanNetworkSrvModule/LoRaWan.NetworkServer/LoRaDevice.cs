@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer
         private readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
         private readonly ILogger<LoRaDevice> logger;
-        private readonly Counter<int> processingErrorCount;
+        private readonly Counter<int> unhandledExceptionCount;
 
         public int TxPower => this.txPower.Get();
 
@@ -209,7 +209,7 @@ namespace LoRaWan.NetworkServer
             this.confirmationResubmitCount = 0;
             this.queuedRequests = new Queue<LoRaRequest>();
             ClassType = LoRaDeviceClassType.A;
-            this.processingErrorCount = meter?.CreateCounter<int>(MetricRegistry.ProcessingErrors);
+            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         /// <summary>
@@ -1093,7 +1093,7 @@ namespace LoRaWan.NetworkServer
                                             ex =>
                                             {
                                                 this.logger.LogError(ex, $"error processing request: {ex.Message}");
-                                                this.processingErrorCount?.Add(1);
+                                                this.unhandledExceptionCount?.Add(1);
                                             });
 
             async Task CoreAsync()

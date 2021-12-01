@@ -75,7 +75,7 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
-            var processingErrorCount = meter?.CreateCounter<int>(MetricRegistry.ProcessingErrors);
+            var unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
             _ = TaskUtil.RunOnThreadPool(async () =>
             {
                 using var scope = this.logger.BeginDeviceAddressScope(this.devAddr);
@@ -93,8 +93,8 @@ namespace LoRaWan.NetworkServer
             },
             ex =>
             {
-                this.logger.LogError($"Error while loading: {ex}.");
-                processingErrorCount?.Add(1);
+                this.logger.LogError(ex, $"Error while loading: {ex}.");
+                unhandledExceptionCount?.Add(1);
             });
         }
 
