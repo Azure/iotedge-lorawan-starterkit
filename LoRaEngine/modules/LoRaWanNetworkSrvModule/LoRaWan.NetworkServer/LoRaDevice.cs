@@ -377,7 +377,7 @@ namespace LoRaWan.NetworkServer
 
             if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
             {
-                var val = twin.Properties.Desired[TwinProperty.Deduplication].Value;
+                string val = twin.Properties.Desired[TwinProperty.Deduplication].Value;
                 _ = Enum.TryParse<DeduplicationMode>(val, true, out var mode);
                 Deduplication = mode;
             }
@@ -397,7 +397,7 @@ namespace LoRaWan.NetworkServer
 
             if (twin.Properties.Reported.Contains(TwinProperty.Region))
             {
-                var regionValue = twin.Properties.Reported[TwinProperty.Region].Value;
+                string regionValue = twin.Properties.Reported[TwinProperty.Region].Value;
                 if (Enum.TryParse<LoRaRegionType>(regionValue, true, out var loRaRegion))
                 {
                     if (Enum.IsDefined(typeof(LoRaRegionType), loRaRegion))
