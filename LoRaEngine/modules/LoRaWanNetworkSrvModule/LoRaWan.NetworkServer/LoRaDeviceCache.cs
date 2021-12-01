@@ -328,9 +328,9 @@ namespace LoRaWan.NetworkServer
         }
     }
 
-    public record CacheStatistics(int Hit, int Miss, int Count);
+    public sealed record CacheStatistics(int Hit, int Miss, int Count);
 
-    public record LoRaDeviceCacheOptions
+    public sealed record LoRaDeviceCacheOptions
     {
         /// <summary>
         /// How often the validation of the device cache is run.
