@@ -161,7 +161,7 @@ namespace LoRaWan.NetworkServer
                 ["DevEUI"] = eui
             });
 
-            var response = await client.GetAsync(new Uri(url.ToString()));
+            var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -210,15 +210,13 @@ namespace LoRaWan.NetworkServer
                 ["CredentialType"] = credentialtype.ToString()
             });
 
-            var response = await client.GetAsync(new Uri(url.ToString()), token);
+            var response = await client.GetAsync(url, token);
             if (!response.IsSuccessStatusCode)
             {
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                if (response.StatusCode is not System.Net.HttpStatusCode.NotFound)
                 {
-                    return string.Empty;
+                    this.logger.LogError($"error calling fetch station credentials api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
                 }
-
-                this.logger.LogError($"error calling fetch station credentials api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
 
                 return string.Empty;
             }
