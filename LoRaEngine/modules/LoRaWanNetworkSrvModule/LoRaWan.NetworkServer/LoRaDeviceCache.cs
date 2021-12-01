@@ -183,7 +183,7 @@ namespace LoRaWan.NetworkServer
 
         public virtual bool HasRegistrations(string devAddr)
         {
-            return this.devAddrCache.TryGetValue(devAddr, out var items) && items.Any();
+            return RegistrationCount(devAddr) > 0;
         }
 
         public virtual bool HasRegistrationsForOtherGateways(string devAddr)
