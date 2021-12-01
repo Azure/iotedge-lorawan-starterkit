@@ -49,7 +49,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                            this.packetForwarder.Object,
                                                                            this.messageDispatcher.Object,
                                                                            loggerMock,
-                                                                           new RegistryMetricTagBag());
+                                                                           new RegistryMetricTagBag(),
+                                                                           null);
         }
 
         [Fact]

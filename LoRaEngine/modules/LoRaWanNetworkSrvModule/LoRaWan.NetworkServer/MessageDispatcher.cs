@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
 
         private static readonly IMemoryCache testMemoryCache = new MemoryCache(new MemoryCacheOptions());
         private static readonly DeduplicationStrategyFactory strategyFactory = new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
-        private static readonly IConcentratorDeduplication concentratorDeduplication = new ConcentratorDeduplication(testMemoryCache, strategyFactory, new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance), NullLogger<IConcentratorDeduplication>.Instance);
+        private static readonly IConcentratorDeduplication concentratorDeduplication = new ConcentratorDeduplication(testMemoryCache, strategyFactory, new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance, null), NullLogger<IConcentratorDeduplication>.Instance);
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
