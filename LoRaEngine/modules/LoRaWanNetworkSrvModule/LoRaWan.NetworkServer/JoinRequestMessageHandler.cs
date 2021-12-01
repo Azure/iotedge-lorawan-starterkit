@@ -20,6 +20,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<JoinRequestMessageHandler> logger;
         private readonly Counter<int> receiveWindowHits;
         private readonly Counter<int> receiveWindowMisses;
+        private readonly Counter<int> unhandledExceptionCount;
         private readonly NetworkServerConfiguration configuration;
 
         public JoinRequestMessageHandler(NetworkServerConfiguration configuration,
@@ -32,6 +33,7 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
             this.receiveWindowMisses = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowMisses);
+            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         public void DispatchRequest(LoRaRequest request)
@@ -297,8 +299,8 @@ namespace LoRaWan.NetworkServer
                     }
                 }
                 catch (Exception ex) when
-                    (ExceptionFilterUtility.True(() => this.logger.LogError($"failed to handle join request. {ex.Message}",
-                                                                            LogLevel.Error)))
+                    (ExceptionFilterUtility.True(() => this.logger.LogError(ex, $"failed to handle join request. {ex.Message}", LogLevel.Error),
+                                                 () => this.unhandledExceptionCount?.Add(1)))
                 {
                     request.NotifyFailed(loRaDevice, ex);
                     throw;

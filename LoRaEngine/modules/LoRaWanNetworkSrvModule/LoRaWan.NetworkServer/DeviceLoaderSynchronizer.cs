@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
@@ -59,7 +60,8 @@ namespace LoRaWan.NetworkServer
             NetworkServerConfiguration configuration,
             Action<Task, DeviceLoaderSynchronizer> continuationAction,
             Action<LoRaDevice> registerDeviceAction,
-            ILogger<DeviceLoaderSynchronizer> logger)
+            ILogger<DeviceLoaderSynchronizer> logger,
+            Meter meter)
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
@@ -88,7 +90,8 @@ namespace LoRaWan.NetworkServer
                     continuationAction(t, this);
                 }
             },
-            ex => this.logger.LogError($"Error while loading: {ex}."));
+            ex => this.logger.LogError(ex, $"Error while loading: {ex}."),
+            meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions));
         }
 
         private async Task Load()
