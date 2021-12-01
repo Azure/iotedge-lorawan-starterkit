@@ -6,6 +6,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System;
     using System.Diagnostics.Metrics;
     using System.Globalization;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Logger;
     using LoRaTools.ADR;
     using LoRaWan;
@@ -15,6 +18,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Server.Kestrel.Https;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Configuration;
@@ -127,40 +131,39 @@ namespace LoRaWan.NetworkServer.BasicsStation
             dataHandlerImplementation.SetClassCMessageSender(classCMessageSender);
 
 
+
             _ = app.UseRouting()
                    .UseWebSockets()
                    .UseEndpoints(endpoints =>
                    {
-                       _ = endpoints.MapGet(BasicsStationNetworkServer.DiscoveryEndpoint, async context =>
+                       Map(HttpMethod.Get, BasicsStationNetworkServer.DiscoveryEndpoint,
+                           context => context.Request.Host.Port is BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort,
+                           (ILnsProtocolMessageProcessor processor) => processor.HandleDiscoveryAsync);
+
+                       Map(HttpMethod.Get, $"{BasicsStationNetworkServer.DataEndpoint}/{{{BasicsStationNetworkServer.RouterIdPathParameterName}:required}}",
+                           context => context.Request.Host.Port is BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort,
+                           (ILnsProtocolMessageProcessor processor) => processor.HandleDataAsync);
+
+                       Map(HttpMethod.Post, BasicsStationNetworkServer.UpdateInfoEndpoint,
+                           context => context.Connection.LocalPort is BasicsStationNetworkServer.CupsPort,
+                           (ICupsProtocolMessageProcessor processor) => processor.HandleUpdateInfoAsync);
+
+                       void Map<TService>(HttpMethod method, string pattern,
+                                          Predicate<HttpContext> predicate,
+                                          Func<TService, Func<HttpContext, CancellationToken, Task>> handlerMapper)
+                       {
+                           _ = endpoints.MapMethods(pattern, new[] { method.ToString() }, async context =>
                            {
-                               if (context.Request.Host.Port is not (BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort))
+                               if (!predicate(context))
                                {
                                    context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
                                    return;
                                }
-                               var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
-                               await lnsProtocolMessageProcessor.HandleDiscoveryAsync(context, context.RequestAborted);
+                               var processor = context.RequestServices.GetRequiredService<TService>();
+                               var handler = handlerMapper(processor);
+                               await handler(context, context.RequestAborted);
                            });
-                       _ = endpoints.MapGet($"{BasicsStationNetworkServer.DataEndpoint}/{{{BasicsStationNetworkServer.RouterIdPathParameterName}:required}}", async context =>
-                           {
-                               if (context.Request.Host.Port is not (BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort))
-                               {
-                                   context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
-                                   return;
-                               }
-                               var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
-                               await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);
-                           });
-                       _ = endpoints.MapPost(BasicsStationNetworkServer.UpdateInfoEndpoint, async context =>
-                           {
-                               if (context.Connection.LocalPort is not BasicsStationNetworkServer.CupsPort)
-                               {
-                                   context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
-                                   return;
-                               }
-                               var cupsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ICupsProtocolMessageProcessor>();
-                               await cupsProtocolMessageProcessor.HandleUpdateInfoAsync(context, context.RequestAborted);
-                           });
+                       }
                    });
 
             _ = app.UseMetricServer();
