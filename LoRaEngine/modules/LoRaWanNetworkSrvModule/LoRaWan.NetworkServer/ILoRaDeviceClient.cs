@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets the twin properties for the device.
         /// </summary>
-        Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default);
+        Task<Twin> GetTwinAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends a telemetry/event.

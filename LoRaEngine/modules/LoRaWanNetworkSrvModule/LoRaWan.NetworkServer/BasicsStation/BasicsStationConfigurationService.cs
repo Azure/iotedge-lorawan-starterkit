@@ -56,7 +56,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                     }
                     var info = queryResult[0];
                     using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
-                    var twin = await client.GetTwinAsync();
+                    var twin = await client.GetTwinAsync(CancellationToken.None);
                     return twin.Properties.Desired;
                 });
             }
