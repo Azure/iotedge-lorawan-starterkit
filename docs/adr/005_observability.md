@@ -81,7 +81,7 @@ In addition to this, we will support Application Insights metrics on an opt-in b
 | JoinRequests               | Number of join requests                                      | LNS    | LoRaWan   | Gateway Id                 |
 | StationConnectivityLost    | Connection to LBS lost                                       | LNS    | LoRaWan   | Gateway Id                 |
 | ActiveStationConnections   | Active connections to stations                               | LNS    | LoRaWan   | Gateway Id                 |
-| ProcessingErrors           | Number of errors in LNS processing                           | LNS    | LoRaWan   | Gateway Id                 |
+| ProcessingErrors           | Number of errors in LNS processing                           | LNS    | LoRaWan   |                          |
 | D2CMessagesReceived        | Number of messages received from device                      | LNS    | LoRaWan   | Gateway Id                 |
 | D2CMessageDeliveryLatency  | Time from when we dispatched the message sent from the concentrator until we are done processing it | LNS | LoRaWan | Gateway Id |
 | D2CMessageSize             | Message size in bytes received from device                   | LNS    | LoRaWan   | Gateway Id                 |
