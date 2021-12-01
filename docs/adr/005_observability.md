@@ -81,6 +81,7 @@ In addition to this, we will support Application Insights metrics on an opt-in b
 | JoinRequests               | Number of join requests                                      | LNS    | LoRaWan   | Gateway Id                 |
 | StationConnectivityLost    | Connection to LBS lost                                       | LNS    | LoRaWan   | Gateway Id                 |
 | ActiveStationConnections   | Active connections to stations                               | LNS    | LoRaWan   | Gateway Id                 |
+| ProcessingErrors           | Number of errors in LNS processing                           | LNS    | LoRaWan   | Gateway Id                 |
 | D2CMessagesReceived        | Number of messages received from device                      | LNS    | LoRaWan   | Gateway Id                 |
 | D2CMessageDeliveryLatency  | Time from when we dispatched the message sent from the concentrator until we are done processing it | LNS | LoRaWan | Gateway Id |
 | D2CMessageSize             | Message size in bytes received from device                   | LNS    | LoRaWan   | Gateway Id                 |
@@ -93,7 +94,7 @@ We support the following alerts when the user opts in to use Application Insight
 | Name                            | Description                                               | Source                                   | Condition |
 | ------------------------------- | --------------------------------------------------------- | ---------------------------------------- | --------- |
 | HighUpstreamMessageLatency      | High device message processing time (throughput)          | D2CMessageDeliveryLatency                | Dynamic   |
-| Exceptions                      | High exception raised count (correctness)                 | Exceptions                               | Dynamic   |
+| HighErrorCount                  | High error count (correctness)                            | Unhandled Exceptions / ProcessingErrors  | Dynamic   |
 | HighUpstreamMessagesLostRatio   | High device messages lost ratio (correctness, throughput) | D2CMessagesReceived/D2CMessagesDelivered | Dynamic   |
 | HighReceiveWindowMisses         | High device message processing time (throughput)          | ReceiveWindowMisses                      | Dynamic   |
 | HighDownstreamMessagesLostRatio | High device messages lost ratio (correctness, throughput) | Abandoned messages (IoT Hub metric)      | Dynamic   |
