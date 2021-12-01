@@ -45,6 +45,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByEuiAsync(stationEui))
                                     .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
 
+        private const string TcUri = "wss://tc.local:5001";
+        private const string CupsUri = "https://cups.local:443";
+
         private void SetupTwinResponse(StationEui stationEui, string primaryKey) =>
             SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)},
                                                             ""clientThumbprint"": [ ""thumbprint"" ],
@@ -53,8 +56,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                                         ""tcCredCrc"":101938194,
                                                                         ""cupsCredentialUrl"": ""https://storageurl.net/container/blob"",
                                                                         ""cupsCredCrc"":101938194,
-                                                                        ""cupsUri"": ""https://cups.local:443"",
-                                                                        ""tcUri"": ""wss://tc.local:5001""
+                                                                        ""cupsUri"": ""{CupsUri}"",
+                                                                        ""tcUri"": ""{TcUri}""
                                                                       }}
                                                           }}");
 
@@ -129,10 +132,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 var result = await this.sut.GetCupsConfigAsync(this.stationEui, CancellationToken.None);
 
                 // assert
-                Assert.Equal("wss", result.TcUri.GetComponents(UriComponents.Scheme, UriFormat.Unescaped));
-                Assert.Equal("https", result.CupsUri.GetComponents(UriComponents.Scheme, UriFormat.Unescaped));
-                Assert.NotEqual((uint)0, result.TcCredentialsChecksum);
-                Assert.NotEqual((uint)0, result.CupsCredentialsChecksum);
+                Assert.Equal(new Uri(TcUri), result.TcUri);
+                Assert.Equal(new Uri(CupsUri), result.CupsUri);
+                Assert.NotEqual(0U, result.TcCredentialsChecksum);
+                Assert.NotEqual(0U, result.CupsCredentialsChecksum);
             }
 
             [Fact]
