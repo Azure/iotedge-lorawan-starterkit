@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools
     using System.Collections.Generic;
     using global::LoRaTools;
     using Newtonsoft.Json;
-    using Org.BouncyCastle.Asn1.BC;
     using Xunit;
 
     public class MacCommandTest
