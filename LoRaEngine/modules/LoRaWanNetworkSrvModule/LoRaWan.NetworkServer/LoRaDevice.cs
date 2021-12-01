@@ -262,7 +262,7 @@ namespace LoRaWan.NetworkServer
             if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
             {
                 // ABP Case
-                AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value as string;
+                AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value;
 
                 if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
                     throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
@@ -270,8 +270,8 @@ namespace LoRaWan.NetworkServer
                 if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
                     throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
 
-                NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value as string;
-                DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value as string;
+                NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value;
+                DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value;
 
                 if (string.IsNullOrEmpty(NwkSKey))
                     throw new InvalidLoRaDeviceException("NwkSKey is empty");
@@ -296,30 +296,30 @@ namespace LoRaWan.NetworkServer
                     throw new InvalidLoRaDeviceException("Missing AppKey for OTAA device");
                 }
 
-                AppKey = twin.Properties.Desired[TwinProperty.AppKey].Value as string;
+                AppKey = twin.Properties.Desired[TwinProperty.AppKey].Value;
 
                 if (!twin.Properties.Desired.Contains(TwinProperty.AppEUI))
                 {
                     throw new InvalidLoRaDeviceException("Missing AppEUI for OTAA device");
                 }
 
-                AppEUI = twin.Properties.Desired[TwinProperty.AppEUI].Value as string;
+                AppEUI = twin.Properties.Desired[TwinProperty.AppEUI].Value;
 
                 // Check for already joined OTAA device properties
                 if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
-                    DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value as string;
+                    DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value;
 
                 if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
-                    AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value as string;
+                    AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value;
 
                 if (twin.Properties.Reported.Contains(TwinProperty.NwkSKey))
-                    NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey].Value as string;
+                    NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey].Value;
 
                 if (twin.Properties.Reported.Contains(TwinProperty.NetID))
-                    NetID = twin.Properties.Reported[TwinProperty.NetID].Value as string;
+                    NetID = twin.Properties.Reported[TwinProperty.NetID].Value;
 
                 if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
-                    DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
+                    DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value;
 
                 // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
                 if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
@@ -354,12 +354,12 @@ namespace LoRaWan.NetworkServer
             }
 
             if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
-                GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value as string;
+                GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value;
 
             _ = UpdateIsOurDevice(configuration.GatewayID);
 
             if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
-                SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value as string;
+                SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value;
 
             InitializeFrameCounters(twin);
 
@@ -377,7 +377,7 @@ namespace LoRaWan.NetworkServer
 
             if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
             {
-                var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
+                var val = twin.Properties.Desired[TwinProperty.Deduplication].Value;
                 _ = Enum.TryParse<DeduplicationMode>(val, true, out var mode);
                 Deduplication = mode;
             }
@@ -392,12 +392,12 @@ namespace LoRaWan.NetworkServer
 
             if (twin.Properties.Reported.Contains(TwinProperty.PreferredGatewayID))
             {
-                this.preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, twin.Properties.Reported[TwinProperty.PreferredGatewayID].Value as string);
+                this.preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, twin.Properties.Reported[TwinProperty.PreferredGatewayID].Value);
             }
 
             if (twin.Properties.Reported.Contains(TwinProperty.Region))
             {
-                var regionValue = twin.Properties.Reported[TwinProperty.Region].Value as string;
+                var regionValue = twin.Properties.Reported[TwinProperty.Region].Value;
                 if (Enum.TryParse<LoRaRegionType>(regionValue, true, out var loRaRegion))
                 {
                     if (Enum.IsDefined(typeof(LoRaRegionType), loRaRegion))
@@ -439,7 +439,7 @@ namespace LoRaWan.NetworkServer
 
             if (twin.Properties.Reported.Contains(TwinProperty.LastProcessingStationEui))
             {
-                var stationEui = StationEui.Parse(twin.Properties.Reported[TwinProperty.LastProcessingStationEui].Value as string);
+                var stationEui = StationEui.Parse(twin.Properties.Reported[TwinProperty.LastProcessingStationEui].Value);
                 lastProcessingStationEui = new ChangeTrackingProperty<StationEui>(TwinProperty.LastProcessingStationEui, stationEui);
             }
 
