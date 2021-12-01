@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
 
-    internal class CupsTwinInfo : CupsBase
+    internal record CupsTwinInfo : CupsBase
     {
         // This class is on purpose left equal to CupsBase.
         // Credential management does not require anything more than the shared endpoint URIs and CRCs

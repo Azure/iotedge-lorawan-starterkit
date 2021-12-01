@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
 
-    internal class CupsBase
+    internal record CupsBase
     {
         public CupsBase(Uri? cupsUri,
                         Uri? tcUri,
