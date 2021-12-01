@@ -38,6 +38,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly RegistryMetricTagBag registryMetricTagBag;
         private readonly Counter<int> joinRequestCounter;
         private readonly Counter<int> uplinkMessageCounter;
+        private readonly Counter<int> processingErrorCounter;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
@@ -59,6 +60,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.registryMetricTagBag = registryMetricTagBag;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
             this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
+            this.processingErrorCounter = meter?.CreateCounter<int>(MetricRegistry.ProcessingErrors);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
@@ -92,7 +94,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     this.logger.LogDebug(ex, ex.Message);
                 }
             }
-            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex)))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex),
+                                                                    () => this.processingErrorCounter?.Add(1)))
             {
                 throw;
             }

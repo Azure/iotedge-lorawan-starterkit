@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
@@ -59,7 +60,8 @@ namespace LoRaWan.NetworkServer
             NetworkServerConfiguration configuration,
             Action<Task, DeviceLoaderSynchronizer> continuationAction,
             Action<LoRaDevice> registerDeviceAction,
-            ILogger<DeviceLoaderSynchronizer> logger)
+            ILogger<DeviceLoaderSynchronizer> logger,
+            Meter meter)
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
@@ -73,6 +75,7 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
+            var processingErrorCount = meter?.CreateCounter<int>(MetricRegistry.ProcessingErrors);
             _ = TaskUtil.RunOnThreadPool(async () =>
             {
                 using var scope = this.logger.BeginDeviceAddressScope(this.devAddr);
@@ -88,7 +91,11 @@ namespace LoRaWan.NetworkServer
                     continuationAction(t, this);
                 }
             },
-            ex => this.logger.LogError($"Error while loading: {ex}."));
+            ex =>
+            {
+                this.logger.LogError($"Error while loading: {ex}.");
+                processingErrorCount?.Add(1);
+            });
         }
 
         private async Task Load()

@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
     using Microsoft.Extensions.Logging;
     using System;
     using System.Configuration;
+    using System.Diagnostics.Metrics;
     using System.Net;
     using System.Text.Json;
     using System.Threading;
@@ -21,6 +22,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILogger<ModuleConnectionHost> logger;
+        private readonly Counter<int> processingErrorCounter;
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
@@ -30,7 +32,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             ILoRaModuleClientFactory loRaModuleClientFactory,
             ILoRaDeviceRegistry loRaDeviceRegistry,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
-            ILogger<ModuleConnectionHost> logger)
+            ILogger<ModuleConnectionHost> logger,
+            Meter meter)
         {
             this.networkServerConfiguration = networkServerConfiguration ?? throw new ArgumentNullException(nameof(networkServerConfiguration));
             this.classCMessageSender = defaultClassCDevicesMessageSender ?? throw new ArgumentNullException(nameof(defaultClassCDevicesMessageSender));
@@ -38,6 +41,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             this.loRaDeviceAPIService = loRaDeviceAPIService ?? throw new ArgumentNullException(nameof(loRaDeviceAPIService));
             this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.processingErrorCounter = meter?.CreateCounter<int>(MetricRegistry.ProcessingErrors);
         }
 
         public async Task CreateAsync(CancellationToken cancellationToken)
@@ -98,7 +102,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
                 return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
-            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError($"An exception occurred on a direct method call: {ex}")))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred on a direct method call: {ex}"),
+                                                                    () => this.processingErrorCounter?.Add(1)))
             {
                 throw;
             }
@@ -156,7 +161,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             {
                 this.logger.LogWarning($"A desired properties update was detected but the parameters are out of range with exception :  {ex}");
             }
-            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError($"An exception occurred on desired property update: {ex}")))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred on desired property update: {ex}"),
+                                                                    () => this.processingErrorCounter?.Add(1)))
             {
                 throw;
             }

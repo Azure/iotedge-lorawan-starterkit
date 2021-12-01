@@ -24,6 +24,20 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Fact]
+        public void True_Two_Arguments_SuccessCase()
+        {
+            // arrange
+            var action = new Mock<Action>();
+
+            // act
+            var result = ExceptionFilterUtility.True(action.Object, action.Object);
+
+            // assert
+            Assert.True(result);
+            action.Verify(a => a.Invoke(), Times.Exactly(2));
+        }
+
+        [Fact]
         public void False_SuccessCase()
         {
             // arrange
@@ -35,6 +49,20 @@ namespace LoRaWan.Tests.Unit
             // assert
             Assert.False(result);
             action.Verify(a => a.Invoke(), Times.Once);
+        }
+
+        [Fact]
+        public void False_Two_Arguments_SuccessCase()
+        {
+            // arrange
+            var action = new Mock<Action>();
+
+            // act
+            var result = ExceptionFilterUtility.False(action.Object, action.Object);
+
+            // assert
+            Assert.False(result);
+            action.Verify(a => a.Invoke(), Times.Exactly(2));
         }
     }
 }

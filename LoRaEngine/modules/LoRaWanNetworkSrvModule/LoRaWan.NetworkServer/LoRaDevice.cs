@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -80,6 +81,7 @@ namespace LoRaWan.NetworkServer
         private readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
         private readonly ILogger<LoRaDevice> logger;
+        private readonly Counter<int> processingErrorCount;
 
         public int TxPower => this.txPower.Get();
 
@@ -194,7 +196,7 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
-        public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger)
+        public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
         {
             DevAddr = devAddr;
             DevEUI = devEUI;
@@ -207,13 +209,14 @@ namespace LoRaWan.NetworkServer
             this.confirmationResubmitCount = 0;
             this.queuedRequests = new Queue<LoRaRequest>();
             ClassType = LoRaDeviceClassType.A;
+            this.processingErrorCount = meter?.CreateCounter<int>(MetricRegistry.ProcessingErrors);
         }
 
         /// <summary>
         /// Use constructor for test code only.
         /// </summary>
         internal LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
-            : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance)
+            : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance, null)
         { }
 
         /// <summary>
@@ -1087,7 +1090,11 @@ namespace LoRaWan.NetworkServer
         private Task RunAndQueueNext(LoRaRequest request)
         {
             return TaskUtil.RunOnThreadPool(() => CoreAsync(),
-                                            ex => this.logger.LogError($"error processing request: {ex.Message}"));
+                                            ex =>
+                                            {
+                                                this.logger.LogError(ex, $"error processing request: {ex.Message}");
+                                                this.processingErrorCount?.Add(1);
+                                            });
 
             async Task CoreAsync()
             {
