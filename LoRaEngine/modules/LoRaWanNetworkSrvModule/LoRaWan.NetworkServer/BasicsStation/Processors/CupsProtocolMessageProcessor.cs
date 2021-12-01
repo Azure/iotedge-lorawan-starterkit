@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
@@ -21,6 +23,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
         private readonly LoRaDeviceAPIServiceBase deviceAPIServiceBase;
         private readonly ILogger<CupsProtocolMessageProcessor> logger;
+        internal const int MaximumAllowedContentLength = 2048;
 
         public CupsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                             LoRaDeviceAPIServiceBase deviceAPIServiceBase,
@@ -33,14 +36,41 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
         public async Task HandleUpdateInfoAsync(HttpContext httpContext, CancellationToken token)
         {
+            // checking content length
+            var contentLength = httpContext.Request.ContentLength;
+            if (contentLength is null)
+            {
+                LogAndSetBadRequest(httpContext, null, "Request is not specifying a Content-Length.");
+                return;
+            }
+            if (contentLength > MaximumAllowedContentLength)
+            {
+                LogAndSetBadRequest(httpContext, null, "Request body is exceeding the maximum content-length limit of {MaximumAllowedContentLength}.", MaximumAllowedContentLength);
+                return;
+            }
+
+            // reading the input stream
             using var reader = new StreamReader(httpContext.Request.Body);
-            var input = await reader.ReadToEndAsync();
+            var inputChars = new char[(int)contentLength];
+            var totalReadBytes = 0;
+            var iterationReadBytes = 0;
+            do
+            {
+                iterationReadBytes = await reader.ReadAsync(inputChars, 0, (int)contentLength);
+                totalReadBytes += iterationReadBytes;
+            } while (totalReadBytes < contentLength && iterationReadBytes != 0);
+
+            if (totalReadBytes > contentLength)
+            {
+                LogAndSetBadRequest(httpContext, null, "Stream includes more bytes than what expected.");
+                return;
+            }
 
             // reading the request from Basic Station
             CupsUpdateInfoRequest updateRequest;
             try
             {
-                updateRequest = CupsEndpoint.UpdateRequestReader.Read(input);
+                updateRequest = CupsEndpoint.UpdateRequestReader.Read(string.Concat(inputChars));
             }
             catch (UriFormatException uriException)
             {
@@ -82,17 +112,18 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
 
             var toWrite = response.Memory.Span[..currentPosition].ToArray();
+            httpContext.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
             httpContext.Response.ContentType = "application/octet-stream";
             httpContext.Response.ContentLength = currentPosition;
             _ = await httpContext.Response.BodyWriter.WriteAsync(toWrite, token);
 
-            void LogAndSetBadRequest(HttpContext httpContext, Exception ex, string message)
+            void LogAndSetBadRequest(HttpContext httpContext, Exception? ex, string message, params object?[] args)
             {
-                this.logger.LogError(ex, message);
+                this.logger.LogError(ex, message, args);
                 httpContext.Response.StatusCode = (int)System.Net.HttpStatusCode.BadRequest;
             }
 
-            static int WriteUriConditionally(Uri requestUri, Uri configUri, IMemoryOwner<byte> response, int currentPosition)
+            static int WriteUriConditionally(Uri? requestUri, Uri configUri, IMemoryOwner<byte> response, int currentPosition)
             {
                 if (requestUri != configUri)
                 {

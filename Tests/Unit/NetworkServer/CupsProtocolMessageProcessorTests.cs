@@ -9,7 +9,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.IO;
     using System.IO.Pipelines;
     using System.Linq;
+    using System.Net;
     using System.Text;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using DotNetty.Common.Utilities;
@@ -27,6 +29,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     {
         private readonly Mock<IBasicsStationConfigurationService> basicsStationConfigurationService;
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceAPIServiceBase;
+        private readonly Mock<ILogger<CupsProtocolMessageProcessor>> logger;
         private readonly CupsProtocolMessageProcessor processor;
 
         private const string StationEui = "aaaa:bbff:fecc:dddd";
@@ -38,10 +41,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.basicsStationConfigurationService = new Mock<IBasicsStationConfigurationService>();
             this.deviceAPIServiceBase = new Mock<LoRaDeviceAPIServiceBase>();
-            var logger = new Mock<ILogger<CupsProtocolMessageProcessor>>();
+            this.logger = new Mock<ILogger<CupsProtocolMessageProcessor>>();
             this.processor = new CupsProtocolMessageProcessor(this.basicsStationConfigurationService.Object,
                                                               this.deviceAPIServiceBase.Object,
-                                                              logger.Object);
+                                                              this.logger.Object);
         }
 
         [Fact]
@@ -49,7 +52,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // setup valid http context
             using var receivedResponse = MemoryPool<byte>.Shared.Rent();
-            SetupValidHttpContextWithRequest(out var httpContext, receivedResponse.Memory);
+            SetupHttpContextWithRequest(out var httpContext, receivedResponse.Memory);
 
             // setting up the twin in such a way that there are no updates
             var cupsTwinInfo = new CupsTwinInfo(new Uri(CupsUri),
@@ -74,7 +77,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // setup valid http context
             using var receivedResponse = MemoryPool<byte>.Shared.Rent();
-            SetupValidHttpContextWithRequest(out var httpContext, receivedResponse.Memory);
+            SetupHttpContextWithRequest(out var httpContext, receivedResponse.Memory);
 
             // setting up the twin in such a way that there are no updates
             var anotherCupsUri = "https://anotheruri:443";
@@ -104,7 +107,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // setup valid http context
             using var receivedResponse = MemoryPool<byte>.Shared.Rent();
-            SetupValidHttpContextWithRequest(out var httpContext, receivedResponse.Memory);
+            SetupHttpContextWithRequest(out var httpContext, receivedResponse.Memory);
 
             // setting up the twin in such a way that there are no updates
             var anotherTcUri = "wss://anotheruri:5001";
@@ -134,7 +137,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // setup valid http context
             using var receivedResponse = MemoryPool<byte>.Shared.Rent();
-            SetupValidHttpContextWithRequest(out var httpContext, receivedResponse.Memory);
+            SetupHttpContextWithRequest(out var httpContext, receivedResponse.Memory);
 
             // setting up the twin in such a way that there are no updates
             uint anotherChecksum = 56789;
@@ -174,11 +177,48 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(responseBytes[((2 * credentialBytes.Length) + 6)..].All(b => b == 0));
         }
 
-        private static void SetupValidHttpContextWithRequest(out Mock<HttpContext> httpContext, Memory<byte> receivedResponse)
+        [Theory]
+        [InlineData(null)]
+        [InlineData(1)]
+        [InlineData(int.MaxValue)]
+        public async Task HandleUpdateInfoAsync_Fails_WithInvalidContentLength(long? requestContentLength)
+        {
+            // setup
+            SetupHttpContextWithRequest(out var httpContext, null, contentLength: requestContentLength);
+
+            // act
+            await this.processor.HandleUpdateInfoAsync(httpContext.Object, default);
+
+            // assert
+            Assert.Equal((int)HttpStatusCode.BadRequest, httpContext.Object.Response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("{'router':'invalidEui','cupsUri':'https://cups:443', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(FormatException))]
+        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https:/cups:443', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(UriFormatException))]
+        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:443', 'tcUri':'wss:/lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(UriFormatException))]
+        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:443', 'tcUri':'wss://lns:5001', 'cupsCredCrc':null, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(JsonException))]
+        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:443', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':null,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(JsonException))]
+        public async Task HandleUpdateInfoAsync_Fails_WithInvalidInput(string input, Type exceptionType)
+        {
+            // setup
+            var strictifiedInput = JsonUtil.Strictify(input);
+            SetupHttpContextWithRequest(out var httpContext, null, strictifiedInput.Length, strictifiedInput);
+
+            // act
+            await this.processor.HandleUpdateInfoAsync(httpContext.Object, default);
+
+            // assert
+            Assert.Equal((int)HttpStatusCode.BadRequest, httpContext.Object.Response.StatusCode);
+            Assert.Contains(this.logger.Invocations, i => i.Arguments.Any(a => a.GetType() == exceptionType));
+        }
+
+        private static void SetupHttpContextWithRequest(out Mock<HttpContext> httpContext, Memory<byte> receivedResponse, long? contentLength = -1, string request = null)
         {
             httpContext = new Mock<HttpContext>();
             var httpRequest = new Mock<HttpRequest>();
-            _ = httpRequest.Setup(r => r.Body).Returns(GetRequestStream());
+            _ = httpRequest.Setup(r => r.ContentLength).Returns(contentLength == -1 ? CupsRequest.Length : contentLength);
+            _ = httpRequest.Setup(r => r.Body).Returns(GetRequestStream(request));
             _ = httpContext.Setup(m => m.Request).Returns(httpRequest.Object);
             var httpResponse = new Mock<HttpResponse>();
             var bodyWriter = new Mock<PipeWriter>();
@@ -187,21 +227,23 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                       {
                           memoryPortion.CopyTo(receivedResponse);
                       });
+            _ = httpResponse.SetupProperty(m => m.StatusCode);
             _ = httpResponse.SetupProperty(m => m.ContentType);
             _ = httpResponse.SetupProperty(m => m.ContentLength);
             _ = httpResponse.Setup(m => m.BodyWriter).Returns(bodyWriter.Object);
             _ = httpContext.Setup(m => m.Response).Returns(httpResponse.Object);
         }
 
-        private static Stream GetRequestStream()
+        private static string CupsRequest => JsonUtil.Strictify(@$"{{'router':'{StationEui}','cupsUri':'{CupsUri}',
+                                                                  'tcUri':'{TcUri}','cupsCredCrc':{CredentialsChecksum},
+                                                                  'tcCredCrc':{CredentialsChecksum},'station':'2.0.5(corecell/std)',
+                                                                  'model':'corecell','package':null,'keys':[]}}");
+
+        private static Stream GetRequestStream(string request = null)
         {
-            var cupsRequest = JsonUtil.Strictify(@$"{{'router':'{StationEui}','cupsUri':'{CupsUri}',
-                                                      'tcUri':'{TcUri}','cupsCredCrc':{CredentialsChecksum},
-                                                      'tcCredCrc':{CredentialsChecksum},'station':'2.0.5(corecell/std)',
-                                                      'model':'corecell','package':null,'keys':[]}}");
             var stream = new MemoryStream();
             using var writer = new StreamWriter(stream, leaveOpen: true);
-            writer.Write(cupsRequest);
+            writer.Write(request is null ? CupsRequest : request);
             writer.Flush();
             stream.Position = 0;
             return stream;
