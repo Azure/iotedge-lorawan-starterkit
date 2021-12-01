@@ -40,12 +40,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             var contentLength = httpContext.Request.ContentLength;
             if (contentLength is null)
             {
-                LogAndSetBadRequest(httpContext, null, "Request is not specifying a Content-Length.");
+                LogAndSetBadRequest(null, "Request is not specifying a Content-Length.");
                 return;
             }
             if (contentLength > MaximumAllowedContentLength)
             {
-                LogAndSetBadRequest(httpContext, null, "Request body is exceeding the maximum content-length limit of {MaximumAllowedContentLength}.", MaximumAllowedContentLength);
+                LogAndSetBadRequest(null, "Request body is exceeding the maximum content-length limit of {MaximumAllowedContentLength}.", MaximumAllowedContentLength);
                 return;
             }
 
@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
             if (totalReadBytes > contentLength)
             {
-                LogAndSetBadRequest(httpContext, null, "Stream includes more bytes than what expected.");
+                LogAndSetBadRequest(null, "Stream includes more bytes than what expected.");
                 return;
             }
 
@@ -74,17 +74,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             }
             catch (UriFormatException uriException)
             {
-                LogAndSetBadRequest(httpContext, uriException, "Current CUPS/TC uri was not properly parsed. Please double check the input.");
+                LogAndSetBadRequest(uriException, "Current CUPS/TC uri was not properly parsed. Please double check the input.");
                 return;
             }
             catch (FormatException formatException)
             {
-                LogAndSetBadRequest(httpContext, formatException, "Station EUI was not properly parsed. Please double check the input.");
+                LogAndSetBadRequest(formatException, "Station EUI was not properly parsed. Please double check the input.");
                 return;
             }
             catch (JsonException jsonException)
             {
-                LogAndSetBadRequest(httpContext, jsonException, "One of the fields was not properly handled. Please double check the input.");
+                LogAndSetBadRequest(jsonException, "One of the fields was not properly handled. Please double check the input.");
                 return;
             }
 
@@ -117,7 +117,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             httpContext.Response.ContentLength = currentPosition;
             _ = await httpContext.Response.BodyWriter.WriteAsync(toWrite, token);
 
-            void LogAndSetBadRequest(HttpContext httpContext, Exception? ex, string message, params object?[] args)
+            void LogAndSetBadRequest(Exception? ex, string message, params object?[] args)
             {
                 this.logger.LogError(ex, message, args);
                 httpContext.Response.StatusCode = (int)System.Net.HttpStatusCode.BadRequest;
