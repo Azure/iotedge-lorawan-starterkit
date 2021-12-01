@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Buffers.Binary;
     using System.IO;
     using System.Text;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
@@ -36,9 +37,26 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             var input = await reader.ReadToEndAsync();
 
             // reading the request from Basic Station
-            var updateRequest = CupsEndpoint.UpdateRequestReader.Read(input);
-            if (updateRequest.StationEui == default)
-                throw new InvalidOperationException(nameof(updateRequest.StationEui));
+            CupsUpdateInfoRequest updateRequest;
+            try
+            {
+                updateRequest = CupsEndpoint.UpdateRequestReader.Read(input);
+            }
+            catch (UriFormatException uriException)
+            {
+                LogAndSetBadRequest(httpContext, uriException, "Current CUPS/TC uri was not properly parsed. Please double check the input.");
+                return;
+            }
+            catch (FormatException formatException)
+            {
+                LogAndSetBadRequest(httpContext, formatException, "Station EUI was not properly parsed. Please double check the input.");
+                return;
+            }
+            catch (JsonException jsonException)
+            {
+                LogAndSetBadRequest(httpContext, jsonException, "One of the fields was not properly handled. Please double check the input.");
+                return;
+            }
 
             // reading the configuration stored in twin
             var remoteCupsConfig = await this.basicsStationConfigurationService.GetCupsConfigAsync(updateRequest.StationEui, token);
@@ -111,6 +129,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             httpContext.Response.ContentType = "application/octet-stream";
             httpContext.Response.ContentLength = currentPosition;
             _ = await httpContext.Response.BodyWriter.WriteAsync(toWrite, token);
+
+            void LogAndSetBadRequest(HttpContext httpContext, Exception ex, string message)
+            {
+                this.logger.LogError(ex, message);
+                httpContext.Response.StatusCode = (int)System.Net.HttpStatusCode.BadRequest;
+            }
         }
 
         private static int WriteToSpan(Span<byte> value, Span<byte> span)
