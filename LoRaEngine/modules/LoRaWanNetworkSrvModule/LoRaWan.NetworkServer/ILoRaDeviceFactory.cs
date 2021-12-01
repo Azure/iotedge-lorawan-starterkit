@@ -17,8 +17,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         /// <returns>A new <see cref="LoRaDevice"/></returns>
         /// <exception cref="InvalidOperationException">If the device was previously registered.</exception>
-        /// <exception cref="ArgumentNullException">If the deviceInfo is null.</exception>
-        /// <exception cref="ArgumentException">If the deviceInfo is incomplete.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="deviceInfo"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="deviceInfo"/> is incomplete.</exception>
         Task<LoRaDevice> CreateAndRegisterAsync(IoTHubDeviceInfo deviceInfo, CancellationToken cancellationToken);
 
         /// <summary>
