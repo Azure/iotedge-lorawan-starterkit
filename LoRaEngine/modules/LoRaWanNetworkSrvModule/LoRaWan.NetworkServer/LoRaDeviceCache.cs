@@ -247,7 +247,7 @@ namespace LoRaWan.NetworkServer
             }
 
             TrackCacheStats(loRaDevice);
-            return loRaDevice != null;
+            return loRaDevice is not null;
         }
 
         protected virtual bool ValidateMic(LoRaDevice loRaDevice, LoRaPayload loRaPayload)
@@ -265,14 +265,14 @@ namespace LoRaWan.NetworkServer
             }
 
             TrackCacheStats(loRaDevice);
-            return loRaDevice != null;
+            return loRaDevice is not null;
         }
 
         public CacheStatistics CalculateStatistics() => new CacheStatistics(this.statisticsTracker.Hit, this.statisticsTracker.Miss, this.euiCache.Count);
 
         private void TrackCacheStats(LoRaDevice? device)
         {
-            if (device is { })
+            if (device is not null)
             {
                 device.LastSeen = DateTimeOffset.UtcNow;
                 this.statisticsTracker.IncrementHit();
