@@ -7,12 +7,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
     using System.Buffers;
-    using System.Buffers.Binary;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools.CommonAPI;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
@@ -90,113 +88,18 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             // reading the configuration stored in twin
             var remoteCupsConfig = await this.basicsStationConfigurationService.GetCupsConfigAsync(updateRequest.StationEui, token);
 
-            // checking for disequalities in desired and reported configuration
-            using var response = MemoryPool<byte>.Shared.Rent(2048);
-            var currentPosition = 0;
+            var responseBytes = await new CupsResponse(updateRequest, remoteCupsConfig, this.deviceAPIServiceBase.FetchStationCredentialsAsync).SerializeAsync(token);
 
-            currentPosition = WriteUriConditionally(updateRequest.CupsUri, remoteCupsConfig.CupsUri, response, currentPosition);
-            currentPosition = WriteUriConditionally(updateRequest.TcUri, remoteCupsConfig.TcUri, response, currentPosition);
-            currentPosition = await WriteCredentialsConditionallyAsync(updateRequest.CupsCredentialsChecksum, remoteCupsConfig.CupsCredentialsChecksum, ConcentratorCredentialType.Cups, response, currentPosition, token);
-            currentPosition = await WriteCredentialsConditionallyAsync(updateRequest.TcCredentialsChecksum, remoteCupsConfig.TcCredentialsChecksum, ConcentratorCredentialType.Lns, response, currentPosition, token);
-
-            /*
-             * Following fields are left empty as no firmware update feature is implemented yet
-             */
-
-            // Signature length (4bytes)
-            currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
-            // CRC of the Key used for the signature (4bytes)
-            currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
-            // Length of the update data (4bytes)
-            currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
-
-            var toWrite = response.Memory.Span[..currentPosition].ToArray();
             httpContext.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
             httpContext.Response.ContentType = "application/octet-stream";
-            httpContext.Response.ContentLength = currentPosition;
-            _ = await httpContext.Response.BodyWriter.WriteAsync(toWrite, token);
+            httpContext.Response.ContentLength = responseBytes.Length;
+            _ = await httpContext.Response.BodyWriter.WriteAsync(responseBytes, token);
 
             void LogAndSetBadRequest(Exception? ex, string message, params object?[] args)
             {
                 this.logger.LogError(ex, message, args);
                 httpContext.Response.StatusCode = (int)System.Net.HttpStatusCode.BadRequest;
             }
-
-            static int WriteUriConditionally(Uri? requestUri, Uri configUri, IMemoryOwner<byte> response, int currentPosition)
-            {
-                if (requestUri != configUri)
-                {
-                    var uriWithoutTrailingSlash = configUri.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort, UriFormat.Unescaped);
-
-                    currentPosition += WriteToSpan((byte)uriWithoutTrailingSlash.Length, response.Memory.Span[currentPosition..]);
-                    currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(uriWithoutTrailingSlash), response.Memory.Span[currentPosition..]);
-                }
-                else
-                {
-                    currentPosition += WriteToSpan(0, response.Memory.Span[currentPosition..]);
-                }
-
-                return currentPosition;
-            }
-
-            async Task<int> WriteCredentialsConditionallyAsync(uint requestChecksum, uint configChecksum, ConcentratorCredentialType credentialType, IMemoryOwner<byte> response, int currentPosition, CancellationToken token)
-            {
-                if (requestChecksum != configChecksum)
-                {
-                    var credentialBase64String = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, credentialType, token);
-
-                    var credentialBytes = Convert.FromBase64String(credentialBase64String);
-                    currentPosition += WriteToSpan((ushort)credentialBytes.Length, response.Memory.Span[currentPosition..]);
-                    currentPosition += WriteToSpan(credentialBytes, response.Memory.Span[currentPosition..]);
-                }
-                else
-                {
-                    currentPosition += WriteToSpan((ushort)0, response.Memory.Span[currentPosition..]);
-                }
-
-                return currentPosition;
-            }
-        }
-
-        private static int WriteToSpan(Span<byte> value, Span<byte> span)
-        {
-            var length = value.Length;
-            value.CopyTo(span[..length]);
-            return length;
-        }
-
-        private static int WriteToSpan(byte value, Span<byte> span)
-        {
-            span[0] = value;
-            return sizeof(byte);
-        }
-
-        private static int WriteToSpan(ushort value, Span<byte> span, bool littleEndian = true)
-        {
-            var length = sizeof(ushort);
-            if (littleEndian)
-            {
-                BinaryPrimitives.WriteUInt16LittleEndian(span[..length], value);
-            }
-            else
-            {
-                BinaryPrimitives.WriteUInt16BigEndian(span[..length], value);
-            }
-            return length;
-        }
-
-        private static int WriteToSpan(uint value, Span<byte> span, bool littleEndian = true)
-        {
-            var length = sizeof(uint);
-            if (littleEndian)
-            {
-                BinaryPrimitives.WriteUInt32LittleEndian(span[..length], value);
-            }
-            else
-            {
-                BinaryPrimitives.WriteUInt32BigEndian(span[..length], value);
-            }
-            return length;
         }
     }
 }
