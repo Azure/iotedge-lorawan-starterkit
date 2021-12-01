@@ -75,9 +75,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 var configJson = desiredProperties[RouterConfigPropertyName].ToString();
                 return LnsStationConfiguration.GetConfiguration(configJson);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (ArgumentOutOfRangeException ex)
             {
-                throw new LoRaProcessingException($"Property '{RouterConfigPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+                throw new LoRaProcessingException($"Property '{RouterConfigPropertyName}' was not present in device twin.", ex, LoRaProcessingErrorCode.InvalidDeviceConfiguration);
             }
         }
 
@@ -95,9 +95,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 string thumbprintsArrayJson = desiredProperties[ClientThumbprintPropertyName].ToString();
                 return JsonReader.Array(JsonReader.String()).Read(thumbprintsArrayJson);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (ArgumentOutOfRangeException ex)
             {
-                throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+                throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", ex, LoRaProcessingErrorCode.InvalidDeviceConfiguration);
             }
         }
 
@@ -109,9 +109,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 string cupsJson = desiredProperties[CupsPropertyName].ToString();
                 return CupsEndpoint.TwinReader.Read(cupsJson);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (ArgumentOutOfRangeException ex)
             {
-                throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+                throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", ex, LoRaProcessingErrorCode.InvalidDeviceConfiguration);
             }
         }
     }
