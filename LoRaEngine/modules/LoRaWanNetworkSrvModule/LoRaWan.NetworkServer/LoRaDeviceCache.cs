@@ -338,7 +338,7 @@ namespace LoRaWan.NetworkServer
         /// time and all devices that need to be removed or
         /// refreshed are processed.
         /// </summary>
-        public TimeSpan ValidationInterval { get; set; }
+        public TimeSpan ValidationInterval { get; init; }
 
         /// <summary>
         /// The time we allow a device to be not sending any
@@ -347,13 +347,13 @@ namespace LoRaWan.NetworkServer
         /// as LoRa sensors are optimized for saving power and
         /// might only send a message, once a week for example.
         /// </summary>
-        public TimeSpan MaxUnobservedLifetime { get; set; }
+        public TimeSpan MaxUnobservedLifetime { get; init; }
 
         /// <summary>
         /// If a device is in cache and it exeeds this time
         /// since the last refresh, a twin refresh is triggered
         /// and the cached data is updated.
         /// </summary>
-        public TimeSpan RefreshInterval { get; set; }
+        public TimeSpan RefreshInterval { get; init; }
     }
 }
