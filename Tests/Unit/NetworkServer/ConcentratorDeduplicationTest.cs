@@ -47,7 +47,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             this.deduplicationStrategyMock = new Mock<DeduplicationStrategyFactory>(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
             this.deduplicationStrategyMock.Setup(x => x.Create(this.loRaDevice)).Returns(new DeduplicationStrategyDrop(NullLogger<DeduplicationStrategyDrop>.Instance)); ;
-            this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
+            this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance, null);
 
             this.concentratorDeduplication = new ConcentratorDeduplication(
                 this.cache,

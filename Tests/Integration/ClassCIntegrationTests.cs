@@ -91,7 +91,8 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
@@ -196,7 +197,8 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {

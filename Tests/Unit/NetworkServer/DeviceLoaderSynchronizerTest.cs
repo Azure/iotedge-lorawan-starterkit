@@ -51,7 +51,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
                 (d) => { destinationDictionary.TryAdd(d.DevEUI, d); },
-                NullLogger<DeviceLoaderSynchronizer>.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance,
+                TestMeter.Instance);
 
             await finished.WaitAsync();
 
@@ -95,7 +96,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d),
-                NullLogger<DeviceLoaderSynchronizer>.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance,
+                TestMeter.Instance);
 
             using var req1 = WaitableLoRaRequest.Create(payload1);
             target.Queue(req1);
@@ -150,7 +152,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d),
-                NullLogger<DeviceLoaderSynchronizer>.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance,
+                TestMeter.Instance);
 
             using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);
@@ -194,7 +197,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d),
-                NullLogger<DeviceLoaderSynchronizer>.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance,
+                TestMeter.Instance);
 
             using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);
@@ -245,7 +249,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.serverConfiguration,
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d),
-                NullLogger<DeviceLoaderSynchronizer>.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance,
+                TestMeter.Instance);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
             payload.SerializeUplink(simulatedDevice.AppSKey, "00000000000000000000000000EEAAFF");

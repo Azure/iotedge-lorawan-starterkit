@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
         public DownstreamSenderTests()
         {
-            var socketWriterRegistry = new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>());
+            var socketWriterRegistry = new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>(), null);
             this.webSocketWriter = new Mock<IWebSocketWriter<string>>();
 
             var basicStationConfigurationService = new Mock<IBasicsStationConfigurationService>();

@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
@@ -16,19 +17,22 @@ namespace LoRaWan.NetworkServer
         private readonly IPacketForwarder packetForwarder;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly ILogger<DefaultClassCDevicesMessageSender> logger;
+        private readonly Counter<int> c2dMessageTooLong;
 
         public DefaultClassCDevicesMessageSender(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry loRaDeviceRegistry,
             IPacketForwarder packetForwarder,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-            ILogger<DefaultClassCDevicesMessageSender> logger)
+            ILogger<DefaultClassCDevicesMessageSender> logger,
+            Meter meter)
         {
             this.configuration = configuration;
             this.loRaDeviceRegistry = loRaDeviceRegistry;
             this.packetForwarder = packetForwarder;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.logger = logger;
+            this.c2dMessageTooLong = meter?.CreateCounter<int>(MetricRegistry.C2DMessageTooLong);
         }
 
         public async Task<bool> SendAsync(IReceivedLoRaCloudToDeviceMessage message, CancellationToken cts = default)
@@ -110,6 +114,7 @@ namespace LoRaWan.NetworkServer
 
             if (downlinkMessageBuilderResp.IsMessageTooLong)
             {
+                this.c2dMessageTooLong?.Add(1);
                 this.logger.LogError($"[class-c] cloud to device message too large, rejecting. Id: {message.MessageId ?? "undefined"}");
                 if (!await message.RejectAsync())
                 {

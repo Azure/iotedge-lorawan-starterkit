@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
@@ -26,6 +27,11 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRAADRManagerFactory loRaADRManagerFactory;
         private readonly IFunctionBundlerProvider functionBundlerProvider;
         private readonly ILogger<DefaultLoRaDataRequestHandler> logger;
+        private readonly Counter<int> receiveWindowMissed;
+        private readonly Counter<int> receiveWindowHits;
+        private readonly Histogram<int> d2cPayloadSizeHistogram;
+        private readonly Counter<int> c2dMessageTooLong;
+        private readonly Counter<int> unhandledExceptionCount;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
 
         public DefaultLoRaDataRequestHandler(
@@ -37,7 +43,8 @@ namespace LoRaWan.NetworkServer
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
             ILoRAADRManagerFactory loRaADRManagerFactory,
             IFunctionBundlerProvider functionBundlerProvider,
-            ILogger<DefaultLoRaDataRequestHandler> logger)
+            ILogger<DefaultLoRaDataRequestHandler> logger,
+            Meter meter)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
@@ -48,6 +55,11 @@ namespace LoRaWan.NetworkServer
             this.loRaADRManagerFactory = loRaADRManagerFactory;
             this.functionBundlerProvider = functionBundlerProvider;
             this.logger = logger;
+            this.receiveWindowMissed = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowMisses);
+            this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
+            this.d2cPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.D2CMessageSize);
+            this.c2dMessageTooLong = meter?.CreateCounter<int>(MetricRegistry.C2DMessageTooLong);
+            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
@@ -63,6 +75,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var loraPayload = (LoRaPayloadData)request.Payload;
+            this.d2cPayloadSizeHistogram?.Record(loraPayload.Frmpayload.Length);
 
             var payloadFcnt = loraPayload.GetFcnt();
 
@@ -278,6 +291,7 @@ namespace LoRaWan.NetworkServer
                 {
                     if (requiresConfirmation)
                     {
+                        this.receiveWindowMissed?.Add(1);
                         this.logger.LogInformation($"too late for down message ({timeWatcher.GetElapsedTime()})");
                     }
 
@@ -308,6 +322,7 @@ namespace LoRaWan.NetworkServer
                         {
                             if (downlinkMessageBuilderResp.IsMessageTooLong)
                             {
+                                this.c2dMessageTooLong?.Add(1);
                                 _ = await cloudToDeviceMessage.AbandonAsync();
                             }
                             else
@@ -409,11 +424,13 @@ namespace LoRaWan.NetworkServer
                 {
                     if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage == null)
                     {
+                        this.receiveWindowMissed?.Add(1);
                         this.logger.LogInformation($"out of time for downstream message, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
                         _ = cloudToDeviceMessage.AbandonAsync();
                     }
                     else if (confirmDownlinkMessageBuilderResp.IsMessageTooLong)
                     {
+                        this.c2dMessageTooLong?.Add(1);
                         this.logger.LogError($"payload will not fit in current receive window, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
                         _ = cloudToDeviceMessage.AbandonAsync();
                     }
@@ -425,6 +442,7 @@ namespace LoRaWan.NetworkServer
 
                 if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                 {
+                    this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)confirmDownlinkMessageBuilderResp.ReceiveWindow));
                     _ = request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
                 }
 
@@ -486,7 +504,8 @@ namespace LoRaWan.NetworkServer
             if (this.classCDeviceMessageSender != null)
             {
                 _ = TaskUtil.RunOnThreadPool(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage),
-                                             ex => this.logger.LogError($"[class-c] error sending class C cloud to device message. {ex.Message}"));
+                                             ex => this.logger.LogError(ex, $"[class-c] error sending class C cloud to device message. {ex.Message}"),
+                                             this.unhandledExceptionCount);
             }
         }
 

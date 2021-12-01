@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -18,20 +19,26 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly Counter<int> joinRequestCounter;
         private readonly ILogger<JoinRequestMessageHandler> logger;
+        private readonly Counter<int> receiveWindowHits;
+        private readonly Counter<int> receiveWindowMisses;
+        private readonly Counter<int> unhandledExceptionCount;
         private readonly NetworkServerConfiguration configuration;
         private readonly IConcentratorDeduplication concentratorDeduplication;
 
         public JoinRequestMessageHandler(NetworkServerConfiguration configuration,
                                          IConcentratorDeduplication concentratorDeduplication,
                                          ILoRaDeviceRegistry deviceRegistry,
-                                         Meter meter,
-                                         ILogger<JoinRequestMessageHandler> logger)
+                                         ILogger<JoinRequestMessageHandler> logger,
+                                         Meter meter)
         {
             this.configuration = configuration;
             this.concentratorDeduplication = concentratorDeduplication;
             this.deviceRegistry = deviceRegistry;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
             this.logger = logger;
+            this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
+            this.receiveWindowMisses = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowMisses);
+            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         public void DispatchRequest(LoRaRequest request)
@@ -142,6 +149,7 @@ namespace LoRaWan.NetworkServer
 
                     if (!timeWatcher.InTimeForJoinAccept())
                     {
+                        this.receiveWindowMisses?.Add(1);
                         // in this case it's too late, we need to break and avoid saving twins
                         this.logger.LogInformation("join refused: processing of the join request took too long, sending no message");
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ReceiveWindowMissed);
@@ -193,6 +201,7 @@ namespace LoRaWan.NetworkServer
                     var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse();
                     if (windowToUse == Constants.InvalidReceiveWindow)
                     {
+                        this.receiveWindowMisses?.Add(1);
                         this.logger.LogInformation("join refused: processing of the join request took too long, sending no message");
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ReceiveWindowMissed);
                         return;
@@ -288,6 +297,7 @@ namespace LoRaWan.NetworkServer
                     var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.Rxpk.Rfch, request.Rxpk.Time, request.StationEui);
                     if (joinAccept != null)
                     {
+                        this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
                         _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);
                         request.NotifySucceeded(loRaDevice, joinAccept);
 
@@ -303,8 +313,8 @@ namespace LoRaWan.NetworkServer
                     }
                 }
                 catch (Exception ex) when
-                    (ExceptionFilterUtility.True(() => this.logger.LogError($"failed to handle join request. {ex.Message}",
-                                                                            LogLevel.Error)))
+                    (ExceptionFilterUtility.True(() => this.logger.LogError(ex, $"failed to handle join request. {ex.Message}", LogLevel.Error),
+                                                 () => this.unhandledExceptionCount?.Add(1)))
                 {
                     request.NotifyFailed(loRaDevice, ex);
                     throw;
