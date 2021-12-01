@@ -47,6 +47,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             Assert.Equal(4, linkADRCmd.TxPower);
             Assert.Equal(25, linkADRCmd.ChMask);
             Assert.Equal(0, linkADRCmd.ChMaskCntl);
+            Assert.Equal(1, linkADRCmd.NbRep);
         }
 
         [Fact]
