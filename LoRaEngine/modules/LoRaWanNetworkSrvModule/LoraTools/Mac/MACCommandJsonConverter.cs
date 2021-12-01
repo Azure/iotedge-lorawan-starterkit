@@ -89,7 +89,7 @@ namespace LoRaTools
                 }
             }
 
-            throw new JsonReaderException($"Unkown MAC command identifier: {cidPropertyValue}");
+            throw new JsonReaderException($"Unknown MAC command identifier: {cidPropertyValue}");
         }
 
         public override bool CanWrite => false;
