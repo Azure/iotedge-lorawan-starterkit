@@ -48,25 +48,25 @@ namespace LoRaWan.NetworkServer
 
         private async Task RefreshCacheAsync(CancellationToken cancellationToken)
         {
-            try
+            while (true)
             {
-                await Task.Delay(this.options.ValidationInterval, cancellationToken);
+                try
+                {
+                    await Task.Delay(this.options.ValidationInterval, cancellationToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+
+                OnRefresh();
+
+                // remove any devices that were not seen for the configured amount of time
+                RemoveExpiredDevices();
+
+                // refresh the devices that were not refreshed within the configured time window
+                await RefreshDevicesAsync(cancellationToken);
             }
-            catch (TaskCanceledException)
-            {
-                return;
-            }
-
-            OnRefresh();
-
-            // remove any devices that were not seen for the configured amount of time
-            RemoveExpiredDevices();
-
-            // refresh the devices that were not refreshed within the configured time window
-            await RefreshDevicesAsync(cancellationToken);
-
-            // re-schedule
-            _ = RefreshCacheAsync(cancellationToken);
         }
 
         private void RemoveExpiredDevices()
