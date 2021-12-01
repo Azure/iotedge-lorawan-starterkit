@@ -64,55 +64,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             // checking for disequalities in desired and reported configuration
             using var response = MemoryPool<byte>.Shared.Rent(2048);
             var currentPosition = 0;
-            if (updateRequest.CupsUri != remoteCupsConfig.CupsUri)
-            {
-                var escapedUri = remoteCupsConfig.CupsUri.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort, UriFormat.Unescaped);
 
-                currentPosition += WriteToSpan((byte)escapedUri.Length, response.Memory.Span[currentPosition..]);
-                currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(escapedUri), response.Memory.Span[currentPosition..]);
-            }
-            else
-            {
-                currentPosition += WriteToSpan(0, response.Memory.Span[currentPosition..]);
-            }
-
-            if (updateRequest.TcUri != remoteCupsConfig.TcUri)
-            {
-                var escapedUri = remoteCupsConfig.TcUri.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort, UriFormat.Unescaped);
-
-                currentPosition += WriteToSpan((byte)escapedUri.Length, response.Memory.Span[currentPosition..]);
-                currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(escapedUri), response.Memory.Span[currentPosition..]);
-            }
-            else
-            {
-                currentPosition += WriteToSpan(0, response.Memory.Span[currentPosition..]);
-            }
-
-            if (updateRequest.CupsCredentialsChecksum != remoteCupsConfig.CupsCredentialsChecksum)
-            {
-                var cupsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, ConcentratorCredentialType.Cups, token);
-
-                var cupsCredentialsBytes = Convert.FromBase64String(cupsCredentials);
-                currentPosition += WriteToSpan((ushort)cupsCredentialsBytes.Length, response.Memory.Span[currentPosition..]);
-                currentPosition += WriteToSpan(cupsCredentialsBytes, response.Memory.Span[currentPosition..]);
-            }
-            else
-            {
-                currentPosition += WriteToSpan((ushort)0, response.Memory.Span[currentPosition..]);
-            }
-
-            if (updateRequest.TcCredentialsChecksum != remoteCupsConfig.TcCredentialsChecksum)
-            {
-                var lnsCredentials = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, ConcentratorCredentialType.Lns, token);
-
-                var lnsCredentialsBytes = Convert.FromBase64String(lnsCredentials);
-                currentPosition += WriteToSpan((ushort)lnsCredentialsBytes.Length, response.Memory.Span[currentPosition..]);
-                currentPosition += WriteToSpan(lnsCredentialsBytes, response.Memory.Span[currentPosition..]);
-            }
-            else
-            {
-                currentPosition += WriteToSpan((ushort)0, response.Memory.Span[currentPosition..]);
-            }
+            currentPosition = WriteUriConditionally(updateRequest.CupsUri, remoteCupsConfig.CupsUri, response, currentPosition);
+            currentPosition = WriteUriConditionally(updateRequest.TcUri, remoteCupsConfig.TcUri, response, currentPosition);
+            currentPosition = await WriteCredentialsConditionallyAsync(updateRequest.CupsCredentialsChecksum, remoteCupsConfig.CupsCredentialsChecksum, ConcentratorCredentialType.Cups, response, currentPosition, token);
+            currentPosition = await WriteCredentialsConditionallyAsync(updateRequest.TcCredentialsChecksum, remoteCupsConfig.TcCredentialsChecksum, ConcentratorCredentialType.Lns, response, currentPosition, token);
 
             /*
              * Following fields are left empty as no firmware update feature is implemented yet
@@ -134,6 +90,41 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             {
                 this.logger.LogError(ex, message);
                 httpContext.Response.StatusCode = (int)System.Net.HttpStatusCode.BadRequest;
+            }
+
+            static int WriteUriConditionally(Uri requestUri, Uri configUri, IMemoryOwner<byte> response, int currentPosition)
+            {
+                if (requestUri != configUri)
+                {
+                    var uriWithoutTrailingSlash = configUri.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort, UriFormat.Unescaped);
+
+                    currentPosition += WriteToSpan((byte)uriWithoutTrailingSlash.Length, response.Memory.Span[currentPosition..]);
+                    currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(uriWithoutTrailingSlash), response.Memory.Span[currentPosition..]);
+                }
+                else
+                {
+                    currentPosition += WriteToSpan(0, response.Memory.Span[currentPosition..]);
+                }
+
+                return currentPosition;
+            }
+
+            async Task<int> WriteCredentialsConditionallyAsync(uint requestChecksum, uint configChecksum, ConcentratorCredentialType credentialType, IMemoryOwner<byte> response, int currentPosition, CancellationToken token)
+            {
+                if (requestChecksum != configChecksum)
+                {
+                    var credentialBase64String = await this.deviceAPIServiceBase.FetchStationCredentialsAsync(updateRequest.StationEui, credentialType, token);
+
+                    var credentialBytes = Convert.FromBase64String(credentialBase64String);
+                    currentPosition += WriteToSpan((ushort)credentialBytes.Length, response.Memory.Span[currentPosition..]);
+                    currentPosition += WriteToSpan(credentialBytes, response.Memory.Span[currentPosition..]);
+                }
+                else
+                {
+                    currentPosition += WriteToSpan((ushort)0, response.Memory.Span[currentPosition..]);
+                }
+
+                return currentPosition;
             }
         }
 
