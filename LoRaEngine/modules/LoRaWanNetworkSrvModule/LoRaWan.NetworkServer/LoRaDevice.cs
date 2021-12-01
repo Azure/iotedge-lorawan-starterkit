@@ -1090,11 +1090,8 @@ namespace LoRaWan.NetworkServer
         private Task RunAndQueueNext(LoRaRequest request)
         {
             return TaskUtil.RunOnThreadPool(() => CoreAsync(),
-                                            ex =>
-                                            {
-                                                this.logger.LogError(ex, $"error processing request: {ex.Message}");
-                                                this.unhandledExceptionCount?.Add(1);
-                                            });
+                                            ex => this.logger.LogError(ex, $"error processing request: {ex.Message}"),
+                                            this.unhandledExceptionCount);
 
             async Task CoreAsync()
             {

@@ -496,11 +496,8 @@ namespace LoRaWan.NetworkServer
             if (this.classCDeviceMessageSender != null)
             {
                 _ = TaskUtil.RunOnThreadPool(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage),
-                                             ex =>
-                                             {
-                                                 this.logger.LogError(ex, $"[class-c] error sending class C cloud to device message. {ex.Message}");
-                                                 this.unhandledExceptionCount?.Add(1);
-                                             });
+                                             ex => this.logger.LogError(ex, $"[class-c] error sending class C cloud to device message. {ex.Message}"),
+                                             this.unhandledExceptionCount);
             }
         }
 

@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 #pragma warning restore CA2201 // Do not raise reserved exception types
 
             // act
-            Task Act() => TaskUtil.RunOnThreadPool(() => throw ex, log.Object);
+            Task Act() => TaskUtil.RunOnThreadPool(() => throw ex, log.Object, null);
 
             // assert
             var actual = await Assert.ThrowsAsync<Exception>(Act);
@@ -36,7 +36,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var log = new Mock<Action<Exception>>();
 
             // act
-            await TaskUtil.RunOnThreadPool(() => Task.CompletedTask, log.Object);
+            await TaskUtil.RunOnThreadPool(() => Task.CompletedTask, log.Object, null);
 
             // assert
             log.Verify(l => l.Invoke(It.IsAny<Exception>()), Times.Never);
