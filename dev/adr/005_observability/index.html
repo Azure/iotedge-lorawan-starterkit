@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.0.1">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.0.2">
     
     
       
@@ -1313,14 +1313,14 @@
 </thead>
 <tbody>
 <tr>
-<td>RxWndRate</td>
+<td>ReceiveWindowHits</td>
 <td>Number of times we hit the different receive windows.</td>
 <td>LNS</td>
 <td>LoRaWan</td>
-<td>Gateway Id, Receive Window</td>
+<td>Gateway Id, (estimated) Receive Window</td>
 </tr>
 <tr>
-<td>RxWndMiss</td>
+<td>ReceiveWindowMisses</td>
 <td>Number of missed on downstream windows</td>
 <td>LNS</td>
 <td>LoRaWan</td>
@@ -1362,6 +1362,13 @@
 <td>Gateway Id</td>
 </tr>
 <tr>
+<td>UnhandledExceptions</td>
+<td>Number of unhandled exceptions in LNS processing</td>
+<td>LNS</td>
+<td>LoRaWan</td>
+<td></td>
+</tr>
+<tr>
 <td>D2CMessagesReceived</td>
 <td>Number of messages received from device</td>
 <td>LNS</td>
@@ -1370,31 +1377,10 @@
 </tr>
 <tr>
 <td>D2CMessageDeliveryLatency</td>
-<td>Time from when we received the message from the concentrator until we are done processing it</td>
+<td>Time from when we dispatched the message sent from the concentrator until we are done processing it</td>
 <td>LNS</td>
 <td>LoRaWan</td>
 <td>Gateway Id</td>
-</tr>
-<tr>
-<td>D2CMessagesDelivered</td>
-<td>Number of messages sent to upstream</td>
-<td>LNS</td>
-<td>LoRaWan</td>
-<td>Gateway Id, To</td>
-</tr>
-<tr>
-<td>D2CMessagesError</td>
-<td>Number of errors in sending messages to upstream</td>
-<td>LNS</td>
-<td>LoRaWan</td>
-<td>Gateway Id, To</td>
-</tr>
-<tr>
-<td>D2CMessagesProcessingError</td>
-<td>Number of errors processing (decoding, decrypting) messages</td>
-<td>LNS</td>
-<td>LoRaWan</td>
-<td>Gateway Id, To</td>
 </tr>
 <tr>
 <td>D2CMessageSize</td>
@@ -1404,39 +1390,11 @@
 <td>Gateway Id</td>
 </tr>
 <tr>
-<td>D2CMessageSizeUpstream</td>
-<td>Message size in bytes sent upstream</td>
-<td>LNS</td>
-<td>LoRaWan</td>
-<td>Gateway Id, To</td>
-</tr>
-<tr>
-<td>C2DMessagesAbandoned</td>
-<td>Number of C2D messages abandoned</td>
+<td>C2DMessageTooLong</td>
+<td>Number of C2D messages that were too long to be sent downstream</td>
 <td>LNS</td>
 <td>LoRaWan</td>
 <td>Gateway Id</td>
-</tr>
-<tr>
-<td>C2DMessagesDelivered</td>
-<td>Number of messages sent downstream</td>
-<td>LNS</td>
-<td>LoRaWan</td>
-<td>Gateway Id, To</td>
-</tr>
-<tr>
-<td>C2DMessagesError</td>
-<td>Number of errors in sending messages to downstream</td>
-<td>LNS</td>
-<td>LoRaWan</td>
-<td>Gateway Id, To</td>
-</tr>
-<tr>
-<td>C2DMessageSizeDownstream</td>
-<td>Message size in bytes sent downstream</td>
-<td>LNS</td>
-<td>LoRaWan</td>
-<td>Gateway Id, To</td>
 </tr>
 </tbody>
 </table>
@@ -1459,9 +1417,9 @@
 <td>Dynamic</td>
 </tr>
 <tr>
-<td>HighUpstreamMessageErrorRatio</td>
-<td>High device messages error ratio (correctness)</td>
-<td>D2CMessagesError</td>
+<td>HighErrorCount</td>
+<td>High error count (correctness)</td>
+<td>Unhandled Exceptions</td>
 <td>Dynamic</td>
 </tr>
 <tr>
@@ -1471,21 +1429,15 @@
 <td>Dynamic</td>
 </tr>
 <tr>
-<td>HighDownstreamMessageLatency</td>
+<td>HighReceiveWindowMisses</td>
 <td>High device message processing time (throughput)</td>
-<td>RxWndMiss</td>
-<td>Dynamic</td>
-</tr>
-<tr>
-<td>HighDownstreamMessageErrorRatio</td>
-<td>High device messages error ratio (correctness)</td>
-<td>D2CMessagesError</td>
+<td>ReceiveWindowMisses</td>
 <td>Dynamic</td>
 </tr>
 <tr>
 <td>HighDownstreamMessagesLostRatio</td>
 <td>High device messages lost ratio (correctness, throughput)</td>
-<td>C2DMessagesAbandoned</td>
+<td>Abandoned messages (IoT Hub metric)</td>
 <td>Dynamic</td>
 </tr>
 </tbody>
@@ -1575,7 +1527,7 @@
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.01824240.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.a87c2adc.min.js"></script>
+      <script src="../../assets/javascripts/bundle.ff0eccb3.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       
