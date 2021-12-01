@@ -50,13 +50,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             }
 
             // reading the input stream
-            using var reader = new StreamReader(httpContext.Request.Body);
-            var inputChars = new char[(int)contentLength];
+            using var inputBytes = MemoryPool<byte>.Shared.Rent();
             var totalReadBytes = 0;
             var iterationReadBytes = 0;
             do
             {
-                iterationReadBytes = await reader.ReadAsync(inputChars, 0, (int)contentLength);
+                iterationReadBytes = await httpContext.Request.Body.ReadAsync(inputBytes.Memory[totalReadBytes..], token);
                 totalReadBytes += iterationReadBytes;
             } while (totalReadBytes < contentLength && iterationReadBytes != 0);
 
@@ -70,7 +69,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             CupsUpdateInfoRequest updateRequest;
             try
             {
-                updateRequest = CupsEndpoint.UpdateRequestReader.Read(string.Concat(inputChars));
+                // We are assuming that input is a UTF8 Json
+                updateRequest = CupsEndpoint.UpdateRequestReader.Read(Encoding.UTF8.GetString(inputBytes.Memory[..totalReadBytes].ToArray()));
             }
             catch (UriFormatException uriException)
             {
