@@ -119,7 +119,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
@@ -155,7 +156,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
@@ -179,7 +181,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
@@ -213,7 +216,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
@@ -257,7 +261,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             _ = await Assert.ThrowsAsync<TimeoutException>(() => target.SendAsync(c2dToDeviceMessage));
 
@@ -285,7 +290,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
@@ -313,7 +319,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
@@ -378,7 +385,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
@@ -433,7 +441,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 

@@ -17,11 +17,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 
         [Theory]
         [InlineData(470.9, 0)]
+        [InlineData(472.5, 1)]
         [InlineData(475.7, 3)]
         [InlineData(507.3, 6)]
+        [InlineData(479.9, 8)]
         [InlineData(499.9, 9)]
         [InlineData(478.3, 14)]
         [InlineData(482.3, 16)]
+        [InlineData(486.3, 18)]
         [InlineData(488.3, 19)]
         public void TestTryGetJoinChannelIndex_ReturnsValidIndex(double freq, int expectedIndex)
         {

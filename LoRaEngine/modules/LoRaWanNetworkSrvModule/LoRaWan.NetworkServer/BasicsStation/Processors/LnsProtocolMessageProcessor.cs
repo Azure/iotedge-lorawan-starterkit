@@ -8,6 +8,8 @@ using System.Runtime.CompilerServices;
 namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Net.NetworkInformation;
@@ -35,6 +37,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
         private readonly Counter<int> joinRequestCounter;
+        private readonly Counter<int> uplinkMessageCounter;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
@@ -55,6 +58,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
+            this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
@@ -240,6 +244,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         }
 
                         using var scope = this.logger.BeginDeviceAddressScope(updf.DevAddr);
+                        this.uplinkMessageCounter?.Add(1);
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);

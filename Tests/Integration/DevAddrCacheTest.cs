@@ -17,6 +17,7 @@ namespace LoRaWan.Tests.Integration
     using StackExchange.Redis;
     using Xunit;
 
+    [Collection(RedisFixture.CollectionName)]
     public class DevAddrCacheTest : FunctionTestBase, IClassFixture<RedisFixture>
     {
         private const string FullUpdateKey = "fullUpdateKey";

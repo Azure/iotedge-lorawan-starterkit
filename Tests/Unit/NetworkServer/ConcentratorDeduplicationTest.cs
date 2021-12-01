@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public ConcentratorDeduplicationTest()
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
+            this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance, null);
 
             this.concentratorDeduplication = new ConcentratorDeduplication<UpstreamDataFrame>(
                 this.cache,

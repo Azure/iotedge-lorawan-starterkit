@@ -364,7 +364,8 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
             Assert.Single(PacketForwarder.DownlinkMessages);

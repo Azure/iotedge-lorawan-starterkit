@@ -47,7 +47,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var joinRequestDeduplicationMock = new Mock<IConcentratorDeduplication<JoinRequestFrame>>();
 
             this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(this.basicsStationConfigurationMock.Object,
-                                                                           new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>()),
+                                                                           new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>(), null),
                                                                            this.packetForwarder.Object,
                                                                            this.messageDispatcher.Object,
                                                                            upstreamDeduplicationMock.Object,
