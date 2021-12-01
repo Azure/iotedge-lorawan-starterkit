@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                await Task.Delay((int)this.options.ValidationInterval.TotalMilliseconds, cancellationToken);
+                await Task.Delay(this.options.ValidationInterval, cancellationToken);
             }
             catch (TaskCanceledException)
             {
