@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.Unit.Logger
         public async Task If_Log_Level_Is_Higher_Log_Is_Written(LogLevel configuredLevel, LogLevel entryLevel, int sendMessageCount)
         {
             // arrange
-            var (_, testableLogger) = SetupProviderAndLogger(new IotHubLoggerConfiguration(configuredLevel, default, false));
+            var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(configuredLevel, default, false));
 
             // act
             testableLogger.Object.Log(entryLevel, "foo");
@@ -40,7 +40,7 @@ namespace LoRaWan.Tests.Unit.Logger
         public async Task When_EventId_Changes_Output_Is_Written_When_Matching_Or_Omitted(int configuredEventId, int loggedEventId, int sendMessageCount)
         {
             // arrange
-            var (_, testableLogger) = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, configuredEventId, false));
+            var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, configuredEventId, false));
 
             // act
             testableLogger.Object.LogInformation(loggedEventId, "Test");
@@ -53,7 +53,7 @@ namespace LoRaWan.Tests.Unit.Logger
         public async Task When_Structured_Parameters_Are_Passed_They_Are_Replaced()
         {
             // arrange
-            var (_, testableLogger) = SetupProviderAndLogger();
+            var testableLogger = SetupProviderAndLogger();
 
             // act
             testableLogger.Object.LogInformation("{Id}", 1);
@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Unit.Logger
         public async void Scope_Is_Set_In_Message_When_Activated()
         {
             // arrange
-            var (_, testableLogger) = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, UseScopes: true));
+            var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, UseScopes: true));
             const string devAddr = "12345678ADDR";
             const string message = "foo";
 
@@ -82,7 +82,7 @@ namespace LoRaWan.Tests.Unit.Logger
         public async void Scope_Is_Not_Set_In_Message_When_Deactivated()
         {
             // arrange
-            var (_, testableLogger) = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, UseScopes: false));
+            var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, UseScopes: false));
             const string devAddr = "12345678ADDR";
             const string message = "foo";
 
@@ -94,14 +94,13 @@ namespace LoRaWan.Tests.Unit.Logger
             await VerifyMessageAsync(testableLogger, message);
         }
 
-        private static (IotHubLoggerProvider, Mock<IotHubLogger>) SetupProviderAndLogger() =>
+        private static Mock<IotHubLogger> SetupProviderAndLogger() =>
             SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, false));
 
-        private static (IotHubLoggerProvider, Mock<IotHubLogger>) SetupProviderAndLogger(IotHubLoggerConfiguration configuration)
+        private static Mock<IotHubLogger> SetupProviderAndLogger(IotHubLoggerConfiguration configuration)
         {
             var provider = new IotHubLoggerProvider(configuration, new Lazy<Task<ModuleClient>>((Task<ModuleClient>)null!));
-            var logger = new Mock<IotHubLogger>(provider, null);
-            return (provider, logger);
+            return new Mock<IotHubLogger>(provider, null);
         }
 
         private static async Task VerifyMessageAsync(Mock<IotHubLogger> logger, string message)
