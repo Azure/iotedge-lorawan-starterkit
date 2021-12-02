@@ -194,8 +194,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on All-In-One ARM gateway
     env:
-      EDGE_AGENT_VERSION: 1.2.6
-      EDGE_HUB_VERSION: 1.2.6
+      EDGE_AGENT_VERSION: 1.2.4
+      EDGE_HUB_VERSION: 1.2.4
     steps:
       - uses: actions/checkout@v2
         name: Checkout current branch
@@ -235,8 +235,8 @@ jobs:
       IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
       FACADE_SERVER_URL: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
       FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
-      EDGE_AGENT_VERSION: 1.1.8
-      EDGE_HUB_VERSION: 1.1.8
+      EDGE_AGENT_VERSION: 1.1.6
+      EDGE_HUB_VERSION: 1.1.6
       IOT_HUB_RESOURCE_ID: ${{ secrets.IOT_HUB_RESOURCE_ID }}
       LOG_ANALYTICS_WORKSPACE_ID: ${{ secrets.LOG_ANALYTICS_WORKSPACE_ID }}
       LOG_ANALYTICS_SHARED_KEY: ${{ secrets.LOG_ANALYTICS_SHARED_KEY }}
