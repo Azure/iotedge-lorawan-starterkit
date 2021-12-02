@@ -6,7 +6,7 @@
 
 With release 2.0.0 we will use .NET 6 for the starter kit. Our docker images will be based on Debian 11 (Bullseye). Please make sure that if you plan to use our Docker images, you use a Debian 11-based OS instead of Debian 10. If you plan to use a Debian 10-based OS, you will need to build a custom Docker image.
 
-### Upgrading to Raspberry Pi OS (bullseye) 
+### Upgrading to Raspberry Pi OS (bullseye)
 
 If you are running IoT Edge on a Raspberry Pi that is based on Debian 10 (Buster), we recommend that you download a new version of the image and perform a clean install.
 
