@@ -3,11 +3,15 @@
 
 #nullable enable
 
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("LoRaWan.Tests.Unit")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+
 namespace Logger
 {
     using System;
     using System.Collections.Concurrent;
-    using System.Diagnostics.CodeAnalysis;
     using System.Text;
     using System.Threading.Tasks;
     using LoRaWan;
@@ -15,39 +19,28 @@ namespace Logger
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Configuration;
-    using Microsoft.Extensions.Options;
 
-    public class IotHubLoggerConfiguration
-    {
-        public LogLevel LogLevel { get; set; }
-        public EventId EventId { get; set; }
-        public bool UseScopes { get; set; } = true;
-    }
+    public record IotHubLoggerConfiguration(LogLevel LogLevel, EventId EventId, bool UseScopes);
 
 #pragma warning disable CA1812 // Class never instantiated
     internal sealed class IotHubLoggerProvider : ILoggerProvider
 #pragma warning restore CA1812 // Class never instantiated
     {
         private readonly ConcurrentDictionary<string, IotHubLogger> loggers = new();
-        private readonly IDisposable onChangeToken;
         private readonly Lazy<Task<ModuleClient>> moduleClientFactory;
 
-        public IotHubLoggerConfiguration Configuration { get; private set; }
-        public LoggerExternalScopeProvider? ScopeProvider { get; private set; }
+        public IotHubLoggerConfiguration Configuration { get; }
+        public LoggerExternalScopeProvider? ScopeProvider { get; }
 
-        public IotHubLoggerProvider(IOptionsMonitor<IotHubLoggerConfiguration> optionsMonitor)
-        {
-            this.onChangeToken = optionsMonitor.OnChange(UpdateConfiguration);
-            UpdateConfiguration(optionsMonitor.CurrentValue);
-            this.moduleClientFactory = new Lazy<Task<ModuleClient>>(ModuleClient.CreateFromEnvironmentAsync(new[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) }));
-        }
+        public IotHubLoggerProvider(IotHubLoggerConfiguration configuration)
+            : this(configuration, new Lazy<Task<ModuleClient>>(ModuleClient.CreateFromEnvironmentAsync(new[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) })))
+        { }
 
-        [MemberNotNull(nameof(Configuration))]
-        private void UpdateConfiguration(IotHubLoggerConfiguration configuration)
+        internal IotHubLoggerProvider(IotHubLoggerConfiguration configuration, Lazy<Task<ModuleClient>> moduleClientFactory)
         {
             Configuration = configuration;
-            ScopeProvider = Configuration.UseScopes ? new LoggerExternalScopeProvider() : null;
+            ScopeProvider = configuration.UseScopes ? new LoggerExternalScopeProvider() : null;
+            this.moduleClientFactory = moduleClientFactory;
         }
 
         public ILogger CreateLogger(string categoryName) =>
@@ -55,7 +48,6 @@ namespace Logger
 
         public void Dispose()
         {
-            this.onChangeToken?.Dispose();
             this.loggers.Clear();
         }
     }
@@ -93,9 +85,7 @@ namespace Logger
                     try
                     {
                         var formattedMessage = LoggerHelper.AddScopeInformation(this.iotHubLoggerProvider.ScopeProvider, formatter(state, exception));
-                        using var m = new Message(Encoding.UTF8.GetBytes(formattedMessage));
-                        var mc = await this.moduleClientFactory.Value;
-                        await mc.SendEventAsync(m);
+                        await SendAsync(formattedMessage);
                     }
                     catch (Exception ex)
                     {
@@ -105,16 +95,21 @@ namespace Logger
                 });
             }
         }
+
+        internal virtual async Task SendAsync(string message)
+        {
+            using var m = new Message(Encoding.UTF8.GetBytes(message));
+            var moduleClient = await this.moduleClientFactory.Value;
+            await moduleClient.SendEventAsync(m);
+        }
     }
 
     public static class IotHubLoggerExtensions
     {
-        public static ILoggingBuilder AddIotHubLogger(this ILoggingBuilder builder, Action<IotHubLoggerConfiguration> configure)
+        public static ILoggingBuilder AddIotHubLogger(this ILoggingBuilder builder, IotHubLoggerConfiguration configuration)
         {
             if (builder is null) throw new ArgumentNullException(nameof(builder));
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, IotHubLoggerProvider>());
-            LoggerProviderOptions.RegisterProviderOptions<IotHubLoggerConfiguration, IotHubLoggerProvider>(builder.Services);
-            _ = builder.Services.Configure(configure);
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, IotHubLoggerProvider>(_ => new IotHubLoggerProvider(configuration)));
             return builder;
         }
     }

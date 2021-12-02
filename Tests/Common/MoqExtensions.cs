@@ -10,6 +10,11 @@ namespace LoRaWan.Tests.Common
 
     public static class MoqExtensions
     {
+        public static Task RetryVerifyAsync<T>(this Mock<T> mock,
+                                                     Expression<Action<T>> expression,
+                                                     Times times)
+            where T : class => RetryVerifyAsync(mock, expression, () => times);
+
         public static async Task RetryVerifyAsync<T>(this Mock<T> mock,
                                                      Expression<Action<T>> expression,
                                                      Func<Times> times,
