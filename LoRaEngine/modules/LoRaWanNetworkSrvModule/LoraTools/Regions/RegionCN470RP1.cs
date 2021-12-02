@@ -70,7 +70,7 @@ namespace LoRaTools.Regions
 
             var upstreamChannelNumber = (int)Math.Round((upstreamFrequency - 470.3) / FrequencyIncrement, 0, MidpointRounding.AwayFromZero);
 
-            downstreamFrequency = 500.3 + ((upstreamChannelNumber % 48) * FrequencyIncrement);
+            downstreamFrequency = Math.Round(500.3 + ((upstreamChannelNumber % 48) * FrequencyIncrement), 1, MidpointRounding.AwayFromZero);
             return true;
         }
 

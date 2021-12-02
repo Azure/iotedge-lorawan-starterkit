@@ -120,5 +120,20 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
             TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
         }
+
+        [Theory]
+        [InlineData("SF12BW125", true, true)]
+        [InlineData("SF10BW125", true, true)]
+        [InlineData("50", true, true)]
+        [InlineData("SF12BW125", false, true)]
+        [InlineData("SF10BW125", false, true)]
+        [InlineData("50", false, true)]
+        [InlineData("SF6BW125", true, false)]
+        [InlineData("SF10BW250", false, false)]
+        [InlineData(null, false, false)]
+        public void TestIsDRWithinAcceptableValues(string dataRate, bool upstream, bool isValid)
+        {
+            TestIsDRValueWithinAcceptableValues(dataRate, upstream, isValid);
+        }
     }
 }

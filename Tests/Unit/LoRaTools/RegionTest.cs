@@ -131,6 +131,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [Theory]
         [MemberData(nameof(RegionEU868TestData.TestIsValidRX1DROffsetData), MemberType = typeof(RegionEU868TestData))]
         [MemberData(nameof(RegionUS915TestData.TestIsValidRX1DROffsetData), MemberType = typeof(RegionUS915TestData))]
+        [MemberData(nameof(RegionCN470RP1TestData.TestIsValidRX1DROffsetData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestIsValidRX1DROffsetData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestIsValidRX1DROffsetData), MemberType = typeof(RegionAS923TestData))]
         public void TestIsValidRX1DROffset(Region region, int offset, bool isValid)

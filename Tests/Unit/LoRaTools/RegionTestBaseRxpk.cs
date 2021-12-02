@@ -125,5 +125,18 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             Assert.False(Region.TryGetJoinChannelIndex(rxpk[0], out var channelIndex));
             Assert.Equal(expectedIndex, channelIndex);
         }
+
+        protected void TestIsDRValueWithinAcceptableValues(string dataRate, bool upstream, bool isValid)
+        {
+            if (upstream)
+            {
+                Assert.NotNull(dataRate);
+                Assert.Equal(isValid, Region.RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(dataRate));
+            }
+            else
+            {
+                Assert.Equal(isValid, Region.RegionLimits.IsCurrentDownstreamDRValueWithinAcceptableValue(dataRate));
+            }
+        }
     }
 }

@@ -16,14 +16,17 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 
             return new List<object[]>
             {
-                new object[] { region, 470.3, dataRate, 500.3, },
-                new object[] { region, 471.5, dataRate, 501.5, },
-                new object[] { region, 473.3, dataRate, 503.3, },
-                new object[] { region, 479.7, dataRate, 509.7, },
-                new object[] { region, 479.9, dataRate, 500.3, },
-                new object[] { region, 480.1, dataRate, 500.5, },
-                new object[] { region, 484.1, dataRate, 504.5, },
-                new object[] { region, 489.3, dataRate, 509.7, },
+                new object[] { region, 470.3, dataRate, 500.3 },
+                new object[] { region, 471.5, dataRate, 501.5 },
+                new object[] { region, 473.3, dataRate, 503.3 },
+                new object[] { region, 475.9, dataRate, 505.9 },
+                new object[] { region, 477.7, dataRate, 507.7 },
+                new object[] { region, 478.1, dataRate, 508.1 },
+                new object[] { region, 479.7, dataRate, 509.7 },
+                new object[] { region, 479.9, dataRate, 500.3 },
+                new object[] { region, 480.1, dataRate, 500.5 },
+                new object[] { region, 484.1, dataRate, 504.5 },
+                new object[] { region, 489.3, dataRate, 509.7 },
             };
         }
 
