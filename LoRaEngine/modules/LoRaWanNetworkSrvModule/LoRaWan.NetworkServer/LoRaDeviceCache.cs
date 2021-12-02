@@ -122,49 +122,49 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public virtual bool Remove(LoRaDevice loRaDevice)
+        public virtual bool Remove(LoRaDevice device)
         {
-            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            _ = device ?? throw new ArgumentNullException(nameof(device));
 
             var result = true;
 
             lock (this.syncLock)
             {
-                result &= this.euiCache.Remove(loRaDevice.DevEUI, out _);
+                result &= this.euiCache.Remove(device.DevEUI, out _);
 
-                if (!string.IsNullOrEmpty(loRaDevice.DevAddr) &&
-                     this.devAddrCache.TryGetValue(loRaDevice.DevAddr, out var devicesByDevAddr))
+                if (!string.IsNullOrEmpty(device.DevAddr) &&
+                     this.devAddrCache.TryGetValue(device.DevAddr, out var devicesByDevAddr))
                 {
-                    result &= devicesByDevAddr.Remove(loRaDevice.DevEUI, out _);
+                    result &= devicesByDevAddr.Remove(device.DevEUI, out _);
                     if (devicesByDevAddr.IsEmpty)
                     {
-                        result &= this.devAddrCache.Remove(loRaDevice.DevAddr, out _);
+                        result &= this.devAddrCache.Remove(device.DevAddr, out _);
                     }
                 }
             }
             return result;
         }
 
-        public void CleanupOldDevAddrForDevice(LoRaDevice loRaDevice, string oldDevAddr)
+        public void CleanupOldDevAddrForDevice(LoRaDevice device, string oldDevAddr)
         {
-            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            _ = device ?? throw new ArgumentNullException(nameof(device));
             _ = oldDevAddr ?? throw new ArgumentNullException(nameof(oldDevAddr));
-            if (loRaDevice.DevAddr == oldDevAddr) throw new InvalidOperationException($"The old devAddr '{oldDevAddr}' to be removed, is still active.");
+            if (device.DevAddr == oldDevAddr) throw new InvalidOperationException($"The old devAddr '{oldDevAddr}' to be removed, is still active.");
 
             lock (this.syncLock)
             {
                 if (!this.devAddrCache.TryGetValue(oldDevAddr, out var devicesByDevAddr) ||
-                    !devicesByDevAddr.TryGetValue(loRaDevice.DevEUI, out var device))
+                    !devicesByDevAddr.TryGetValue(device.DevEUI, out var cachedDevice))
                 {
-                    throw new InvalidOperationException($"Device does not exist in cache with this {nameof(oldDevAddr)}:{oldDevAddr} and {nameof(loRaDevice.DevEUI)}:{loRaDevice.DevEUI}");
+                    throw new InvalidOperationException($"Device does not exist in cache with this {nameof(oldDevAddr)}:{oldDevAddr} and {nameof(device.DevEUI)}:{device.DevEUI}");
                 }
 
-                if (!ReferenceEquals(device, loRaDevice))
+                if (!ReferenceEquals(cachedDevice, device))
                 {
-                    throw new InvalidOperationException($"Device does not match exist device in cache with this {nameof(oldDevAddr)}:{oldDevAddr} and {nameof(loRaDevice.DevEUI)}:{loRaDevice.DevEUI}");
+                    throw new InvalidOperationException($"Device does not match exist device in cache with this {nameof(oldDevAddr)}:{oldDevAddr} and {nameof(device.DevEUI)}:{device.DevEUI}");
                 }
 
-                _ = devicesByDevAddr.TryRemove(loRaDevice.DevEUI, out _);
+                _ = devicesByDevAddr.TryRemove(device.DevEUI, out _);
                 if (devicesByDevAddr.IsEmpty)
                 {
                     _ = this.devAddrCache.TryRemove(oldDevAddr, out _);
@@ -189,32 +189,32 @@ namespace LoRaWan.NetworkServer
             return this.devAddrCache.TryGetValue(devAddr, out var items) ? items.Count : 0;
         }
 
-        public void Register(LoRaDevice loraDevice)
+        public void Register(LoRaDevice device)
         {
-            _ = loraDevice ?? throw new ArgumentNullException(nameof(loraDevice));
+            _ = device ?? throw new ArgumentNullException(nameof(device));
 
             lock (this.syncLock)
             {
-                if (this.euiCache.TryGetValue(loraDevice.DevEUI, out var existingDevice))
+                if (this.euiCache.TryGetValue(device.DevEUI, out var existingDevice))
                 {
                     // joins do register without DevAddr and then re-register with the DevAddr
                     // however, the references need to match
-                    if (!ReferenceEquals(existingDevice, loraDevice))
+                    if (!ReferenceEquals(existingDevice, device))
                     {
-                        throw new InvalidOperationException($"{loraDevice.DevEUI} already registered. We would overwrite a device client");
+                        throw new InvalidOperationException($"{device.DevEUI} already registered. We would overwrite a device client");
                     }
                 }
                 else
                 {
-                    this.euiCache[loraDevice.DevEUI] = loraDevice;
+                    this.euiCache[device.DevEUI] = device;
                 }
 
-                if (!string.IsNullOrEmpty(loraDevice.DevAddr))
+                if (!string.IsNullOrEmpty(device.DevAddr))
                 {
-                    var devAddrLookup = this.devAddrCache.GetOrAdd(loraDevice.DevAddr, (_) => new ConcurrentDictionary<string, LoRaDevice>());
-                    devAddrLookup[loraDevice.DevEUI] = loraDevice;
+                    var devAddrLookup = this.devAddrCache.GetOrAdd(device.DevAddr, (_) => new ConcurrentDictionary<string, LoRaDevice>());
+                    devAddrLookup[device.DevEUI] = device;
                 }
-                loraDevice.LastSeen = DateTimeOffset.UtcNow;
+                device.LastSeen = DateTimeOffset.UtcNow;
                 this.logger.LogDebug($"Device registered in cache.");
             }
         }
@@ -224,41 +224,41 @@ namespace LoRaWan.NetworkServer
             CleanupAllDevices();
         }
 
-        public virtual bool TryGetForPayload(LoRaPayload payload, [MaybeNullWhen(returnValue: false)] out LoRaDevice loRaDevice)
+        public virtual bool TryGetForPayload(LoRaPayload payload, [MaybeNullWhen(returnValue: false)] out LoRaDevice device)
         {
             _ = payload ?? throw new ArgumentNullException(nameof(payload));
 
-            loRaDevice = null;
+            device = null;
 
             var devAddr = ConversionHelper.ByteArrayToString(payload.DevAddr);
             lock (this.syncLock)
             {
                 if (this.devAddrCache.TryGetValue(devAddr, out var devices))
                 {
-                    loRaDevice = devices.Values.FirstOrDefault(x => !string.IsNullOrEmpty(x.NwkSKey) && ValidateMic(x, payload));
+                    device = devices.Values.FirstOrDefault(x => !string.IsNullOrEmpty(x.NwkSKey) && ValidateMic(x, payload));
                 }
             }
 
-            TrackCacheStats(loRaDevice);
-            return loRaDevice is not null;
+            TrackCacheStats(device);
+            return device is not null;
         }
 
-        protected virtual bool ValidateMic(LoRaDevice loRaDevice, LoRaPayload loRaPayload)
+        protected virtual bool ValidateMic(LoRaDevice device, LoRaPayload loRaPayload)
         {
-            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            _ = device ?? throw new ArgumentNullException(nameof(device));
             _ = loRaPayload ?? throw new ArgumentNullException(nameof(loRaPayload));
-            return loRaDevice.ValidateMic(loRaPayload);
+            return device.ValidateMic(loRaPayload);
         }
 
-        public bool TryGetByDevEui(string devEUI, [MaybeNullWhen(returnValue: false)] out LoRaDevice loRaDevice)
+        public bool TryGetByDevEui(string devEUI, [MaybeNullWhen(returnValue: false)] out LoRaDevice device)
         {
             lock (this.syncLock)
             {
-                _ = this.euiCache.TryGetValue(devEUI, out loRaDevice);
+                _ = this.euiCache.TryGetValue(devEUI, out device);
             }
 
-            TrackCacheStats(loRaDevice);
-            return loRaDevice is not null;
+            TrackCacheStats(device);
+            return device is not null;
         }
 
         public CacheStatistics CalculateStatistics() => new CacheStatistics(this.statisticsTracker.Hit, this.statisticsTracker.Miss, this.euiCache.Count);
