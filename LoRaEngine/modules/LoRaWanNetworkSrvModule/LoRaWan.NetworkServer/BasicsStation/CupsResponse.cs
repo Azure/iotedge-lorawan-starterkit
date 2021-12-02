@@ -45,11 +45,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
              */
 
             // Signature length (4bytes)
-            currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
+            currentPosition += WriteToSpan(0U, response.Memory.Span[currentPosition..]);
             // CRC of the Key used for the signature (4bytes)
-            currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
+            currentPosition += WriteToSpan(0U, response.Memory.Span[currentPosition..]);
             // Length of the update data (4bytes)
-            currentPosition += WriteToSpan((uint)0, response.Memory.Span[currentPosition..]);
+            currentPosition += WriteToSpan(0U, response.Memory.Span[currentPosition..]);
 
             return response.Memory.Span[..currentPosition].ToArray();
         }
