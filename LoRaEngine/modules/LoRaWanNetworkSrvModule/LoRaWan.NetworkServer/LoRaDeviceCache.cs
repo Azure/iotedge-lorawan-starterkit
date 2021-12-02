@@ -19,8 +19,8 @@ namespace LoRaWan.NetworkServer
     public class LoRaDeviceCache : IDisposable
     {
         private readonly LoRaDeviceCacheOptions options;
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, LoRaDevice>> devAddrCache;
-        private readonly ConcurrentDictionary<string, LoRaDevice> euiCache;
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, LoRaDevice>> devAddrCache = new();
+        private readonly ConcurrentDictionary<string, LoRaDevice> euiCache = new();
         private readonly object syncLock = new object();
         private readonly NetworkServerConfiguration configuration;
         private readonly ILogger<LoRaDeviceCache> logger;
@@ -30,8 +30,6 @@ namespace LoRaWan.NetworkServer
         protected LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, ILogger<LoRaDeviceCache> logger, CancellationToken externalRefreshCancellationToken)
         {
             this.options = options;
-            this.devAddrCache = new ConcurrentDictionary<string, ConcurrentDictionary<string, LoRaDevice>>();
-            this.euiCache = new ConcurrentDictionary<string, LoRaDevice>();
             this.ctsDispose = externalRefreshCancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(externalRefreshCancellationToken) : new CancellationTokenSource();
 
             _ = RefreshCacheAsync(this.ctsDispose.Token);
