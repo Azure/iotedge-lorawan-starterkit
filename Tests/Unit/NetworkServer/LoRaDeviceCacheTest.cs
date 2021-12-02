@@ -31,9 +31,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Cache_Is_Disposed_While_Waiting_For_Refresh_Refresh_Stops()
         {
-            var options = this.quickRefreshOptions;
-            options.RefreshInterval = TimeSpan.FromSeconds(250);
-            var cache = new TestDeviceCache(this.quickRefreshOptions);
+            var options = this.quickRefreshOptions with
+            {
+                RefreshInterval = TimeSpan.FromSeconds(250)
+            };
+            var cache = new TestDeviceCache(options);
             cache.Dispose();
 
             var count = cache.RefreshOperationsCount;
@@ -98,10 +100,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Device_Inactive_It_Is_Removed()
         {
-            var options = this.quickRefreshOptions;
-            options.MaxUnobservedLifetime = TimeSpan.FromMilliseconds(1);
+            var options = this.quickRefreshOptions with
+            {
+                MaxUnobservedLifetime = TimeSpan.FromMilliseconds(1)
+            };
+            using var cache = new TestDeviceCache(options);
 
-            using var cache = new TestDeviceCache(this.quickRefreshOptions);
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
 
             using var device = new LoRaDevice("abc", "123", connectionManager.Object) { LastSeen = DateTime.UtcNow };
@@ -373,7 +377,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 : this (onRefreshDevice, new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration())
             { }
 
-            internal async Task WaitForRefreshAsync(CancellationToken cancellationToken) => 
+            internal async Task WaitForRefreshAsync(CancellationToken cancellationToken) =>
                 await this.refreshTick.WaitAsync(cancellationToken);
 
             internal async Task WaitForRemoveAsync(CancellationToken cancellationToken) =>
