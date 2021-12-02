@@ -71,6 +71,9 @@
                   "5000/tcp": {}
                 },
                 "HostConfig": {
+                  "Binds":  [
+                    "$CERT_REMOTE_PATH:/var/lorastarterkit/certs/"
+                  ],
                   "PortBindings": {
                     "5000/tcp": [
                       {
@@ -100,6 +103,12 @@
               },
               "APPINSIGHTS_INSTRUMENTATIONKEY": {
                 "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
+              },
+              "LNS_SERVER_PFX_PATH": {
+                "value": "/var/lorastarterkit/certs/server.pfx"
+              },
+              "LNS_SERVER_PFX_PASSWORD": {
+                "value": "$SERVER_PFX_PASSWORD"
               }
             },
             "status": "running",
@@ -112,7 +121,10 @@
               "createOptions": {
                 "HostConfig": {
                   "NetworkMode": "host",
-                  "Privileged": true
+                  "Privileged": true,
+                  "Binds":  [
+                    "$CERT_REMOTE_PATH:/var/lorastarterkit/certs/"
+                  ]
                 },
                 "NetworkingConfig": {
                   "EndpointsConfig": {
