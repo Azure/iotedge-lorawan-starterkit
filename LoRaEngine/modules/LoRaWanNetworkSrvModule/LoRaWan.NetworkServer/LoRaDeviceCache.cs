@@ -62,17 +62,11 @@ namespace LoRaWan.NetworkServer
                 OnRefresh();
 
                 // remove any devices that were not seen for the configured amount of time
-                RemoveExpiredDevices();
 
-                // refresh the devices that were not refreshed within the configured time window
-                await RefreshDevicesAsync();
-            }
+                var now = DateTimeOffset.UtcNow;
 
-            void RemoveExpiredDevices()
-            {
                 lock (this.syncLock)
                 {
-                    var now = DateTimeOffset.UtcNow;
                     var itemsToRemove = this.euiCache.Values.Where(x => now - x.LastSeen > this.options.MaxUnobservedLifetime);
                     foreach (var expiredDevice in itemsToRemove)
                     {
@@ -80,11 +74,9 @@ namespace LoRaWan.NetworkServer
                         expiredDevice.Dispose();
                     }
                 }
-            }
 
-            async Task RefreshDevicesAsync()
-            {
-                var now = DateTimeOffset.UtcNow;
+                // refresh the devices that were not refreshed within the configured time window
+
                 var itemsToRefresh = this.euiCache.Values.Where(x => now - x.LastUpdate > this.options.RefreshInterval).ToList();
                 var tasks = new List<Task>(itemsToRefresh.Count);
 
