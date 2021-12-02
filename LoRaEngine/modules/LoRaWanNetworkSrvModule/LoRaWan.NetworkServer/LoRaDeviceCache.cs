@@ -48,8 +48,7 @@ namespace LoRaWan.NetworkServer
 
         private async Task RefreshCacheAsync(CancellationToken cancellationToken)
         {
-            var canceled = false;
-            while (!canceled)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
@@ -97,7 +96,8 @@ namespace LoRaWan.NetworkServer
                     }
                     catch (TaskCanceledException)
                     {
-                        canceled = true;
+                        // ignore canceled task for now (so all remaining tasks can be awaited),
+                        // but outer loop will eventually break due to cancellation
                     }
                     catch (LoRaProcessingException ex)
                     {
