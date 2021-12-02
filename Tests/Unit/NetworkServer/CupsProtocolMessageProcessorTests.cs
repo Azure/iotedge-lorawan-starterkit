@@ -49,7 +49,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // setup valid http context
             using var receivedResponse = MemoryPool<byte>.Shared.Rent();
-            SetupHttpContextWithRequest(out var httpContext, receivedResponse.Memory);
+            var (httpContext, _, _) = SetupHttpContextWithRequest(CupsRequestJson, receivedResponse.Memory);
 
             // setting up the twin in such a way that there are no updates
             var cupsTwinInfo = new CupsTwinInfo(new Uri(CupsUri),
@@ -75,7 +75,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task HandleUpdateInfoAsync_Fails_WithInvalidContentLength(long? requestContentLength)
         {
             // setup
-            SetupHttpContextWithRequest(out var httpContext, null, contentLength: requestContentLength);
+            var (httpContext, httpRequest, _) = SetupHttpContextWithRequest(CupsRequestJson, null);
+            _ = httpRequest.Setup(r => r.ContentLength).Returns(requestContentLength);
 
             // act
             await this.processor.HandleUpdateInfoAsync(httpContext.Object, default);
@@ -94,7 +95,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // setup
             var strictifiedInput = JsonUtil.Strictify(input);
-            SetupHttpContextWithRequest(out var httpContext, null, strictifiedInput.Length, strictifiedInput);
+            var (httpContext, httpRequest, _) = SetupHttpContextWithRequest(strictifiedInput, null);
+            _ = httpRequest.Setup(r => r.ContentLength).Returns(Encoding.UTF8.GetByteCount(strictifiedInput));
 
             // act
             await this.processor.HandleUpdateInfoAsync(httpContext.Object, default);
@@ -104,12 +106,26 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Contains(this.logger.Invocations, i => i.Arguments.Any(a => a.GetType() == exceptionType));
         }
 
-        private static void SetupHttpContextWithRequest(out Mock<HttpContext> httpContext, Memory<byte> receivedResponse, long? contentLength = -1, string request = null)
+        private static readonly string CupsRequestJson = JsonSerializer.Serialize(new
         {
-            httpContext = new Mock<HttpContext>();
+            router = StationEui,
+            cupsUri = CupsUri,
+            tcUri = TcUri,
+            cupsCredCrc = CredentialsChecksum,
+            tcCredCrc = CredentialsChecksum,
+            station = "2.0.5(corecell/std)",
+            model = "corecell",
+            package = (string)null,
+            keys = Array.Empty<int>()
+        });
+
+        private static (Mock<HttpContext>, Mock<HttpRequest>, Mock<HttpResponse>)
+            SetupHttpContextWithRequest(string request, Memory<byte> receivedResponse)
+        {
+            var httpContext = new Mock<HttpContext>();
             var httpRequest = new Mock<HttpRequest>();
-            _ = httpRequest.Setup(r => r.ContentLength).Returns(contentLength == -1 ? CupsRequest.Length : contentLength);
-            var requestStream = GetRequestStream(request);
+            var requestStream = new MemoryStream(Encoding.UTF8.GetBytes(request));
+            _ = httpRequest.Setup(r => r.ContentLength).Returns(requestStream.Length);
             _ = httpRequest.Setup(r => r.Body).Returns(requestStream);
             _ = httpRequest.Setup(r => r.BodyReader).Returns(PipeReader.Create(requestStream));
             _ = httpContext.Setup(m => m.Request).Returns(httpRequest.Object);
@@ -125,25 +141,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             _ = httpResponse.SetupProperty(m => m.ContentLength);
             _ = httpResponse.Setup(m => m.BodyWriter).Returns(bodyWriter.Object);
             _ = httpContext.Setup(m => m.Response).Returns(httpResponse.Object);
+            return (httpContext, httpRequest, httpResponse);
         }
-
-        private static string CupsRequest => JsonUtil.Strictify(@$"{{'router':'{StationEui}','cupsUri':'{CupsUri}',
-                                                                  'tcUri':'{TcUri}','cupsCredCrc':{CredentialsChecksum},
-                                                                  'tcCredCrc':{CredentialsChecksum},'station':'2.0.5(corecell/std)',
-                                                                  'model':'corecell','package':null,'keys':[]}}");
-
-        private static Stream GetRequestStream(string request = null) =>
-            new MemoryStream(Encoding.UTF8.GetBytes(request is null ? JsonSerializer.Serialize(new
-            {
-                router = StationEui,
-                cupsUri = CupsUri,
-                tcUri = TcUri,
-                cupsCredCrc = CredentialsChecksum,
-                tcCredCrc = CredentialsChecksum,
-                station = "2.0.5(corecell/std)",
-                model = "corecell",
-                package = (string)null,
-                keys = Array.Empty<int>()
-            }) : request));
     }
 }
