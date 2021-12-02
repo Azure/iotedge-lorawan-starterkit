@@ -65,52 +65,52 @@ namespace LoRaWan.NetworkServer
                 RemoveExpiredDevices();
 
                 // refresh the devices that were not refreshed within the configured time window
-                await RefreshDevicesAsync(cancellationToken);
+                await RefreshDevicesAsync();
             }
-        }
 
-        private void RemoveExpiredDevices()
-        {
-            lock (this.syncLock)
+            void RemoveExpiredDevices()
+            {
+                lock (this.syncLock)
+                {
+                    var now = DateTimeOffset.UtcNow;
+                    var itemsToRemove = this.euiCache.Values.Where(x => now - x.LastSeen > this.options.MaxUnobservedLifetime);
+                    foreach (var expiredDevice in itemsToRemove)
+                    {
+                        _ = Remove(expiredDevice);
+                        expiredDevice.Dispose();
+                    }
+                }
+            }
+
+            async Task RefreshDevicesAsync()
             {
                 var now = DateTimeOffset.UtcNow;
-                var itemsToRemove = this.euiCache.Values.Where(x => now - x.LastSeen > this.options.MaxUnobservedLifetime);
-                foreach (var expiredDevice in itemsToRemove)
+                var itemsToRefresh = this.euiCache.Values.Where(x => now - x.LastUpdate > this.options.RefreshInterval).ToList();
+                var tasks = new List<Task>(itemsToRefresh.Count);
+
+                foreach (var item in itemsToRefresh)
                 {
-                    _ = Remove(expiredDevice);
-                    expiredDevice.Dispose();
+                    tasks.Add(RefreshDeviceAsync(item, cancellationToken));
                 }
-            }
-        }
 
-        private async Task RefreshDevicesAsync(CancellationToken cancellationToken)
-        {
-            var now = DateTimeOffset.UtcNow;
-            var itemsToRefresh = this.euiCache.Values.Where(x => now - x.LastUpdate > this.options.RefreshInterval).ToList();
-            var tasks = new List<Task>(itemsToRefresh.Count);
-
-            foreach (var item in itemsToRefresh)
-            {
-                tasks.Add(RefreshDeviceAsync(item, cancellationToken));
-            }
-
-            while (tasks.Count > 0)
-            {
-                var t = await Task.WhenAny(tasks);
-                _ = tasks.Remove(t);
-
-                try
+                while (tasks.Count > 0)
                 {
-                    await t;
-                }
-                catch (TaskCanceledException)
-                {
-                    break;
-                }
-                catch (LoRaProcessingException ex)
-                {
-                    // retry on next iteration
-                    this.logger.LogError(ex, "Failed to refresh device.");
+                    var t = await Task.WhenAny(tasks);
+                    _ = tasks.Remove(t);
+
+                    try
+                    {
+                        await t;
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        break;
+                    }
+                    catch (LoRaProcessingException ex)
+                    {
+                        // retry on next iteration
+                        this.logger.LogError(ex, "Failed to refresh device.");
+                    }
                 }
             }
         }
