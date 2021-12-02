@@ -35,10 +35,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
             using var response = MemoryPool<byte>.Shared.Rent(2048);
             var currentPosition = 0;
 
-            currentPosition = WriteUriConditionally(ConcentratorCredentialType.Cups, response, currentPosition);
-            currentPosition = WriteUriConditionally(ConcentratorCredentialType.Lns, response, currentPosition);
-            currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Cups, response, currentPosition, token);
-            currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Lns, response, currentPosition, token);
+            currentPosition = WriteUriConditionally(ConcentratorCredentialType.Cups, response.Memory.Span, currentPosition);
+            currentPosition = WriteUriConditionally(ConcentratorCredentialType.Lns, response.Memory.Span, currentPosition);
+            currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Cups, response.Memory, currentPosition, token);
+            currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Lns, response.Memory, currentPosition, token);
 
             /*
              * Following fields are left empty as no firmware update feature is implemented yet
@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             return response.Memory.Span[..currentPosition].ToArray();
         }
 
-        private int WriteUriConditionally(ConcentratorCredentialType endpointType, IMemoryOwner<byte> response, int currentPosition)
+        private int WriteUriConditionally(ConcentratorCredentialType endpointType, Span<byte> response, int currentPosition)
         {
             var uriMismatch = endpointType switch
             {
@@ -72,12 +72,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
                     _ => throw new SwitchExpressionException(nameof(endpointType))
                 };
 
-                currentPosition += WriteToSpan((byte)uriWithoutTrailingSlash.Length, response.Memory.Span[currentPosition..]);
-                currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(uriWithoutTrailingSlash), response.Memory.Span[currentPosition..]);
+                currentPosition += WriteToSpan((byte)uriWithoutTrailingSlash.Length, response[currentPosition..]);
+                currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(uriWithoutTrailingSlash), response[currentPosition..]);
             }
             else
             {
-                currentPosition += WriteToSpan(0, response.Memory.Span[currentPosition..]);
+                currentPosition += WriteToSpan(0, response[currentPosition..]);
             }
 
             return currentPosition;
@@ -87,7 +87,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
         private async Task<int> WriteCredentialsConditionallyAsync(ConcentratorCredentialType endpointType,
-                                                                   IMemoryOwner<byte> response,
+                                                                   Memory<byte> response,
                                                                    int currentPosition,
                                                                    CancellationToken token)
         {
@@ -103,12 +103,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 var credentialBase64String = await this.credentialFetcher(this.cupsUpdateInfoRequest.StationEui, endpointType, token);
 
                 var credentialBytes = Convert.FromBase64String(credentialBase64String);
-                currentPosition += WriteToSpan((ushort)credentialBytes.Length, response.Memory.Span[currentPosition..]);
-                currentPosition += WriteToSpan(credentialBytes, response.Memory.Span[currentPosition..]);
+                currentPosition += WriteToSpan((ushort)credentialBytes.Length, response.Span[currentPosition..]);
+                currentPosition += WriteToSpan(credentialBytes, response.Span[currentPosition..]);
             }
             else
             {
-                currentPosition += WriteToSpan((ushort)0, response.Memory.Span[currentPosition..]);
+                currentPosition += WriteToSpan((ushort)0, response.Span[currentPosition..]);
             }
 
             return currentPosition;
