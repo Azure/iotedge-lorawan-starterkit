@@ -17,18 +17,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class DeviceLoaderSynchronizerTest : IDisposable
     {
-        private readonly NetworkServerConfiguration serverConfiguration;
-
         private readonly MemoryCache memoryCache;
         private readonly LoRaDeviceClientConnectionManager connectionManager;
 
         public DeviceLoaderSynchronizerTest()
         {
-            this.serverConfiguration = new NetworkServerConfiguration()
-            {
-                GatewayID = "test-gateway",
-                LogLevel = "Debug",
-            };
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
             this.connectionManager = new LoRaDeviceClientConnectionManager(this.memoryCache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
         }
