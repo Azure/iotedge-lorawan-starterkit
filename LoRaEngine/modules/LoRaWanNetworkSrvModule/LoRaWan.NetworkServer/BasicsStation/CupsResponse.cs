@@ -65,13 +65,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             if (uriMismatch)
             {
-                var uriWithoutTrailingSlash = endpointType switch
+                var uri = endpointType switch
                 {
-                    ConcentratorCredentialType.Cups => GetCupsNormalizedUri(this.cupsTwinInfo.CupsUri),
-                    ConcentratorCredentialType.Lns => GetCupsNormalizedUri(this.cupsTwinInfo.TcUri),
+                    ConcentratorCredentialType.Cups => this.cupsTwinInfo.CupsUri,
+                    ConcentratorCredentialType.Lns => this.cupsTwinInfo.TcUri,
                     _ => throw new SwitchExpressionException(nameof(endpointType))
                 };
-
+                var uriWithoutTrailingSlash = uri.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort, UriFormat.Unescaped);
                 currentPosition += WriteToSpan((byte)uriWithoutTrailingSlash.Length, response[currentPosition..]);
                 currentPosition += WriteToSpan(Encoding.UTF8.GetBytes(uriWithoutTrailingSlash), response[currentPosition..]);
             }
@@ -81,9 +81,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
             }
 
             return currentPosition;
-
-            static string GetCupsNormalizedUri(Uri uri) =>
-                uri.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort, UriFormat.Unescaped);
         }
 
         private async Task<int> WriteCredentialsConditionallyAsync(ConcentratorCredentialType endpointType,
