@@ -21,6 +21,29 @@ curl -L https://github.com/Azure/azure-iotedge/releases/download/1.2.5/aziot-ide
 curl -L https://github.com/Azure/azure-iotedge/releases/download/1.2.5/aziot-edge_1.2.5-1_debian11_armhf.deb -o aziot-edge.deb && sudo apt-get install ./aziot-edge.deb
 ```
 
+If you do not want to perform a clean install of Raspberry OS but instead want to upgrade an existing image, you can consider using the following commands to perform a full upgrade. Please note that this is not recommended, it might leave you with a broken installation.
+
+```bash
+sudo apt-get update
+sudo rpi-update
+sudo apt full-upgrade
+```
+
+Update the `/etc/apt/sources.list` file and replace all occurrences of `buster` with `bullseye`. Do the same for any list file in `/etc/apt/sources.list.d`. Then run:
+
+```bash
+sudo apt-get update
+sudo apt-get full-upgrade
+sudo apt autoremove
+sudo reboot
+```
+
+After your Pi was upgraded to the latest Raspberry Pi OS, run the following steps to uninstall the old versions of IoT Edge and then continue with the install of IoT Edge as described above.
+
+```bash
+sudo apt-get remove aziot-edge aziot-identity-service moby-engine
+```
+
 ### Azure Functions
 
 To support .NET 6 you will need to upgrade the Azure Functions runtime to v4. To update, you can set `FUNCTIONS_EXTENSION_VERSION` to `~4` in your Function configuration.
