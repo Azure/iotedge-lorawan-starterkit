@@ -126,31 +126,17 @@ namespace LoRaWan.NetworkServer.BasicsStation
             return sizeof(byte);
         }
 
-        private static int WriteToSpan(ushort value, Span<byte> span, bool littleEndian = true)
+        private static int WriteToSpan(ushort value, Span<byte> span)
         {
             var length = sizeof(ushort);
-            if (littleEndian)
-            {
-                BinaryPrimitives.WriteUInt16LittleEndian(span[..length], value);
-            }
-            else
-            {
-                BinaryPrimitives.WriteUInt16BigEndian(span[..length], value);
-            }
+            BinaryPrimitives.WriteUInt16LittleEndian(span[..length], value);
             return length;
         }
 
-        private static int WriteToSpan(uint value, Span<byte> span, bool littleEndian = true)
+        private static int WriteToSpan(uint value, Span<byte> span)
         {
             var length = sizeof(uint);
-            if (littleEndian)
-            {
-                BinaryPrimitives.WriteUInt32LittleEndian(span[..length], value);
-            }
-            else
-            {
-                BinaryPrimitives.WriteUInt32BigEndian(span[..length], value);
-            }
+            BinaryPrimitives.WriteUInt32LittleEndian(span[..length], value);
             return length;
         }
     }
