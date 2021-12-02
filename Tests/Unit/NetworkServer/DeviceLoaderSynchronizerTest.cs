@@ -336,7 +336,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static void VerifyFailedReason(Mock<LoRaRequest> request, LoRaDeviceRequestFailedReason reason) =>
             request.Verify(x => x.NotifyFailed(reason, It.IsAny<Exception>()), Times.Once);
 
-        private static TestDeviceLoaderSynchronizer CreateDefaultLoader(LoRaDeviceCache deviceCache) => 
+        private static TestDeviceLoaderSynchronizer CreateDefaultLoader(LoRaDeviceCache deviceCache) =>
             new TestDeviceLoaderSynchronizer(Mock.Of<LoRaDeviceAPIServiceBase>(),
                                              Mock.Of<ILoRaDeviceFactory>(),
                                              deviceCache);
