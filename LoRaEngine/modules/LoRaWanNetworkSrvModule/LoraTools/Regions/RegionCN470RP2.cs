@@ -24,7 +24,7 @@ namespace LoRaTools.Regions
         public Dictionary<double, (double downstreamFreq, int joinChannelIndex)> UpstreamJoinFrequenciesToDownstreamAndChannelIndex { get; }
 
         public RegionCN470RP2()
-            : base(LoRaRegionType.CN470)
+            : base(LoRaRegionType.CN470RP2)
         {
             // Values assuming FOpts param is not used
             DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));

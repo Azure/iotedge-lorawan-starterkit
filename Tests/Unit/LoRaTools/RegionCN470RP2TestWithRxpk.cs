@@ -8,11 +8,11 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using Xunit;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-    public class RegionCN470TestWithRxpk : RegionTestBaseRxpk
+    public class RegionCN470RP2TestWithRxpk : RegionTestBaseRxpk
     {
-        public RegionCN470TestWithRxpk()
+        public RegionCN470RP2TestWithRxpk()
         {
-            Region = RegionManager.CN470;
+            Region = RegionManager.CN470RP2;
         }
 
         [Theory]
@@ -119,12 +119,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
             TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
-        }
-
-        [Fact]
-        public void TestResolveRegion()
-        {
-            TestTryResolveRegionRxpk("SF11BW125", 470.3);
         }
     }
 }

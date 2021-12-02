@@ -15,7 +15,7 @@ namespace LoRaTools.Regions
         private const double FrequencyIncrement = 0.2;
 
         public RegionCN470RP1()
-            : base(LoRaRegionType.CN470)
+            : base(LoRaRegionType.CN470RP1)
         {
             DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
             DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));

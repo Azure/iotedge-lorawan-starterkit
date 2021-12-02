@@ -31,8 +31,12 @@ namespace LoRaTools.Regions
                     region = US915;
                     return true;
 
-                case LoRaRegionType.CN470:
-                    region = CN470;
+                case LoRaRegionType.CN470RP1:
+                    region = CN470RP1;
+                    return true;
+
+                case LoRaRegionType.CN470RP2:
+                    region = CN470RP2;
                     return true;
 
                 case LoRaRegionType.AS923:
@@ -71,7 +75,7 @@ namespace LoRaTools.Regions
             }
             else if (rxpk.Freq is <= 510 and >= 470)
             {
-                region = CN470;
+                region = CN470RP1; // Should be determined based on configured region for China
                 return true;
             }
             // Note: Resolving region based on frequency should be avoided as AS923 frequency band overlaps with US915;
@@ -115,18 +119,33 @@ namespace LoRaTools.Regions
             }
         }
 
-        private static Region cn470;
+        private static Region cn470RP1;
 
-        public static Region CN470
+        public static Region CN470RP1
         {
             get
             {
-                if (cn470 == null)
+                if (cn470RP1 == null)
                 {
-                    cn470 = new RegionCN470RP2();
+                    cn470RP1 = new RegionCN470RP1();
                 }
 
-                return cn470;
+                return cn470RP1;
+            }
+        }
+
+        private static Region cn470RP2;
+
+        public static Region CN470RP2
+        {
+            get
+            {
+                if (cn470RP2 == null)
+                {
+                    cn470RP2 = new RegionCN470RP2();
+                }
+
+                return cn470RP2;
             }
         }
 

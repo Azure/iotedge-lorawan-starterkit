@@ -5,7 +5,6 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Security.Cryptography;
     using LoRaTools;
@@ -72,7 +71,7 @@ namespace LoRaWan.NetworkServer
             long tmst;
             ushort lnsRxDelay = 0;
 
-            var deviceJoinInfo = request.Region.LoRaRegion == LoRaRegionType.CN470
+            var deviceJoinInfo = request.Region.LoRaRegion == LoRaRegionType.CN470RP2
                 ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
                 : null;
 
