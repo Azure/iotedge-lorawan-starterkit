@@ -33,33 +33,34 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
         public async Task HandleUpdateInfoAsync(HttpContext httpContext, CancellationToken token)
         {
+            string json;
+
             // checking content length
-            var contentLength = httpContext.Request.ContentLength;
-            if (contentLength is null)
+#pragma warning disable IDE0010 // Add missing cases (false positive)
+            switch (httpContext.Request.ContentLength)
+#pragma warning restore IDE0010 // Add missing cases
             {
-                LogAndSetBadRequest(null, "Request is not specifying a Content-Length.");
-                return;
-            }
-            if (contentLength > MaximumAllowedContentLength)
-            {
-                LogAndSetBadRequest(null, "Request body is exceeding the maximum content-length limit of {MaximumAllowedContentLength}.", MaximumAllowedContentLength);
-                return;
-            }
-
-            // reading the input stream
-            using var inputBytes = MemoryPool<byte>.Shared.Rent();
-            var totalReadBytes = 0;
-            var iterationReadBytes = 0;
-            do
-            {
-                iterationReadBytes = await httpContext.Request.Body.ReadAsync(inputBytes.Memory[totalReadBytes..], token);
-                totalReadBytes += iterationReadBytes;
-            } while (totalReadBytes < contentLength && iterationReadBytes != 0);
-
-            if (totalReadBytes > contentLength)
-            {
-                LogAndSetBadRequest(null, "Stream includes more bytes than what expected.");
-                return;
+                case null:
+                    LogAndSetBadRequest(null, "Request is not specifying a Content-Length.");
+                    return;
+                case > MaximumAllowedContentLength:
+                    LogAndSetBadRequest(null, "Request body is exceeding the maximum content-length limit of {MaximumAllowedContentLength}.", MaximumAllowedContentLength);
+                    return;
+                case var contentLength:
+                {
+                    // reading the input stream
+                    using var inputBytes = MemoryPool<byte>.Shared.Rent(checked((int)contentLength));
+                    var totalReadBytes = 0;
+                    int iterationReadBytes;
+                    do
+                    {
+                        iterationReadBytes = await httpContext.Request.Body.ReadAsync(inputBytes.Memory[totalReadBytes..], token);
+                        totalReadBytes += iterationReadBytes;
+                    }
+                    while (totalReadBytes < contentLength && iterationReadBytes != 0);
+                    json = Encoding.UTF8.GetString(inputBytes.Memory.Span[..totalReadBytes]);
+                    break;
+                }
             }
 
             // reading the request from Basic Station
@@ -67,7 +68,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             try
             {
                 // We are assuming that input is a UTF8 Json
-                updateRequest = CupsEndpoint.UpdateRequestReader.Read(Encoding.UTF8.GetString(inputBytes.Memory[..totalReadBytes].ToArray()));
+                updateRequest = CupsEndpoint.UpdateRequestReader.Read(json);
             }
             catch (UriFormatException uriException)
             {
