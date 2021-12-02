@@ -22,9 +22,7 @@ namespace Logger
 
     public record IotHubLoggerConfiguration(LogLevel LogLevel, EventId EventId, bool UseScopes);
 
-#pragma warning disable CA1812 // Class never instantiated
     internal sealed class IotHubLoggerProvider : ILoggerProvider
-#pragma warning restore CA1812 // Class never instantiated
     {
         private readonly ConcurrentDictionary<string, IotHubLogger> loggers = new();
         private readonly Lazy<Task<ModuleClient>> moduleClientFactory;
