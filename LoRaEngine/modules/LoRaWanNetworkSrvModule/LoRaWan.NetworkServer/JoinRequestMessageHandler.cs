@@ -108,7 +108,6 @@ namespace LoRaWan.NetworkServer
                     if (!loRaDevice.IsOurDevice)
                     {
                         this.logger.LogInformation("join refused: trying to join not through its linked gateway, ignoring join request");
-                        loRaDevice.IsOurDevice = false;
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
                         return;
                     }
