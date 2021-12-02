@@ -268,6 +268,46 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
+        /// Get downstream RX2 data rate.
+        /// </summary>
+        /// <param name="devEUI">The device id.</param>
+        /// <param name="nwkSrvRx2Dr">The network server rx2 datarate.</param>
+        /// <param name="rx2DrFromTwins">RX2 datarate value from twins.</param>
+        /// <returns>The RX2 data rate.</returns>
+        public ushort GetDownstreamRX2DataRate(string devEUI, ushort? nwkSrvRx2Dr, ushort? rx2DrFromTwins, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
+        {
+            // If the rx2 datarate property is in twins, we take it from there
+            if (rx2DrFromTwins.HasValue)
+            {
+                if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
+                {
+                    var datr = rx2DrFromTwins.Value;
+                    logger.LogDebug(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
+                    return datr;
+                }
+                else
+                {
+                    logger.LogDebug(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
+                }
+            }
+            else
+            {
+                // Otherwise we check if we have some properties set on the server (server-specific)
+                if (nwkSrvRx2Dr.HasValue)
+                {
+                    var datr = nwkSrvRx2Dr.Value;
+                    logger.LogDebug(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
+                    return datr;
+                }
+            }
+
+            // If no settings was set we use region default.
+            var defaultDatr = GetDefaultRX2ReceiveWindow(deviceJoinInfo).DataRate;
+            logger.LogDebug($"using standard region RX2 datarate {defaultDatr}");
+            return defaultDatr;
+        }
+
+        /// <summary>
         /// Implement correct logic to get the maximum payload size based on the datr/configuration.
         /// </summary>
         /// <param name="datr">the datr/configuration with which the message was transmitted.</param>
