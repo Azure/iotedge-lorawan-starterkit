@@ -6,7 +6,6 @@
 namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
-    using System.Buffers;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
@@ -48,17 +47,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     return;
                 case var contentLength:
                 {
-                    // reading the input stream
-                    using var inputBytes = MemoryPool<byte>.Shared.Rent(checked((int)contentLength));
-                    var totalReadBytes = 0;
-                    int iterationReadBytes;
-                    do
+                    var reader = httpContext.Request.BodyReader;
+                    var result = await reader.ReadAtLeastAsync(checked((int)contentLength), token);
+
+                    if (result.Buffer.Length != contentLength)
                     {
-                        iterationReadBytes = await httpContext.Request.Body.ReadAsync(inputBytes.Memory[totalReadBytes..], token);
-                        totalReadBytes += iterationReadBytes;
+                        LogAndSetBadRequest(null, "Actual content length does not match the expected length of {ContentLength} bytes.", contentLength);
+                        return;
                     }
-                    while (totalReadBytes < contentLength && iterationReadBytes != 0);
-                    json = Encoding.UTF8.GetString(inputBytes.Memory.Span[..totalReadBytes]);
+
+                    json = Encoding.UTF8.GetString(result.Buffer);
+                    reader.AdvanceTo(result.Buffer.End);
                     break;
                 }
             }

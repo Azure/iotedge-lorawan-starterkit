@@ -113,6 +113,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var requestStream = GetRequestStream(request);
 #pragma warning restore CA2000 // Can't dispose stream before losing scope
             _ = httpRequest.Setup(r => r.Body).Returns(requestStream);
+            _ = httpRequest.Setup(r => r.BodyReader).Returns(PipeReader.Create(requestStream));
             _ = httpContext.Setup(m => m.Request).Returns(httpRequest.Object);
             var httpResponse = new Mock<HttpResponse>();
             var bodyWriter = new Mock<PipeWriter>();
