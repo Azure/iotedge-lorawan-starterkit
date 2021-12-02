@@ -100,7 +100,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
             if (desiredProperties.Contains(CupsPropertyName))
             {
-                string cupsJson = desiredProperties[CupsPropertyName].ToString();
+                var cupsJson = ((object)desiredProperties[CupsPropertyName]).ToString();
                 return CupsEndpoint.TwinReader.Read(cupsJson);
             }
 
