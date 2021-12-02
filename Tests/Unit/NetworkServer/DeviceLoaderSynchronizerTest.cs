@@ -55,7 +55,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var deviceFactory = new Mock<ILoRaDeviceFactory>(MockBehavior.Strict);
 
             using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
-            using var finished = new SemaphoreSlim(0);
             var target = new DeviceLoaderSynchronizer(
                 devAddr,
                 apiService.Object,
