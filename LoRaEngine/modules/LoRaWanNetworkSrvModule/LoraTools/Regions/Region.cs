@@ -30,7 +30,7 @@ namespace LoRaTools.Regions
         /// Gets or sets by default MaxEIRP is considered to be +16dBm.
         /// If the end-device cannot achieve 16dBm EIRP, the Max EIRP SHOULD be communicated to the network server using an out-of-band channel during the end-device commissioning process.
         /// </summary>
-        public Dictionary<uint, uint> TXPowertoMaxEIRP { get; } = new Dictionary<uint, uint>();
+        public Dictionary<uint, double> TXPowertoMaxEIRP { get; } = new Dictionary<uint, double>();
 
         /// <summary>
         /// Gets or sets table to the get receive windows Offsets.
