@@ -8,17 +8,25 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
 
     internal abstract class RegistryMetricExporter : IMetricExporter
     {
-        protected readonly IDictionary<string, CustomMetric> registryLookup;
+        private static readonly TimeSpan ObserveInterval = TimeSpan.FromSeconds(30);
 
+        private readonly CancellationTokenSource cancellationTokenSource;
+        protected readonly IDictionary<string, CustomMetric> registryLookup;
+        private readonly ILogger<RegistryMetricExporter> logger;
         private MeterListener? listener;
         private bool disposedValue;
 
-        public RegistryMetricExporter(IDictionary<string, CustomMetric> registryLookup)
+        public RegistryMetricExporter(IDictionary<string, CustomMetric> registryLookup, ILogger<RegistryMetricExporter> logger)
         {
             this.registryLookup = registryLookup;
+            this.logger = logger;
+            this.cancellationTokenSource = new CancellationTokenSource();
         }
 
         public void Start()
@@ -28,7 +36,9 @@ namespace LoRaWan.NetworkServer
                 InstrumentPublished = (instrument, meterListener) =>
                 {
                     if (instrument.Meter.Name == MetricRegistry.Namespace && this.registryLookup.ContainsKey(instrument.Name))
+                    {
                         meterListener.EnableMeasurementEvents(instrument);
+                    }
                 }
             };
 
@@ -40,6 +50,30 @@ namespace LoRaWan.NetworkServer
             this.listener.SetMeasurementEventCallback<double>(TrackValue);
             this.listener.SetMeasurementEventCallback<decimal>((i, m, t, s) => TrackValue(i, checked((double)m), t, s));
             this.listener.Start();
+
+            _ = Task.Run(async () =>
+            {
+                while (!this.cancellationTokenSource.IsCancellationRequested)
+                {
+                    try
+                    {
+                        this.listener.RecordObservableInstruments();
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // exception raised after disposal.
+                        return;
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types (continue observing metrics even on error)
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        this.logger.LogInformation(ex, "Exception when recording observable metrics.");
+                    }
+
+                    await Task.Delay(ObserveInterval, this.cancellationTokenSource.Token);
+                }
+            });
         }
 
         protected abstract void TrackValue(Instrument instrument,
@@ -54,6 +88,8 @@ namespace LoRaWan.NetworkServer
                 if (disposing)
                 {
                     this.listener?.Dispose();
+                    this.cancellationTokenSource.Cancel();
+                    this.cancellationTokenSource.Dispose();
                 }
 
                 this.disposedValue = true;

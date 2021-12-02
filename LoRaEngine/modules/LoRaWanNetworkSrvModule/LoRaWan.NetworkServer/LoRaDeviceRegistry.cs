@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace LoRaWan.NetworkServer
         private readonly object getOrCreateLoadingDevicesRequestQueueLock;
         private readonly object getOrCreateJoinDeviceLoaderLock;
         private readonly object devEUIToLoRaDeviceDictionaryLock;
-
+        private readonly Meter meter;
         private readonly IMemoryCache cache;
 
         private CancellationChangeToken resetCacheChangeToken;
@@ -50,7 +51,8 @@ namespace LoRaWan.NetworkServer
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
             ILoRaDeviceFactory deviceFactory,
             ILoggerFactory loggerFactory,
-            ILogger<LoRaDeviceRegistry> logger)
+            ILogger<LoRaDeviceRegistry> logger,
+            Meter meter)
         {
             this.configuration = configuration;
             this.resetCacheToken = new CancellationTokenSource();
@@ -65,6 +67,7 @@ namespace LoRaWan.NetworkServer
             this.getOrCreateLoadingDevicesRequestQueueLock = new object();
             this.getOrCreateJoinDeviceLoaderLock = new object();
             this.devEUIToLoRaDeviceDictionaryLock = new object();
+            this.meter = meter;
         }
 
         /// <summary>
@@ -75,7 +78,7 @@ namespace LoRaWan.NetworkServer
                                     LoRaDeviceAPIServiceBase loRaDeviceAPIService,
                                     ILoRaDeviceFactory deviceFactory)
             : this(configuration, cache, loRaDeviceAPIService, deviceFactory,
-                   NullLoggerFactory.Instance, NullLogger<LoRaDeviceRegistry>.Instance)
+                   NullLoggerFactory.Instance, NullLogger<LoRaDeviceRegistry>.Instance, null)
         { }
 
         /// <summary>
@@ -148,7 +151,8 @@ namespace LoRaWan.NetworkServer
                                 }
                             },
                             (l) => UpdateDeviceRegistration(l),
-                            this.loggerFactory.CreateLogger<DeviceLoaderSynchronizer>());
+                            this.loggerFactory.CreateLogger<DeviceLoaderSynchronizer>(),
+                            meter);
 
                         return loader;
                     });

@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         public WebSocketWriterRegistryTests()
         {
-            this.sut = new WebSocketWriterRegistry<string, string>(NullLogger<WebSocketWriterRegistry<string, string>>.Instance);
+            this.sut = new WebSocketWriterRegistry<string, string>(NullLogger<WebSocketWriterRegistry<string, string>>.Instance, null);
         }
 
         [Fact]

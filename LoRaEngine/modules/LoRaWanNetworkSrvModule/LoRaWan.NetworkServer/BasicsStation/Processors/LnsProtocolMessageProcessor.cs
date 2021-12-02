@@ -35,6 +35,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
         private readonly Counter<int> joinRequestCounter;
+        private readonly Counter<int> uplinkMessageCounter;
+        private readonly Counter<int> unhandledExceptionCount;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
@@ -55,6 +57,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
+            this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
+            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
@@ -88,7 +92,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     this.logger.LogDebug(ex, ex.Message);
                 }
             }
-            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex)))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex),
+                                                                    () => this.unhandledExceptionCount?.Add(1)))
             {
                 throw;
             }
@@ -240,6 +245,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         }
 
                         using var scope = this.logger.BeginDeviceAddressScope(updf.DevAddr);
+                        this.uplinkMessageCounter?.Add(1);
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
