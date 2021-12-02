@@ -53,14 +53,10 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         [Fact]
         public void When_Serializing_Invalid_LinkAdrCmd_Should_Throw()
         {
-            var input = @"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""chmaskctl"": 0 }";
+            var input = @"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""chmask"": 25, ""chmaskctl"": 0, ""nbtrans"": 1 }";
             var ex = Assert.Throws<JsonReaderException>(() => JsonConvert.DeserializeObject<MacCommand>(input));
 
-            var missingProperties = new string[] { "txpower", "chmask", "nbtrans" };
-            foreach (var property in missingProperties)
-            {
-                Assert.Contains($"Property '{property}' is missing", ex.Message, StringComparison.InvariantCulture);
-            }
+            Assert.Equal($"Property 'txpower' is missing", ex.Message);
         }
     }
 }

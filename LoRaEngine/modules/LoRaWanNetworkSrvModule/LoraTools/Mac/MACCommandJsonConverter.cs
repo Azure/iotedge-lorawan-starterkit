@@ -4,8 +4,6 @@
 namespace LoRaTools
 {
     using System;
-    using System.Collections.Generic;
-    using System.Globalization;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -76,11 +74,18 @@ namespace LoRaTools
                     case Cid.LinkCheckCmd:
                     case Cid.LinkADRCmd:
                     {
-                        if (!IsValidLindADRCmd(item, out var errors))
-                        {
-                            throw new JsonReaderException(string.Format(CultureInfo.InvariantCulture, "Command {0} is invalid: {1}", item, string.Join(", ", errors)));
-                        }
-                        var cmd = new LinkADRRequest((ushort)item["datarate"], (ushort)item["txpower"], (ushort)item["chmask"], (byte)item["chmaskctl"], (byte)item["nbtrans"]);
+                        if (!item.TryGetValue("datarate", out var datarate))
+                            throw new JsonReaderException("Property 'datarate' is missing");
+                        if (!item.TryGetValue("txpower", out var txpower))
+                            throw new JsonReaderException("Property 'txpower' is missing");
+                        if (!item.TryGetValue("chmask", out var chmask))
+                            throw new JsonReaderException("Property 'chmask' is missing");
+                        if (!item.TryGetValue("chmaskctl", out var chmaskctl))
+                            throw new JsonReaderException("Property 'chmaskctl' is missing");
+                        if (!item.TryGetValue("nbtrans", out var nbtrans))
+                            throw new JsonReaderException("Property 'nbtrans' is missing");
+
+                        var cmd = new LinkADRRequest((ushort)datarate, (ushort)txpower, (ushort)chmask, (byte)chmaskctl, (byte)nbtrans);
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
@@ -95,19 +100,5 @@ namespace LoRaTools
         public override bool CanWrite => false;
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => throw new NotImplementedException();
-
-        private static bool IsValidLindADRCmd(JObject item, out List<string> errorMsgs)
-        {
-            errorMsgs = new List<string>();
-            var requiredProperties = new List<string> { "datarate", "txpower", "chmask", "chmaskctl", "nbtrans" };
-
-            foreach (var property in requiredProperties)
-            {
-                if (!item.ContainsKey(property))
-                    errorMsgs.Add($"Property '{property}' is missing");
-            }
-
-            return errorMsgs.Count == 0;
-        }
     }
 }
