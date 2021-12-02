@@ -9,15 +9,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     public static class CupsEndpoint
     {
-        internal static class CommonCupsProperties
-        {
-            internal static readonly IJsonProperty<uint> CupsCredCrc =
-                JsonReader.Property("cupsCredCrc", JsonReader.UInt32());
-
-            internal static readonly IJsonProperty<uint> TcCredCrc =
-                JsonReader.Property("tcCredCrc", JsonReader.UInt32());
-        }
-
         internal static readonly IJsonReader<CupsUpdateInfoRequest> UpdateRequestReader =
             JsonReader.Object(JsonReader.Property("router", from s in JsonReader.String()
                                                             select StationEui.Parse(s)),
@@ -25,17 +16,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                              select string.IsNullOrEmpty(s) ? null : new Uri(s)),
                               JsonReader.Property("tcUri", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
                                                            select string.IsNullOrEmpty(s) ? null : new Uri(s)),
-                              CommonCupsProperties.CupsCredCrc,
-                              CommonCupsProperties.TcCredCrc,
+                              JsonReader.Property("cupsCredCrc", JsonReader.UInt32()),
+                              JsonReader.Property("tcCredCrc", JsonReader.UInt32()),
                               (r, c, t, cc, tc) => new CupsUpdateInfoRequest(r, c, t, cc, tc));
-
-        internal static readonly IJsonReader<CupsTwinInfo> TwinReader =
-            JsonReader.Object(JsonReader.Property("cupsUri", from s in JsonReader.String()
-                                                             select new Uri(s)),
-                              JsonReader.Property("tcUri", from s in JsonReader.String()
-                                                           select new Uri(s)),
-                              CommonCupsProperties.CupsCredCrc,
-                              CommonCupsProperties.TcCredCrc,
-                              (c, t, cc, tc) => new CupsTwinInfo(c, t, cc, tc));
     }
 }

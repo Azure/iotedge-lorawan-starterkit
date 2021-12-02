@@ -6,6 +6,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Text.Json.Serialization;
 
     internal sealed record CupsTwinInfo
     {
@@ -17,15 +18,22 @@ namespace LoRaWan.NetworkServer.BasicsStation
                             uint cupsCredentialsChecksum,
                             uint tcCredentialsChecksum)
         {
-            CupsUri = cupsUri;
-            TcUri = tcUri;
+            CupsUri = cupsUri ?? throw new ArgumentNullException(nameof(cupsUri));
+            TcUri = tcUri ?? throw new ArgumentNullException(nameof(tcUri));
             CupsCredentialsChecksum = cupsCredentialsChecksum;
             TcCredentialsChecksum = tcCredentialsChecksum;
         }
 
+        [JsonPropertyName("cupsUri")]
         public Uri CupsUri { get; }
+
+        [JsonPropertyName("tcUri")]
         public Uri TcUri { get; }
+
+        [JsonPropertyName("cupsCredCrc")]
         public uint CupsCredentialsChecksum { get; }
+
+        [JsonPropertyName("tcCredCrc")]
         public uint TcCredentialsChecksum { get; }
     }
 }

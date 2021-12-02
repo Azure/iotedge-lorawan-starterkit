@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
@@ -101,7 +102,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (desiredProperties.Contains(CupsPropertyName))
             {
                 var cupsJson = ((object)desiredProperties[CupsPropertyName]).ToString();
-                return CupsEndpoint.TwinReader.Read(cupsJson);
+                return JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson);
             }
 
             throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
