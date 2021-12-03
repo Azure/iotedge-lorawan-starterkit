@@ -161,6 +161,7 @@ namespace LoRaWan.NetworkServer
                         updatedProperties.StationEui = request.StationEui;
                     }
 
+                    DeviceJoinInfo deviceJoinInfo = null;
                     if (request.Region.LoRaRegion == LoRaRegionType.CN470RP2)
                     {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
@@ -168,6 +169,7 @@ namespace LoRaWan.NetworkServer
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                         {
                             updatedProperties.CN470JoinChannel = channelIndex;
+                            deviceJoinInfo = new DeviceJoinInfo(channelIndex);
                         }
                         else
                         {
@@ -201,7 +203,7 @@ namespace LoRaWan.NetworkServer
                     {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                         datr = loraRegion.GetDownstreamDataRate(request.Rxpk);
-                        if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
+                        if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq, deviceJoinInfo) || datr == null)
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                         {
                             this.logger.LogError("could not resolve DR and/or frequency for downstream");
@@ -219,9 +221,9 @@ namespace LoRaWan.NetworkServer
                         tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
                         lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
 
-                        freq = loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger);
+                        freq = loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger, deviceJoinInfo);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                        datr = loraRegion.GetDownstreamRX2DataRate(devEUI, this.configuration.Rx2DataRate, null, logger);
+                        datr = loraRegion.GetDownstreamRX2DataRate(devEUI, this.configuration.Rx2DataRate, null, logger, deviceJoinInfo);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     }
 
@@ -280,7 +282,7 @@ namespace LoRaWan.NetworkServer
                         loraSpecDesiredRxDelay,
                         null);
 
-                    var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.Rxpk.Rfch, request.Rxpk.Time, request.StationEui);
+                    var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.Rxpk.Rfch, request.Rxpk.Time, request.StationEui, deviceJoinInfo);
                     if (joinAccept != null)
                     {
                         this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
