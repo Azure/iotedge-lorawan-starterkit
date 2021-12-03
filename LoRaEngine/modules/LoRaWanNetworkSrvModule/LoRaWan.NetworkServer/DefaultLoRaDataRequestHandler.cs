@@ -102,15 +102,16 @@ namespace LoRaWan.NetworkServer
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
             var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
-            var skipConfirmation = false;
             var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicate(request, loRaDevice);
             if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Drop)
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
             }
-            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Resubmission || concentratorDeduplicationResult is ConcentratorDeduplication.Result.AllowButSkipConfirmation)
+            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.AllowButSkipConfirmation)
             {
-                skipConfirmation = true;
+                // If it was detected as a duplicate we can not send a confirmation as we would get collisions on the air.
+                // this overrides the flag set on the upstream message.
+                requiresConfirmation = false;
             }
 
             // Reply attack or confirmed reply
@@ -151,7 +152,7 @@ namespace LoRaWan.NetworkServer
                 if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
                 {
                     // if we got an ADR result or request, we have to send the update to the device
-                    requiresConfirmation = true;
+                    requiresConfirmation = true; // TODO: is it oK to set to true if AllowButSkipConfirmation?
                 }
 
                 if (useMultipleGateways)
@@ -289,12 +290,6 @@ namespace LoRaWan.NetworkServer
 
                         loRaDevice.SetFcntUp(payloadFcntAdjusted);
                     }
-                }
-
-                if (skipConfirmation)
-                {
-                    // TODO should we check if we have other messages pending?
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                 }
 
                 // We check if we have time to futher progress or not
