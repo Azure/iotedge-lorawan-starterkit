@@ -15,6 +15,14 @@ namespace LoRaWan.NetworkServer
     public sealed class ConcentratorDeduplication :
         IConcentratorDeduplication, IDisposable
     {
+        public enum Result
+        {
+            Allow,
+            Resubmission,
+            Drop,
+            AllowButSkipConfirmation
+        }
+
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
         private readonly IMemoryCache cache;
@@ -39,19 +47,13 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
         }
 
-        /// <summary>
-        /// Checks if this class should process the specified request and decide later to drop or not.
-        /// </summary>
-        internal bool ShouldProcess(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
-            => (loRaRequest.Payload is LoRaPayloadData && this.deduplicationStrategy.Create(loRaDevice) is DeduplicationStrategyDrop)
-             || loRaRequest.Payload is LoRaPayloadJoinRequest;
+        private bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
+            => loRaRequest.Payload is LoRaPayloadJoinRequest
+            || (loRaRequest.Payload is LoRaPayloadData && this.deduplicationStrategy.Create(loRaDevice) is DeduplicationStrategyDrop);
 
-        public bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
+        public Result CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
         {
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
-
-            if (!ShouldProcess(loRaRequest, loRaDevice))
-                return false;
 
             var key = CreateCacheKey(loRaRequest);
             var stationEui = loRaRequest.StationEui;
@@ -62,28 +64,25 @@ namespace LoRaWan.NetworkServer
                 if (!this.cache.TryGetValue(key, out previousStation))
                 {
                     AddToCache(key, stationEui);
-                    return false;
+                    return Result.Allow;
                 }
             }
 
             if (previousStation == stationEui)
             {
-                // considered as a resubmit
                 this.logger.LogDebug("Message received from the same EUI {StationEui} as before, will not drop.", stationEui);
-                return false;
+                return Result.Resubmission;
             }
 
             // received from a different station
-            if (this.socketRegistry.IsSocketWriterOpen(previousStation))
+            if (ShouldDrop(loRaRequest, loRaDevice))
             {
-                this.logger.LogInformation($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {stationEui}, will drop.");
-                return true;
+                this.logger.LogInformation($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {previousStation}, will drop.");
+                return Result.Drop;
             }
 
-            this.logger.LogInformation("Connectivity to previous station with EUI {PreviousStation}, was lost, will not drop and will use station with EUI {StationEui} from now onwards.",
-                                       previousStation, stationEui);
-            AddToCache(key, stationEui);
-            return false;
+            this.logger.LogInformation($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {previousStation} but will not drop due to DeduplicationStrategy {this.deduplicationStrategy.Create(loRaDevice)}."); // TODO change for the E2E test
+            return Result.AllowButSkipConfirmation;
         }
 
         internal static string CreateCacheKey(LoRaRequest loRaRequest)
@@ -142,6 +141,7 @@ namespace LoRaWan.NetworkServer
                 SlidingExpiration = DefaultExpiration
             });
 
-        public void Dispose() => this.cache.Dispose();
+        public void Dispose()
+            => this.cache.Dispose();
     }
 }

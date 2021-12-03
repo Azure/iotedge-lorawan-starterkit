@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#if IS_LINUX
+
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
@@ -8,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
+    using DotNetty.Transport.Channels;
     using global::LoRaTools.LoRaMessage;
     using global::LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
@@ -647,3 +650,4 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
     }
 }
+#endif

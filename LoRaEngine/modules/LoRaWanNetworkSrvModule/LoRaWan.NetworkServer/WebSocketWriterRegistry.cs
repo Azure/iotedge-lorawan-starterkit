@@ -67,20 +67,13 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public bool TryGetHandle(TKey key, [NotNullWhen(true)] out IWebSocketWriterHandle<TMessage>? handle)
         {
-            var keyFound = TryGetValue(key, out var value);
-            handle = value?.Handle;
-            return keyFound;
+            lock (this.sockets)
+            {
+                var keyFound = this.sockets.TryGetValue(key, out var value);
+                handle = value.Handle;
+                return keyFound;
+            }
         }
-
-        /// <summary>
-        /// Checks whether the socket writer associated with the given key
-        /// is flagged as open. Actual connectivity is not checked.
-        /// </summary>
-        /// <remarks>
-        /// Implementation does not throw when key is not present in the underlying dictionary.
-        /// </remarks>
-        public virtual bool IsSocketWriterOpen(TKey key)
-            => TryGetValue(key, out var value) && !value!.Value.Object.IsClosed; // when key found, value will not be null
 
         /// <summary>
         /// Registers a socket writer under a key, returning a handle to the writer.
@@ -196,16 +189,6 @@ namespace LoRaWan.NetworkServer
                     _ = this.sockets.Remove(key);
 
                 return keys;
-            }
-        }
-
-        private bool TryGetValue(TKey key, [NotNullWhen(true)] out (IWebSocketWriter<TMessage> Object, Handle Handle)? value)
-        {
-            lock (this.sockets)
-            {
-                var keyFound = this.sockets.TryGetValue(key, out var v);
-                value = v; // converts to nullable type
-                return keyFound;
             }
         }
     }
