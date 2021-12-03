@@ -388,6 +388,15 @@ namespace LoRaWan.NetworkServer
                         case Cid.Zero:
                         case Cid.One:
                         case Cid.LinkADRCmd:
+                            if (rxpk != null)
+                            {
+                                var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
+                                if (macCommands.TryAdd((int)Cid.LinkCheckCmd, linkCheckAnswer))
+                                {
+                                    logger.LogInformation($"answering to a MAC command request {linkCheckAnswer}");
+                                }
+                            }
+                            break;
                         case Cid.DutyCycleCmd:
                         case Cid.RXParamCmd:
                         case Cid.DevStatusCmd:
