@@ -50,13 +50,15 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             Assert.Equal(1, linkADRCmd.NbRep);
         }
 
-        [Fact]
-        public void When_Serializing_Invalid_LinkAdrCmd_Should_Throw()
+        [Theory]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""chmask"": 25, ""chmaskctl"": 0, ""nbtrans"": 1 }", "txpower")]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""chmask"": 20 }", "datarate")]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 6, ""txpower"": 4, ""chmask"": 0 }", "chmaskctl")]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 8, ""txpower"": 0, ""chmask"": 20, ""chmaskctl"": 1 }", "nbtrans")]
+        public void When_Serializing_Invalid_LinkAdrCmd_Should_Throw(string input, string missingProperty)
         {
-            var input = @"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""chmask"": 25, ""chmaskctl"": 0, ""nbtrans"": 1 }";
             var ex = Assert.Throws<JsonReaderException>(() => JsonConvert.DeserializeObject<MacCommand>(input));
-
-            Assert.Equal($"Property 'txpower' is missing", ex.Message);
+            Assert.Equal($"Property '{missingProperty}' is missing", ex.Message);
         }
     }
 }
