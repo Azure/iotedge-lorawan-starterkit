@@ -25,7 +25,7 @@
       <StackExchangeRedisVersion>2.1.58</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
       <ApplicationInsightsVersion>2.19.0</ApplicationInsightsVersion>
-      <PrometheusNetVersion>5.0.1</PrometheusNetVersion>
+      <PrometheusNetVersion>5.0.2</PrometheusNetVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
