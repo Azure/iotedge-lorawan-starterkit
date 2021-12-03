@@ -148,6 +148,9 @@
               },
               "FIXED_STATION_EUI": {
                 "value": "$LBS_FIXED_STATION_EUI"
+              },
+              "TLS_SNI": {
+                "value": "false"
               }
             },
             "version": "1.0",
