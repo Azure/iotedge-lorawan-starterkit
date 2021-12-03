@@ -6,6 +6,8 @@ namespace LoRaWan.Tests.E2E
     using System;
     using System.Globalization;
     using System.Threading.Tasks;
+    using LoRaTools;
+    using LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
     using Xunit;
     using XunitRetryHelper;
@@ -30,6 +32,52 @@ namespace LoRaWan.Tests.E2E
         public Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR_MultiGw()
         {
             return Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(nameof(TestFixtureCi.Device5_ABP_MultiGw));
+        }
+
+        [RetryFact]
+        public Task Test_ABP_ADR()
+        {
+            return Test_ABP_LinkADRRequest(nameof(TestFixtureCi.Device32_ABP));
+        }
+
+        private async Task Test_ABP_LinkADRRequest(string devicePropertyName)
+        {
+            var device = TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
+            await ArduinoDevice.setDeviceDefaultAsync();
+
+            LogTestStart(device);
+
+            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion, LoRaArduinoSerial._data_rate_t.DR3, 4, true);
+
+            const int UnconfirmedMsgCount = 2;
+
+            // Sends 2x unconfirmed messages
+            for (var i = 1; i <= UnconfirmedMsgCount; ++i)
+            {
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
+                Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{UnconfirmedMsgCount}");
+
+                await ArduinoDevice.transferPacketAsync(msg, 10);
+
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+
+                TestFixtureCi.ClearLogs();
+            }
+
+            var c2dMessage = new LoRaCloudToDeviceMessage()
+            {
+                Fport = 1,
+                Payload = string.Empty,
+                MacCommands = { new LinkADRRequest(4, 4, 25, 0, 1) }
+            };
+
+            await TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
+            Log($"C2D message sent to device, need to check if it receives");
         }
 
         // Verifies that ABP confirmed and unconfirmed messages are working
