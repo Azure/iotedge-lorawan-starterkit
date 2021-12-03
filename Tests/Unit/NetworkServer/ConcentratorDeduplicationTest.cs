@@ -114,9 +114,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(true, ConcentratorDeduplication.Result.Resubmission)]
-        [InlineData(false, ConcentratorDeduplication.Result.Drop)]
-        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, ConcentratorDeduplication.Result expectedResult)
+        [InlineData(true, true, ConcentratorDeduplication.Result.Resubmission)]
+        [InlineData(false, true, ConcentratorDeduplication.Result.Drop)]
+        [InlineData(false, false, ConcentratorDeduplication.Result.AllowButSkipConfirmation)]
+        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool dropDeduplication, ConcentratorDeduplication.Result expectedResult)
         {
             // arrange
             var stationEui = this.loraRequest.StationEui;
@@ -125,12 +126,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
             this.loraRequest.SetStationEui(anotherStation);
 
+            if (!dropDeduplication)
+                this.deduplicationStrategyMock.Setup(x => x.Create(this.loRaDevice)).Returns(new DeduplicationStrategyMark(NullLogger<DeduplicationStrategyMark>.Instance));
+
             // act/assert
             Assert.Equal(expectedResult, this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice));
             Assert.Equal(1, this.cache.Count);
             var key = ConcentratorDeduplication.CreateCacheKey(this.loraRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
-            Assert.Equal(expectedResult is ConcentratorDeduplication.Result.Drop ? stationEui : anotherStation, addedStation);
+            Assert.Equal(
+                (expectedResult is ConcentratorDeduplication.Result.Drop || expectedResult is ConcentratorDeduplication.Result.AllowButSkipConfirmation)
+                    ? stationEui
+                    : anotherStation,
+                addedStation);
         }
 
         [Fact]

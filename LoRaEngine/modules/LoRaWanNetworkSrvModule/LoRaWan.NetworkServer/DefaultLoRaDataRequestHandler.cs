@@ -108,7 +108,7 @@ namespace LoRaWan.NetworkServer
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
             }
-            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Resubmission)
+            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Resubmission || concentratorDeduplicationResult is ConcentratorDeduplication.Result.AllowButSkipConfirmation)
             {
                 skipConfirmation = true;
             }
@@ -293,6 +293,7 @@ namespace LoRaWan.NetworkServer
 
                 if (skipConfirmation)
                 {
+                    // TODO should we check if we have other messages pending?
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                 }
 
