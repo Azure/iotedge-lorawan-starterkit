@@ -44,7 +44,7 @@
       <MicrosoftAzureEventHubsProcessorVersion>4.3.2</MicrosoftAzureEventHubsProcessorVersion>
       <MicrosoftExtensionsLogging>6.0.0</MicrosoftExtensionsLogging>
       <MicrosoftExtensionsLoggingConfiguration>6.0.0</MicrosoftExtensionsLoggingConfiguration>
-      <BogusVersion>33.1.1</BogusVersion>
+      <BogusVersion>34.0.1</BogusVersion>
       <NullablePkg>1.3.0</NullablePkg>
       <MicrosoftAspNetCoreMvcTestingVersion>6.0.0</MicrosoftAspNetCoreMvcTestingVersion>
     </PropertyGroup>
