@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                var bundlerResult = await TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
+                var bundlerResult = await TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways, concentratorDeduplicationResult);
 
                 loRaADRResult = bundlerResult?.AdrResult;
 
@@ -685,10 +685,10 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
+        private async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways, ConcentratorDeduplication.Result deduplicationResult)
         {
             FunctionBundlerResult bundlerResult = null;
-            if (useMultipleGateways)
+            if (useMultipleGateways && deduplicationResult is ConcentratorDeduplication.Result.Allow)
             {
                 var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
                 if (bundler != null)
