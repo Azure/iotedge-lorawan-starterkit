@@ -1,32 +1,35 @@
 #This docker builds a container for the LoRa Basics station on arm32 architecture
 
-FROM arm32v7/debian:buster as build
+FROM debian:buster as build
 RUN apt-get update
 RUN apt-get install -y git
-RUN apt-get install -y --no-install-recommends apt-utils build-essential
+RUN apt-get install -y apt-utils build-essential gcc-arm-linux-gnueabihf
 RUN git clone --branch v2.0.5 --single-branch --depth 1 https://github.com/lorabasics/basicstation.git
+RUN mkdir -p ~/toolchain-rpi/bin/
+RUN ln -s /usr/bin/arm-linux-gnueabihf-gcc ~/toolchain-rpi/bin/arm-linux-gnueabihf-gcc
+RUN ln -s /usr/bin/arm-linux-gnueabihf-ld ~/toolchain-rpi/bin/arm-linux-gnueabihf-ld
+RUN ln -s /usr/bin/arm-linux-gnueabihf-ar ~/toolchain-rpi/bin/arm-linux-gnueabihf-ar
+RUN ln -s /usr/bin/arm-linux-gnueabihf-objdump ~/toolchain-rpi/bin/arm-linux-gnueabihf-objdump
+RUN ln -s /usr/bin/arm-linux-gnueabihf-objcopy ~/toolchain-rpi/bin/arm-linux-gnueabihf-objcopy
 WORKDIR /basicstation
 
 # make standard version
 RUN make platform=rpi variant=std
+RUN mkdir built && cp ./build-rpi-std/bin/station ./built/station.std
 
-FROM arm32v7/debian:buster-slim as base
-COPY --from=build /basicstation/build-rpi-std/bin/station /bin/station.std
-
-FROM build as build2
-# #reset
-WORKDIR /basicstation
+# clean before making spi speed 2 version
 RUN make platform=rpi variant=std clean
 # make spi speed 2 version
 RUN sed -i "s|8000000|2000000|g" /basicstation/deps/lgw/platform-rpi/libloragw/src/loragw_spi.native.c
 RUN make platform=rpi variant=std
+RUN cp ./build-rpi-std/bin/station ./built/station.spispeed2
 
-FROM base
-WORKDIR /bin
+FROM arm32v7/debian:buster
+WORKDIR /basicstation
 COPY --from=build /basicstation/deps/lgw/platform-rpi/reset_lgw.sh .
-COPY --from=build2 /basicstation/build-rpi-std/bin/station /bin/station.spispeed2
+COPY --from=build /basicstation/built/* .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
-COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basestation_arm.sh .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basestation.sh .
 COPY LICENSE .
-RUN chmod +x ./start_basestation_arm.sh
-ENTRYPOINT ["./start_basestation_arm.sh"]
+RUN chmod +x ./start_basestation.sh
+ENTRYPOINT ["./start_basestation.sh"]

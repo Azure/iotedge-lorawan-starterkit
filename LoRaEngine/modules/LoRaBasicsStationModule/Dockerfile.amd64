@@ -9,11 +9,11 @@ WORKDIR /basicstation
 RUN make platform=linux variant=std
 
 FROM debian:buster-slim
-WORKDIR /bin
-COPY --from=build /basicstation/build-linux-std/bin/station /bin/station
-COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basestation_amd64.sh .
+WORKDIR /basicstation
+COPY --from=build /basicstation/build-linux-std/bin/station ./station.std
+COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basestation.sh .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
 COPY --from=build /basicstation/deps/lgw/platform-linux/reset_lgw.sh .
 COPY LICENSE .
-RUN chmod +x ./start_basestation_amd64.sh
-ENTRYPOINT ["./start_basestation_amd64.sh"]
+RUN chmod +x ./start_basestation.sh
+ENTRYPOINT ["./start_basestation.sh"]
