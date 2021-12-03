@@ -208,6 +208,7 @@ jobs:
         RPI_HOST: ${{ secrets.RPI_HOST }}
         CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
       run: |
+        chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
