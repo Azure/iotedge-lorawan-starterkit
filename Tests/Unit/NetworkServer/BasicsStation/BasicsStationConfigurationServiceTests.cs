@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                     .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
 
         private const string TcUri = "wss://tc.local:5001";
-        private const string CupsUri = "https://cups.local:443";
+        private const string CupsUri = "https://cups.local:5002";
 
         private void SetupTwinResponse(StationEui stationEui, string primaryKey) =>
             SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)},

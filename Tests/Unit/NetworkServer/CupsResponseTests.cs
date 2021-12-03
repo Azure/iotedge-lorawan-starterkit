@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public CupsResponseTests()
         {
             this.cupsRequest = new CupsUpdateInfoRequest(StationEui.Parse("aaaa:bbff:fecc:dddd"),
-                                                         new Uri("https://localhost:443"),
+                                                         new Uri("https://localhost:5002"),
                                                          new Uri("wss://localhost:5001"),
                                                          12345,
                                                          12345);
@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task Serialize_WithCupsUriUpdates()
         {
             // setting up the twin in such a way that there are cups uri updates
-            var anotherCupsUri = "https://anotheruri:443";
+            var anotherCupsUri = "https://anotheruri:5002";
             var cupsTwinInfo = new CupsTwinInfo(new Uri(anotherCupsUri),
                                                 this.cupsRequest.TcUri,
                                                 this.cupsRequest.CupsCredentialsChecksum,
