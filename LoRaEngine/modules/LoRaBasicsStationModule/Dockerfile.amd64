@@ -1,6 +1,6 @@
 #This docker builds a container for the LoRa Basics station on amd64 architecture
 
-FROM debian:buster as build
+FROM amd64/debian:buster as build
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
@@ -8,7 +8,7 @@ RUN git clone --branch v2.0.5 --single-branch --depth 1 https://github.com/lorab
 WORKDIR /basicstation
 RUN make platform=linux variant=std
 
-FROM debian:buster-slim
+FROM amd64/debian:buster-slim
 WORKDIR /basicstation
 COPY --from=build /basicstation/build-linux-std/bin/station ./station.std
 COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basestation.sh .

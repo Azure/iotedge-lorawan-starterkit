@@ -1,6 +1,6 @@
 #This docker builds a container for the LoRa Basics station on arm32 architecture
 
-FROM debian:buster as build
+FROM amd64/debian:buster as build
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y apt-utils build-essential gcc-arm-linux-gnueabihf
