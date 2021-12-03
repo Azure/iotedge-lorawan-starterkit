@@ -68,16 +68,22 @@
               "image": "${MODULES.LoRaWanNetworkSrvModule}",
               "createOptions": {
                 "ExposedPorts": {
-                  "5000/tcp": {}
+                  "5001/tcp": {},
+                  "443/tcp": {}
                 },
                 "HostConfig": {
                   "Binds":  [
                     "$CERT_REMOTE_PATH:/var/lorastarterkit/certs/"
                   ],
                   "PortBindings": {
-                    "5000/tcp": [
+                    "5001/tcp": [
                       {
-                        "HostPort": "5000"
+                        "HostPort": "5001"
+                      }
+                    ],
+                    "443/tcp": [
+                      {
+                        "HostPort": "443"
                       }
                     ]
                   }
