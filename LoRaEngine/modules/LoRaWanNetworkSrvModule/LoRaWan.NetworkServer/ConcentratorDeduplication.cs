@@ -51,6 +51,9 @@ namespace LoRaWan.NetworkServer
             => loRaRequest.Payload is LoRaPayloadJoinRequest
             || (loRaRequest.Payload is LoRaPayloadData && this.deduplicationStrategy.Create(loRaDevice) is DeduplicationStrategyDrop);
 
+        internal static bool RequiresConfirmation(LoRaRequest loraRequest)
+            => loraRequest.Payload is LoRaPayloadData payload && (payload.IsConfirmed || payload.IsMacAnswerRequired);
+
         public Result CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
         {
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
@@ -68,7 +71,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            if (previousStation == stationEui)
+            if (RequiresConfirmation(loRaRequest) && previousStation == stationEui)
             {
                 this.logger.LogDebug("Message received from the same EUI {StationEui} as before, will not drop.", stationEui);
                 return Result.Resubmission;

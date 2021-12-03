@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
@@ -83,7 +84,7 @@ namespace LoRaWan.NetworkServer
             this.logger.LogDebug($"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}");
 
             var payloadPort = loraPayload.FPortValue;
-            var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
+            var requiresConfirmation = ConcentratorDeduplication.RequiresConfirmation(request);
 
             LoRaADRResult loRaADRResult = null;
 
@@ -101,16 +102,21 @@ namespace LoRaWan.NetworkServer
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
             var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
+            var skipConfirmation = false;
             var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicate(request, loRaDevice);
             if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Drop)
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
             }
+            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Resubmission)
+            {
+                skipConfirmation = true;
+            }
 
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
             // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
-            if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, requiresConfirmation, out var isConfirmedResubmit, out var result))
+            if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, concentratorDeduplicationResult, out var isConfirmedResubmit, out var result))
             {
                 return result;
             }
@@ -283,6 +289,11 @@ namespace LoRaWan.NetworkServer
 
                         loRaDevice.SetFcntUp(payloadFcntAdjusted);
                     }
+                }
+
+                if (skipConfirmation)
+                {
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                 }
 
                 // We check if we have time to futher progress or not
@@ -750,19 +761,19 @@ namespace LoRaWan.NetworkServer
         /// <param name="isFrameCounterFromNewlyStartedDevice"></param>
         /// <param name="payloadFcnt"></param>
         /// <param name="loRaDevice"></param>
-        /// <param name="requiresConfirmation"></param>
+        /// <param name="deduplicationResult"></param>
         /// <param name="isConfirmedResubmit"><code>True</code> when it's a confirmation resubmit.</param>
         /// <param name="result">When request is not valid, indicates the reason.</param>
         /// <returns><code>True</code> when the provided request is valid, false otherwise.</returns>
-        internal virtual bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, bool requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
+        internal virtual bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, ConcentratorDeduplication.Result deduplicationResult, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
         {
             isConfirmedResubmit = false;
             result = null;
 
             if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
             {
-                // if it is confirmed most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
-                if (requiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
+                // most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
+                if (deduplicationResult is ConcentratorDeduplication.Result.Resubmission)
                 {
                     if (!loRaDevice.ValidateConfirmResubmit(payloadFcnt))
                     {

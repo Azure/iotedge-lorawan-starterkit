@@ -45,9 +45,8 @@ namespace LoRaWan.Tests.Integration
 
             var deduplicationFactory = new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            var registryMock = new Mock<WebSocketWriterRegistry<StationEui, string>>(MockBehavior.Default, NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
-            _ = registryMock.Setup(r => r.IsSocketWriterOpen(It.IsAny<StationEui>())).Returns(true);
-            using var concentratorDeduplication = new ConcentratorDeduplication(cache, deduplicationFactory, registryMock.Object, NullLogger<IConcentratorDeduplication>.Instance);
+            var registry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance, null);
+            using var concentratorDeduplication = new ConcentratorDeduplication(cache, deduplicationFactory, registry, NullLogger<IConcentratorDeduplication>.Instance);
 
             var dataRequestHandlerMock = new Mock<DefaultLoRaDataRequestHandler>(MockBehavior.Default,
                 ServerConfiguration,
@@ -66,7 +65,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(true);
             var result1 = true;
             var result2 = new LoRaDeviceRequestProcessResult(this.loRaDevice, this.loraRequest, LoRaDeviceRequestFailedReason.UnknownDevice);
-            _ = dataRequestHandlerMock.Setup(x => x.ValidateRequest(It.IsAny<LoRaRequest>(), It.IsAny<bool>(), It.IsAny<uint>(), It.IsAny<LoRaDevice>(), It.IsAny<bool>(), out result1, out result2))
+            _ = dataRequestHandlerMock.Setup(x => x.ValidateRequest(It.IsAny<LoRaRequest>(), It.IsAny<bool>(), It.IsAny<uint>(), It.IsAny<LoRaDevice>(), It.IsAny<ConcentratorDeduplication.Result>(), out result1, out result2))
                 .Returns(false);
 
             // first request
