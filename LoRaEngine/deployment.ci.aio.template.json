@@ -141,7 +141,7 @@
                 "value": "$LBS_SPI_SPEED"
               },
               "TC_URI": {
-                "value": "ws://localhost:5000"
+                "value": "wss://localhost:5001"
               },
               "RESET_PIN": {
                 "value": "$RESET_PIN"
