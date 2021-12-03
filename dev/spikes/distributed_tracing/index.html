@@ -13,7 +13,7 @@
     
     
       
-        <title>Basics Station IoT Edge Module configuration parameters - IoTEdge LoRaWAN StarterKit - documentation</title>
+        <title>Distributed Tracing with IoT Edge - IoTEdge LoRaWAN StarterKit - documentation</title>
       
     
     
@@ -64,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#basics-station-iot-edge-module-configuration-parameters" class="md-skip">
+        <a href="#distributed-tracing-with-iot-edge" class="md-skip">
           Skip to content
         </a>
       
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Basics Station IoT Edge Module configuration parameters
+              Distributed Tracing with IoT Edge
             
           </span>
         </div>
@@ -223,15 +223,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../devguide/" class="md-tabs__link md-tabs__link--active">
+      <a href="../../user-guide/devguide/" class="md-tabs__link">
         User Guide
       </a>
     </li>
@@ -398,14 +396,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
@@ -428,7 +424,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../devguide/" class="md-nav__link">
+      <a href="../../user-guide/devguide/" class="md-nav__link">
         Developer Guidance
       </a>
     </li>
@@ -442,7 +438,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
+      <a href="../../user-guide/architecture/" class="md-nav__link">
         Architecture and Concepts for the LoRaWAN starter kit
       </a>
     </li>
@@ -456,7 +452,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../message-flows/" class="md-nav__link">
+      <a href="../../user-guide/message-flows/" class="md-nav__link">
         Message Flows
       </a>
     </li>
@@ -470,7 +466,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../partner/" class="md-nav__link">
+      <a href="../../user-guide/partner/" class="md-nav__link">
         Device Manufacturer Guidance
       </a>
     </li>
@@ -484,7 +480,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../caching/" class="md-nav__link">
+      <a href="../../user-guide/caching/" class="md-nav__link">
         Caching
       </a>
     </li>
@@ -498,7 +494,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../station-configuration/" class="md-nav__link">
+      <a href="../../user-guide/station-configuration/" class="md-nav__link">
         Basics Station configuration
       </a>
     </li>
@@ -512,7 +508,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../station-credential-management/" class="md-nav__link">
+      <a href="../../user-guide/station-credential-management/" class="md-nav__link">
         Basics Station credentials management
       </a>
     </li>
@@ -524,21 +520,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-module-configuration/" class="md-nav__link">
         Basics Station IoT Edge Module configuration parameters
       </a>
-      
     </li>
   
 
@@ -550,7 +536,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../upgrade/" class="md-nav__link">
+      <a href="../../user-guide/upgrade/" class="md-nav__link">
         Upgrade LoRaWAN to a new version
       </a>
     </li>
@@ -564,7 +550,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../documentation/" class="md-nav__link">
+      <a href="../../user-guide/documentation/" class="md-nav__link">
         Working with the documentation
       </a>
     </li>
@@ -1041,6 +1027,42 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#challenge" class="md-nav__link">
+    Challenge
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iot-hub-offering" class="md-nav__link">
+    IoT Hub offering
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#approach" class="md-nav__link">
+    Approach
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    Resources
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1051,49 +1073,78 @@
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/user-guide/station-module-configuration.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/spikes/distributed_tracing.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
-<h1 id="basics-station-iot-edge-module-configuration-parameters">Basics Station IoT Edge Module configuration parameters</h1>
-<p>The following table is providing a list of configuration options, to be provided as environment variables for manual configuration of the 'LoRaBasicsStationModule':</p>
-<table>
-<thead>
-<tr>
-<th>Environment variable name</th>
-<th>Description</th>
-<th>Mandatory</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>TC_URI</td>
-<td>The URI to the LNS Server implementation</td>
-<td><strong>Yes</strong> (i.e.: 'ws://IP_or_DNS:PORT')</td>
-</tr>
-<tr>
-<td>RESET_PIN</td>
-<td>Pin number for resetting the concentrator. </br> It is board specific.</td>
-<td>No (if not set, module will skip the reset of the board)</td>
-</tr>
-<tr>
-<td>SPI_DEV</td>
-<td>A number identifying the location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)</td>
-<td>No (defaults to 0)</td>
-</tr>
-<tr>
-<td>SPI_SPEED</td>
-<td>Useful for setting <a href="https://github.com/Lora-net/lora_gateway/blob/master/libloragw/src/loragw_spi.native.c">SPI max clock</a></td>
-<td>No (default to 8, unique alternative provided is 2)</td>
-</tr>
-<tr>
-<td>TC_TRUST_PATH</td>
-<td>The path to the tc.trust file. Refer to <a href=".\station-credential-management.md">this file</a> for more information</td>
-<td>No (if not set, defaulting to '/var/lorastarterkit/certs/tc.trust')</td>
-</tr>
-</tbody>
-</table>
+<h1 id="distributed-tracing-with-iot-edge">Distributed Tracing with IoT Edge</h1>
+<h2 id="challenge">Challenge</h2>
+<p>Processing of telemetry data coming from an edge device may include multiple running pieces. For example: sensor-&gt;module 1-&gt;module-2&gt;IoT Hub-&gt;function 1-&gt;microservice 1-&gt;microservice 2-&gt;storage.</p>
+<p><img alt="iot-flow.png" src="../../images/iot-flow.png" /></p>
+<p>While diagnosing and troubleshooting a problem such as "the data didn't arrive to the storage" or even worse "the data arrived but it's not what was expected", it's hard to "trace" how the data was traveling and what was happening at every single station. Hence distributed "tracing".</p>
+<p>As a matter of fact, in many cases we know how the data was traveling as the flows are mostly straight forward, but we don't know what was happening at every point in the flow when this specific data was processed. This is the real challenge.</p>
+<p>In IoT world the solution is getting more complicated as the flow consists of two parts: device and the cloud. While the flow steps in the cloud always have a direct access to the cloud tracing services (App Insights) and can flush their tracing data just on-the-fly, the steps happening in the device don't have this privilege as they are often offline and connection to the cloud service is very limited/restricted.</p>
+<p>Besides the standard use-case of sending telemetry data from devices to the cloud, there are other scenarios which would also benefit from distributed tracing functionality:</p>
+<ul>
+<li>Device-to-cloud file upload</li>
+<li>Cloud-to-device messages</li>
+<li>Cloud-to-device direct method invocation</li>
+<li>Direct access to external/cloud services from the device</li>
+</ul>
+<h2 id="iot-hub-offering">IoT Hub offering</h2>
+<p>There is a single resource that touches distributed tracing with IoT Hub: <a href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-distributed-tracing">Trace Azure IoT device-to-cloud messages with distributed tracing</a>.</p>
+<p>The preview IoT Hub feature which is described in the guidance is supposed to do the following:</p>
+<ul>
+<li>On message arrival from a device, IoT Hub generates a globally unique "correlationId"</li>
+<li>IoT Hub logs to Log Analytics/Event Hub a record under "DistributedTracing" category signaling that a message has arrived with DiagnosticIoTHubD2C operation.</li>
+<li>When IoT Hub writes the message to internal/built-in Event Hub it logs a record under "DistributedTracing" category to signal that event with DiagnosticIoTHubIngress operation.</li>
+<li>When there is a routing configured for the message and the message is written to an endpoint, IoT Hub logs a record under "DistributedTracing" category to signal that event with DiagnosticIoTHubEgress operation.</li>
+</ul>
+<p>All this is supposed to work only if a device uses C SDK for the communication or constructs a message manually handling all required properties.</p>
+<p>To summarize:</p>
+<ul>
+<li>The "distributed tracing" feature logs three steps of a message processing inside IoT Hub.</li>
+<li>These three log records are tied by generated "correlationId".</li>
+</ul>
+<p>This feature <a href="https://github.com/MicrosoftDocs/azure-docs/issues/84386">doesn't work</a>.  The guidance is referring to <a href="https://github.com/MicrosoftDocs/azure-docs/issues/84282">outdated/archived repo</a> samples that <a href="https://github.com/Azure-Samples/e2e-diagnostic-provision-cli/issues/12">are broken too</a>.</p>
+<p>But even if it worked, it would cover only a tiny piece in the whole flow - internal IoT Hub message processing, which is not that interesting after all. The picture is way bigger.</p>
+<h2 id="approach">Approach</h2>
+<ul>
+<li>Instrument custom modules on IoT Edge device with OpenTelemetry to report tracing.</li>
+<li>Instrument IoT Hub module with OpenTelemetry to report tracing. Since all communication on the device is routed through IoT Hub module this will give a lot of tracing data even without instrumenting other modules on the device. It will also help with use-cases like c2d, upload files, etc.</li>
+<li>The key component to route OpenTelemetry tracing data to the observability backend (e.g. App Insights, Jaeger, Zipkin, etc.) is <a href="https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/design.md">OpenTelemetry Collector</a> which may work on the device as a module and in the cloud as an Azure Function or K8s microservice.</li>
+<li>All modules on the device should export tracing data to OpenTelemetry Collector Module via <a href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md">OpenTelemetry Protocol Exporter</a> (e.g. with <a href="https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/src/OpenTelemetry.Exporter.OpenTelemetryProtocol/README.md">OTLP exporter</a>). This decouples the module code from the details on how/where the tracing data is going to be used.</li>
+<li>On the devices that are mostly/normally online, the OpenTelemetry Collector Module is configured to receive traces with <a href="https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md">OTLP Receiver</a> and to export traces to Azure Monitor (App Insights) via <a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/azuremonitorexporter">Azure Monitor Exporter for OpenTelemetry Collector</a><ul>
+<li>Alternatively, the devices that are always online (can't work otherwise) and have a stable connection with the cloud (like in LoRaWan case) may have custom modules export tracing data directly to App Insights with <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-enable?tabs=net#enable-azure-monitor-application-insights">Azure Monitor OpenTelemetry exporter</a>. In this case they don't need to have OpenTelemetry Collector Module on the device.</li>
+</ul>
+</li>
+</ul>
+<p><img alt="online-trace-data.png" src="../../images/online-trace-data.png" /></p>
+<ul>
+<li>On the devices that may be normally offline, the OpenTelemetry Collector Module is configured to export traces to Azure Blob Storage module (an OpenTelemetry Collector exporter for that should be implemented <a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter">in this repo</a>). Once the module is online the traces will be replicated automatically to the storage account in the cloud. On the cloud side there is an OpenTelemetry Collector instance running and receiving traces from the storage with Azure Storage receiver (to be implemented <a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver">in this repo</a>) and exports traces to Azure Monitor via <a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/azuremonitorexporter">Azure Monitor Exporter for OpenTelemetry Collector</a>.<ul>
+<li>Alternatively, for the devices that are mostly offline and/or not supposed to report much to the cloud, the tracing data can be forwarded by OpenTelemetry Collector Module to an open source observability backend (e.g. Jaeger, Zipkin) using one of <a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter">available exporters</a>.</li>
+<li>Alternatively, until Azure Storage receiver for OpenTelemetry Collector is implemented, a cloud workflow could be used to import traces from Azure Storage to the OpenTelemetry Collector. A cloud workflow typically consists of Event Hub listening for traces arrival to the storage and an Azure function triggering on that event. The function uses OTLP to export traces to the collector.</li>
+</ul>
+</li>
+</ul>
+<p><img alt="offline-trace-data.png" src="../../images/offline-trace-data.png" /></p>
+<ul>
+<li>All services in the cloud, that are included in the flow may export OpenTelemetry traces to Azure Monitor with the <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-overview#sending-your-telemetry">direct exporter</a> from the code or they may use OTLP to export traces to the OpenTelemetry Collector instance in the cloud. The latter covers cases when services are not implemented with one of <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/platforms">supported by Azure Monitor languages</a>, for example GoLang.</li>
+<li>All steps in the flow (modules on the device and services in the cloud) should leverage OpenTelemetry Tracing API components such as <a href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#set-attributes">Span Attributes</a> to store deviceid, sensorid, gateway, etc. and <a href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#add-events">Span Events</a> to store essential logs that should be exported with tracing data.</li>
+<li>D2C and C2D messages should contain <a href="https://opentelemetry.io/docs/reference/specification/overview/#spancontext">tracing span context</a> injected in the message system properties. It can be extracted and used by receiving modules and backend services to <a href="https://opentelemetry.io/docs/concepts/data-sources/#traces">continue the trace</a>. This may require using <a href="https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/src/OpenTelemetry.Api/README.md#context-propagation">Context propagation techniques</a>.</li>
+</ul>
+<h2 id="resources">Resources</h2>
+<ul>
+<li><a href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-distributed-tracing">Trace Azure IoT device-to-cloud messages with distributed tracing</a></li>
+<li><a href="https://github.com/Azure-Samples/e2e-diagnostic-provision-cli">E2E diagnostic provision CLI</a></li>
+<li><a href="https://github.com/Azure-Samples/e2e-diagnostic-eventhub-ai-function">E2E diagnostic event hub function</a></li>
+<li><a href="https://lightstep.com/blog/opentelemetry-101-what-is-tracing/">OpenTelemetry and Tracing</a></li>
+<li><a href="https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/design.md">OpenTelemetry Collector</a></li>
+<li><a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/azuremonitorexporter">Azure Monitor Exporter for OpenTelemetry Collector</a></li>
+<li><a href="https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/src/OpenTelemetry.Api/README.md#introduction-to-opentelemetry-net-tracing-api">OpenTelemetry .Net API</a></li>
+<li><a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-overview#sending-your-telemetry">Sending telemetry to Azure Monitor</a></li>
+</ul>
 
               
             </article>
@@ -1108,41 +1159,6 @@
       </main>
       
         <footer class="md-footer">
-  
-    <nav class="md-footer__inner md-grid" aria-label="Footer">
-      
-        
-        <a href="../station-credential-management/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Basics Station credentials management" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Basics Station credentials management
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../upgrade/" class="md-footer__link md-footer__link--next" aria-label="Next: Upgrade LoRaWAN to a new version" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Upgrade LoRaWAN to a new version
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
