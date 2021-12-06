@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.Logger
 {
     using System;
+    using global::Logger;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
@@ -192,7 +193,7 @@ namespace LoRaWan.Tests.Unit.Logger
 
             Assert.Equal(LogLevel.Debug, provider.LogLevel);
 
-            options.Update(new LoRaConsoleLoggerConfiguration { LogLevel = LogLevel.Critical });
+            options.Update(new LoRaLoggerConfiguration { LogLevel = LogLevel.Critical });
 
             Assert.Equal(LogLevel.Critical, provider.LogLevel);
         }
@@ -200,34 +201,34 @@ namespace LoRaWan.Tests.Unit.Logger
 
     public abstract class LoRaConsoleLoggerTestBase
     {
-        internal static TestLoRaConsoleLoggerOptionsMonitor CreateLoggerConfigMonitor(LoRaConsoleLoggerConfiguration config = null)
+        internal static TestLoRaConsoleLoggerOptionsMonitor CreateLoggerConfigMonitor(LoRaLoggerConfiguration config = null)
         {
-            config ??= new LoRaConsoleLoggerConfiguration() { LogLevel = LogLevel.Trace };
+            config ??= new LoRaLoggerConfiguration() { LogLevel = LogLevel.Trace };
             return new TestLoRaConsoleLoggerOptionsMonitor(config);
         }
     }
 
-    internal class TestLoRaConsoleLoggerOptionsMonitor : IOptionsMonitor<LoRaConsoleLoggerConfiguration>
+    internal class TestLoRaConsoleLoggerOptionsMonitor : IOptionsMonitor<LoRaLoggerConfiguration>
     {
-        public TestLoRaConsoleLoggerOptionsMonitor(LoRaConsoleLoggerConfiguration config)
+        public TestLoRaConsoleLoggerOptionsMonitor(LoRaLoggerConfiguration config)
         {
             CurrentValue = config;
         }
 
-        private Action<LoRaConsoleLoggerConfiguration, string> listener;
-        public LoRaConsoleLoggerConfiguration CurrentValue { get; private set; }
-        public LoRaConsoleLoggerConfiguration Get(string name)
+        private Action<LoRaLoggerConfiguration, string> listener;
+        public LoRaLoggerConfiguration CurrentValue { get; private set; }
+        public LoRaLoggerConfiguration Get(string name)
         {
             return CurrentValue;
         }
 
-        public void Update(LoRaConsoleLoggerConfiguration config)
+        public void Update(LoRaLoggerConfiguration config)
         {
             CurrentValue = config;
             this.listener?.Invoke(config, null);
         }
 
-        public IDisposable OnChange(Action<LoRaConsoleLoggerConfiguration, string> listener)
+        public IDisposable OnChange(Action<LoRaLoggerConfiguration, string> listener)
         {
             if (this.listener != null) throw new InvalidOperationException("Only one listener is supported");
             this.listener = listener;

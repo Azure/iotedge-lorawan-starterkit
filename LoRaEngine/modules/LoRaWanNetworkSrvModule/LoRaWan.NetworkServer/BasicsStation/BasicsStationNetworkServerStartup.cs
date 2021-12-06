@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                                                            NetworkServerConfiguration.GatewayID));
                             }
                             if (NetworkServerConfiguration.LogToHub)
-                                _ = loggingBuilder.AddIotHubLogger(new IotHubLoggerConfiguration(logLevel, default, true));
+                                _ = loggingBuilder.AddIotHubLogger(c => c.LogLevel = logLevel);
 
                             if (useApplicationInsights)
                             {

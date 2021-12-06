@@ -14,25 +14,23 @@ namespace Logger
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Logging;
-
-    public record IotHubLoggerConfiguration(LogLevel LogLevel, EventId EventId, bool UseScopes);
+    using Microsoft.Extensions.Logging.Configuration;
+    using Microsoft.Extensions.Options;
 
     internal sealed class IotHubLoggerProvider : ILoggerProvider
     {
         private readonly ConcurrentDictionary<string, IotHubLogger> loggers = new();
         private readonly Lazy<Task<ModuleClient>> moduleClientFactory;
 
-        public IotHubLoggerConfiguration Configuration { get; }
-        public LoggerExternalScopeProvider? ScopeProvider { get; }
+        internal LoggerConfigurationMonitor LoggerConfigurationMonitor { get; }
 
-        internal IotHubLoggerProvider(IotHubLoggerConfiguration configuration)
+        public IotHubLoggerProvider(IOptionsMonitor<LoRaLoggerConfiguration> configuration)
             : this(configuration, new Lazy<Task<ModuleClient>>(ModuleClient.CreateFromEnvironmentAsync(new[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) })))
         { }
 
-        internal IotHubLoggerProvider(IotHubLoggerConfiguration configuration, Lazy<Task<ModuleClient>> moduleClientFactory)
+        internal IotHubLoggerProvider(IOptionsMonitor<LoRaLoggerConfiguration> configuration, Lazy<Task<ModuleClient>> moduleClientFactory)
         {
-            Configuration = configuration;
-            ScopeProvider = configuration.UseScopes ? new LoggerExternalScopeProvider() : null;
+            LoggerConfigurationMonitor = new LoggerConfigurationMonitor(configuration);
             this.moduleClientFactory = moduleClientFactory;
         }
 
@@ -42,6 +40,7 @@ namespace Logger
         public void Dispose()
         {
             this.loggers.Clear();
+            this.LoggerConfigurationMonitor.Dispose();
         }
     }
 
@@ -60,10 +59,10 @@ namespace Logger
         }
 
         public IDisposable BeginScope<TState>(TState state) =>
-            this.iotHubLoggerProvider.ScopeProvider?.Push(state) ?? NoopDisposable.Instance;
+            this.iotHubLoggerProvider.LoggerConfigurationMonitor.ScopeProvider?.Push(state) ?? NoopDisposable.Instance;
 
         public bool IsEnabled(LogLevel logLevel) =>
-            !this.hasError && logLevel >= this.iotHubLoggerProvider.Configuration.LogLevel;
+            !this.hasError && logLevel >= this.iotHubLoggerProvider.LoggerConfigurationMonitor.Configuration.LogLevel;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
@@ -72,14 +71,14 @@ namespace Logger
             if (!IsEnabled(logLevel))
                 return;
 
-            var configuredEventId = this.iotHubLoggerProvider.Configuration.EventId;
+            var configuredEventId = this.iotHubLoggerProvider.LoggerConfigurationMonitor.Configuration.EventId;
             if (configuredEventId == 0 || configuredEventId == eventId)
             {
                 _ = Task.Run(async () =>
                 {
                     try
                     {
-                        var formattedMessage = LoggerHelper.AddScopeInformation(this.iotHubLoggerProvider.ScopeProvider, formatter(state, exception));
+                        var formattedMessage = LoggerHelper.AddScopeInformation(this.iotHubLoggerProvider.LoggerConfigurationMonitor.ScopeProvider, formatter(state, exception));
                         ModuleClient moduleClient;
                         try
                         {
@@ -111,10 +110,12 @@ namespace Logger
 
     public static class IotHubLoggerExtensions
     {
-        public static ILoggingBuilder AddIotHubLogger(this ILoggingBuilder builder, IotHubLoggerConfiguration configuration)
+        public static ILoggingBuilder AddIotHubLogger(this ILoggingBuilder builder, Action<LoRaLoggerConfiguration> configure)
         {
             if (builder is null) throw new ArgumentNullException(nameof(builder));
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, IotHubLoggerProvider>(_ => new IotHubLoggerProvider(configuration)));
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, IotHubLoggerProvider>());
+            LoggerProviderOptions.RegisterProviderOptions<LoRaLoggerConfiguration, IotHubLoggerProvider>(builder.Services);
+            _ = builder.Services.Configure(configure);
             return builder;
         }
     }

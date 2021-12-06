@@ -9,9 +9,11 @@ namespace LoRaWan.Tests.Unit.Logger
     using System.Threading;
     using System.Threading.Tasks;
     using global::Logger;
+    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
     using Moq;
     using Xunit;
 
@@ -24,7 +26,7 @@ namespace LoRaWan.Tests.Unit.Logger
         public async Task If_Log_Level_Is_Higher_Log_Is_Written(LogLevel configuredLevel, LogLevel entryLevel, int sendMessageCount)
         {
             // arrange
-            using var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(configuredLevel, default, false));
+            using var testableLogger = SetupProviderAndLogger(new LoRaLoggerConfiguration { LogLevel = configuredLevel, UseScopes = false });
 
             // act
             testableLogger.Value.Object.Log(entryLevel, "foo");
@@ -41,7 +43,7 @@ namespace LoRaWan.Tests.Unit.Logger
         public async Task When_EventId_Changes_Output_Is_Written_When_Matching_Or_Omitted(int configuredEventId, int loggedEventId, int sendMessageCount)
         {
             // arrange
-            using var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, configuredEventId, false));
+            using var testableLogger = SetupProviderAndLogger(new LoRaLoggerConfiguration { LogLevel = LogLevel.Trace, EventId = configuredEventId, UseScopes = false });
 
             // act
             testableLogger.Value.Object.LogInformation(loggedEventId, "Test");
@@ -67,7 +69,7 @@ namespace LoRaWan.Tests.Unit.Logger
         public async Task Scope_Is_Set_In_Message_When_Activated()
         {
             // arrange
-            using var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, UseScopes: true));
+            using var testableLogger = SetupProviderAndLogger(new LoRaLoggerConfiguration { LogLevel = LogLevel.Trace });
             const string devAddr = "12345678ADDR";
             const string message = "foo";
 
@@ -83,7 +85,7 @@ namespace LoRaWan.Tests.Unit.Logger
         public async Task Scope_Is_Not_Set_In_Message_When_Deactivated()
         {
             // arrange
-            using var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, UseScopes: false));
+            using var testableLogger = SetupProviderAndLogger(new LoRaLoggerConfiguration { LogLevel = LogLevel.Trace, UseScopes = false });
             const string devAddr = "12345678ADDR";
             const string message = "foo";
 
@@ -115,14 +117,17 @@ namespace LoRaWan.Tests.Unit.Logger
         }
 
         private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger(Lazy<Task<ModuleClient>>? moduleClientFactory) =>
-             SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, false), moduleClientFactory);
+             SetupProviderAndLogger(new LoRaLoggerConfiguration { LogLevel = LogLevel.Trace, UseScopes = false }, moduleClientFactory);
 
         private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger() => SetupProviderAndLogger(null);
 
-        private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger(IotHubLoggerConfiguration configuration, Lazy<Task<ModuleClient>>? moduleClientFactory = null)
+        private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger(LoRaLoggerConfiguration configuration, Lazy<Task<ModuleClient>>? moduleClientFactory = null)
         {
+            var optionsMonitor = new Mock<IOptionsMonitor<LoRaLoggerConfiguration>>();
+            optionsMonitor.Setup(om => om.CurrentValue).Returns(configuration);
+            optionsMonitor.Setup(om => om.OnChange(It.IsAny<Action<LoRaLoggerConfiguration, string>>())).Returns(NullDisposable.Instance);
             var mcf = moduleClientFactory ?? new Lazy<Task<ModuleClient>>(Task.FromResult((ModuleClient)null!));
-            var provider = new IotHubLoggerProvider(configuration, mcf);
+            var provider = new IotHubLoggerProvider(optionsMonitor.Object, mcf);
             return new DisposableValue<Mock<IotHubLogger>>(new Mock<IotHubLogger>(provider, mcf), provider);
         }
 
