@@ -227,6 +227,53 @@
                 "targetResourceType": "microsoft.devices/iothubs",
                 "actions": []
             }
-        }        
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "High Upstream Messages Lost Ratio",
+            "location": "global",
+            "properties": {
+                "description": "High Upstream Messages Lost Ratio (Correctness) (D2CMessagesReceived/D2CMessagesDelivered)",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[variables('ai_scope_resource_id')]"
+                ],
+                "evaluationFrequency": "[variables('evaluationFrequency')]",
+                "windowSize": "[variables('aggregationPeriod')]",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "[variables('alertSensitivity')]",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "[variables('metricNamespace')]",
+                            "metricName": "D2CMessagesLostRatio",
+                            "dimensions": [
+                                {
+                                    "name": "GatewayId",
+                                    "operator": "Include",
+                                    "values": [
+                                        "*"
+                                    ]
+                                }
+                            ],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion",
+                            "skipMetricValidation": true
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "microsoft.insights/components",
+                "actions": []
+            }
+        }                
     ]
 }
