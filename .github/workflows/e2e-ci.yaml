@@ -189,7 +189,7 @@ jobs:
     name: Generate and copy certificates
     environment:
       name: CI_AZURE_ENVIRONMENT
-    if: always()
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     needs:
       - env_var
     runs-on: [ self-hosted, x64 ]
