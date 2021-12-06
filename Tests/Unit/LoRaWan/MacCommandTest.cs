@@ -3,7 +3,6 @@
 
 namespace LoRaWan.Tests.Unit.LoRaTools
 {
-    using System;
     using System.Collections.Generic;
     using global::LoRaTools;
     using Newtonsoft.Json;

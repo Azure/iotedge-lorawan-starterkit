@@ -74,18 +74,18 @@ namespace LoRaTools
                     case Cid.LinkCheckCmd:
                     case Cid.LinkADRCmd:
                     {
-                        if (!item.TryGetValue("datarate", out var datarate))
-                            throw new JsonReaderException("Property 'datarate' is missing");
-                        if (!item.TryGetValue("txpower", out var txpower))
-                            throw new JsonReaderException("Property 'txpower' is missing");
-                        if (!item.TryGetValue("chmask", out var chmask))
-                            throw new JsonReaderException("Property 'chmask' is missing");
-                        if (!item.TryGetValue("chmaskctl", out var chmaskctl))
-                            throw new JsonReaderException("Property 'chmaskctl' is missing");
-                        if (!item.TryGetValue("nbtrans", out var nbtrans))
-                            throw new JsonReaderException("Property 'nbtrans' is missing");
+                        if (!item.TryGetValue("datarate", StringComparison.InvariantCultureIgnoreCase, out var datarate))
+                            throw new JsonReaderException("Property 'dataRate' is missing");
+                        if (!item.TryGetValue("txpower", StringComparison.InvariantCultureIgnoreCase, out var txpower))
+                            throw new JsonReaderException("Property 'txPower' is missing");
+                        if (!item.TryGetValue("chmask", StringComparison.InvariantCultureIgnoreCase, out var chmask))
+                            throw new JsonReaderException("Property 'chMask' is missing");
+                        if (!item.TryGetValue("chmaskcntl", StringComparison.InvariantCultureIgnoreCase, out var chmaskcntl))
+                            throw new JsonReaderException("Property 'chMaskCntl' is missing");
+                        if (!item.TryGetValue("nbrep", StringComparison.InvariantCultureIgnoreCase, out var nbrep))
+                            throw new JsonReaderException("Property 'nbRep' is missing");
 
-                        var cmd = new LinkADRRequest((ushort)datarate, (ushort)txpower, (ushort)chmask, (byte)chmaskctl, (byte)nbtrans);
+                        var cmd = new LinkADRRequest((ushort)datarate, (ushort)txpower, (ushort)chmask, (byte)chmaskcntl, (byte)nbrep);
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
