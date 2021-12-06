@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer
     {
         public RegistryMetricTagBag(NetworkServerConfiguration networkServerConfiguration)
         {
-            GatewayId = networkServerConfiguration.GatewayID;
+            GatewayId = string.IsNullOrEmpty(networkServerConfiguration.GatewayID) ? "unknown" : networkServerConfiguration.GatewayID;
         }
 
         public AsyncLocal<StationEui?> StationEui { get; } = new AsyncLocal<StationEui?>();

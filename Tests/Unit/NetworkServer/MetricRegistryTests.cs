@@ -173,6 +173,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
+        public void GetTagsInOrder_Should_Indicate_Gateway_Id_Unknown_When_GatewayId_Not_Set()
+        {
+            // arrange + act
+            var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.GatewayIdTagName },
+                                                             Array.Empty<KeyValuePair<string, object?>>(),
+                                                             new RegistryMetricTagBag(new NetworkServerConfiguration()));
+
+            // assert
+            Assert.Equal(new[] { "unknown" }, result);
+        }
+
+        [Fact]
         public void CompositeMetricExporter_Works_If_One_Exporter_Null()
         {
             // arrange
