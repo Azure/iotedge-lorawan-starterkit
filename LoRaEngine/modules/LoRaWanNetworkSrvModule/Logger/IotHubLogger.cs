@@ -50,6 +50,8 @@ namespace Logger
         private readonly IotHubLoggerProvider iotHubLoggerProvider;
         private readonly Lazy<Task<ModuleClient>> moduleClientFactory;
 
+        internal bool hasError;
+
         public IotHubLogger(IotHubLoggerProvider iotHubLoggerProvider,
                             Lazy<Task<ModuleClient>> moduleClientFactory)
         {
@@ -61,7 +63,7 @@ namespace Logger
             this.iotHubLoggerProvider.ScopeProvider?.Push(state) ?? NoopDisposable.Instance;
 
         public bool IsEnabled(LogLevel logLevel) =>
-            logLevel >= this.iotHubLoggerProvider.Configuration.LogLevel;
+            !this.hasError && logLevel >= this.iotHubLoggerProvider.Configuration.LogLevel;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
@@ -78,7 +80,18 @@ namespace Logger
                     try
                     {
                         var formattedMessage = LoggerHelper.AddScopeInformation(this.iotHubLoggerProvider.ScopeProvider, formatter(state, exception));
-                        await SendAsync(formattedMessage);
+                        ModuleClient moduleClient;
+                        try
+                        {
+                            moduleClient = await this.moduleClientFactory.Value;
+                        }
+                        catch (Exception)
+                        {
+                            this.hasError = true;
+                            throw;
+                        }
+
+                        await SendAsync(moduleClient, formattedMessage);
                     }
                     catch (Exception ex)
                     {
@@ -89,10 +102,9 @@ namespace Logger
             }
         }
 
-        internal virtual async Task SendAsync(string message)
+        internal virtual async Task SendAsync(ModuleClient moduleClient, string message)
         {
             using var m = new Message(Encoding.UTF8.GetBytes(message));
-            var moduleClient = await this.moduleClientFactory.Value;
             await moduleClient.SendEventAsync(m);
         }
     }

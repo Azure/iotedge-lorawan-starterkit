@@ -6,6 +6,7 @@
 namespace LoRaWan.Tests.Unit.Logger
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using global::Logger;
     using LoRaWan.Tests.Common;
@@ -63,7 +64,7 @@ namespace LoRaWan.Tests.Unit.Logger
         }
 
         [Fact]
-        public async void Scope_Is_Set_In_Message_When_Activated()
+        public async Task Scope_Is_Set_In_Message_When_Activated()
         {
             // arrange
             using var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, UseScopes: true));
@@ -79,7 +80,7 @@ namespace LoRaWan.Tests.Unit.Logger
         }
 
         [Fact]
-        public async void Scope_Is_Not_Set_In_Message_When_Deactivated()
+        public async Task Scope_Is_Not_Set_In_Message_When_Deactivated()
         {
             // arrange
             using var testableLogger = SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, UseScopes: false));
@@ -94,26 +95,48 @@ namespace LoRaWan.Tests.Unit.Logger
             await VerifyMessageAsync(testableLogger.Value, message);
         }
 
-        private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger() =>
-            SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, false));
-
-        private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger(IotHubLoggerConfiguration configuration)
+        [Fact]
+        public async Task Error_During_Module_Client_Initialization_Disables_Logger()
         {
-            var provider = new IotHubLoggerProvider(configuration, new Lazy<Task<ModuleClient>>((Task<ModuleClient>)null!));
-            return new DisposableValue<Mock<IotHubLogger>>(new Mock<IotHubLogger>(provider, null), provider);
+            // arrange
+            using var testableLogger = SetupProviderAndLogger(new Lazy<Task<ModuleClient>>(() => throw new FormatException()));
+            var logger = testableLogger.Value.Object;
+            var logLevel = LogLevel.Information;
+            Assert.True(logger.IsEnabled(logLevel));
+
+            // act
+            logger.Log(logLevel, "foo");
+
+            // assert
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            while (logger.IsEnabled(logLevel))
+                await Task.Delay(TimeSpan.FromMilliseconds(50), cts.Token);
+            Assert.False(logger.IsEnabled(logLevel));
+        }
+
+        private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger(Lazy<Task<ModuleClient>>? moduleClientFactory) =>
+             SetupProviderAndLogger(new IotHubLoggerConfiguration(LogLevel.Trace, default, false), moduleClientFactory);
+
+        private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger() => SetupProviderAndLogger(null);
+
+        private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger(IotHubLoggerConfiguration configuration, Lazy<Task<ModuleClient>>? moduleClientFactory = null)
+        {
+            var mcf = moduleClientFactory ?? new Lazy<Task<ModuleClient>>(Task.FromResult((ModuleClient)null!));
+            var provider = new IotHubLoggerProvider(configuration, mcf);
+            return new DisposableValue<Mock<IotHubLogger>>(new Mock<IotHubLogger>(provider, mcf), provider);
         }
 
         private static async Task VerifyMessageAsync(Mock<IotHubLogger> logger, string message)
         {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed (false positive, verification only)
-            await logger.RetryVerifyAsync(x => x.SendAsync(message), Times.Once);
+            await logger.RetryVerifyAsync(x => x.SendAsync(It.IsAny<ModuleClient>(), message), Times.Once);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
         private static async Task VerifySendMessageCountAsync(Mock<IotHubLogger> logger, int sendMessageCount)
         {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed (false positive, verification only)
-            await logger.RetryVerifyAsync(x => x.SendAsync(It.IsAny<string>()), Times.Exactly(sendMessageCount));
+            await logger.RetryVerifyAsync(x => x.SendAsync(It.IsAny<ModuleClient>(), It.IsAny<string>()), Times.Exactly(sendMessageCount));
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
     }
