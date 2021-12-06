@@ -928,7 +928,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 TrackErrorIf(opts.TcUri is { } tu && tu.Port != 5001, "CUPS is enabled but TC URI does not point to port 5001.");
                 TrackErrorIf(opts.CupsUri is null, "CUPS is enabled but CUPS URI is not defined");
                 TrackErrorIf(opts.CupsUri is { } cupsUri && !cupsUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase), "CUPS is enabled but CUPS URI is not in https:// protocol.");
-                TrackErrorIf(opts.CupsUri is { } cu && cu.Port != 443, "CUPS is enabled but CUPS URI does not point to port 443.");
+                TrackErrorIf(opts.CupsUri is { } cu && cu.Port != 5002, "CUPS is enabled but CUPS URI does not point to port 5002.");
             }
 
             void TrackErrorIf(bool hasError, string message)
