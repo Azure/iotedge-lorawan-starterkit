@@ -16,11 +16,33 @@ namespace LoRaWan.NetworkServer
         public const string Namespace = "LoRaWan";
         public const string Version = "1.0";
         public const string GatewayIdTagName = "GatewayId";
+        public const string ReceiveWindowTagName = "ReceiveWindow";
 
         public static readonly CustomMetric JoinRequests = new CustomMetric("JoinRequests", "Number of join requests", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric ActiveStationConnections = new CustomMetric("ActiveStationConnections", "Number of active station connections", MetricType.ObservableGauge, Array.Empty<string>());
+        public static readonly CustomMetric StationConnectivityLost = new CustomMetric("StationConnectivityLost", "Counts the number of station connectivities that were lost", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric ReceiveWindowHits = new CustomMetric("ReceiveWindowHits", "Receive window hits", MetricType.Counter, new[] { GatewayIdTagName, ReceiveWindowTagName });
+        public static readonly CustomMetric ReceiveWindowMisses = new CustomMetric("ReceiveWindowMisses", "Receive window misses", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric UnhandledExceptions = new CustomMetric("UnhandledExceptions", "Number of unhandled exceptions", MetricType.Counter, Array.Empty<string>());
+        public static readonly CustomMetric D2CMessageDeliveryLatency = new CustomHistogram("D2CMessageDeliveryLatency", "D2C delivery latency (in milliseconds)", MetricType.Histogram, new[] { GatewayIdTagName },
+                                                                                            BucketStart: 100, BucketWidth: 50, BucketCount: 45);
+        public static readonly CustomMetric D2CMessagesReceived = new CustomMetric("D2CMessagesReceived", "Number of D2C messages received", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric D2CMessageSize = new CustomHistogram("D2CMessageSize", "Size of D2C messages (in bytes)", MetricType.Histogram, new[] { GatewayIdTagName },
+                                                                                 BucketStart: 5, BucketWidth: 10, BucketCount: 26);
+        public static readonly CustomMetric C2DMessageTooLong = new CustomMetric("C2DMessageTooLong", "Number of C2D messages that were too long to be sent downstream", MetricType.Counter, new[] { GatewayIdTagName });
+
         private static readonly ICollection<CustomMetric> Registry = new[]
         {
-            JoinRequests
+            JoinRequests,
+            ActiveStationConnections,
+            StationConnectivityLost,
+            ReceiveWindowHits,
+            ReceiveWindowMisses,
+            UnhandledExceptions,
+            D2CMessageDeliveryLatency,
+            D2CMessagesReceived,
+            D2CMessageSize,
+            C2DMessageTooLong
         };
 
         public static readonly IDictionary<string, CustomMetric> RegistryLookup =
@@ -29,10 +51,15 @@ namespace LoRaWan.NetworkServer
 
     internal record CustomMetric(string Name, string Description, MetricType Type, string[] Tags);
 
+    internal record CustomHistogram(string Name, string Description, MetricType Type, string[] Tags,
+                                    double BucketStart, double BucketWidth, int BucketCount)
+        : CustomMetric(Name, Description, Type, Tags);
+
     internal enum MetricType
     {
         Counter,
-        Histogram
+        Histogram,
+        ObservableGauge
     }
 
     internal interface IMetricExporter : IDisposable
@@ -113,6 +140,11 @@ namespace LoRaWan.NetworkServer
         public static Histogram<T> CreateHistogram<T>(this Meter meter, CustomMetric customMetric) where T : struct =>
             customMetric.Type == MetricType.Histogram
             ? meter.CreateHistogram<T>(customMetric.Name, description: customMetric.Description)
+            : throw new ArgumentException("Custom metric must of type Histogram", nameof(customMetric));
+
+        public static ObservableGauge<T> CreateObservableGauge<T>(this Meter meter, CustomMetric customMetric, Func<T> observeValue) where T : struct =>
+            customMetric.Type == MetricType.ObservableGauge
+            ? meter.CreateObservableGauge(customMetric.Name, observeValue, description: customMetric.Description)
             : throw new ArgumentException("Custom metric must of type Histogram", nameof(customMetric));
     }
 }

@@ -49,7 +49,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var message = new Message(Encoding.UTF8.GetBytes(json));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
-            Assert.Equal($"could not parse cloud to device message: {json}", errorMessage);
+            Assert.Contains($"could not parse cloud to device message: {json}", errorMessage, StringComparison.InvariantCulture);
         }
 
         [Theory]
@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var message = new Message(Encoding.UTF8.GetBytes(json));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
-            Assert.Equal($"could not parse cloud to device message: {json}", errorMessage);
+            Assert.Contains($"could not parse cloud to device message: {json}: Unknown MAC command identifier", errorMessage, StringComparison.InvariantCulture);
         }
 
         [Theory]

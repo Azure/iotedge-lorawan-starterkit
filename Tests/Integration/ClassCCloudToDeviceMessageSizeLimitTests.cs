@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -121,7 +122,8 @@ namespace LoRaWan.Tests.Integration
                 this.loRaDeviceRegistry,
                 PacketForwarder,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             // Expectations
             // Verify that C2D message is sent
@@ -206,7 +208,8 @@ namespace LoRaWan.Tests.Integration
                 this.loRaDeviceRegistry,
                 PacketForwarder,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance);
+                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                TestMeter.Instance);
 
             // Expectations
             // Verify that C2D message is sent

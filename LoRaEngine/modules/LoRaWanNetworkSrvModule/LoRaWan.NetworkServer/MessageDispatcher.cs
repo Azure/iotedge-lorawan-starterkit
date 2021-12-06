@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Diagnostics.Metrics;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
@@ -22,6 +23,7 @@ namespace LoRaWan.NetworkServer
         private readonly IJoinRequestMessageHandler joinRequestHandler;
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<MessageDispatcher> logger;
+        private readonly Histogram<double> d2cMessageDeliveryLatencyHistogram;
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
@@ -29,7 +31,8 @@ namespace LoRaWan.NetworkServer
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             IJoinRequestMessageHandler joinRequestHandler,
             ILoggerFactory loggerFactory,
-            ILogger<MessageDispatcher> logger)
+            ILogger<MessageDispatcher> logger,
+            Meter meter)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.deviceRegistry = deviceRegistry;
@@ -42,6 +45,7 @@ namespace LoRaWan.NetworkServer
             this.joinRequestHandler = joinRequestHandler;
             this.loggerFactory = loggerFactory;
             this.logger = logger;
+            this.d2cMessageDeliveryLatencyHistogram = meter?.CreateHistogram<double>(MetricRegistry.D2CMessageDeliveryLatency);
         }
 
         /// <summary>
@@ -51,9 +55,10 @@ namespace LoRaWan.NetworkServer
                                    ILoRaDeviceRegistry deviceRegistry,
                                    ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
             : this(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
-                   new JoinRequestMessageHandler(configuration, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance),
+                   new JoinRequestMessageHandler(configuration, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance, null),
                    NullLoggerFactory.Instance,
-                   NullLogger<MessageDispatcher>.Instance)
+                   NullLogger<MessageDispatcher>.Instance,
+                   null)
         { }
 
         /// <summary>
@@ -93,7 +98,7 @@ namespace LoRaWan.NetworkServer
 
             request.SetRegion(this.loraRegion);
 
-            var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>());
+            var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>(), this.d2cMessageDeliveryLatencyHistogram);
 
             if (request.Payload.LoRaMessageType == LoRaMessageType.JoinRequest)
             {

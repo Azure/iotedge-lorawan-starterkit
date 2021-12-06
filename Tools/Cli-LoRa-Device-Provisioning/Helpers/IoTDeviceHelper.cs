@@ -7,9 +7,7 @@ namespace LoRaWan.Tools.CLI.Helpers
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
-    using Azure.Storage.Blobs;
     using LoRaWan.Tools.CLI.Options;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -909,8 +907,12 @@ namespace LoRaWan.Tools.CLI.Helpers
             var isValid = true;
             TrackErrorIf(string.IsNullOrEmpty(opts.StationEui), "'Concentrator' device type has been specified but StationEui option is missing.");
             TrackErrorIf(string.IsNullOrEmpty(opts.Region), "'Concentrator' device type has been specified but Region option is missing.");
-            TrackErrorIf(opts.Region is { } region && !File.Exists(Path.Combine(DefaultRouterConfigFolder, $"{region.ToUpperInvariant()}.json")),
-                         $"'Concentrator' device type has been specified with Region '{opts.Region.ToUpperInvariant()}' but no default router config file was found.");
+            if (opts.Region is { } region)
+            {
+                TrackErrorIf(!File.Exists(Path.Combine(DefaultRouterConfigFolder, $"{region.ToUpperInvariant()}.json")),
+                             $"'Concentrator' device type has been specified with Region '{region.ToUpperInvariant()}' but no default router config file was found.");
+            }
+
             if (opts.NoCups)
             {
                 TrackErrorIf(opts.TcUri is not null, "TC URI must not be defined if --no-cups is set.");
@@ -952,19 +954,22 @@ namespace LoRaWan.Tools.CLI.Helpers
             var propObject = JsonConvert.DeserializeObject<JObject>(jsonString);
             twinProperties.Desired[TwinProperty.RouterConfig] = propObject;
 
-            // Add CUPS configuration
-            twinProperties.Desired[TwinProperty.Cups] = new JObject
+            if (!opts.NoCups)
             {
-                [TwinProperty.TcCredentialUrl] = certificateBundleLocation,
-                [TwinProperty.TcCredentialCrc] = crcChecksum,
-                [TwinProperty.CupsCredentialUrl] = certificateBundleLocation,
-                [TwinProperty.CupsCredentialCrc] = crcChecksum,
-                [TwinProperty.CupsUri] = opts.CupsUri,
-                [TwinProperty.TcUri] = opts.TcUri,
-            };
+                // Add CUPS configuration
+                twinProperties.Desired[TwinProperty.Cups] = new JObject
+                {
+                    [TwinProperty.TcCredentialUrl] = certificateBundleLocation,
+                    [TwinProperty.TcCredentialCrc] = crcChecksum,
+                    [TwinProperty.CupsCredentialUrl] = certificateBundleLocation,
+                    [TwinProperty.CupsCredentialCrc] = crcChecksum,
+                    [TwinProperty.CupsUri] = opts.CupsUri,
+                    [TwinProperty.TcUri] = opts.TcUri,
+                };
 
-            // Add client certificate thumbprints
-            twinProperties.Desired[TwinProperty.ClientThumbprint] = new JArray(opts.ClientCertificateThumbprints);
+                // Add client certificate thumbprints
+                twinProperties.Desired[TwinProperty.ClientThumbprint] = new JArray(opts.ClientCertificateThumbprints);
+            }
 
             return new Twin
             {

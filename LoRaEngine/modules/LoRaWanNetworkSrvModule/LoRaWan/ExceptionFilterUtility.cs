@@ -7,15 +7,23 @@ namespace LoRaWan
 
     public static class ExceptionFilterUtility
     {
-        public static bool True(Action action)
+        public static bool True(params Action[] actions)
         {
-            (action ?? throw new ArgumentNullException(nameof(action)))();
+            if (actions is null) throw new ArgumentNullException(nameof(actions));
+
+            foreach (var a in actions)
+                a();
+
             return true;
         }
 
-        public static bool False(Action action)
+        public static bool False(params Action[] actions)
         {
-            (action ?? throw new ArgumentNullException(nameof(action)))();
+            if (actions is null) throw new ArgumentNullException(nameof(actions));
+
+            foreach (var a in actions)
+                a();
+
             return false;
         }
     }
