@@ -102,14 +102,13 @@ namespace LoRaWan.NetworkServer
             var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
             var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicate(request, loRaDevice);
-            if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Drop)
+            if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Duplicate)
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
             }
-            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.AllowButSkipConfirmation)
+            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.SoftDuplicate)
             {
-                // If it was detected as a duplicate we can not send a confirmation as we would get collisions on the air.
-                // this overrides the flag set on the upstream message.
+                // Request is allowed upstream but confirmation is skipped to avoid collisions on the air.
                 requiresConfirmation = false;
             }
 
@@ -151,7 +150,7 @@ namespace LoRaWan.NetworkServer
                 if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
                 {
                     // if we got an ADR result or request, we have to send the update to the device
-                    requiresConfirmation = true; // TODO: is it oK to set to true if AllowButSkipConfirmation?
+                    requiresConfirmation = true;
                 }
 
                 if (useMultipleGateways)
@@ -280,7 +279,8 @@ namespace LoRaWan.NetworkServer
                         // In case it is a Mac Command only we don't want to send it to the IoT Hub
                         if (payloadPort != LoRaFPort.MacCommand)
                         {
-                            var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplication.Result.Allow || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);
+                            // combine the results of the 2 deduplications: on the concentrator level and on the network server layer
+                            var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplication.Result.NotDuplicate || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);
                             if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, isDuplicate, decryptedPayloadData))
                             {
                                 // failed to send event to IoT Hub, stop now
@@ -695,8 +695,9 @@ namespace LoRaWan.NetworkServer
         private async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways, ConcentratorDeduplication.Result deduplicationResult)
         {
             FunctionBundlerResult bundlerResult = null;
-            if (useMultipleGateways && (deduplicationResult is ConcentratorDeduplication.Result.Allow || deduplicationResult is ConcentratorDeduplication.Result.Resubmission))
+            if (useMultipleGateways && (deduplicationResult is ConcentratorDeduplication.Result.NotDuplicate || deduplicationResult is ConcentratorDeduplication.Result.DuplicateDueToResubmission))
             {
+                // in the case of resubmissions we need to contact the function to get a valid frame counter down
                 var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
                 if (bundler != null)
                 {

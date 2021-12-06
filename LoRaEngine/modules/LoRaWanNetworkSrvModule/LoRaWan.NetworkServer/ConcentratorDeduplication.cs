@@ -17,10 +17,10 @@ namespace LoRaWan.NetworkServer
     {
         public enum Result
         {
-            Allow,
-            Resubmission,
-            Drop,
-            AllowButSkipConfirmation
+            NotDuplicate,
+            DuplicateDueToResubmission,
+            Duplicate,
+            SoftDuplicate // detected as a duplicate but due to the DeduplicationStrategy marked as a "soft" duplicate
         }
 
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
@@ -67,25 +67,25 @@ namespace LoRaWan.NetworkServer
                 if (!this.cache.TryGetValue(key, out previousStation))
                 {
                     AddToCache(key, stationEui);
-                    return Result.Allow;
+                    return Result.NotDuplicate;
                 }
             }
 
             if (RequiresConfirmation(loRaRequest) && previousStation == stationEui)
             {
-                this.logger.LogDebug("Message received from the same EUI {StationEui} as before, will not drop.", stationEui);
-                return Result.Resubmission;
+                this.logger.LogDebug($"Message received from the same EUI {stationEui} as before, will not drop.");
+                return Result.DuplicateDueToResubmission;
             }
 
             // received from a different station
             if (ShouldDrop(loRaRequest, loRaDevice))
             {
-                this.logger.LogInformation($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {previousStation}, will drop.");
-                return Result.Drop;
+                this.logger.LogInformation($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {stationEui}, will drop.");
+                return Result.Duplicate;
             }
 
-            this.logger.LogInformation($"Message from station with EUI {previousStation} will not be dropped due to DeduplicationStrategy {this.deduplicationStrategy.Create(loRaDevice)}.");
-            return Result.AllowButSkipConfirmation;
+            this.logger.LogDebug($"Message from station with EUI {stationEui} will not be dropped due to DeduplicationStrategy.");
+            return Result.SoftDuplicate;
         }
 
         internal static string CreateCacheKey(LoRaRequest loRaRequest)

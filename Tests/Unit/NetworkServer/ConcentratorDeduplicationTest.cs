@@ -107,16 +107,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var result = this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice);
 
             // assert
-            Assert.Equal(ConcentratorDeduplication.Result.Allow, result);
+            Assert.Equal(ConcentratorDeduplication.Result.NotDuplicate, result);
             var key = ConcentratorDeduplication.CreateCacheKey(this.loraRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(this.loraRequest.StationEui, addedStation);
         }
 
         [Theory]
-        [InlineData(true, true, ConcentratorDeduplication.Result.Resubmission)]
-        [InlineData(false, true, ConcentratorDeduplication.Result.Drop)]
-        [InlineData(false, false, ConcentratorDeduplication.Result.AllowButSkipConfirmation)]
+        [InlineData(true, true, ConcentratorDeduplication.Result.DuplicateDueToResubmission)]
+        [InlineData(false, true, ConcentratorDeduplication.Result.Duplicate)]
+        [InlineData(false, false, ConcentratorDeduplication.Result.SoftDuplicate)]
         public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool dropDeduplication, ConcentratorDeduplication.Result expectedResult)
         {
             // arrange
@@ -135,7 +135,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var key = ConcentratorDeduplication.CreateCacheKey(this.loraRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(
-                (expectedResult is ConcentratorDeduplication.Result.Drop || expectedResult is ConcentratorDeduplication.Result.AllowButSkipConfirmation)
+                (expectedResult is ConcentratorDeduplication.Result.Duplicate || expectedResult is ConcentratorDeduplication.Result.SoftDuplicate)
                     ? stationEui
                     : anotherStation,
                 addedStation);

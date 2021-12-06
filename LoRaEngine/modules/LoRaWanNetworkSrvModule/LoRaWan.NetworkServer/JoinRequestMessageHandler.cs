@@ -66,7 +66,7 @@ namespace LoRaWan.NetworkServer
                     var devNonce = joinReq.GetDevNonceAsString();
                     this.logger.LogInformation("join request received");
 
-                    if (this.concentratorDeduplication.CheckDuplicate(request, loRaDevice) is ConcentratorDeduplication.Result.Drop)
+                    if (this.concentratorDeduplication.CheckDuplicate(request, loRaDevice) is ConcentratorDeduplication.Result.Duplicate)
                     {
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.DeduplicationDrop);
                         // we do not log here as the concentratorDeduplication service already does more detailed logging
