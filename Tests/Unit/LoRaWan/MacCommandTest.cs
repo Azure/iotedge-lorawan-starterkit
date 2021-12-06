@@ -37,7 +37,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         [Fact]
         public void When_Serializing_LinkAdrCmd_Should_Create_Correct_Items()
         {
-            var input = @"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""txpower"": 4, ""chmask"": 25, ""chmaskctl"": 0, ""nbtrans"": 1 }";
+            var input = @"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""txpower"": 4, ""chmask"": 25, ""chmaskcntl"": 0, ""nbrep"": 1 }";
             var macCommand = JsonConvert.DeserializeObject<MacCommand>(input);
             Assert.NotNull(macCommand);
             Assert.IsType<LinkADRRequest>(macCommand);
@@ -50,10 +50,10 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         }
 
         [Theory]
-        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""chmask"": 25, ""chmaskctl"": 0, ""nbtrans"": 1 }", "txpower")]
-        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""chmask"": 20 }", "datarate")]
-        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 6, ""txpower"": 4, ""chmask"": 0 }", "chmaskctl")]
-        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 8, ""txpower"": 0, ""chmask"": 20, ""chmaskctl"": 1 }", "nbtrans")]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""chmask"": 25, ""chmaskcntl"": 0, ""nbrep"": 1 }", "txPower")]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""chmask"": 20 }", "dataRate")]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 6, ""txpower"": 4, ""chmask"": 0 }", "chMaskCntl")]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 8, ""txpower"": 0, ""chmask"": 20, ""chmaskcntl"": 1 }", "nbRep")]
         public void When_Serializing_Invalid_LinkAdrCmd_Should_Throw(string input, string missingProperty)
         {
             var ex = Assert.Throws<JsonReaderException>(() => JsonConvert.DeserializeObject<MacCommand>(input));
