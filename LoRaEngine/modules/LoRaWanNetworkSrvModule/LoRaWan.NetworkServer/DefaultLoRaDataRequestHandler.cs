@@ -280,7 +280,8 @@ namespace LoRaWan.NetworkServer
                         // In case it is a Mac Command only we don't want to send it to the IoT Hub
                         if (payloadPort != LoRaFPort.MacCommand)
                         {
-                            if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, bundlerResult?.DeduplicationResult, decryptedPayloadData))
+                            var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplication.Result.Allow || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);
+                            if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, isDuplicate, decryptedPayloadData))
                             {
                                 // failed to send event to IoT Hub, stop now
                                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
@@ -598,7 +599,7 @@ namespace LoRaWan.NetworkServer
             return true;
         }
 
-        private async Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, DeduplicationResult deduplicationResult, byte[] decryptedPayloadData)
+        private async Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
         {
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
             var deviceTelemetry = new LoRaDeviceTelemetry(request.Rxpk, loRaPayloadData, decodedValue, decryptedPayloadData)
@@ -608,7 +609,7 @@ namespace LoRaWan.NetworkServer
                 Edgets = (long)(timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds
             };
 
-            if (deduplicationResult != null && deduplicationResult.IsDuplicate)
+            if (isDuplicate)
             {
                 deviceTelemetry.DupMsg = true;
             }
