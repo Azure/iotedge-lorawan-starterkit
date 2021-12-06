@@ -11,7 +11,7 @@
     </PropertyGroup>
     <PropertyGroup>
       <DockerDotNetX509Version>3.125.2</DockerDotNetX509Version>
-      <MicrosoftAzureDevicesVersion>1.36.0</MicrosoftAzureDevicesVersion>
+      <MicrosoftAzureDevicesVersion>1.33.0</MicrosoftAzureDevicesVersion>
       <MicrosoftAzureDevicesClientVersion>1.39.0</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>6.0.0</MicrosoftExtensionsCachingMemoryVersion>
       <MicrosoftAzureFunctionsExtensionsVersion>1.0.0</MicrosoftAzureFunctionsExtensionsVersion>
