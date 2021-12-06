@@ -29,7 +29,7 @@ WORKDIR /basicstation
 COPY --from=build /basicstation/deps/lgw/platform-rpi/reset_lgw.sh .
 COPY --from=build /basicstation/built/* .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
-COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basestation.sh .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basicsstation.sh .
 COPY LICENSE .
-RUN chmod +x ./start_basestation.sh
-ENTRYPOINT ["./start_basestation.sh"]
+RUN chmod +x ./start_basicsstation.sh
+ENTRYPOINT ["./start_basicsstation.sh"]
