@@ -21,6 +21,8 @@ curl -L https://github.com/Azure/azure-iotedge/releases/download/1.2.5/aziot-ide
 curl -L https://github.com/Azure/azure-iotedge/releases/download/1.2.5/aziot-edge_1.2.5-1_debian11_armhf.deb -o aziot-edge.deb && sudo apt-get install ./aziot-edge.deb
 ```
 
+If you want to install specific versions of IoT Edge that differ from the abovementioned versions, refer to [offline or specific version installation](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-provision-single-device-linux-symmetric?view=iotedge-2020-11&tabs=azure-portal#offline-or-specific-version-installation-optional).
+
 If you do not want to perform a clean install of Raspberry OS but instead want to upgrade an existing image, you can consider using the following commands to perform a full upgrade. Please note that this is not recommended, it might leave you with a broken installation.
 
 Update the `/etc/apt/sources.list` file and replace all occurrences of `buster` with `bullseye`. Do the same for any list file in `/etc/apt/sources.list.d`. Then run:
