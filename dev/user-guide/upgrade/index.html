@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.0.3">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.0.4">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.62128196.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2a4617e2.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.9204c3b2.min.css">
@@ -577,6 +577,26 @@
   <a href="#release-200-alpha-not-released-yet" class="md-nav__link">
     Release 2.0.0-alpha (not released yet)
   </a>
+  
+    <nav class="md-nav" aria-label="Release 2.0.0-alpha (not released yet)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-to-raspberry-pi-os-bullseye" class="md-nav__link">
+    Upgrading to Raspberry Pi OS (bullseye)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#azure-functions" class="md-nav__link">
+    Azure Functions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1367,6 +1387,26 @@
     Release 2.0.0-alpha (not released yet)
   </a>
   
+    <nav class="md-nav" aria-label="Release 2.0.0-alpha (not released yet)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-to-raspberry-pi-os-bullseye" class="md-nav__link">
+    Upgrading to Raspberry Pi OS (bullseye)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#azure-functions" class="md-nav__link">
+    Azure Functions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1675,7 +1715,30 @@
 <!-- markdownlint-disable MD040 -->
 
 <h2 id="release-200-alpha-not-released-yet">Release 2.0.0-alpha (not released yet)</h2>
-<p>With release 2.0.0 we will use .NET 6 for the starter kit. Our docker images will be based on Debian 11 (Bullseye). Please make sure that if you plan to use our Docker images, you use Debian 11 instead of Debian 10. If you plan to use a Debian 10-based OS, you will need to build a custom Docker image.</p>
+<p>With release 2.0.0 we will use .NET 6 for the starter kit. Our docker images will be based on Debian 11 (Bullseye). Please make sure that if you plan to use our Docker images, you use a Debian 11-based OS instead of Debian 10. If you plan to use a Debian 10-based OS on an ARM device, you might need to build a custom Docker image.</p>
+<h3 id="upgrading-to-raspberry-pi-os-bullseye">Upgrading to Raspberry Pi OS (bullseye)</h3>
+<p>If you are running IoT Edge on a Raspberry Pi that is based on Debian 10 (Buster), we recommend that you download a new version of the image and perform a clean install.</p>
+<p>After you installed the latest version of Raspberry Pi OS, execute the following commands to install IoT Edge:</p>
+<div class="highlight"><pre><span></span><code>curl https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb &gt; ./packages-microsoft-prod.deb
+sudo apt-get install ./packages-microsoft-prod.deb
+sudo apt-get update
+sudo apt-get install moby-engine
+curl -L https://github.com/Azure/azure-iotedge/releases/download/1.2.5/aziot-identity-service_1.2.4-1_debian11_armhf.deb -o aziot-identity-service.deb <span class="o">&amp;&amp;</span> sudo apt-get install ./aziot-identity-service.deb
+curl -L https://github.com/Azure/azure-iotedge/releases/download/1.2.5/aziot-edge_1.2.5-1_debian11_armhf.deb -o aziot-edge.deb <span class="o">&amp;&amp;</span> sudo apt-get install ./aziot-edge.deb
+</code></pre></div>
+<p>If you want to install specific versions of IoT Edge that differ from the abovementioned versions, refer to <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-provision-single-device-linux-symmetric?view=iotedge-2020-11&amp;tabs=azure-portal#offline-or-specific-version-installation-optional">offline or specific version installation</a>.</p>
+<p>If you do not want to perform a clean install of Raspberry OS but instead want to upgrade an existing image, you can consider using the following commands to perform a full upgrade. Please note that this is not recommended, it might leave you with a broken installation.</p>
+<p>Update the <code>/etc/apt/sources.list</code> file and replace all occurrences of <code>buster</code> with <code>bullseye</code>. Do the same for any list file in <code>/etc/apt/sources.list.d</code>. Then run:</p>
+<div class="highlight"><pre><span></span><code>sudo apt-get update
+sudo apt install libgcc-8-dev gcc-8-base
+sudo apt-get full-upgrade
+sudo apt autoremove
+sudo reboot
+</code></pre></div>
+<p>After your Pi was upgraded to the latest Raspberry Pi OS, run the following steps to uninstall the old versions of IoT Edge and then continue with the install of IoT Edge as described above. After you finish the abovementioned install steps, please make sure to run another <code>sudo apt-get upgrade</code> to install the latest versions of the moby dependencies.</p>
+<div class="highlight"><pre><span></span><code>sudo apt-get remove aziot-edge aziot-identity-service moby-engine
+</code></pre></div>
+<h3 id="azure-functions">Azure Functions</h3>
 <p>To support .NET 6 you will need to upgrade the Azure Functions runtime to v4. To update, you can set <code>FUNCTIONS_EXTENSION_VERSION</code> to <code>~4</code> in your Function configuration.</p>
 <h2 id="release-107">Release 1.0.7</h2>
 <p>To update from version 1.0.6, 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the <a href="#Release-1.0.3">Release 1.0.3</a> section below.</p>
@@ -2008,10 +2071,10 @@ TwinManagerVersion: v2
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.01824240.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.ca141e46.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.e0abf5b0.min.js"></script>
+      <script src="../../assets/javascripts/bundle.6baa0517.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       
