@@ -236,7 +236,7 @@ namespace LoRaWan.Tests.Common
             {
                 if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Error)
                 {
-                    var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
+                    var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5).Select(x => x.Message));
                     Assert.True(searchResult.Found, $"Searching for {options?.Description ?? "??"} failed. Current log content: [{logs}]");
                 }
                 else if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Warning)
