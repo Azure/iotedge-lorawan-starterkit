@@ -57,7 +57,8 @@ namespace LoRaWan.Tests.Integration
                 new LoRaADRStrategyProvider(NullLoggerFactory.Instance),
                 new LoRAADRManagerFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance),
                 new FunctionBundlerProvider(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance),
-                NullLogger<DefaultLoRaDataRequestHandler>.Instance)
+                NullLogger<DefaultLoRaDataRequestHandler>.Instance,
+                null)
             {
                 CallBase = true
             };
