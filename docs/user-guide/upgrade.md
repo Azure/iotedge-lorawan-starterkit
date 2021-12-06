@@ -4,7 +4,7 @@
 
 ## Release 2.0.0-alpha (not released yet)
 
-With release 2.0.0 we will use .NET 6 for the starter kit. Our docker images will be based on Debian 11 (Bullseye). Please make sure that if you plan to use our Docker images, you use a Debian 11-based OS instead of Debian 10. If you plan to use a Debian 10-based OS, you might need to build a custom Docker image.
+With release 2.0.0 we will use .NET 6 for the starter kit. Our docker images will be based on Debian 11 (Bullseye). Please make sure that if you plan to use our Docker images, you use a Debian 11-based OS instead of Debian 10. If you plan to use a Debian 10-based OS on an ARM device, you might need to build a custom Docker image.
 
 ### Upgrading to Raspberry Pi OS (bullseye)
 
