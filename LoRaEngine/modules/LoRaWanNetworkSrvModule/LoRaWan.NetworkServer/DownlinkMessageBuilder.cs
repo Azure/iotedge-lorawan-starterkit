@@ -47,11 +47,11 @@ namespace LoRaWan.NetworkServer
             var isMessageTooLong = false;
 
             // default fport
-            var fctrl = FrameControl.None;
+            var fctrl = FCtrlFlags.None;
             if (upstreamPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
-                fctrl = new FrameControl(FCtrlFlags.Ack);
+                fctrl = FCtrlFlags.Ack;
             }
 
             // Calculate receive window
@@ -196,12 +196,12 @@ namespace LoRaWan.NetworkServer
 
             if (fpending || isMessageTooLong)
             {
-                fctrl = fctrl with { DownlinkFramePending = true };
+                fctrl |= FCtrlFlags.FPending;
             }
 
             if (upstreamPayload.FrameControl.AdrAckRequested)
             {
-                fctrl = fctrl with { Adr = true };
+                fctrl |= FCtrlFlags.Adr;
             }
 
             var srcDevAddr = upstreamPayload.DevAddr.Span;
