@@ -105,7 +105,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                        connectionManager ?? new Mock<ILoRaDeviceClientConnectionManager>().Object,
                        loRaDeviceCache,
                        NullLoggerFactory.Instance,
-                       NullLogger<LoRaDeviceFactory>.Instance)
+                       NullLogger<LoRaDeviceFactory>.Instance,
+                       meter: null)
             {
                 this.deviceSetup = deviceSetup;
             }

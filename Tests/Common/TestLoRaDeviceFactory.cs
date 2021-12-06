@@ -39,7 +39,8 @@ namespace LoRaWan.Tests.Common
                    connectionManager,
                    deviceCache,
                    NullLoggerFactory.Instance,
-                   NullLogger<LoRaDeviceFactory>.Instance)
+                   NullLogger<LoRaDeviceFactory>.Instance,
+                   meter: null)
         {
             this.loRaDeviceClient = loRaDeviceClient;
         }
