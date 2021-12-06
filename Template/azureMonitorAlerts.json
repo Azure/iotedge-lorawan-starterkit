@@ -42,7 +42,7 @@
                                 "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
                                 "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
                             },
-                            "name": "D2CMessageDeliveryLatency",
+                            "name": "Metric1",
                             "metricNamespace": "[variables('metricNamespace')]",
                             "metricName": "D2CMessageDeliveryLatency",
                             "dimensions": [
@@ -89,7 +89,7 @@
                                 "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
                                 "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
                             },
-                            "name": "ReceiveWindowMisses",
+                            "name": "Metric1",
                             "metricNamespace": "[variables('metricNamespace')]",
                             "metricName": "ReceiveWindowMisses",
                             "dimensions": [
@@ -136,7 +136,7 @@
                                 "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
                                 "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
                             },
-                            "name": "UnhandledExceptions",
+                            "name": "Metric1",
                             "metricNamespace": "[variables('metricNamespace')]",
                             "metricName": "UnhandledExceptions",
                             "operator": "GreaterThan",
@@ -174,7 +174,7 @@
                                 "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
                                 "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
                             },
-                            "name": "abandon",
+                            "name": "Metric1",
                             "metricNamespace": "Microsoft.Devices/IotHubs",
                             "metricName": "c2d.commands.egress.abandon.success",
                             "operator": "GreaterThan",
@@ -212,7 +212,7 @@
                                 "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
                                 "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
                             },
-                            "name": "reject",
+                            "name": "Metric1",
                             "metricNamespace": "Microsoft.Devices/IotHubs",
                             "metricName": "c2d.commands.egress.reject.success",
                             "operator": "GreaterThan",
@@ -250,7 +250,7 @@
                                 "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
                                 "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
                             },
-                            "name": "D2CMessagesLostRatio",
+                            "name": "Metric1",
                             "metricNamespace": "[variables('metricNamespace')]",
                             "metricName": "D2CMessagesLostRatio",
                             "dimensions": [
