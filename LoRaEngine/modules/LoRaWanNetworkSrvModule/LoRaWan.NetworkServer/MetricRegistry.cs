@@ -125,11 +125,11 @@ namespace LoRaWan.NetworkServer
                 string? tagValue = null;
 
                 // nested loop since we will only ever have less than approximately five custom dimensions
-                foreach (var tagKeyValuePair in tags)
+                for (var j = 0; j < tags.Length; ++j)
                 {
-                    if (tagName == tagKeyValuePair.Key)
+                    if (tagName == tags[j].Key)
                     {
-                        tagValue = tagKeyValuePair.Value?.ToString();
+                        tagValue = tags[j].Value?.ToString();
                         break;
                     }
                 }
