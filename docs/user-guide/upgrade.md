@@ -4,7 +4,44 @@
 
 ## Release 2.0.0-alpha (not released yet)
 
-With release 2.0.0 we will use .NET 6 for the starter kit. Our docker images will be based on Debian 11 (Bullseye). Please make sure that if you plan to use our Docker images, you use Debian 11 instead of Debian 10. If you plan to use a Debian 10-based OS, you will need to build a custom Docker image.
+With release 2.0.0 we will use .NET 6 for the starter kit. Our docker images will be based on Debian 11 (Bullseye). Please make sure that if you plan to use our Docker images, you use a Debian 11-based OS instead of Debian 10. If you plan to use a Debian 10-based OS on an ARM device, you might need to build a custom Docker image.
+
+### Upgrading to Raspberry Pi OS (bullseye)
+
+If you are running IoT Edge on a Raspberry Pi that is based on Debian 10 (Buster), we recommend that you download a new version of the image and perform a clean install.
+
+After you installed the latest version of Raspberry Pi OS, execute the following commands to install IoT Edge:
+
+```bash
+curl https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb > ./packages-microsoft-prod.deb
+sudo apt-get install ./packages-microsoft-prod.deb
+sudo apt-get update
+sudo apt-get install moby-engine
+curl -L https://github.com/Azure/azure-iotedge/releases/download/1.2.5/aziot-identity-service_1.2.4-1_debian11_armhf.deb -o aziot-identity-service.deb && sudo apt-get install ./aziot-identity-service.deb
+curl -L https://github.com/Azure/azure-iotedge/releases/download/1.2.5/aziot-edge_1.2.5-1_debian11_armhf.deb -o aziot-edge.deb && sudo apt-get install ./aziot-edge.deb
+```
+
+If you want to install specific versions of IoT Edge that differ from the abovementioned versions, refer to [offline or specific version installation](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-provision-single-device-linux-symmetric?view=iotedge-2020-11&tabs=azure-portal#offline-or-specific-version-installation-optional).
+
+If you do not want to perform a clean install of Raspberry OS but instead want to upgrade an existing image, you can consider using the following commands to perform a full upgrade. Please note that this is not recommended, it might leave you with a broken installation.
+
+Update the `/etc/apt/sources.list` file and replace all occurrences of `buster` with `bullseye`. Do the same for any list file in `/etc/apt/sources.list.d`. Then run:
+
+```bash
+sudo apt-get update
+sudo apt install libgcc-8-dev gcc-8-base
+sudo apt-get full-upgrade
+sudo apt autoremove
+sudo reboot
+```
+
+After your Pi was upgraded to the latest Raspberry Pi OS, run the following steps to uninstall the old versions of IoT Edge and then continue with the install of IoT Edge as described above. After you finish the abovementioned install steps, please make sure to run another `sudo apt-get upgrade` to install the latest versions of the moby dependencies.
+
+```bash
+sudo apt-get remove aziot-edge aziot-identity-service moby-engine
+```
+
+### Azure Functions
 
 To support .NET 6 you will need to upgrade the Azure Functions runtime to v4. To update, you can set `FUNCTIONS_EXTENSION_VERSION` to `~4` in your Function configuration.
 
