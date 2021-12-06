@@ -8,7 +8,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
-    using DotNetty.Transport.Channels;
     using global::LoRaTools.LoRaMessage;
     using global::LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;

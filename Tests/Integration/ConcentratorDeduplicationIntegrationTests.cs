@@ -65,7 +65,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(true);
             var result1 = true;
             var result2 = new LoRaDeviceRequestProcessResult(this.loRaDevice, this.loraRequest, LoRaDeviceRequestFailedReason.UnknownDevice);
-            _ = dataRequestHandlerMock.Setup(x => x.ValidateRequest(It.IsAny<LoRaRequest>(), It.IsAny<bool>(), It.IsAny<uint>(), It.IsAny<LoRaDevice>(), It.IsAny<ConcentratorDeduplication.Result>(), out result1, out result2))
+            _ = dataRequestHandlerMock.Setup(x => x.ValidateRequest(It.IsAny<LoRaRequest>(), It.IsAny<bool>(), It.IsAny<uint>(), It.IsAny<LoRaDevice>(), out result1, out result2))
                 .Returns(false);
 
             // first request
