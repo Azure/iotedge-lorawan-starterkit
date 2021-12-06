@@ -84,8 +84,7 @@ namespace LoRaWan.NetworkServer
                 return Result.Drop;
             }
 
-            // TODO change for the E2E test
-            this.logger.LogInformation($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {previousStation} but will not drop due to DeduplicationStrategy {this.deduplicationStrategy.Create(loRaDevice)}.");
+            this.logger.LogInformation($"Message from station with EUI {previousStation} will not be dropped due to DeduplicationStrategy {this.deduplicationStrategy.Create(loRaDevice)}.");
             return Result.AllowButSkipConfirmation;
         }
 
