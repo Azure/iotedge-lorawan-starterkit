@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
@@ -14,6 +15,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable
     {
         private const string RouterConfigPropertyName = "routerConfig";
+        private const string CupsPropertyName = "cups";
         private const string ClientThumbprintPropertyName = "clientThumbprint";
         private const string ConcentratorTwinCachePrefixName = "concentratorTwin:";
 
@@ -69,15 +71,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            try
+            if (desiredProperties.Contains(RouterConfigPropertyName))
             {
                 var configJson = desiredProperties[RouterConfigPropertyName].ToString();
                 return LnsStationConfiguration.GetConfiguration(configJson);
             }
-            catch (ArgumentOutOfRangeException)
-            {
-                throw new LoRaProcessingException($"Property '{RouterConfigPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
-            }
+            throw new LoRaProcessingException($"Property '{RouterConfigPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
         }
 
         public async Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken)
@@ -89,15 +88,24 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<string[]> GetAllowedClientThumbprintsAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            try
+            if (desiredProperties.Contains(ClientThumbprintPropertyName))
             {
                 string thumbprintsArrayJson = desiredProperties[ClientThumbprintPropertyName].ToString();
                 return JsonReader.Array(JsonReader.String()).Read(thumbprintsArrayJson);
             }
-            catch (ArgumentOutOfRangeException)
+            throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+        }
+
+        public async Task<CupsTwinInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken)
+        {
+            var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
+            if (desiredProperties.Contains(CupsPropertyName))
             {
-                throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+                var cupsJson = ((object)desiredProperties[CupsPropertyName]).ToString();
+                return JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson);
             }
+
+            throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
         }
     }
 }

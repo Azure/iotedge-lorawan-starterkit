@@ -5,6 +5,8 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
@@ -29,7 +31,7 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly object getOrCreateLoadingDevicesRequestQueueLock;
         private readonly object getOrCreateJoinDeviceLoaderLock;
-
+        private readonly Meter meter;
         private readonly IMemoryCache cache;
         private readonly LoRaDeviceCache deviceCache;
 
@@ -46,7 +48,8 @@ namespace LoRaWan.NetworkServer
             ILoRaDeviceFactory deviceFactory,
             LoRaDeviceCache deviceCache,
             ILoggerFactory loggerFactory,
-            ILogger<LoRaDeviceRegistry> logger)
+            ILogger<LoRaDeviceRegistry> logger,
+            Meter meter)
         {
             this.configuration = configuration;
             this.cache = cache;
@@ -58,6 +61,7 @@ namespace LoRaWan.NetworkServer
             DevAddrReloadInterval = TimeSpan.FromSeconds(30);
             this.getOrCreateLoadingDevicesRequestQueueLock = new object();
             this.getOrCreateJoinDeviceLoaderLock = new object();
+            this.meter = meter;
             this.deviceCache = deviceCache;
         }
 
@@ -69,7 +73,7 @@ namespace LoRaWan.NetworkServer
                                     LoRaDeviceAPIServiceBase loRaDeviceAPIService,
                                     ILoRaDeviceFactory deviceFactory, LoRaDeviceCache deviceCache)
             : this(configuration, cache, loRaDeviceAPIService, deviceFactory, deviceCache,
-                   NullLoggerFactory.Instance, NullLogger<LoRaDeviceRegistry>.Instance)
+                   NullLoggerFactory.Instance, NullLogger<LoRaDeviceRegistry>.Instance, null)
         { }
 
         /// <summary>

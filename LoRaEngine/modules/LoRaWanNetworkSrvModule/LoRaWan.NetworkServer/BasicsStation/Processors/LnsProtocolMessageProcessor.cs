@@ -8,8 +8,6 @@ using System.Runtime.CompilerServices;
 namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Net.NetworkInformation;
@@ -38,6 +36,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly RegistryMetricTagBag registryMetricTagBag;
         private readonly Counter<int> joinRequestCounter;
         private readonly Counter<int> uplinkMessageCounter;
+        private readonly Counter<int> unhandledExceptionCount;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
@@ -59,6 +58,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.registryMetricTagBag = registryMetricTagBag;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
             this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
+            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
@@ -92,7 +92,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     this.logger.LogDebug(ex, ex.Message);
                 }
             }
-            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex)))
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex),
+                                                                    () => this.unhandledExceptionCount?.Add(1)))
             {
                 throw;
             }

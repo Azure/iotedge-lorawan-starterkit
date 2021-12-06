@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -91,6 +92,7 @@ namespace LoRaWan.NetworkServer
         private readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
         private readonly ILogger<LoRaDevice> logger;
+        private readonly Counter<int> unhandledExceptionCount;
 
         public int TxPower => this.txPower.Get();
 
@@ -205,7 +207,7 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
-        public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger)
+        public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
         {
             this.connectionManager = connectionManager;
             this.queuedRequests = new Queue<LoRaRequest>();
@@ -216,13 +218,14 @@ namespace LoRaWan.NetworkServer
             IsABPRelaxedFrameCounter = true;
             PreferredWindow = 1;
             ClassType = LoRaDeviceClassType.A;
+            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         /// <summary>
         /// Use constructor for test code only.
         /// </summary>
         internal LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
-            : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance)
+            : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance, null)
         { }
 
         /// <summary>
@@ -1126,7 +1129,8 @@ namespace LoRaWan.NetworkServer
         private Task RunAndQueueNext(LoRaRequest request)
         {
             return TaskUtil.RunOnThreadPool(() => CoreAsync(),
-                                            ex => this.logger.LogError($"error processing request: {ex.Message}"));
+                                            ex => this.logger.LogError(ex, $"error processing request: {ex.Message}"),
+                                            this.unhandledExceptionCount);
 
             async Task CoreAsync()
             {

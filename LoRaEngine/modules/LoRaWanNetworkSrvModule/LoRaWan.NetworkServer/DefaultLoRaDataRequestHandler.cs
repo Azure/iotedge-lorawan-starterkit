@@ -30,6 +30,7 @@ namespace LoRaWan.NetworkServer
         private readonly Counter<int> receiveWindowHits;
         private readonly Histogram<int> d2cPayloadSizeHistogram;
         private readonly Counter<int> c2dMessageTooLong;
+        private readonly Counter<int> unhandledExceptionCount;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
 
         public DefaultLoRaDataRequestHandler(
@@ -55,6 +56,7 @@ namespace LoRaWan.NetworkServer
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
             this.d2cPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.D2CMessageSize);
             this.c2dMessageTooLong = meter?.CreateCounter<int>(MetricRegistry.C2DMessageTooLong);
+            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
@@ -494,7 +496,8 @@ namespace LoRaWan.NetworkServer
             if (this.classCDeviceMessageSender != null)
             {
                 _ = TaskUtil.RunOnThreadPool(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage),
-                                             ex => this.logger.LogError($"[class-c] error sending class C cloud to device message. {ex.Message}"));
+                                             ex => this.logger.LogError(ex, $"[class-c] error sending class C cloud to device message. {ex.Message}"),
+                                             this.unhandledExceptionCount);
             }
         }
 

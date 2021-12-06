@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Diagnostics.Metrics;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
@@ -17,19 +18,22 @@ namespace LoRaWan.NetworkServer
         private readonly LoRaDeviceCache loRaDeviceCache;
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<LoRaDeviceFactory> logger;
+        private readonly Meter meter;
 
         public LoRaDeviceFactory(NetworkServerConfiguration configuration,
                                  ILoRaDataRequestHandler dataRequestHandler,
                                  ILoRaDeviceClientConnectionManager connectionManager,
                                  LoRaDeviceCache loRaDeviceCache,
                                  ILoggerFactory loggerFactory,
-                                 ILogger<LoRaDeviceFactory> logger)
+                                 ILogger<LoRaDeviceFactory> logger,
+                                 Meter meter)
         {
             this.configuration = configuration;
             this.dataRequestHandler = dataRequestHandler;
             this.connectionManager = connectionManager;
             this.loggerFactory = loggerFactory;
             this.logger = logger;
+            this.meter = meter;
             this.loRaDeviceCache = loRaDeviceCache;
         }
 
@@ -84,7 +88,8 @@ namespace LoRaWan.NetworkServer
                     : new LoRaDevice(deviceInfo.DevAddr,
                                      deviceInfo.DevEUI,
                                      this.connectionManager,
-                                     this.loggerFactory.CreateLogger<LoRaDevice>())
+                                     this.loggerFactory.CreateLogger<LoRaDevice>(),
+                                     this.meter)
                     {
                         GatewayID = deviceInfo.GatewayId,
                         NwkSKey = deviceInfo.NwkSKey,
