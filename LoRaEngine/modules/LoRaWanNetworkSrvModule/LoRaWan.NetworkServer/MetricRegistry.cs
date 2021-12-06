@@ -116,28 +116,42 @@ namespace LoRaWan.NetworkServer
         /// Gets the tags ordered by the original order of the tags.
         /// Falls back to common tags that are present in the RegistryMetricTagBag.
         /// </summary>
-        public static string[] GetTagsInOrder(IEnumerable<string> tagNames, ReadOnlySpan<KeyValuePair<string, object?>> tags, RegistryMetricTagBag metricTagBag)
+        public static string[] GetTagsInOrder(IReadOnlyList<string> tagNames, ReadOnlySpan<KeyValuePair<string, object?>> tags, RegistryMetricTagBag metricTagBag)
         {
-            var tagLookup = new Dictionary<string, object?>(tags.ToArray(), StringComparer.OrdinalIgnoreCase);
-            return tagNames.Select(t => GetNonEmptyTagValue(t, tagLookup, metricTagBag)).ToArray();
-            static string GetNonEmptyTagValue(string tag, IDictionary<string, object?> tagLookup, RegistryMetricTagBag registryMetricTagBag)
+            var result = new string[tagNames.Count];
+            for (var i = 0; i < tagNames.Count; ++i)
             {
-                if (tagLookup.TryGetValue(tag, out var tagValue))
+                var tagName = tagNames[i];
+                string? tagValue = null;
+
+                // nested loop since we will only ever have less than approximately five custom dimensions
+                foreach (var tagKeyValuePair in tags)
                 {
-                    var tagString = tagValue?.ToString();
-                    if (!string.IsNullOrEmpty(tagString)) return tagString;
-                }
-                else if (tag.Equals(MetricRegistry.ConcentratorIdTagName, StringComparison.OrdinalIgnoreCase) && registryMetricTagBag.StationEui.Value is { } stationEui)
-                {
-                    return stationEui.ToString();
-                }
-                else if (tag.Equals(MetricRegistry.GatewayIdTagName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return registryMetricTagBag.GatewayId;
+                    if (tagName == tagKeyValuePair.Key)
+                    {
+                        tagValue = tagKeyValuePair.Value?.ToString();
+                        break;
+                    }
                 }
 
-                throw new LoRaProcessingException($"Tag '{tag}' is not defined.", LoRaProcessingErrorCode.TagNotSet);
+                // fall back to tag bag lookup
+                if (tagValue == null)
+                {
+                    tagValue = tagName switch
+                    {
+                        MetricRegistry.ConcentratorIdTagName when metricTagBag.StationEui.Value is { } stationEui => stationEui.ToString(),
+                        MetricRegistry.GatewayIdTagName => metricTagBag.GatewayId,
+                        _ => null
+                    };
+                }
+
+                if (string.IsNullOrEmpty(tagValue))
+                    throw new LoRaProcessingException($"Tag '{tagName}' is not defined.", LoRaProcessingErrorCode.TagNotSet);
+
+                result[i] = tagValue;
             }
+
+            return result;
         }
     }
 

@@ -180,22 +180,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_Raising_Metric_Dimensions_Should_Be_Case_Insensitive()
-        {
-            // arrange
-            const string gateway = "foogateway";
-            using var meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
-            var counter = meter.CreateCounter<int>(CounterMetric.Name);
-
-            // act
-            applicationInsightsMetricExporter.Start();
-            counter.Add(1, new KeyValuePair<string, object>(MetricRegistry.ConcentratorIdTagName.ToUpperInvariant(), gateway));
-
-            // assert
-            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), 1, new[] { gateway }), Times.Once);
-        }
-
-        [Fact]
         public void When_Tag_Not_Specified_Should_Fallback_To_Tag_Bag()
         {
             // arrange
