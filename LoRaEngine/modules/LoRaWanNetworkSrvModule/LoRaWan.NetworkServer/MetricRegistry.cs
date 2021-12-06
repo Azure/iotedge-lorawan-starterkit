@@ -15,21 +15,22 @@ namespace LoRaWan.NetworkServer
     {
         public const string Namespace = "LoRaWan";
         public const string Version = "1.0";
+        public const string ConcentratorIdTagName = "ConcentratorId";
         public const string GatewayIdTagName = "GatewayId";
         public const string ReceiveWindowTagName = "ReceiveWindow";
 
-        public static readonly CustomMetric JoinRequests = new CustomMetric("JoinRequests", "Number of join requests", MetricType.Counter, new[] { GatewayIdTagName });
-        public static readonly CustomMetric ActiveStationConnections = new CustomMetric("ActiveStationConnections", "Number of active station connections", MetricType.ObservableGauge, Array.Empty<string>());
-        public static readonly CustomMetric StationConnectivityLost = new CustomMetric("StationConnectivityLost", "Counts the number of station connectivities that were lost", MetricType.Counter, new[] { GatewayIdTagName });
-        public static readonly CustomMetric ReceiveWindowHits = new CustomMetric("ReceiveWindowHits", "Receive window hits", MetricType.Counter, new[] { GatewayIdTagName, ReceiveWindowTagName });
-        public static readonly CustomMetric ReceiveWindowMisses = new CustomMetric("ReceiveWindowMisses", "Receive window misses", MetricType.Counter, new[] { GatewayIdTagName });
-        public static readonly CustomMetric UnhandledExceptions = new CustomMetric("UnhandledExceptions", "Number of unhandled exceptions", MetricType.Counter, Array.Empty<string>());
-        public static readonly CustomMetric D2CMessageDeliveryLatency = new CustomHistogram("D2CMessageDeliveryLatency", "D2C delivery latency (in milliseconds)", MetricType.Histogram, new[] { GatewayIdTagName },
+        public static readonly CustomMetric JoinRequests = new CustomMetric("JoinRequests", "Number of join requests", MetricType.Counter, new[] { GatewayIdTagName, ConcentratorIdTagName });
+        public static readonly CustomMetric ActiveStationConnections = new CustomMetric("ActiveStationConnections", "Number of active station connections", MetricType.ObservableGauge, new[] { GatewayIdTagName });
+        public static readonly CustomMetric StationConnectivityLost = new CustomMetric("StationConnectivityLost", "Counts the number of station connectivities that were lost", MetricType.Counter, new[] { GatewayIdTagName, ConcentratorIdTagName });
+        public static readonly CustomMetric ReceiveWindowHits = new CustomMetric("ReceiveWindowHits", "Receive window hits", MetricType.Counter, new[] { GatewayIdTagName, ConcentratorIdTagName, ReceiveWindowTagName });
+        public static readonly CustomMetric ReceiveWindowMisses = new CustomMetric("ReceiveWindowMisses", "Receive window misses", MetricType.Counter, new[] { GatewayIdTagName, ConcentratorIdTagName });
+        public static readonly CustomMetric UnhandledExceptions = new CustomMetric("UnhandledExceptions", "Number of unhandled exceptions", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric D2CMessageDeliveryLatency = new CustomHistogram("D2CMessageDeliveryLatency", "D2C delivery latency (in milliseconds)", MetricType.Histogram, new[] { GatewayIdTagName, ConcentratorIdTagName },
                                                                                             BucketStart: 100, BucketWidth: 50, BucketCount: 45);
-        public static readonly CustomMetric D2CMessagesReceived = new CustomMetric("D2CMessagesReceived", "Number of D2C messages received", MetricType.Counter, new[] { GatewayIdTagName });
-        public static readonly CustomMetric D2CMessageSize = new CustomHistogram("D2CMessageSize", "Size of D2C messages (in bytes)", MetricType.Histogram, new[] { GatewayIdTagName },
+        public static readonly CustomMetric D2CMessagesReceived = new CustomMetric("D2CMessagesReceived", "Number of D2C messages received", MetricType.Counter, new[] { GatewayIdTagName, ConcentratorIdTagName });
+        public static readonly CustomMetric D2CMessageSize = new CustomHistogram("D2CMessageSize", "Size of D2C messages (in bytes)", MetricType.Histogram, new[] { GatewayIdTagName, ConcentratorIdTagName },
                                                                                  BucketStart: 5, BucketWidth: 10, BucketCount: 26);
-        public static readonly CustomMetric C2DMessageTooLong = new CustomMetric("C2DMessageTooLong", "Number of C2D messages that were too long to be sent downstream", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric C2DMessageTooLong = new CustomMetric("C2DMessageTooLong", "Number of C2D messages that were too long to be sent downstream", MetricType.Counter, new[] { GatewayIdTagName, ConcentratorIdTagName });
 
         private static readonly ICollection<CustomMetric> Registry = new[]
         {
@@ -100,7 +101,13 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal sealed class RegistryMetricTagBag
     {
+        public RegistryMetricTagBag(NetworkServerConfiguration networkServerConfiguration)
+        {
+            GatewayId = networkServerConfiguration.GatewayID;
+        }
+
         public AsyncLocal<StationEui?> StationEui { get; } = new AsyncLocal<StationEui?>();
+        public string GatewayId { get; init; }
     }
 
     internal static class MetricExporterHelper
@@ -120,9 +127,13 @@ namespace LoRaWan.NetworkServer
                     var tagString = tagValue?.ToString();
                     if (!string.IsNullOrEmpty(tagString)) return tagString;
                 }
-                else if (tag.Equals(MetricRegistry.GatewayIdTagName, StringComparison.OrdinalIgnoreCase) && registryMetricTagBag.StationEui.Value is { } stationEui)
+                else if (tag.Equals(MetricRegistry.ConcentratorIdTagName, StringComparison.OrdinalIgnoreCase) && registryMetricTagBag.StationEui.Value is { } stationEui)
                 {
                     return stationEui.ToString();
+                }
+                else if (tag.Equals(MetricRegistry.GatewayIdTagName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return registryMetricTagBag.GatewayId;
                 }
 
                 throw new LoRaProcessingException($"Tag '{tag}' is not defined.", LoRaProcessingErrorCode.TagNotSet);

@@ -15,12 +15,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class MetricRegistryTests : IDisposable
     {
+        private const string GatewayId = "foogateway";
+
         private readonly RegistryMetricTagBag metricTagBag;
         private readonly Meter meter;
 
         public MetricRegistryTests()
         {
-            this.metricTagBag = new RegistryMetricTagBag();
+            this.metricTagBag = new RegistryMetricTagBag(new NetworkServerConfiguration { GatewayID = GatewayId });
             this.meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
         }
 
@@ -154,10 +156,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.metricTagBag.StationEui.Value = stationEui;
 
             // act
-            var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.GatewayIdTagName }, Array.Empty<KeyValuePair<string, object?>>(), this.metricTagBag);
+            var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.ConcentratorIdTagName }, Array.Empty<KeyValuePair<string, object?>>(), this.metricTagBag);
 
             // assert
             Assert.Equal(new[] { stationEui.ToString() }, result);
+        }
+
+        [Fact]
+        public void GetTagsInOrder_Should_Fall_Back_To_Tag_Bag_For_GatewayId()
+        {
+            // arrange + act
+            var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.GatewayIdTagName }, Array.Empty<KeyValuePair<string, object?>>(), this.metricTagBag);
+
+            // assert
+            Assert.Equal(new[] { GatewayId }, result);
         }
 
         [Fact]
