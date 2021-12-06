@@ -578,10 +578,10 @@ namespace LoRaWan.Tests.E2E
         }
 
         /// <summary>
-        /// Ensures that a device that has preferred window set to two receives C2D messages.
+        /// Ensures that data rate is updated on a device after a LinkADRCmd MAC Command is sent as C2D message.
         /// </summary>
         [RetryFact]
-        public async Task C2D_ADR()
+        public async Task Data_Rate_Is_Updated_When_C2D_With_LinkADRCmd_Received()
         {
             const int messagesToSend = 10;
             const int warmUpMessageCount = 2;
@@ -611,13 +611,11 @@ namespace LoRaWan.Tests.E2E
                 TestFixture.ClearLogs();
             }
 
-            var c2dMessageBody = string.Empty;
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Fport = 0,
-                Payload = c2dMessageBody,
-                // Update data rate to DR3
-                MacCommands = { new LinkADRRequest(3, 4, 25, 0, 1) }
+                Payload = string.Empty,
+                MacCommands = { new LinkADRRequest(3, 4, 25, 0, 1) } // Update data rate to DR3
             };
 
             await TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
@@ -683,7 +681,6 @@ namespace LoRaWan.Tests.E2E
                         MaxAttempts = 1
                     });
 
-                // We should only receive the message once
                 if (C2DSearchResults.Found)
                 {
                     foundC2DMessageCount++;
@@ -691,7 +688,6 @@ namespace LoRaWan.Tests.E2E
                     EnsureNotSeenTooManyTimes(foundC2DMessageCount);
                 }
 
-                // We should only receive the message once
                 if (linkADRCmdSearchResults.Found)
                 {
                     foundLinkADRCmdCount++;
