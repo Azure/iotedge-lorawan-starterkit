@@ -3,11 +3,6 @@
 
 #nullable enable
 
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("LoRaWan.Tests.Unit")]
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-
 namespace Logger
 {
     using System;
