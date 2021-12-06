@@ -182,7 +182,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDevice.Dispose();
 
             this.connectionManager.Dispose();
-            this.concentratorDeduplication.Dispose();
             this.cache?.Dispose();
         }
     }

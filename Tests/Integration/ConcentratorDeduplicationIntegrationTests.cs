@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Integration
             var deduplicationFactory = new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
             using var cache = new MemoryCache(new MemoryCacheOptions());
             var registry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance, null);
-            using var concentratorDeduplication = new ConcentratorDeduplication(cache, deduplicationFactory, registry, NullLogger<IConcentratorDeduplication>.Instance);
+            var concentratorDeduplication = new ConcentratorDeduplication(cache, deduplicationFactory, registry, NullLogger<IConcentratorDeduplication>.Instance);
 
             var dataRequestHandlerMock = new Mock<DefaultLoRaDataRequestHandler>(MockBehavior.Default,
                 ServerConfiguration,

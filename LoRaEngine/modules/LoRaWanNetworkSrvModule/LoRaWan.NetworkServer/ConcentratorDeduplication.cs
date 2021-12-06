@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Logging;
 
     public sealed class ConcentratorDeduplication :
-        IConcentratorDeduplication, IDisposable
+        IConcentratorDeduplication
     {
         public enum Result
         {
@@ -144,8 +144,5 @@ namespace LoRaWan.NetworkServer
             {
                 SlidingExpiration = DefaultExpiration
             });
-
-        public void Dispose()
-            => this.cache.Dispose();
     }
 }

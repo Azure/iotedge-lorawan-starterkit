@@ -122,7 +122,6 @@ namespace LoRaWan.Tests.Common
                 if (disposing)
                 {
                     this.cache.Dispose();
-                    ConcentratorDeduplication.Dispose();
                 }
 
                 this.disposedValue = true;
