@@ -4,9 +4,13 @@
 namespace LoRaWan.Tests.Unit
 {
     using System;
+    using System.Linq;
     using LoRaWan;
     using LoRaWan.Tests.Common;
     using Xunit;
+    using MoreEnumerable = MoreLinq.MoreEnumerable;
+    using static MoreLinq.Extensions.SubsetsExtension;
+    using System.Collections.Immutable;
 
     public class FrameControlTests
     {
@@ -54,19 +58,26 @@ namespace LoRaWan.Tests.Unit
             public const bool DownlinkFramePending = false;
         }
 
-        private const FCtrlFlags AllFCtrlFlags = FCtrlFlags.Adr | FCtrlFlags.AdrAckReq | FCtrlFlags.Ack | FCtrlFlags.FPending;
+        public static readonly ImmutableArray<FCtrlFlags> FCtrlFlagsSubsets =
+            Enum.GetValues<FCtrlFlags>()
+                .Where(f => f != FCtrlFlags.None)
+                .Subsets()
+                .Select(fs => fs.Aggregate(FCtrlFlags.None, (fs, f) => fs | f))
+                .ToImmutableArray();
+
+        public static readonly TheoryData<FCtrlFlags, int, bool, bool, bool, bool> Property_Getter_Data =
+            TheoryDataFactory.From(
+                from flags in FCtrlFlagsSubsets
+                from optionsLength in MoreEnumerable.Sequence(0, 15)
+                select (flags, optionsLength, flags.HasFlag(FCtrlFlags.Adr),
+                                              flags.HasFlag(FCtrlFlags.AdrAckReq),
+                                              flags.HasFlag(FCtrlFlags.Ack),
+                                              flags.HasFlag(FCtrlFlags.FPending)));
 
         [Theory]
-        [InlineData(FCtrlFlags.None     , 0, False.Adr, False.AdrAckRequested, False.Ack, False.DownlinkFramePending)]
-        [InlineData(FCtrlFlags.None     , 3, False.Adr, False.AdrAckRequested, False.Ack, False.DownlinkFramePending)]
-        [InlineData(FCtrlFlags.Adr      , 0, True.Adr , False.AdrAckRequested, False.Ack, False.DownlinkFramePending)]
-        [InlineData(FCtrlFlags.AdrAckReq, 0, False.Adr, True.AdrAckRequested , False.Ack, False.DownlinkFramePending)]
-        [InlineData(FCtrlFlags.Ack      , 0, False.Adr, False.AdrAckRequested, True.Ack , False.DownlinkFramePending)]
-        [InlineData(FCtrlFlags.FPending , 0, False.Adr, False.AdrAckRequested, False.Ack, True.DownlinkFramePending )]
-        [InlineData(AllFCtrlFlags       , 0, True.Adr , True.AdrAckRequested , True.Ack , True.DownlinkFramePending )]
-        [InlineData(AllFCtrlFlags       , 5, True.Adr , True.AdrAckRequested , True.Ack , True.DownlinkFramePending )]
-        public void Properties(FCtrlFlags flags, int optionsLength,
-                               bool adr, bool adrAckRequested, bool ack, bool downlinkFramePending)
+        [MemberData(nameof(Property_Getter_Data))]
+        public void Property_Getter(FCtrlFlags flags, int optionsLength,
+                                    bool adr, bool adrAckRequested, bool ack, bool downlinkFramePending)
         {
             var subject = new FrameControl(flags, optionsLength);
 
@@ -78,10 +89,32 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(optionsLength, subject.OptionsLength);
         }
 
-        public static readonly TheoryData<int> OneToFifteen = new()
+        public static readonly TheoryData<FCtrlFlags, FCtrlFlags, bool, bool, bool, bool> Flag_Property_Setter_Data =
+            TheoryDataFactory.From(
+                from init in FCtrlFlagsSubsets
+                from expected in FCtrlFlagsSubsets
+                select (expected, init, expected.HasFlag(FCtrlFlags.Adr),
+                                        expected.HasFlag(FCtrlFlags.AdrAckReq),
+                                        expected.HasFlag(FCtrlFlags.Ack),
+                                        expected.HasFlag(FCtrlFlags.FPending)));
+
+        [Theory]
+        [MemberData(nameof(Flag_Property_Setter_Data))]
+        public void Flag_Property_Setter(FCtrlFlags expectedFlags, FCtrlFlags initFlags, bool adr, bool adrAckRequested, bool ack, bool downlinkFramePending)
         {
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-        };
+            var subject = new FrameControl(initFlags, 15) with
+            {
+                Adr = adr,
+                AdrAckRequested = adrAckRequested,
+                Ack = ack,
+                DownlinkFramePending = downlinkFramePending,
+            };
+
+            Assert.Equal(expectedFlags, subject.Flags);
+            Assert.Equal(15, subject.OptionsLength);
+        }
+
+        public static readonly TheoryData<int> OneToFifteen = TheoryDataFactory.From(Enumerable.Range(1, 15));
 
         [Theory]
         [MemberData(nameof(OneToFifteen))]
@@ -125,8 +158,10 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal("value", ex.ParamName);
         }
 
+        public static readonly TheoryData<FCtrlFlags> FCtrlFlagsData = TheoryDataFactory.From(FCtrlFlagsSubsets);
+
         [Theory]
-        [MemberData(nameof(TheoryDataFactory.GetEnumMembers), typeof(FCtrlFlags), MemberType = typeof(TheoryDataFactory))]
+        [MemberData(nameof(FCtrlFlagsData))]
         public void Flags_Setter(FCtrlFlags flags)
         {
             var result = this.subject with { Flags = flags };
@@ -136,7 +171,7 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Theory]
-        [MemberData(nameof(TheoryDataFactory.GetEnumMembers), typeof(FCtrlFlags), MemberType = typeof(TheoryDataFactory))]
+        [MemberData(nameof(FCtrlFlagsData))]
         public void Implicit_Conversion_To_FCtrlFlags(FCtrlFlags flags)
         {
             var subject = this.subject with { Flags = flags };
@@ -151,29 +186,6 @@ namespace LoRaWan.Tests.Unit
         {
             var ex = Assert.Throws<ArgumentException>(() => this.subject with { Flags = checked((FCtrlFlags)flags) });
             Assert.Equal("value", ex.ParamName);
-        }
-
-        [Theory]
-        [InlineData(FCtrlFlags.None, FCtrlFlags.Adr      , True.Adr , False.AdrAckRequested, False.Ack, False.DownlinkFramePending)]
-        [InlineData(FCtrlFlags.None, FCtrlFlags.AdrAckReq, False.Adr, True.AdrAckRequested , False.Ack, False.DownlinkFramePending)]
-        [InlineData(FCtrlFlags.None, FCtrlFlags.Ack      , False.Adr, False.AdrAckRequested, True.Ack , False.DownlinkFramePending)]
-        [InlineData(FCtrlFlags.None, FCtrlFlags.FPending , False.Adr, False.AdrAckRequested, False.Ack, True.DownlinkFramePending )]
-        public void Flag_Property_Setter(FCtrlFlags initFlags, FCtrlFlags expectedFlags, bool adr, bool adrAckRequested, bool ack, bool downlinkFramePending)
-        {
-            var subject = new FrameControl(initFlags, 5) with
-            {
-                Adr = adr,
-                AdrAckRequested = adrAckRequested,
-                Ack = ack,
-                DownlinkFramePending = downlinkFramePending,
-            };
-
-            Assert.Equal(adr, subject.Adr);
-            Assert.Equal(adrAckRequested, subject.AdrAckRequested);
-            Assert.Equal(ack, subject.Ack);
-            Assert.Equal(downlinkFramePending, subject.DownlinkFramePending);
-            Assert.Equal(expectedFlags, subject.Flags);
-            Assert.Equal(5, subject.OptionsLength);
         }
 
         [Fact]
