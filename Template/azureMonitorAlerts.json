@@ -155,10 +155,10 @@
         {
             "type": "microsoft.insights/metricAlerts",
             "apiVersion": "2018-03-01",
-            "name": "High Downstream Messages Lost Ratio",
+            "name": "High Downstream Messages Abandoned Number",
             "location": "global",
             "properties": {
-                "description": "High device messages lost ratio (correctness, throughput)",
+                "description": "High device messages abandoned number (correctness, throughput)",
                 "severity": 2,
                 "enabled": true,
                 "scopes": [
@@ -189,6 +189,44 @@
                 "targetResourceType": "microsoft.devices/iothubs",
                 "actions": []
             }
-        }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "High Downstream Messages Rejected Number",
+            "location": "global",
+            "properties": {
+                "description": "High device messages rejected number (correctness, throughput)",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[variables('iot_hub_scope_resource_id')]"
+                ],
+                "evaluationFrequency": "[variables('evaluationFrequency')]",
+                "windowSize": "[variables('aggregationPeriod')]",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "[variables('alertSensitivity')]",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "Microsoft.Devices/IotHubs",
+                            "metricName": "c2d.commands.egress.reject.success",
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion",
+                            "skipMetricValidation": true
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "microsoft.devices/iothubs",
+                "actions": []
+            }
+        }        
     ]
 }
