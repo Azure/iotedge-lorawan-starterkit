@@ -83,7 +83,7 @@
         "appInsightName": "[concat(parameters('uniqueSolutionPrefix'), 'insight')]",
         "redisCacheName": "[concat(parameters('uniqueSolutionPrefix'), 'redis')]",
         "logAnalyticsName": "[concat(parameters('uniqueSolutionPrefix'), 'log')]",
-        "deploymentsAPIVersion": "2021-05-01"
+        "deploymentsAPIVersion": "2021-04-01"
     },
     "resources": [
         {
