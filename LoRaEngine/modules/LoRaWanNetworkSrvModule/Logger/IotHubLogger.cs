@@ -25,7 +25,7 @@ namespace Logger
         public IotHubLoggerConfiguration Configuration { get; }
         public LoggerExternalScopeProvider? ScopeProvider { get; }
 
-        public IotHubLoggerProvider(IotHubLoggerConfiguration configuration)
+        internal IotHubLoggerProvider(IotHubLoggerConfiguration configuration)
             : this(configuration, new Lazy<Task<ModuleClient>>(ModuleClient.CreateFromEnvironmentAsync(new[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) })))
         { }
 
