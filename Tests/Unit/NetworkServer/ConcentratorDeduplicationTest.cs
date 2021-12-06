@@ -93,7 +93,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void When_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool isCacheEmpty)
+        public void When_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Should_Add_To_Cache(bool isCacheEmpty)
         {
             // arrange
             if (!isCacheEmpty)
@@ -115,6 +115,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [InlineData(true, true, ConcentratorDeduplication.Result.DuplicateDueToResubmission)]
+        [InlineData(true, false, ConcentratorDeduplication.Result.DuplicateDueToResubmission)]
         [InlineData(false, true, ConcentratorDeduplication.Result.Duplicate)]
         [InlineData(false, false, ConcentratorDeduplication.Result.SoftDuplicate)]
         public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool dropDeduplication, ConcentratorDeduplication.Result expectedResult)
