@@ -8,11 +8,6 @@ namespace LoRaTools.Regions
 
     public static class RegionManager
     {
-        public static Region CurrentRegion
-        {
-            get; set;
-        }
-
         /// <summary>
         /// Tries to get the <see cref="LoRaRegionType"/> based on <paramref name="value"/>.
         /// </summary>
