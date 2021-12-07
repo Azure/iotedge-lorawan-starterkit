@@ -16,7 +16,10 @@ namespace LoRaWan
         Adr       = 0x80,
         AdrAckReq = 0x40,
         Ack       = 0x20,
+#pragma warning disable CA1069 // Enums values should not be duplicated (by design)
         FPending  = 0x10,
+        ClassB    = 0x10,
+#pragma warning restore CA1069 // Enums values should not be duplicated
 #pragma warning restore format
     }
 
