@@ -5,6 +5,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Threading;
@@ -18,9 +19,9 @@ namespace LoRaWan.Tools.CLI.Helpers
 
     internal class IoTDeviceHelper
     {
+        private const string DefaultRouterConfigFolder = "DefaultRouterConfig";
         private static readonly string[] ClassTypes = { "A", "C" };
         private static readonly string[] DeduplicationModes = { "None", "Drop", "Mark" };
-        private static readonly string DefaultRouterConfigFolder = "DefaultRouterConfig";
 
         public static async Task<Twin> QueryDeviceTwin(string devEui, ConfigurationHelper configurationHelper)
         {
@@ -472,14 +473,14 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     var devAddrCorrect = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
 
-                    if (string.Equals(devAddrCorrect, opts.DevAddr))
+                    if (string.Equals(devAddrCorrect, opts.DevAddr, StringComparison.OrdinalIgnoreCase))
                     {
                         StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"DevAddr {opts.DevAddr} is valid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.", isVerbose);
                     }
                     else
                     {
                         StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.", opts.DevEui, isVerbose);
-                        StatusConsole.WriteLogLineIfVerbose(MessageType.Warning, $"DevAddr {opts.DevAddr} belongs to NetId ending in byte {NetIdHelper.GetNwkIdPart(opts.DevAddr).ToString("X2")}.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Warning, $"DevAddr {opts.DevAddr} belongs to NetId ending in byte {NetIdHelper.GetNwkIdPart(opts.DevAddr):X2}.", isVerbose);
                         StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"To stop seeing this error, provide the --netid parameter or set the NetId in the settings file.", isVerbose);
 
                         isValid = false;
@@ -786,7 +787,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"GatewayId is missing.", opts.DevEui, isVerbose);
                 isValid = false;
             }
-            else if (opts.GatewayId == string.Empty)
+            else if (string.IsNullOrEmpty(opts.GatewayId))
             {
                 StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"GatewayId is empty. This is valid.", isVerbose);
             }
@@ -1189,7 +1190,7 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             var count = 0;
             IEnumerable<string> currentPage;
-            var totalString = (total == -1) ? "all" : total.ToString();
+            var totalString = (total == -1) ? "all" : total.ToString(CultureInfo.InvariantCulture);
 
             page = Math.Max(1, page);
 

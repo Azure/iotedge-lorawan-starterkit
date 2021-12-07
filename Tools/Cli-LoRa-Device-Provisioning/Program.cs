@@ -5,6 +5,7 @@ namespace LoRaWan.Tools.CLI
 {
     using System;
     using System.Buffers.Binary;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -168,7 +169,7 @@ namespace LoRaWan.Tools.CLI
 
             opts = IoTDeviceHelper.CleanOptions(opts as object, true) as AddOptions;
 
-            if (opts.Type.ToUpperInvariant().Equals("CONCENTRATOR"))
+            if (opts.Type.Equals("concentrator", StringComparison.OrdinalIgnoreCase))
             {
                 var isVerified = IoTDeviceHelper.VerifyConcentrator(opts);
                 if (!isVerified) return false;
@@ -208,7 +209,7 @@ namespace LoRaWan.Tools.CLI
             }
             else
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"Can not add {opts.Type.ToUpper()} device.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Can not add {opts.Type.ToUpper(CultureInfo.InvariantCulture)} device.");
             }
 
             if (isSuccess)
@@ -362,7 +363,7 @@ namespace LoRaWan.Tools.CLI
 
             try
             {
-                var crc = new Force.Crc32.Crc32Algorithm();
+                using var crc = new Force.Crc32.Crc32Algorithm();
                 var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(fileContent));
                 if (!await uploadSuccessActionAsync(crcHash, blobClient.Uri))
                     await CleanupAsync();

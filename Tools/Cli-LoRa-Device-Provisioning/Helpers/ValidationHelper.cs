@@ -5,6 +5,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Text;
     using LoRaWan.Tools.CLI.Options;
 
@@ -54,7 +55,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
 
             _ = result.Remove(result.Length - 2, 2)
-                      .Append(".");
+                      .Append('.');
 
             return result.ToString();
         }
@@ -63,7 +64,7 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             if (!string.IsNullOrEmpty(workString))
             {
-                workString = workString.Trim().Replace("\'", string.Empty);
+                workString = workString.Trim().Replace("\'", string.Empty, StringComparison.Ordinal);
             }
 
             return workString;
@@ -75,7 +76,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             if (!string.IsNullOrEmpty(inNetId))
             {
-                outNetId = inNetId.Trim().Replace("\'", string.Empty);
+                outNetId = inNetId.Trim().Replace("\'", string.Empty, StringComparison.Ordinal);
                 if (outNetId.Length < 6)
                     outNetId = string.Concat(new string('0', 6).Substring(outNetId.Length), outNetId);
 
@@ -100,7 +101,9 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             if (value is bool valueBool)
             {
-                return valueBool ? bool.TrueString.ToLower() : bool.FalseString.ToLower();
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                return valueBool ? bool.TrueString.ToLower(CultureInfo.InvariantCulture) : bool.FalseString.ToLower(CultureInfo.InvariantCulture);
+#pragma warning restore CA1308 // Normalize strings to uppercase
             }
 
             return value.ToString();
@@ -127,7 +130,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Verify each individual byte for validity.
             for (var i = 0; i + 1 < hexString.Length; i += 2)
             {
-                if (!int.TryParse(hexString.Substring(i, 2), System.Globalization.NumberStyles.HexNumber, null, out _))
+                if (!int.TryParse(hexString.AsSpan(i, 2), NumberStyles.HexNumber, null, out _))
                 {
                     error = $"Hex string contains invalid byte {hexString.Substring(i, 2)}";
                     return false;
@@ -307,7 +310,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 return false;
             }
 
-            if (sensorDecoder == string.Empty)
+            if (string.IsNullOrEmpty(sensorDecoder))
             {
                 if (isVerbose)
                     StatusConsole.WriteLogLine(MessageType.Info, "SensorDecoder is empty. No decoder will be used.");
@@ -315,7 +318,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 return true;
             }
 
-            if (sensorDecoder.StartsWith("http", StringComparison.OrdinalIgnoreCase) || sensorDecoder.Contains('/'))
+            if (sensorDecoder.StartsWith("http", StringComparison.OrdinalIgnoreCase) || sensorDecoder.Contains('/', StringComparison.Ordinal))
             {
                 if (!Uri.TryCreate(sensorDecoder, UriKind.Absolute, out var validatedUri))
                 {
@@ -325,13 +328,13 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 // if (validatedUri.Host.Any(char.IsUpper))
                 if (!sensorDecoder.StartsWith(validatedUri.Scheme, StringComparison.OrdinalIgnoreCase)
-                    || sensorDecoder.IndexOf(validatedUri.Host) != validatedUri.Scheme.Length + 3)
+                    || sensorDecoder.IndexOf(validatedUri.Host, StringComparison.Ordinal) != validatedUri.Scheme.Length + 3)
                 {
                     StatusConsole.WriteLogLine(MessageType.Error, "SensorDecoder Hostname must be all lowercase.");
                     isValid = false;
                 }
 
-                if (validatedUri.AbsolutePath.IndexOf("/api/") < 0)
+                if (validatedUri.AbsolutePath.IndexOf("/api/", StringComparison.Ordinal) < 0)
                 {
                     if (isVerbose)
                         StatusConsole.WriteLogLine(MessageType.Warning, "SensorDecoder is missing \"api\" keyword.");

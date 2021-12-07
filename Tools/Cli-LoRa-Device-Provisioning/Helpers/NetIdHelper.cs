@@ -4,6 +4,7 @@
 namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
+    using System.Globalization;
 
     internal static class NetIdHelper
     {
@@ -18,7 +19,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             if (ValidationHelper.ValidateHexStringTwinProperty(configurationHelper.NetId, 3, out _))
             {
                 netIdLastByte = configurationHelper.NetId.Substring(configurationHelper.NetId.Length - 2, 2);
-                netId = uint.Parse(netIdLastByte, System.Globalization.NumberStyles.HexNumber);
+                netId = uint.Parse(netIdLastByte, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             }
 
             if (!string.IsNullOrEmpty(networkId))
@@ -26,7 +27,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 if (ValidationHelper.ValidateHexStringTwinProperty(networkId, 3, out _))
                 {
                     netIdLastByte = networkId.Substring(networkId.Length - 2, 2);
-                    netId = uint.Parse(netIdLastByte, System.Globalization.NumberStyles.HexNumber);
+                    netId = uint.Parse(netIdLastByte, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 }
             }
 

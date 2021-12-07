@@ -4,6 +4,7 @@
 namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using Azure.Storage.Blobs;
     using Microsoft.Azure.Devices;
@@ -71,7 +72,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Validate NetId setting
             if (string.IsNullOrEmpty(netId))
             {
-                netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString());
+                netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString(CultureInfo.InvariantCulture));
                 StatusConsole.WriteLogLine(MessageType.Info, $"NetId is not set in settings file. Using default {netId}.");
             }
             else
@@ -85,7 +86,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 else
                 {
                     var netIdBad = netId;
-                    netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString());
+                    netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString(CultureInfo.InvariantCulture));
                     StatusConsole.WriteLogLine(MessageType.Warning, $"NetId {netIdBad} in settings file is invalid. {customError}.");
                     StatusConsole.WriteLogLine(MessageType.Warning, $"Using default NetId {netId} instead.");
                 }
@@ -125,10 +126,10 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             hostName = string.Empty;
 
-            var from = connectionString.IndexOf("HostName=");
+            var from = connectionString.IndexOf("HostName=", StringComparison.OrdinalIgnoreCase);
             var fromOffset = "HostName=".Length;
 
-            var to = connectionString.IndexOf("azure-devices.net");
+            var to = connectionString.IndexOf("azure-devices.net", StringComparison.OrdinalIgnoreCase);
             var length = to - from - fromOffset + "azure-devices.net".Length;
 
             if (from == -1 || to == -1)
