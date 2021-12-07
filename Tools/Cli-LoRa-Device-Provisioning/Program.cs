@@ -22,7 +22,6 @@ namespace LoRaWan.Tools.CLI
     public class Program
     {
         static ConfigurationHelper configurationHelper = new ConfigurationHelper();
-        static IoTDeviceHelper iotDeviceHelper = new IoTDeviceHelper();
 
         static async Task<int> Main(string[] args)
         {
@@ -92,7 +91,7 @@ namespace LoRaWan.Tools.CLI
             if (!int.TryParse(opts.Total, out total))
                 total = -1;
 
-            var isSuccess = await iotDeviceHelper.QueryDevices(configurationHelper, page, total);
+            var isSuccess = await IoTDeviceHelper.QueryDevices(configurationHelper, page, total);
 
             return isSuccess;
         }
@@ -102,7 +101,7 @@ namespace LoRaWan.Tools.CLI
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
             {
@@ -121,12 +120,12 @@ namespace LoRaWan.Tools.CLI
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
             {
                 StatusConsole.WriteTwin(opts.DevEui, twin);
-                return iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true);
+                return IoTDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true);
             }
             else
             {
@@ -145,7 +144,7 @@ namespace LoRaWan.Tools.CLI
             if (!int.TryParse(opts.Page, out page))
                 page = 0;
 
-            var isSuccess = await iotDeviceHelper.QueryDevicesAndVerify(configurationHelper, page);
+            var isSuccess = await IoTDeviceHelper.QueryDevicesAndVerify(configurationHelper, page);
 
             Console.WriteLine();
             if (isSuccess)
@@ -167,11 +166,11 @@ namespace LoRaWan.Tools.CLI
 
             var isSuccess = false;
 
-            opts = iotDeviceHelper.CleanOptions(opts as object, true) as AddOptions;
+            opts = IoTDeviceHelper.CleanOptions(opts as object, true) as AddOptions;
 
             if (opts.Type.ToUpperInvariant().Equals("CONCENTRATOR"))
             {
-                var isVerified = iotDeviceHelper.VerifyConcentrator(opts);
+                var isVerified = IoTDeviceHelper.VerifyConcentrator(opts);
                 if (!isVerified) return false;
                 if (configurationHelper.CertificateStorageContainerClient is null)
                 {
@@ -179,7 +178,7 @@ namespace LoRaWan.Tools.CLI
                     return false;
                 }
 
-                if (await iotDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper) is not null)
+                if (await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper) is not null)
                 {
                     StatusConsole.WriteLogLine(MessageType.Error, "Station was already created, please use the 'update' verb to update an existing station.");
                     return false;
@@ -187,25 +186,25 @@ namespace LoRaWan.Tools.CLI
 
                 if (opts.NoCups)
                 {
-                    var twin = iotDeviceHelper.CreateConcentratorTwin(opts, 0, null);
-                    return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
+                    var twin = IoTDeviceHelper.CreateConcentratorTwin(opts, 0, null);
+                    return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
                 }
                 else
                 {
                     return await UploadCertificateBundleAsync(opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
                     {
-                        var twin = iotDeviceHelper.CreateConcentratorTwin(opts, crcHash, bundleStorageUri);
-                        return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
+                        var twin = IoTDeviceHelper.CreateConcentratorTwin(opts, crcHash, bundleStorageUri);
+                        return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
                     });
                 }
             }
 
-            opts = iotDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
+            opts = IoTDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
 
-            if (iotDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper, true))
+            if (IoTDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper, true))
             {
-                var twin = iotDeviceHelper.CreateDeviceTwin(opts);
-                isSuccess = await iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true);
+                var twin = IoTDeviceHelper.CreateDeviceTwin(opts);
+                isSuccess = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true);
             }
             else
             {
@@ -214,7 +213,7 @@ namespace LoRaWan.Tools.CLI
 
             if (isSuccess)
             {
-                var twin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
+                var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
                 StatusConsole.WriteTwin(opts.DevEui, twin);
             }
 
@@ -232,7 +231,7 @@ namespace LoRaWan.Tools.CLI
                 return false;
             }
 
-            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
 
             if (twin is null)
             {
@@ -258,7 +257,7 @@ namespace LoRaWan.Tools.CLI
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.CupsCredentialUrl] = bundleStorageUri;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.TcCredentialUrl] = bundleStorageUri;
 
-                return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
+                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
             });
 
             // Clean up old certificate bundles
@@ -279,7 +278,7 @@ namespace LoRaWan.Tools.CLI
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
 
             if (twin is null)
             {
@@ -296,7 +295,7 @@ namespace LoRaWan.Tools.CLI
 
             t?.Remove();
             twin.Properties.Desired[TwinProperty.ClientThumbprint] = clientThumprints;
-            return await iotDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
+            return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
         }
 
         private static async Task<bool> RunUpdateAndReturnExitCode(UpdateOptions opts)
@@ -306,18 +305,18 @@ namespace LoRaWan.Tools.CLI
 
             var isSuccess = false;
 
-            opts = iotDeviceHelper.CleanOptions(opts as object, false) as UpdateOptions;
-            opts = iotDeviceHelper.CompleteMissingUpdateOptions(opts, configurationHelper);
+            opts = IoTDeviceHelper.CleanOptions(opts as object, false) as UpdateOptions;
+            opts = IoTDeviceHelper.CompleteMissingUpdateOptions(opts, configurationHelper);
 
-            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
             {
-                twin = iotDeviceHelper.UpdateDeviceTwin(twin, opts);
+                twin = IoTDeviceHelper.UpdateDeviceTwin(twin, opts);
 
-                if (iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true))
+                if (IoTDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true))
                 {
-                    isSuccess = await iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, false);
+                    isSuccess = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, false);
 
                     if (isSuccess)
                     {
@@ -383,7 +382,7 @@ namespace LoRaWan.Tools.CLI
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            return await iotDeviceHelper.RemoveDevice(opts.DevEui, configurationHelper);
+            return await IoTDeviceHelper.RemoveDevice(opts.DevEui, configurationHelper);
         }
 
         private static void WriteAzureLogo()

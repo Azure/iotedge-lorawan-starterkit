@@ -121,7 +121,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return true;
         }
 
-        public bool GetHostFromConnectionString(string connectionString, out string hostName)
+        public static bool GetHostFromConnectionString(string connectionString, out string hostName)
         {
             hostName = string.Empty;
 

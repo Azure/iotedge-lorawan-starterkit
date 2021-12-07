@@ -22,7 +22,7 @@ namespace LoRaWan.Tools.CLI.Helpers
         private static readonly string[] DeduplicationModes = { "None", "Drop", "Mark" };
         private static readonly string DefaultRouterConfigFolder = "DefaultRouterConfig";
 
-        public async Task<Twin> QueryDeviceTwin(string devEui, ConfigurationHelper configurationHelper)
+        public static async Task<Twin> QueryDeviceTwin(string devEui, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
             Console.WriteLine($"Querying device {devEui} in IoT Hub...");
@@ -36,7 +36,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return twin;
         }
 
-        public bool VerifyDeviceTwin(string devEui, string netId, Twin twin, ConfigurationHelper configurationHelper, bool isVerbose)
+        public static bool VerifyDeviceTwin(string devEui, string netId, Twin twin, ConfigurationHelper configurationHelper, bool isVerbose)
         {
             var isOtaa = false;
             var isAbp = false;
@@ -185,12 +185,12 @@ namespace LoRaWan.Tools.CLI.Helpers
             return isValid;
         }
 
-        public string ReadTwin(TwinCollection collection, string property)
+        public static string ReadTwin(TwinCollection collection, string property)
         {
             return collection.Contains(property) ? ValidationHelper.GetTwinPropertyValue(collection[property]) : null;
         }
 
-        public object CleanOptions(object optsObject, bool isNewDevice)
+        public static object CleanOptions(object optsObject, bool isNewDevice)
         {
             dynamic opts;
 
@@ -271,7 +271,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return (object)opts;
         }
 
-        public AddOptions CompleteMissingAddOptions(AddOptions opts, ConfigurationHelper configurationHelper)
+        public static AddOptions CompleteMissingAddOptions(AddOptions opts, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
             Console.WriteLine($"Completing missing options for device...");
@@ -347,7 +347,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return opts;
         }
 
-        public UpdateOptions CompleteMissingUpdateOptions(UpdateOptions opts, ConfigurationHelper configurationHelper)
+        public static UpdateOptions CompleteMissingUpdateOptions(UpdateOptions opts, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
             Console.WriteLine($"Completing missing options for device...");
@@ -380,7 +380,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return opts;
         }
 
-        public bool VerifyDevice(AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper, bool isVerbose)
+        public static bool VerifyDevice(AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper, bool isVerbose)
         {
             var validationError = string.Empty;
             var isValid = true;
@@ -897,7 +897,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return isValid;
         }
 
-        public bool VerifyConcentrator(AddOptions opts)
+        public static bool VerifyConcentrator(AddOptions opts)
         {
             var isValid = true;
             TrackErrorIf(string.IsNullOrEmpty(opts.StationEui), "'Concentrator' device type has been specified but StationEui option is missing.");
@@ -938,7 +938,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return isValid;
         }
 
-        public Twin CreateConcentratorTwin(AddOptions opts, uint crcChecksum, Uri certificateBundleLocation)
+        public static Twin CreateConcentratorTwin(AddOptions opts, uint crcChecksum, Uri certificateBundleLocation)
         {
             var twinProperties = new TwinProperties();
             Console.WriteLine();
@@ -972,7 +972,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             };
         }
 
-        public Twin CreateDeviceTwin(AddOptions opts)
+        public static Twin CreateDeviceTwin(AddOptions opts)
         {
             var twinProperties = new TwinProperties();
             Console.WriteLine();
@@ -1051,7 +1051,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             };
         }
 
-        public Twin UpdateDeviceTwin(Twin twin, UpdateOptions opts)
+        public static Twin UpdateDeviceTwin(Twin twin, UpdateOptions opts)
         {
             Console.WriteLine();
             Console.WriteLine($"Applying changes to device {opts.DevEui} twin...");
@@ -1128,7 +1128,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return twin;
         }
 
-        public async Task<bool> WriteDeviceTwin(Twin twin, string devEui, ConfigurationHelper configurationHelper, bool isNewDevice)
+        public static async Task<bool> WriteDeviceTwin(Twin twin, string devEui, ConfigurationHelper configurationHelper, bool isNewDevice)
         {
             var device = new Device(devEui);
             BulkRegistryOperationResult result;
@@ -1185,7 +1185,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return true;
         }
 
-        public async Task<bool> QueryDevices(ConfigurationHelper configurationHelper, int page, int total)
+        public static async Task<bool> QueryDevices(ConfigurationHelper configurationHelper, int page, int total)
         {
             var count = 0;
             IEnumerable<string> currentPage;
@@ -1247,7 +1247,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return true;
         }
 
-        public async Task<bool> QueryDevicesAndVerify(ConfigurationHelper configurationHelper, int page)
+        public static async Task<bool> QueryDevicesAndVerify(ConfigurationHelper configurationHelper, int page)
         {
             var countValid = 0;
             var countInvalid = 0;
@@ -1297,7 +1297,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return isValid;
         }
 
-        public async Task<bool> RemoveDevice(string devEui, ConfigurationHelper configurationHelper)
+        public static async Task<bool> RemoveDevice(string devEui, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
             Console.WriteLine($"Finding existing device {devEui} in IoT Hub...");
