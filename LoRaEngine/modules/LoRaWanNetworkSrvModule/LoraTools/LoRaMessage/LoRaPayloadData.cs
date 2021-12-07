@@ -216,7 +216,7 @@ namespace LoRaTools.LoRaMessage
             DevAddr = new Memory<byte>(RawMessage, 1, 4);
             Array.Copy(devAddr, 0, RawMessage, 1, 4);
             FrameControlFlags = fctrlFlags;
-            RawMessage[5] = (byte)new FrameControl(fctrlFlags, fOpts?.Length ?? 0);
+            RawMessage[5] = new FrameControl(fctrlFlags, fOpts?.Length ?? 0).AsByte;
             Fcnt = new Memory<byte>(RawMessage, 6, 2);
             Array.Copy(fcnt, 0, RawMessage, 6, 2);
             if (fOpts != null)
@@ -442,7 +442,7 @@ namespace LoRaTools.LoRaMessage
             DevAddr.Span.Reverse();
             messageArray.AddRange(DevAddr.ToArray());
             DevAddr.Span.Reverse();
-            messageArray.Add((byte)new FrameControl(FrameControlFlags, Fopts.Length));
+            messageArray.Add(new FrameControl(FrameControlFlags, Fopts.Length).AsByte);
             messageArray.AddRange(Fcnt.ToArray());
             if (!Fopts.Span.IsEmpty)
             {
