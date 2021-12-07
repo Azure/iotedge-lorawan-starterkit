@@ -6,50 +6,64 @@ namespace LoRaWan.Tests.Unit
     using System;
     using System.Linq;
     using LoRaWan;
+    using LoRaWan.Tests.Common;
     using Xunit;
+    using static MoreLinq.Extensions.SubsetsExtension;
+    using MoreEnumerable = MoreLinq.MoreEnumerable;
 
     public class FrameControlTests
     {
-        private readonly FrameControl subject = new(FCtrlFlags.FPending, 5);
-
         [Fact]
         public void Size()
         {
             Assert.Equal(1, FrameControl.Size);
         }
 
-        [Fact]
-        public void Init_Returns_Initialized_When_Options_Length_Is_Valid()
+        public static readonly TheoryData<byte, FCtrlFlags, int> Codec_Test_Data =
+            TheoryDataFactory.From(
+                from flags in
+                    from fs in Enum.GetValues<FCtrlFlags>()
+                                   .Where(f => f != FCtrlFlags.None)
+                                   .Subsets()
+                    select fs.Aggregate(FCtrlFlags.None, (fs, f) => fs | f)
+                from optionsLength in MoreEnumerable.Sequence(0, 15)
+                select (checked((byte)((byte)flags | optionsLength)), flags, optionsLength));
+
+        [Theory]
+        [MemberData(nameof(Codec_Test_Data))]
+        public void Encode(byte exptected, FCtrlFlags flags, int optionsLength)
         {
-            foreach (var optionsLength in Enumerable.Range(0, 15))
-            {
-                var ex = Record.Exception(() => new FrameControl(FCtrlFlags.None, optionsLength));
-                Assert.Null(ex);
-            }
+            var result = FrameControl.Encode(flags, optionsLength);
+            Assert.Equal(exptected, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(Codec_Test_Data))]
+        public void Decode(byte input, FCtrlFlags expectedFlags, int expectedOptionsLength)
+        {
+            var (flags, optionsLength) = FrameControl.Decode(input);
+            Assert.Equal(expectedFlags, flags);
+            Assert.Equal(expectedOptionsLength, optionsLength);
         }
 
         [Theory]
         [InlineData(-1)]
         [InlineData(16)]
-        public void Init_Throws_When_Options_Length_Is_Not_In_Range(int length)
+        public void Encode_Throws_When_Options_Length_Is_Not_In_Range(int length)
         {
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new FrameControl(FCtrlFlags.None, length));
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => FrameControl.Encode(FCtrlFlags.None, length));
             Assert.Equal("optionsLength", ex.ParamName);
         }
 
-        [Fact]
-        public void ToString_Returns_Hexadecimal_String()
-        {
-            Assert.Equal("15", this.subject.ToString());
-        }
+        public static readonly TheoryData<int> Encode_Throws_When_Flags_Is_Invalid_Data =
+            TheoryDataFactory.From(MoreEnumerable.Sequence(1, 15));
 
-        [Fact]
-        public void Write_Writes_Byte_And_Returns_Updated_Span()
+        [Theory]
+        [MemberData(nameof(Encode_Throws_When_Flags_Is_Invalid_Data))]
+        public void Encode_Throws_When_Flags_Is_Invalid(byte flags)
         {
-            var bytes = new byte[1];
-            var remainingBytes = this.subject.Write(bytes);
-            Assert.Equal(0, remainingBytes.Length);
-            Assert.Equal(new byte[] { 21 }, bytes);
+            var ex = Assert.Throws<ArgumentException>(() => FrameControl.Encode((FCtrlFlags)flags, 0));
+            Assert.Equal("flags", ex.ParamName);
         }
     }
 }

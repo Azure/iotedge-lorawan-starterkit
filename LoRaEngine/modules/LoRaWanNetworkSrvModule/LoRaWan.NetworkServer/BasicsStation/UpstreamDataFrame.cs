@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     {
         public UpstreamDataFrame(MacHeader macHeader,
                                  DevAddr devAddress,
-                                 FrameControl control,
+                                 FCtrlFlags fctrlFlags,
                                  ushort counter,
                                  string options,
                                  FramePort port,
@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         {
             MacHeader = macHeader;
             DevAddr = devAddress;
-            Control = control;
+            FrameControlFlags = fctrlFlags;
             Counter = counter;
             Options = options;
             Port = port;
@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public MacHeader MacHeader { get; }
         public DevAddr DevAddr { get; }
-        public FrameControl Control { get; }
+        public FCtrlFlags FrameControlFlags { get; }
         public ushort Counter { get; }
         public string Options { get; }
         public FramePort Port { get; }
