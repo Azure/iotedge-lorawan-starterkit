@@ -13,6 +13,7 @@ namespace LoRaWan.Tests.Unit
     using global::LoRaTools.LoRaMessage;
     using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Utils;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     /// <summary>

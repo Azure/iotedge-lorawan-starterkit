@@ -249,16 +249,6 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Serialize a message to be sent upstream.
-        /// </summary>
-        public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0, float lsnr = 0)
-        {
-            _ = PerformEncryption(appSKey);
-            SetMic(nwkSKey);
-            return new UplinkPktFwdMessage(GetByteMessage(), datr, freq, tmst, lsnr);
-        }
-
-        /// <summary>
         /// Serialize a message to be sent downlink on the wire.
         /// </summary>
         /// <param name="appSKey">the app key used for encryption.</param>
