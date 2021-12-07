@@ -40,21 +40,21 @@ namespace LoRaWan.Tools.CLI.Helpers
         public static string GetDataRatesforLocale(string locale)
         {
             var result = new StringBuilder();
-            result.Append(locale + ": ");
+            _ = result.Append(locale + ": ");
 
             if (string.Equals(locale, "EU", StringComparison.OrdinalIgnoreCase))
             {
                 foreach (var dr in euValidDataranges)
-                    result.Append(dr + ", ");
+                    _ = result.Append(dr + ", ");
             }
             else
             {
                 foreach (var dr in usValidDataranges)
-                    result.Append(dr + ", ");
+                    _ = result.Append(dr + ", ");
             }
 
-            result.Remove(result.Length - 2, 2);
-            result.Append(".");
+            _ = result.Remove(result.Length - 2, 2)
+                      .Append(".");
 
             return result.ToString();
         }

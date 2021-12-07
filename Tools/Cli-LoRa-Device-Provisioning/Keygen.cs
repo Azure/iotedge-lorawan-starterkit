@@ -17,7 +17,7 @@ namespace LoRaWan.Tools.CLI
             for (var i = 0; i < keyLength; i++)
             {
                 var newKey = rnd.Next(0, 256);
-                randomKey.Append(newKey.ToString("X2"));
+                _ = randomKey.Append(newKey.ToString("X2"));
             }
 
             return randomKey.ToString();

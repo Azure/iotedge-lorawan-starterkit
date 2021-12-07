@@ -79,8 +79,8 @@ namespace LoRaWan.Tools.CLI
         private static string TwinToString(Twin twin)
         {
             var twinData = JObject.Parse(twin.Properties.Desired.ToJson());
-            twinData.Remove("$metadata");
-            twinData.Remove("$version");
+            _ = twinData.Remove("$metadata");
+            _ = twinData.Remove("$version");
             return twinData.ToString();
         }
     }

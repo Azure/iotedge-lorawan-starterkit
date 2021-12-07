@@ -34,8 +34,8 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             for (var i = 0; i < bytes.Length; i++)
             {
-                result.Append(Constants.HexAlphabet[byteSpan[i] >> 4]);
-                result.Append(Constants.HexAlphabet[byteSpan[i] & 0xF]);
+                _ = result.Append(Constants.HexAlphabet[byteSpan[i] >> 4])
+                          .Append(Constants.HexAlphabet[byteSpan[i] & 0xF]);
             }
 
             return result.ToString();
@@ -48,21 +48,8 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             for (var i = bytes.Length - 1; i >= 0; --i)
             {
-                result.Append(Constants.HexAlphabet[byteSpan[i] >> 4]);
-                result.Append(Constants.HexAlphabet[byteSpan[i] & 0xF]);
-            }
-
-            return result.ToString();
-        }
-
-        static string ByteArrayToString(byte[] bytes)
-        {
-            var result = new StringBuilder(bytes.Length * 2);
-
-            foreach (var b in bytes)
-            {
-                result.Append(Constants.HexAlphabet[b >> 4]);
-                result.Append(Constants.HexAlphabet[b & 0xF]);
+                _ = result.Append(Constants.HexAlphabet[byteSpan[i] >> 4])
+                          .Append(Constants.HexAlphabet[byteSpan[i] & 0xF]);
             }
 
             return result.ToString();

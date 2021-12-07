@@ -1217,8 +1217,8 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     var desired = json.SelectToken("$.properties.desired") as JObject;
-                    desired.Remove("$metadata");
-                    desired.Remove("$version");
+                    _ = desired.Remove("$metadata");
+                    _ = desired.Remove("$version");
                     Console.WriteLine(desired);
                     Console.ResetColor();
 
@@ -1234,7 +1234,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 if (count > 0)
                 {
                     Console.WriteLine("Press any key to continue.");
-                    Console.ReadKey();
+                    _ = Console.ReadKey();
                     Console.WriteLine();
                 }
                 else
@@ -1279,7 +1279,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                             if (countInvalid % page == 0)
                             {
                                 Console.WriteLine("Press any key to continue...");
-                                Console.ReadKey();
+                                _ = Console.ReadKey();
                                 Console.WriteLine();
                             }
                         }
