@@ -44,30 +44,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 NullLogger<IConcentratorDeduplication>.Instance);
         }
 
-        [Fact]
-        public void When_Not_Data_Payload_RequiresConfirmation_Should_Return_False()
-        {
-            // arrange
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
-            var joinRxpk = simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]; ;
-            using var loraRequest = WaitableLoRaRequest.Create(joinRxpk);
-            loraRequest.SetPayload(new LoRaPayloadJoinRequest());
-
-            // act / assert
-            Assert.False(ConcentratorDeduplication.RequiresConfirmation(loraRequest));
-        }
-
-        [Fact]
-        public void When_Data_Payload_Does_Not_Need_Confirmation_RequiresConfirmation_Should_Return_False()
-        {
-            // arrange
-            var dataPayload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload");
-            using var loraRequest = WaitableLoRaRequest.Create(dataPayload);
-
-            // act/assert
-            Assert.False(ConcentratorDeduplication.RequiresConfirmation(loraRequest));
-        }
-
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

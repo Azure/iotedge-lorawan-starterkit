@@ -67,7 +67,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            if (RequiresConfirmation(loRaRequest) && previousStation == stationEui)
+            if (LoRaRequest.RequiresConfirmation(loRaRequest) && previousStation == stationEui)
             {
                 this.logger.LogDebug($"Message received from the same EUI {stationEui} as before, will not drop.");
                 return Result.DuplicateDueToResubmission;
@@ -91,9 +91,6 @@ namespace LoRaWan.NetworkServer
                 LoRaPayloadJoinRequest asJoinPayload => CreateCacheKeyCore(asJoinPayload),
                 _ => throw new ArgumentException($"{loRaRequest} with invalid type.")
             };
-
-        internal static bool RequiresConfirmation(LoRaRequest loraRequest)
-            => loraRequest.Payload is LoRaPayloadData payload && (payload.IsConfirmed || payload.IsMacAnswerRequired);
 
         private static string CreateCacheKeyCore(LoRaPayloadData payload)
         {
