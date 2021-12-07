@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaWan.Tests.Unit.Logger
 {
     using System;
@@ -18,12 +20,10 @@ namespace LoRaWan.Tests.Unit.Logger
         {
             // arrange
             var configuration = new LoRaLoggerConfiguration { EventId = default, LogLevel = LogLevel.Debug, UseScopes = true };
-            var optionsMonitorMock = new Mock<IOptionsMonitor<LoRaLoggerConfiguration>>();
-            optionsMonitorMock.Setup(om => om.CurrentValue).Returns(configuration);
-            optionsMonitorMock.Setup(om => om.OnChange(It.IsAny<Action<LoRaLoggerConfiguration, string>>())).Returns(NullDisposable.Instance);
+            var optionsMonitor = CreateOptionsMonitor(configuration);
 
             // act
-            using var loggerMonitor = new LoggerConfigurationMonitor(optionsMonitorMock.Object);
+            using var loggerMonitor = new LoggerConfigurationMonitor(optionsMonitor);
 
             // assert
             Assert.Same(configuration, loggerMonitor.Configuration);
@@ -50,6 +50,31 @@ namespace LoRaWan.Tests.Unit.Logger
             // assert
             Assert.Same(updatedConfiguration, loggerMonitor.Configuration);
             Assert.Null(loggerMonitor.ScopeProvider);
+        }
+
+        [Fact]
+        public void Disposes_Correctly()
+        {
+            // arrange
+            var onChangeDisposable = new Mock<IDisposable>();
+            var optionsMonitor = CreateOptionsMonitor(new LoRaLoggerConfiguration(), onChangeDisposable.Object);
+
+            // act
+            using (var loggerMonitor = new LoggerConfigurationMonitor(optionsMonitor))
+            {
+                // dispose
+            }
+
+            // assert
+            onChangeDisposable.Verify(oc => oc.Dispose(), Times.Once);
+        }
+
+        private static IOptionsMonitor<LoRaLoggerConfiguration> CreateOptionsMonitor(LoRaLoggerConfiguration configuration, IDisposable? onChangeToken = null)
+        {
+            var optionsMonitorMock = new Mock<IOptionsMonitor<LoRaLoggerConfiguration>>();
+            optionsMonitorMock.Setup(om => om.CurrentValue).Returns(configuration);
+            optionsMonitorMock.Setup(om => om.OnChange(It.IsAny<Action<LoRaLoggerConfiguration, string>>())).Returns(onChangeToken ?? NullDisposable.Instance);
+            return optionsMonitorMock.Object;
         }
     }
 }
