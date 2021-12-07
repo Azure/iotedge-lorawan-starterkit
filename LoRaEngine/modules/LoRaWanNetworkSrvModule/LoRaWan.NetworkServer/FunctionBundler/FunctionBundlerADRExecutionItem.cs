@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
         public bool RequiresExecution(FunctionBundlerExecutionContext context)
         {
             if (context is null) throw new ArgumentNullException(nameof(context));
-            return context.LoRaPayload.IsAdrEnabled;
+            return context.LoRaPayload.IsDataRateNetworkControlled;
         }
     }
 }

@@ -128,7 +128,7 @@ namespace LoRaWan.NetworkServer
                 // ADR should be performed before the deduplication
                 // as we still want to collect the signal info, even if we drop
                 // it in the next step
-                if (loRaADRResult == null && loraPayload.IsAdrEnabled)
+                if (loRaADRResult == null && loraPayload.IsDataRateNetworkControlled)
                 {
                     loRaADRResult = await PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }

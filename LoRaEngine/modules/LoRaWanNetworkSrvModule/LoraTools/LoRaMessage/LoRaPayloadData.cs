@@ -68,9 +68,9 @@ namespace LoRaTools.LoRaMessage
         public bool IsAdrReq => FrameControlFlags.HasFlag(FrameControlFlags.AdrAckReq);
 
         /// <summary>
-        /// Gets a value indicating whether the device has ADR enabled.
+        /// Gets a value indicating whether the network controls the data rate.
         /// </summary>
-        public bool IsAdrEnabled => FrameControlFlags.HasFlag(FrameControlFlags.Adr);
+        public bool IsDataRateNetworkControlled => FrameControlFlags.HasFlag(FrameControlFlags.Adr);
 
         /// <summary>
         /// Indicates (downlink only) whether a gateway has more data pending (FPending) to be sent.
