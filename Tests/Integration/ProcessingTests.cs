@@ -562,7 +562,7 @@ namespace LoRaWan.Tests.Integration
                deviceRegistry,
                FrameCounterUpdateStrategyProvider);
 
-            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: FrameControlFlags.Ack);
+            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.Ack);
             var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var ackRequest = CreateWaitableRequest(ackRxpk);
             messageDispatcher.DispatchRequest(ackRequest);

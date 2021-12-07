@@ -100,7 +100,7 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, FrameControlFlags fctrl = default, bool isHexPayload = false, IList<MacCommand> macCommands = null)
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, FrameControlFlags fctrlFlags = default, bool isHexPayload = false, IList<MacCommand> macCommands = null)
         {
             var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
@@ -132,7 +132,7 @@ namespace LoRaWan.Tests.Common
             var payloadData = new LoRaPayloadData(
                 LoRaMessageType.UnconfirmedDataUp,
                 devAddr,
-                fctrl,
+                fctrlFlags,
                 fcntBytes,
                 macCommands,
                 fPort,
