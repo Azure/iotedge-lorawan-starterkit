@@ -66,18 +66,18 @@ namespace LoRaWan.NetworkServer
 
             if (LoRaRequest.RequiresConfirmation(loRaRequest) && previousStation == stationEui)
             {
-                this.logger.LogDebug($"Message received from the same EUI {stationEui} as before, will not drop.");
+                this.logger.LogDebug($"Message was received previously from the same EUI {stationEui} (\"confirmedResubmit\").");
                 return Result.DuplicateDueToResubmission;
             }
 
             // received from a different station
             if (ShouldDrop(loRaRequest, loRaDevice))
             {
-                this.logger.LogInformation($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {stationEui}, will drop.");
+                this.logger.LogDebug($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {stationEui}.");
                 return Result.Duplicate;
             }
 
-            this.logger.LogDebug($"Message from station with EUI {stationEui} will not be dropped due to DeduplicationStrategy.");
+            this.logger.LogDebug($"Message from station with EUI {stationEui} marked as soft duplicate due to DeduplicationStrategy.");
             return Result.SoftDuplicate;
         }
 
