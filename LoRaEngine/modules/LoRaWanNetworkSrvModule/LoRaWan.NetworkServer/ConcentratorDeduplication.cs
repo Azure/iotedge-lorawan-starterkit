@@ -19,15 +19,14 @@ namespace LoRaWan.NetworkServer
         {
             NotDuplicate,
             DuplicateDueToResubmission,
-            Duplicate,
-            SoftDuplicate // detected as a duplicate but due to the DeduplicationStrategy marked as a "soft" duplicate
+            SoftDuplicate, // detected as a duplicate but due to the DeduplicationStrategy marked as a "soft" duplicate
+            Duplicate
         }
 
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
         private readonly IMemoryCache cache;
         private readonly IDeduplicationStrategyFactory deduplicationStrategy;
-        private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
         private readonly ILogger<IConcentratorDeduplication> logger;
 
         [ThreadStatic]
@@ -38,12 +37,10 @@ namespace LoRaWan.NetworkServer
         public ConcentratorDeduplication(
             IMemoryCache cache,
             IDeduplicationStrategyFactory deduplicationStrategy,
-            WebSocketWriterRegistry<StationEui, string> socketRegistry,
             ILogger<IConcentratorDeduplication> logger)
         {
             this.cache = cache;
             this.deduplicationStrategy = deduplicationStrategy;
-            this.socketRegistry = socketRegistry;
             this.logger = logger;
         }
 

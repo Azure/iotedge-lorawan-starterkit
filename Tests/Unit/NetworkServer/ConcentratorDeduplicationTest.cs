@@ -19,7 +19,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly LoRaDevice loRaDevice;
         private readonly SimulatedDevice simulatedDevice;
         private readonly WaitableLoRaRequest loraRequest;
-        private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
         private readonly Mock<DeduplicationStrategyFactory> deduplicationStrategyMock;
         private readonly MemoryCache cache; // ownership passed to ConcentratorDeduplication
 
@@ -35,12 +34,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             this.deduplicationStrategyMock = new Mock<DeduplicationStrategyFactory>(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
             this.deduplicationStrategyMock.Setup(x => x.Create(this.loRaDevice)).Returns(new DeduplicationStrategyDrop(NullLogger<DeduplicationStrategyDrop>.Instance)); ;
-            this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance, null);
 
             this.concentratorDeduplication = new ConcentratorDeduplication(
                 this.cache,
                 this.deduplicationStrategyMock.Object,
-                this.socketRegistry,
                 NullLogger<IConcentratorDeduplication>.Instance);
         }
 
