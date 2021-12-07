@@ -55,7 +55,27 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public bool IsMacAnswerRequired => MacCommands?.FirstOrDefault(x => x.Cid == Cid.LinkCheckCmd) != null;
 
-        public FrameControl FrameControl { get; set; }
+        public FCtrlFlags FrameControlFlags { get; set; }
+
+        /// <summary>
+        /// Indicates if the payload is an confirmation message acknowledgement.
+        /// </summary>
+        public bool IsUpwardAck => FrameControlFlags.HasFlag(FCtrlFlags.Ack);
+
+        /// <summary>
+        /// Gets a value indicating whether indicates if the payload is an confirmation message acknowledgement.
+        /// </summary>
+        public bool IsAdrReq => FrameControlFlags.HasFlag(FCtrlFlags.AdrAckReq);
+
+        /// <summary>
+        /// Gets a value indicating whether the device has ADR enabled.
+        /// </summary>
+        public bool IsAdrEnabled => FrameControlFlags.HasFlag(FCtrlFlags.Adr);
+
+        /// <summary>
+        /// Indicates (downlink only) whether a gateway has more data pending (FPending) to be sent.
+        /// </summary>
+        public bool IsDownlinkFramePending => FrameControlFlags.HasFlag(FCtrlFlags.FPending);
 
         /// <summary>
         /// Gets or sets frame Counter.
@@ -122,8 +142,9 @@ namespace LoRaTools.LoRaMessage
 
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // Fctrl Frame Control Octet
-            FrameControl = new FrameControl(inputMessage[5]);
-            var foptsSize = FrameControl.OptionsLength;
+            var frameControl = new FrameControl(inputMessage[5]);
+            FrameControlFlags = frameControl.Flags;
+            var foptsSize = frameControl.OptionsLength;
             // Fcnt
             Fcnt = new Memory<byte>(inputMessage, 6, 2);
             // FOpts
@@ -194,8 +215,8 @@ namespace LoRaTools.LoRaMessage
             Array.Reverse(devAddr);
             DevAddr = new Memory<byte>(RawMessage, 1, 4);
             Array.Copy(devAddr, 0, RawMessage, 1, 4);
-            FrameControl = new FrameControl(fctrlFlags, fOpts?.Length ?? 0);
-            RawMessage[5] = (byte)FrameControl;
+            FrameControlFlags = fctrlFlags;
+            RawMessage[5] = (byte)new FrameControl(fctrlFlags, fOpts?.Length ?? 0);
             Fcnt = new Memory<byte>(RawMessage, 6, 2);
             Array.Copy(fcnt, 0, RawMessage, 6, 2);
             if (fOpts != null)
@@ -421,7 +442,7 @@ namespace LoRaTools.LoRaMessage
             DevAddr.Span.Reverse();
             messageArray.AddRange(DevAddr.ToArray());
             DevAddr.Span.Reverse();
-            messageArray.Add((byte)FrameControl);
+            messageArray.Add((byte)new FrameControl(FrameControlFlags, Fopts.Length));
             messageArray.AddRange(Fcnt.ToArray());
             if (!Fopts.Span.IsEmpty)
             {

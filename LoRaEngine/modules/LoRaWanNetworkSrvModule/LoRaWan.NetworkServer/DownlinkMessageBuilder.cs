@@ -199,7 +199,7 @@ namespace LoRaWan.NetworkServer
                 fctrl |= FCtrlFlags.FPending;
             }
 
-            if (upstreamPayload.FrameControl.AdrAckRequested)
+            if (upstreamPayload.IsAdrEnabled)
             {
                 fctrl |= FCtrlFlags.Adr;
             }

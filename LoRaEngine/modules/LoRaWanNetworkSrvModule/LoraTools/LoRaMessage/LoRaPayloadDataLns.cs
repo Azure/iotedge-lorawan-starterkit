@@ -51,7 +51,7 @@ namespace LoRaTools.LoRaMessage
             _ = macHeader.Write(Mhdr.Span);
 
             // Setting Fctrl
-            FrameControl = control;
+            FrameControlFlags = control.Flags;
 
             // Setting Fcnt
             Fcnt = new byte[sizeof(ushort)];

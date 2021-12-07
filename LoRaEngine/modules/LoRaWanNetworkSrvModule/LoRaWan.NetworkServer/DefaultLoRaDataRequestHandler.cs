@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer
                     HandlePreferredGatewayChanges(request, loRaDevice, bundlerResult);
                 }
 
-                if (loraPayload.FrameControl.AdrAckRequested)
+                if (loraPayload.IsAdrReq)
                 {
                     this.logger.LogDebug("ADR ack request received");
                 }
@@ -128,12 +128,12 @@ namespace LoRaWan.NetworkServer
                 // ADR should be performed before the deduplication
                 // as we still want to collect the signal info, even if we drop
                 // it in the next step
-                if (loRaADRResult == null && loraPayload.FrameControl.Adr)
+                if (loRaADRResult == null && loraPayload.IsAdrEnabled)
                 {
                     loRaADRResult = await PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }
 
-                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.FrameControl.AdrAckRequested)
+                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
                 {
                     // if we got an ADR result or request, we have to send the update to the device
                     requiresConfirmation = true;
@@ -599,7 +599,7 @@ namespace LoRaWan.NetworkServer
             }
 
             Dictionary<string, string> eventProperties = null;
-            if (loRaPayloadData.FrameControl.Ack)
+            if (loRaPayloadData.IsUpwardAck)
             {
                 eventProperties = new Dictionary<string, string>();
                 this.logger.LogInformation($"message ack received for cloud to device message id {loRaDevice.LastConfirmedC2DMessageID}");
@@ -710,7 +710,7 @@ namespace LoRaWan.NetworkServer
             };
 
             // If the ADR req bit is not set we don't perform rate adaptation.
-            if (!loraPayload.FrameControl.AdrAckRequested)
+            if (!loraPayload.IsAdrReq)
             {
                 _ = loRaADRManager.StoreADREntryAsync(loRaADRTableEntry);
             }
