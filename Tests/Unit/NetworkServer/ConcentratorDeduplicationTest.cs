@@ -23,15 +23,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<DeduplicationStrategyFactory> deduplicationStrategyMock;
         private readonly MemoryCache cache; // ownership passed to ConcentratorDeduplication
 
-        //public static class TheoryMembers
-        //{
-        //    public static IEnumerable<object[]> DeduplicationStrategies()
-        //    {
-        //        yield return new object[] { new DeduplicationStrategyMark(NullLogger<DeduplicationStrategyMark>.Instance) };
-        //        yield return new object[] { null };
-        //    }
-        //}
-
         public ConcentratorDeduplicationTest()
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
@@ -53,42 +44,29 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 NullLogger<IConcentratorDeduplication>.Instance);
         }
 
-        //[Fact]
-        //public void ShouldProcess_JoinRequests()
-        //{
-        //    // arrange
-        //    var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
-        //    var joinRxpk = simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]; ;
-        //    using var loraRequest = WaitableLoRaRequest.Create(joinRxpk);
-        //    loraRequest.SetPayload(new LoRaPayloadJoinRequest());
+        [Fact]
+        public void When_Not_Data_Payload_RequiresConfirmation_Should_Return_False()
+        {
+            // arrange
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
+            var joinRxpk = simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]; ;
+            using var loraRequest = WaitableLoRaRequest.Create(joinRxpk);
+            loraRequest.SetPayload(new LoRaPayloadJoinRequest());
 
-        //    // act / assert
-        //    var shouldProcess = this.concentratorDeduplication.ShouldProcess(loraRequest, null);
-        //    Assert.True(shouldProcess);
-        //}
+            // act / assert
+            Assert.False(ConcentratorDeduplication.RequiresConfirmation(loraRequest));
+        }
 
-        //[Theory]
-        //[MemberData(nameof(TheoryMembers.DeduplicationStrategies), MemberType = typeof(TheoryMembers))]
-        //public void ShouldNotProcess_Mark_And_None_Deduplication_Strategies(ILoRaDeviceMessageDeduplicationStrategy strategy)
-        //{
-        //    // arrange
-        //    using var otherDevice = new LoRaDevice(this.simulatedDevice.DevAddr, new Faker().Random.String(10), this.connectionManager);
-        //    _ = this.deduplicationStrategyMock.Setup(x => x.Create(otherDevice)).Returns(strategy); ;
+        [Fact]
+        public void When_Data_Payload_Does_Not_Need_Confirmation_RequiresConfirmation_Should_Return_False()
+        {
+            // arrange
+            var dataPayload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload");
+            using var loraRequest = WaitableLoRaRequest.Create(dataPayload);
 
-        //    using var concentratorDeduplication = new ConcentratorDeduplication(
-        //        this.cache,
-        //        this.deduplicationStrategyMock.Object,
-        //        this.socketRegistry,
-        //        NullLogger<IConcentratorDeduplication>.Instance);
-
-        //    // act / assert
-        //    var shouldNotProcess = concentratorDeduplication.ShouldProcess(this.loraRequest, otherDevice);
-        //    Assert.False(shouldNotProcess);
-
-        //    // should not affect existing mock
-        //    var shouldProcess = concentratorDeduplication.ShouldProcess(this.loraRequest, this.loRaDevice);
-        //    Assert.True(shouldProcess);
-        //}
+            // act/assert
+            Assert.False(ConcentratorDeduplication.RequiresConfirmation(loraRequest));
+        }
 
         [Theory]
         [InlineData(true)]
@@ -118,7 +96,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(true, false, ConcentratorDeduplication.Result.DuplicateDueToResubmission)]
         [InlineData(false, true, ConcentratorDeduplication.Result.Duplicate)]
         [InlineData(false, false, ConcentratorDeduplication.Result.SoftDuplicate)]
-        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool dropDeduplication, ConcentratorDeduplication.Result expectedResult)
+        public void When_Message_Encountered_Should_Find_Duplicates_For_Different_Deduplication(bool sameStationAsBefore, bool dropDeduplicationStrategy, ConcentratorDeduplication.Result expectedResult)
         {
             // arrange
             var stationEui = this.loraRequest.StationEui;
@@ -127,7 +105,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
             this.loraRequest.SetStationEui(anotherStation);
 
-            if (!dropDeduplication)
+            if (!dropDeduplicationStrategy)
                 this.deduplicationStrategyMock.Setup(x => x.Create(this.loRaDevice)).Returns(new DeduplicationStrategyMark(NullLogger<DeduplicationStrategyMark>.Instance));
 
             // act/assert

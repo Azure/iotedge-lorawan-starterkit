@@ -47,13 +47,6 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
         }
 
-        private bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
-            => loRaRequest.Payload is LoRaPayloadJoinRequest
-            || (loRaRequest.Payload is LoRaPayloadData && this.deduplicationStrategy.Create(loRaDevice) is DeduplicationStrategyDrop);
-
-        internal static bool RequiresConfirmation(LoRaRequest loraRequest)
-            => loraRequest.Payload is LoRaPayloadData payload && (payload.IsConfirmed || payload.IsMacAnswerRequired);
-
         public Result CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
         {
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
@@ -66,7 +59,10 @@ namespace LoRaWan.NetworkServer
             {
                 if (!this.cache.TryGetValue(key, out previousStation))
                 {
-                    AddToCache(key, stationEui);
+                    _ = this.cache.Set(key, stationEui, new MemoryCacheEntryOptions()
+                    {
+                        SlidingExpiration = DefaultExpiration
+                    });
                     return Result.NotDuplicate;
                 }
             }
@@ -95,6 +91,9 @@ namespace LoRaWan.NetworkServer
                 LoRaPayloadJoinRequest asJoinPayload => CreateCacheKeyCore(asJoinPayload),
                 _ => throw new ArgumentException($"{loRaRequest} with invalid type.")
             };
+
+        internal static bool RequiresConfirmation(LoRaRequest loraRequest)
+            => loraRequest.Payload is LoRaPayloadData payload && (payload.IsConfirmed || payload.IsMacAnswerRequired);
 
         private static string CreateCacheKeyCore(LoRaPayloadData payload)
         {
@@ -138,10 +137,8 @@ namespace LoRaWan.NetworkServer
             return BitConverter.ToString(key);
         }
 
-        private void AddToCache(string key, StationEui stationEui)
-            => this.cache.Set(key, stationEui, new MemoryCacheEntryOptions()
-            {
-                SlidingExpiration = DefaultExpiration
-            });
+        private bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
+            => loRaRequest.Payload is LoRaPayloadJoinRequest
+            || (loRaRequest.Payload is LoRaPayloadData && this.deduplicationStrategy.Create(loRaDevice) is DeduplicationStrategyDrop);
     }
 }
