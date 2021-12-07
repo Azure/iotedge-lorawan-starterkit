@@ -52,34 +52,34 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             devEui = ValidationHelper.CleanString(devEui);
 
-            var appEui = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppEUI);
-            var appKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppKey);
+            var appEui = ReadTwin(twin.Properties.Desired, TwinProperty.AppEUI);
+            var appKey = ReadTwin(twin.Properties.Desired, TwinProperty.AppKey);
 
-            var nwkSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.NwkSKey);
-            var appSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppSKey);
-            var devAddr = this.ReadTwin(twin.Properties.Desired, TwinProperty.DevAddr);
-            var abpRelaxMode = this.ReadTwin(twin.Properties.Desired, TwinProperty.ABPRelaxMode);
+            var nwkSKey = ReadTwin(twin.Properties.Desired, TwinProperty.NwkSKey);
+            var appSKey = ReadTwin(twin.Properties.Desired, TwinProperty.AppSKey);
+            var devAddr = ReadTwin(twin.Properties.Desired, TwinProperty.DevAddr);
+            var abpRelaxMode = ReadTwin(twin.Properties.Desired, TwinProperty.ABPRelaxMode);
 
             netId = ValidationHelper.CleanNetId(netId);
 
-            var gatewayID = this.ReadTwin(twin.Properties.Desired, TwinProperty.GatewayID);
-            var sensorDecoder = this.ReadTwin(twin.Properties.Desired, TwinProperty.SensorDecoder);
-            var classType = this.ReadTwin(twin.Properties.Desired, TwinProperty.ClassType);
-            var downlinkEnabled = this.ReadTwin(twin.Properties.Desired, TwinProperty.DownlinkEnabled);
-            var preferredWindow = this.ReadTwin(twin.Properties.Desired, TwinProperty.PreferredWindow);
-            var deduplication = this.ReadTwin(twin.Properties.Desired, TwinProperty.Deduplication);
-            var rx2DataRate = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX2DataRate);
-            var rx1DrOffset = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX1DROffset);
-            var rxDelay = this.ReadTwin(twin.Properties.Desired, TwinProperty.RXDelay);
-            var keepAliveTimeout = this.ReadTwin(twin.Properties.Desired, TwinProperty.KeepAliveTimeout);
-            var supports32BitFCnt = this.ReadTwin(twin.Properties.Desired, TwinProperty.Supports32BitFCnt);
-            var fCntUpStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntUpStart);
-            var fCntDownStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntDownStart);
-            var fCntResetCounter = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntResetCounter);
+            var gatewayID = ReadTwin(twin.Properties.Desired, TwinProperty.GatewayID);
+            var sensorDecoder = ReadTwin(twin.Properties.Desired, TwinProperty.SensorDecoder);
+            var classType = ReadTwin(twin.Properties.Desired, TwinProperty.ClassType);
+            var downlinkEnabled = ReadTwin(twin.Properties.Desired, TwinProperty.DownlinkEnabled);
+            var preferredWindow = ReadTwin(twin.Properties.Desired, TwinProperty.PreferredWindow);
+            var deduplication = ReadTwin(twin.Properties.Desired, TwinProperty.Deduplication);
+            var rx2DataRate = ReadTwin(twin.Properties.Desired, TwinProperty.RX2DataRate);
+            var rx1DrOffset = ReadTwin(twin.Properties.Desired, TwinProperty.RX1DROffset);
+            var rxDelay = ReadTwin(twin.Properties.Desired, TwinProperty.RXDelay);
+            var keepAliveTimeout = ReadTwin(twin.Properties.Desired, TwinProperty.KeepAliveTimeout);
+            var supports32BitFCnt = ReadTwin(twin.Properties.Desired, TwinProperty.Supports32BitFCnt);
+            var fCntUpStart = ReadTwin(twin.Properties.Desired, TwinProperty.FCntUpStart);
+            var fCntDownStart = ReadTwin(twin.Properties.Desired, TwinProperty.FCntDownStart);
+            var fCntResetCounter = ReadTwin(twin.Properties.Desired, TwinProperty.FCntResetCounter);
 
-            var fCntUpStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntUpStart);
-            var fCntDownStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntDownStart);
-            var fCntResetCounterReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntResetCounter);
+            var fCntUpStartReported = ReadTwin(twin.Properties.Reported, TwinProperty.FCntUpStart);
+            var fCntDownStartReported = ReadTwin(twin.Properties.Reported, TwinProperty.FCntDownStart);
+            var fCntResetCounterReported = ReadTwin(twin.Properties.Reported, TwinProperty.FCntResetCounter);
 
             isOtaa = !string.IsNullOrEmpty(appEui) || !string.IsNullOrEmpty(appKey);
             isAbp = !string.IsNullOrEmpty(nwkSKey) || !string.IsNullOrEmpty(appSKey) || !string.IsNullOrEmpty(devAddr);
@@ -88,7 +88,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             if (isAbp && !isOtaa)
             {
                 StatusConsole.WriteLogLineIfVerbose(MessageType.Info, "ABP device configuration detected.", isVerbose);
-                isValid = this.VerifyDevice(
+                isValid = VerifyDevice(
                     new AddOptions()
                     {
                         Type = "ABP",
@@ -126,7 +126,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             else if (isOtaa && !isAbp)
             {
                 StatusConsole.WriteLogLineIfVerbose(MessageType.Info, "OTAA device configuration detected.", isVerbose);
-                isValid = this.VerifyDevice(
+                isValid = VerifyDevice(
                     new AddOptions()
                     {
                         Type = "OTAA",
@@ -1284,7 +1284,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 foreach (var twin in fullList)
                 {
-                    if (!this.VerifyDeviceTwin(twin.DeviceId, null, twin, configurationHelper, false))
+                    if (!VerifyDeviceTwin(twin.DeviceId, null, twin, configurationHelper, false))
                     {
                         isValid = false;
                         countInvalid++;

@@ -52,7 +52,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             else
             {
                 // Just show IoT Hub Hostname
-                if (this.GetHostFromConnectionString(connectionString, out var hostName))
+                if (GetHostFromConnectionString(connectionString, out var hostName))
                 {
                     StatusConsole.WriteLogLine(MessageType.Info, $"Using IoT Hub: {hostName}");
                 }
@@ -88,12 +88,12 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             StatusConsole.WriteLogLine(MessageType.Info, $"To override, use --netid parameter.");
 
-            this.NetId = netId;
+            NetId = netId;
 
             // Create Registry Manager using connection string
             try
             {
-                this.RegistryManager = RegistryManager.CreateFromConnectionString(connectionString);
+                RegistryManager = RegistryManager.CreateFromConnectionString(connectionString);
             }
             catch (Exception ex)
             {
