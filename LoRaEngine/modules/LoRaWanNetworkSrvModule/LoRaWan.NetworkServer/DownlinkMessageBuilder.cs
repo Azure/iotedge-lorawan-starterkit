@@ -196,7 +196,7 @@ namespace LoRaWan.NetworkServer
 
             if (fpending || isMessageTooLong)
             {
-                fctrl |= FrameControlFlags.FPending;
+                fctrl |= FrameControlFlags.DownlinkFramePending;
             }
 
             if (upstreamPayload.IsAdrEnabled)

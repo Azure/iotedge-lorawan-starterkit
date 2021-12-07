@@ -75,7 +75,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Indicates (downlink only) whether a gateway has more data pending (FPending) to be sent.
         /// </summary>
-        public bool IsDownlinkFramePending => FrameControlFlags.HasFlag(FrameControlFlags.FPending);
+        public bool IsDownlinkFramePending => FrameControlFlags.HasFlag(FrameControlFlags.DownlinkFramePending);
 
         /// <summary>
         /// Gets or sets frame Counter.

@@ -12,13 +12,13 @@ namespace LoRaWan
 #pragma warning restore CA1711, CA1028
     {
 #pragma warning disable format
-        None      = 0,
-        Adr       = 0x80,
-        AdrAckReq = 0x40,
-        Ack       = 0x20,
+        None                  = 0,
+        Adr                   = 0x80,
+        AdrAckReq             = 0x40,
+        Ack                   = 0x20,
 #pragma warning disable CA1069 // Enums values should not be duplicated (by design)
-        FPending  = 0x10,
-        ClassB    = 0x10,
+        DownlinkFramePending  = 0x10, // FPending
+        ClassB                = 0x10,
 #pragma warning restore CA1069 // Enums values should not be duplicated
 #pragma warning restore format
     }
