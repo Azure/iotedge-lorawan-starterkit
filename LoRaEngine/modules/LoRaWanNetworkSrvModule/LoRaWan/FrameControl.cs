@@ -30,8 +30,6 @@ namespace LoRaWan
     {
         public const int Size = sizeof(byte);
 
-        public static readonly FrameControl None = new(FCtrlFlags.None);
-
         private const byte FOptsLenMask = 0x0f;
         private const byte FlagsMask = 0xf0;
 

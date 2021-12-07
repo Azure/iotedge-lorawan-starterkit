@@ -23,16 +23,6 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Fact]
-        public void None_Is_Initialized_To_Defaults()
-        {
-            var subject = FrameControl.None;
-
-            Assert.Equal(FCtrlFlags.None, subject.Flags);
-            Assert.Equal(0, subject.OptionsLength);
-            Assert.Equal(default, subject);
-        }
-
-        [Fact]
         public void Init_With_Byte()
         {
             var subjectCopy = new FrameControl((byte)this.subject);

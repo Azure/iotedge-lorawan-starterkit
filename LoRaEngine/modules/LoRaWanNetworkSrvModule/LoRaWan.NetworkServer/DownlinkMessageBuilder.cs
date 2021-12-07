@@ -328,7 +328,7 @@ namespace LoRaWan.NetworkServer
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
                 reversedDevAddr,
-                FrameControl.None,
+                FCtrlFlags.None,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
                 new byte[] { cloudToDeviceMessage.Fport },
