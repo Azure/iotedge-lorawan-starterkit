@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Unit.Logger
             var optionsMonitor = CreateOptionsMonitor(new LoRaLoggerConfiguration(), onChangeDisposable.Object);
 
             // act
-            using (var loggerMonitor = new LoggerConfigurationMonitor(optionsMonitor))
+            using (new LoggerConfigurationMonitor(optionsMonitor))
             {
                 // dispose
             }
