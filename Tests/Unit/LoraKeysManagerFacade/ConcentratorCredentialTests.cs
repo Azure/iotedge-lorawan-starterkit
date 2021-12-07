@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             // twin mock
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
-                'cupsUri': 'https://localhost:443',
+                'cupsUri': 'https://localhost:5002',
                 'tcUri': 'wss://localhost:5001',
                 'cupsCredCrc': 1234,
                 'tcCredCrc': 5678,
@@ -107,7 +107,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             // twin mock
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
-                'cupsUri': 'https://localhost:443',
+                'cupsUri': 'https://localhost:5002',
                 'tcUri': 'wss://localhost:5001',
                 'cupsCredCrc': 1234,
                 'tcCredCrc': 5678,

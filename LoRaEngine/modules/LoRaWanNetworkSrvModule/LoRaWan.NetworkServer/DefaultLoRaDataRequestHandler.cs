@@ -324,6 +324,7 @@ namespace LoRaWan.NetworkServer
 
                     if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                     {
+                        this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)downlinkMessageBuilderResp.ReceiveWindow));
                         _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
 
                         if (cloudToDeviceMessage != null)

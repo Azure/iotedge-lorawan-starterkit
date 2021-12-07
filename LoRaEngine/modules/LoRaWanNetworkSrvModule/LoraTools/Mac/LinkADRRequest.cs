@@ -34,7 +34,7 @@ namespace LoRaTools
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRRequest"/> class.
         /// </summary>
-        public LinkADRRequest(byte datarate, byte txPower, ushort chMask, byte chMaskCntl, byte nbTrans)
+        public LinkADRRequest(ushort datarate, ushort txPower, ushort chMask, ushort chMaskCntl, ushort nbTrans)
         {
             Cid = Cid.LinkADRCmd;
             DataRateTXPower = (byte)((datarate << 4) | txPower);
