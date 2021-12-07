@@ -95,7 +95,6 @@ We support the following alerts when the user opts in to use Application Insight
 | ------------------------------- | --------------------------------------------------------- | ---------------------------------------- | --------- |
 | HighUpstreamMessageLatency      | High device message processing time (throughput)          | D2CMessageDeliveryLatency                | Dynamic   |
 | HighErrorCount                  | High error count (correctness)                            | Unhandled Exceptions                     | Dynamic   |
-| HighUpstreamMessagesLostRatio   | High device messages lost ratio (correctness, throughput) | D2CMessagesReceived/D2CMessagesDelivered | Dynamic   |
 | HighReceiveWindowMisses         | High device message processing time (throughput)          | ReceiveWindowMisses                      | Dynamic   |
 | HighDownstreamMessagesLostRatio | High device messages lost ratio (correctness, throughput) | Abandoned messages (IoT Hub metric)      | Dynamic   |
 
