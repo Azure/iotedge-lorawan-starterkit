@@ -25,6 +25,7 @@ namespace LoRaWan.Tests.Common
         private readonly IFunctionBundlerProvider functionBundlerProvider;
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
         private readonly IMemoryCache memoryCache;
+        private ConcentratorDeduplication concentratorDeduplication;
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDeviceClientConnectionManager connectionManager = null)
         {
@@ -84,9 +85,9 @@ namespace LoRaWan.Tests.Common
 
             this.connectionManager.Register(loRaDevice, deviceClientToAssign);
 
-            var concentratorDeduplication = new ConcentratorDeduplication(this.memoryCache, NullLogger<IConcentratorDeduplication>.Instance);
+            this.concentratorDeduplication = new ConcentratorDeduplication(this.memoryCache, NullLogger<IConcentratorDeduplication>.Instance);
 
-            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, concentratorDeduplication, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance, null));
+            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, this.concentratorDeduplication, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance, null));
 
             this.deviceMap[deviceInfo.DevEUI] = loRaDevice;
 
@@ -97,7 +98,11 @@ namespace LoRaWan.Tests.Common
 
         public void SetClient(string devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
 
-        public void Dispose() => this.memoryCache.Dispose();
+        public void Dispose()
+        {
+            this.memoryCache.Dispose();
+            this.concentratorDeduplication?.Dispose();
+        }
 
         public ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey) =>
             this.deviceClientMap.TryGetValue(eui, out var deviceClientToAssign) ? deviceClientToAssign : this.loRaDeviceClient;
