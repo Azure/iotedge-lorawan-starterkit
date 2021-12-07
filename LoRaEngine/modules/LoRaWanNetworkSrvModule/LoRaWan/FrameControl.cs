@@ -28,17 +28,17 @@ namespace LoRaWan
     {
         public const int Size = sizeof(byte);
 
-        private const byte FOptsLenMask = 0x0f;
+        private const byte OptionsLengthMask = 0x0f; // FOptsLen mask
         private const byte FlagsMask = 0xf0;
 
         public static byte Encode(FCtrlFlags flags, int optionsLength)
         {
-            var fn = ((byte)flags & FOptsLenMask) == 0 ? (byte)flags : throw new ArgumentException(null, nameof(flags));
+            var fn = ((byte)flags & OptionsLengthMask) == 0 ? (byte)flags : throw new ArgumentException(null, nameof(flags));
             var ln = optionsLength is >= 0 and <= 15 ? optionsLength : throw new ArgumentOutOfRangeException(nameof(optionsLength), optionsLength, null);
             return unchecked((byte)(fn | ln)); // legend: fn = flags nibble; ln = length nibble
         }
 
         public static (FCtrlFlags Flags, int OptionsLength) Decode(byte octet) =>
-            ((FCtrlFlags)(octet & FlagsMask), octet & FOptsLenMask);
+            ((FCtrlFlags)(octet & FlagsMask), octet & OptionsLengthMask);
     }
 }
