@@ -14,7 +14,7 @@ namespace LoRaWan.Tools.CLI.Helpers
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
-    public class IoTDeviceHelper
+    internal class IoTDeviceHelper
     {
         private static readonly string[] ClassTypes = { "A", "C" };
         private static readonly string[] DeduplicationModes = { "None", "Drop", "Mark" };

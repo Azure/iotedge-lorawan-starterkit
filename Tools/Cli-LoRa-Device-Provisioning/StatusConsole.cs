@@ -7,7 +7,7 @@ namespace LoRaWan.Tools.CLI
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json.Linq;
 
-    public static class StatusConsole
+    internal static class StatusConsole
     {
         public static void WriteIfVerbose(string message, bool isVerbose)
         {

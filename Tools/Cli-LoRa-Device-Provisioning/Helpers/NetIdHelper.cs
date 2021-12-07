@@ -5,7 +5,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
 
-    public static class NetIdHelper
+    internal static class NetIdHelper
     {
         /// <summary>
         /// Set the NetworkId Part of a devAddr with a given network Id.

@@ -6,7 +6,7 @@ namespace LoRaWan.Tools.CLI.Helpers
     using System;
     using System.Text;
 
-    public static class ConversionHelper
+    internal static class ConversionHelper
     {
         /// <summary>
         /// Method enabling to convert a hex string to a byte array.

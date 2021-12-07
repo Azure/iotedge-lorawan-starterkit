@@ -9,7 +9,7 @@ namespace LoRaWan.Tools.CLI.Helpers
     using Microsoft.Azure.Devices;
     using Microsoft.Extensions.Configuration;
 
-    public class ConfigurationHelper
+    internal class ConfigurationHelper
     {
         private const string CredentialsStorageContainerName = "stationcredentials";
         public string NetId { get; set; }

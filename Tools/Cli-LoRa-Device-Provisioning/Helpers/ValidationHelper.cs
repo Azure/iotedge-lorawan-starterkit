@@ -8,7 +8,7 @@ namespace LoRaWan.Tools.CLI.Helpers
     using System.Text;
     using LoRaWan.Tools.CLI.Options;
 
-    public static class ValidationHelper
+    internal static class ValidationHelper
     {
         private static List<string> euValidDataranges = new List<string>()
             {
