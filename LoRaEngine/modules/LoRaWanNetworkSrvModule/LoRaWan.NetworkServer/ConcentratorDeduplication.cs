@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer
                 _ = this.cacheSemaphore.Release();
             }
 
-            if (LoRaRequest.RequiresConfirmation(loRaRequest) && previousStation == stationEui)
+            if (loRaRequest.Payload.RequiresConfirmation() && previousStation == stationEui)
             {
                 this.logger.LogDebug($"Message was received previously from the same EUI {stationEui} (\"confirmedResubmit\").");
                 return Result.DuplicateDueToResubmission;

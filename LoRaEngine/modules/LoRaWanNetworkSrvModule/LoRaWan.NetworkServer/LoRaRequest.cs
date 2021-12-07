@@ -61,9 +61,6 @@ namespace LoRaWan.NetworkServer
 
         internal void SetStationEui(StationEui stationEui) => StationEui = stationEui;
 
-        internal static bool RequiresConfirmation(LoRaRequest loraRequest)
-            => loraRequest.Payload is LoRaPayloadData payload && (payload.IsConfirmed || payload.IsMacAnswerRequired);
-
         public virtual LoRaOperationTimeWatcher GetTimeWatcher() => new LoRaOperationTimeWatcher(Region, StartTime);
     }
 }

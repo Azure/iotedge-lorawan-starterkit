@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.NetworkServer
+namespace LoRaWan.Tests.Unit.LoRaTools.LoRaMessage
 {
     using global::LoRaTools.LoRaMessage;
-    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Xunit;
 
-    public class LoRaRequestTest
+    public class LoRaPayloadTest
     {
         [Fact]
         public void When_Data_Payload_Needs_Confirmation_RequiresConfirmation_Should_Return_True()
@@ -19,7 +18,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loraRequest = WaitableLoRaRequest.Create(dataPayload);
 
             // act/assert
-            Assert.True(LoRaRequest.RequiresConfirmation(loraRequest));
+            Assert.True(loraRequest.Payload.RequiresConfirmation());
         }
 
         [Fact]
@@ -32,7 +31,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loraRequest.SetPayload(new LoRaPayloadJoinRequest());
 
             // act/assert
-            Assert.False(LoRaRequest.RequiresConfirmation(loraRequest));
+            Assert.False(loraRequest.Payload.RequiresConfirmation());
         }
 
         [Fact]
@@ -44,7 +43,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loraRequest = WaitableLoRaRequest.Create(dataPayload);
 
             // act/assert
-            Assert.False(LoRaRequest.RequiresConfirmation(loraRequest));
+            Assert.False(loraRequest.Payload.RequiresConfirmation());
         }
     }
 }
