@@ -5,6 +5,7 @@ namespace LoRaTools.LoRaPhysical
 {
     using System;
     using System.Collections.Generic;
+    using LoRaWan;
 
     /// <summary>
     /// an uplink Json for the packet forwarder.
@@ -35,7 +36,7 @@ namespace LoRaTools.LoRaPhysical
         /// </summary>
         /// <param name="LoraMessage">the serialized LoRa Message.</param>
         /// <returns>UplinkPktFwdMessage object ready to be sent.</returns>
-        public UplinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint tmst = 0, float lsnr = 0)
+        public UplinkPktFwdMessage(byte[] loRaData, LoRaDataRate datr, double freq, uint tmst = 0, float lsnr = 0)
         {
             if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
 
@@ -51,7 +52,7 @@ namespace LoRaTools.LoRaPhysical
                     // TODO check this,
                     Rfch = 1,
                     Modu = "LORA",
-                    Datr = datr,
+                    Datr = datr.ToString(),
                     Codr = "4/5",
                     Lsnr = lsnr
                 }

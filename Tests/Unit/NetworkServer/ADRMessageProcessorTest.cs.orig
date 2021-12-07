@@ -123,7 +123,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
+            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
@@ -237,7 +237,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
                 Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
                 Assert.False(payloadDataDown.IsConfirmed);
-                Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
+                Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
                 // 4. Frame counter up was updated
                 Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
@@ -329,7 +329,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
+            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
@@ -375,7 +375,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
+            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
@@ -506,7 +506,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
+            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
@@ -550,7 +550,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.GetFcnt());
         }
 
-        private async Task<uint> SendMessage(float currentLsnr, LoRaDataRate currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, FrameControlFlags fctrl)
+<<<<<<< HEAD
+        private async Task<uint> SendMessage(float currentLsnr, string currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, FrameControlFlags fctrl)
+||||||| parent of 2398e831 (Add and use "LoRaDataRate")
+        private async Task<uint> SendMessage(float currentLsnr, string currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, byte fctrl)
+=======
+        private async Task<uint> SendMessage(float currentLsnr, LoRaDataRate currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, byte fctrl)
+>>>>>>> 2398e831 (Add and use "LoRaDataRate")
         {
             var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: fctrl);
             var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
@@ -563,7 +569,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         private async Task<uint> InitializeCacheToDefaultValuesAsync(uint payloadfcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor)
         {
-            return await SendMessage(0, new LoRaDataRate(SF7, BW125), payloadfcnt, simulatedDevice, messageProcessor, FrameControlFlags.Adr | FrameControlFlags.AdrAckReq);
+<<<<<<< HEAD
+            return await SendMessage(0, "SF7BW125", payloadfcnt, simulatedDevice, messageProcessor, FrameControlFlags.Adr | FrameControlFlags.AdrAckReq);
+||||||| parent of 2398e831 (Add and use "LoRaDataRate")
+            return await SendMessage(0, "SF7BW125", payloadfcnt, simulatedDevice, messageProcessor, (int)Fctrl.ADR + (int)Fctrl.ADRAckReq);
+=======
+            return await SendMessage(0, new LoRaDataRate(SF7, BW125), payloadfcnt, simulatedDevice, messageProcessor, (int)Fctrl.ADR + (int)Fctrl.ADRAckReq);
+>>>>>>> 2398e831 (Add and use "LoRaDataRate")
         }
     }
 }

@@ -37,7 +37,7 @@ namespace LoRaWan.Tests.Integration
 
             var loraDevice = CreateLoRaDevice(simulatedDevice);
 
-            var rxpk = CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
+            var rxpk = CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, LoRaDataRate.Parse(datr), simulatedDevice);
 
             if (!hasMacInUpstream)
             {
