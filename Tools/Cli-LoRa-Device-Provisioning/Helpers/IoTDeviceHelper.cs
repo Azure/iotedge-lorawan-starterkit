@@ -7,9 +7,11 @@ namespace LoRaWan.Tools.CLI.Helpers
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.Tools.CLI.Options;
     using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -25,17 +27,10 @@ namespace LoRaWan.Tools.CLI.Helpers
             Console.WriteLine();
             Console.WriteLine($"Querying device {devEui} in IoT Hub...");
 
-            Twin twin;
+            var (success, twin) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.GetTwinAsync(devEui));
 
-            try
-            {
-                twin = await configurationHelper.RegistryManager.GetTwinAsync(devEui);
-            }
-            catch (Exception ex)
-            {
-                StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+            if (!success)
                 return null;
-            }
 
             Console.WriteLine("done.");
             return twin;
@@ -1144,15 +1139,10 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Add new device
             if (isNewDevice)
             {
-                try
-                {
-                    result = await configurationHelper.RegistryManager.AddDeviceWithTwinAsync(device, twin);
-                }
-                catch (Exception ex)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+                (var success, result) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.AddDeviceWithTwinAsync(device, twin));
+
+                if (!success)
                     return false;
-                }
 
                 if (result.IsSuccessful)
                 {
@@ -1173,13 +1163,18 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Update existing device
             else
             {
+
                 try
                 {
-                    await configurationHelper.RegistryManager.UpdateTwinAsync(twin.DeviceId, twin, twin.ETag);
+                    (var success, _) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.UpdateTwinAsync(twin.DeviceId, twin, twin.ETag),
+                                                                                 "Updating device failed");
+
+                    if (!success)
+                        return false;
                 }
-                catch (Exception ex)
+                catch (PreconditionFailedException ex)
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, "Updating device failed: " + ex.Message);
+                    StatusConsole.WriteLogLine(MessageType.Error, "Updating device failed, device changed since last fetch (ETag did not match): " + ex.Message);
                     return false;
                 }
 
@@ -1209,15 +1204,10 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             while (query.HasMoreResults)
             {
-                try
-                {
-                    currentPage = await query.GetNextAsJsonAsync();
-                }
-                catch (Exception ex)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+                (var success, currentPage) = await ExecuteWithIotHubErrorHandlingAsync(() => query.GetNextAsJsonAsync());
+
+                if (!success)
                     return false;
-                }
 
                 foreach (var jsonString in currentPage)
                 {
@@ -1272,15 +1262,10 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             while (query.HasMoreResults)
             {
-                try
-                {
-                    fullList = await query.GetNextAsTwinAsync();
-                }
-                catch (Exception ex)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+                (var success, fullList) = await ExecuteWithIotHubErrorHandlingAsync(() => query.GetNextAsTwinAsync());
+
+                if (!success)
                     return false;
-                }
 
                 foreach (var twin in fullList)
                 {
@@ -1314,20 +1299,13 @@ namespace LoRaWan.Tools.CLI.Helpers
 
         public async Task<bool> RemoveDevice(string devEui, ConfigurationHelper configurationHelper)
         {
-            Device device;
-
             Console.WriteLine();
             Console.WriteLine($"Finding existing device {devEui} in IoT Hub...");
 
-            try
-            {
-                device = await configurationHelper.RegistryManager.GetDeviceAsync(devEui);
-            }
-            catch (Exception ex)
-            {
-                StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+            var (success, device) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.GetDeviceAsync(devEui));
+
+            if (!success)
                 return false;
-            }
 
             if (device != null)
             {
@@ -1335,11 +1313,12 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 try
                 {
-                    await configurationHelper.RegistryManager.RemoveDeviceAsync(device);
+                    if (!await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.RemoveDeviceAsync(device)))
+                        return false;
                 }
-                catch (Exception ex)
+                catch (DeviceNotFoundException)
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+                    StatusConsole.WriteLogLine(MessageType.Error, "Did not remove device as it did not exist.");
                     return false;
                 }
             }
@@ -1352,6 +1331,30 @@ namespace LoRaWan.Tools.CLI.Helpers
             StatusConsole.WriteLogLine(MessageType.Info, "Success!");
             Console.WriteLine("done.");
             return true;
+        }
+
+        private static async Task<bool> ExecuteWithIotHubErrorHandlingAsync(Func<Task> executeAsync, string errorMessageContext = null)
+        {
+            var (success, _) = await ExecuteWithIotHubErrorHandlingAsync(async () => { await executeAsync(); return true; }, errorMessageContext);
+            return success;
+        }
+
+        private static async Task<(bool Success, T Value)> ExecuteWithIotHubErrorHandlingAsync<T>(Func<Task<T>> executeAsync, string errorMessageContext = null)
+        {
+            try
+            {
+                var result = await executeAsync();
+                return (true, result);
+            }
+            catch (Exception ex) when (ex is UnauthorizedException
+                                          or IotHubCommunicationException)
+            {
+                var logMessage = errorMessageContext is { } e
+                    ? $"{e}: {ex.Message}"
+                    : ex.Message;
+                StatusConsole.WriteLogLine(MessageType.Error, logMessage);
+                return (false, default);
+            }
         }
     }
 }

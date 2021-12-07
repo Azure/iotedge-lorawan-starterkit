@@ -35,18 +35,23 @@ namespace LoRaWan.Tools.CLI.Helpers
                 connectionString = configurationBuilder["IoTHubConnectionString"];
                 credentialStorageConnectionString = configurationBuilder["CredentialStorageConnectionString"];
                 netId = configurationBuilder["NetId"];
+
+                if (connectionString is null || credentialStorageConnectionString is null || netId is null)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Info, "The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
+                    return false;
+                }
             }
-            catch (Exception ex)
+            catch (FileNotFoundException)
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"{ex.Message}");
-                StatusConsole.WriteLogLine(MessageType.Info, "The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
+                StatusConsole.WriteLogLine(MessageType.Error, "Configuration file 'appsettings.json' was not found.");
                 return false;
             }
 
             // Validate connection setting
             if (string.IsNullOrEmpty(connectionString))
             {
-                StatusConsole.WriteLogLine(MessageType.Error, "Connection string not found in settings file. The format should be: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
+                StatusConsole.WriteLogLine(MessageType.Error, "Connection string 'IoTHubConnectionString' may not be empty.");
                 return false;
             }
             else
@@ -95,9 +100,11 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 RegistryManager = RegistryManager.CreateFromConnectionString(connectionString);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is ArgumentNullException
+                                          or FormatException
+                                          or ArgumentException)
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"Can not connect to IoT Hub (possible error in connection string): {ex.Message}.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Failed to create connection string: {ex.Message}.");
                 return false;
             }
 

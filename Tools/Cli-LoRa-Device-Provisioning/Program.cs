@@ -26,44 +26,55 @@ namespace LoRaWan.Tools.CLI
 
         static async Task<int> Main(string[] args)
         {
-            WriteAzureLogo();
-            Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Tool.");
-            Console.Write("This tool complements ");
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("http://aka.ms/lora");
-            Console.ResetColor();
-            Console.WriteLine();
-
-            var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions>(args)
-                .MapResult(
-                    (ListOptions opts) => RunListAndReturnExitCode(opts),
-                    (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
-                    (VerifyOptions opts) => RunVerifyAndReturnExitCode(opts),
-                    (BulkVerifyOptions opts) => RunBulkVerifyAndReturnExitCode(opts),
-                    (AddOptions opts) => RunAddAndReturnExitCode(opts),
-                    (UpdateOptions opts) => RunUpdateAndReturnExitCode(opts),
-                    (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
-                    (RotateCertificateOptions opts) => RunRotateCertificateAndReturnExitCodeAsync(opts),
-                    (RevokeOptions opts) => RunRevokeAndReturnExitCodeAsync(opts),
-                    errs => Task.FromResult(false));
-
-            if (success)
+            try
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine();
-                Console.WriteLine("Successfully terminated.");
+                WriteAzureLogo();
+                Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Tool.");
+                Console.Write("This tool complements ");
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("http://aka.ms/lora");
                 Console.ResetColor();
+                Console.WriteLine();
 
-                return (int)ExitCode.Success;
+                var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions>(args)
+                    .MapResult(
+                        (ListOptions opts) => RunListAndReturnExitCode(opts),
+                        (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
+                        (VerifyOptions opts) => RunVerifyAndReturnExitCode(opts),
+                        (BulkVerifyOptions opts) => RunBulkVerifyAndReturnExitCode(opts),
+                        (AddOptions opts) => RunAddAndReturnExitCode(opts),
+                        (UpdateOptions opts) => RunUpdateAndReturnExitCode(opts),
+                        (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
+                        (RotateCertificateOptions opts) => RunRotateCertificateAndReturnExitCodeAsync(opts),
+                        (RevokeOptions opts) => RunRevokeAndReturnExitCodeAsync(opts),
+                        errs => Task.FromResult(false));
+
+                if (success)
+                {
+                    WriteToConsole("Successfully terminated.", ConsoleColor.Green);
+                    return (int)ExitCode.Success;
+                }
+                else
+                {
+                    WriteToConsole("Terminated with errors.", ConsoleColor.Red);
+                    return (int)ExitCode.Error;
+                }
             }
-            else
+#pragma warning disable CA1031 // Do not catch general exception types
+            // Fallback error handling for whole CLI.
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine();
-                Console.WriteLine("Terminated with errors.");
-                Console.ResetColor();
-
+                WriteToConsole($"Terminated with error: {ex}.", ConsoleColor.Red);
                 return (int)ExitCode.Error;
+            }
+
+            static void WriteToConsole(string message, ConsoleColor color)
+            {
+                Console.ForegroundColor = color;
+                Console.WriteLine();
+                Console.WriteLine(message);
+                Console.ResetColor();
             }
         }
 
@@ -310,7 +321,6 @@ namespace LoRaWan.Tools.CLI
 
                     if (isSuccess)
                     {
-                        var newTwin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
                         StatusConsole.WriteTwin(opts.DevEui, twin);
                     }
                     else
