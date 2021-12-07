@@ -237,7 +237,7 @@ namespace LoRaWan.Tests.Unit
             var nwkkey = new byte[16] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
             var appkey = new byte[16] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
-            var lora = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, FCtrlFlags.None, fcnt, null, fport, frmPayload, 0);
+            var lora = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.None, fcnt, null, fport, frmPayload, 0);
             _ = lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
             var testEncrypt = new byte[4]
             {
@@ -358,7 +358,7 @@ namespace LoRaWan.Tests.Unit
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var devicePayloadData = new LoRaPayloadData(loRaMessageType, devAddr, FCtrlFlags.Adr, fcntBytes, fopts, fPort, payload, direction);
+            var devicePayloadData = new LoRaPayloadData(loRaMessageType, devAddr, FrameControlFlags.Adr, fcntBytes, fopts, fPort, payload, direction);
 
             Assert.Equal(12, devicePayloadData.GetFcnt());
             Assert.Equal(0, devicePayloadData.Direction);

@@ -12,7 +12,7 @@ namespace LoRaTools.LoRaMessage
     {
         public LoRaPayloadDataLns(DevAddr devAddress,
                                   MacHeader macHeader,
-                                  FCtrlFlags fctrlFlags,
+                                  FrameControlFlags fctrlFlags,
                                   ushort counter,
                                   string options,
                                   string payload,

@@ -19,19 +19,19 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(1, FrameControl.Size);
         }
 
-        public static readonly TheoryData<byte, FCtrlFlags, int> Codec_Test_Data =
+        public static readonly TheoryData<byte, FrameControlFlags, int> Codec_Test_Data =
             TheoryDataFactory.From(
                 from flags in
-                    from fs in Enum.GetValues<FCtrlFlags>()
-                                   .Where(f => f != FCtrlFlags.None)
+                    from fs in Enum.GetValues<FrameControlFlags>()
+                                   .Where(f => f != FrameControlFlags.None)
                                    .Subsets()
-                    select fs.Aggregate(FCtrlFlags.None, (fs, f) => fs | f)
+                    select fs.Aggregate(FrameControlFlags.None, (fs, f) => fs | f)
                 from optionsLength in MoreEnumerable.Sequence(0, 15)
                 select (checked((byte)((byte)flags | optionsLength)), flags, optionsLength));
 
         [Theory]
         [MemberData(nameof(Codec_Test_Data))]
-        public void Encode(byte exptected, FCtrlFlags flags, int optionsLength)
+        public void Encode(byte exptected, FrameControlFlags flags, int optionsLength)
         {
             var result = FrameControl.Encode(flags, optionsLength);
             Assert.Equal(exptected, result);
@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Unit
 
         [Theory]
         [MemberData(nameof(Codec_Test_Data))]
-        public void Decode(byte input, FCtrlFlags expectedFlags, int expectedOptionsLength)
+        public void Decode(byte input, FrameControlFlags expectedFlags, int expectedOptionsLength)
         {
             var (flags, optionsLength) = FrameControl.Decode(input);
             Assert.Equal(expectedFlags, flags);
@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Unit
         [InlineData(16)]
         public void Encode_Throws_When_Options_Length_Is_Not_In_Range(int length)
         {
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => FrameControl.Encode(FCtrlFlags.None, length));
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => FrameControl.Encode(FrameControlFlags.None, length));
             Assert.Equal("optionsLength", ex.ParamName);
         }
 
@@ -62,7 +62,7 @@ namespace LoRaWan.Tests.Unit
         [MemberData(nameof(Encode_Throws_When_Flags_Is_Invalid_Data))]
         public void Encode_Throws_When_Flags_Is_Invalid(byte flags)
         {
-            var ex = Assert.Throws<ArgumentException>(() => FrameControl.Encode((FCtrlFlags)flags, 0));
+            var ex = Assert.Throws<ArgumentException>(() => FrameControl.Encode((FrameControlFlags)flags, 0));
             Assert.Equal("flags", ex.ParamName);
         }
     }

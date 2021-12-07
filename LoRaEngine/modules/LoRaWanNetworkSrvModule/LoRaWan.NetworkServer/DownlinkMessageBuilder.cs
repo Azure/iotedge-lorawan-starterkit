@@ -47,11 +47,11 @@ namespace LoRaWan.NetworkServer
             var isMessageTooLong = false;
 
             // default fport
-            var fctrl = FCtrlFlags.None;
+            var fctrl = FrameControlFlags.None;
             if (upstreamPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
-                fctrl = FCtrlFlags.Ack;
+                fctrl = FrameControlFlags.Ack;
             }
 
             // Calculate receive window
@@ -196,12 +196,12 @@ namespace LoRaWan.NetworkServer
 
             if (fpending || isMessageTooLong)
             {
-                fctrl |= FCtrlFlags.FPending;
+                fctrl |= FrameControlFlags.FPending;
             }
 
             if (upstreamPayload.IsAdrEnabled)
             {
-                fctrl |= FCtrlFlags.Adr;
+                fctrl |= FrameControlFlags.Adr;
             }
 
             var srcDevAddr = upstreamPayload.DevAddr.Span;
@@ -328,7 +328,7 @@ namespace LoRaWan.NetworkServer
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
                 reversedDevAddr,
-                FCtrlFlags.None,
+                FrameControlFlags.None,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
                 new byte[] { cloudToDeviceMessage.Fport },

@@ -55,27 +55,27 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public bool IsMacAnswerRequired => MacCommands?.FirstOrDefault(x => x.Cid == Cid.LinkCheckCmd) != null;
 
-        public FCtrlFlags FrameControlFlags { get; set; }
+        public FrameControlFlags FrameControlFlags { get; set; }
 
         /// <summary>
         /// Indicates if the payload is an confirmation message acknowledgement.
         /// </summary>
-        public bool IsUpwardAck => FrameControlFlags.HasFlag(FCtrlFlags.Ack);
+        public bool IsUpwardAck => FrameControlFlags.HasFlag(FrameControlFlags.Ack);
 
         /// <summary>
         /// Gets a value indicating whether indicates if the payload is an confirmation message acknowledgement.
         /// </summary>
-        public bool IsAdrReq => FrameControlFlags.HasFlag(FCtrlFlags.AdrAckReq);
+        public bool IsAdrReq => FrameControlFlags.HasFlag(FrameControlFlags.AdrAckReq);
 
         /// <summary>
         /// Gets a value indicating whether the device has ADR enabled.
         /// </summary>
-        public bool IsAdrEnabled => FrameControlFlags.HasFlag(FCtrlFlags.Adr);
+        public bool IsAdrEnabled => FrameControlFlags.HasFlag(FrameControlFlags.Adr);
 
         /// <summary>
         /// Indicates (downlink only) whether a gateway has more data pending (FPending) to be sent.
         /// </summary>
-        public bool IsDownlinkFramePending => FrameControlFlags.HasFlag(FCtrlFlags.FPending);
+        public bool IsDownlinkFramePending => FrameControlFlags.HasFlag(FrameControlFlags.FPending);
 
         /// <summary>
         /// Gets or sets frame Counter.
@@ -172,7 +172,7 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Downstream Constructor (build a LoRa Message).
         /// </summary>
-        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, FCtrlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
+        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, FrameControlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
             if (devAddr is null) throw new ArgumentNullException(nameof(devAddr));
             if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
