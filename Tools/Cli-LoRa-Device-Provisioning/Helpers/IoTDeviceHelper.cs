@@ -39,10 +39,6 @@ namespace LoRaWan.Tools.CLI.Helpers
 
         public static bool VerifyDeviceTwin(string devEui, string netId, Twin twin, ConfigurationHelper configurationHelper, bool isVerbose)
         {
-            var isOtaa = false;
-            var isAbp = false;
-            var isValid = true;
-
             StatusConsole.WriteLineIfVerbose(null, isVerbose);
             StatusConsole.WriteLineIfVerbose($"Analyzing device {devEui}...", isVerbose);
 
@@ -77,9 +73,10 @@ namespace LoRaWan.Tools.CLI.Helpers
             var fCntDownStartReported = ReadTwin(twin.Properties.Reported, TwinProperty.FCntDownStart);
             var fCntResetCounterReported = ReadTwin(twin.Properties.Reported, TwinProperty.FCntResetCounter);
 
-            isOtaa = !string.IsNullOrEmpty(appEui) || !string.IsNullOrEmpty(appKey);
-            isAbp = !string.IsNullOrEmpty(nwkSKey) || !string.IsNullOrEmpty(appSKey) || !string.IsNullOrEmpty(devAddr);
+            var isOtaa = !string.IsNullOrEmpty(appEui) || !string.IsNullOrEmpty(appKey);
+            var isAbp = !string.IsNullOrEmpty(nwkSKey) || !string.IsNullOrEmpty(appSKey) || !string.IsNullOrEmpty(devAddr);
 
+            bool isValid;
             // ABP device
             if (isAbp && !isOtaa)
             {

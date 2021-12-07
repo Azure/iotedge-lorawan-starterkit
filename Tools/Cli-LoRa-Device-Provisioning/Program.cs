@@ -20,11 +20,11 @@ namespace LoRaWan.Tools.CLI
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
-    public class Program
+    public static class Program
     {
-        static ConfigurationHelper configurationHelper = new ConfigurationHelper();
+        private static readonly ConfigurationHelper configurationHelper = new ConfigurationHelper();
 
-        static async Task<int> Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             try
             {
@@ -80,16 +80,13 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunListAndReturnExitCode(ListOptions opts)
         {
-            int page;
-            int total;
-
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            if (!int.TryParse(opts.Page, out page))
+            if (!int.TryParse(opts.Page, out var page))
                 page = 10;
 
-            if (!int.TryParse(opts.Total, out total))
+            if (!int.TryParse(opts.Total, out var total))
                 total = -1;
 
             var isSuccess = await IoTDeviceHelper.QueryDevices(configurationHelper, page, total);
@@ -137,12 +134,10 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunBulkVerifyAndReturnExitCode(BulkVerifyOptions opts)
         {
-            int page;
-
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            if (!int.TryParse(opts.Page, out page))
+            if (!int.TryParse(opts.Page, out var page))
                 page = 0;
 
             var isSuccess = await IoTDeviceHelper.QueryDevicesAndVerify(configurationHelper, page);
@@ -167,7 +162,7 @@ namespace LoRaWan.Tools.CLI
 
             var isSuccess = false;
 
-            opts = IoTDeviceHelper.CleanOptions(opts as object, true) as AddOptions;
+            opts = IoTDeviceHelper.CleanOptions(opts, true) as AddOptions;
 
             if (opts.Type.Equals("concentrator", StringComparison.OrdinalIgnoreCase))
             {
@@ -306,7 +301,7 @@ namespace LoRaWan.Tools.CLI
 
             var isSuccess = false;
 
-            opts = IoTDeviceHelper.CleanOptions(opts as object, false) as UpdateOptions;
+            opts = IoTDeviceHelper.CleanOptions(opts, false) as UpdateOptions;
             opts = IoTDeviceHelper.CompleteMissingUpdateOptions(opts, configurationHelper);
 
             var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);

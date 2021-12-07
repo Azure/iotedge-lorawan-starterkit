@@ -11,7 +11,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
     internal static class ValidationHelper
     {
-        private static List<string> euValidDataranges = new List<string>()
+        private static readonly List<string> EuValidDataranges = new List<string>()
             {
                 "SF12BW125", // 0
                 "SF11BW125", // 1
@@ -23,7 +23,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 "50" // 7 FSK 50
             };
 
-        private static List<string> usValidDataranges = new List<string>()
+        private static readonly List<string> UsValidDataranges = new List<string>()
             {
                 "SF10BW125", // 0
                 "SF9BW125", // 1
@@ -45,12 +45,12 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             if (string.Equals(locale, "EU", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var dr in euValidDataranges)
+                foreach (var dr in EuValidDataranges)
                     _ = result.Append(dr + ", ");
             }
             else
             {
-                foreach (var dr in usValidDataranges)
+                foreach (var dr in UsValidDataranges)
                     _ = result.Append(dr + ", ");
             }
 
@@ -78,10 +78,10 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 outNetId = inNetId.Trim().Replace("\'", string.Empty, StringComparison.Ordinal);
                 if (outNetId.Length < 6)
-                    outNetId = string.Concat(new string('0', 6).Substring(outNetId.Length), outNetId);
+                    outNetId = string.Concat(new string('0', 6)[outNetId.Length..], outNetId);
 
                 if (outNetId.Length > 6)
-                    outNetId = outNetId.Substring(outNetId.Length - 6);
+                    outNetId = outNetId[^6..];
             }
 
             return outNetId;
@@ -290,7 +290,7 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             error = null;
 
-            if (!euValidDataranges.Contains(property) && !usValidDataranges.Contains(property))
+            if (!EuValidDataranges.Contains(property) && !UsValidDataranges.Contains(property))
             {
                 error = "Property is not a valid data rate";
                 return false;
