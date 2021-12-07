@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Buffers.Binary;
+    using System.Diagnostics.CodeAnalysis;
     using System.Security.Cryptography;
     using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Caching.Memory;
@@ -26,7 +27,6 @@ namespace LoRaWan.NetworkServer
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
         private readonly IMemoryCache cache;
-        private readonly IDeduplicationStrategyFactory deduplicationStrategy;
         private readonly ILogger<IConcentratorDeduplication> logger;
 
         [ThreadStatic]
@@ -36,17 +36,17 @@ namespace LoRaWan.NetworkServer
 
         public ConcentratorDeduplication(
             IMemoryCache cache,
-            IDeduplicationStrategyFactory deduplicationStrategy,
             ILogger<IConcentratorDeduplication> logger)
         {
             this.cache = cache;
-            this.deduplicationStrategy = deduplicationStrategy;
             this.logger = logger;
         }
 
         public Result CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
         {
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
+            if (loRaDevice is null && loRaRequest.Payload is LoRaPayloadData)
+                throw new ArgumentNullException(nameof(loRaDevice));
 
             var key = CreateCacheKey(loRaRequest);
             var stationEui = loRaRequest.StationEui;
@@ -131,8 +131,7 @@ namespace LoRaWan.NetworkServer
             return BitConverter.ToString(key);
         }
 
-        private bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
-            => loRaRequest.Payload is LoRaPayloadJoinRequest
-            || (loRaRequest.Payload is LoRaPayloadData && this.deduplicationStrategy.Create(loRaDevice) is DeduplicationStrategyDrop);
+        private static bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
+            => loRaRequest.Payload is LoRaPayloadJoinRequest || loRaDevice?.Deduplication is DeduplicationMode.Drop;
     }
 }

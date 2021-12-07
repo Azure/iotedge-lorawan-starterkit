@@ -27,8 +27,7 @@ namespace LoRaWan.NetworkServer
         private readonly Histogram<double> d2cMessageDeliveryLatencyHistogram;
 
         private static readonly IMemoryCache testMemoryCache = new MemoryCache(new MemoryCacheOptions());
-        private static readonly DeduplicationStrategyFactory strategyFactory = new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
-        private static readonly IConcentratorDeduplication concentratorDeduplication = new ConcentratorDeduplication(testMemoryCache, strategyFactory, NullLogger<IConcentratorDeduplication>.Instance);
+        private static readonly IConcentratorDeduplication concentratorDeduplication = new ConcentratorDeduplication(testMemoryCache, NullLogger<IConcentratorDeduplication>.Instance);
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,

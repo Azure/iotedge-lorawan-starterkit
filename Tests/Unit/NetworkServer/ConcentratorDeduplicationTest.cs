@@ -19,7 +19,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly LoRaDevice loRaDevice;
         private readonly SimulatedDevice simulatedDevice;
         private readonly WaitableLoRaRequest loraRequest;
-        private readonly Mock<DeduplicationStrategyFactory> deduplicationStrategyMock;
         private readonly MemoryCache cache; // ownership passed to ConcentratorDeduplication
 
         public ConcentratorDeduplicationTest()
@@ -30,14 +29,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload");
             this.loraRequest = WaitableLoRaRequest.Create(dataPayload);
-            this.loRaDevice = new LoRaDevice(this.simulatedDevice.DevAddr, this.simulatedDevice.DevEUI, this.connectionManager);
-
-            this.deduplicationStrategyMock = new Mock<DeduplicationStrategyFactory>(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
-            this.deduplicationStrategyMock.Setup(x => x.Create(this.loRaDevice)).Returns(new DeduplicationStrategyDrop(NullLogger<DeduplicationStrategyDrop>.Instance)); ;
+            this.loRaDevice = new LoRaDevice(this.simulatedDevice.DevAddr, this.simulatedDevice.DevEUI, this.connectionManager)
+            {
+                Deduplication = DeduplicationMode.Drop // the default
+            };
 
             this.concentratorDeduplication = new ConcentratorDeduplication(
                 this.cache,
-                this.deduplicationStrategyMock.Object,
                 NullLogger<IConcentratorDeduplication>.Instance);
         }
 
@@ -79,7 +77,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loraRequest.SetStationEui(anotherStation);
 
             if (!dropDeduplicationStrategy)
-                this.deduplicationStrategyMock.Setup(x => x.Create(this.loRaDevice)).Returns(new DeduplicationStrategyMark(NullLogger<DeduplicationStrategyMark>.Instance));
+                this.loRaDevice.Deduplication = DeduplicationMode.Mark;
 
             // act/assert
             Assert.Equal(expectedResult, this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice));
