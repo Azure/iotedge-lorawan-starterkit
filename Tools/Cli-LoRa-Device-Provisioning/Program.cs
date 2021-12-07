@@ -154,7 +154,7 @@ namespace LoRaWan.Tools.CLI
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            bool isSuccess = false;
+            var isSuccess = false;
 
             opts = iotDeviceHelper.CleanOptions(opts as object, true) as AddOptions;
 
@@ -193,7 +193,7 @@ namespace LoRaWan.Tools.CLI
 
             if (iotDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper, true))
             {
-                Twin twin = iotDeviceHelper.CreateDeviceTwin(opts);
+                var twin = iotDeviceHelper.CreateDeviceTwin(opts);
                 isSuccess = await iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true);
             }
             else
@@ -293,7 +293,7 @@ namespace LoRaWan.Tools.CLI
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            bool isSuccess = false;
+            var isSuccess = false;
 
             opts = iotDeviceHelper.CleanOptions(opts as object, false) as UpdateOptions;
             opts = iotDeviceHelper.CompleteMissingUpdateOptions(opts, configurationHelper);

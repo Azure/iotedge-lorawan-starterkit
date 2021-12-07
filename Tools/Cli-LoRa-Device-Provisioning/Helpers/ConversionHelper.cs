@@ -14,13 +14,13 @@ namespace LoRaWan.Tools.CLI.Helpers
         /// <param name="hex">Input hex string</param>
         public static byte[] StringToByteArray(string hex)
         {
-            int numberChars = hex.Length;
+            var numberChars = hex.Length;
 
-            byte[] bytes = new byte[numberChars >> 1];
+            var bytes = new byte[numberChars >> 1];
 
             if (numberChars % 2 == 0)
             {
-                for (int i = 0; i < numberChars; i += 2)
+                for (var i = 0; i < numberChars; i += 2)
                     bytes[i >> 1] = Convert.ToByte(hex.Substring(i, 2), 16);
             }
 
@@ -59,7 +59,7 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             var result = new StringBuilder(bytes.Length * 2);
 
-            foreach (byte b in bytes)
+            foreach (var b in bytes)
             {
                 result.Append(Constants.HexAlphabet[b >> 4]);
                 result.Append(Constants.HexAlphabet[b & 0xF]);

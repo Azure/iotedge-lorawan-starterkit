@@ -43,43 +43,43 @@ namespace LoRaWan.Tools.CLI.Helpers
 
         public bool VerifyDeviceTwin(string devEui, string netId, Twin twin, ConfigurationHelper configurationHelper, bool isVerbose)
         {
-            bool isOtaa = false;
-            bool isAbp = false;
-            bool isValid = true;
+            var isOtaa = false;
+            var isAbp = false;
+            var isValid = true;
 
             StatusConsole.WriteLineIfVerbose(null, isVerbose);
             StatusConsole.WriteLineIfVerbose($"Analyzing device {devEui}...", isVerbose);
 
             devEui = ValidationHelper.CleanString(devEui);
 
-            string appEui = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppEUI);
-            string appKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppKey);
+            var appEui = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppEUI);
+            var appKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppKey);
 
-            string nwkSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.NwkSKey);
-            string appSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppSKey);
-            string devAddr = this.ReadTwin(twin.Properties.Desired, TwinProperty.DevAddr);
-            string abpRelaxMode = this.ReadTwin(twin.Properties.Desired, TwinProperty.ABPRelaxMode);
+            var nwkSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.NwkSKey);
+            var appSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppSKey);
+            var devAddr = this.ReadTwin(twin.Properties.Desired, TwinProperty.DevAddr);
+            var abpRelaxMode = this.ReadTwin(twin.Properties.Desired, TwinProperty.ABPRelaxMode);
 
             netId = ValidationHelper.CleanNetId(netId);
 
-            string gatewayID = this.ReadTwin(twin.Properties.Desired, TwinProperty.GatewayID);
-            string sensorDecoder = this.ReadTwin(twin.Properties.Desired, TwinProperty.SensorDecoder);
-            string classType = this.ReadTwin(twin.Properties.Desired, TwinProperty.ClassType);
-            string downlinkEnabled = this.ReadTwin(twin.Properties.Desired, TwinProperty.DownlinkEnabled);
-            string preferredWindow = this.ReadTwin(twin.Properties.Desired, TwinProperty.PreferredWindow);
-            string deduplication = this.ReadTwin(twin.Properties.Desired, TwinProperty.Deduplication);
-            string rx2DataRate = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX2DataRate);
-            string rx1DrOffset = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX1DROffset);
-            string rxDelay = this.ReadTwin(twin.Properties.Desired, TwinProperty.RXDelay);
-            string keepAliveTimeout = this.ReadTwin(twin.Properties.Desired, TwinProperty.KeepAliveTimeout);
-            string supports32BitFCnt = this.ReadTwin(twin.Properties.Desired, TwinProperty.Supports32BitFCnt);
-            string fCntUpStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntUpStart);
-            string fCntDownStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntDownStart);
-            string fCntResetCounter = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntResetCounter);
+            var gatewayID = this.ReadTwin(twin.Properties.Desired, TwinProperty.GatewayID);
+            var sensorDecoder = this.ReadTwin(twin.Properties.Desired, TwinProperty.SensorDecoder);
+            var classType = this.ReadTwin(twin.Properties.Desired, TwinProperty.ClassType);
+            var downlinkEnabled = this.ReadTwin(twin.Properties.Desired, TwinProperty.DownlinkEnabled);
+            var preferredWindow = this.ReadTwin(twin.Properties.Desired, TwinProperty.PreferredWindow);
+            var deduplication = this.ReadTwin(twin.Properties.Desired, TwinProperty.Deduplication);
+            var rx2DataRate = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX2DataRate);
+            var rx1DrOffset = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX1DROffset);
+            var rxDelay = this.ReadTwin(twin.Properties.Desired, TwinProperty.RXDelay);
+            var keepAliveTimeout = this.ReadTwin(twin.Properties.Desired, TwinProperty.KeepAliveTimeout);
+            var supports32BitFCnt = this.ReadTwin(twin.Properties.Desired, TwinProperty.Supports32BitFCnt);
+            var fCntUpStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntUpStart);
+            var fCntDownStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntDownStart);
+            var fCntResetCounter = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntResetCounter);
 
-            string fCntUpStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntUpStart);
-            string fCntDownStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntDownStart);
-            string fCntResetCounterReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntResetCounter);
+            var fCntUpStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntUpStart);
+            var fCntDownStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntDownStart);
+            var fCntResetCounterReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntResetCounter);
 
             isOtaa = !string.IsNullOrEmpty(appEui) || !string.IsNullOrEmpty(appKey);
             isAbp = !string.IsNullOrEmpty(nwkSKey) || !string.IsNullOrEmpty(appSKey) || !string.IsNullOrEmpty(devAddr);
@@ -308,7 +308,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                     StatusConsole.WriteLogLine(MessageType.Info, $"Generating missing DevAddr: {opts.DevAddr}");
                 }
 
-                if (ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out string _))
+                if (ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out var _))
                 {
                     var newDevAddr = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
                     if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.OrdinalIgnoreCase))
@@ -358,7 +358,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             Console.WriteLine($"Completing missing options for device...");
 
             // ABP device specific properties
-            if (!string.IsNullOrEmpty(opts.DevAddr) && ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out string _))
+            if (!string.IsNullOrEmpty(opts.DevAddr) && ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out var _))
             {
                 var newDevAddr = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
                 if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.OrdinalIgnoreCase))
@@ -387,8 +387,8 @@ namespace LoRaWan.Tools.CLI.Helpers
 
         public bool VerifyDevice(AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper, bool isVerbose)
         {
-            string validationError = string.Empty;
-            bool isValid = true;
+            var validationError = string.Empty;
+            var isValid = true;
 
             StatusConsole.WriteLineIfVerbose(null, isVerbose);
             StatusConsole.WriteLineIfVerbose($"Verifying device {opts.DevEui} twin data...", isVerbose);
@@ -949,8 +949,8 @@ namespace LoRaWan.Tools.CLI.Helpers
             Console.WriteLine();
 
             // Add routerConfig configuration
-            string fileName = Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json");
-            string jsonString = File.ReadAllText(fileName);
+            var fileName = Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json");
+            var jsonString = File.ReadAllText(fileName);
             var propObject = JsonConvert.DeserializeObject<JObject>(jsonString);
             twinProperties.Desired[TwinProperty.RouterConfig] = propObject;
 
@@ -1194,7 +1194,7 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             var count = 0;
             IEnumerable<string> currentPage;
-            string totalString = (total == -1) ? "all" : total.ToString();
+            var totalString = (total == -1) ? "all" : total.ToString();
 
             page = Math.Max(1, page);
 
@@ -1221,12 +1221,12 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 foreach (var jsonString in currentPage)
                 {
-                    JObject json = JObject.Parse(jsonString);
+                    var json = JObject.Parse(jsonString);
 
                     Console.WriteLine($"DevEUI: {(string)json["deviceId"]}");
 
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    JObject desired = json.SelectToken("$.properties.desired") as JObject;
+                    var desired = json.SelectToken("$.properties.desired") as JObject;
                     desired.Remove("$metadata");
                     desired.Remove("$version");
                     Console.WriteLine(desired);
@@ -1261,7 +1261,7 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             var countValid = 0;
             var countInvalid = 0;
-            bool isValid = true;
+            var isValid = true;
             IEnumerable<Twin> fullList;
 
             Console.WriteLine();

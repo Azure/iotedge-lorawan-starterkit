@@ -52,7 +52,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             else
             {
                 // Just show IoT Hub Hostname
-                if (this.GetHostFromConnectionString(connectionString, out string hostName))
+                if (this.GetHostFromConnectionString(connectionString, out var hostName))
                 {
                     StatusConsole.WriteLogLine(MessageType.Info, $"Using IoT Hub: {hostName}");
                 }
@@ -73,7 +73,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 netId = ValidationHelper.CleanNetId(netId);
 
-                if (ValidationHelper.ValidateHexStringTwinProperty(netId, 3, out string customError))
+                if (ValidationHelper.ValidateHexStringTwinProperty(netId, 3, out var customError))
                 {
                     StatusConsole.WriteLogLine(MessageType.Info, $"Using NetId {netId} from settings file.");
                 }

@@ -39,17 +39,17 @@ namespace LoRaWan.Tools.CLI.Helpers
 
         public static string GetDataRatesforLocale(string locale)
         {
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
             result.Append(locale + ": ");
 
             if (string.Equals(locale, "EU", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (string dr in euValidDataranges)
+                foreach (var dr in euValidDataranges)
                     result.Append(dr + ", ");
             }
             else
             {
-                foreach (string dr in usValidDataranges)
+                foreach (var dr in usValidDataranges)
                     result.Append(dr + ", ");
             }
 
@@ -125,7 +125,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
 
             // Verify each individual byte for validity.
-            for (int i = 0; i + 1 < hexString.Length; i += 2)
+            for (var i = 0; i + 1 < hexString.Length; i += 2)
             {
                 if (!int.TryParse(hexString.Substring(i, 2), System.Globalization.NumberStyles.HexNumber, null, out _))
                 {
@@ -317,7 +317,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             if (sensorDecoder.StartsWith("http", StringComparison.OrdinalIgnoreCase) || sensorDecoder.Contains('/'))
             {
-                if (!Uri.TryCreate(sensorDecoder, UriKind.Absolute, out Uri validatedUri))
+                if (!Uri.TryCreate(sensorDecoder, UriKind.Absolute, out var validatedUri))
                 {
                     StatusConsole.WriteLogLine(MessageType.Error, "SensorDecoder has an invalid URL.");
                     isValid = false;
