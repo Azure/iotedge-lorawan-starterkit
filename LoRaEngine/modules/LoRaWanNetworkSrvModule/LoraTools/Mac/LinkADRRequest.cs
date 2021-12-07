@@ -34,13 +34,13 @@ namespace LoRaTools
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRRequest"/> class.
         /// </summary>
-        public LinkADRRequest(ushort datarate, ushort txPower, ushort chMask, ushort chMaskCntl, ushort nbRep)
+        public LinkADRRequest(ushort datarate, ushort txPower, ushort chMask, ushort chMaskCntl, ushort nbTrans)
         {
             Cid = Cid.LinkADRCmd;
             DataRateTXPower = (byte)((datarate << 4) | txPower);
             ChMask = chMask;
             // bit 7 is RFU
-            Redundancy = (byte)((byte)((chMaskCntl << 4) | nbRep) & 0b01111111);
+            Redundancy = (byte)((byte)((chMaskCntl << 4) | nbTrans) & 0b01111111);
         }
 
         /// <summary>
