@@ -27,9 +27,11 @@ namespace LoRaWan.Tests.Integration
         /// <param name="expectedFailure"></param>
         /// <returns></returns>
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", LoRaDeviceRequestFailedReason.UnknownDevice)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", LoRaDeviceRequestFailedReason.DeduplicationDrop)]
-        public async Task When_Same_Data_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(string station1, string station2, LoRaDeviceRequestFailedReason expectedFailure)
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, LoRaDeviceRequestFailedReason.UnknownDevice)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, LoRaDeviceRequestFailedReason.UnknownDevice)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, LoRaDeviceRequestFailedReason.UnknownDevice)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, LoRaDeviceRequestFailedReason.DeduplicationDrop)]
+        public async Task When_Same_Data_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(string station1, string station2, DeduplicationMode deduplicationMode, LoRaDeviceRequestFailedReason expectedFailure)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
@@ -40,7 +42,7 @@ namespace LoRaWan.Tests.Integration
 
             this.loRaDevice = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
             {
-                Deduplication = DeduplicationMode.Drop
+                Deduplication = deduplicationMode
             };
 
             var deduplicationFactory = new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
