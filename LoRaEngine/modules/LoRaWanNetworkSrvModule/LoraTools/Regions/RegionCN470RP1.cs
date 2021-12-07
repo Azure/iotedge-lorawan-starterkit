@@ -12,6 +12,9 @@ namespace LoRaTools.Regions
     // Frequency plan for region CN470-510 using version 1 of LoRaWAN 1.0.3 Regional Parameters specification
     public class RegionCN470RP1 : Region
     {
+        private const double StartingUpstreamFrequency = 470.3;
+        private const double StartingDownstreamFrequency = 500.3;
+        private const int DownstreamChannelCount = 48;
         private const double FrequencyIncrement = 0.2;
 
         public RegionCN470RP1()
@@ -68,9 +71,16 @@ namespace LoRaTools.Regions
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
-            var upstreamChannelNumber = (int)Math.Round((upstreamFrequency - 470.3) / FrequencyIncrement, 0, MidpointRounding.AwayFromZero);
+            var upstreamChannelNumber = (int)Math.Round(
+                (upstreamFrequency - StartingUpstreamFrequency) / FrequencyIncrement,
+                0,
+                MidpointRounding.AwayFromZero);
 
-            downstreamFrequency = Math.Round(500.3 + ((upstreamChannelNumber % 48) * FrequencyIncrement), 1, MidpointRounding.AwayFromZero);
+            downstreamFrequency = Math.Round(
+                StartingDownstreamFrequency + ((upstreamChannelNumber % DownstreamChannelCount) * FrequencyIncrement),
+                1,
+                MidpointRounding.AwayFromZero);
+
             return true;
         }
 
