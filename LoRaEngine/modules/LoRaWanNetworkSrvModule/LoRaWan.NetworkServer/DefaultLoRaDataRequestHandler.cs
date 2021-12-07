@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer
                     HandlePreferredGatewayChanges(request, loRaDevice, bundlerResult);
                 }
 
-                if (loraPayload.IsAdrReq)
+                if (loraPayload.IsAdrAckRequested)
                 {
                     this.logger.LogDebug("ADR ack request received");
                 }
@@ -133,7 +133,7 @@ namespace LoRaWan.NetworkServer
                     loRaADRResult = await PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }
 
-                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
+                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrAckRequested)
                 {
                     // if we got an ADR result or request, we have to send the update to the device
                     requiresConfirmation = true;
@@ -710,7 +710,7 @@ namespace LoRaWan.NetworkServer
             };
 
             // If the ADR req bit is not set we don't perform rate adaptation.
-            if (!loraPayload.IsAdrReq)
+            if (!loraPayload.IsAdrAckRequested)
             {
                 _ = loRaADRManager.StoreADREntryAsync(loRaADRTableEntry);
             }

@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
                 FCntUp = context.FCntUp,
                 GatewayId = context.GatewayId,
                 MinTxPowerIndex = context.Request.Region.TXPowertoMaxEIRP.Count - 1,
-                PerformADRCalculation = context.LoRaPayload.IsAdrReq,
+                PerformADRCalculation = context.LoRaPayload.IsAdrAckRequested,
                 RequiredSnr = (float)context.Request.Rxpk.RequiredSnr
             };
 

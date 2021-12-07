@@ -65,7 +65,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets a value indicating whether indicates if the payload is an confirmation message acknowledgement.
         /// </summary>
-        public bool IsAdrReq => FrameControlFlags.HasFlag(FrameControlFlags.AdrAckReq);
+        public bool IsAdrAckRequested => FrameControlFlags.HasFlag(FrameControlFlags.AdrAckReq);
 
         /// <summary>
         /// Gets a value indicating whether the network controls the data rate.
