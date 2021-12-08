@@ -83,6 +83,12 @@ namespace LoRaWan.NetworkServer
         public bool LogToTcp { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether logging to IoT Hub is enabled.
+        /// Default is false.
+        /// </summary>
+        public bool LogToHub { get; set; }
+
+        /// <summary>
         /// Gets or sets TCP address to send log to.
         /// </summary>
         public string LogToTcpAddress { get; set; }
@@ -143,6 +149,7 @@ namespace LoRaWan.NetworkServer
             config.LogLevel = envVars.GetEnvVar("LOG_LEVEL", config.LogLevel);
             config.LogToConsole = envVars.GetEnvVar("LOG_TO_CONSOLE", config.LogToConsole);
             config.LogToTcp = envVars.GetEnvVar("LOG_TO_TCP", config.LogToTcp);
+            config.LogToHub = envVars.GetEnvVar("LOG_TO_HUB", config.LogToHub);
             config.LogToTcpAddress = envVars.GetEnvVar("LOG_TO_TCP_ADDRESS", string.Empty);
             config.LogToTcpPort = envVars.GetEnvVar("LOG_TO_TCP_PORT", config.LogToTcpPort);
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);

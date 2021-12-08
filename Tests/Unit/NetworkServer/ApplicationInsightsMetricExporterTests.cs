@@ -31,13 +31,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.registry = new[]
             {
-                new CustomMetric(Guid.NewGuid().ToString(), "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
-                new CustomMetric(Guid.NewGuid().ToString(), "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName }),
-                new CustomMetric(Guid.NewGuid().ToString(), "ObservableGauge", MetricType.ObservableGauge, new[] { MetricRegistry.GatewayIdTagName })
+                new CustomMetric(Guid.NewGuid().ToString(), "Counter", MetricType.Counter, new[] { MetricRegistry.ConcentratorIdTagName }),
+                new CustomMetric(Guid.NewGuid().ToString(), "Histogram", MetricType.Histogram, new[] { MetricRegistry.ConcentratorIdTagName }),
+                new CustomMetric(Guid.NewGuid().ToString(), "ObservableGauge", MetricType.ObservableGauge, new[] { MetricRegistry.ConcentratorIdTagName })
             };
             this.telemetryConfiguration = new TelemetryConfiguration { TelemetryChannel = new Mock<ITelemetryChannel>().Object };
             this.trackValueMock = new Mock<Action<Metric, double, string[]>>();
-            this.registryMetricTagBag = new RegistryMetricTagBag();
+            this.registryMetricTagBag = new RegistryMetricTagBag(new NetworkServerConfiguration { GatewayID = "foogateway" });
             this.applicationInsightsMetricExporter = new TestableApplicationInsightsExporter(new TelemetryClient(this.telemetryConfiguration),
                                                                                              this.trackValueMock.Object,
                                                                                              this.registry.ToDictionary(m => m.Name, m => m),
@@ -91,7 +91,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // act
             applicationInsightsMetricExporter.Start();
             foreach (var val in metricValues)
-                counter.Add(val, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)gateway));
+                counter.Add(val, KeyValuePair.Create(MetricRegistry.ConcentratorIdTagName, (object)gateway));
 
             // assert
             foreach (var expectedReportedValue in expectedReportedValues)
@@ -116,7 +116,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // act
             this.applicationInsightsMetricExporter.Start();
-            histogram.Record(value, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)gateway));
+            histogram.Record(value, KeyValuePair.Create(MetricRegistry.ConcentratorIdTagName, (object)gateway));
 
             // assert
             this.trackValueMock.Verify(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricRegistry.Namespace
@@ -132,7 +132,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             var observeValue = new Mock<Func<Measurement<int>>>();
             var stationEui = new StationEui(1);
-            var measurement = new Measurement<int>(1, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object)stationEui));
+            var measurement = new Measurement<int>(1, KeyValuePair.Create(MetricRegistry.ConcentratorIdTagName, (object)stationEui));
             _ = observeValue.Setup(ov => ov.Invoke()).Returns(measurement);
             using var meter = new Meter("LoRaWan", "1.0");
             _ = meter.CreateObservableGauge(ObservableGaugeMetric.Name, observeValue.Object);
@@ -177,22 +177,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Throws<LoRaProcessingException>(() => counter.Add(1));
-        }
-
-        [Fact]
-        public void When_Raising_Metric_Dimensions_Should_Be_Case_Insensitive()
-        {
-            // arrange
-            const string gateway = "foogateway";
-            using var meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
-            var counter = meter.CreateCounter<int>(CounterMetric.Name);
-
-            // act
-            applicationInsightsMetricExporter.Start();
-            counter.Add(1, new KeyValuePair<string, object>(MetricRegistry.GatewayIdTagName.ToUpperInvariant(), gateway));
-
-            // assert
-            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), 1, new[] { gateway }), Times.Once);
         }
 
         [Fact]
