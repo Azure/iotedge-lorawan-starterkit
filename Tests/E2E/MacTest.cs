@@ -249,13 +249,9 @@ namespace LoRaWan.Tests.E2E
             await TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
             Log($"C2D Message sent to device, need to check if it receives");
 
-            var foundC2DMessageCount = 0;
-            var foundLinkADRCmdCount = 0;
-            var foundChangedDataRateCount = 0;
-
-            var c2dLogMessage = $"{device.DeviceID}: cloud to device MAC command LinkADRCmd received Type: LinkADRCmd Answer, datarate: 3";
-            var linkADRCmdMessage = $"LinkADRCmd mac command detected in upstream payload: Type: LinkADRCmd Answer, power: changed, data rate: changed";
-            var changedDataRateMessage = "\"datr\":\"SF9BW125\""; // DR3 
+            var foundC2DMessage = false;
+            var foundLinkADRCmd = false;
+            var foundChangedDataRate = false;
 
             // Sends 8x confirmed messages, stopping if C2D message is found and data rate is updated
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
@@ -271,72 +267,40 @@ namespace LoRaWan.Tests.E2E
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 // check if C2D message was found
-                // 0000000000000032: cloud to device MAC command LinkADRCmd received Type: LinkADRCmd
-                var C2DSearchResults = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (messageBody) =>
-                    {
-                        return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
-                    },
-                    new SearchLogOptions
-                    {
-                        Description = c2dLogMessage,
-                        MaxAttempts = 1
-                    });
+                if (await SearchMessageAsync($"{device.DeviceID}: cloud to device MAC command LinkADRCmd received Type: LinkADRCmd Answer, datarate: 3"))
+                    foundC2DMessage = true;
 
                 // check if LinkADRCmd MAC Command was detected
-                // LinkADRCmd mac command detected in upstream payload
-                var linkADRCmdSearchResults = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (messageBody) =>
-                    {
-                        return messageBody.Contains(linkADRCmdMessage, StringComparison.OrdinalIgnoreCase);
-                    },
-                    new SearchLogOptions
-                    {
-                        Description = linkADRCmdMessage,
-                        MaxAttempts = 1
-                    });
+                if (await SearchMessageAsync("LinkADRCmd mac command detected in upstream payload: Type: LinkADRCmd Answer, power: changed, data rate: changed"))
+                    foundLinkADRCmd = true;
 
                 // check if the data rate was changed to DR3
-                // 'datr':'SF9BW125'
-                var changedDataRateSearchResults = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (messageBody) =>
-                    {
-                        return messageBody.Contains(changedDataRateMessage, StringComparison.OrdinalIgnoreCase);
-                    },
-                    new SearchLogOptions
-                    {
-                        Description = changedDataRateMessage,
-                        MaxAttempts = 1
-                    });
+                if (await SearchMessageAsync("\"datr\":\"SF9BW125\""))
+                    foundChangedDataRate = true;
 
-                if (C2DSearchResults.Found)
+                async Task<bool> SearchMessageAsync(string message)
                 {
-                    foundC2DMessageCount++;
-                    Log($"{device.DeviceID}: Found C2D message in log (after sending {i}/{messagesToSend}) {foundC2DMessageCount} times");
-                }
+                    var searchResult =
+                        await TestFixtureCi.SearchNetworkServerModuleAsync(messageBody => messageBody.Contains(message, StringComparison.OrdinalIgnoreCase),
+                                                                           new SearchLogOptions
+                                                                           {
+                                                                               Description = message,
+                                                                               MaxAttempts = 1
+                                                                           });
 
-                if (linkADRCmdSearchResults.Found)
-                {
-                    foundLinkADRCmdCount++;
-                    Log($"{device.DeviceID}: Found LinkADRCmd in log (after sending {i}/{messagesToSend}) {foundC2DMessageCount} times");
-                }
-
-                if (changedDataRateSearchResults.Found)
-                {
-                    foundChangedDataRateCount++;
-                    Log($"{device.DeviceID}: Found changed data rate in log (after sending {i}/{messagesToSend}) {foundC2DMessageCount} times");
+                    return searchResult.Found;
                 }
 
                 TestFixture.ClearLogs();
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                if (foundC2DMessageCount > 0 && foundLinkADRCmdCount > 0 && foundChangedDataRateCount > 0)
+                if (foundC2DMessage && foundLinkADRCmd && foundChangedDataRate)
                     break;
             }
 
-            Assert.True(foundC2DMessageCount > 0, $"Could not find C2D message with MAC command LinkADRCmd in LNS log");
-            Assert.True(foundLinkADRCmdCount > 0, $"Could not find LinkADRCmd MAC Command in LNS log");
-            Assert.True(foundChangedDataRateCount > 0, $"Could not find updated data rate in LNS log");
+            Assert.True(foundC2DMessage, $"Could not find C2D message with MAC command LinkADRCmd in LNS log");
+            Assert.True(foundLinkADRCmd, $"Could not find LinkADRCmd MAC Command in LNS log");
+            Assert.True(foundChangedDataRate, $"Could not find updated data rate in LNS log");
         }
     }
 }
