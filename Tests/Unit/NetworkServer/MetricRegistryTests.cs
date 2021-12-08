@@ -15,12 +15,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class MetricRegistryTests : IDisposable
     {
+        private const string GatewayId = "foogateway";
+
         private readonly RegistryMetricTagBag metricTagBag;
         private readonly Meter meter;
 
         public MetricRegistryTests()
         {
-            this.metricTagBag = new RegistryMetricTagBag();
+            this.metricTagBag = new RegistryMetricTagBag(new NetworkServerConfiguration { GatewayID = GatewayId });
             this.meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
         }
 
@@ -138,6 +140,21 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(LoRaProcessingErrorCode.TagNotSet, result.ErrorCode);
         }
 
+        public static object[][] Tag_Value_Is_Not_In_Tag_Names() => new[]
+        {
+            new object[] { Array.Empty<string>(), KeyValuePair.Create("foo", (object?)"bar") },
+            new object[] { new[] { "foo" }, KeyValuePair.Create("foo", (object?)"bar"), KeyValuePair.Create("baz", (object?)"bar") },
+            new object[] { new[] { MetricRegistry.GatewayIdTagName }, KeyValuePair.Create("foo", (object?)"bar") },
+            new object[] { new[] { MetricRegistry.GatewayIdTagName, "foo" }, KeyValuePair.Create("foo", (object?)"bar"), KeyValuePair.Create("baz", (object?)"bar") }
+        };
+
+        [Theory]
+        [MemberData(nameof(Tag_Value_Is_Not_In_Tag_Names))]
+        public void GetTagsInOrder_Throws_When_Tag_Value_Is_Not_In_Tag_Names(string[] tagNames, params KeyValuePair<string, object?>[] tagValues)
+        {
+            _ = Assert.Throws<InvalidOperationException>(() => MetricExporterHelper.GetTagsInOrder(tagNames, tagValues, this.metricTagBag));
+        }
+
         [Fact]
         public void GetTagsInOrder_Throws_When_Tag_Is_Empty()
         {
@@ -154,10 +171,32 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.metricTagBag.StationEui.Value = stationEui;
 
             // act
-            var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.GatewayIdTagName }, Array.Empty<KeyValuePair<string, object?>>(), this.metricTagBag);
+            var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.ConcentratorIdTagName }, Array.Empty<KeyValuePair<string, object?>>(), this.metricTagBag);
 
             // assert
             Assert.Equal(new[] { stationEui.ToString() }, result);
+        }
+
+        [Fact]
+        public void GetTagsInOrder_Should_Fall_Back_To_Tag_Bag_For_GatewayId()
+        {
+            // arrange + act
+            var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.GatewayIdTagName }, Array.Empty<KeyValuePair<string, object?>>(), this.metricTagBag);
+
+            // assert
+            Assert.Equal(new[] { GatewayId }, result);
+        }
+
+        [Fact]
+        public void GetTagsInOrder_Should_Indicate_Gateway_Id_Unknown_When_GatewayId_Not_Set()
+        {
+            // arrange + act
+            var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.GatewayIdTagName },
+                                                             Array.Empty<KeyValuePair<string, object?>>(),
+                                                             new RegistryMetricTagBag(new NetworkServerConfiguration()));
+
+            // assert
+            Assert.Equal(new[] { "unknown" }, result);
         }
 
         [Fact]

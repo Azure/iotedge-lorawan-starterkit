@@ -19,10 +19,12 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal class ApplicationInsightsMetricExporter : RegistryMetricExporter
     {
-        private readonly IDictionary<string, (Metric, MetricIdentifier)> metricRegistry;
+        private readonly IDictionary<string, (Metric, string[])> metricRegistry;
         private readonly RegistryMetricTagBag metricTagBag;
 
-        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient, RegistryMetricTagBag metricTagBag, ILogger<ApplicationInsightsMetricExporter> logger)
+        public ApplicationInsightsMetricExporter(TelemetryClient telemetryClient,
+                                                 RegistryMetricTagBag metricTagBag,
+                                                 ILogger<ApplicationInsightsMetricExporter> logger)
             : this(telemetryClient, MetricRegistry.RegistryLookup, metricTagBag, logger)
         { }
 
@@ -35,7 +37,7 @@ namespace LoRaWan.NetworkServer
             this.metricRegistry = registryLookup.ToDictionary(m => m.Key, m =>
             {
                 var id = new MetricIdentifier(MetricRegistry.Namespace, m.Value.Name, m.Value.Tags);
-                return (telemetryClient.GetMetric(id), id);
+                return (telemetryClient.GetMetric(id), id.GetDimensionNames().ToArray());
             });
             this.metricTagBag = metricTagBag;
         }
@@ -44,9 +46,8 @@ namespace LoRaWan.NetworkServer
         {
             if (this.metricRegistry.TryGetValue(instrument.Name, out var value))
             {
-                var (metric, identifier) = value;
-                var tagNames = identifier.GetDimensionNames().ToArray() ?? Array.Empty<string>();
-                TrackValue(metric, measurement, MetricExporterHelper.GetTagsInOrder(tagNames, tags, this.metricTagBag));
+                var (metric, dimensions) = value;
+                TrackValue(metric, measurement, MetricExporterHelper.GetTagsInOrder(dimensions, tags, this.metricTagBag));
             }
         }
 
@@ -58,7 +59,8 @@ namespace LoRaWan.NetworkServer
                 case 1: _ = metric.TrackValue(measurement, dimensions[0]); break;
                 case 2: _ = metric.TrackValue(measurement, dimensions[0], dimensions[1]); break;
                 case 3: _ = metric.TrackValue(measurement, dimensions[0], dimensions[1], dimensions[2]); break;
-                default: throw new NotImplementedException("Metrics tracking in Application Insights for more than three dimensions it not supported");
+                case 4: _ = metric.TrackValue(measurement, dimensions[0], dimensions[1], dimensions[2], dimensions[3]); break;
+                default: throw new NotImplementedException("We do not support tracking more than four custom dimensions.");
             }
         }
     }

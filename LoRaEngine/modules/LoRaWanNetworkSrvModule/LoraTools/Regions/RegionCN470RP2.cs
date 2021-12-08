@@ -11,7 +11,8 @@ namespace LoRaTools.Regions
     using LoRaWan;
     using static LoRaWan.Metric;
 
-    public class RegionCN470 : Region
+    // Frequency plan for region CN470-510 using version RP002-1.0.3 of LoRaWAN Regional Parameters specification
+    public class RegionCN470RP2 : Region
     {
         private static readonly Mega FrequencyIncrement = new(0.2);
 
@@ -23,8 +24,8 @@ namespace LoRaTools.Regions
         // the corresponding downstream join frequency and the channel index
         public Dictionary<Hertz, (Hertz downstreamFreq, int joinChannelIndex)> UpstreamJoinFrequenciesToDownstreamAndChannelIndex { get; }
 
-        public RegionCN470()
-            : base(LoRaRegionType.CN470)
+        public RegionCN470RP2()
+            : base(LoRaRegionType.CN470RP2)
         {
             // Values assuming FOpts param is not used
             DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
