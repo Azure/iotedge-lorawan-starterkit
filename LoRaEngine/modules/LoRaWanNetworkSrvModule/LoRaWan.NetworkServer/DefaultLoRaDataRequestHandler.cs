@@ -101,7 +101,7 @@ namespace LoRaWan.NetworkServer
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
             var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
-            var concentratorDeduplicationResult = await this.concentratorDeduplication.CheckDuplicateAsync(request, loRaDevice);
+            var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicate(request, loRaDevice);
             if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Duplicate)
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);

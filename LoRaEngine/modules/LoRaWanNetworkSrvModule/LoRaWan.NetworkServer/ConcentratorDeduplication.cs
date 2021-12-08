@@ -7,15 +7,14 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Buffers.Binary;
+    using System.Diagnostics.CodeAnalysis;
     using System.Security.Cryptography;
-    using System.Threading;
-    using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
     public sealed class ConcentratorDeduplication :
-        IConcentratorDeduplication, IDisposable
+        IConcentratorDeduplication
     {
         public enum Result
         {
@@ -28,8 +27,6 @@ namespace LoRaWan.NetworkServer
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
         private readonly IMemoryCache cache;
-        private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
-
         private readonly ILogger<IConcentratorDeduplication> logger;
 
         [ThreadStatic]
@@ -45,7 +42,7 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
         }
 
-        public async Task<Result> CheckDuplicateAsync(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
+        public Result CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
         {
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
             if (loRaDevice is null && loRaRequest.Payload is LoRaPayloadData)
@@ -55,8 +52,7 @@ namespace LoRaWan.NetworkServer
             var stationEui = loRaRequest.StationEui;
 
             StationEui previousStation;
-            await this.cacheSemaphore.WaitAsync();
-            try
+            lock (this.cache)
             {
                 if (!this.cache.TryGetValue(key, out previousStation))
                 {
@@ -66,10 +62,6 @@ namespace LoRaWan.NetworkServer
                     });
                     return Result.NotDuplicate;
                 }
-            }
-            finally
-            {
-                _ = this.cacheSemaphore.Release();
             }
 
             if (loRaRequest.Payload.RequiresConfirmation() && previousStation == stationEui)
@@ -141,8 +133,5 @@ namespace LoRaWan.NetworkServer
 
         private static bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
             => loRaRequest.Payload is LoRaPayloadJoinRequest || loRaDevice?.Deduplication is DeduplicationMode.Drop;
-
-        public void Dispose()
-            => this.cacheSemaphore.Dispose();
     }
 }

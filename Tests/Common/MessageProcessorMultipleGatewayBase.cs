@@ -70,7 +70,6 @@ namespace LoRaWan.Tests.Common
             if (disposing)
             {
                 this.cache.Dispose();
-                SecondConcentratorDeduplication?.Dispose();
             }
         }
     }

@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.Threading.Tasks;
     using global::LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -43,18 +42,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task When_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Should_Add_To_Cache(bool isCacheEmpty)
+        public void When_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Should_Add_To_Cache(bool isCacheEmpty)
         {
             // arrange
             if (!isCacheEmpty)
             {
                 var anotherPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("another_payload");
                 using var anotherRequest = WaitableLoRaRequest.Create(anotherPayload);
-                _ = await this.concentratorDeduplication.CheckDuplicateAsync(anotherRequest, this.loRaDevice);
+                _ = this.concentratorDeduplication.CheckDuplicate(anotherRequest, this.loRaDevice);
             }
 
             // act
-            var result = await this.concentratorDeduplication.CheckDuplicateAsync(this.loraRequest, this.loRaDevice);
+            var result = this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice);
 
             // assert
             Assert.Equal(ConcentratorDeduplication.Result.NotDuplicate, result);
@@ -68,11 +67,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(true, false, ConcentratorDeduplication.Result.DuplicateDueToResubmission)]
         [InlineData(false, true, ConcentratorDeduplication.Result.Duplicate)]
         [InlineData(false, false, ConcentratorDeduplication.Result.SoftDuplicate)]
-        public async Task When_Message_Encountered_Should_Find_Duplicates_For_Different_Deduplication(bool sameStationAsBefore, bool dropDeduplicationStrategy, ConcentratorDeduplication.Result expectedResult)
+        public void When_Message_Encountered_Should_Find_Duplicates_For_Different_Deduplication(bool sameStationAsBefore, bool dropDeduplicationStrategy, ConcentratorDeduplication.Result expectedResult)
         {
             // arrange
             var stationEui = this.loraRequest.StationEui;
-            _ = this.concentratorDeduplication.CheckDuplicateAsync(this.loraRequest, this.loRaDevice);
+            _ = this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice);
 
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
             this.loraRequest.SetStationEui(anotherStation);
@@ -81,7 +80,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDevice.Deduplication = DeduplicationMode.Mark;
 
             // act/assert
-            Assert.Equal(expectedResult, await this.concentratorDeduplication.CheckDuplicateAsync(this.loraRequest, this.loRaDevice));
+            Assert.Equal(expectedResult, this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice));
             Assert.Equal(1, this.cache.Count);
             var key = ConcentratorDeduplication.CreateCacheKey(this.loraRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
@@ -131,9 +130,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.loraRequest.Dispose();
             this.loRaDevice.Dispose();
+
             this.connectionManager.Dispose();
             this.cache?.Dispose();
-            this.concentratorDeduplication?.Dispose();
         }
     }
 }

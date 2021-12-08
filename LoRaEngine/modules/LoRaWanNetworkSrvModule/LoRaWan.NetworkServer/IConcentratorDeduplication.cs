@@ -5,8 +5,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System.Threading.Tasks;
-
     public interface IConcentratorDeduplication
     {
         /// <summary>
@@ -14,7 +12,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         /// <param name="loRaRequest">The received request.</param>
         /// <param name="loRaDevice">The leaf device it was sent from, required only for <code>LoRaPayloadData</code> requests.</param>
-        /// <returns>Task of <code>ConcentratorDeduplication.Result</code> with the result of detection.</returns>
-        public Task<ConcentratorDeduplication.Result> CheckDuplicateAsync(LoRaRequest loRaRequest, LoRaDevice? loRaDevice);
+        /// <returns><code>ConcentratorDeduplication.Result</code> with the result of detection.</returns>
+        public ConcentratorDeduplication.Result CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice);
     }
 }
