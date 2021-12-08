@@ -5,14 +5,14 @@
 // Cn470 Channels 1-4 : 470.3, 470.5, 470.7, 470.9
 // Cn470 Channels 39-42: 478.1, 478.3, 478.5, 478.7
 // please refer to the repo documentation for further information
-//set to true to send confirmed data up messages
+
+// set to true to send confirmed data up messages
 bool confirmed = true;
-//application information, should be similar to what was provisiionned in the device twins
+// application information, should be similar to what was provisioned in the device twins
 char * deviceId = "46AAC86800430028";
 char * devAddr = "0228B1B1";
 char * appSKey = "2B7E151628AED2A6ABF7158809CF4F3C";
 char * nwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
-
 
 /*
   iot hub ABP tags for deviceid: 46AAC86800430028
@@ -25,7 +25,7 @@ char * nwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
     },
 */
 
-//set initial datarate and physical information for the device
+// set initial datarate and physical information for the device
 _data_rate_t dr = DR6;
 _physical_type_t physicalType = EU868 ;
 
@@ -34,7 +34,6 @@ char data[10];
 char buffer[256];
 int i = 0;
 int lastCall = 0;
-
 
 void setup(void)
 {
@@ -58,14 +57,9 @@ void setup(void)
   }
 
   lora.setAdaptiveDataRate(false);
-
   lora.setDutyCycle(false);
   lora.setJoinDutyCycle(false);
-
-
   lora.setPower(2);
-
-
 }
 
 void loop(void)
@@ -99,11 +93,12 @@ void loop(void)
         SerialUSB.print("RSSI is: ");
         SerialUSB.println(rssi);
         SerialUSB.print("Data is: ");
+
         for (unsigned char i = 0; i < length; i ++)
         {
           SerialUSB.print( char(buffer[i]));
-
         }
+
         SerialUSB.println();
       }
     }
