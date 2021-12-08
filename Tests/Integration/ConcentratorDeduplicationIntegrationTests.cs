@@ -62,7 +62,7 @@ namespace LoRaWan.Tests.Integration
             {
                 CallBase = true
             };
-            _ = dataRequestHandlerMock.Setup(x => x.DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(It.IsAny<LoRaDevice>(), 1, It.IsAny<ILoRaDeviceFrameCounterUpdateStrategy>()))
+            _ = dataRequestHandlerMock.Setup(x => x.DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(It.IsAny<LoRaDevice>(), 1, It.IsAny<ILoRaDeviceFrameCounterUpdateStrategy>(), It.IsAny<ConcentratorDeduplication.Result>()))
                 .ReturnsAsync(true);
             var result1 = true;
             var result2 = new LoRaDeviceRequestProcessResult(this.loRaDevice, this.loraRequest, LoRaDeviceRequestFailedReason.UnknownDevice);

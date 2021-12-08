@@ -97,10 +97,6 @@ namespace LoRaWan.NetworkServer
             // Contains the Cloud to message we need to send
             IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage = null;
 
-            // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
-            // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
-            var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
-
             var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicate(request, loRaDevice);
             if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Duplicate)
             {
@@ -111,6 +107,10 @@ namespace LoRaWan.NetworkServer
                 // Request is allowed upstream but confirmation is skipped to avoid collisions on the air.
                 requiresConfirmation = false;
             }
+
+            // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
+            // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
+            var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy, concentratorDeduplicationResult);
 
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
@@ -804,7 +804,11 @@ namespace LoRaWan.NetworkServer
             return valid;
         }
 
-        internal virtual async Task<bool> DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(LoRaDevice loRaDevice, uint payloadFcnt, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
+        internal virtual async Task<bool> DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(
+            LoRaDevice loRaDevice,
+            uint payloadFcnt,
+            ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy,
+            ConcentratorDeduplication.Result concentratorDeduplicationResult)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
             _ = frameCounterStrategy ?? throw new ArgumentNullException(nameof(frameCounterStrategy));
@@ -819,7 +823,8 @@ namespace LoRaWan.NetworkServer
                         // known problem when device restarts, starts fcnt from zero
                         // We need to await this reset to avoid races on the server with deduplication and
                         // fcnt down calculations
-                        _ = await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
+                        if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.NotDuplicate)
+                            _ = await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
                         isFrameCounterFromNewlyStartedDevice = true;
                     }
                 }
