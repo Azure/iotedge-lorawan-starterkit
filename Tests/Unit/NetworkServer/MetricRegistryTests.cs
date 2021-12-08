@@ -140,6 +140,21 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(LoRaProcessingErrorCode.TagNotSet, result.ErrorCode);
         }
 
+        public static object[][] Tag_Value_Is_Not_In_Tag_Names() => new[]
+        {
+            new object[] { Array.Empty<string>(), KeyValuePair.Create("foo", (object?)"bar") },
+            new object[] { new[] { "foo" }, KeyValuePair.Create("foo", (object?)"bar"), KeyValuePair.Create("baz", (object?)"bar") },
+            new object[] { new[] { MetricRegistry.GatewayIdTagName }, KeyValuePair.Create("foo", (object?)"bar") },
+            new object[] { new[] { MetricRegistry.GatewayIdTagName, "foo" }, KeyValuePair.Create("foo", (object?)"bar"), KeyValuePair.Create("baz", (object?)"bar") }
+        };
+
+        [Theory]
+        [MemberData(nameof(Tag_Value_Is_Not_In_Tag_Names))]
+        public void GetTagsInOrder_Throws_When_Tag_Value_Is_Not_In_Tag_Names(string[] tagNames, params KeyValuePair<string, object?>[] tagValues)
+        {
+            _ = Assert.Throws<InvalidOperationException>(() => MetricExporterHelper.GetTagsInOrder(tagNames, tagValues, this.metricTagBag));
+        }
+
         [Fact]
         public void GetTagsInOrder_Throws_When_Tag_Is_Empty()
         {

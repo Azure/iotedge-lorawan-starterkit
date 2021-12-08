@@ -118,6 +118,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public static string[] GetTagsInOrder(IReadOnlyList<string> tagNames, ReadOnlySpan<KeyValuePair<string, object?>> tags, RegistryMetricTagBag metricTagBag)
         {
+            var tagsMatchedCount = 0; // Used to validate that all tag values that are raised are defined in the custom metric registry.
             var result = new string[tagNames.Count];
             for (var i = 0; i < tagNames.Count; ++i)
             {
@@ -130,6 +131,7 @@ namespace LoRaWan.NetworkServer
                     if (tagName == tags[j].Key)
                     {
                         tagValue = tags[j].Value?.ToString();
+                        ++tagsMatchedCount;
                         break;
                     }
                 }
@@ -150,6 +152,9 @@ namespace LoRaWan.NetworkServer
 
                 result[i] = tagValue;
             }
+
+            if (tagsMatchedCount != tags.Length)
+                throw new InvalidOperationException("Some tags raised are not defined in custom metric registry. Make sure that all tags that you raise are defined in the metric registry.");
 
             return result;
         }
