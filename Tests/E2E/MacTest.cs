@@ -243,7 +243,7 @@ namespace LoRaWan.Tests.E2E
             {
                 Fport = 0,
                 Payload = string.Empty,
-                MacCommands = { new LinkADRRequest(3, 4, 25, 0, 1) } // Update data rate to DR3
+                MacCommands = { new LinkADRRequest(datarate: 3, txPower: 4, chMask: 25, chMaskCntl: 0, nbTrans: 1) } // Update data rate to DR3
             };
 
             await TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
