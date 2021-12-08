@@ -8,7 +8,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using Common;
     using LoRaTools.ADR;
-    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Caching.Memory;
@@ -44,45 +43,31 @@ namespace LoRaWan.Tests.Integration
                     meter)
             { }
 
-            protected override Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
-            {
-                SendDeviceAsyncAssert();
-                return Task.FromResult(true);
-            }
-
             protected override Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaTools.LoRaMessage.LoRaPayloadData loraPayload, bool useMultipleGateways)
-            {
-                return Task.FromResult(TryUseBundlerAssert());
-            }
-
-            protected override Task SaveChangesToDevice(LoRaDevice loRaDevice, bool stationEuiChanged)
-            {
-                SaveChangesToDeviceAssert();
-                return Task.FromResult(true);
-            }
-
-            protected override Task SendMessageDownstreamAsync(LoRaRequest request, DownlinkMessageBuilderResponse confirmDownlinkMessageBuilderResp)
-            {
-                return Task.FromResult(SendMessageDownstreamAsyncAssert());
-            }
+                => Task.FromResult(TryUseBundlerAssert());
 
             protected override Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
-            {
-                return Task.FromResult<IReceivedLoRaCloudToDeviceMessage>(null);
-            }
+                => Task.FromResult<IReceivedLoRaCloudToDeviceMessage>(null);
+
+            protected override Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
+                => Task.FromResult(SendDeviceAsyncAssert());
 
             protected override DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, LoRaADRResult loRaADRResult, IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, uint? fcntDown, bool fpending)
-            {
-                return new DownlinkMessageBuilderResponse(new LoRaTools.LoRaPhysical.DownlinkPktFwdMessage(), false, 1);
-            }
+                => new DownlinkMessageBuilderResponse(new LoRaTools.LoRaPhysical.DownlinkPktFwdMessage(), false, 1);
 
-            public virtual void SendDeviceAsyncAssert() { }
+            protected override Task SendMessageDownstreamAsync(LoRaRequest request, DownlinkMessageBuilderResponse confirmDownlinkMessageBuilderResp)
+                => Task.FromResult(SendMessageDownstreamAsyncAssert());
+
+            protected override Task SaveChangesToDevice(LoRaDevice loRaDevice, bool stationEuiChanged)
+                => Task.FromResult(SaveChangesToDeviceAssert());
 
             public virtual FunctionBundlerResult TryUseBundlerAssert() => null;
 
+            public virtual bool SendDeviceAsyncAssert() => true;
+
             public virtual Task SendMessageDownstreamAsyncAssert() => null;
 
-            public virtual void SaveChangesToDeviceAssert() { }
+            public virtual bool SaveChangesToDeviceAssert() => true;
         }
 
         private WaitableLoRaRequest loraRequest;
@@ -96,7 +81,7 @@ namespace LoRaWan.Tests.Integration
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 2, 1, 2)]
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 2, 1, 2)]
         public async Task When_Same_Data_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(
-            string station1, string station2, DeduplicationMode deduplicationMode,  int expectedNumberOfFrameCounterResets, int expectedNumberOfFunctionCalls, int expectedMessagesUp, int expectedMessagesDown, int expectedTwinSaves)
+            string station1, string station2, DeduplicationMode deduplicationMode, int expectedNumberOfFrameCounterResets, int expectedNumberOfFunctionCalls, int expectedMessagesUp, int expectedMessagesDown, int expectedTwinSaves)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
@@ -104,7 +89,6 @@ namespace LoRaWan.Tests.Integration
             this.loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
             this.loraRequest.SetStationEui(StationEui.Parse(station1));
             this.loraRequest.SetPayload(dataPayload);
-            this.loraRequest.SetRegion(new RegionEU868());
 
             this.loRaDevice = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
             {
@@ -137,6 +121,12 @@ namespace LoRaWan.Tests.Integration
 
             // first request
             _ = await dataRequestHandlerMock.Object.ProcessRequestAsync(this.loraRequest, this.loRaDevice);
+            // assert methods are called once
+            frameCounterStrategyMock.Verify(x => x.ResetAsync(this.loRaDevice, It.IsAny<uint>(), ServerGatewayID), Times.Once);
+            dataRequestHandlerMock.Verify(x => x.TryUseBundlerAssert(), Times.Once);
+            dataRequestHandlerMock.Verify(x => x.SendDeviceAsyncAssert(), Times.Once);
+            dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Once);
+            dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAssert(), Times.Once);
 
             // act
             this.loraRequest.SetStationEui(StationEui.Parse(station2));
