@@ -56,18 +56,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var result = this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice);
 
             // assert
-            Assert.Equal(ConcentratorDeduplication.Result.NotDuplicate, result);
+            Assert.Equal(ConcentratorDeduplicationResult.NotDuplicate, result);
             var key = ConcentratorDeduplication.CreateCacheKey(this.loraRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(this.loraRequest.StationEui, addedStation);
         }
 
         [Theory]
-        [InlineData(true, true, ConcentratorDeduplication.Result.DuplicateDueToResubmission)]
-        [InlineData(true, false, ConcentratorDeduplication.Result.DuplicateDueToResubmission)]
-        [InlineData(false, true, ConcentratorDeduplication.Result.Duplicate)]
-        [InlineData(false, false, ConcentratorDeduplication.Result.SoftDuplicateDueToDeduplicationStrategy)]
-        public void When_Message_Encountered_Should_Find_Duplicates_For_Different_Deduplication(bool sameStationAsBefore, bool dropDeduplicationStrategy, ConcentratorDeduplication.Result expectedResult)
+        [InlineData(true, true, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
+        [InlineData(true, false, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
+        [InlineData(false, true, ConcentratorDeduplicationResult.Duplicate)]
+        [InlineData(false, false, ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)]
+        public void When_Message_Encountered_Should_Find_Duplicates_For_Different_Deduplication(bool sameStationAsBefore, bool dropDeduplicationStrategy, ConcentratorDeduplicationResult expectedResult)
         {
             // arrange
             var stationEui = this.loraRequest.StationEui;
@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var key = ConcentratorDeduplication.CreateCacheKey(this.loraRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(
-                (expectedResult is ConcentratorDeduplication.Result.Duplicate || expectedResult is ConcentratorDeduplication.Result.SoftDuplicateDueToDeduplicationStrategy)
+                (expectedResult is ConcentratorDeduplicationResult.Duplicate || expectedResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
                     ? stationEui
                     : anotherStation,
                 addedStation);

@@ -98,11 +98,11 @@ namespace LoRaWan.NetworkServer
             IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage = null;
 
             var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicate(request, loRaDevice);
-            if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.Duplicate)
+            if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.Duplicate)
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
             }
-            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.SoftDuplicateDueToDeduplicationStrategy)
+            else if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
             {
                 // Request is allowed upstream but confirmation is skipped to avoid collisions on the air.
                 requiresConfirmation = false;
@@ -280,7 +280,7 @@ namespace LoRaWan.NetworkServer
                         if (payloadPort != LoRaFPort.MacCommand)
                         {
                             // combine the results of the 2 deduplications: on the concentrator level and on the network server layer
-                            var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplication.Result.NotDuplicate || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);
+                            var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplicationResult.NotDuplicate || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);
                             if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, isDuplicate, decryptedPayloadData))
                             {
                                 // failed to send event to IoT Hub, stop now
@@ -693,10 +693,10 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways, ConcentratorDeduplication.Result deduplicationResult)
+        private async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways, ConcentratorDeduplicationResult deduplicationResult)
         {
             FunctionBundlerResult bundlerResult = null;
-            if (useMultipleGateways && (deduplicationResult is ConcentratorDeduplication.Result.NotDuplicate || deduplicationResult is ConcentratorDeduplication.Result.DuplicateDueToResubmission))
+            if (useMultipleGateways && (deduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || deduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission))
             {
                 // in the case of resubmissions we need to contact the function to get a valid frame counter down
                 var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
@@ -808,7 +808,7 @@ namespace LoRaWan.NetworkServer
             LoRaDevice loRaDevice,
             uint payloadFcnt,
             ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy,
-            ConcentratorDeduplication.Result concentratorDeduplicationResult)
+            ConcentratorDeduplicationResult concentratorDeduplicationResult)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
             _ = frameCounterStrategy ?? throw new ArgumentNullException(nameof(frameCounterStrategy));
@@ -823,7 +823,7 @@ namespace LoRaWan.NetworkServer
                         // known problem when device restarts, starts fcnt from zero
                         // We need to await this reset to avoid races on the server with deduplication and
                         // fcnt down calculations
-                        if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.NotDuplicate)
+                        if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate)
                             _ = await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
                         isFrameCounterFromNewlyStartedDevice = true;
                     }

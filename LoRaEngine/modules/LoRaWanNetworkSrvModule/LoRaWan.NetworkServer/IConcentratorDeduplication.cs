@@ -13,6 +13,14 @@ namespace LoRaWan.NetworkServer
         /// <param name="loRaRequest">The received request.</param>
         /// <param name="loRaDevice">The leaf device it was sent from, required only for <code>LoRaPayloadData</code> requests.</param>
         /// <returns><code>ConcentratorDeduplication.Result</code> with the result of detection.</returns>
-        public ConcentratorDeduplication.Result CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice);
+        public ConcentratorDeduplicationResult CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice);
+    }
+
+    public enum ConcentratorDeduplicationResult
+    {
+        NotDuplicate,
+        DuplicateDueToResubmission,
+        SoftDuplicateDueToDeduplicationStrategy, // detected as a duplicate but due to the DeduplicationStrategy, marked only as a "soft" duplicate
+        Duplicate
     }
 }
