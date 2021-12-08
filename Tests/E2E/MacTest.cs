@@ -255,7 +255,7 @@ namespace LoRaWan.Tests.E2E
 
             var c2dLogMessage = $"{device.DeviceID}: cloud to device MAC command LinkADRCmd received Type: LinkADRCmd Answer, datarate: 3";
             var linkADRCmdMessage = "LinkADRCmd mac command detected in upstream payload";
-            var changedDataRateMessage = $"\"datr\":\"SF9BW125\""; // DR3
+            var changedDataRateMessage = "\"datr\":\"SF9BW125\""; // DR3
 
             // Sends 8x confirmed messages, stopping if C2D message is found and data rate is updated
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
