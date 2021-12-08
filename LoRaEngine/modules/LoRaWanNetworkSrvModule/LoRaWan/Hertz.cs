@@ -3,12 +3,50 @@
 
 namespace LoRaWan
 {
+    using System;
     using System.Globalization;
+
+    public readonly record struct Kilo(double Value) : IFormattable
+    {
+        public double Unit => Value * 1e3;
+
+        public string ToString(IFormatProvider? formatProvider) => ToString(null, formatProvider);
+        public string ToString(string? format) => ToString(format, null);
+        public string ToString(string? format, IFormatProvider? formatProvider) => Value.ToString(format, formatProvider);
+        public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
+    }
+
+    public readonly record struct Mega(double Value) : IFormattable
+    {
+        public double Unit => Value * 1e6;
+
+        public string ToString(IFormatProvider? formatProvider) => ToString(null, formatProvider);
+        public string ToString(string? format) => ToString(format, null);
+        public string ToString(string? format, IFormatProvider? formatProvider) => Value.ToString(format, formatProvider);
+        public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
+    }
+
+    public readonly record struct Giga(double Value) : IFormattable
+    {
+        public double Unit => Value * 1e9;
+
+        public string ToString(IFormatProvider? formatProvider) => ToString(null, formatProvider);
+        public string ToString(string? format) => ToString(format, null);
+        public string ToString(string? format, IFormatProvider? formatProvider) => Value.ToString(format, formatProvider);
+        public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
+    }
+
+    public static class Metric
+    {
+        public static Kilo Kilo(double value) => new Kilo(value);
+        public static Mega Mega(double value) => new Mega(value);
+        public static Giga Giga(double value) => new Giga(value);
+    }
 
     /// <summary>
     /// Represents a frequency in Hertz.
     /// </summary>
-    public readonly record struct Hertz
+    public readonly record struct Hertz : IComparable<Hertz>
     {
 #pragma warning disable IDE0032 // Use auto property
         private readonly ulong value;
@@ -26,6 +64,25 @@ namespace LoRaWan
 
         public static Hertz FromMega(double value) => new Hertz(checked((ulong)(value * 1e6)));
 
+        public static implicit operator Hertz(Kilo value) => new Hertz(checked((ulong)value.Unit));
+        public static implicit operator Hertz(Mega value) => new Hertz(checked((ulong)value.Unit));
+        public static implicit operator Hertz(Giga value) => new Hertz(checked((ulong)value.Unit));
+
         public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
+
+        public static explicit operator ulong(Hertz value) => value.value;
+
+        public int CompareTo(Hertz other) => this.value.CompareTo(other.value);
+
+        public static bool operator <(Hertz a, Hertz b) => a.CompareTo(b) < 0;
+        public static bool operator <=(Hertz a, Hertz b) => a.CompareTo(b) <= 0;
+        public static bool operator >(Hertz a, Hertz b) => a.CompareTo(b) > 0;
+        public static bool operator >=(Hertz a, Hertz b) => a.CompareTo(b) >= 0;
+
+        //public static Hertz operator +(Hertz a, Hertz b) => new Hertz(checked(a.value + b.value));
+        //public static Hertz operator -(Hertz a, Hertz b) => new Hertz(checked(a.value - b.value));
+        public static Hertz operator +(Hertz a, long offset) => new(checked((ulong)((long)a.value + offset)));
+        public static Hertz operator +(Hertz a, Mega offset) => new(checked((ulong)((long)a.value + offset.Unit)));
+        public static long operator -(Hertz a, Hertz b) => checked((long)a.value - (long)b.value);
     }
 }

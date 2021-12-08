@@ -170,15 +170,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                   {
                                       if (region is RegionAS923 as923 && radioConf.FirstOrDefault() is { } configuration)
                                       {
-                                          var chan0CentralFreq = configuration.ChannelMultiSf0.Radio ? configuration.Radio0.Freq.AsUInt64
-                                                                                                     : configuration.Radio1.Freq.AsUInt64;
-                                          var chan0Freq = configuration.ChannelMultiSf0.If < 0 ? chan0CentralFreq - (ulong)(-1 * configuration.ChannelMultiSf0.If)
-                                                                                               : chan0CentralFreq + (ulong)configuration.ChannelMultiSf0.If;
-                                          var chan1CentralFreq = configuration.ChannelMultiSf1.Radio ? configuration.Radio0.Freq.AsUInt64
-                                                                                                     : configuration.Radio1.Freq.AsUInt64;
-                                          var chan1Freq = configuration.ChannelMultiSf1.If < 0 ? chan1CentralFreq - (ulong)(-1 * configuration.ChannelMultiSf1.If)
-                                                                                               : chan1CentralFreq + (ulong)configuration.ChannelMultiSf1.If;
-                                          return as923.WithFrequencyOffset(new Hertz(chan0Freq), new Hertz(chan1Freq));
+                                          var chan0CentralFreq = configuration.ChannelMultiSf0.Radio ? configuration.Radio0.Freq
+                                                                                                     : configuration.Radio1.Freq;
+                                          var chan0Freq = chan0CentralFreq + configuration.ChannelMultiSf0.If;
+                                          var chan1CentralFreq = configuration.ChannelMultiSf1.Radio ? configuration.Radio0.Freq
+                                                                                                     : configuration.Radio1.Freq;
+                                          var chan1Freq = chan1CentralFreq + configuration.ChannelMultiSf1.If;
+                                          return as923.WithFrequencyOffset(chan0Freq, chan1Freq);
                                       }
                                       return region;
                                   });

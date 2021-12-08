@@ -8,13 +8,24 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
+    using static LoRaWan.Metric;
 
     public class RegionUS915 : Region
     {
         // Frequencies calculated according to formula:
         // 923.3 + upstreamChannelNumber % 8 * 0.6,
         // rounded to first decimal point
-        private static readonly double[] DownstreamChannelFrequencies = new double[] { 923.3, 923.9, 924.5, 925.1, 925.7, 926.3, 926.9, 927.5 };
+        private static readonly Hertz[] DownstreamChannelFrequencies = new Hertz[]
+        {
+            Mega(923.3),
+            Mega(923.9),
+            Mega(924.5),
+            Mega(925.1),
+            Mega(925.7),
+            Mega(926.3),
+            Mega(926.9),
+            Mega(927.5)
+       };
 
         public RegionUS915()
             : base(LoRaRegionType.US915)
@@ -65,7 +76,7 @@ namespace LoRaTools.Regions
             };
 
             MaxADRDataRate = 3;
-            RegionLimits = new RegionLimits((min: 902.3, max: 927.5), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
+            RegionLimits = new RegionLimits((Min: Mega(902.3), Max: Mega(927.5)), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
         }
 
         /// <summary>
@@ -94,30 +105,30 @@ namespace LoRaTools.Regions
                 upstreamChannelNumber = (int)Math.Round((upstreamChannel.Freq - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
             }
 
-            frequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
+            frequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8].Mega;
             return true;
         }
 
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region US915.
         /// </summary>
-        /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
+        /// <param name="upstream">Frequency on which the message was transmitted.</param>
         /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstream, out Hertz downstream, ushort? upstreamDataRate, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (upstreamDataRate is null) throw new ArgumentNullException(nameof(upstreamDataRate));
 
-            if (!IsValidUpstreamFrequency(upstreamFrequency))
-                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
+            if (!IsValidUpstreamFrequency(upstream))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstream}", LoRaProcessingErrorCode.InvalidFrequency);
 
             if (!IsValidUpstreamDataRate((ushort)upstreamDataRate))
                 throw new LoRaProcessingException($"Invalid upstream data rate {upstreamDataRate}", LoRaProcessingErrorCode.InvalidDataRate);
 
             int upstreamChannelNumber;
-            upstreamChannelNumber = upstreamDataRate == 4 ? 64 + (int)Math.Round((upstreamFrequency - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
-                                                    : (int)Math.Round((upstreamFrequency - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
-            downstreamFrequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
+            upstreamChannelNumber = upstreamDataRate == 4 ? 64 + (int)Math.Round((upstream.Mega - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
+                                                    : (int)Math.Round((upstream.Mega - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
+            downstream = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
             return true;
         }
 
@@ -125,6 +136,6 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(923.3, 8);
+        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(Mega(923.3), 8);
     }
 }

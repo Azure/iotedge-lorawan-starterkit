@@ -68,7 +68,7 @@ namespace LoRaWan.NetworkServer
             RndKeysGenerator.GetBytes(rndToken);
 
             string datr;
-            double freq;
+            Hertz freq;
             long tmst;
             ushort lnsRxDelay = 0;
 
@@ -97,9 +97,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // The logic for passing CN470 join channel will change as part of #561
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq, deviceJoinInfo))
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk.FreqHertz, out freq, deviceJoinInfo: deviceJoinInfo))
                 {
                     logger.LogError("there was a problem in setting the frequency in the downstream message packet forwarder settings");
                     return new DownlinkMessageBuilderResponse(null, false, receiveWindow);
@@ -265,7 +263,7 @@ namespace LoRaWan.NetworkServer
 
             // Class C always uses RX2
             string datr;
-            double freq;
+            Hertz freq;
             var tmst = 0; // immediate mode
             ushort rxDelay = 0; // Class C sends immediately
 

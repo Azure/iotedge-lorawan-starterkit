@@ -555,7 +555,7 @@ namespace LoRaWan.NetworkServer
                     this.logger.LogError("Failed to get downstream data rate");
                     return false;
                 }
-                maxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDataRate(rxpk));
+                maxPayload = loRaRegion.GetMaxPayloadSize(downstreamDataRate);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
 

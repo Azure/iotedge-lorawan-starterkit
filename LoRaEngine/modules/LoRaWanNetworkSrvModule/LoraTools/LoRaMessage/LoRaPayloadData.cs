@@ -277,7 +277,7 @@ namespace LoRaTools.LoRaMessage
         /// <param name="time">the original receive time.</param>
         /// <param name="stationEui">the station eui which will handle the downlink message.</param>
         /// <returns>the Downlink message.</returns>
-        public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI, ushort lnsRxDelay, uint rfch = 0, string time = "", StationEui stationEui = default)
+        public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, Hertz freq, long tmst, string devEUI, ushort lnsRxDelay, uint rfch = 0, string time = "", StationEui stationEui = default)
         {
             if (devEUI is null) throw new ArgumentNullException(nameof(devEUI));
 

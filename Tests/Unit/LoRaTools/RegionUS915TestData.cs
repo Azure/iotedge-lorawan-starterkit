@@ -4,59 +4,45 @@
 namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 {
     using System.Collections.Generic;
+    using System.Linq;
     using global::LoRaTools.Regions;
+    using static LoRaWan.Metric;
 
     public static class RegionUS915TestData
     {
         private static readonly Region region = RegionManager.US915;
-        private static readonly List<double> frequenciesDR1To3 = new List<double> { 902.3, 902.5, 902.7, 902.9, 903.1, 903.3, 903.5, 903.7, 903.9 };
-        private static readonly List<double> frequenciesDR4 = new List<double> { 903, 904.6, 906.2, 907.8, 909.4, 911, 912.6, 914.2 };
 
-        public static IEnumerable<object[]> TestRegionFrequencyDataDR1To3()
-        {
-            var dataRates = new List<ushort> { 0, 1, 2, 3 };
-
-            var inputFreqToExpectedFreq = new Dictionary<double, double>
+        public static readonly IEnumerable<object[]> TestRegionFrequencyDataDR1To3 =
+            from dr in new ushort[] { 0, 1, 2, 3 }
+            from freq in new (double Input, double Output)[]
             {
-                { 902.3, 923.3 },
-                { 902.5, 923.9 },
-                { 902.7, 924.5 },
-                { 902.9, 925.1 },
-                { 903.1, 925.7 },
-                { 903.3, 926.3 },
-                { 903.5, 926.9 },
-                { 903.7, 927.5 },
-                { 903.9, 923.3 },
-                { 904.1, 923.9 },
-                { 904.3, 924.5 },
-            };
-
-            foreach (var dr in dataRates)
-            {
-                foreach (var freq in frequenciesDR1To3)
-                    yield return new object[] { region, freq, dr, inputFreqToExpectedFreq[freq] };
+                (902.3, 923.3),
+                (902.5, 923.9),
+                (902.7, 924.5),
+                (902.9, 925.1),
+                (903.1, 925.7),
+                (903.3, 926.3),
+                (903.5, 926.9),
+                (903.7, 927.5),
+                (903.9, 923.3),
+                (904.1, 923.9),
+                (904.3, 924.5),
             }
-        }
+            select new object[] { region, (Hertz)Mega(freq.Input), dr, (Hertz)Mega(freq.Output) };
 
-        public static IEnumerable<object[]> TestRegionFrequencyDataDR4()
-        {
-            ushort dataRate = 4;
-
-            var inputFreqToExpectedFreq = new Dictionary<double, double>
+        public static readonly IEnumerable<object[]> TestRegionFrequencyDataDR4 =
+            from freq in new (double Input, double Output)[]
             {
-                { 903,   923.3 },
-                { 904.6, 923.9 },
-                { 906.2, 924.5 },
-                { 907.8, 925.1 },
-                { 909.4, 925.7 },
-                { 911,   926.3 },
-                { 912.6, 926.9 },
-                { 914.2, 927.5 },
-            };
-
-            foreach (var freq in frequenciesDR4)
-                yield return new object[] { region, freq, dataRate, inputFreqToExpectedFreq[freq] };
-        }
+                (903  , 923.3),
+                (904.6, 923.9),
+                (906.2, 924.5),
+                (907.8, 925.1),
+                (909.4, 925.7),
+                (911  , 926.3),
+                (912.6, 926.9),
+                (914.2, 927.5),
+            }
+            select new object[] { region, (Hertz)Mega(freq.Input), /* data rate */ 4, (Hertz)Mega(freq.Output) };
 
         public static IEnumerable<object[]> TestRegionDataRateDataDR1To3()
         {
@@ -88,13 +74,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
-          new List<object[]>
+          from x in new[]
           {
-               new object[] { region, 700, 5 },
-               new object[] { region, 1024, 10 },
-               new object[] { region, 901.2, 90 },
-               new object[] { region, 928.5, 100 },
-          };
+               new { Region = region, Frequency =  700.0, DataRate =   5  },
+               new { Region = region, Frequency = 1024.0, DataRate =  10 },
+               new { Region = region, Frequency =  901.2, DataRate =  90 },
+               new { Region = region, Frequency =  928.5, DataRate = 100 },
+          }
+          select new object[] { x.Region, (Hertz)Mega(x.Frequency), x.DataRate };
 
         public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
            new List<object[]>
@@ -112,18 +99,23 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
-           new List<object[]>
+           from x in new[]
            {
-               new object[] { region, null, 923.3, },
-               new object[] { region, null, 923.3, },
-               new object[] { region, 920.0, 920.0 },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 923.3 },
+               new { NwkSrvRx2Freq = 920.0     , ExpectedFreq = 920.0 },
+           }
+           select new object[]
+           {
+               region,
+               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.FromMega(x.NwkSrvRx2Freq) : (Hertz?)null,
+               Hertz.FromMega(x.ExpectedFreq)
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
            new List<object[]>
            {
                 new object[] { region, null, null, (ushort)8 },
-                new object[] { region, (ushort)11, null, (ushort)11 }, 
+                new object[] { region, (ushort)11, null, (ushort)11 },
                 new object[] { region, (ushort)11, (ushort)12, (ushort)12 },
            };
 
@@ -135,10 +127,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
-            new List<object[]>
+            from x in new[]
             {
-                new object[] { region, 902.3, -1 },
-                new object[] { region, 927.5, -1 },
+                new { Freq = 902.3, ExpectedIndex = -1 },
+                new { Freq = 927.5, ExpectedIndex = -1 },
+            }
+            select new object[]
+            {
+                region,
+                Hertz.FromMega(x.Freq),
+                x.ExpectedIndex,
             };
 
         public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>

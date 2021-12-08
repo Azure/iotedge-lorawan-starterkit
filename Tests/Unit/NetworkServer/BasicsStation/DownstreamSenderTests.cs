@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // arrange
             var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.loraDataByteArray,
                                                                   "SF7BW125",
-                                                                  868.5,
+                                                                  Hertz.FromMega(868.5),
                                                                   this.devEui.ToString(),
                                                                   tmst: 0,
                                                                   lnsRxDelay: 1,
@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // arrange
             var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.loraDataByteArray,
                                                                   "SF7BW125",
-                                                                  868.5,
+                                                                  Hertz.FromMega(868.5),
                                                                   this.devEui.ToString(),
                                                                   tmst: 0,
                                                                   lnsRxDelay: 0,
@@ -151,7 +151,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // arrange
             var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.loraDataByteArray,
                                                                   "SF7BW125",
-                                                                  868.5,
+                                                                  Hertz.FromMega(868.5),
                                                                   this.devEui.ToString(),
                                                                   tmst: 0,
                                                                   lnsRxDelay: 0,

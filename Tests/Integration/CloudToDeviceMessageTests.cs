@@ -478,7 +478,7 @@ namespace LoRaWan.Tests.Integration
             var txpk = downlinkMessage.Txpk;
 
             // Ensure we are using second window frequency
-            Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.Freq);
+            Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.FreqHertz);
 
             // Ensure we are using second window datr
             Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration, txpk.Datr);
@@ -580,7 +580,7 @@ namespace LoRaWan.Tests.Integration
             var txpk = downlinkMessage.Txpk;
 
             // Ensure we are using second window frequency
-            Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.Freq);
+            Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.FreqHertz);
 
             // Ensure we are using second window datr
             Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration, txpk.Datr);

@@ -193,7 +193,7 @@ namespace LoRaWan.NetworkServer
                         return;
                     }
 
-                    double freq = 0;
+                    Hertz freq;
                     string datr = null;
                     uint tmst = 0;
                     ushort lnsRxDelay = 0;
@@ -201,8 +201,8 @@ namespace LoRaWan.NetworkServer
                     {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                         datr = loraRegion.GetDownstreamDataRate(request.Rxpk);
-                        if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                        if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk.FreqHertz, out freq) || datr == null)
                         {
                             this.logger.LogError("could not resolve DR and/or frequency for downstream");
                             request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidRxpk);

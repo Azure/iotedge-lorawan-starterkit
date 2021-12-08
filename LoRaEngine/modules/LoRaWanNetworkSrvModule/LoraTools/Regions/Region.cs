@@ -122,7 +122,7 @@ namespace LoRaTools.Regions
         /// This default implementation is used by all regions which do not have the concept of join channels.
         /// </summary>
         /// <param name="joinChannel">Channel on which the join request was received.</param>
-        public virtual bool TryGetJoinChannelIndex(double frequency, out int channelIndex)
+        public virtual bool TryGetJoinChannelIndex(Hertz frequency, out int channelIndex)
         {
             channelIndex = -1;
             return false;
@@ -142,7 +142,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency of the upstream message.</param>
         /// <param name="upstreamDataRate">Ustream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null);
+        public abstract bool TryGetDownstreamChannelFrequency(Hertz upstream, out Hertz downstream, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>
         /// Returns downstream data rate based on the upstream channel and RX1 DR offset.
@@ -207,20 +207,20 @@ namespace LoRaTools.Regions
         /// <param name="nwkSrvRx2Freq">the value of the rx2freq env var on the nwk srv.</param>
         /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
         /// <returns>rx2 freq.</returns>
-        public double GetDownstreamRX2Freq(double? nwkSrvRx2Freq, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
+        public Hertz GetDownstreamRX2Freq(Hertz? nwkSrvRx2Freq, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
         {
             // resolve frequency to gateway if set to region's default
-            if (nwkSrvRx2Freq.HasValue)
+            if (nwkSrvRx2Freq is { } someNwkSrvRx2Freq)
             {
-                logger.LogDebug($"using custom gateway RX2 frequency {nwkSrvRx2Freq}", LogLevel.Debug);
-                return nwkSrvRx2Freq.Value;
+                logger.LogDebug($"using custom gateway RX2 frequency {someNwkSrvRx2Freq}", LogLevel.Debug);
+                return someNwkSrvRx2Freq;
             }
             else
             {
                 // default frequency
-                var rx2ReceiveWindow = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
-                logger.LogDebug($"using standard region RX2 frequency {rx2ReceiveWindow.Frequency}");
-                return rx2ReceiveWindow.Frequency;
+                (var defaultFrequency, _) = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                logger.LogDebug($"using standard region RX2 frequency {defaultFrequency}");
+                return defaultFrequency;
             }
         }
 
@@ -292,8 +292,8 @@ namespace LoRaTools.Regions
         {
             if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
 
-            if (rxpk.Freq < RegionLimits.FrequencyRange.min ||
-                rxpk.Freq > RegionLimits.FrequencyRange.max ||
+            if (rxpk.FreqHertz < RegionLimits.FrequencyRange.Min ||
+                rxpk.FreqHertz > RegionLimits.FrequencyRange.Max ||
                 !RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
             {
                 return false;
@@ -302,7 +302,7 @@ namespace LoRaTools.Regions
             return true;
         }
 
-        protected bool IsValidUpstreamFrequency(double frequency) => RegionLimits.FrequencyRange.min <= frequency && frequency <= RegionLimits.FrequencyRange.max;
+        protected bool IsValidUpstreamFrequency(Hertz frequency) => RegionLimits.FrequencyRange.Min <= frequency && frequency <= RegionLimits.FrequencyRange.Max;
 
         protected bool IsValidUpstreamDataRate(ushort dataRate) => RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(dataRate);
 

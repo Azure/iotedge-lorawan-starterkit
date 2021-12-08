@@ -4,13 +4,15 @@
 namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 {
     using System.Collections.Generic;
+    using System.Linq;
     using global::LoRaTools.Regions;
+    using static LoRaWan.Metric;
 
     public static class RegionEU868TestData
     {
         private static readonly Region region = RegionManager.EU868;
-        private static readonly List<ushort> dataRates = new List<ushort> { 0, 1, 2, 3, 4, 5, 6 };
-        private static readonly List<double> frequencies = new List<double> { 868.1, 868.3, 868.5 };
+        private static readonly ushort[] dataRates = { 0, 1, 2, 3, 4, 5, 6 };
+        private static readonly Hertz[] frequencies = { Mega(868.1), Mega(868.3), Mega(868.5) };
 
         public static IEnumerable<object[]> TestRegionFrequencyData()
         {
@@ -57,10 +59,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
-           new List<object[]>
+           from x in new[]
            {
-               new object[] { region, null, 869.525 },
-               new object[] { region, 868.250, 868.250 },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 869.525 },
+               new { NwkSrvRx2Freq = 868.250   , ExpectedFreq = 868.250 },
+           }
+           select new object[]
+           {
+               region,
+               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.FromMega(x.NwkSrvRx2Freq) : (Hertz?)null,
+               Hertz.FromMega(x.ExpectedFreq)
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
@@ -79,10 +87,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
-            new List<object[]>
+            from x in new[]
             {
-                new object[] { region, 863, -1 },
-                new object[] { region, 870, -1 },
+                new { Freq = 863, ExpectedIndex = -1 },
+                new { Freq = 870, ExpectedIndex = -1 },
+            }
+            select new object[]
+            {
+                region,
+                Hertz.FromMega(x.Freq),
+                x.ExpectedIndex,
             };
 
         public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>
