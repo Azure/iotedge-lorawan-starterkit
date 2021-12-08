@@ -125,7 +125,9 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                var bundlerResult = await TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways, concentratorDeduplicationResult);
+                FunctionBundlerResult bundlerResult = null;
+                if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission)
+                    bundlerResult = await TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
 
                 loRaADRResult = bundlerResult?.AdrResult;
 
@@ -418,16 +420,8 @@ namespace LoRaWan.NetworkServer
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                 }
 
-                var confirmDownlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
-                    this.configuration,
-                    loRaDevice,
-                    request,
-                    timeWatcher,
-                    cloudToDeviceMessage,
-                    fpending,
-                    fcntDown.GetValueOrDefault(),
-                    loRaADRResult,
-                    this.logger);
+                var confirmDownlinkMessageBuilderResp = DownlinkMessageBuilderResponse
+                    (request, loRaDevice, timeWatcher, loRaADRResult, cloudToDeviceMessage, fcntDown, fpending);
 
                 if (cloudToDeviceMessage != null)
                 {
@@ -452,17 +446,16 @@ namespace LoRaWan.NetworkServer
                 if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                 {
                     this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)confirmDownlinkMessageBuilderResp.ReceiveWindow));
-                    _ = request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                    _ = SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp);
                 }
 
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
             }
             finally
             {
-
                 try
                 {
-                    _ = await loRaDevice.SaveChangesAsync(force: stationEuiChanged);
+                    await SaveChangesToDevice(loRaDevice, stationEuiChanged);
                 }
                 catch (OperationCanceledException saveChangesException)
                 {
@@ -473,6 +466,39 @@ namespace LoRaWan.NetworkServer
                     this.logger.LogError($"The device properties are out of range. {ex.Message}");
                 }
             }
+        }
+
+        protected virtual DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, LoRaADRResult loRaADRResult, IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, uint? fcntDown, bool fpending)
+        {
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            _ = request ?? throw new ArgumentNullException(nameof(request));
+            _ = timeWatcher ?? throw new ArgumentNullException(nameof(timeWatcher));
+
+            return DownlinkMessageBuilder.CreateDownlinkMessage(
+                this.configuration,
+                loRaDevice,
+                request,
+                timeWatcher,
+                cloudToDeviceMessage,
+                fpending,
+                fcntDown.GetValueOrDefault(),
+                loRaADRResult,
+                this.logger);
+        }
+
+        protected virtual Task SendMessageDownstreamAsync(LoRaRequest request, DownlinkMessageBuilderResponse confirmDownlinkMessageBuilderResp)
+        {
+            _ = request ?? throw new ArgumentNullException(nameof(request));
+            _ = confirmDownlinkMessageBuilderResp ?? throw new ArgumentNullException(nameof(confirmDownlinkMessageBuilderResp));
+
+            return request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+        }
+
+        protected virtual async Task SaveChangesToDevice(LoRaDevice loRaDevice, bool stationEuiChanged)
+        {
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+
+            _ = await loRaDevice.SaveChangesAsync(force: stationEuiChanged);
         }
 
         private void HandlePreferredGatewayChanges(
@@ -518,8 +544,10 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private static async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
+        protected virtual async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
         {
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+
             var actualMessage = await loRaDevice.ReceiveCloudToDeviceAsync(timeAvailableToCheckCloudToDeviceMessages);
             return (actualMessage != null) ? new LoRaCloudToDeviceMessageWrapper(loRaDevice, actualMessage) : null;
         }
@@ -600,8 +628,12 @@ namespace LoRaWan.NetworkServer
             return true;
         }
 
-        private async Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
+        protected virtual async Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
         {
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            _ = timeWatcher ?? throw new ArgumentNullException(nameof(timeWatcher));
+            _ = request ?? throw new ArgumentNullException(nameof(request));
+
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
             var deviceTelemetry = new LoRaDeviceTelemetry(request.Rxpk, loRaPayloadData, decodedValue, decryptedPayloadData)
             {
@@ -693,10 +725,12 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways, ConcentratorDeduplicationResult deduplicationResult)
+        protected virtual async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
         {
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+
             FunctionBundlerResult bundlerResult = null;
-            if (useMultipleGateways && (deduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || deduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission))
+            if (useMultipleGateways)
             {
                 // in the case of resubmissions we need to contact the function to get a valid frame counter down
                 var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);

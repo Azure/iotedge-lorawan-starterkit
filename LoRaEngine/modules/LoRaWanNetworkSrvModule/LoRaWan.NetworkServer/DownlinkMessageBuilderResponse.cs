@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using LoRaTools.LoRaPhysical;
 
-    internal class DownlinkMessageBuilderResponse
+    public class DownlinkMessageBuilderResponse
     {
         internal DownlinkPktFwdMessage DownlinkPktFwdMessage { get; set; }
 

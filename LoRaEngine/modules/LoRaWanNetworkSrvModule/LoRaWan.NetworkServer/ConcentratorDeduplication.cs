@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Buffers.Binary;
-    using System.Diagnostics.CodeAnalysis;
     using System.Security.Cryptography;
     using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Caching.Memory;
