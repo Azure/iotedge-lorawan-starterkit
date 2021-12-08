@@ -60,7 +60,7 @@ namespace LoRaWan.NetworkServer
                 case 2: _ = metric.TrackValue(measurement, dimensions[0], dimensions[1]); break;
                 case 3: _ = metric.TrackValue(measurement, dimensions[0], dimensions[1], dimensions[2]); break;
                 case 4: _ = metric.TrackValue(measurement, dimensions[0], dimensions[1], dimensions[2], dimensions[3]); break;
-                default: throw new NotImplementedException("Metrics tracking in Application Insights for more than three dimensions it not supported");
+                default: throw new NotImplementedException("We do not support tracking more than four custom dimensions.");
             }
         }
     }
