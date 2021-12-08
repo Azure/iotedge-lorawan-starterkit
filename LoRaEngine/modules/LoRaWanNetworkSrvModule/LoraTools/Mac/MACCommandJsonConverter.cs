@@ -74,16 +74,17 @@ namespace LoRaTools
                     case Cid.LinkCheckCmd:
                     case Cid.LinkADRCmd:
                     {
-                        if (!item.TryGetValue("datarate", StringComparison.InvariantCultureIgnoreCase, out var datarate))
-                            throw new JsonReaderException("Property 'dataRate' is missing");
-                        if (!item.TryGetValue("txpower", StringComparison.InvariantCultureIgnoreCase, out var txpower))
-                            throw new JsonReaderException("Property 'txPower' is missing");
-                        if (!item.TryGetValue("chmask", StringComparison.InvariantCultureIgnoreCase, out var chmask))
-                            throw new JsonReaderException("Property 'chMask' is missing");
-                        if (!item.TryGetValue("chmaskcntl", StringComparison.InvariantCultureIgnoreCase, out var chmaskcntl))
-                            throw new JsonReaderException("Property 'chMaskCntl' is missing");
-                        if (!item.TryGetValue("nbrep", StringComparison.InvariantCultureIgnoreCase, out var nbrep))
-                            throw new JsonReaderException("Property 'nbRep' is missing");
+                        GetValue("dataRate", out var datarate);
+                        GetValue("txPower", out var txpower);
+                        GetValue("chMask", out var chmask);
+                        GetValue("chMaskCntl", out var chmaskcntl);
+                        GetValue("nbRep", out var nbrep);
+
+                        void GetValue(string propertyName, out JToken value)
+                        {
+                            if (!item.TryGetValue(propertyName, StringComparison.OrdinalIgnoreCase, out value))
+                                throw new JsonReaderException($"Property '{propertyName}' is missing");
+                        }
 
                         var cmd = new LinkADRRequest((ushort)datarate, (ushort)txpower, (ushort)chmask, (byte)chmaskcntl, (byte)nbrep);
                         serializer.Populate(item.CreateReader(), cmd);

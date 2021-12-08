@@ -34,10 +34,12 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             Assert.Equal(12, dutyCycleCmd.DutyCyclePL);
         }
 
-        [Fact]
-        public void When_Serializing_LinkAdrCmd_Should_Create_Correct_Items()
+        [Theory]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""txpower"": 4, ""chmask"": 25, ""chmaskcntl"": 0, ""nbrep"": 1 }")]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""dataRate"": 2, ""txPower"": 4, ""chMask"": 25, ""chMaskCntl"": 0, ""nbRep"": 1 }")]
+        [InlineData(@"{ ""cid"": ""LinkAdrCmd"", ""DataRate"": 2, ""TXPower"": 4, ""ChMask"": 25, ""ChMaskCntl"": 0, ""NbRep"": 1 }")]
+        public void When_Serializing_LinkAdrCmd_Should_Create_Correct_Items(string input)
         {
-            var input = @"{ ""cid"": ""LinkAdrCmd"", ""datarate"": 2, ""txpower"": 4, ""chmask"": 25, ""chmaskcntl"": 0, ""nbrep"": 1 }";
             var macCommand = JsonConvert.DeserializeObject<MacCommand>(input);
             Assert.NotNull(macCommand);
             Assert.IsType<LinkADRRequest>(macCommand);
