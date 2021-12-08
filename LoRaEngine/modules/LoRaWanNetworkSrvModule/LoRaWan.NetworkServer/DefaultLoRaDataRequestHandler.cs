@@ -139,10 +139,10 @@ namespace LoRaWan.NetworkServer
                     this.logger.LogDebug("ADR ack request received");
                 }
 
-                // ADR should be performed before the deduplication
-                // as we still want to collect the signal info, even if we drop
-                // it in the next step
-                if (loRaADRResult == null && loraPayload.IsAdrEnabled)
+                // ADR should be performed before the gateway deduplication as we still want to collect the signal info,
+                // even if we drop it in the next step.
+                // ADR is skipped for soft duplicates and will be enabled again in https://github.com/Azure/iotedge-lorawan-starterkit/issues/1017
+                if (loRaADRResult == null && loraPayload.IsAdrEnabled && concentratorDeduplicationResult is not ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
                 {
                     loRaADRResult = await PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }
