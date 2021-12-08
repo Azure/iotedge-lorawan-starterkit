@@ -27,6 +27,9 @@ namespace LoRaWan.NetworkServer
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
 
         private readonly IMemoryCache cache;
+
+        private static readonly object cacheLock = new object();
+
         private readonly ILogger<IConcentratorDeduplication> logger;
 
         [ThreadStatic]
@@ -52,7 +55,7 @@ namespace LoRaWan.NetworkServer
             var stationEui = loRaRequest.StationEui;
 
             StationEui previousStation;
-            lock (this.cache)
+            lock (cacheLock)
             {
                 if (!this.cache.TryGetValue(key, out previousStation))
                 {
