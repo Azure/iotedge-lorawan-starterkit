@@ -253,7 +253,7 @@ namespace LoRaWan.Tests.E2E
             var foundLinkADRCmd = false;
             var foundChangedDataRate = false;
 
-            // Sends 8x confirmed messages, stopping if C2D message is found and data rate is updated
+            // Sends 8x unconfirmed messages, stopping if C2D message is found and data rate is updated
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
