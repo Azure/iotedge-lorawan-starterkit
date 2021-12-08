@@ -102,7 +102,7 @@ namespace LoRaWan.NetworkServer
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
             }
-            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.SoftDuplicate)
+            else if (concentratorDeduplicationResult is ConcentratorDeduplication.Result.SoftDuplicateDueToDeduplicationStrategy)
             {
                 // Request is allowed upstream but confirmation is skipped to avoid collisions on the air.
                 requiresConfirmation = false;

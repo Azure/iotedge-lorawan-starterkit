@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer
         {
             NotDuplicate,
             DuplicateDueToResubmission,
-            SoftDuplicate, // detected as a duplicate but due to the DeduplicationStrategy marked as a "soft" duplicate
+            SoftDuplicateDueToDeduplicationStrategy, // detected as a duplicate but due to the DeduplicationStrategy, marked only as a "soft" duplicate
             Duplicate
         }
 
@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer
             }
 
             this.logger.LogDebug($"Message from station with EUI {stationEui} marked as soft duplicate due to DeduplicationStrategy.");
-            return Result.SoftDuplicate;
+            return Result.SoftDuplicateDueToDeduplicationStrategy;
         }
 
         internal static string CreateCacheKey(LoRaRequest loRaRequest)

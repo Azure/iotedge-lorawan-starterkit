@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(true, true, ConcentratorDeduplication.Result.DuplicateDueToResubmission)]
         [InlineData(true, false, ConcentratorDeduplication.Result.DuplicateDueToResubmission)]
         [InlineData(false, true, ConcentratorDeduplication.Result.Duplicate)]
-        [InlineData(false, false, ConcentratorDeduplication.Result.SoftDuplicate)]
+        [InlineData(false, false, ConcentratorDeduplication.Result.SoftDuplicateDueToDeduplicationStrategy)]
         public void When_Message_Encountered_Should_Find_Duplicates_For_Different_Deduplication(bool sameStationAsBefore, bool dropDeduplicationStrategy, ConcentratorDeduplication.Result expectedResult)
         {
             // arrange
@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var key = ConcentratorDeduplication.CreateCacheKey(this.loraRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(
-                (expectedResult is ConcentratorDeduplication.Result.Duplicate || expectedResult is ConcentratorDeduplication.Result.SoftDuplicate)
+                (expectedResult is ConcentratorDeduplication.Result.Duplicate || expectedResult is ConcentratorDeduplication.Result.SoftDuplicateDueToDeduplicationStrategy)
                     ? stationEui
                     : anotherStation,
                 addedStation);
