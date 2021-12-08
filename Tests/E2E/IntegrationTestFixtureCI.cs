@@ -576,9 +576,9 @@ namespace LoRaWan.Tests.E2E
 
             Device32_ABP = new TestDeviceInfo()
             {
-                DeviceID = "0000000000000032",
-                AppSKey = "00000000000000000000000000000032",
-                NwkSKey = "00000000000000000000000000000032",
+                DeviceID = GetKey16(32),
+                AppSKey = GetKey32(32),
+                NwkSKey = GetKey32(32),
                 DevAddr = "00000032",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true
