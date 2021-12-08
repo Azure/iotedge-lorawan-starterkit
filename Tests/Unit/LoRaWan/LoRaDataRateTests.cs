@@ -8,37 +8,13 @@ namespace LoRaWan.Tests.Unit
     using System.Linq;
     using LoRaWan;
     using LoRaWan.Tests.Common;
-    using Newtonsoft.Json.Linq;
     using Xunit;
 
     public class LoRaDataRateTests
     {
-        [Fact]
-        public void IsUndefined_Returns_True_For_Default_Value()
-        {
-            LoRaDataRate subject = default;
-            Assert.True(subject.IsUndefined);
-        }
-
-        [Fact]
-        public void Init_Throws_When_Spreading_Factor_Is_Undefined()
-        {
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new LoRaDataRate(SpreadingFactor.Undefined, Bandwidth.BW125));
-            Assert.Equal("sf", ex.ParamName);
-        }
-
-        [Fact]
-        public void Init_Throws_When_Bandwidth_Is_Undefined()
-        {
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new LoRaDataRate(SpreadingFactor.SF7, Bandwidth.Undefined));
-            Assert.Equal("bw", ex.ParamName);
-        }
-
         private static IEnumerable<T> LoRaDataRates<T>(Func<SpreadingFactor, Bandwidth, T> selector) =>
             from sf in Enum.GetValues<SpreadingFactor>()
-            where sf is not SpreadingFactor.Undefined
             from bw in Enum.GetValues<Bandwidth>()
-            where bw is not Bandwidth.Undefined
             select selector(sf, bw);
 
         public static readonly TheoryData<SpreadingFactor, Bandwidth> InitData =

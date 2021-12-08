@@ -12,7 +12,7 @@ namespace LoRaWan.Tests.Common
         /// Serialize a message to be sent upstream.
         /// </summary>
         public static UplinkPktFwdMessage SerializeUplink(this LoRaPayloadData payloadData, string appSKey, string nwkSKey,
-                                                          LoRaDataRate? datr = null, double freq = 868.3, uint tmst = 0, float lsnr = 0)
+                                                          IDataRate datr = null, double freq = 868.3, uint tmst = 0, float lsnr = 0)
         {
             _ = payloadData.PerformEncryption(appSKey);
             payloadData.SetMic(nwkSKey);
