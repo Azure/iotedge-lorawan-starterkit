@@ -112,14 +112,6 @@ namespace LoRaWan.NetworkServer
             return device.InitializeAsync(this.configuration, cancellationToken);
         }
 
-        public bool Remove(string devEui)
-        {
-            lock (this.syncLock)
-            {
-                return TryGetByDevEui(devEui, out var device) && Remove(device);
-            }
-        }
-
         public virtual bool Remove(LoRaDevice device)
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
