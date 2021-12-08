@@ -464,7 +464,7 @@ namespace LoRaWan.Tests.E2E
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
-        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(TestDeviceInfo device)
         {
             const int messagesToSend = 10;
             const int warmUpMessageCount = 2;
