@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using Common;
     using LoRaTools.ADR;
+    using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Caching.Memory;
@@ -46,6 +47,11 @@ namespace LoRaWan.Tests.Integration
             protected override Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaTools.LoRaMessage.LoRaPayloadData loraPayload, bool useMultipleGateways)
                 => Task.FromResult(TryUseBundlerAssert());
 
+            protected override Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, uint payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
+            {
+                return Task.FromResult<LoRaADRResult>(null);
+            }
+
             protected override Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
                 => Task.FromResult<IReceivedLoRaCloudToDeviceMessage>(null);
 
@@ -77,15 +83,26 @@ namespace LoRaWan.Tests.Integration
         /// This test integrates <code>DefaultLoRaDataRequestHandler</code> with <code>ConcentratorDeduplication</code>.
         /// </summary>
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 1, 1, 1)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 2, 1, 2)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 2, 1, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, false, 1, 1, 1, 1, 1)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, false, 1, 1, 2, 1, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, true, 1, 1, 2, 1, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, false, 1, 1, 2, 1, 2)]
         public async Task When_Same_Data_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(
-            string station1, string station2, DeduplicationMode deduplicationMode, int expectedNumberOfFrameCounterResets, int expectedNumberOfFunctionCalls, int expectedMessagesUp, int expectedMessagesDown, int expectedTwinSaves)
+            string station1,
+            string station2,
+            DeduplicationMode deduplicationMode,
+            bool isAdrRequest,
+            int expectedNumberOfFrameCounterResets,
+            int expectedNumberOfFunctionCalls,
+            int expectedMessagesUp,
+            int expectedMessagesDown,
+            int expectedTwinSaves)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
+            if (isAdrRequest)
+                dataPayload.Fctrl.Span[0] = 250;
             this.loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
             this.loraRequest.SetStationEui(StationEui.Parse(station1));
             this.loraRequest.SetPayload(dataPayload);
@@ -117,7 +134,12 @@ namespace LoRaWan.Tests.Integration
             {
                 CallBase = true
             };
-            dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult { DeduplicationResult = new DeduplicationResult { IsDuplicate = false, CanProcess = true }, NextFCntDown = 1 });
+            _ = dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
+            {
+                DeduplicationResult = new DeduplicationResult
+                    { IsDuplicate = false, CanProcess = true },
+                NextFCntDown = 1
+            });
 
             // first request
             _ = await dataRequestHandlerMock.Object.ProcessRequestAsync(this.loraRequest, this.loRaDevice);

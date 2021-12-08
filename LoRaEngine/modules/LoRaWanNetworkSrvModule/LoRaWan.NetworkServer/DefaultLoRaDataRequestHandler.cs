@@ -97,6 +97,7 @@ namespace LoRaWan.NetworkServer
             // Contains the Cloud to message we need to send
             IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage = null;
 
+            var skipConfirmationToAvoidCollisions = false;
             var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicate(request, loRaDevice);
             if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.Duplicate)
             {
@@ -105,7 +106,7 @@ namespace LoRaWan.NetworkServer
             else if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
             {
                 // Request is allowed upstream but confirmation is skipped to avoid collisions on the air.
-                requiresConfirmation = false;
+                skipConfirmationToAvoidCollisions = true;
             }
 
             // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
@@ -182,7 +183,7 @@ namespace LoRaWan.NetworkServer
 
                 // If it is confirmed it require us to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
-                if (requiresConfirmation)
+                if (requiresConfirmation && !skipConfirmationToAvoidCollisions)
                 {
                     fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
@@ -369,7 +370,7 @@ namespace LoRaWan.NetworkServer
 
                         if (cloudToDeviceMessage != null)
                         {
-                            if (!requiresConfirmation)
+                            if (!requiresConfirmation || skipConfirmationToAvoidCollisions)
                             {
                                 // The message coming from the device was not confirmed, therefore we did not computed the frame count down
                                 // Now we need to increment because there is a C2D message to be sent
@@ -415,7 +416,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // No C2D message and request was not confirmed, return nothing
-                if (!requiresConfirmation)
+                if (!requiresConfirmation || skipConfirmationToAvoidCollisions)
                 {
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                 }
@@ -749,8 +750,12 @@ namespace LoRaWan.NetworkServer
             return bundlerResult;
         }
 
-        private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, uint payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
+        protected virtual async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, uint payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            _ = request ?? throw new ArgumentNullException(nameof(request));
+            _ = loraPayload ?? throw new ArgumentNullException(nameof(loraPayload));
+
             var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
 
             var loRaADRTableEntry = new LoRaADRTableEntry()
