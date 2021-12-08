@@ -16,30 +16,30 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             from p in new[]
             {
                 // 20 MHz plan A
-                new { Region = region, Frequency = new { Input = Mega(470.3), Output = Mega(483.9) }, JoinChannel = 0 },
-                new { Region = region, Frequency = new { Input = Mega(471.5), Output = Mega(485.1) }, JoinChannel = 1 },
-                new { Region = region, Frequency = new { Input = Mega(476.5), Output = Mega(490.1) }, JoinChannel = 2 },
-                new { Region = region, Frequency = new { Input = Mega(503.9), Output = Mega(490.7) }, JoinChannel = 3 },
-                new { Region = region, Frequency = new { Input = Mega(503.5), Output = Mega(490.3) }, JoinChannel = 4 },
-                new { Region = region, Frequency = new { Input = Mega(504.5), Output = Mega(491.3) }, JoinChannel = 5 },
-                new { Region = region, Frequency = new { Input = Mega(509.7), Output = Mega(496.5) }, JoinChannel = 7 },
+                new { Frequency = new { Input = Mega(470.3), Output = Mega(483.9) }, JoinChannel = 0 },
+                new { Frequency = new { Input = Mega(471.5), Output = Mega(485.1) }, JoinChannel = 1 },
+                new { Frequency = new { Input = Mega(476.5), Output = Mega(490.1) }, JoinChannel = 2 },
+                new { Frequency = new { Input = Mega(503.9), Output = Mega(490.7) }, JoinChannel = 3 },
+                new { Frequency = new { Input = Mega(503.5), Output = Mega(490.3) }, JoinChannel = 4 },
+                new { Frequency = new { Input = Mega(504.5), Output = Mega(491.3) }, JoinChannel = 5 },
+                new { Frequency = new { Input = Mega(509.7), Output = Mega(496.5) }, JoinChannel = 7 },
                 // 20 MHz plan B
-                new { Region = region, Frequency = new { Input = Mega(476.9), Output = Mega(476.9) }, JoinChannel = 8 },
-                new { Region = region, Frequency = new { Input = Mega(479.9), Output = Mega(479.9) }, JoinChannel = 8 },
-                new { Region = region, Frequency = new { Input = Mega(503.1), Output = Mega(503.1) }, JoinChannel = 9 },
+                new { Frequency = new { Input = Mega(476.9), Output = Mega(476.9) }, JoinChannel = 8 },
+                new { Frequency = new { Input = Mega(479.9), Output = Mega(479.9) }, JoinChannel = 8 },
+                new { Frequency = new { Input = Mega(503.1), Output = Mega(503.1) }, JoinChannel = 9 },
                 // 26 MHz plan A
-                new { Region = region, Frequency = new { Input = Mega(470.3), Output = Mega(490.1) }, JoinChannel = 10 },
-                new { Region = region, Frequency = new { Input = Mega(473.3), Output = Mega(493.1) }, JoinChannel = 11 },
-                new { Region = region, Frequency = new { Input = Mega(475.1), Output = Mega(490.1) }, JoinChannel = 12 },
-                new { Region = region, Frequency = new { Input = Mega(471.1), Output = Mega(490.9) }, JoinChannel = 14 },
+                new { Frequency = new { Input = Mega(470.3), Output = Mega(490.1) }, JoinChannel = 10 },
+                new { Frequency = new { Input = Mega(473.3), Output = Mega(493.1) }, JoinChannel = 11 },
+                new { Frequency = new { Input = Mega(475.1), Output = Mega(490.1) }, JoinChannel = 12 },
+                new { Frequency = new { Input = Mega(471.1), Output = Mega(490.9) }, JoinChannel = 14 },
                 // 26 MHz plan B
-                new { Region = region, Frequency = new { Input = Mega(480.3), Output = Mega(500.1) }, JoinChannel = 15 },
-                new { Region = region, Frequency = new { Input = Mega(485.1), Output = Mega(500.1) }, JoinChannel = 16 },
-                new { Region = region, Frequency = new { Input = Mega(485.3), Output = Mega(500.3) }, JoinChannel = 17 },
-                new { Region = region, Frequency = new { Input = Mega(489.7), Output = Mega(504.7) }, JoinChannel = 18 },
-                new { Region = region, Frequency = new { Input = Mega(488.9), Output = Mega(503.9) }, JoinChannel = 19 },
+                new { Frequency = new { Input = Mega(480.3), Output = Mega(500.1) }, JoinChannel = 15 },
+                new { Frequency = new { Input = Mega(485.1), Output = Mega(500.1) }, JoinChannel = 16 },
+                new { Frequency = new { Input = Mega(485.3), Output = Mega(500.3) }, JoinChannel = 17 },
+                new { Frequency = new { Input = Mega(489.7), Output = Mega(504.7) }, JoinChannel = 18 },
+                new { Frequency = new { Input = Mega(488.9), Output = Mega(503.9) }, JoinChannel = 19 },
             }
-            select new object[] { p.Region, p.Frequency.Input, /* data rate */ 0, p.Frequency.Output, p.JoinChannel };
+            select new object[] { region, p.Frequency.Input, /* data rate */ 0, p.Frequency.Output, p.JoinChannel };
 
         public static IEnumerable<object[]> TestRegionDataRateData =>
            new List<object[]>
