@@ -27,7 +27,7 @@ char * nwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
 
 //set initial datarate and physical information for the device
 _data_rate_t dr = DR6;
-_physical_type_t physicalType = EU868 ;
+_physical_type_t physicalType = CN470 ;
 
 //internal variables
 char data[10];
@@ -41,6 +41,7 @@ void setup(void)
   SerialUSB.begin(115200);
   while (!SerialUSB);
   lora.init();
+  delay(1000);
   lora.setDeviceDefault();
 
   lora.setId(devAddr, deviceId, NULL);
