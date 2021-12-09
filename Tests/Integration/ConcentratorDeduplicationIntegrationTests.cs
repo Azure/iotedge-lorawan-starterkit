@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Integration
 
             protected override Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, uint payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
             {
-                return Task.FromResult<LoRaADRResult>(null);
+                return Task.FromResult(PerformADRAssert());
             }
 
             protected override Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
@@ -68,6 +68,8 @@ namespace LoRaWan.Tests.Integration
 
             protected override Task SaveChangesToDevice(LoRaDevice loRaDevice, bool stationEuiChanged)
                 => Task.FromResult(SaveChangesToDeviceAssert());
+
+            public virtual LoRaADRResult PerformADRAssert() => null;
 
             public virtual FunctionBundlerResult TryUseBundlerAssert() => null;
 
@@ -105,6 +107,53 @@ namespace LoRaWan.Tests.Integration
             {
                 CallBase = true
             };
+        }
+
+
+        [Theory]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2, 1, 2, 2, 2, 2, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 1, 1, 1, 2, 1, 2)]
+        public async Task When_ADR_Enabled_PerformADR_Should_Be_Disabled_For_SoftDuplicate(
+            string station1,
+            string station2,
+            int expectedNumberOfADRCalls,
+            int expectedNumberOfFrameCounterResets,
+            int expectedNumberOfBundlerCalls,
+            int expectedNumberOfFrameCounterDownCalls,
+            int expectedMessagesUp,
+            int expectedMessagesDown,
+            int expectedTwinSaves)
+        {
+            // arrange
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
+            var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
+            dataPayload.Fctrl.Span[0] = 250; // adr enabled
+
+            var request1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            request1.SetStationEui(StationEui.Parse(station1));
+            request1.SetPayload(dataPayload);
+
+            using var request2 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            request2.SetStationEui(StationEui.Parse(station2));
+            request2.SetPayload(dataPayload);
+
+            using var device = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
+            {
+                Deduplication = DeduplicationMode.Mark,
+                NwkSKey = station1
+            };
+
+            _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
+            {
+                DeduplicationResult = new DeduplicationResult
+                { IsDuplicate = false, CanProcess = true },
+                NextFCntDown = null
+            });
+
+            // act/assert
+            await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+
+            this.dataRequestHandlerMock.Verify(x => x.PerformADRAssert(), Times.Exactly(expectedNumberOfADRCalls));
         }
 
         [Theory]
@@ -155,18 +204,15 @@ namespace LoRaWan.Tests.Integration
         /// This test integrates <code>DefaultLoRaDataRequestHandler</code> with <code>ConcentratorDeduplication</code>.
         /// </summary>
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, true, true, 1, 2, 0, 2, 2, 2)] // resubmission 
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, true, null, 1, 2, 2, 2, 2, 2)] // resubmission, with extra call to get framecounter down
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, false, null, 1, 1, 1, 1, 1, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, false, true, 1, 1, 0, 2, 1, 2)] // soft duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, false, null, 1, 1, 1, 2, 1, 2)] // soft duplicate, with extra call to get framecounter down
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, true, true, 1, 1, 0, 2, 1, 2)] // soft duplicate, adr request
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, false, true, 1, 1, 0, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, true, 1, 2, 0, 2, 2, 2)] // resubmission 
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, false, 1, 1, 1, 1, 1, 1)] // duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, true, 1, 1, 0, 2, 1, 2)] // soft duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, null, 1, 1, 1, 2, 1, 2)] // soft duplicate, with extra call to get framecounter down
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, true, 1, 1, 0, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
         public async Task When_Same_Data_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(
             string station1,
             string station2,
             DeduplicationMode? deduplicationMode,
-            bool isAdrRequest,
             bool? frameCounterResultFromBundler,
             int expectedNumberOfFrameCounterResets,
             int expectedNumberOfBundlerCalls,
@@ -178,8 +224,6 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
-            if (isAdrRequest)
-                dataPayload.Fctrl.Span[0] = 250;
             using var loraRequest1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
             loraRequest1.SetStationEui(StationEui.Parse(station1));
             loraRequest1.SetPayload(dataPayload);
