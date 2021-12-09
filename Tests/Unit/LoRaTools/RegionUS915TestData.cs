@@ -6,7 +6,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using global::LoRaTools.Regions;
-    using static LoRaWan.Metric;
 
     public static class RegionUS915TestData
     {
