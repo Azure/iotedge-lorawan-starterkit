@@ -155,18 +155,12 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2, 1, 2, 2, 2, 2, 2)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 1, 1, 1, 2, 1, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1)]
         public async Task When_ADR_Enabled_PerformADR_Should_Be_Disabled_For_SoftDuplicate(
             string station1,
             string station2,
-            int expectedNumberOfADRCalls,
-            int expectedNumberOfFrameCounterResets,
-            int expectedNumberOfBundlerCalls,
-            int expectedNumberOfFrameCounterDownCalls,
-            int expectedMessagesUp,
-            int expectedMessagesDown,
-            int expectedTwinSaves)
+            int expectedNumberOfADRCalls)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
@@ -188,23 +182,17 @@ namespace LoRaWan.Tests.Integration
             };
 
             // act/assert
-            await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
-
+            await TestAssertions(request1, request2, device);
             this.dataRequestHandlerMock.Verify(x => x.PerformADRAssert(), Times.Exactly(expectedNumberOfADRCalls));
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 1, 2, 0, 2, 2, 2)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 1, 0, 2, 1, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 0)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 0)]
         public async Task When_Bundler_Returns_FrameCounterDown_Should_Skip_Call_To_FrameCounterDown_Independently_Of_Deduplication_Result(
             string station1,
             string station2,
-            int expectedNumberOfFrameCounterResets,
-            int expectedNumberOfBundlerCalls,
-            int expectedNumberOfFrameCounterDownCalls,
-            int expectedMessagesUp,
-            int expectedMessagesDown,
-            int expectedTwinSaves)
+            int expectedNumberOfFrameCounterDownCalls)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
@@ -232,21 +220,17 @@ namespace LoRaWan.Tests.Integration
             });
 
             // act/assert
-            await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await TestAssertions(request1, request2, device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls);
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 1, 2, 2, 0, 2, 2)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 1, 1, 0, 1, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2, 0)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 0)]
         public async Task When_Mac_Command_Should_Not_Send_Upstream_Messages_And_Should_Skip_Calls_To_FrameCounterDown_When_SoftDuplicate(
             string station1,
             string station2,
-            int expectedNumberOfFrameCounterResets,
-            int expectedNumberOfBundlerCalls,
             int expectedNumberOfFrameCounterDownCalls,
-            int expectedMessagesUp,
-            int expectedMessagesDown,
-            int expectedTwinSaves)
+            int expectedMessagesUp)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
@@ -270,19 +254,19 @@ namespace LoRaWan.Tests.Integration
             };
 
             // act/assert
-            await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await TestAssertions(request1, request2, device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: expectedMessagesUp);
         }
 
         private async Task TestAssertions(
             LoRaRequest request1,
             LoRaRequest request2,
             LoRaDevice device,
-            int expectedNumberOfFrameCounterResets,
-            int expectedNumberOfBundlerCalls,
-            int expectedNumberOfFrameCounterDownCalls,
-            int expectedMessagesUp,
-            int expectedMessagesDown,
-            int expectedTwinSaves)
+            int? expectedFrameCounterResets = null,
+            int? expectedBundlerCalls = null,
+            int? expectedFrameCounterDownCalls = null,
+            int? expectedMessagesUp = null,
+            int? expectedMessagesDown = null,
+            int? expectedTwinSaves = null)
         {
             _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(device, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
             _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(device.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
@@ -294,12 +278,18 @@ namespace LoRaWan.Tests.Integration
             var actual = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request2, device);
 
             // assert
-            this.frameCounterStrategyMock.Verify(x => x.ResetAsync(device, It.IsAny<uint>(), ServerGatewayID), Times.Exactly(expectedNumberOfFrameCounterResets));
-            this.frameCounterStrategyMock.Verify(x => x.NextFcntDown(device, It.IsAny<uint>()), Times.Exactly(expectedNumberOfFrameCounterDownCalls));
-            this.dataRequestHandlerMock.Verify(x => x.TryUseBundlerAssert(), Times.Exactly(expectedNumberOfBundlerCalls));
-            this.dataRequestHandlerMock.Verify(x => x.SendDeviceAsyncAssert(), Times.Exactly(expectedMessagesUp));
-            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Exactly(expectedMessagesDown));
-            this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAssert(), Times.Exactly(expectedTwinSaves));
+            if (expectedFrameCounterResets is int frameCounterResets)
+                this.frameCounterStrategyMock.Verify(x => x.ResetAsync(device, It.IsAny<uint>(), ServerGatewayID), Times.Exactly(frameCounterResets));
+            if (expectedFrameCounterDownCalls is int frameCounterDownCalls)
+                this.frameCounterStrategyMock.Verify(x => x.NextFcntDown(device, It.IsAny<uint>()), Times.Exactly(frameCounterDownCalls));
+            if (expectedBundlerCalls is int bundlerCalls)
+                this.dataRequestHandlerMock.Verify(x => x.TryUseBundlerAssert(), Times.Exactly(bundlerCalls));
+            if (expectedMessagesUp is int messagesUp)
+                this.dataRequestHandlerMock.Verify(x => x.SendDeviceAsyncAssert(), Times.Exactly(messagesUp));
+            if (expectedMessagesDown is int messagesDown)
+                this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Exactly(messagesDown));
+            if (expectedTwinSaves is int twinSaves)
+                this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAssert(), Times.Exactly(twinSaves));
         }
 
         // Protected implementation of Dispose pattern.
