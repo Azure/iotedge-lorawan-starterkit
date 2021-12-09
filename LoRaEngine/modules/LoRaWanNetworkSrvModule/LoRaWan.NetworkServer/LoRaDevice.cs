@@ -385,12 +385,9 @@ namespace LoRaWan.NetworkServer
                 Deduplication = mode;
             }
 
-            if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
+            if (twin.Properties.Desired.Contains(TwinProperty.ClassType) && string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
-                {
-                    ClassType = LoRaDeviceClassType.C;
-                }
+                ClassType = LoRaDeviceClassType.C;
             }
 
             if (twin.Properties.Reported.Contains(TwinProperty.PreferredGatewayID))

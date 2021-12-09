@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.Utils;
@@ -271,7 +272,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_Loading_Devices_Failed()
         {
             var loraRequest = CreateVerifyableRequest();
-            var sut = CreateDefaultLoader(this.deviceCache.Object);
+            var sut = CreateDefaultLoader(loraRequest.Object, this.deviceCache.Object);
 
             sut.UpdateLoadingDevicesFailed(true);
             sut.ExecuteProcessRequest(loraRequest.Object);
@@ -283,7 +284,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_No_Devices_Found()
         {
             var loraRequest = CreateVerifyableRequest();
-            var sut = CreateDefaultLoader(this.deviceCache.Object);
+            var sut = CreateDefaultLoader(loraRequest.Object, this.deviceCache.Object);
             sut.ExecuteProcessRequest(loraRequest.Object);
 
             VerifyFailedReason(loraRequest, LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr);
@@ -302,7 +303,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceCache.Setup(x => x.HasRegistrations(devAddr))
                             .Returns(true);
 
-            var sut = CreateDefaultLoader(this.deviceCache.Object);
+            var sut = CreateDefaultLoader(request, this.deviceCache.Object);
             sut.ExecuteProcessRequest(request);
 
             VerifyFailedReason(loraRequestMock, LoRaDeviceRequestFailedReason.BelongsToAnotherGateway);
@@ -325,7 +326,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceCache.Setup(x => x.HasRegistrationsForOtherGateways(devAddr))
                             .Returns(hasRegistrationsFromOtherDevices);
 
-            var sut = CreateDefaultLoader(this.deviceCache.Object);
+            var sut = CreateDefaultLoader(request, this.deviceCache.Object);
             sut.ExecuteProcessRequest(request);
 
             VerifyFailedReason(loraRequestMock, reason);
@@ -336,10 +337,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static void VerifyFailedReason(Mock<LoRaRequest> request, LoRaDeviceRequestFailedReason reason) =>
             request.Verify(x => x.NotifyFailed(reason, It.IsAny<Exception>()), Times.Once);
 
-        private static TestDeviceLoaderSynchronizer CreateDefaultLoader(LoRaDeviceCache deviceCache) =>
+        private static TestDeviceLoaderSynchronizer CreateDefaultLoader(LoRaRequest request, LoRaDeviceCache deviceCache) =>
             new TestDeviceLoaderSynchronizer(Mock.Of<LoRaDeviceAPIServiceBase>(),
                                              Mock.Of<ILoRaDeviceFactory>(),
-                                             deviceCache);
+                                             deviceCache,
+                                             request);
 
 
         private static Mock<LoRaRequest> CreateVerifyableRequest()
@@ -355,9 +357,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             internal TestDeviceLoaderSynchronizer(LoRaDeviceAPIServiceBase loRaDeviceAPIService,
                                                   ILoRaDeviceFactory deviceFactory,
-                                                  LoRaDeviceCache deviceCache)
+                                                  LoRaDeviceCache deviceCache,
+                                                  LoRaRequest loRaRequest)
 #pragma warning disable CA2000 // ownership transferred
-                : base(null, loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache, null, NullLogger<DeviceLoaderSynchronizer>.Instance)
+                : base(ConversionHelper.ByteArrayToString(loRaRequest.Payload.DevAddr), loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache, null, NullLogger<DeviceLoaderSynchronizer>.Instance)
 #pragma warning restore CA2000
             { }
 

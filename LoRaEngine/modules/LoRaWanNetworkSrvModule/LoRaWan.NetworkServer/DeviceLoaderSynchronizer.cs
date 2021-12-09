@@ -235,8 +235,7 @@ namespace LoRaWan.NetworkServer
                 return;
             }
 
-            var devAddr = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
-            if (!this.loraDeviceCache.HasRegistrations(devAddr))
+            if (!this.loraDeviceCache.HasRegistrations(this.devAddr))
             {
                 LogAndNotifyFailedRequest(LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr);
                 return;
@@ -253,7 +252,7 @@ namespace LoRaWan.NetworkServer
                     LogAndNotifyFailedRequest(LoRaDeviceRequestFailedReason.BelongsToAnotherGateway);
                 }
             }
-            else if (this.loraDeviceCache.HasRegistrationsForOtherGateways(devAddr))
+            else if (this.loraDeviceCache.HasRegistrationsForOtherGateways(this.devAddr))
             {
                 LogAndNotifyFailedRequest(LoRaDeviceRequestFailedReason.BelongsToAnotherGateway);
             }
