@@ -27,20 +27,16 @@ namespace LoRaWan.NetworkServer
         private CancellationTokenSource? ctsDispose;
         private readonly StatisticsTracker statisticsTracker = new StatisticsTracker();
 
-        protected LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, ILogger<LoRaDeviceCache> logger, CancellationToken externalRefreshCancellationToken)
+        public LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, ILogger<LoRaDeviceCache> logger)
         {
             this.options = options;
-            this.ctsDispose = externalRefreshCancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(externalRefreshCancellationToken) : new CancellationTokenSource();
+            this.ctsDispose = new CancellationTokenSource();
 
             _ = RefreshCacheAsync(this.ctsDispose.Token);
 
             this.configuration = configuration;
             this.logger = logger;
         }
-
-        public LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, ILogger<LoRaDeviceCache> logger)
-            : this(options, configuration, logger, CancellationToken.None)
-        { }
 
         protected virtual void OnRefresh() { }
 
