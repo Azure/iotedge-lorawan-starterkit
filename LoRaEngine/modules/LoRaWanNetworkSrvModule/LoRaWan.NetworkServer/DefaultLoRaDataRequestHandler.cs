@@ -97,7 +97,7 @@ namespace LoRaWan.NetworkServer
             // Contains the Cloud to message we need to send
             IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage = null;
 
-            var skipConfirmationToAvoidCollisions = false;
+            var skipDownstreamToAvoidCollisions = false;
             var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicateData(request, loRaDevice);
             if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.Duplicate)
             {
@@ -106,7 +106,7 @@ namespace LoRaWan.NetworkServer
             else if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
             {
                 // Request is allowed upstream but confirmation is skipped to avoid collisions on the air.
-                skipConfirmationToAvoidCollisions = true;
+                skipDownstreamToAvoidCollisions = true;
             }
 
             // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
@@ -183,7 +183,7 @@ namespace LoRaWan.NetworkServer
 
                 // If we can send message downstream, we need to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
-                if (requiresConfirmation && !skipConfirmationToAvoidCollisions)
+                if (requiresConfirmation && !skipDownstreamToAvoidCollisions)
                 {
                     fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
@@ -297,6 +297,13 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
+                #region Downstream
+                if (skipDownstreamToAvoidCollisions)
+                {
+                    this.logger.LogInformation($"skipping downstream messages due to deduplication ({timeWatcher.GetElapsedTime()})");
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request);
+                }
+
                 // We check if we have time to futher progress or not
                 // C2D checks are quite expensive so if we are really late we just stop here
                 var timeToSecondWindow = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice);
@@ -372,7 +379,7 @@ namespace LoRaWan.NetworkServer
 
                         if (cloudToDeviceMessage != null)
                         {
-                            if (!requiresConfirmation || skipConfirmationToAvoidCollisions)
+                            if (!requiresConfirmation)
                             {
                                 // The message coming from the device was not confirmed, therefore we did not computed the frame count down
                                 // Now we need to increment because there is a C2D message to be sent
@@ -418,7 +425,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // No C2D message and request was not confirmed, return nothing
-                if (!requiresConfirmation || skipConfirmationToAvoidCollisions)
+                if (!requiresConfirmation)
                 {
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                 }
@@ -453,6 +460,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                #endregion
             }
             finally
             {
