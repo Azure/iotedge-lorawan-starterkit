@@ -98,7 +98,7 @@ namespace LoRaWan.NetworkServer
             IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage = null;
 
             var skipConfirmationToAvoidCollisions = false;
-            var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicate(request, loRaDevice);
+            var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicateData(request, loRaDevice);
             if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.Duplicate)
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);

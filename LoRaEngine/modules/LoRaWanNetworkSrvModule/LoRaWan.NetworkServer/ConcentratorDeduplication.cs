@@ -16,12 +16,9 @@ namespace LoRaWan.NetworkServer
         IConcentratorDeduplication
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
-
         private readonly IMemoryCache cache;
-
-        private static readonly object cacheLock = new object();
-
         private readonly ILogger<IConcentratorDeduplication> logger;
+        private static readonly object cacheLock = new object();
 
         [ThreadStatic]
         private static SHA256? sha256;
@@ -36,16 +33,45 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
         }
 
-        public ConcentratorDeduplicationResult CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
+        public ConcentratorDeduplicationResult CheckDuplicateJoin(LoRaRequest loRaRequest)
         {
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
-            if (loRaDevice is null && loRaRequest.Payload is LoRaPayloadData)
-                throw new ArgumentNullException(nameof(loRaDevice));
+            var key = CreateCacheKey((LoRaPayloadJoinRequest)loRaRequest.Payload);
+            if (EnsureFirstMessageInCache(key, loRaRequest, out _))
+                return ConcentratorDeduplicationResult.NotDuplicate;
 
-            var key = CreateCacheKey(loRaRequest);
+            this.logger.LogDebug($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {loRaRequest.StationEui}.");
+            return ConcentratorDeduplicationResult.Duplicate;
+        }
+
+        public ConcentratorDeduplicationResult CheckDuplicateData(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
+        {
+            _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            var key = CreateCacheKey((LoRaPayloadData)loRaRequest.Payload);
+            if (EnsureFirstMessageInCache(key, loRaRequest, out var previousStation))
+                return ConcentratorDeduplicationResult.NotDuplicate;
+
+            if (loRaRequest.Payload.RequiresConfirmation() && previousStation == loRaRequest.StationEui)
+            {
+                this.logger.LogDebug($"Message was received previously from the same EUI {loRaRequest.StationEui} (\"confirmedResubmit\").");
+                return ConcentratorDeduplicationResult.DuplicateDueToResubmission;
+            }
+
+            if (loRaDevice.Deduplication == DeduplicationMode.Drop)
+            {
+                this.logger.LogDebug($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {loRaRequest.StationEui}.");
+                return ConcentratorDeduplicationResult.Duplicate;
+            }
+
+            this.logger.LogDebug($"Message from station with EUI {loRaRequest.StationEui} marked as soft duplicate due to DeduplicationStrategy.");
+            return ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy;
+        }
+
+        private bool EnsureFirstMessageInCache(string key, LoRaRequest loRaRequest, out StationEui previousStation)
+        {
             var stationEui = loRaRequest.StationEui;
 
-            StationEui previousStation;
             lock (cacheLock)
             {
                 if (!this.cache.TryGetValue(key, out previousStation))
@@ -54,36 +80,22 @@ namespace LoRaWan.NetworkServer
                     {
                         SlidingExpiration = DefaultExpiration
                     });
-                    return ConcentratorDeduplicationResult.NotDuplicate;
+                    return true;
                 }
             }
 
-            if (loRaRequest.Payload.RequiresConfirmation() && previousStation == stationEui)
-            {
-                this.logger.LogDebug($"Message was received previously from the same EUI {stationEui} (\"confirmedResubmit\").");
-                return ConcentratorDeduplicationResult.DuplicateDueToResubmission;
-            }
-
-            // received from a different station
-            if (ShouldDrop(loRaRequest, loRaDevice))
-            {
-                this.logger.LogDebug($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {stationEui}.");
-                return ConcentratorDeduplicationResult.Duplicate;
-            }
-
-            this.logger.LogDebug($"Message from station with EUI {stationEui} marked as soft duplicate due to DeduplicationStrategy.");
-            return ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy;
+            return false;
         }
 
         internal static string CreateCacheKey(LoRaRequest loRaRequest)
             => loRaRequest.Payload switch
             {
-                LoRaPayloadData asDataPayload => CreateCacheKeyCore(asDataPayload),
-                LoRaPayloadJoinRequest asJoinPayload => CreateCacheKeyCore(asJoinPayload),
+                LoRaPayloadData asDataPayload => CreateCacheKey(asDataPayload),
+                LoRaPayloadJoinRequest asJoinPayload => CreateCacheKey(asJoinPayload),
                 _ => throw new ArgumentException($"{loRaRequest} with invalid type.")
             };
 
-        private static string CreateCacheKeyCore(LoRaPayloadData payload)
+        private static string CreateCacheKey(LoRaPayloadData payload)
         {
             var totalBufferLength = payload.DevAddr.Length + payload.Mic.Length + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
@@ -106,7 +118,7 @@ namespace LoRaWan.NetworkServer
             return BitConverter.ToString(key);
         }
 
-        private static string CreateCacheKeyCore(LoRaPayloadJoinRequest payload)
+        private static string CreateCacheKey(LoRaPayloadJoinRequest payload)
         {
             var joinEui = JoinEui.Read(payload.AppEUI.Span);
             var devEui = DevEui.Read(payload.DevEUI.Span);
@@ -124,8 +136,5 @@ namespace LoRaWan.NetworkServer
 
             return BitConverter.ToString(key);
         }
-
-        private static bool ShouldDrop(LoRaRequest loRaRequest, LoRaDevice? loRaDevice)
-            => loRaRequest.Payload is LoRaPayloadJoinRequest || loRaDevice?.Deduplication is DeduplicationMode.Drop;
     }
 }

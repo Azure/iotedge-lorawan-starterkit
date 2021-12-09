@@ -49,11 +49,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 var anotherPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("another_payload");
                 using var anotherRequest = WaitableLoRaRequest.Create(anotherPayload);
-                _ = this.concentratorDeduplication.CheckDuplicate(anotherRequest, this.loRaDevice);
+                _ = this.concentratorDeduplication.CheckDuplicateData(anotherRequest, this.loRaDevice);
             }
 
             // act
-            var result = this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice);
+            var result = this.concentratorDeduplication.CheckDuplicateData(this.loraRequest, this.loRaDevice);
 
             // assert
             Assert.Equal(ConcentratorDeduplicationResult.NotDuplicate, result);
@@ -71,7 +71,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             var stationEui = this.loraRequest.StationEui;
-            _ = this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice);
+            _ = this.concentratorDeduplication.CheckDuplicateData(this.loraRequest, this.loRaDevice);
 
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
             this.loraRequest.SetStationEui(anotherStation);
@@ -80,7 +80,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.loRaDevice.Deduplication = DeduplicationMode.Mark;
 
             // act/assert
-            Assert.Equal(expectedResult, this.concentratorDeduplication.CheckDuplicate(this.loraRequest, this.loRaDevice));
+            Assert.Equal(expectedResult, this.concentratorDeduplication.CheckDuplicateData(this.loraRequest, this.loRaDevice));
             Assert.Equal(1, this.cache.Count);
             var key = ConcentratorDeduplication.CreateCacheKey(this.loraRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));

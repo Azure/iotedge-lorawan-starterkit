@@ -7,13 +7,8 @@ namespace LoRaWan.NetworkServer
 {
     public interface IConcentratorDeduplication
     {
-        /// <summary>
-        /// Checks whether the specified request is a duplicate and should be allowed, dropped or skip confirmation.
-        /// </summary>
-        /// <param name="loRaRequest">The received request.</param>
-        /// <param name="loRaDevice">The leaf device it was sent from, required only for <code>LoRaPayloadData</code> requests.</param>
-        /// <returns><code>ConcentratorDeduplication.Result</code> with the result of detection.</returns>
-        public ConcentratorDeduplicationResult CheckDuplicate(LoRaRequest loRaRequest, LoRaDevice? loRaDevice);
+        public ConcentratorDeduplicationResult CheckDuplicateJoin(LoRaRequest loRaRequest);
+        public ConcentratorDeduplicationResult CheckDuplicateData(LoRaRequest loRaRequest, LoRaDevice loRaDevice);
     }
 
     public enum ConcentratorDeduplicationResult
