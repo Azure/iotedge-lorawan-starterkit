@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                new object[] { region, 1, 10 },
           };
 
-        public static readonly IEnumerable<object[]> TestRegionLimitData =
+        public static IEnumerable<object[]> TestRegionLimitData =>
             from x in new(Hertz Frequency, ushort DataRate)[]
             {
                 (Mega( 800  ),   8),

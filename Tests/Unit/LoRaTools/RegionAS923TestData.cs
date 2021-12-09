@@ -62,7 +62,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                new object[] { regionWithDwellTime, 1, 10 },
            };
 
-        public static readonly IEnumerable<object[]> TestRegionLimitData =
+        public static IEnumerable<object[]> TestRegionLimitData =>
           from x in new[]
           {
                new { Frequency = 900.0, DataRate =   8 },

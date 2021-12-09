@@ -12,7 +12,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     {
         private static readonly Region region = RegionManager.CN470RP2;
 
-        public static readonly IEnumerable<object[]> TestRegionFrequencyData =
+        public static IEnumerable<object[]> TestRegionFrequencyData =>
             from p in new[]
             {
                 // 20 MHz plan A

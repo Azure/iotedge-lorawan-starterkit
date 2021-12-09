@@ -12,7 +12,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     {
         private static readonly Region region = RegionManager.CN470RP1;
 
-        public static readonly IEnumerable<object[]> TestRegionFrequencyData =
+        public static IEnumerable<object[]> TestRegionFrequencyData =>
             from f in new (Hertz Input, Hertz Output)[]
             {
                 (Mega(470.3), Mega(500.3)),
@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                new object[] { region, 2, 10 },
            };
 
-        public static readonly IEnumerable<object[]> TestRegionLimitData =
+        public static IEnumerable<object[]> TestRegionLimitData =>
           from x in new[]
           {
                new { Frequency = 467.0, DataRate =   6 },
@@ -104,7 +104,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                 new object[] { region, LoRaRegionType.CN470RP1 },
            };
 
-        public static readonly IEnumerable<object[]> TestTryGetJoinChannelIndexData =
+        public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
             from x in new[]
             {
                 new { Freq = 470.3, ExpectedIndex = -1 },
