@@ -6,16 +6,6 @@ namespace LoRaWan
     using System;
     using System.Globalization;
 
-    public readonly record struct Kilo(double Value) : IFormattable
-    {
-        public double Unit => Value * 1e3;
-
-        public string ToString(IFormatProvider? formatProvider) => ToString(null, formatProvider);
-        public string ToString(string? format) => ToString(format, null);
-        public string ToString(string? format, IFormatProvider? formatProvider) => Value.ToString(format, formatProvider);
-        public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
-    }
-
     public readonly record struct Mega(double Value) : IFormattable
     {
         public double Unit => Value * 1e6;
@@ -26,21 +16,9 @@ namespace LoRaWan
         public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
     }
 
-    public readonly record struct Giga(double Value) : IFormattable
-    {
-        public double Unit => Value * 1e9;
-
-        public string ToString(IFormatProvider? formatProvider) => ToString(null, formatProvider);
-        public string ToString(string? format) => ToString(format, null);
-        public string ToString(string? format, IFormatProvider? formatProvider) => Value.ToString(format, formatProvider);
-        public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
-    }
-
     public static class Metric
     {
-        public static Kilo Kilo(double value) => new Kilo(value);
         public static Mega Mega(double value) => new Mega(value);
-        public static Giga Giga(double value) => new Giga(value);
     }
 
     /// <summary>
@@ -64,9 +42,7 @@ namespace LoRaWan
 
         public static Hertz FromMega(double value) => new Hertz(checked((ulong)(value * 1e6)));
 
-        public static implicit operator Hertz(Kilo value) => new Hertz(checked((ulong)value.Unit));
         public static implicit operator Hertz(Mega value) => new Hertz(checked((ulong)value.Unit));
-        public static implicit operator Hertz(Giga value) => new Hertz(checked((ulong)value.Unit));
 
         public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
 
