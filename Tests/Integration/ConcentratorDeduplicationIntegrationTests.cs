@@ -116,6 +116,43 @@ namespace LoRaWan.Tests.Integration
             });
         }
 
+        [Theory]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, 1, 2, 2, 2, 2, 2)] // resubmission 
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 1, 1, 1, 1)] // duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
+        public async Task When_Default_Data_Message_Test_All_Different_DeduplicationModes(
+          string station1,
+          string station2,
+          DeduplicationMode? deduplicationMode,
+          int expectedNumberOfFrameCounterResets,
+          int expectedNumberOfBundlerCalls,
+          int expectedNumberOfFrameCounterDownCalls,
+          int expectedMessagesUp,
+          int expectedMessagesDown,
+          int expectedTwinSaves)
+        {
+            // arrange
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
+            var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
+
+            using var loraRequest1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            loraRequest1.SetStationEui(StationEui.Parse(station1));
+            loraRequest1.SetPayload(dataPayload);
+
+            using var loraRequest2 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            loraRequest2.SetStationEui(StationEui.Parse(station2));
+            loraRequest2.SetPayload(dataPayload);
+
+            using var loRaDevice = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
+            {
+                Deduplication = deduplicationMode ?? DeduplicationMode.Drop, // fallback to default
+                NwkSKey = station1
+            };
+
+            // act/assert
+            await TestAssertions(loraRequest1, loraRequest2, loRaDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+        }
 
         [Theory]
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2, 1, 2, 2, 2, 2, 2)]
@@ -154,44 +191,6 @@ namespace LoRaWan.Tests.Integration
             await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
 
             this.dataRequestHandlerMock.Verify(x => x.PerformADRAssert(), Times.Exactly(expectedNumberOfADRCalls));
-        }
-
-        [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 1, 2, 2, 0, 2, 2)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 1, 1, 0, 1, 2)]
-        public async Task When_Mac_Command_Should_Not_Send_Upstream_Messages_And_Should_Skip_Calls_To_FrameCounterDown_When_SoftDuplicate(
-            string station1,
-            string station2,
-            int expectedNumberOfFrameCounterResets,
-            int expectedNumberOfBundlerCalls,
-            int expectedNumberOfFrameCounterDownCalls,
-            int expectedMessagesUp,
-            int expectedMessagesDown,
-            int expectedTwinSaves)
-        {
-            // arrange
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
-            // MAC command
-            dataPayload.Fport = new byte[1] { 0 };
-            dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
-
-            var request1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
-            request1.SetStationEui(StationEui.Parse(station1));
-            request1.SetPayload(dataPayload);
-
-            using var request2 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
-            request2.SetStationEui(StationEui.Parse(station2));
-            request2.SetPayload(dataPayload);
-
-            using var device = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
-            {
-                Deduplication = DeduplicationMode.None, // or Mark
-                NwkSKey = station1
-            };
-
-            // act/assert
-            await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
         [Theory]
@@ -237,14 +236,11 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, 1, 2, 2, 2, 2, 2)] // resubmission 
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 1, 1, 1, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
-        public async Task When_Default_Data_Message_Test_All_Different_DeduplicationModes(
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 1, 2, 2, 0, 2, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 1, 1, 0, 1, 2)]
+        public async Task When_Mac_Command_Should_Not_Send_Upstream_Messages_And_Should_Skip_Calls_To_FrameCounterDown_When_SoftDuplicate(
             string station1,
             string station2,
-            DeduplicationMode? deduplicationMode,
             int expectedNumberOfFrameCounterResets,
             int expectedNumberOfBundlerCalls,
             int expectedNumberOfFrameCounterDownCalls,
@@ -255,23 +251,26 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
+            // MAC command
+            dataPayload.Fport = new byte[1] { 0 };
+            dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
 
-            using var loraRequest1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
-            loraRequest1.SetStationEui(StationEui.Parse(station1));
-            loraRequest1.SetPayload(dataPayload);
+            var request1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            request1.SetStationEui(StationEui.Parse(station1));
+            request1.SetPayload(dataPayload);
 
-            using var loraRequest2 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
-            loraRequest2.SetStationEui(StationEui.Parse(station2));
-            loraRequest2.SetPayload(dataPayload);
+            using var request2 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            request2.SetStationEui(StationEui.Parse(station2));
+            request2.SetPayload(dataPayload);
 
-            using var loRaDevice = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
+            using var device = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
             {
-                Deduplication = deduplicationMode ?? DeduplicationMode.Drop, // fallback to default
+                Deduplication = DeduplicationMode.None, // or Mark
                 NwkSKey = station1
             };
 
             // act/assert
-            await TestAssertions(loraRequest1, loraRequest2, loRaDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
         private async Task TestAssertions(
