@@ -126,9 +126,11 @@ namespace LoRaWan.NetworkServer
 
             try
             {
+                #region FunctionBundler
                 FunctionBundlerResult bundlerResult = null;
                 if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission)
                     bundlerResult = await TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
+                #endregion
 
                 loRaADRResult = bundlerResult?.AdrResult;
 
@@ -137,6 +139,7 @@ namespace LoRaWan.NetworkServer
                     HandlePreferredGatewayChanges(request, loRaDevice, bundlerResult);
                 }
 
+                #region ADR
                 if (loraPayload.IsAdrReq)
                 {
                     this.logger.LogDebug("ADR ack request received");
@@ -149,6 +152,7 @@ namespace LoRaWan.NetworkServer
                 {
                     loRaADRResult = await PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }
+                #endregion
 
                 if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
                 {
@@ -173,27 +177,24 @@ namespace LoRaWan.NetworkServer
                         loRaDevice.UpdateRegion(request.Region.LoRaRegion, acceptChanges: false);
                 }
 
+                #region FrameCounterDown
                 // if deduplication already processed the next framecounter down, use that
                 var fcntDown = loRaADRResult?.FCntDown != null ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
 
-                if (fcntDown.HasValue)
-                {
-                    LogFrameCounterDownState(loRaDevice, fcntDown.Value);
-                }
-
-                // If it is confirmed it require us to update the frame counter down
+                // If we can send message downstream, we need to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
                 if (requiresConfirmation && !skipConfirmationToAvoidCollisions)
                 {
                     fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                     // Failed to update the fcnt down
-                    // In multi gateway scenarios it means the another gateway was faster than using, can stop now
+                    // In multi gateway scenarios it means another gateway has won the race to handle this message, can stop now
                     if (fcntDown <= 0)
                     {
                         return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
                     }
                 }
+                #endregion
 
                 var validFcntUp = isFrameCounterFromNewlyStartedDevice || (payloadFcntAdjusted > loRaDevice.FCntUp);
                 if (validFcntUp || isConfirmedResubmit)
@@ -228,6 +229,7 @@ namespace LoRaWan.NetworkServer
                         if (loraPayload.IsMacAnswerRequired)
                         {
                             fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+
                             if (!fcntDown.HasValue || fcntDown <= 0)
                             {
                                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
@@ -702,27 +704,25 @@ namespace LoRaWan.NetworkServer
         {
             if (fcntDown.HasValue)
             {
+                LogFrameCounterDownState(loRaDevice, fcntDown.Value);
                 return fcntDown.Value;
             }
 
             var newFcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, payloadFcnt);
-
-            // Failed to update the fcnt down
-            // In multi gateway scenarios it means the another gateway was faster than using, can stop now
             LogFrameCounterDownState(loRaDevice, newFcntDown);
 
             return newFcntDown;
-        }
 
-        private void LogFrameCounterDownState(LoRaDevice loRaDevice, uint newFcntDown)
-        {
-            if (newFcntDown <= 0)
+            void LogFrameCounterDownState(LoRaDevice loRaDevice, uint newFcntDown)
             {
-                this.logger.LogDebug("another gateway has already sent ack or downlink msg");
-            }
-            else
-            {
-                this.logger.LogDebug($"down frame counter: {loRaDevice.FCntDown}");
+                if (newFcntDown <= 0)
+                {
+                    this.logger.LogDebug("another gateway has already sent ack or downlink msg");
+                }
+                else
+                {
+                    this.logger.LogDebug($"down frame counter: {loRaDevice.FCntDown}");
+                }
             }
         }
 

@@ -83,18 +83,22 @@ namespace LoRaWan.Tests.Integration
         /// This test integrates <code>DefaultLoRaDataRequestHandler</code> with <code>ConcentratorDeduplication</code>.
         /// </summary>
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, true, 1, 2, 2, 2, 2)] // resubmission case
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, false, 1, 1, 1, 1, 1)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, false, 1, 1, 2, 1, 2)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, true, 1, 1, 2, 1, 2)] // adr request
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, false, 1, 1, 2, 1, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, true, true, 1, 2, 0, 2, 2, 2)] // resubmission 
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, true, null, 1, 2, 2, 2, 2, 2)] // resubmission, with extra call to get framecounter down
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, false, null, 1, 1, 1, 1, 1, 1)] // duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, false, true, 1, 1, 0, 2, 1, 2)] // soft duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, false, null, 1, 1, 1, 2, 1, 2)] // soft duplicate, with extra call to get framecounter down
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, true, true, 1, 1, 0, 2, 1, 2)] // soft duplicate, adr request
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, false, true, 1, 1, 0, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
         public async Task When_Same_Data_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(
             string station1,
             string station2,
             DeduplicationMode? deduplicationMode,
             bool isAdrRequest,
+            bool? frameCounterResultFromBundler,
             int expectedNumberOfFrameCounterResets,
-            int expectedNumberOfFunctionCalls,
+            int expectedNumberOfBundlerCalls,
+            int expectedNumberOfFrameCounterDownCalls,
             int expectedMessagesUp,
             int expectedMessagesDown,
             int expectedTwinSaves)
@@ -118,8 +122,9 @@ namespace LoRaWan.Tests.Integration
             var concentratorDeduplication = new ConcentratorDeduplication(cache, NullLogger<IConcentratorDeduplication>.Instance);
 
             var frameCounterStrategyMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>();
+            _ = frameCounterStrategyMock.Setup(x => x.NextFcntDown(this.loRaDevice, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
             var frameCounterProviderMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategyProvider>();
-            frameCounterProviderMock.Setup(x => x.GetStrategy(this.loRaDevice.GatewayID)).Returns(frameCounterStrategyMock.Object);
+            _ = frameCounterProviderMock.Setup(x => x.GetStrategy(this.loRaDevice.GatewayID)).Returns(frameCounterStrategyMock.Object);
 
             var dataRequestHandlerMock = new Mock<TestDefaultLoRaRequestHandler>(MockBehavior.Default,
                 ServerConfiguration,
@@ -139,7 +144,7 @@ namespace LoRaWan.Tests.Integration
             {
                 DeduplicationResult = new DeduplicationResult
                     { IsDuplicate = false, CanProcess = true },
-                NextFCntDown = 1
+                NextFCntDown = (frameCounterResultFromBundler is true) ? 1 : null
             });
 
             // first request
@@ -157,7 +162,8 @@ namespace LoRaWan.Tests.Integration
 
             // assert
             frameCounterStrategyMock.Verify(x => x.ResetAsync(this.loRaDevice, It.IsAny<uint>(), ServerGatewayID), Times.Exactly(expectedNumberOfFrameCounterResets));
-            dataRequestHandlerMock.Verify(x => x.TryUseBundlerAssert(), Times.Exactly(expectedNumberOfFunctionCalls));
+            frameCounterStrategyMock.Verify(x => x.NextFcntDown(this.loRaDevice, It.IsAny<uint>()), Times.Exactly(expectedNumberOfFrameCounterDownCalls));
+            dataRequestHandlerMock.Verify(x => x.TryUseBundlerAssert(), Times.Exactly(expectedNumberOfBundlerCalls));
             dataRequestHandlerMock.Verify(x => x.SendDeviceAsyncAssert(), Times.Exactly(expectedMessagesUp));
             dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Exactly(expectedMessagesDown));
             dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAssert(), Times.Exactly(expectedTwinSaves));
