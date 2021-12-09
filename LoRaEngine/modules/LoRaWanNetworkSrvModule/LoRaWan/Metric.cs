@@ -13,7 +13,7 @@ namespace LoRaWan
 
     public readonly record struct Mega(double Value) : IFormattable
     {
-        public double Unit => Value * 1e6;
+        public double Units => Value * 1e6;
 
         public string ToString(IFormatProvider? formatProvider) => ToString(null, formatProvider);
         public string ToString(string? format) => ToString(format, null);

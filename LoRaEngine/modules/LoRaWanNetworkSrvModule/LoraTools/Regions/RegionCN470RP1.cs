@@ -74,11 +74,11 @@ namespace LoRaTools.Regions
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
             var upstreamChannelNumber = (int)Math.Round(
-                (upstreamFrequency - StartingUpstreamFrequency) / FrequencyIncrement.Unit,
+                (upstreamFrequency - StartingUpstreamFrequency) / FrequencyIncrement.Units,
                 0,
                 MidpointRounding.AwayFromZero);
 
-            downstreamFrequency = StartingDownstreamFrequency + checked((long)((upstreamChannelNumber % DownstreamChannelCount) * FrequencyIncrement.Unit));
+            downstreamFrequency = StartingDownstreamFrequency + checked((long)((upstreamChannelNumber % DownstreamChannelCount) * FrequencyIncrement.Units));
 
             return true;
         }
