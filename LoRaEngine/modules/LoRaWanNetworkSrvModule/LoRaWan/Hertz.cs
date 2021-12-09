@@ -6,21 +6,6 @@ namespace LoRaWan
     using System;
     using System.Globalization;
 
-    public readonly record struct Mega(double Value) : IFormattable
-    {
-        public double Unit => Value * 1e6;
-
-        public string ToString(IFormatProvider? formatProvider) => ToString(null, formatProvider);
-        public string ToString(string? format) => ToString(format, null);
-        public string ToString(string? format, IFormatProvider? formatProvider) => Value.ToString(format, formatProvider);
-        public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
-    }
-
-    public static class Metric
-    {
-        public static Mega Mega(double value) => new Mega(value);
-    }
-
     /// <summary>
     /// Represents a frequency in Hertz.
     /// </summary>
