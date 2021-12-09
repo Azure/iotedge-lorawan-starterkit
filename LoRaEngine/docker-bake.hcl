@@ -10,7 +10,7 @@ variable "CONTAINER_REGISTRY_ADDRESS" {
 }
 
 group "default" {
-    targets = ["LoRaWanNetworkServer", "LoraBasicsStation"]
+    targets = ["LoRaWanNetworkServerx64", "LoRaWanNetworkServerarm32", "LoraBasicsStationx64", "LoraBasicsStationarm32v7"]
 }
 
 target "LoRaWanNetworkServer" {
