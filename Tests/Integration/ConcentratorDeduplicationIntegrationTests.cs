@@ -4,9 +4,11 @@
 namespace LoRaWan.Tests.Integration
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Threading.Tasks;
     using Common;
+    using LoRaTools;
     using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
@@ -76,8 +78,78 @@ namespace LoRaWan.Tests.Integration
             public virtual bool SaveChangesToDeviceAssert() => true;
         }
 
-        private WaitableLoRaRequest loraRequest;
-        private LoRaDevice loRaDevice;
+        private readonly Mock<ILoRaDeviceFrameCounterUpdateStrategy> frameCounterStrategyMock;
+        private readonly Mock<TestDefaultLoRaRequestHandler> dataRequestHandlerMock;
+        private readonly Mock<ILoRaDeviceFrameCounterUpdateStrategyProvider> frameCounterProviderMock;
+        private readonly MemoryCache cache;
+
+        public ConcentratorDeduplicationIntegrationTests()
+        {
+            this.cache = new MemoryCache(new MemoryCacheOptions());
+            var concentratorDeduplication = new ConcentratorDeduplication(this.cache, NullLogger<IConcentratorDeduplication>.Instance);
+
+            this.frameCounterStrategyMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>();
+            this.frameCounterProviderMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategyProvider>();
+
+            this.dataRequestHandlerMock = new Mock<TestDefaultLoRaRequestHandler>(MockBehavior.Default,
+                ServerConfiguration,
+                this.frameCounterProviderMock.Object,
+                concentratorDeduplication,
+                PayloadDecoder,
+                new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance),
+                new LoRaADRStrategyProvider(NullLoggerFactory.Instance),
+                new LoRAADRManagerFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance),
+                new FunctionBundlerProvider(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance),
+                NullLogger<DefaultLoRaDataRequestHandler>.Instance,
+                null)
+            {
+                CallBase = true
+            };
+        }
+
+        [Theory]
+        [InlineData(DeduplicationMode.Mark, false, 1, 1, 1, 2, 1, 2)]
+        [InlineData(DeduplicationMode.None, false, 1, 1, 1, 2, 1, 2)]
+        [InlineData(DeduplicationMode.Mark, true, 1, 1, 1, 0, 1, 2)]
+        [InlineData(DeduplicationMode.None, true, 1, 1, 1, 0, 1, 2)]
+        public async Task When_Mac_Command_Soft_Duplicate_Should_Influence_Upstream_Messages(
+            DeduplicationMode deduplicationMode,
+            bool isMacCommand,
+            int expectedNumberOfFrameCounterResets,
+            int expectedNumberOfBundlerCalls,
+            int expectedNumberOfFrameCounterDownCalls,
+            int expectedMessagesUp,
+            int expectedMessagesDown,
+            int expectedTwinSaves)
+        {
+            // arrange
+            var station1 = "11-11-11-11-11-11-11-11";
+            var station2 = "22-22-22-22-22-22-22-22";
+
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
+            var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
+            var request1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            request1.SetStationEui(StationEui.Parse(station1));
+            request1.SetPayload(dataPayload);
+
+            using var request2 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            request2.SetStationEui(StationEui.Parse(station2));
+            request2.SetPayload(dataPayload);
+
+            using var device = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
+            {
+                Deduplication = deduplicationMode,
+                NwkSKey = station1
+            };
+            if (isMacCommand)
+            {
+                dataPayload.Fport = new byte[1] { 0 };
+                dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
+            }
+
+            // act/assert
+            await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+        }
 
         /// <summary>
         /// This test integrates <code>DefaultLoRaDataRequestHandler</code> with <code>ConcentratorDeduplication</code>.
@@ -108,65 +180,58 @@ namespace LoRaWan.Tests.Integration
             var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
             if (isAdrRequest)
                 dataPayload.Fctrl.Span[0] = 250;
-            this.loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
-            this.loraRequest.SetStationEui(StationEui.Parse(station1));
-            this.loraRequest.SetPayload(dataPayload);
+            using var loraRequest1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            loraRequest1.SetStationEui(StationEui.Parse(station1));
+            loraRequest1.SetPayload(dataPayload);
 
-            this.loRaDevice = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
+            using var loraRequest2 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
+            loraRequest2.SetStationEui(StationEui.Parse(station2));
+            loraRequest2.SetPayload(dataPayload);
+
+            using var loRaDevice = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
             {
                 Deduplication = deduplicationMode ?? DeduplicationMode.Drop,
                 NwkSKey = station1
             };
 
-            using var cache = new MemoryCache(new MemoryCacheOptions());
-            var concentratorDeduplication = new ConcentratorDeduplication(cache, NullLogger<IConcentratorDeduplication>.Instance);
-
-            var frameCounterStrategyMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>();
-            _ = frameCounterStrategyMock.Setup(x => x.NextFcntDown(this.loRaDevice, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
-            var frameCounterProviderMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategyProvider>();
-            _ = frameCounterProviderMock.Setup(x => x.GetStrategy(this.loRaDevice.GatewayID)).Returns(frameCounterStrategyMock.Object);
-
-            var dataRequestHandlerMock = new Mock<TestDefaultLoRaRequestHandler>(MockBehavior.Default,
-                ServerConfiguration,
-                frameCounterProviderMock.Object,
-                concentratorDeduplication,
-                PayloadDecoder,
-                new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance),
-                new LoRaADRStrategyProvider(NullLoggerFactory.Instance),
-                new LoRAADRManagerFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance),
-                new FunctionBundlerProvider(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance),
-                NullLogger<DefaultLoRaDataRequestHandler>.Instance,
-                null)
-            {
-                CallBase = true
-            };
-            _ = dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
+            _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
             {
                 DeduplicationResult = new DeduplicationResult
-                    { IsDuplicate = false, CanProcess = true },
+                { IsDuplicate = false, CanProcess = true },
                 NextFCntDown = (frameCounterResultFromBundler is true) ? 1 : null
             });
 
+            // act/assert
+            await TestAssertions(loraRequest1, loraRequest2, loRaDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+        }
+
+        private async Task TestAssertions(
+            LoRaRequest request1,
+            LoRaRequest request2,
+            LoRaDevice device,
+            int expectedNumberOfFrameCounterResets,
+            int expectedNumberOfBundlerCalls,
+            int expectedNumberOfFrameCounterDownCalls,
+            int expectedMessagesUp,
+            int expectedMessagesDown,
+            int expectedTwinSaves)
+        {
+            _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(device, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
+            _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(device.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
+
             // first request
-            _ = await dataRequestHandlerMock.Object.ProcessRequestAsync(this.loraRequest, this.loRaDevice);
-            // assert methods are called once
-            frameCounterStrategyMock.Verify(x => x.ResetAsync(this.loRaDevice, It.IsAny<uint>(), ServerGatewayID), Times.Once);
-            dataRequestHandlerMock.Verify(x => x.TryUseBundlerAssert(), Times.Once);
-            dataRequestHandlerMock.Verify(x => x.SendDeviceAsyncAssert(), Times.Once);
-            dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Once);
-            dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAssert(), Times.Once);
+            _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request1, device);
 
             // act
-            this.loraRequest.SetStationEui(StationEui.Parse(station2));
-            var actual = await dataRequestHandlerMock.Object.ProcessRequestAsync(this.loraRequest, this.loRaDevice);
+            var actual = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request2, device);
 
             // assert
-            frameCounterStrategyMock.Verify(x => x.ResetAsync(this.loRaDevice, It.IsAny<uint>(), ServerGatewayID), Times.Exactly(expectedNumberOfFrameCounterResets));
-            frameCounterStrategyMock.Verify(x => x.NextFcntDown(this.loRaDevice, It.IsAny<uint>()), Times.Exactly(expectedNumberOfFrameCounterDownCalls));
-            dataRequestHandlerMock.Verify(x => x.TryUseBundlerAssert(), Times.Exactly(expectedNumberOfBundlerCalls));
-            dataRequestHandlerMock.Verify(x => x.SendDeviceAsyncAssert(), Times.Exactly(expectedMessagesUp));
-            dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Exactly(expectedMessagesDown));
-            dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAssert(), Times.Exactly(expectedTwinSaves));
+            this.frameCounterStrategyMock.Verify(x => x.ResetAsync(device, It.IsAny<uint>(), ServerGatewayID), Times.Exactly(expectedNumberOfFrameCounterResets));
+            this.frameCounterStrategyMock.Verify(x => x.NextFcntDown(device, It.IsAny<uint>()), Times.Exactly(expectedNumberOfFrameCounterDownCalls));
+            this.dataRequestHandlerMock.Verify(x => x.TryUseBundlerAssert(), Times.Exactly(expectedNumberOfBundlerCalls));
+            this.dataRequestHandlerMock.Verify(x => x.SendDeviceAsyncAssert(), Times.Exactly(expectedMessagesUp));
+            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Exactly(expectedMessagesDown));
+            this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAssert(), Times.Exactly(expectedTwinSaves));
         }
 
         // Protected implementation of Dispose pattern.
@@ -175,8 +240,7 @@ namespace LoRaWan.Tests.Integration
             base.Dispose(disposing);
             if (disposing)
             {
-                this.loRaDevice.Dispose();
-                this.loraRequest.Dispose();
+                this.cache.Dispose();
             }
         }
     }

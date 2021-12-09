@@ -219,25 +219,30 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
+                    #region Handling MacCommands
                     if (payloadPort == LoRaFPort.MacCommand)
                     {
-                        if (decryptedPayloadData?.Length > 0)
+                        if (!skipDownstreamToAvoidCollisions)
                         {
-                            loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
-                        }
-
-                        if (loraPayload.IsMacAnswerRequired)
-                        {
-                            fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
-
-                            if (!fcntDown.HasValue || fcntDown <= 0)
+                            if (decryptedPayloadData?.Length > 0)
                             {
-                                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                                loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
                             }
 
-                            requiresConfirmation = true;
+                            if (loraPayload.IsMacAnswerRequired)
+                            {
+                                fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+
+                                if (!fcntDown.HasValue || fcntDown <= 0)
+                                {
+                                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                                }
+
+                                requiresConfirmation = true;
+                            }
                         }
                     }
+                    #endregion
                     else
                     {
                         if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
