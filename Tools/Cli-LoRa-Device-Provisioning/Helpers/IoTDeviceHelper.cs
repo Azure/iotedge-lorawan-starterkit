@@ -5,90 +5,82 @@ namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaWan.Tools.CLI.Options;
     using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
-    public class IoTDeviceHelper
+    internal class IoTDeviceHelper
     {
+        private const string DefaultRouterConfigFolder = "DefaultRouterConfig";
         private static readonly string[] ClassTypes = { "A", "C" };
         private static readonly string[] DeduplicationModes = { "None", "Drop", "Mark" };
-        private static readonly string DefaultRouterConfigFolder = "DefaultRouterConfig";
 
-        public async Task<Twin> QueryDeviceTwin(string devEui, ConfigurationHelper configurationHelper)
+        public static async Task<Twin> QueryDeviceTwin(string devEui, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
             Console.WriteLine($"Querying device {devEui} in IoT Hub...");
 
-            Twin twin;
+            var (success, twin) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.GetTwinAsync(devEui));
 
-            try
-            {
-                twin = await configurationHelper.RegistryManager.GetTwinAsync(devEui);
-            }
-            catch (Exception ex)
-            {
-                StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+            if (!success)
                 return null;
-            }
 
             Console.WriteLine("done.");
             return twin;
         }
 
-        public bool VerifyDeviceTwin(string devEui, string netId, Twin twin, ConfigurationHelper configurationHelper, bool isVerbose)
+        public static bool VerifyDeviceTwin(string devEui, string netId, Twin twin, ConfigurationHelper configurationHelper, bool isVerbose)
         {
-            bool isOtaa = false;
-            bool isAbp = false;
-            bool isValid = true;
-
             StatusConsole.WriteLineIfVerbose(null, isVerbose);
             StatusConsole.WriteLineIfVerbose($"Analyzing device {devEui}...", isVerbose);
 
             devEui = ValidationHelper.CleanString(devEui);
 
-            string appEui = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppEUI);
-            string appKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppKey);
+            var appEui = ReadTwin(twin.Properties.Desired, TwinProperty.AppEUI);
+            var appKey = ReadTwin(twin.Properties.Desired, TwinProperty.AppKey);
 
-            string nwkSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.NwkSKey);
-            string appSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppSKey);
-            string devAddr = this.ReadTwin(twin.Properties.Desired, TwinProperty.DevAddr);
-            string abpRelaxMode = this.ReadTwin(twin.Properties.Desired, TwinProperty.ABPRelaxMode);
+            var nwkSKey = ReadTwin(twin.Properties.Desired, TwinProperty.NwkSKey);
+            var appSKey = ReadTwin(twin.Properties.Desired, TwinProperty.AppSKey);
+            var devAddr = ReadTwin(twin.Properties.Desired, TwinProperty.DevAddr);
+            var abpRelaxMode = ReadTwin(twin.Properties.Desired, TwinProperty.ABPRelaxMode);
 
             netId = ValidationHelper.CleanNetId(netId);
 
-            string gatewayID = this.ReadTwin(twin.Properties.Desired, TwinProperty.GatewayID);
-            string sensorDecoder = this.ReadTwin(twin.Properties.Desired, TwinProperty.SensorDecoder);
-            string classType = this.ReadTwin(twin.Properties.Desired, TwinProperty.ClassType);
-            string downlinkEnabled = this.ReadTwin(twin.Properties.Desired, TwinProperty.DownlinkEnabled);
-            string preferredWindow = this.ReadTwin(twin.Properties.Desired, TwinProperty.PreferredWindow);
-            string deduplication = this.ReadTwin(twin.Properties.Desired, TwinProperty.Deduplication);
-            string rx2DataRate = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX2DataRate);
-            string rx1DrOffset = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX1DROffset);
-            string rxDelay = this.ReadTwin(twin.Properties.Desired, TwinProperty.RXDelay);
-            string keepAliveTimeout = this.ReadTwin(twin.Properties.Desired, TwinProperty.KeepAliveTimeout);
-            string supports32BitFCnt = this.ReadTwin(twin.Properties.Desired, TwinProperty.Supports32BitFCnt);
-            string fCntUpStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntUpStart);
-            string fCntDownStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntDownStart);
-            string fCntResetCounter = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntResetCounter);
+            var gatewayID = ReadTwin(twin.Properties.Desired, TwinProperty.GatewayID);
+            var sensorDecoder = ReadTwin(twin.Properties.Desired, TwinProperty.SensorDecoder);
+            var classType = ReadTwin(twin.Properties.Desired, TwinProperty.ClassType);
+            var downlinkEnabled = ReadTwin(twin.Properties.Desired, TwinProperty.DownlinkEnabled);
+            var preferredWindow = ReadTwin(twin.Properties.Desired, TwinProperty.PreferredWindow);
+            var deduplication = ReadTwin(twin.Properties.Desired, TwinProperty.Deduplication);
+            var rx2DataRate = ReadTwin(twin.Properties.Desired, TwinProperty.RX2DataRate);
+            var rx1DrOffset = ReadTwin(twin.Properties.Desired, TwinProperty.RX1DROffset);
+            var rxDelay = ReadTwin(twin.Properties.Desired, TwinProperty.RXDelay);
+            var keepAliveTimeout = ReadTwin(twin.Properties.Desired, TwinProperty.KeepAliveTimeout);
+            var supports32BitFCnt = ReadTwin(twin.Properties.Desired, TwinProperty.Supports32BitFCnt);
+            var fCntUpStart = ReadTwin(twin.Properties.Desired, TwinProperty.FCntUpStart);
+            var fCntDownStart = ReadTwin(twin.Properties.Desired, TwinProperty.FCntDownStart);
+            var fCntResetCounter = ReadTwin(twin.Properties.Desired, TwinProperty.FCntResetCounter);
 
-            string fCntUpStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntUpStart);
-            string fCntDownStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntDownStart);
-            string fCntResetCounterReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntResetCounter);
+            var fCntUpStartReported = ReadTwin(twin.Properties.Reported, TwinProperty.FCntUpStart);
+            var fCntDownStartReported = ReadTwin(twin.Properties.Reported, TwinProperty.FCntDownStart);
+            var fCntResetCounterReported = ReadTwin(twin.Properties.Reported, TwinProperty.FCntResetCounter);
 
-            isOtaa = !string.IsNullOrEmpty(appEui) || !string.IsNullOrEmpty(appKey);
-            isAbp = !string.IsNullOrEmpty(nwkSKey) || !string.IsNullOrEmpty(appSKey) || !string.IsNullOrEmpty(devAddr);
+            var isOtaa = !string.IsNullOrEmpty(appEui) || !string.IsNullOrEmpty(appKey);
+            var isAbp = !string.IsNullOrEmpty(nwkSKey) || !string.IsNullOrEmpty(appSKey) || !string.IsNullOrEmpty(devAddr);
 
+            bool isValid;
             // ABP device
             if (isAbp && !isOtaa)
             {
                 StatusConsole.WriteLogLineIfVerbose(MessageType.Info, "ABP device configuration detected.", isVerbose);
-                isValid = this.VerifyDevice(
+                isValid = VerifyDevice(
                     new AddOptions()
                     {
                         Type = "ABP",
@@ -126,7 +118,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             else if (isOtaa && !isAbp)
             {
                 StatusConsole.WriteLogLineIfVerbose(MessageType.Info, "OTAA device configuration detected.", isVerbose);
-                isValid = this.VerifyDevice(
+                isValid = VerifyDevice(
                     new AddOptions()
                     {
                         Type = "OTAA",
@@ -190,12 +182,12 @@ namespace LoRaWan.Tools.CLI.Helpers
             return isValid;
         }
 
-        public string ReadTwin(TwinCollection collection, string property)
+        public static string ReadTwin(TwinCollection collection, string property)
         {
             return collection.Contains(property) ? ValidationHelper.GetTwinPropertyValue(collection[property]) : null;
         }
 
-        public object CleanOptions(object optsObject, bool isNewDevice)
+        public static object CleanOptions(object optsObject, bool isNewDevice)
         {
             dynamic opts;
 
@@ -276,7 +268,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return (object)opts;
         }
 
-        public AddOptions CompleteMissingAddOptions(AddOptions opts, ConfigurationHelper configurationHelper)
+        public static AddOptions CompleteMissingAddOptions(AddOptions opts, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
             Console.WriteLine($"Completing missing options for device...");
@@ -308,7 +300,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                     StatusConsole.WriteLogLine(MessageType.Info, $"Generating missing DevAddr: {opts.DevAddr}");
                 }
 
-                if (ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out string _))
+                if (ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out var _))
                 {
                     var newDevAddr = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
                     if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.OrdinalIgnoreCase))
@@ -352,13 +344,13 @@ namespace LoRaWan.Tools.CLI.Helpers
             return opts;
         }
 
-        public UpdateOptions CompleteMissingUpdateOptions(UpdateOptions opts, ConfigurationHelper configurationHelper)
+        public static UpdateOptions CompleteMissingUpdateOptions(UpdateOptions opts, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
             Console.WriteLine($"Completing missing options for device...");
 
             // ABP device specific properties
-            if (!string.IsNullOrEmpty(opts.DevAddr) && ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out string _))
+            if (!string.IsNullOrEmpty(opts.DevAddr) && ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out var _))
             {
                 var newDevAddr = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
                 if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.OrdinalIgnoreCase))
@@ -385,10 +377,10 @@ namespace LoRaWan.Tools.CLI.Helpers
             return opts;
         }
 
-        public bool VerifyDevice(AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper, bool isVerbose)
+        public static bool VerifyDevice(AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper, bool isVerbose)
         {
-            string validationError = string.Empty;
-            bool isValid = true;
+            var validationError = string.Empty;
+            var isValid = true;
 
             StatusConsole.WriteLineIfVerbose(null, isVerbose);
             StatusConsole.WriteLineIfVerbose($"Verifying device {opts.DevEui} twin data...", isVerbose);
@@ -477,14 +469,14 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     var devAddrCorrect = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
 
-                    if (string.Equals(devAddrCorrect, opts.DevAddr))
+                    if (string.Equals(devAddrCorrect, opts.DevAddr, StringComparison.OrdinalIgnoreCase))
                     {
                         StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"DevAddr {opts.DevAddr} is valid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.", isVerbose);
                     }
                     else
                     {
                         StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.", opts.DevEui, isVerbose);
-                        StatusConsole.WriteLogLineIfVerbose(MessageType.Warning, $"DevAddr {opts.DevAddr} belongs to NetId ending in byte {NetIdHelper.GetNwkIdPart(opts.DevAddr).ToString("X2")}.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Warning, $"DevAddr {opts.DevAddr} belongs to NetId ending in byte {NetIdHelper.GetNwkIdPart(opts.DevAddr):X2}.", isVerbose);
                         StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"To stop seeing this error, provide the --netid parameter or set the NetId in the settings file.", isVerbose);
 
                         isValid = false;
@@ -791,7 +783,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"GatewayId is missing.", opts.DevEui, isVerbose);
                 isValid = false;
             }
-            else if (opts.GatewayId == string.Empty)
+            else if (string.IsNullOrEmpty(opts.GatewayId))
             {
                 StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"GatewayId is empty. This is valid.", isVerbose);
             }
@@ -902,7 +894,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return isValid;
         }
 
-        public bool VerifyConcentrator(AddOptions opts)
+        public static bool VerifyConcentrator(AddOptions opts)
         {
             var isValid = true;
             TrackErrorIf(string.IsNullOrEmpty(opts.StationEui), "'Concentrator' device type has been specified but StationEui option is missing.");
@@ -928,7 +920,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 TrackErrorIf(opts.TcUri is { } tu && tu.Port != 5001, "CUPS is enabled but TC URI does not point to port 5001.");
                 TrackErrorIf(opts.CupsUri is null, "CUPS is enabled but CUPS URI is not defined");
                 TrackErrorIf(opts.CupsUri is { } cupsUri && !cupsUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase), "CUPS is enabled but CUPS URI is not in https:// protocol.");
-                TrackErrorIf(opts.CupsUri is { } cu && cu.Port != 443, "CUPS is enabled but CUPS URI does not point to port 443.");
+                TrackErrorIf(opts.CupsUri is { } cu && cu.Port != 5002, "CUPS is enabled but CUPS URI does not point to port 5002.");
             }
 
             void TrackErrorIf(bool hasError, string message)
@@ -943,14 +935,14 @@ namespace LoRaWan.Tools.CLI.Helpers
             return isValid;
         }
 
-        public Twin CreateConcentratorTwin(AddOptions opts, uint crcChecksum, Uri certificateBundleLocation)
+        public static Twin CreateConcentratorTwin(AddOptions opts, uint crcChecksum, Uri certificateBundleLocation)
         {
             var twinProperties = new TwinProperties();
             Console.WriteLine();
 
             // Add routerConfig configuration
-            string fileName = Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json");
-            string jsonString = File.ReadAllText(fileName);
+            var fileName = Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json");
+            var jsonString = File.ReadAllText(fileName);
             var propObject = JsonConvert.DeserializeObject<JObject>(jsonString);
             twinProperties.Desired[TwinProperty.RouterConfig] = propObject;
 
@@ -977,7 +969,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             };
         }
 
-        public Twin CreateDeviceTwin(AddOptions opts)
+        public static Twin CreateDeviceTwin(AddOptions opts)
         {
             var twinProperties = new TwinProperties();
             Console.WriteLine();
@@ -1056,7 +1048,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             };
         }
 
-        public Twin UpdateDeviceTwin(Twin twin, UpdateOptions opts)
+        public static Twin UpdateDeviceTwin(Twin twin, UpdateOptions opts)
         {
             Console.WriteLine();
             Console.WriteLine($"Applying changes to device {opts.DevEui} twin...");
@@ -1133,7 +1125,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return twin;
         }
 
-        public async Task<bool> WriteDeviceTwin(Twin twin, string devEui, ConfigurationHelper configurationHelper, bool isNewDevice)
+        public static async Task<bool> WriteDeviceTwin(Twin twin, string devEui, ConfigurationHelper configurationHelper, bool isNewDevice)
         {
             var device = new Device(devEui);
             BulkRegistryOperationResult result;
@@ -1144,15 +1136,10 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Add new device
             if (isNewDevice)
             {
-                try
-                {
-                    result = await configurationHelper.RegistryManager.AddDeviceWithTwinAsync(device, twin);
-                }
-                catch (Exception ex)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+                (var success, result) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.AddDeviceWithTwinAsync(device, twin));
+
+                if (!success)
                     return false;
-                }
 
                 if (result.IsSuccessful)
                 {
@@ -1173,13 +1160,18 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Update existing device
             else
             {
+
                 try
                 {
-                    await configurationHelper.RegistryManager.UpdateTwinAsync(twin.DeviceId, twin, twin.ETag);
+                    (var success, _) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.UpdateTwinAsync(twin.DeviceId, twin, twin.ETag),
+                                                                                 "Updating device failed");
+
+                    if (!success)
+                        return false;
                 }
-                catch (Exception ex)
+                catch (PreconditionFailedException ex)
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, "Updating device failed: " + ex.Message);
+                    StatusConsole.WriteLogLine(MessageType.Error, "Updating device failed, device changed since last fetch (ETag did not match): " + ex.Message);
                     return false;
                 }
 
@@ -1190,11 +1182,11 @@ namespace LoRaWan.Tools.CLI.Helpers
             return true;
         }
 
-        public async Task<bool> QueryDevices(ConfigurationHelper configurationHelper, int page, int total)
+        public static async Task<bool> QueryDevices(ConfigurationHelper configurationHelper, int page, int total)
         {
             var count = 0;
             IEnumerable<string> currentPage;
-            string totalString = (total == -1) ? "all" : total.ToString();
+            var totalString = (total == -1) ? "all" : total.ToString(CultureInfo.InvariantCulture);
 
             page = Math.Max(1, page);
 
@@ -1209,26 +1201,21 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             while (query.HasMoreResults)
             {
-                try
-                {
-                    currentPage = await query.GetNextAsJsonAsync();
-                }
-                catch (Exception ex)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+                (var success, currentPage) = await ExecuteWithIotHubErrorHandlingAsync(() => query.GetNextAsJsonAsync());
+
+                if (!success)
                     return false;
-                }
 
                 foreach (var jsonString in currentPage)
                 {
-                    JObject json = JObject.Parse(jsonString);
+                    var json = JObject.Parse(jsonString);
 
                     Console.WriteLine($"DevEUI: {(string)json["deviceId"]}");
 
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    JObject desired = json.SelectToken("$.properties.desired") as JObject;
-                    desired.Remove("$metadata");
-                    desired.Remove("$version");
+                    var desired = json.SelectToken("$.properties.desired") as JObject;
+                    _ = desired.Remove("$metadata");
+                    _ = desired.Remove("$version");
                     Console.WriteLine(desired);
                     Console.ResetColor();
 
@@ -1244,7 +1231,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 if (count > 0)
                 {
                     Console.WriteLine("Press any key to continue.");
-                    Console.ReadKey();
+                    _ = Console.ReadKey();
                     Console.WriteLine();
                 }
                 else
@@ -1257,11 +1244,11 @@ namespace LoRaWan.Tools.CLI.Helpers
             return true;
         }
 
-        public async Task<bool> QueryDevicesAndVerify(ConfigurationHelper configurationHelper, int page)
+        public static async Task<bool> QueryDevicesAndVerify(ConfigurationHelper configurationHelper, int page)
         {
             var countValid = 0;
             var countInvalid = 0;
-            bool isValid = true;
+            var isValid = true;
             IEnumerable<Twin> fullList;
 
             Console.WriteLine();
@@ -1272,19 +1259,14 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             while (query.HasMoreResults)
             {
-                try
-                {
-                    fullList = await query.GetNextAsTwinAsync();
-                }
-                catch (Exception ex)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+                (var success, fullList) = await ExecuteWithIotHubErrorHandlingAsync(() => query.GetNextAsTwinAsync());
+
+                if (!success)
                     return false;
-                }
 
                 foreach (var twin in fullList)
                 {
-                    if (!this.VerifyDeviceTwin(twin.DeviceId, null, twin, configurationHelper, false))
+                    if (!VerifyDeviceTwin(twin.DeviceId, null, twin, configurationHelper, false))
                     {
                         isValid = false;
                         countInvalid++;
@@ -1294,7 +1276,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                             if (countInvalid % page == 0)
                             {
                                 Console.WriteLine("Press any key to continue...");
-                                Console.ReadKey();
+                                _ = Console.ReadKey();
                                 Console.WriteLine();
                             }
                         }
@@ -1312,22 +1294,15 @@ namespace LoRaWan.Tools.CLI.Helpers
             return isValid;
         }
 
-        public async Task<bool> RemoveDevice(string devEui, ConfigurationHelper configurationHelper)
+        public static async Task<bool> RemoveDevice(string devEui, ConfigurationHelper configurationHelper)
         {
-            Device device;
-
             Console.WriteLine();
             Console.WriteLine($"Finding existing device {devEui} in IoT Hub...");
 
-            try
-            {
-                device = await configurationHelper.RegistryManager.GetDeviceAsync(devEui);
-            }
-            catch (Exception ex)
-            {
-                StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+            var (success, device) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.GetDeviceAsync(devEui));
+
+            if (!success)
                 return false;
-            }
 
             if (device != null)
             {
@@ -1335,11 +1310,13 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 try
                 {
-                    await configurationHelper.RegistryManager.RemoveDeviceAsync(device);
+                    (success, _) = await ExecuteWithIotHubErrorHandlingAsync(async () => { await configurationHelper.RegistryManager.RemoveDeviceAsync(device); return 0; });
+                    if (!success)
+                        return false;
                 }
-                catch (Exception ex)
+                catch (DeviceNotFoundException)
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, ex.Message);
+                    StatusConsole.WriteLogLine(MessageType.Error, "Did not remove device as it did not exist.");
                     return false;
                 }
             }
@@ -1352,6 +1329,24 @@ namespace LoRaWan.Tools.CLI.Helpers
             StatusConsole.WriteLogLine(MessageType.Info, "Success!");
             Console.WriteLine("done.");
             return true;
+        }
+
+        private static async Task<(bool Success, T Value)> ExecuteWithIotHubErrorHandlingAsync<T>(Func<Task<T>> executeAsync, string errorMessageContext = null)
+        {
+            try
+            {
+                var result = await executeAsync();
+                return (true, result);
+            }
+            catch (Exception ex) when (ex is UnauthorizedException
+                                          or IotHubCommunicationException)
+            {
+                var logMessage = errorMessageContext is { } e
+                    ? $"{e}: {ex.Message}"
+                    : ex.Message;
+                StatusConsole.WriteLogLine(MessageType.Error, logMessage);
+                return (false, default);
+            }
         }
     }
 }
