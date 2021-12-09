@@ -107,6 +107,13 @@ namespace LoRaWan.Tests.Integration
             {
                 CallBase = true
             };
+
+            _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
+            {
+                DeduplicationResult = new DeduplicationResult
+                { IsDuplicate = false, CanProcess = true },
+                NextFCntDown = null
+            });
         }
 
 
@@ -139,16 +146,9 @@ namespace LoRaWan.Tests.Integration
 
             using var device = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
             {
-                Deduplication = DeduplicationMode.Mark,
+                Deduplication = DeduplicationMode.Mark, // or None
                 NwkSKey = station1
             };
-
-            _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
-            {
-                DeduplicationResult = new DeduplicationResult
-                { IsDuplicate = false, CanProcess = true },
-                NextFCntDown = null
-            });
 
             // act/assert
             await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
@@ -157,13 +157,11 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData(DeduplicationMode.Mark, false, 1, 1, 1, 2, 1, 2)]
-        [InlineData(DeduplicationMode.None, false, 1, 1, 1, 2, 1, 2)]
-        [InlineData(DeduplicationMode.Mark, true, 1, 1, 1, 0, 1, 2)]
-        [InlineData(DeduplicationMode.None, true, 1, 1, 1, 0, 1, 2)]
-        public async Task When_Mac_Command_Soft_Duplicate_Should_Influence_Upstream_Messages(
-            DeduplicationMode deduplicationMode,
-            bool isMacCommand,
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 1, 2, 2, 0, 2, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 1, 1, 0, 1, 2)]
+        public async Task When_Mac_Command_Should_Not_Send_Upstream_Messages_And_Should_Skip_Calls_To_FrameCounterDown_When_SoftDuplicate(
+            string station1,
+            string station2,
             int expectedNumberOfFrameCounterResets,
             int expectedNumberOfBundlerCalls,
             int expectedNumberOfFrameCounterDownCalls,
@@ -172,11 +170,12 @@ namespace LoRaWan.Tests.Integration
             int expectedTwinSaves)
         {
             // arrange
-            var station1 = "11-11-11-11-11-11-11-11";
-            var station2 = "22-22-22-22-22-22-22-22";
-
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
+            // MAC command
+            dataPayload.Fport = new byte[1] { 0 };
+            dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
+
             var request1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
             request1.SetStationEui(StationEui.Parse(station1));
             request1.SetPayload(dataPayload);
@@ -187,14 +186,9 @@ namespace LoRaWan.Tests.Integration
 
             using var device = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
             {
-                Deduplication = deduplicationMode,
+                Deduplication = DeduplicationMode.None, // or Mark
                 NwkSKey = station1
             };
-            if (isMacCommand)
-            {
-                dataPayload.Fport = new byte[1] { 0 };
-                dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
-            }
 
             // act/assert
             await TestAssertions(request1, request2, device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
