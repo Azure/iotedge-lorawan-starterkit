@@ -9,12 +9,11 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
-    using static LoRaWan.Metric;
 
     public class RegionAS923 : Region
     {
-        private static readonly Hertz Channel0Frequency = Mega(923.2);
-        private static readonly Hertz Channel1Frequency = Mega(923.4);
+        private static readonly Hertz Channel0Frequency = Hertz.FromMega(923.2);
+        private static readonly Hertz Channel1Frequency = Hertz.FromMega(923.4);
 
         private readonly bool useDwellTimeLimit;
 
@@ -95,7 +94,7 @@ namespace LoRaTools.Regions
             };
 
             MaxADRDataRate = 7;
-            RegionLimits = new RegionLimits((Min: Mega(915), Max: Mega(928)), validDatarates, validDatarates, 0, 0);
+            RegionLimits = new RegionLimits((Min: Hertz.FromMega(915), Max: Hertz.FromMega(928)), validDatarates, validDatarates, 0, 0);
         }
 
         /// <summary>
@@ -155,6 +154,6 @@ namespace LoRaTools.Regions
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
         public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
-            new RX2ReceiveWindow((Hertz)Mega(923.2) + FrequencyOffset, 2);
+            new RX2ReceiveWindow(Hertz.FromMega(923.2) + FrequencyOffset, 2);
     }
 }
