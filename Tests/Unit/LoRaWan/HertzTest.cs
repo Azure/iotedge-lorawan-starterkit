@@ -32,5 +32,11 @@ namespace LoRaWan.Tests.Unit
         {
             Assert.Equal("863000000", this.subject.ToString());
         }
+
+        [Fact]
+        public void Conversion_To_UInt64_Returns_Initial_Value()
+        {
+            Assert.Equal(863_000_000UL, (ulong)this.subject);
+        }
     }
 }
