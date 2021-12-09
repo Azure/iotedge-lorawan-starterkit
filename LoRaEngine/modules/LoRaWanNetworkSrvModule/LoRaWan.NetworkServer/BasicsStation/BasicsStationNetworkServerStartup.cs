@@ -96,7 +96,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
                         .AddSingleton<LoRaDeviceCache>()
-                        .AddSingleton(x => new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
+                        .AddSingleton(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
                         .AddTransient<ICupsProtocolMessageProcessor, CupsProtocolMessageProcessor>()
                         .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>))
