@@ -33,14 +33,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.registry = new[]
             {
-                new CustomMetric($"counter{Guid.NewGuid():N}", "Counter", MetricType.Counter, new[] { MetricRegistry.GatewayIdTagName }),
-                new CustomMetric($"histogram{Guid.NewGuid():N}", "Histogram", MetricType.Histogram, new[] { MetricRegistry.GatewayIdTagName }),
-                new CustomMetric($"observablegauge{Guid.NewGuid():N}", "Observable Gauge", MetricType.ObservableGauge, new[] { MetricRegistry.GatewayIdTagName })
+                new CustomMetric($"counter{Guid.NewGuid():N}", "Counter", MetricType.Counter, new[] { MetricRegistry.ConcentratorIdTagName }),
+                new CustomMetric($"histogram{Guid.NewGuid():N}", "Histogram", MetricType.Histogram, new[] { MetricRegistry.ConcentratorIdTagName }),
+                new CustomMetric($"observablegauge{Guid.NewGuid():N}", "Observable Gauge", MetricType.ObservableGauge, new[] { MetricRegistry.ConcentratorIdTagName })
             };
             this.incCounterMock = new Mock<Action<string, string[], double>>();
             this.recordHistogramMock = new Mock<Action<string, string[], double>>();
             this.recordObservableGaugeMock = new Mock<Action<string, string[], double>>();
-            this.metricTagBag = new RegistryMetricTagBag();
+            this.metricTagBag = new RegistryMetricTagBag(new NetworkServerConfiguration { GatewayID = "foogateway" });
             this.prometheusMetricExporter = new TestablePrometheusMetricExporter(this.incCounterMock.Object,
                                                                                  this.recordHistogramMock.Object,
                                                                                  this.recordObservableGaugeMock.Object,
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var meter = new Meter("LoRaWan", "1.0");
             var counter = meter.CreateCounter<T>(Counter.Name);
             foreach (var value in values)
-                counter.Add(value, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object?)gatewayId));
+                counter.Add(value, KeyValuePair.Create(MetricRegistry.ConcentratorIdTagName, (object?)gatewayId));
 
             // assert
             foreach (var value in expectedReportedValues)
@@ -118,7 +118,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var meter = new Meter("LoRaWan", "1.0");
             var histogram = meter.CreateHistogram<int>(Histogram.Name);
             foreach (var value in values)
-                histogram.Record(value, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object?)gatewayId));
+                histogram.Record(value, KeyValuePair.Create(MetricRegistry.ConcentratorIdTagName, (object?)gatewayId));
 
             // assert
             foreach (var value in values)
@@ -131,7 +131,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             var observeValue = new Mock<Func<Measurement<int>>>();
             var stationEui = new StationEui(1);
-            var measurement = new Measurement<int>(1, KeyValuePair.Create(MetricRegistry.GatewayIdTagName, (object?)stationEui));
+            var measurement = new Measurement<int>(1, KeyValuePair.Create(MetricRegistry.ConcentratorIdTagName, (object?)stationEui));
             observeValue.Setup(ov => ov.Invoke()).Returns(measurement);
             using var meter = new Meter("LoRaWan", "1.0");
             _ = meter.CreateObservableGauge(ObservableGauge.Name, observeValue.Object);

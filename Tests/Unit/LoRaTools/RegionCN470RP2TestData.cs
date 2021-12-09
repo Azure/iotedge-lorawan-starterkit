@@ -6,9 +6,9 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using global::LoRaTools.Regions;
 
-    public static class RegionCN470TestData
+    public static class RegionCN470RP2TestData
     {
-        private static readonly Region region = RegionManager.CN470;
+        private static readonly Region region = RegionManager.CN470RP2;
 
         public static IEnumerable<object[]> TestRegionFrequencyData()
         {
@@ -131,7 +131,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public static IEnumerable<object[]> TestTranslateToRegionData =>
            new List<object[]>
            {
-                new object[] { region, LoRaRegionType.CN470 },
+                new object[] { region, LoRaRegionType.CN470RP2 },
            };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>

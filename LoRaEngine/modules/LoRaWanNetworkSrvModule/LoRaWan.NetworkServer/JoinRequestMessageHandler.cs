@@ -159,7 +159,7 @@ namespace LoRaWan.NetworkServer
                         updatedProperties.StationEui = request.StationEui;
                     }
 
-                    if (request.Region.LoRaRegion == LoRaRegionType.CN470)
+                    if (request.Region.LoRaRegion == LoRaRegionType.CN470RP2)
                     {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                         if (request.Region.TryGetJoinChannelIndex(request.Rxpk, out var channelIndex))
