@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Unit
 {
+    using System;
     using LoRaWan;
     using Xunit;
 
@@ -97,6 +98,51 @@ namespace LoRaWan.Tests.Unit
             var subject2 = new Hertz(b);
 
             Assert.Equal(expected, subject1 >= subject2);
+        }
+
+        [Theory]
+        [InlineData(-333, 123, 456)]
+        [InlineData( 333, 456, 123)]
+        [InlineData(   0, 123, 123)]
+        public void Subtraction(int expected, ulong a, ulong b)
+        {
+            var subject1 = new Hertz(a);
+            var subject2 = new Hertz(b);
+
+            Assert.Equal(expected, subject1 - subject2);
+        }
+
+        [Theory]
+        [InlineData(579, 123,  456)]
+        [InlineData(  0, 123, -123)]
+        public void Addition(ulong expected, ulong hz, long offset)
+        {
+            var subject = new Hertz(hz);
+
+            Assert.Equal(new Hertz(expected), subject + offset);
+        }
+
+        [Fact]
+        public void Addition_Throws_On_Overflow()
+        {
+            Assert.Throws<OverflowException>(() => this.subject + long.MaxValue);
+        }
+
+        [Theory]
+        [InlineData(4_560_123,       123,  4.56)]
+        [InlineData(        0, 1_230_000, -1.23)]
+        public void Addition_Mega(ulong expected, ulong hz, double offset)
+        {
+            var subject = new Hertz(hz);
+            var mega = new Mega(offset);
+
+            Assert.Equal(new Hertz(expected), subject + mega);
+        }
+
+        [Fact]
+        public void Addition_Mega_Throws_On_Overflow()
+        {
+            Assert.Throws<OverflowException>(() => this.subject + new Mega(ulong.MaxValue));
         }
     }
 }
