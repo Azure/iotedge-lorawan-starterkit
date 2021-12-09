@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public static IEnumerable<object[]> TestRegionLimitData =>
           from x in new[]
           {
-               new { Frequency =  700.0, DataRate =   5  },
+               new { Frequency =  700.0, DataRate =   5 },
                new { Frequency = 1024.0, DataRate =  10 },
                new { Frequency =  901.2, DataRate =  90 },
                new { Frequency =  928.5, DataRate = 100 },
