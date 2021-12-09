@@ -4,20 +4,22 @@
 namespace LoRaWan
 {
     using System;
-    using System.Globalization;
 
     [Flags]
 #pragma warning disable CA1028 // Enum Storage should be Int32 (byte required by LoRaWAN spec)
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-    public enum FCtrlFlags : byte
+    public enum FrameControlFlags : byte
 #pragma warning restore CA1711, CA1028
     {
 #pragma warning disable format
-        None      = 0,
-        Adr       = 0x80,
-        AdrAckReq = 0x40,
-        Ack       = 0x20,
-        FPending  = 0x10,
+        None                  = 0,
+        Adr                   = 0x80,
+        AdrAckReq             = 0x40,
+        Ack                   = 0x20,
+#pragma warning disable CA1069 // Enums values should not be duplicated (by design)
+        DownlinkFramePending  = 0x10, // FPending
+        ClassB                = 0x10,
+#pragma warning restore CA1069 // Enums values should not be duplicated
 #pragma warning restore format
     }
 
@@ -25,59 +27,21 @@ namespace LoRaWan
     /// Frame control octet (FCtrl) found in a frame header (FHDR) for either uplink or downlink
     /// frames.
     /// </summary>
-    public readonly record struct FrameControl
+    public static class FrameControl
     {
-        private const byte FOptsLenMask = 0xf;
-
         public const int Size = sizeof(byte);
-        private readonly byte value;
 
-        public FrameControl(byte value) => this.value = value;
+        private const byte OptionsLengthMask = 0x0f; // FOptsLen mask
+        private const byte FlagsMask = 0xf0;
 
-        public FrameControl(FCtrlFlags flags, int optionsLength = 0) :
-            this(unchecked((byte)((byte)(((byte)flags & FOptsLenMask) == 0 ? flags : throw new ArgumentException(null, nameof(flags)))
-                                         | (optionsLength is >= 0 and <= 15 ? optionsLength : throw new ArgumentOutOfRangeException(nameof(optionsLength), optionsLength, null)))))
-        { }
-
-        private bool HasFlags(FCtrlFlags flags) => ((FCtrlFlags)this.value & flags) == flags;
-
-        /// <summary>
-        /// Indicates whether the network will control the data rate of the end-device.
-        /// Represents the ADR bit in the frame control octet (FCtrl).
-        /// </summary>
-        /// <remarks>
-        /// If the ADR bit is set, the network will control the data rate of the end-device through
-        /// the 20 appropriate MAC commands. If the ADR bit is not set, the network will not attempt
-        /// to control the data rate of the end-device regardless of the received signal quality.
-        /// </remarks>
-        public bool Adr => HasFlags(FCtrlFlags.Adr);
-
-        /// <summary>
-        /// Indicates whether ADR acknowledgement is requested (ADRACKReq).
-        /// </summary>
-        public bool AdrAckRequested => HasFlags(FCtrlFlags.AdrAckReq);
-
-        /// <summary>
-        /// Indicates whether the receiver acknowledges (ACK) receiving a confirmed data message.
-        /// </summary>
-        public bool Ack => HasFlags(FCtrlFlags.Ack);
-
-        /// <summary>
-        /// Indicates (downlink only) whether a gateway has more data pending (FPending) to be sent.
-        /// </summary>
-        public bool DownlinkFramePending => HasFlags(FCtrlFlags.FPending);
-
-        /// <summary>
-        /// Gets the length of the frame options (FOpts).
-        /// </summary>
-        public int OptionsLength => this.value & 0x0f;
-
-        public override string ToString() => this.value.ToString("X2", CultureInfo.InvariantCulture);
-
-        public Span<byte> Write(Span<byte> buffer)
+        public static byte Encode(FrameControlFlags flags, int optionsLength)
         {
-            buffer[0] = this.value;
-            return buffer[Size..];
+            var fn = ((byte)flags & OptionsLengthMask) == 0 ? (byte)flags : throw new ArgumentException(null, nameof(flags));
+            var ln = optionsLength is >= 0 and <= 15 ? optionsLength : throw new ArgumentOutOfRangeException(nameof(optionsLength), optionsLength, null);
+            return unchecked((byte)(fn | ln)); // legend: fn = flags nibble; ln = length nibble
         }
+
+        public static (FrameControlFlags Flags, int OptionsLength) Decode(byte octet) =>
+            ((FrameControlFlags)(octet & FlagsMask), octet & OptionsLengthMask);
     }
 }

@@ -46,11 +46,11 @@ namespace LoRaWan.NetworkServer
             var isMessageTooLong = false;
 
             // default fport
-            byte fctrl = 0;
+            var fctrl = FrameControlFlags.None;
             if (upstreamPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
-                fctrl = (byte)Fctrl.Ack;
+                fctrl = FrameControlFlags.Ack;
             }
 
             // Calculate receive window
@@ -193,12 +193,12 @@ namespace LoRaWan.NetworkServer
 
             if (fpending || isMessageTooLong)
             {
-                fctrl |= (int)Fctrl.FpendingOrClassB;
+                fctrl |= FrameControlFlags.DownlinkFramePending;
             }
 
-            if (upstreamPayload.IsAdrEnabled)
+            if (upstreamPayload.IsDataRateNetworkControlled)
             {
-                fctrl |= (byte)Fctrl.ADR;
+                fctrl |= FrameControlFlags.Adr;
             }
 
             var srcDevAddr = upstreamPayload.DevAddr.Span;
@@ -212,7 +212,7 @@ namespace LoRaWan.NetworkServer
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
                 reversedDevAddr,
-                new byte[] { fctrl },
+                fctrl,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
                 fport.HasValue ? new byte[] { fport.Value } : null,
@@ -252,7 +252,6 @@ namespace LoRaWan.NetworkServer
             var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
 
             // default fport
-            byte fctrl = 0;
             var macCommandType = Cid.Zero;
 
             var rndToken = new byte[2];
@@ -326,7 +325,7 @@ namespace LoRaWan.NetworkServer
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
                 reversedDevAddr,
-                new byte[] { fctrl },
+                FrameControlFlags.None,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
                 new byte[] { cloudToDeviceMessage.Fport },
