@@ -25,7 +25,7 @@ namespace LoRaTools.LoRaPhysical
         [JsonProperty("freq")]
         public double Freq { get; set; }
         [JsonIgnore]
-        public Hertz FreqHertz { get => Hertz.FromMega(Freq); set => Freq = value.Mega; }
+        public Hertz FreqHertz { get => Hertz.Mega(Freq); set => Freq = value.InMega; }
 
         [JsonProperty("rfch")]
         public uint Rfch { get; set; }
