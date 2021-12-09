@@ -38,5 +38,65 @@ namespace LoRaWan.Tests.Unit
         {
             Assert.Equal(863_000_000UL, (ulong)this.subject);
         }
+
+        [Theory]
+        [InlineData(-1, 123, 456)]
+        [InlineData( 1, 456, 123)]
+        [InlineData( 0, 123, 123)]
+        public void CompareTo(int expected, ulong a, ulong b)
+        {
+            var subject1 = new Hertz(a);
+            var subject2 = new Hertz(b);
+
+            Assert.Equal(expected, subject1.CompareTo(subject2));
+        }
+
+        [Theory]
+        [InlineData(true , 123, 456)]
+        [InlineData(false, 456, 123)]
+        [InlineData(false, 123, 123)]
+        public void LessThan(bool expected, ulong a, ulong b)
+        {
+            var subject1 = new Hertz(a);
+            var subject2 = new Hertz(b);
+
+            Assert.Equal(expected, subject1 < subject2);
+        }
+
+        [Theory]
+        [InlineData(true , 123, 456)]
+        [InlineData(false, 456, 123)]
+        [InlineData(true , 123, 123)]
+        public void LessThanOrEqual(bool expected, ulong a, ulong b)
+        {
+            var subject1 = new Hertz(a);
+            var subject2 = new Hertz(b);
+
+            Assert.Equal(expected, subject1 <= subject2);
+        }
+
+        [Theory]
+        [InlineData(false, 123, 456)]
+        [InlineData(true , 456, 123)]
+        [InlineData(false, 123, 123)]
+        public void GreaterThan(bool expected, ulong a, ulong b)
+        {
+            var subject1 = new Hertz(a);
+            var subject2 = new Hertz(b);
+
+            Assert.Equal(expected, subject1 > subject2);
+        }
+
+        [Theory]
+        [InlineData(false, 123, 456)]
+        [InlineData(true , 456, 123)]
+        [InlineData(true , 123, 123)]
+        public void GreaterThanOrEqual(bool expected, ulong a, ulong b)
+        {
+            var subject1 = new Hertz(a);
+            var subject2 = new Hertz(b);
+
+            Assert.Equal(expected, subject1 >= subject2);
+        }
     }
 }
