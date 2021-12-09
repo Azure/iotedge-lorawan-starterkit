@@ -4,12 +4,13 @@
 namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using Azure.Storage.Blobs;
     using Microsoft.Azure.Devices;
     using Microsoft.Extensions.Configuration;
 
-    public class ConfigurationHelper
+    internal class ConfigurationHelper
     {
         private const string CredentialsStorageContainerName = "stationcredentials";
         public string NetId { get; set; }
@@ -35,24 +36,29 @@ namespace LoRaWan.Tools.CLI.Helpers
                 connectionString = configurationBuilder["IoTHubConnectionString"];
                 credentialStorageConnectionString = configurationBuilder["CredentialStorageConnectionString"];
                 netId = configurationBuilder["NetId"];
+
+                if (connectionString is null || credentialStorageConnectionString is null || netId is null)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Info, "The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
+                    return false;
+                }
             }
-            catch (Exception ex)
+            catch (FileNotFoundException)
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"{ex.Message}");
-                StatusConsole.WriteLogLine(MessageType.Info, "The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
+                StatusConsole.WriteLogLine(MessageType.Error, "Configuration file 'appsettings.json' was not found.");
                 return false;
             }
 
             // Validate connection setting
             if (string.IsNullOrEmpty(connectionString))
             {
-                StatusConsole.WriteLogLine(MessageType.Error, "Connection string not found in settings file. The format should be: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
+                StatusConsole.WriteLogLine(MessageType.Error, "Connection string 'IoTHubConnectionString' may not be empty.");
                 return false;
             }
             else
             {
                 // Just show IoT Hub Hostname
-                if (this.GetHostFromConnectionString(connectionString, out string hostName))
+                if (GetHostFromConnectionString(connectionString, out var hostName))
                 {
                     StatusConsole.WriteLogLine(MessageType.Info, $"Using IoT Hub: {hostName}");
                 }
@@ -66,21 +72,21 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Validate NetId setting
             if (string.IsNullOrEmpty(netId))
             {
-                netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString());
+                netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString(CultureInfo.InvariantCulture));
                 StatusConsole.WriteLogLine(MessageType.Info, $"NetId is not set in settings file. Using default {netId}.");
             }
             else
             {
                 netId = ValidationHelper.CleanNetId(netId);
 
-                if (ValidationHelper.ValidateHexStringTwinProperty(netId, 3, out string customError))
+                if (ValidationHelper.ValidateHexStringTwinProperty(netId, 3, out var customError))
                 {
                     StatusConsole.WriteLogLine(MessageType.Info, $"Using NetId {netId} from settings file.");
                 }
                 else
                 {
                     var netIdBad = netId;
-                    netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString());
+                    netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString(CultureInfo.InvariantCulture));
                     StatusConsole.WriteLogLine(MessageType.Warning, $"NetId {netIdBad} in settings file is invalid. {customError}.");
                     StatusConsole.WriteLogLine(MessageType.Warning, $"Using default NetId {netId} instead.");
                 }
@@ -88,16 +94,18 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             StatusConsole.WriteLogLine(MessageType.Info, $"To override, use --netid parameter.");
 
-            this.NetId = netId;
+            NetId = netId;
 
             // Create Registry Manager using connection string
             try
             {
-                this.RegistryManager = RegistryManager.CreateFromConnectionString(connectionString);
+                RegistryManager = RegistryManager.CreateFromConnectionString(connectionString);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is ArgumentNullException
+                                          or FormatException
+                                          or ArgumentException)
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"Can not connect to IoT Hub (possible error in connection string): {ex.Message}.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Failed to create connection string: {ex.Message}.");
                 return false;
             }
 
@@ -114,14 +122,14 @@ namespace LoRaWan.Tools.CLI.Helpers
             return true;
         }
 
-        public bool GetHostFromConnectionString(string connectionString, out string hostName)
+        public static bool GetHostFromConnectionString(string connectionString, out string hostName)
         {
             hostName = string.Empty;
 
-            var from = connectionString.IndexOf("HostName=");
+            var from = connectionString.IndexOf("HostName=", StringComparison.OrdinalIgnoreCase);
             var fromOffset = "HostName=".Length;
 
-            var to = connectionString.IndexOf("azure-devices.net");
+            var to = connectionString.IndexOf("azure-devices.net", StringComparison.OrdinalIgnoreCase);
             var length = to - from - fromOffset + "azure-devices.net".Length;
 
             if (from == -1 || to == -1)

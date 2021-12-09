@@ -141,6 +141,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                    .UseWebSockets()
                    .UseEndpoints(endpoints =>
                    {
+                       _ = endpoints.MapMetrics();
+
                        Map(HttpMethod.Get, BasicsStationNetworkServer.DiscoveryEndpoint,
                            context => context.Request.Host.Port is BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort,
                            (ILnsProtocolMessageProcessor processor) => processor.HandleDiscoveryAsync);
@@ -170,8 +172,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
                            });
                        }
                    });
-
-            _ = app.UseMetricServer();
         }
     }
 }

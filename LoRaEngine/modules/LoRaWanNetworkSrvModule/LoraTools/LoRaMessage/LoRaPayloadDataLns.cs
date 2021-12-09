@@ -12,7 +12,7 @@ namespace LoRaTools.LoRaMessage
     {
         public LoRaPayloadDataLns(DevAddr devAddress,
                                   MacHeader macHeader,
-                                  FrameControl control,
+                                  FrameControlFlags fctrlFlags,
                                   ushort counter,
                                   string options,
                                   string payload,
@@ -20,6 +20,7 @@ namespace LoRaTools.LoRaMessage
                                   Mic mic,
                                   ILogger logger)
         {
+            if (options is null) throw new ArgumentNullException(nameof(options));
             if (string.IsNullOrEmpty(payload)) throw new ArgumentNullException(nameof(payload));
 
             // Writing the DevAddr
@@ -51,20 +52,18 @@ namespace LoRaTools.LoRaMessage
             _ = macHeader.Write(Mhdr.Span);
 
             // Setting Fctrl
-            Fctrl = new byte[1];
-            _ = control.Write(Fctrl.Span);
+            FrameControlFlags = fctrlFlags;
 
             // Setting Fcnt
             Fcnt = new byte[sizeof(ushort)];
             BinaryPrimitives.WriteUInt16LittleEndian(Fcnt.Span, counter);
 
             // Setting FOpts
-            var foptsSize = control.OptionsLength;
-            Fopts = new byte[foptsSize];
+            Fopts = new byte[options.Length / 2];
             _ = Hexadecimal.TryParse(options, Fopts.Span);
 
             // Populate the MacCommands present in the payload.
-            if (foptsSize > 0)
+            if (options.Length > 0)
             {
                 MacCommands = MacCommand.CreateMacCommandFromBytes(Fopts, logger);
             }

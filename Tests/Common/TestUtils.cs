@@ -10,8 +10,6 @@ namespace LoRaWan.Tests.Common
     using LoRaWan.NetworkServer;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
 
     public static class TestUtils

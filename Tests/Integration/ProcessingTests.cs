@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Integration
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
@@ -325,9 +326,9 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("00")]
-        [InlineData("25")]
-        public async Task ABP_Unconfirmed_Sends_Invalid_Mac_Commands_In_Fopts(string macCommand)
+        [InlineData(0x00)]
+        [InlineData(0x25)]
+        public async Task ABP_Unconfirmed_Sends_Invalid_Mac_Commands_In_Fopts(byte macCommand)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
@@ -371,9 +372,7 @@ namespace LoRaWan.Tests.Integration
             // sends unconfirmed mac LinkCheckCmd
             var msgPayload = "Hello World";
 
-            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
-            unconfirmedMessagePayload.Fopts = ConversionHelper.StringToByteArray(macCommand);
-            unconfirmedMessagePayload.Fctrl = new byte[1] { (byte)unconfirmedMessagePayload.Fopts.Length };
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1, macCommands: MacCommand.CreateMacCommandFromBytes(new[] { macCommand }));
             // only use nwkskey
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.NwkSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var request = CreateWaitableRequest(rxpk);
@@ -553,7 +552,7 @@ namespace LoRaWan.Tests.Integration
                deviceRegistry,
                FrameCounterUpdateStrategyProvider);
 
-            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: (byte)Fctrl.Ack);
+            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.Ack);
             var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var ackRequest = CreateWaitableRequest(ackRxpk);
             messageDispatcher.DispatchRequest(ackRequest);

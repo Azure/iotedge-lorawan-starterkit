@@ -137,7 +137,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Never());
 
             LoRaDeviceClient.VerifyAll();
-            if (isMultigateway && ((LoRaPayloadData)request.Payload).IsAdrEnabled)
+            if (isMultigateway && ((LoRaPayloadData)request.Payload).IsDataRateNetworkControlled)
             {
                 LoRaDeviceApi.Verify(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()));
             }
