@@ -1310,7 +1310,8 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 try
                 {
-                    if (!await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.RemoveDeviceAsync(device)))
+                    (success, _) = await ExecuteWithIotHubErrorHandlingAsync(async () => { await configurationHelper.RegistryManager.RemoveDeviceAsync(device); return 0; });
+                    if (!success)
                         return false;
                 }
                 catch (DeviceNotFoundException)
@@ -1328,12 +1329,6 @@ namespace LoRaWan.Tools.CLI.Helpers
             StatusConsole.WriteLogLine(MessageType.Info, "Success!");
             Console.WriteLine("done.");
             return true;
-        }
-
-        private static async Task<bool> ExecuteWithIotHubErrorHandlingAsync(Func<Task> executeAsync, string errorMessageContext = null)
-        {
-            var (success, _) = await ExecuteWithIotHubErrorHandlingAsync(async () => { await executeAsync(); return true; }, errorMessageContext);
-            return success;
         }
 
         private static async Task<(bool Success, T Value)> ExecuteWithIotHubErrorHandlingAsync<T>(Func<Task<T>> executeAsync, string errorMessageContext = null)
