@@ -119,3 +119,6 @@ dotnet_diagnostic.CA1848.severity = suggestion
 # Logging template should not vary between calls. To be revisited as part of
 # https://github.com/Azure/iotedge-lorawan-starterkit/issues/829
 dotnet_diagnostic.CA2254.severity = suggestion
+
+# Extract strings to resource table (the solution will not be localized).
+dotnet_diagnostic.CA1303.severity = none

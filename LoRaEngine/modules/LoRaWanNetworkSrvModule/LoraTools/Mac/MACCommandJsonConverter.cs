@@ -74,18 +74,19 @@ namespace LoRaTools
                     case Cid.LinkCheckCmd:
                     case Cid.LinkADRCmd:
                     {
-                        if (!item.TryGetValue("datarate", out var datarate))
-                            throw new JsonReaderException("Property 'datarate' is missing");
-                        if (!item.TryGetValue("txpower", out var txpower))
-                            throw new JsonReaderException("Property 'txpower' is missing");
-                        if (!item.TryGetValue("chmask", out var chmask))
-                            throw new JsonReaderException("Property 'chmask' is missing");
-                        if (!item.TryGetValue("chmaskctl", out var chmaskctl))
-                            throw new JsonReaderException("Property 'chmaskctl' is missing");
-                        if (!item.TryGetValue("nbtrans", out var nbtrans))
-                            throw new JsonReaderException("Property 'nbtrans' is missing");
+                        GetValue("dataRate", out var datarate);
+                        GetValue("txPower", out var txpower);
+                        GetValue("chMask", out var chmask);
+                        GetValue("chMaskCntl", out var chmaskcntl);
+                        GetValue("nbRep", out var nbrep);
 
-                        var cmd = new LinkADRRequest((ushort)datarate, (ushort)txpower, (ushort)chmask, (byte)chmaskctl, (byte)nbtrans);
+                        void GetValue(string propertyName, out JToken value)
+                        {
+                            if (!item.TryGetValue(propertyName, StringComparison.OrdinalIgnoreCase, out value))
+                                throw new JsonReaderException($"Property '{propertyName}' is missing");
+                        }
+
+                        var cmd = new LinkADRRequest((ushort)datarate, (ushort)txpower, (ushort)chmask, (byte)chmaskcntl, (byte)nbrep);
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
