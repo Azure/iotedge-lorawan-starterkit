@@ -83,14 +83,15 @@ namespace LoRaWan.Tests.Integration
         /// This test integrates <code>DefaultLoRaDataRequestHandler</code> with <code>ConcentratorDeduplication</code>.
         /// </summary>
         [Theory]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, true, 1, 2, 2, 2, 2)] // resubmission case
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, false, 1, 1, 1, 1, 1)]
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, false, 1, 1, 2, 1, 2)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, true, 1, 1, 2, 1, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, true, 1, 1, 2, 1, 2)] // adr request
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, false, 1, 1, 2, 1, 2)]
         public async Task When_Same_Data_Message_Comes_Multiple_Times_Result_Depends_On_Which_Concentrator_It_Was_Sent_From(
             string station1,
             string station2,
-            DeduplicationMode deduplicationMode,
+            DeduplicationMode? deduplicationMode,
             bool isAdrRequest,
             int expectedNumberOfFrameCounterResets,
             int expectedNumberOfFunctionCalls,
@@ -109,7 +110,7 @@ namespace LoRaWan.Tests.Integration
 
             this.loRaDevice = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
             {
-                Deduplication = deduplicationMode,
+                Deduplication = deduplicationMode ?? DeduplicationMode.Drop,
                 NwkSKey = station1
             };
 
