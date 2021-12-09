@@ -60,17 +60,12 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
-           from x in new[]
+           from x in new (Hertz? NwkSrvRx2Freq, Hertz ExpectedFreq)[]
            {
-               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 869.525 },
-               new { NwkSrvRx2Freq = 868.250   , ExpectedFreq = 868.250 },
+               (null         , Mega(869.525)),
+               (Mega(868.250), Mega(868.250)),
            }
-           select new object[]
-           {
-               region,
-               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.Mega(x.NwkSrvRx2Freq) : (Hertz?)null,
-               Hertz.Mega(x.ExpectedFreq)
-           };
+           select new object[] { region, x.NwkSrvRx2Freq, x.ExpectedFreq };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
             new List<object[]>
@@ -88,17 +83,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
-            from x in new[]
-            {
-                new { Freq = 863, ExpectedIndex = -1 },
-                new { Freq = 870, ExpectedIndex = -1 },
-            }
-            select new object[]
-            {
-                region,
-                Hertz.Mega(x.Freq),
-                x.ExpectedIndex,
-            };
+            from freq in new Hertz[] { Mega(863), Mega(870) }
+            select new object[] { region, freq, /* expected index */ -1 };
 
         public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>
            new List<object[]>
