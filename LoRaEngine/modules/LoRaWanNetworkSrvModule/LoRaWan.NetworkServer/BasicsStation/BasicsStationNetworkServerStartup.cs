@@ -62,6 +62,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                                                            NetworkServerConfiguration.LogToTcpPort,
                                                                                            NetworkServerConfiguration.GatewayID));
                             }
+                            if (NetworkServerConfiguration.LogToHub)
+                                _ = loggingBuilder.AddIotHubLogger(c => c.LogLevel = logLevel);
 
                             if (useApplicationInsights)
                             {
@@ -96,7 +98,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
                         .AddTransient<ICupsProtocolMessageProcessor, CupsProtocolMessageProcessor>()
                         .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>))
-                        .AddSingleton(new RegistryMetricTagBag())
+                        .AddSingleton(new RegistryMetricTagBag(NetworkServerConfiguration))
                         .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
                         .AddHostedService(sp =>
                             new MetricExporterHostedService(

@@ -124,5 +124,20 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         {
             TestTryGetJoinChannelIndexRxpk("SF12BW500", freq, -1);
         }
+
+        [Theory]
+        [InlineData("SF10BW125", true, true)]
+        [InlineData("SF8BW125", true, true)]
+        [InlineData("SF8BW500", true, true)]
+        [InlineData("SF10BW500", false, true)]
+        [InlineData("SF7BW500", false, true)]
+        [InlineData("SF8BW125", false, false)]
+        [InlineData("SF12BW500", true, false)]
+        [InlineData("SF10BW500", true, false)]
+        [InlineData(null, false, false)]
+        public void TestIsDRWithinAcceptableValues(string dataRate, bool upstream, bool isValid)
+        {
+            TestIsDRValueWithinAcceptableValues(dataRate, upstream, isValid);
+        }
     }
 }

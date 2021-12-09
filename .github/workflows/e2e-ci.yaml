@@ -26,7 +26,7 @@ env:
   CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CI_ACR_CREDENTIALS }}
   IOT_EDGE_DEPLOYMENT_ID: ""
   NET_SRV_LOG_LEVEL: 1
-  NET_SRV_LOGTO_HUB: false
+  NET_SRV_LOG_TO_HUB: false
   NET_SRV_LOG_TO_TCP: true
   NET_SRV_IOTEDGE_TIMEOUT: 0
   NET_SRV_LOG_TO_TCP_ADDRESS: "itestup"
@@ -85,6 +85,7 @@ jobs:
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
+      CertRemotePath: "/var/lorastarterkit/certs"
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
@@ -182,6 +183,37 @@ jobs:
       env:
         CONTAINER_REGISTRY_ADDRESS: ${{ env.CONTAINER_REGISTRY_ADDRESS }}
 
+  # Generate root and server certificates and copy required files to RPi
+  certificates_job :
+    timeout-minutes: 5
+    name: Generate and copy certificates
+    environment:
+      name: CI_AZURE_ENVIRONMENT
+    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
+    needs:
+      - env_var
+    runs-on: [ self-hosted, x64 ]
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout current branch
+
+    - id: generate_step
+      shell: bash
+      name: Generate server and client certificates
+      env:
+        SERVER_PFX_PASSWORD: ${{ secrets.SERVER_PFX_PASSWORD }}
+        SSH_PRIVATE_KEY_PATH: ${{ secrets.SSH_PRIVATE_KEY_PATH }}
+        RPI_USERNAME: ${{ secrets.RPI_USERNAME }}
+        RPI_HOST: ${{ secrets.RPI_HOST }}
+        CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
+      run: |
+        chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
+        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
+        ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
+        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
+        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$RPI_HOST.pfx $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/server.pfx
+
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
     timeout-minutes: 20
@@ -190,6 +222,7 @@ jobs:
     needs:
     - env_var
     - build_push_docker_images
+    - certificates_job
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on All-In-One ARM gateway
@@ -213,6 +246,8 @@ jobs:
           LOG_ANALYTICS_WORKSPACE_ID: ${{ secrets.LOG_ANALYTICS_WORKSPACE_ID }}
           LOG_ANALYTICS_SHARED_KEY: ${{ secrets.LOG_ANALYTICS_SHARED_KEY }}
           APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_INSTRUMENTATIONKEY }}
+          CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
+          SERVER_PFX_PASSWORD: ${{ secrets.SERVER_PFX_PASSWORD }}
         with:
           deployment_file_name: '${{ secrets.DEPLOYMENT_FILE_NAME }}'
           architecture: '${{ secrets.ARCHITECTURE }}'
