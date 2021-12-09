@@ -79,8 +79,6 @@ namespace LoRaWan
         public static bool operator >(Hertz a, Hertz b) => a.CompareTo(b) > 0;
         public static bool operator >=(Hertz a, Hertz b) => a.CompareTo(b) >= 0;
 
-        //public static Hertz operator +(Hertz a, Hertz b) => new Hertz(checked(a.value + b.value));
-        //public static Hertz operator -(Hertz a, Hertz b) => new Hertz(checked(a.value - b.value));
         public static Hertz operator +(Hertz a, long offset) => new(checked((ulong)((long)a.value + offset)));
         public static Hertz operator +(Hertz a, Mega offset) => new(checked((ulong)((long)a.value + offset.Unit)));
         public static long operator -(Hertz a, Hertz b) => checked((long)a.value - (long)b.value);
