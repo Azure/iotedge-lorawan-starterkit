@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using global::LoRaTools.Regions;
+    using static LoRaWan.Metric;
 
     public static class RegionAS923TestData
     {
@@ -63,16 +64,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
-          from x in new[]
-          {
-               new { Frequency = 900.0, DataRate =   8 },
-               new { Frequency = 914.5, DataRate =   9 },
-               new { Frequency = 930.0, DataRate =  10 },
-               new { Frequency = 928.4, DataRate =  18 },
-               new { Frequency = 928.5, DataRate =  90 },
-               new { Frequency = 928.2, DataRate = 100 },
-          }
-          select new object[] { region, Hertz.Mega(x.Frequency), x.DataRate };
+            from x in new (Hertz Frequency, ushort DataRate)[]
+            {
+                (Mega(900.0),   8),
+                (Mega(914.5),   9),
+                (Mega(930.0),  10),
+                (Mega(928.4),  18),
+                (Mega(928.5),  90),
+                (Mega(928.2), 100),
+            }
+            select new object[] { region, x.Frequency, x.DataRate };
 
         public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
            new List<object[]>
