@@ -9,11 +9,12 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
+    using static LoRaWan.Metric;
 
     public class RegionAS923 : Region
     {
-        private static readonly Hertz Channel0Frequency = Hertz.Mega(923.2);
-        private static readonly Hertz Channel1Frequency = Hertz.Mega(923.4);
+        private static readonly Hertz Channel0Frequency = Mega(923.2);
+        private static readonly Hertz Channel1Frequency = Mega(923.4);
 
         private readonly bool useDwellTimeLimit;
 
@@ -94,7 +95,7 @@ namespace LoRaTools.Regions
             };
 
             MaxADRDataRate = 7;
-            RegionLimits = new RegionLimits((Min: Hertz.Mega(915), Max: Hertz.Mega(928)), validDatarates, validDatarates, 0, 0);
+            RegionLimits = new RegionLimits((Min: Mega(915), Max: Mega(928)), validDatarates, validDatarates, 0, 0);
         }
 
         /// <summary>
