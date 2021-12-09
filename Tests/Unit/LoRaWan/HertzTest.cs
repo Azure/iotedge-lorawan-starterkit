@@ -44,72 +44,78 @@ namespace LoRaWan.Tests.Unit
         [InlineData(-1, 123, 456)]
         [InlineData( 1, 456, 123)]
         [InlineData( 0, 123, 123)]
-        public void CompareTo(int expected, ulong a, ulong b)
+        public void CompareTo(int expected, ulong hz1, ulong hz2)
         {
-            var subject1 = new Hertz(a);
-            var subject2 = new Hertz(b);
+            var a = new Hertz(hz1);
+            var b = new Hertz(hz2);
+            var result = a.CompareTo(b);
 
-            Assert.Equal(expected, subject1.CompareTo(subject2));
+            Assert.Equal(expected, result);
         }
 
         [Theory]
         [InlineData(true , 123, 456)]
         [InlineData(false, 456, 123)]
         [InlineData(false, 123, 123)]
-        public void LessThan(bool expected, ulong a, ulong b)
+        public void LessThan(bool expected, ulong hz1, ulong hz2)
         {
-            var subject1 = new Hertz(a);
-            var subject2 = new Hertz(b);
+            var a = new Hertz(hz1);
+            var b = new Hertz(hz2);
+            var result = a < b;
 
-            Assert.Equal(expected, subject1 < subject2);
+            Assert.Equal(expected, result);
         }
 
         [Theory]
         [InlineData(true , 123, 456)]
         [InlineData(false, 456, 123)]
         [InlineData(true , 123, 123)]
-        public void LessThanOrEqual(bool expected, ulong a, ulong b)
+        public void LessThanOrEqual(bool expected, ulong hz1, ulong hz2)
         {
-            var subject1 = new Hertz(a);
-            var subject2 = new Hertz(b);
+            var a = new Hertz(hz1);
+            var b = new Hertz(hz2);
+            var result = a <= b;
 
-            Assert.Equal(expected, subject1 <= subject2);
+            Assert.Equal(expected, result);
         }
 
         [Theory]
         [InlineData(false, 123, 456)]
         [InlineData(true , 456, 123)]
         [InlineData(false, 123, 123)]
-        public void GreaterThan(bool expected, ulong a, ulong b)
+        public void GreaterThan(bool expected, ulong hz1, ulong hz2)
         {
-            var subject1 = new Hertz(a);
-            var subject2 = new Hertz(b);
+            var a = new Hertz(hz1);
+            var b = new Hertz(hz2);
+            var result = a > b;
 
-            Assert.Equal(expected, subject1 > subject2);
+            Assert.Equal(expected, result);
         }
 
         [Theory]
         [InlineData(false, 123, 456)]
         [InlineData(true , 456, 123)]
         [InlineData(true , 123, 123)]
-        public void GreaterThanOrEqual(bool expected, ulong a, ulong b)
+        public void GreaterThanOrEqual(bool expected, ulong hz1, ulong hz2)
         {
-            var subject1 = new Hertz(a);
-            var subject2 = new Hertz(b);
+            var a = new Hertz(hz1);
+            var b = new Hertz(hz2);
+            var result = a >= b;
 
-            Assert.Equal(expected, subject1 >= subject2);
+            Assert.Equal(expected, result);
         }
 
         [Theory]
         [InlineData(-333, 123, 456)]
         [InlineData( 333, 456, 123)]
         [InlineData(   0, 123, 123)]
-        public void Subtraction(int expected, ulong a, ulong b)
+        public void Subtraction(int expected, ulong hz1, ulong hz2)
         {
-            var subject1 = new Hertz(a);
-            var subject2 = new Hertz(b);
+            var a = new Hertz(hz1);
+            var b = new Hertz(hz2);
+            var result = a - b;
 
-            Assert.Equal(expected, subject1 - subject2);
+            Assert.Equal(expected, result);
         }
 
         [Theory]
@@ -118,8 +124,9 @@ namespace LoRaWan.Tests.Unit
         public void Addition(ulong expected, ulong hz, long offset)
         {
             var subject = new Hertz(hz);
+            var result = subject + offset;
 
-            Assert.Equal(new Hertz(expected), subject + offset);
+            Assert.Equal(new Hertz(expected), result);
         }
 
         [Fact]
@@ -133,10 +140,11 @@ namespace LoRaWan.Tests.Unit
         [InlineData(        0, 1_230_000, -1.23)]
         public void Addition_Mega(ulong expected, ulong hz, double offset)
         {
-            var subject = new Hertz(hz);
-            var mega = new Mega(offset);
+            var a = new Hertz(hz);
+            var b = new Mega(offset);
+            var result = a + b;
 
-            Assert.Equal(new Hertz(expected), subject + mega);
+            Assert.Equal(new Hertz(expected), result);
         }
 
         [Fact]
