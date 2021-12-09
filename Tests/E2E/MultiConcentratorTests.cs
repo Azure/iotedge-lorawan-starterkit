@@ -4,19 +4,42 @@
 namespace LoRaWan.Tests.E2E
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Threading.Tasks;
+    using LoRaWan.Tests.Common;
     using Xunit;
     using XunitRetryHelper;
 
     // Tests multi-concentrator scenarios
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-    public sealed class MultiConcentratorTests : IntegrationTestBaseCi
+    public sealed class MultiConcentratorTests : IntegrationTestBaseCi, IAsyncLifetime
     {
         public MultiConcentratorTests(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
         {
+        }
+
+        public Task DisposeAsync()
+        {
+            TestUtils.KillBasicsStation(TestFixture.Configuration);
+            return Task.CompletedTask;
+        }
+
+        public async Task InitializeAsync()
+        {
+            TestUtils.StartBasicsStation(TestFixture.Configuration, new Dictionary<string, string>()
+            {
+                { "TLS_SNI", "false" },
+                { "TC_URI", TestFixture.Configuration.SharedLnsEndpoint },
+                { "FIXED_STATION_EUI", TestFixture.Configuration.FixedBasicStationEui }
+            });
+            // Waiting 5 seconds for the BasicsStation to connect
+            await Task.Delay(5_000);
+            var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
+                (log) => log.IndexOf(TestFixture.Configuration.FixedBasicStationEui, StringComparison.Ordinal) != -1);
+            Assert.NotNull(log.MatchedEvent);
         }
 
         [RetryFact]
