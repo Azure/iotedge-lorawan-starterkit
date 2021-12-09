@@ -7,7 +7,6 @@ namespace LoRaTools.LoRaPhysical
     using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
-    using static LoRaWan.Metric;
 
     public class Txpk
     {
@@ -26,7 +25,7 @@ namespace LoRaTools.LoRaPhysical
         [JsonProperty("freq")]
         public double Freq { get; set; }
         [JsonIgnore]
-        public Hertz FreqHertz { get => Mega(Freq); set => Freq = value.Mega; }
+        public Hertz FreqHertz => Hertz.FromMega(Freq);
 
         [JsonProperty("rfch")]
         public uint Rfch { get; set; }
