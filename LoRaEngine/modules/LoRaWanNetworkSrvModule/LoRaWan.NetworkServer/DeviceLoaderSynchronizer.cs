@@ -316,14 +316,10 @@ namespace LoRaWan.NetworkServer
 
         private void InitializeDevice(LoRaDevice loRaDevice)
         {
-            if (loRaDevice.IsOurDevice)
+            if (loRaDevice.IsOurDevice && this.initializers != null)
             {
-                // once added, call initializers
-                if (this.initializers != null)
-                {
-                    foreach (var initializer in this.initializers)
-                        initializer.Initialize(loRaDevice);
-                }
+                foreach (var initializer in this.initializers)
+                    initializer.Initialize(loRaDevice);
             }
         }
     }
