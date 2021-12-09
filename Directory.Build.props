@@ -11,10 +11,10 @@
     </PropertyGroup>
     <PropertyGroup>
       <DockerDotNetX509Version>3.125.2</DockerDotNetX509Version>
-      <MicrosoftAzureDevicesVersion>1.33.0</MicrosoftAzureDevicesVersion>
+      <MicrosoftAzureDevicesVersion>1.36.0</MicrosoftAzureDevicesVersion>
       <MicrosoftAzureDevicesClientVersion>1.39.0</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>6.0.0</MicrosoftExtensionsCachingMemoryVersion>
-      <MicrosoftAzureFunctionsExtensionsVersion>1.0.0</MicrosoftAzureFunctionsExtensionsVersion>
+      <MicrosoftAzureFunctionsExtensionsVersion>1.1.0</MicrosoftAzureFunctionsExtensionsVersion>
       <MicrosoftExtensionsDependencyInjectionVersion>6.0.0</MicrosoftExtensionsDependencyInjectionVersion>
       <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
       <MicrosoftExtensionsPrimitivesVersion>6.0.0</MicrosoftExtensionsPrimitivesVersion>
@@ -22,7 +22,7 @@
       <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
       <PortableBouncyCastleVersion>1.9.0</PortableBouncyCastleVersion>
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
-      <StackExchangeRedisVersion>2.1.58</StackExchangeRedisVersion>
+      <StackExchangeRedisVersion>2.2.88</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
       <ApplicationInsightsVersion>2.19.0</ApplicationInsightsVersion>
       <PrometheusNetVersion>5.0.2</PrometheusNetVersion>

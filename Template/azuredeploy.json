@@ -82,7 +82,8 @@
         "iotHubOwnerPolicyName": "iothubowner",
         "appInsightName": "[concat(parameters('uniqueSolutionPrefix'), 'insight')]",
         "redisCacheName": "[concat(parameters('uniqueSolutionPrefix'), 'redis')]",
-        "logAnalyticsName": "[concat(parameters('uniqueSolutionPrefix'), 'log')]"
+        "logAnalyticsName": "[concat(parameters('uniqueSolutionPrefix'), 'log')]",
+        "deploymentsAPIVersion": "2021-04-01"
     },
     "resources": [
         {
@@ -225,7 +226,7 @@
         {
             "name": "functionLauncher",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2015-01-01",
+            "apiVersion": "[variables('deploymentsAPIVersion')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
             ],
@@ -269,6 +270,30 @@
             },
             "dependsOn": []
         },
+        {
+            "name": "azuremonitoralerts",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('deploymentsAPIVersion')]",
+            "dependsOn": [                
+                "[resourceId('microsoft.insights/components/', variables('appInsightName'))]",
+                "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"  
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit/',variables('gitBranch'),'/Template/azureMonitorAlerts.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appInsightName": {
+                        "value": "[variables('appInsightName')]"
+                    },
+                    "iotHubName": {
+                        "value": "[variables('iotHubName')]"
+                    }
+                }
+            }
+        },        
         {
             "type": "Microsoft.OperationalInsights/workspaces",
             "apiVersion": "2021-06-01",

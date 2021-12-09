@@ -308,6 +308,7 @@ namespace LoRaWan.NetworkServer
 
                     if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                     {
+                        this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)downlinkMessageBuilderResp.ReceiveWindow));
                         _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
 
                         if (cloudToDeviceMessage != null)
@@ -525,7 +526,7 @@ namespace LoRaWan.NetworkServer
                 // Get max. payload size for RX2, considering possible user provided Rx2DataRate
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
                 {
-                    if (loRaRegion.LoRaRegion == LoRaRegionType.CN470)
+                    if (loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2)
                     {
                         var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel));
                         maxPayload = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate].maxPyldSize;
