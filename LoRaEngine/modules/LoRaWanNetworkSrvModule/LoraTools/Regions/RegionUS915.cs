@@ -15,7 +15,7 @@ namespace LoRaTools.Regions
         // Frequencies calculated according to formula:
         // 923.3 + upstreamChannelNumber % 8 * 0.6,
         // rounded to first decimal point
-        private static readonly Hertz[] DownstreamChannelFrequencies = new Hertz[]
+        private static readonly Hertz[] DownstreamChannelFrequencies =
         {
             Mega(923.3),
             Mega(923.9),
