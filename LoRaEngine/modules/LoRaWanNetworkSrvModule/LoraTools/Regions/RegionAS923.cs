@@ -137,16 +137,16 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region CN470.
         /// </summary>
-        /// <param name="upstream">The frequency at which the message was transmitted.</param>
+        /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstream, out Hertz downstream, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
-            if (!IsValidUpstreamFrequency(upstream))
-                throw new LoRaProcessingException($"Invalid upstream frequency {upstream}", LoRaProcessingErrorCode.InvalidFrequency);
+            if (!IsValidUpstreamFrequency(upstreamFrequency))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
             // Use the same frequency as the upstream.
-            downstream = upstream;
+            downstreamFrequency = upstreamFrequency;
             return true;
         }
 

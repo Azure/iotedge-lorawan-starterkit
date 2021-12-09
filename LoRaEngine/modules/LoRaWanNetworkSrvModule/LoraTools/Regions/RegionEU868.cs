@@ -81,16 +81,16 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region EU868.
         /// </summary>
-        /// <param name="upstream">Frequency on which the message was transmitted.</param>
+        /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
         /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstream, out Hertz downstream, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
-            if (!IsValidUpstreamFrequency(upstream))
-                throw new LoRaProcessingException($"Invalid upstream frequency {upstream}", LoRaProcessingErrorCode.InvalidFrequency);
+            if (!IsValidUpstreamFrequency(upstreamFrequency))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
             // in case of EU, you respond on same frequency as you sent data.
-            downstream = upstream;
+            downstreamFrequency = upstreamFrequency;
             return true;
         }
 

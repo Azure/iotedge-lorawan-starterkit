@@ -142,7 +142,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency of the upstream message.</param>
         /// <param name="upstreamDataRate">Ustream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract bool TryGetDownstreamChannelFrequency(Hertz upstream, out Hertz downstream, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null);
+        public abstract bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>
         /// Returns downstream data rate based on the upstream channel and RX1 DR offset.

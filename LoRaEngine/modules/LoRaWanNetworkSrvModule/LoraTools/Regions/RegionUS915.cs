@@ -112,23 +112,23 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region US915.
         /// </summary>
-        /// <param name="upstream">Frequency on which the message was transmitted.</param>
+        /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
         /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstream, out Hertz downstream, ushort? upstreamDataRate, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (upstreamDataRate is null) throw new ArgumentNullException(nameof(upstreamDataRate));
 
-            if (!IsValidUpstreamFrequency(upstream))
-                throw new LoRaProcessingException($"Invalid upstream frequency {upstream}", LoRaProcessingErrorCode.InvalidFrequency);
+            if (!IsValidUpstreamFrequency(upstreamFrequency))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
             if (!IsValidUpstreamDataRate((ushort)upstreamDataRate))
                 throw new LoRaProcessingException($"Invalid upstream data rate {upstreamDataRate}", LoRaProcessingErrorCode.InvalidDataRate);
 
             int upstreamChannelNumber;
-            upstreamChannelNumber = upstreamDataRate == 4 ? 64 + (int)Math.Round((upstream.Mega - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
-                                                    : (int)Math.Round((upstream.Mega - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
-            downstream = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
+            upstreamChannelNumber = upstreamDataRate == 4 ? 64 + (int)Math.Round((upstreamFrequency.Mega - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
+                                                    : (int)Math.Round((upstreamFrequency.Mega - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
+            downstreamFrequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
             return true;
         }
 

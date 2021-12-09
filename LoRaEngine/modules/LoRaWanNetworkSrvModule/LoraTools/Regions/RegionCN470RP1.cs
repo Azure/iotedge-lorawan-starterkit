@@ -64,21 +64,21 @@ namespace LoRaTools.Regions
 
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region CN470.
-        /// <param name="upstream">The frequency at which the message was transmitted.</param>
+        /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         /// </summary>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstream, out Hertz downstream, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
-            if (!IsValidUpstreamFrequency(upstream))
-                throw new LoRaProcessingException($"Invalid upstream frequency {upstream}", LoRaProcessingErrorCode.InvalidFrequency);
+            if (!IsValidUpstreamFrequency(upstreamFrequency))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
             var upstreamChannelNumber = (int)Math.Round(
-                (upstream - StartingUpstreamFrequency) / FrequencyIncrement.Unit,
+                (upstreamFrequency - StartingUpstreamFrequency) / FrequencyIncrement.Unit,
                 0,
                 MidpointRounding.AwayFromZero);
 
-            downstream = StartingDownstreamFrequency + checked((long)((upstreamChannelNumber % DownstreamChannelCount) * FrequencyIncrement.Unit));
+            downstreamFrequency = StartingDownstreamFrequency + checked((long)((upstreamChannelNumber % DownstreamChannelCount) * FrequencyIncrement.Unit));
 
             return true;
         }

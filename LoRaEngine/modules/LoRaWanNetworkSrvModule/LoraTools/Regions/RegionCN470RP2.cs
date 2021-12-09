@@ -218,16 +218,16 @@ namespace LoRaTools.Regions
 
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region CN470.
-        /// <param name="upstream">The frequency at which the message was transmitted.</param>
+        /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         /// </summary>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstream, out Hertz downstream, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = default)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = default)
         {
             if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
 
-            if (!IsValidUpstreamFrequency(upstream))
-                throw new LoRaProcessingException($"Invalid upstream frequency {upstream}", LoRaProcessingErrorCode.InvalidFrequency);
+            if (!IsValidUpstreamFrequency(upstreamFrequency))
+                throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
             // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
             // over desired twin properties (set for APB devices).
@@ -235,30 +235,30 @@ namespace LoRaTools.Regions
             {
                 case <= 7: // 20 MHz plan A
                 {
-                    var channelNumber = upstream < Mega(500) ? GetChannelNumber(upstream, Mega(470.3)) : GetChannelNumber(upstream, Mega(503.5), 32);
-                    downstream = this.downstreamFrequenciesByPlanType[0][channelNumber];
+                    var channelNumber = upstreamFrequency < Mega(500) ? GetChannelNumber(upstreamFrequency, Mega(470.3)) : GetChannelNumber(upstreamFrequency, Mega(503.5), 32);
+                    downstreamFrequency = this.downstreamFrequenciesByPlanType[0][channelNumber];
                     return true;
                 }
                 case <= 9: // 20 MHz plan B
                 {
-                    var channelNumber = upstream < Mega(490) ? GetChannelNumber(upstream, Mega(476.9)) : GetChannelNumber(upstream, Mega(496.9), 32);
-                    downstream = this.downstreamFrequenciesByPlanType[1][channelNumber];
+                    var channelNumber = upstreamFrequency < Mega(490) ? GetChannelNumber(upstreamFrequency, Mega(476.9)) : GetChannelNumber(upstreamFrequency, Mega(496.9), 32);
+                    downstreamFrequency = this.downstreamFrequenciesByPlanType[1][channelNumber];
                     return true;
                 }
                 case <= 14: // 26 MHz plan A
                 {
-                    var channelNumber = GetChannelNumber(upstream, Mega(470.3));
-                    downstream = this.downstreamFrequenciesByPlanType[2][channelNumber % 24];
+                    var channelNumber = GetChannelNumber(upstreamFrequency, Mega(470.3));
+                    downstreamFrequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24];
                     return true;
                 }
                 case <= 19: // 26 MHz plan B
                 {
-                    var channelNumber = GetChannelNumber(upstream, Mega(480.3));
-                    downstream = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
+                    var channelNumber = GetChannelNumber(upstreamFrequency, Mega(480.3));
+                    downstreamFrequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
                     return true;
                 }
                 default:
-                    downstream = default;
+                    downstreamFrequency = default;
                     return false;
             }
         }
