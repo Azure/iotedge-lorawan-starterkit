@@ -112,8 +112,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            select new object[]
            {
                region,
-               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.FromMega(x.NwkSrvRx2Freq) : (Hertz?)null,
-               Hertz.FromMega(x.ExpectedFreq),
+               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.Mega(x.NwkSrvRx2Freq) : (Hertz?)null,
+               Hertz.Mega(x.ExpectedFreq),
                x.JoinChannel.Reported,
                x.JoinChannel.Desired,
            };
@@ -158,7 +158,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             select new object[]
             {
                 region,
-                Hertz.FromMega(x.Freq),
+                Hertz.Mega(x.Freq),
                 x.ExpectedIndex,
             };
 

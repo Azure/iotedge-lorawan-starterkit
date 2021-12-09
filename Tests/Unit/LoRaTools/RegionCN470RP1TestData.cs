@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                new { Frequency = 510.8, DataRate =  20 },
                new { Frequency = 512.3, DataRate = 110 },
           }
-          select new object[] { region, Hertz.FromMega(x.Frequency), x.DataRate };
+          select new object[] { region, Hertz.Mega(x.Frequency), x.DataRate };
 
         public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
            new List<object[]>
@@ -83,8 +83,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            select new object[]
            {
                region,
-               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.FromMega(x.NwkSrvRx2Freq) : (Hertz?)null,
-               Hertz.FromMega(x.ExpectedFreq)
+               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.Mega(x.NwkSrvRx2Freq) : (Hertz?)null,
+               Hertz.Mega(x.ExpectedFreq)
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
@@ -114,7 +114,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             select new object[]
             {
                 region,
-                Hertz.FromMega(x.Freq),
+                Hertz.Mega(x.Freq),
                 x.ExpectedIndex,
             };
 

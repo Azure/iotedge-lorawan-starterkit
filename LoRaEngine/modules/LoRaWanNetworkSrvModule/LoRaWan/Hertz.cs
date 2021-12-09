@@ -21,11 +21,11 @@ namespace LoRaWan
         public ulong AsUInt64 => this.value;
 #pragma warning restore IDE0032 // Use auto property
 
-        public double Kilo => this.value / 1e3;
-        public double Mega => this.value / 1e6;
-        public double Giga => this.value / 1e9;
+        public double InKilo => this.value / 1e3;
+        public double InMega => this.value / 1e6;
+        public double InGiga => this.value / 1e9;
 
-        public static Hertz FromMega(double value) => new Hertz(checked((ulong)(value * 1e6)));
+        public static Hertz Mega(double value) => new Hertz(checked((ulong)(value * 1e6)));
 
         public static implicit operator Hertz(Mega value) => new Hertz(checked((ulong)value.Units));
 

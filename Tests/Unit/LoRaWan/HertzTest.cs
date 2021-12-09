@@ -13,18 +13,18 @@ namespace LoRaWan.Tests.Unit
         [Fact]
         public void HertzConversions_Behave_Properly()
         {
-            Assert.Equal(863000, this.subject.Kilo);
-            Assert.Equal(863, this.subject.Mega);
-            Assert.Equal(0.863, this.subject.Giga);
+            Assert.Equal(863000, this.subject.InKilo);
+            Assert.Equal(863, this.subject.InMega);
+            Assert.Equal(0.863, this.subject.InGiga);
         }
 
         [Fact]
         public void FromMega_Returns_Expected_Hertz()
         {
-            var hz = Hertz.FromMega(863.5);
-            Assert.Equal(863500, hz.Kilo);
-            Assert.Equal(863.5, hz.Mega);
-            Assert.Equal(0.8635, hz.Giga);
+            var hz = Hertz.Mega(863.5);
+            Assert.Equal(863500, hz.InKilo);
+            Assert.Equal(863.5, hz.InMega);
+            Assert.Equal(0.8635, hz.InGiga);
         }
 
         [Fact]

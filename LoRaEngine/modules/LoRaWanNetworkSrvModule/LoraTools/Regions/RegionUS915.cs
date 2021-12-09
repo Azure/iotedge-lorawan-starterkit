@@ -105,7 +105,7 @@ namespace LoRaTools.Regions
                 upstreamChannelNumber = (int)Math.Round((upstreamChannel.Freq - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
             }
 
-            frequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8].Mega;
+            frequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8].InMega;
             return true;
         }
 
@@ -126,8 +126,8 @@ namespace LoRaTools.Regions
                 throw new LoRaProcessingException($"Invalid upstream data rate {upstreamDataRate}", LoRaProcessingErrorCode.InvalidDataRate);
 
             int upstreamChannelNumber;
-            upstreamChannelNumber = upstreamDataRate == 4 ? 64 + (int)Math.Round((upstreamFrequency.Mega - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
-                                                    : (int)Math.Round((upstreamFrequency.Mega - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
+            upstreamChannelNumber = upstreamDataRate == 4 ? 64 + (int)Math.Round((upstreamFrequency.InMega - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
+                                                    : (int)Math.Round((upstreamFrequency.InMega - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
             downstreamFrequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
             return true;
         }

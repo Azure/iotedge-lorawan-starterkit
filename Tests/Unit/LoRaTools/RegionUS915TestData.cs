@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                 (904.1, 923.9),
                 (904.3, 924.5),
             }
-            select new object[] { region, Hertz.FromMega(freq.Input), dr, Hertz.FromMega(freq.Output) };
+            select new object[] { region, Hertz.Mega(freq.Input), dr, Hertz.Mega(freq.Output) };
 
         public static readonly IEnumerable<object[]> TestRegionFrequencyDataDR4 =
             from freq in new (double Input, double Output)[]
@@ -42,7 +42,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                 (912.6, 926.9),
                 (914.2, 927.5),
             }
-            select new object[] { region, Hertz.FromMega(freq.Input), /* data rate */ 4, Hertz.FromMega(freq.Output) };
+            select new object[] { region, Hertz.Mega(freq.Input), /* data rate */ 4, Hertz.Mega(freq.Output) };
 
         public static IEnumerable<object[]> TestRegionDataRateDataDR1To3()
         {
@@ -81,7 +81,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                new { Frequency =  901.2, DataRate =  90 },
                new { Frequency =  928.5, DataRate = 100 },
           }
-          select new object[] { region, Hertz.FromMega(x.Frequency), x.DataRate };
+          select new object[] { region, Hertz.Mega(x.Frequency), x.DataRate };
 
         public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
            new List<object[]>
@@ -107,8 +107,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            select new object[]
            {
                region,
-               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.FromMega(x.NwkSrvRx2Freq) : (Hertz?)null,
-               Hertz.FromMega(x.ExpectedFreq)
+               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.Mega(x.NwkSrvRx2Freq) : (Hertz?)null,
+               Hertz.Mega(x.ExpectedFreq)
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
@@ -135,7 +135,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             select new object[]
             {
                 region,
-                Hertz.FromMega(x.Freq),
+                Hertz.Mega(x.Freq),
                 x.ExpectedIndex,
             };
 

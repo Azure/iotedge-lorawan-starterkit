@@ -97,7 +97,7 @@ namespace LoRaTools.Regions
                 throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
 
             (var result, frequency) = TryGetDownstreamChannelFrequency(upstreamChannel.FreqHertz, out var downstream)
-                                    ? (true, downstream.Mega) : default;
+                                    ? (true, downstream.InMega) : default;
             return result;
         }
 
