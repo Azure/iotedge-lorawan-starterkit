@@ -7,7 +7,9 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -159,7 +161,7 @@ namespace LoRaWan.NetworkServer
                 ["DevEUI"] = eui
             });
 
-            var response = await client.GetAsync(new Uri(url.ToString()));
+            var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -196,6 +198,30 @@ namespace LoRaWan.NetworkServer
                 .Aggregate(queryParameterSb, (sb, qp) => sb.Append(qp));
 
             return new Uri(baseUrl, queryParameterSb.ToString());
+        }
+
+        public override async Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype, CancellationToken token)
+        {
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
+            {
+                ["code"] = AuthCode,
+                ["StationEui"] = eui.ToString("N", null),
+                ["CredentialType"] = credentialtype.ToString()
+            });
+
+            var response = await client.GetAsync(url, token);
+            if (!response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode is not System.Net.HttpStatusCode.NotFound)
+                {
+                    this.logger.LogError($"error calling fetch station credentials api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
+                }
+
+                return string.Empty;
+            }
+
+            return await response.Content.ReadAsStringAsync(token);
         }
     }
 }

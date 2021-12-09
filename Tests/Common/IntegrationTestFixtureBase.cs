@@ -211,7 +211,7 @@ namespace LoRaWan.Tests.Common
                 var twinCollection = new TwinCollection();
                 twinCollection[twinName] = twinValue;
                 await device.UpdateReportedPropertiesAsync(twinCollection);
-                device.Dispose();
+                await device.DisposeAsync();
             }
             catch (System.InvalidOperationException)
             {

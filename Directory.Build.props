@@ -11,28 +11,28 @@
     </PropertyGroup>
     <PropertyGroup>
       <DockerDotNetX509Version>3.125.2</DockerDotNetX509Version>
-      <MicrosoftAzureDevicesVersion>1.33.0</MicrosoftAzureDevicesVersion>
-      <MicrosoftAzureDevicesClientVersion>1.37.1</MicrosoftAzureDevicesClientVersion>
+      <MicrosoftAzureDevicesVersion>1.36.0</MicrosoftAzureDevicesVersion>
+      <MicrosoftAzureDevicesClientVersion>1.39.0</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>6.0.0</MicrosoftExtensionsCachingMemoryVersion>
-      <MicrosoftAzureFunctionsExtensionsVersion>1.0.0</MicrosoftAzureFunctionsExtensionsVersion>
+      <MicrosoftAzureFunctionsExtensionsVersion>1.1.0</MicrosoftAzureFunctionsExtensionsVersion>
       <MicrosoftExtensionsDependencyInjectionVersion>6.0.0</MicrosoftExtensionsDependencyInjectionVersion>
       <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
       <MicrosoftExtensionsPrimitivesVersion>6.0.0</MicrosoftExtensionsPrimitivesVersion>
       <MicrosoftNETSdkFunctionsVersion>4.0.1</MicrosoftNETSdkFunctionsVersion>
       <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
-      <PortableBouncyCastleVersion>1.8.10</PortableBouncyCastleVersion>
+      <PortableBouncyCastleVersion>1.9.0</PortableBouncyCastleVersion>
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
-      <StackExchangeRedisVersion>2.1.58</StackExchangeRedisVersion>
+      <StackExchangeRedisVersion>2.2.88</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
       <ApplicationInsightsVersion>2.19.0</ApplicationInsightsVersion>
-      <PrometheusNetVersion>5.0.1</PrometheusNetVersion>
+      <PrometheusNetVersion>5.0.2</PrometheusNetVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
       <MicrosoftNETTestSdkVersion>17.0.0</MicrosoftNETTestSdkVersion>
       <MoqVersion>4.16.1</MoqVersion>
       <XUnitVersion>2.4.1</XUnitVersion>
-      <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
+      <XunitCombinatorialVersion>1.4.1</XunitCombinatorialVersion>
       <MicrosoftExtensionsConfigurationVersion>6.0.0</MicrosoftExtensionsConfigurationVersion>
       <MicrosoftExtensionsConfigurationBinderVersion>6.0.0</MicrosoftExtensionsConfigurationBinderVersion>
       <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>6.0.0</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
@@ -44,7 +44,7 @@
       <MicrosoftAzureEventHubsProcessorVersion>4.3.2</MicrosoftAzureEventHubsProcessorVersion>
       <MicrosoftExtensionsLogging>6.0.0</MicrosoftExtensionsLogging>
       <MicrosoftExtensionsLoggingConfiguration>6.0.0</MicrosoftExtensionsLoggingConfiguration>
-      <BogusVersion>33.1.1</BogusVersion>
+      <BogusVersion>34.0.1</BogusVersion>
       <NullablePkg>1.3.0</NullablePkg>
       <MicrosoftAspNetCoreMvcTestingVersion>6.0.0</MicrosoftAspNetCoreMvcTestingVersion>
     </PropertyGroup>
