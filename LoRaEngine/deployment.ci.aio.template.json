@@ -120,7 +120,7 @@
                 "value": "$SERVER_PFX_PASSWORD"
               },
               "LNS_VERSION": {
-                "value": "$IMAGE_TAG"
+                "value": "$NET_SRV_VERSION"
               }
             },
             "status": "running",
@@ -165,7 +165,7 @@
                 "value": "false"
               },
               "LNS_VERSION": {
-                "value": "$IMAGE_TAG"
+                "value": "$NET_SRV_VERSION"
               }
             },
             "version": "1.0",

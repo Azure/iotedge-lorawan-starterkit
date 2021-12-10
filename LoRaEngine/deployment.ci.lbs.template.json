@@ -96,7 +96,7 @@
                 "value": "$LBS_FIXED_STATION_EUI"
               },
               "LNS_VERSION": {
-                "value": "$IMAGE_TAG"
+                "value": "$NET_SRV_VERSION"
               }
             },
             "version": "1.0",

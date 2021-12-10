@@ -105,7 +105,7 @@
                 "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
               },
               "LNS_VERSION": {
-                "value": "$IMAGE_TAG"
+                "value": "$NET_SRV_VERSION"
               }
             },
             "status": "running",
