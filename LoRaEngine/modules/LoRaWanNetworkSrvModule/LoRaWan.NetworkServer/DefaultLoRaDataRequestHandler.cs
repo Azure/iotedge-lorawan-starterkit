@@ -858,7 +858,7 @@ namespace LoRaWan.NetworkServer
             return valid;
         }
 
-        internal virtual async Task<bool> DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(
+        private async Task<bool> DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(
             LoRaDevice loRaDevice,
             uint payloadFcnt,
             ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy,
