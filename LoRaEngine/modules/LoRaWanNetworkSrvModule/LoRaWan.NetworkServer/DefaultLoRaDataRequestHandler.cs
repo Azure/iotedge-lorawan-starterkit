@@ -196,7 +196,9 @@ namespace LoRaWan.NetworkServer
                 }
                 #endregion
 
-                var validFcntUp = isFrameCounterFromNewlyStartedDevice || (payloadFcntAdjusted > loRaDevice.FCntUp);
+                var validFcntUp = isFrameCounterFromNewlyStartedDevice
+                                  || payloadFcntAdjusted > loRaDevice.FCntUp
+                                  || (payloadFcntAdjusted == loRaDevice.FCntUp && concentratorDeduplicationResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy);
                 if (validFcntUp || isConfirmedResubmit)
                 {
                     if (!isConfirmedResubmit)
@@ -284,7 +286,7 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    if (!isConfirmedResubmit)
+                    if (!(isConfirmedResubmit && concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission))
                     {
                         // In case it is a Mac Command only we don't want to send it to the IoT Hub
                         if (payloadPort != LoRaFPort.MacCommand)
@@ -877,7 +879,9 @@ namespace LoRaWan.NetworkServer
                         // fcnt down calculations
                         if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate)
                             _ = await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
-                        isFrameCounterFromNewlyStartedDevice = true;
+
+                        if (concentratorDeduplicationResult is not ConcentratorDeduplicationResult.DuplicateDueToResubmission)
+                            isFrameCounterFromNewlyStartedDevice = true;
                     }
                 }
                 else if (loRaDevice.FCntUp == payloadFcnt && payloadFcnt == 0)
