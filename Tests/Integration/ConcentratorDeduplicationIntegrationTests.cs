@@ -125,13 +125,17 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null,                   0, 2, 2, 1, 2, 2)] // resubmission
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 0, 1, 1, 1, 1, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 0, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 0, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", true, null,                    0, 2, 2, 1, 2, 2)] // resubmission
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", true, DeduplicationMode.Drop,  0, 1, 1, 1, 1, 1)] // duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", true, DeduplicationMode.Mark,  0, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", true, DeduplicationMode.None,  0, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", false, DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", false, DeduplicationMode.Mark, 0, 1, 0, 2, 0, 2)] // soft duplicate, due to DeduplicationMode.Mark
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", false, DeduplicationMode.None, 0, 1, 0, 2, 0, 2)] // soft duplicate but due to DeduplicationMode.None
         public async Task When_Default_Data_Message_Test_All_Different_DeduplicationModes(
           string station1,
           string station2,
+          bool confirmedMessage,
           DeduplicationMode? deduplicationMode,
           int expectedNumberOfFrameCounterResets,
           int expectedNumberOfBundlerCalls,
@@ -141,7 +145,8 @@ namespace LoRaWan.Tests.Integration
           int expectedTwinSaves)
         {
             // arrange
-            var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload", 10);
+            var dataPayload = confirmedMessage ? this.simulatedDevice.CreateConfirmedDataUpMessage("payload", 10) :
+                                                 this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload", 10);
 
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 

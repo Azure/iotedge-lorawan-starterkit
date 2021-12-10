@@ -116,7 +116,7 @@ namespace LoRaWan.NetworkServer
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
             // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
-            if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, out var isConfirmedResubmit, out var result))
+            if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, concentratorDeduplicationResult, out var isConfirmedResubmit, out var result))
             {
                 return result;
             }
@@ -820,7 +820,7 @@ namespace LoRaWan.NetworkServer
         /// <param name="isConfirmedResubmit"><code>True</code> when it's a confirmation resubmit.</param>
         /// <param name="result">When request is not valid, indicates the reason.</param>
         /// <returns><code>True</code> when the provided request is valid, false otherwise.</returns>
-        internal virtual bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
+        internal virtual bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, ConcentratorDeduplicationResult concentratorDeduplicationResult, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
         {
             isConfirmedResubmit = false;
             result = null;
@@ -839,6 +839,11 @@ namespace LoRaWan.NetworkServer
 
                     isConfirmedResubmit = true;
                     this.logger.LogInformation($"resubmit from confirmed message detected, msg: {payloadFcnt} server: {loRaDevice.FCntUp}");
+                }
+                else if (payloadFcnt == loRaDevice.FCntUp && concentratorDeduplicationResult == ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
+                {
+                    // multi concentrator receive, with dedup strategy to send upstream
+                    return true;
                 }
                 else
                 {
