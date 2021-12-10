@@ -5,7 +5,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 {
     using LoraKeysManagerFacade.IoTCentralImp.Definitions;
 
-    internal class IoTCentralDevice : IDevice
+    public sealed class IoTCentralDevice : IDevice
     {
         private readonly Device deviceObject;
         private readonly SymmetricKeyAttestation attestationObject;

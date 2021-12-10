@@ -5,7 +5,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 {
     using LoraKeysManagerFacade.IoTCentralImp.Definitions;
 
-    public class DeviceProvisioningResult
+    public sealed class DeviceProvisioningResult
     {
         public string AssignedIoTHubHostname { get; set; }
 

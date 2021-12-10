@@ -11,26 +11,37 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     using LoraKeysManagerFacade.IoTCentralImp.Definitions;
     using Newtonsoft.Json.Linq;
 
-    internal class DeviceTwinPageResult : IRegistryPageResult<IDeviceTwin>
+    public sealed class DeviceTwinPageResult : IRegistryPageResult<IDeviceTwin>
     {
         private readonly HttpClient client;
         private readonly string apiVersion;
         private readonly Func<DeviceTemplateInfo, string> query;
-        private readonly IEnumerable<DeviceTemplateInfo> deviceTemplateInfos;
         private readonly IEnumerator<DeviceTemplateInfo> deviceTemplatesEnumerator;
 
         public DeviceTwinPageResult(HttpClient client, IEnumerable<DeviceTemplateInfo> deviceTemplateInfos, string apiVersion, Func<DeviceTemplateInfo, string> query)
         {
             this.client = client;
-            this.deviceTemplateInfos = deviceTemplateInfos;
             this.apiVersion = apiVersion;
             this.query = query;
+
+            if (deviceTemplateInfos == null)
+            {
+                throw new ArgumentNullException(nameof(deviceTemplateInfos));
+            }
 
             deviceTemplatesEnumerator = deviceTemplateInfos.GetEnumerator();
             HasMoreResults = deviceTemplatesEnumerator.MoveNext();
         }
 
         public bool HasMoreResults { get; private set; }
+
+        public void Dispose()
+        {
+            if (this.deviceTemplatesEnumerator != null)
+            {
+                this.deviceTemplatesEnumerator.Dispose();
+            }
+        }
 
         public async Task<IEnumerable<IDeviceTwin>> GetNextPageAsync()
         {

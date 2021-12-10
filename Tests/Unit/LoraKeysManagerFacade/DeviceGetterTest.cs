@@ -15,6 +15,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         private const string PrimaryKey = "ABCDEFGH1234567890";
         protected const string IotHubHostName = "fake.azure-devices.net";
 
+        private static DevAddr CreateDevAddr() => new DevAddr((uint)RandomNumberGenerator.GetInt32(int.MaxValue));
+
         [Fact]
         public async void DeviceGetter_OTAA_Join()
         {
@@ -55,11 +57,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
                     mockDevice.SetupGet(t => t.DeviceId)
                         .Returns(deviceId);
-                    mockDevice.Setup(t => t.GetDevAddr())
-                              .Returns(new DevAddr());
-                    mockDevice.Setup(t => t.GetGatewayID())
+                    mockDevice.SetupGet(t => t.DevAddr)
+                              .Returns(CreateDevAddr());
+                    mockDevice.SetupGet(t => t.GatewayID)
                               .Returns(string.Empty);
-                    mockDevice.Setup(t => t.GetLastUpdated())
+                    mockDevice.SetupGet(t => t.LastUpdated)
                               .Returns(DateTime.UtcNow);
 
                     return mockDevice.Object;
@@ -83,11 +85,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
                     mockDevice.SetupGet(t => t.DeviceId)
                         .Returns(deviceIds[deviceCount++]);
-                    mockDevice.Setup(t => t.GetDevAddr())
-                              .Returns(new DevAddr());
-                    mockDevice.Setup(t => t.GetGatewayID())
+                    mockDevice.SetupGet(t => t.DevAddr)
+                              .Returns(CreateDevAddr());
+                    mockDevice.SetupGet(t => t.GatewayID)
                               .Returns(string.Empty);
-                    mockDevice.Setup(t => t.GetLastUpdated())
+                    mockDevice.SetupGet(t => t.LastUpdated)
                               .Returns(DateTime.UtcNow);
 
                     yield return mockDevice.Object;

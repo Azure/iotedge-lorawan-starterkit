@@ -13,7 +13,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     using LoRaWan;
     using Newtonsoft.Json.Linq;
 
-    internal class IoTCentralDeviceRegistryManager : IDeviceRegistryManager
+    public sealed class IoTCentralDeviceRegistryManager : IDeviceRegistryManager
     {
         private const string API_VERSION = "api-version=1.1-preview";
 

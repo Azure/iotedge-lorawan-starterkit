@@ -11,9 +11,9 @@ namespace LoraKeysManagerFacade
     {
         Task CreateEdgeDeviceAsync(string edgeDeviceName, bool deployEndDevice, Uri facadeUrl, string facadeKey, string region, string resetPin, string spiSpeed, string spiDev);
 
-        Task<IDeviceTwin> GetTwinAsync(string deviceName);
+        Task<IDeviceTwin> GetTwinAsync(string deviceId);
 
-        Task<IDevice> GetDeviceAsync(string deviceName);
+        Task<IDevice> GetDeviceAsync(string deviceId);
 
         Task<IRegistryPageResult<IDeviceTwin>> FindDeviceByAddrAsync(DevAddr devAddr);
 

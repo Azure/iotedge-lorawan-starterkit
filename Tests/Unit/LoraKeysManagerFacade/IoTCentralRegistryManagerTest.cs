@@ -224,7 +224,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             var properties = await instance.GetTwinAsync(device.Id);
 
             Assert.NotNull(properties);
-            Assert.NotEqual(DateTime.MinValue, properties.GetLastUpdated());
+            Assert.NotEqual(DateTime.MinValue, properties.LastUpdated);
 
             handlerMock.Protected().Verify("SendAsync", Times.Exactly(1), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/{device.Id}/properties"), ItExpr.IsAny<CancellationToken>());
         }
@@ -260,7 +260,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
                             $"    \"results\": [" +
                             $"        {{" +
                             $"              \"$id\":  \"vn1lwbzhic\"," +
-                            $"              \"{componentName}.DevAddr\":  \"{NewUniqueEUI64()}\"," +
+                            $"              \"{componentName}.DevAddr\":  \"{CreateDevAddr()}\"," +
                             $"              \"{componentName}.NwkSKey\":  \"{NewUniqueEUI64()}\"," +
                             $"              \"{componentName}.GatewayID\":  \"{NewUniqueEUI64()}\"" +
                             $"         }}" +

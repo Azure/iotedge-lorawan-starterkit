@@ -5,7 +5,7 @@ namespace LoraKeysManagerFacade.IoTHubImp
 {
     using Microsoft.Azure.Devices;
 
-    internal class IoTHubDevice : IDevice
+    public sealed class IoTHubDevice : IDevice
     {
         private readonly Device device;
 

@@ -65,13 +65,13 @@ namespace LoRaWan.Tests.Integration
 
                     mockDevice.SetupGet(t => t.DeviceId)
                         .Returns(deviceId);
-                    mockDevice.Setup(t => t.GetDevAddr())
+                    mockDevice.SetupGet(t => t.DevAddr)
                               .Returns(CreateDevAddr());
-                    mockDevice.Setup(t => t.GetGatewayID())
+                    mockDevice.SetupGet(t => t.GatewayID)
                               .Returns(string.Empty);
-                    mockDevice.Setup(t => t.GetLastUpdated())
+                    mockDevice.SetupGet(t => t.LastUpdated)
                               .Returns(DateTime.UtcNow);
-                    mockDevice.Setup(t => t.GetNwkSKey())
+                    mockDevice.SetupGet(t => t.NwkSKey)
                               .Returns(string.Empty);
 
                     return mockDevice.Object;
@@ -104,16 +104,18 @@ namespace LoRaWan.Tests.Integration
                     {
                         var mockDevice = new Mock<IDeviceTwin>(MockBehavior.Strict);
                         mockDevice.SetupGet(t => t.DeviceId).Returns(devaddrItem.DevEUI);
-                        mockDevice.Setup(t => t.GetGatewayID()).Returns(devaddrItem.GatewayId);
-                        mockDevice.Setup(t => t.GetDevAddr()).Returns(devaddrItem.DevAddr);
-                        mockDevice.Setup(t => t.GetNwkSKey()).Returns(devaddrItem.NwkSKey);
-                        mockDevice.Setup(t => t.GetLastUpdated()).Returns(devaddrItem.LastUpdatedTwins);
+                        mockDevice.SetupGet(t => t.GatewayID).Returns(devaddrItem.GatewayId);
+                        mockDevice.SetupGet(t => t.DevAddr).Returns(devaddrItem.DevAddr);
+                        mockDevice.SetupGet(t => t.NwkSKey).Returns(devaddrItem.NwkSKey);
+                        mockDevice.SetupGet(t => t.LastUpdated).Returns(devaddrItem.LastUpdatedTwins);
 
                         twins.Add(mockDevice.Object);
                     }
 
                     return twins;
                 });
+
+            cacheMissQueryMock.Setup(x => x.Dispose());
 
             mockRegistryManager
                 .Setup(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()))

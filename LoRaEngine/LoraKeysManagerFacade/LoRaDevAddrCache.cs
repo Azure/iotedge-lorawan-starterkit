@@ -10,7 +10,6 @@ namespace LoraKeysManagerFacade
     using System.Threading.Tasks;
     using LoRaTools.Utils;
     using LoRaWan;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -202,7 +201,7 @@ namespace LoraKeysManagerFacade
         /// </summary>
         private async Task PerformFullReload()
         {
-            var query = await this.registryManager.FindConfiguredLoRaDevices();
+            using var query = await this.registryManager.FindConfiguredLoRaDevices();
             var devAddrCacheInfos = await this.GetDeviceTwinsFromIotHub(query);
             this.BulkSaveDevAddrCache(devAddrCacheInfos, true);
         }
@@ -214,7 +213,7 @@ namespace LoraKeysManagerFacade
         {
             // if the value is null (first call), we take five minutes before this call
             var lastUpdate = this.cacheStore.StringGet(LastDeltaUpdateKeyValue) ?? DateTime.UtcNow.AddMinutes(-5).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
-            var query = await this.registryManager.FindDevicesByLastUpdateDate(lastUpdate);
+            using var query = await this.registryManager.FindDevicesByLastUpdateDate(lastUpdate);
             var devAddrCacheInfos = await this.GetDeviceTwinsFromIotHub(query);
             this.BulkSaveDevAddrCache(devAddrCacheInfos, false);
         }
@@ -242,10 +241,10 @@ namespace LoraKeysManagerFacade
                         devAddrCacheInfos.Add(new DevAddrCacheInfo()
                         {
                             DevAddr = devAddr,
-                            DevEUI = DevEui.Parse(twin.DeviceId),
-                            GatewayId = twin.GetGatewayID(),
-                            NwkSKey = twin.GetNwkSKey(),
-                            LastUpdatedTwins = twin.GetLastUpdated()
+                            DevEUI = twin.DeviceId,
+                            GatewayId = twin.GatewayID,
+                            NwkSKey = twin.NwkSKey,
+                            LastUpdatedTwins = twin.LastUpdated
                         });
                     }
                 }

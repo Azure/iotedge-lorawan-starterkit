@@ -7,19 +7,15 @@ namespace LoraKeysManagerFacade.IoTHubImp
     using LoRaWan;
     using Microsoft.Azure.Devices.Shared;
 
-    internal class IoTHubDeviceTwin : IDeviceTwin
+    public sealed class IoTHubDeviceTwin : IDeviceTwin
     {
         private readonly Twin twin;
+        private readonly DevAddr devAddr;
 
         public IoTHubDeviceTwin(Twin twin)
         {
             this.twin = twin;
-        }
 
-        public string DeviceId => this.twin.DeviceId;
-
-        public DevAddr GetDevAddr()
-        {
             var rawDevAddr = string.Empty;
 
             if (this.twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
@@ -31,27 +27,20 @@ namespace LoraKeysManagerFacade.IoTHubImp
                 rawDevAddr = this.twin.Properties.Reported[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value;
             }
 
-            if (DevAddr.TryParse(rawDevAddr, out var someDevAddr))
+            if (!DevAddr.TryParse(rawDevAddr, out devAddr))
             {
-                return someDevAddr;
+                throw new LoRaProcessingException($"Dev addr '{rawDevAddr}' is invalid.", LoRaProcessingErrorCode.InvalidFormat);
             }
-
-            throw new LoRaProcessingException($"Dev addr '{rawDevAddr}' is invalid.", LoRaProcessingErrorCode.InvalidFormat);
         }
 
-        public string GetGatewayID()
-        {
-            return this.twin.GetGatewayID();
-        }
+        public string DeviceId => this.twin.DeviceId;
 
-        public DateTime GetLastUpdated()
-        {
-            return this.twin.Properties.Reported.GetLastUpdated();
-        }
+        public DevAddr DevAddr => this.devAddr;
 
-        public string GetNwkSKey()
-        {
-            return this.twin.GetNwkSKey();
-        }
+        public string GatewayID => this.twin.GetGatewayID();
+
+        public DateTime LastUpdated => this.twin.Properties.Reported.GetLastUpdated();
+
+        public string NwkSKey => this.twin.GetNwkSKey();
     }
 }

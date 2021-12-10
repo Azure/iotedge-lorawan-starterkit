@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
+    using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.IoTHubImp;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
@@ -30,7 +31,13 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             var deviceId = CreateDevAddr();
 
             var twins = Enumerable.Range(0, 7)
-                                .Select(c => new Twin(NewUniqueEUI64())).ToArray();
+                                .Select(c => {
+                                    var twin = new Twin(NewUniqueEUI64());
+
+                                    twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr] = CreateDevAddr().ToString();
+
+                                    return twin;
+                                }).ToArray();
 
             var loggerMock = new Mock<ILogger>(MockBehavior.Loose);
 
@@ -125,7 +132,14 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             var iotHubMock = new Mock<RegistryManager>(MockBehavior.Strict);
 
             iotHubMock.Setup(x => x.GetTwinAsync(It.IsAny<string>()))
-                   .ReturnsAsync((string x) => new Twin(x));
+                   .ReturnsAsync((string x) => {
+                       var twin = new Twin(x);
+
+                       twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr] = CreateDevAddr().ToString();
+
+                       return twin;
+                   });
+
 
             var loggerMock = new Mock<ILogger>(MockBehavior.Loose);
 
@@ -166,7 +180,13 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         public async Task Find_Device_By_Addr_Query_IoTHub()
         {
             var twins = Enumerable.Range(0, 10)
-                                .Select(c => new Twin(NewUniqueEUI64()));
+                                .Select(c => {
+                                    var twin = new Twin(NewUniqueEUI64());
+
+                                    twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr] = CreateDevAddr().ToString();
+
+                                    return twin;
+                                });
 
             var queryMock = new Mock<IQuery>(MockBehavior.Strict);
             queryMock.SetupGet(c => c.HasMoreResults)
@@ -199,7 +219,13 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         public async Task Find_Devices_By_LastUpdate_Date_Query_IoTHub()
         {
             var twins = Enumerable.Range(0, 10)
-                                .Select(c => new Twin(NewUniqueEUI64()));
+                                .Select(c => {
+                                    var twin = new Twin(NewUniqueEUI64());
+
+                                    twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr] = CreateDevAddr().ToString();
+
+                                    return twin;
+                                });
 
             var queryMock = new Mock<IQuery>(MockBehavior.Strict);
             queryMock.SetupGet(c => c.HasMoreResults)
@@ -232,7 +258,13 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         public async Task Find_Configured_LoRaDevices_Query_IoTHub()
         {
             var twins = Enumerable.Range(0, 10)
-                                .Select(c => new Twin(NewUniqueEUI64()));
+                                .Select(c => {
+                                    var twin = new Twin(NewUniqueEUI64());
+
+                                    twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr] = CreateDevAddr().ToString();
+
+                                    return twin;
+                                });
 
             var queryMock = new Mock<IQuery>(MockBehavior.Strict);
             queryMock.SetupGet(c => c.HasMoreResults)

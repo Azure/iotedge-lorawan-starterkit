@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
     using System;
     using System.Linq;
     using System.Net.Http;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -18,18 +19,20 @@ namespace LoRaWan.Tests.Unit.FacadeTests
 
     public class IoTCentralDeviceTwinPageResultTest : FunctionTestBase
     {
+        private static DevAddr CreateDevAddr() => new DevAddr((uint)RandomNumberGenerator.GetInt32(int.MaxValue));
+
         [Fact]
         public async Task IoTCentral_Device_Twin_Pagination_Executed()
         {
             var deviceTemplateInfos = new DeviceTemplateInfo[] {
                 new DeviceTemplateInfo
                 {
-                    ComponentName = Guid.NewGuid().ToString(),
+                    ComponentName = "LoRa",
                     DeviceTempalteId = Guid.NewGuid().ToString()
                 },
                 new DeviceTemplateInfo
                 {
-                    ComponentName = Guid.NewGuid().ToString(),
+                    ComponentName = "LoRa",
                     DeviceTempalteId = Guid.NewGuid().ToString()
                 }
             };
@@ -44,6 +47,8 @@ namespace LoRaWan.Tests.Unit.FacadeTests
                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
                {
+                   var requestBody = req.Content.ReadAsAsync<dynamic>().Result;
+
                    var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
                    {
                        Content = new StringContent(
@@ -51,7 +56,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
                             $"    \"results\": [" +
                             $"        {{" +
                             $"              \"$id\":  \"vn1lwbzhic \"," +
-                            $"              \"LoRa.DevAddr\":  \"Et cupiditate voluptate architecto numquam numquam. \"," +
+                            $"              \"LoRa.DevAddr\":  \"{CreateDevAddr()}\"," +
                             $"              \"LoRa.NwkSKey\":  \"Sit quam itaque cum. \"," +
                             $"              \"LoRa.GatewayID\":  \"Qui voluptatem facere.\"" +
                             $"         }}" +
@@ -69,7 +74,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
                 BaseAddress = new Uri("http://localhost.local/")
             };
 
-            var instance = new DeviceTwinPageResult(mockHttpClient, deviceTemplateInfos, "1.0", c => "");
+            using var instance = new DeviceTwinPageResult(mockHttpClient, deviceTemplateInfos, "1.0", c => c.ComponentName);
 
             Assert.True(instance.HasMoreResults);
             var results = await instance.GetNextPageAsync();

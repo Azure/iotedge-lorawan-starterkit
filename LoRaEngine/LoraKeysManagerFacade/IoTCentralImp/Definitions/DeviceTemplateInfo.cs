@@ -3,8 +3,7 @@
 
 namespace LoraKeysManagerFacade.IoTCentralImp.Definitions
 {
-
-    internal class DeviceTemplateInfo
+    public sealed class DeviceTemplateInfo
     {
         public string DeviceTempalteId { get; set; }
 

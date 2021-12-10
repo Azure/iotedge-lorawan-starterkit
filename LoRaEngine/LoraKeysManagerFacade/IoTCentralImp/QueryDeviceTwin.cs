@@ -7,43 +7,32 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     using LoRaWan;
     using Newtonsoft.Json.Linq;
 
-    internal class QueryDeviceTwin : IDeviceTwin
+    public sealed class QueryDeviceTwin : IDeviceTwin
     {
         public string DeviceId => deviceTwin["$id"].ToString();
 
         private readonly JObject deviceTwin;
         private readonly string componentName;
+        private readonly DevAddr devAddr;
 
         public QueryDeviceTwin(string componentName, JObject result)
         {
             this.deviceTwin = result;
             this.componentName = componentName;
-        }
 
-        public DevAddr GetDevAddr()
-        {
-            if (DevAddr.TryParse(deviceTwin[$"{componentName}.DevAddr"].ToString(), out var someDevAddr))
+            if (!DevAddr.TryParse(deviceTwin[$"{componentName}.DevAddr"].ToString(), out devAddr))
             {
-                return someDevAddr;
+                throw new LoRaProcessingException($"Dev addr '{deviceTwin[$"{componentName}.DevAddr"]}' is invalid.", LoRaProcessingErrorCode.InvalidFormat);
             }
-
-            throw new LoRaProcessingException($"Dev addr '{deviceTwin[$"{componentName}.DevAddr"]}' is invalid.", LoRaProcessingErrorCode.InvalidFormat);
         }
 
-        public string GetGatewayID()
-        {
-            return deviceTwin[$"{componentName}.GatewayID"].ToString();
-        }
+        public DevAddr DevAddr => this.devAddr;
 
-        public DateTime GetLastUpdated()
-        {
-            // At this time, there is no way to get Last update date from IoT Central
-            return DateTime.Now;
-        }
+        public string GatewayID => deviceTwin[$"{componentName}.GatewayID"].ToString();
 
-        public string GetNwkSKey()
-        {
-            return deviceTwin[$"{componentName}.NwkSKey"].ToString();
-        }
+        // At this time, there is no way to get Last update date from IoT Central
+        public DateTime LastUpdated => DateTime.Now;
+
+        public string NwkSKey => deviceTwin[$"{componentName}.NwkSKey"].ToString();
     }
 }

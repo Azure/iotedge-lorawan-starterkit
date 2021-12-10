@@ -7,7 +7,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
-    public class DesiredProperties
+    public sealed class DesiredProperties
     {
         public string GatewayID { get; set; }
 
@@ -16,6 +16,6 @@ namespace LoraKeysManagerFacade.IoTCentralImp
         public string NwkSKey { get; set; }
 
         [JsonExtensionData]
-        public Dictionary<string, JToken> AdditionalData { get; } = new Dictionary<string, JToken>();
+        public Dictionary<string, JToken> AdditionalData { get; } = new();
     }
 }

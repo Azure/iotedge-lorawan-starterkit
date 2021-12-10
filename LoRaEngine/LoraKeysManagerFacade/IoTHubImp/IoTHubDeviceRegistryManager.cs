@@ -13,7 +13,7 @@ namespace LoraKeysManagerFacade.IoTHubImp
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
-    internal sealed class IoTHubDeviceRegistryManager : IDeviceRegistryManager
+    public sealed class IoTHubDeviceRegistryManager : IDeviceRegistryManager
     {
         private readonly RegistryManager registryManager;
 
@@ -28,9 +28,9 @@ namespace LoraKeysManagerFacade.IoTHubImp
             this.iotHubHostname = hostName;
         }
 
-        public async Task CreateEdgeDeviceAsync(string deviceName, bool deployEndDevice, Uri facadeUrl, string facadeKey, string region, string resetPin, string spiSpeed, string spiDev)
+        public async Task CreateEdgeDeviceAsync(string edgeDeviceName, bool deployEndDevice, Uri facadeUrl, string facadeKey, string region, string resetPin, string spiSpeed, string spiDev)
         {
-            var edgeGatewayDevice = new Device(deviceName)
+            var edgeGatewayDevice = new Device(edgeDeviceName)
             {
                 Capabilities = new DeviceCapabilities()
                 {
@@ -39,7 +39,7 @@ namespace LoraKeysManagerFacade.IoTHubImp
             };
 
             _ = await this.registryManager.AddDeviceAsync(edgeGatewayDevice);
-            _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
+            _ = await this.registryManager.AddModuleAsync(new Module(edgeDeviceName, "LoRaWanNetworkSrvModule"));
 
             static async Task<ConfigurationContent> GetConfigurationContentAsync(Uri configLocation, IDictionary<string, string> tokenReplacements)
             {
@@ -58,13 +58,13 @@ namespace LoraKeysManagerFacade.IoTHubImp
                 ["[$spi_dev]"] = string.IsNullOrEmpty(spiDev) || string.Equals(spiDev, "2", StringComparison.OrdinalIgnoreCase) ? string.Empty : ",'SPI_DEV':{'value':'1'}"
             });
 
-            await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, deviceConfigurationContent);
+            await this.registryManager.ApplyConfigurationContentOnDeviceAsync(edgeDeviceName, deviceConfigurationContent);
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_ID")))
             {
                 log.LogDebug("Opted-in to use Azure Monitor on the edge. Deploying the observability layer.");
                 // If Appinsights Key is set this means that user opted in to use Azure Monitor.
-                _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "IotHubMetricsCollectorModule"));
+                _ = await this.registryManager.AddModuleAsync(new Module(edgeDeviceName, "IotHubMetricsCollectorModule"));
                 var observabilityConfigurationContent = await GetConfigurationContentAsync(new Uri(Environment.GetEnvironmentVariable("OBSERVABILITY_CONFIG_LOCATION")), new Dictionary<string, string>
                 {
                     ["[$iot_hub_resource_id]"] = Environment.GetEnvironmentVariable("IOT_HUB_RESOURCE_ID"),
@@ -75,15 +75,15 @@ namespace LoraKeysManagerFacade.IoTHubImp
                 _ = await this.registryManager.AddConfigurationAsync(new Configuration($"obs-{Guid.NewGuid()}")
                 {
                     Content = observabilityConfigurationContent,
-                    TargetCondition = $"deviceId='{deviceName}'"
+                    TargetCondition = $"deviceId='{edgeDeviceName}'"
                 });
             }
 
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{Environment.GetEnvironmentVariable("FACADE_HOST_NAME", EnvironmentVariableTarget.Process)}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
-            var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
+            var remoteTwin = await this.registryManager.GetTwinAsync(edgeDeviceName);
 
-            _ = await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
+            _ = await this.registryManager.UpdateTwinAsync(edgeDeviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
 
             // This section will get deployed ONLY if the user selected the "deploy end device" options.
             // Information in this if clause, is for demo purpose only and should not be used for productive workloads.
@@ -107,9 +107,9 @@ namespace LoraKeysManagerFacade.IoTHubImp
             }
         }
 
-        public async Task<IDevice> GetDeviceAsync(string deviceName)
+        public async Task<IDevice> GetDeviceAsync(string deviceId)
         {
-            var device = await this.registryManager.GetDeviceAsync(deviceName);
+            var device = await this.registryManager.GetDeviceAsync(deviceId);
 
             if (device == null)
             {
@@ -119,9 +119,9 @@ namespace LoraKeysManagerFacade.IoTHubImp
             return new IoTHubDevice(device, this.iotHubHostname);
         }
 
-        public async Task<IDeviceTwin> GetTwinAsync(string deviceName)
+        public async Task<IDeviceTwin> GetTwinAsync(string deviceId)
         {
-            var twin = await this.registryManager.GetTwinAsync(deviceName);
+            var twin = await this.registryManager.GetTwinAsync(deviceId);
 
             if (twin == null)
             {

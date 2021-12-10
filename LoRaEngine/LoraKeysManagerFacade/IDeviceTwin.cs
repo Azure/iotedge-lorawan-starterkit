@@ -10,12 +10,12 @@ namespace LoraKeysManagerFacade
     {
         string DeviceId { get; }
 
-        string GetGatewayID();
+        string GatewayID { get; }
 
-        string GetNwkSKey();
+        string NwkSKey { get; }
 
-        DevAddr GetDevAddr();
+        DevAddr DevAddr { get; }
 
-        DateTime GetLastUpdated();
+        DateTime LastUpdated { get; }
     }
 }

@@ -8,7 +8,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     using System.Linq;
     using LoRaWan;
 
-    public class DeviceTwin : IDeviceTwin
+    public sealed class DeviceTwin : IDeviceTwin
     {
         private readonly DesiredProperties properties;
 
@@ -20,41 +20,42 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 
         public string DeviceId { get; }
 
-        public DevAddr GetDevAddr()
+        public DevAddr DevAddr
         {
-            if (DevAddr.TryParse(this.properties.DevAddr, out var someDevAddr))
+            get
             {
-                return someDevAddr;
+                if (DevAddr.TryParse(this.properties.DevAddr, out var someDevAddr))
+                {
+                    return someDevAddr;
+                }
+
+                return new DevAddr();
             }
-
-            return new DevAddr();
         }
 
-        public string GetGatewayID()
-        {
-            return this.properties.GatewayID;
-        }
+        public string GatewayID => this.properties.GatewayID;
 
-        public DateTime GetLastUpdated()
+        public DateTime LastUpdated
         {
-            if (!this.properties.AdditionalData.TryGetValue("$metadata", out var metadata))
+            get
             {
-                return DateTime.MinValue;
-            }
+                if (!this.properties.AdditionalData.TryGetValue("$metadata", out var metadata))
+                {
+                    return DateTime.MinValue;
+                }
 
-            return new List<DateTime>()
-            {
-                metadata?["NwkSKey"]?["lastUpdateTime"]?.ToObject<DateTime>() ?? DateTime.MinValue,
-                metadata?["DevAddr"]?["lastUpdateTime"]?.ToObject<DateTime>() ?? DateTime.MinValue,
-                metadata?["GatewayID"]?["lastUpdateTime"]?.ToObject<DateTime>() ?? DateTime.MinValue
+                return new List<DateTime>()
+                {
+                    metadata?["NwkSKey"]?["lastUpdateTime"]?.ToObject<DateTime>() ?? DateTime.MinValue,
+                    metadata?["DevAddr"]?["lastUpdateTime"]?.ToObject<DateTime>() ?? DateTime.MinValue,
+                    metadata?["GatewayID"]?["lastUpdateTime"]?.ToObject<DateTime>() ?? DateTime.MinValue
+                }
+                .OrderByDescending(x => x)
+                .First();
             }
-            .OrderByDescending(x => x)
-            .First();
         }
 
-        public string GetNwkSKey()
-        {
-            return this.properties.NwkSKey;
-        }
+        public string NwkSKey => this.properties.NwkSKey;
+
     }
 }

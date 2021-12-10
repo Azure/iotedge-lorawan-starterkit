@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.IoTHubImp
@@ -8,7 +8,7 @@ namespace LoraKeysManagerFacade.IoTHubImp
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
 
-    internal sealed class DeviceTwinPageResult : IoTHubRegistryPageResult<IDeviceTwin>, IRegistryPageResult<IDeviceTwin>
+    public sealed class DeviceTwinPageResult : IoTHubRegistryPageResult<IDeviceTwin>, IRegistryPageResult<IDeviceTwin>
     {
         public DeviceTwinPageResult(IQuery originalQuery)
             : base(originalQuery)

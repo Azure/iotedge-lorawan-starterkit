@@ -3,22 +3,35 @@
 
 namespace LoraKeysManagerFacade.IoTHubImp
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
 
-    internal abstract class IoTHubRegistryPageResult<TResultType> : IRegistryPageResult<TResultType>
+    public abstract class IoTHubRegistryPageResult<TResultType> : IRegistryPageResult<TResultType>
         where TResultType : class
     {
         protected IQuery OriginalQuery { get; }
 
         public bool HasMoreResults => this.OriginalQuery.HasMoreResults;
 
-        public IoTHubRegistryPageResult(IQuery originalQuery)
+        protected IoTHubRegistryPageResult(IQuery originalQuery)
         {
             this.OriginalQuery = originalQuery;
         }
 
         public abstract Task<IEnumerable<TResultType>> GetNextPageAsync();
+
+        protected virtual void Dispose(bool disposing)
+        {
+
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
     }
 }

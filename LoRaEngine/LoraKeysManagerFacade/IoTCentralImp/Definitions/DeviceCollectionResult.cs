@@ -5,7 +5,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp.Definitions
 {
     using System.Collections.Generic;
 
-    public class DeviceCollectionResult
+    public sealed class DeviceCollectionResult
     {
         public string NextLink { get; set; }
 

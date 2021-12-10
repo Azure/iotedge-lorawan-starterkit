@@ -12,7 +12,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     using Microsoft.Azure.Devices.Provisioning.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
 
-    public class DeviceProvisioningHelper : IDeviceProvisioningHelper
+    public sealed class DeviceProvisioningHelper : IDeviceProvisioningHelper
     {
         private readonly string deviceProvisioningEndpoint;
         private readonly string provisioningScopeId;
