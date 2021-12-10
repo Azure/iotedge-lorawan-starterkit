@@ -4,13 +4,14 @@
 namespace LoRaTools.Regions
 {
     using System.Collections.Generic;
+    using LoRaWan;
 
     public class RegionLimits
     {
         /// <summary>
         /// Gets or sets The maximum and minimum datarate of a given region.
         /// </summary>
-        public (double min, double max) FrequencyRange { get; set; }
+        public (Hertz Min, Hertz Max) FrequencyRange { get; set; }
 
         private readonly HashSet<string> downstreamValidDR;
 
@@ -20,7 +21,7 @@ namespace LoRaTools.Regions
 
         private readonly uint startDownstreamDRIndex;
 
-        public RegionLimits((double min, double max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR, uint startUpstreamDRIndex, uint startDownstreamDRIndex)
+        public RegionLimits((Hertz Min, Hertz Max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR, uint startUpstreamDRIndex, uint startDownstreamDRIndex)
         {
             FrequencyRange = frequencyRange;
             this.downstreamValidDR = downstreamValidDR;
