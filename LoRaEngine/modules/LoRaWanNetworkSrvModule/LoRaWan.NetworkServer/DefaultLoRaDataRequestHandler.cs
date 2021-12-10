@@ -286,7 +286,11 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    if (!(isConfirmedResubmit && concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission))
+                    // when we have a confirmed resubmit message and it is marked as a duplicate
+                    // from another station (concentrator) - we do not want to send it upstream.
+                    var skipUpStream = isConfirmedResubmit && concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission;
+
+                    if (!skipUpStream)
                     {
                         // In case it is a Mac Command only we don't want to send it to the IoT Hub
                         if (payloadPort != LoRaFPort.MacCommand)
