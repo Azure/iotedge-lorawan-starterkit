@@ -102,8 +102,8 @@ namespace LoRaWan.NetworkServer
 
             switch (request.Payload.LoRaMessageType)
             {
-                case MacMessageType.JoinRequest: DispatchLoRaJoinRequest(loggingRequest); break;
-                case MacMessageType.UnconfirmedDataUp or MacMessageType.ConfirmedDataUp: DispatchLoRaDataMessage(loggingRequest); break;
+                case LoRaMessageType.JoinRequest: DispatchLoRaJoinRequest(loggingRequest); break;
+                case LoRaMessageType.UnconfirmedDataUp or LoRaMessageType.ConfirmedDataUp: DispatchLoRaDataMessage(loggingRequest); break;
                 default: this.logger.LogError("Unknwon message type in rxpk, message ignored"); break;
             }
         }

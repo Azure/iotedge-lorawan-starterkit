@@ -12,23 +12,23 @@ namespace LoRaWan.Tests.Unit
         private readonly MacHeader unconfirmedDataUp = new(64);
 
         [Theory]
-        [InlineData(  0, MacMessageType.JoinRequest        , 0)]
-        [InlineData( 31, MacMessageType.JoinRequest        , 3)]
-        [InlineData( 32, MacMessageType.JoinAccept         , 0)]
-        [InlineData( 63, MacMessageType.JoinAccept         , 3)]
-        [InlineData( 64, MacMessageType.UnconfirmedDataUp  , 0)]
-        [InlineData( 95, MacMessageType.UnconfirmedDataUp  , 3)]
-        [InlineData( 96, MacMessageType.UnconfirmedDataDown, 0)]
-        [InlineData(127, MacMessageType.UnconfirmedDataDown, 3)]
-        [InlineData(128, MacMessageType.ConfirmedDataUp    , 0)]
-        [InlineData(159, MacMessageType.ConfirmedDataUp    , 3)]
-        [InlineData(160, MacMessageType.ConfirmedDataDown  , 0)]
-        [InlineData(191, MacMessageType.ConfirmedDataDown  , 3)]
-        [InlineData(192, MacMessageType.RejoinRequest      , 0)]
-        [InlineData(223, MacMessageType.RejoinRequest      , 3)]
-        [InlineData(224, MacMessageType.Proprietary        , 0)]
-        [InlineData(255, MacMessageType.Proprietary        , 3)]
-        public void Properties_Return_Corresponding_Parts(byte value, MacMessageType macMessageType, int major)
+        [InlineData(  0, LoRaMessageType.JoinRequest        , 0)]
+        [InlineData( 31, LoRaMessageType.JoinRequest        , 3)]
+        [InlineData( 32, LoRaMessageType.JoinAccept         , 0)]
+        [InlineData( 63, LoRaMessageType.JoinAccept         , 3)]
+        [InlineData( 64, LoRaMessageType.UnconfirmedDataUp  , 0)]
+        [InlineData( 95, LoRaMessageType.UnconfirmedDataUp  , 3)]
+        [InlineData( 96, LoRaMessageType.UnconfirmedDataDown, 0)]
+        [InlineData(127, LoRaMessageType.UnconfirmedDataDown, 3)]
+        [InlineData(128, LoRaMessageType.ConfirmedDataUp    , 0)]
+        [InlineData(159, LoRaMessageType.ConfirmedDataUp    , 3)]
+        [InlineData(160, LoRaMessageType.ConfirmedDataDown  , 0)]
+        [InlineData(191, LoRaMessageType.ConfirmedDataDown  , 3)]
+        [InlineData(192, LoRaMessageType.RejoinRequest      , 0)]
+        [InlineData(223, LoRaMessageType.RejoinRequest      , 3)]
+        [InlineData(224, LoRaMessageType.Proprietary        , 0)]
+        [InlineData(255, LoRaMessageType.Proprietary        , 3)]
+        public void Properties_Return_Corresponding_Parts(byte value, LoRaMessageType macMessageType, int major)
         {
             var subject = new MacHeader(value);
             Assert.Equal(macMessageType, subject.MessageType);

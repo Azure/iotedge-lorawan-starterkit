@@ -48,7 +48,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp).
         /// </summary>
-        public bool IsConfirmed => LoRaMessageType is MacMessageType.ConfirmedDataDown or MacMessageType.ConfirmedDataUp;
+        public bool IsConfirmed => LoRaMessageType is LoRaMessageType.ConfirmedDataDown or LoRaMessageType.ConfirmedDataUp;
 
         /// <summary>
         /// Gets a value indicating whether does a Mac command require an answer?.
@@ -129,9 +129,9 @@ namespace LoRaTools.LoRaMessage
             LoRaMessageType = new MacHeader(RawMessage[0]).MessageType;
 
             // in this case the payload is not downlink of our type
-            if (LoRaMessageType is MacMessageType.ConfirmedDataDown
-                                or MacMessageType.JoinAccept
-                                or MacMessageType.UnconfirmedDataDown)
+            if (LoRaMessageType is LoRaMessageType.ConfirmedDataDown
+                                or LoRaMessageType.JoinAccept
+                                or LoRaMessageType.UnconfirmedDataDown)
             {
                 Direction = 1;
             }
@@ -172,7 +172,7 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Downstream Constructor (build a LoRa Message).
         /// </summary>
-        public LoRaPayloadData(MacMessageType messageType, byte[] devAddr, FrameControlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
+        public LoRaPayloadData(LoRaMessageType messageType, byte[] devAddr, FrameControlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
             if (devAddr is null) throw new ArgumentNullException(nameof(devAddr));
             if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
