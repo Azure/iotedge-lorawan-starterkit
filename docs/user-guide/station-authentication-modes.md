@@ -1,8 +1,18 @@
-# Basics Station credentials management
+# Authentication modes
 
 Starting with 'Azure IoT Edge LoRaWAN Starter Kit' v2.0.0, the LoRaWan Network Server runs a WebSocket endpoint compatible with [The LNS Protocol](https://doc.sm.tc/station/tcproto.html) and the [CUPS Protocol](https://doc.sm.tc/station/cupsproto.html) from LoRa Basics™ Station.
 
 As described in the official LoRa Basics™ Station documentation - [Credentials](https://doc.sm.tc/station/credentials.html), a Basics™ Station client needs some credentials to establish a secure connection to LNS/CUPS compatible endpoints.
+
+## Supported authentication modes
+
+The following table describes the supported authentication modes with the LoRaWan Network Server provided in Azure IoT Edge LoRaWAN Starter Kit
+
+|                                         | LNS Endpoint | CUPS Endpoint |
+| --------------------------------------- | :----------: | :-----------: |
+| No Authentication                       |      ✔️       |       ❌       |
+| Server Authentication only              |      ✔️       |       ❌       |
+| Mutual (server + client) authentication |      ✔️       |       ✔️       |
 
 ## Server Authentication
 
@@ -41,9 +51,23 @@ The default path of the tc.trust file can be overridden by using the **'TC_TRUST
 
 Same can be done for a cups.trust file by overriding the **'CUPS_TRUST_PATH'** environment variable
 
-## Client certification
+## Client authentication
 
 The LoRaWan Network Server implementation provided by this starter kit is allowing client authentication from a Basics Station client.
+
+### Changing 'Client Certificate Mode' in 'LoRaWan Network Server module'
+
+By default, the 'LoRaWanNetworkSrvModule' is not accepting/requiring any client certificate for its exposed endpoints.
+
+It is possible to modify the behavior of the module to actually either allow or require a client certificate for accessing to its endpoints.
+
+In example, in order to always require a client certificate for reaching LNS/CUPS endpoints you should set the **'CLIENT_CERTIFICATE_MODE'** environment variable in 'LoRaWanNetworkSrvModule' to a value of '2' or 'RequireCertificate'.
+
+Supported values for 'CLIENT_CERTIFICATE_MODE' environment variables are:
+
+- '0' or 'NoCertificate' (client certificate is not required and will not be requested from clients)
+- '1' or 'AllowCertificate' (client certificate will be requested; however, authentication will not fail if a certificate is not provided by the client)
+- '2' or 'RequireCertificate' (client certificate will be requested, and the client must provide a valid certificate for authentication to succeed)
 
 ### Importing 'tc.crt/tc.key/cups.crt/cups.key' in bundled 'LoRaBasicsStationModule'
 
@@ -61,7 +85,7 @@ When using the provided **Cli-LoRa-Device-Provisioning** tool to provision a con
 
 If you can't use the tool, when creating the Concentrator device in IoT Hub, all you need to do is to add a desired property named '**clientThumbprint**' (being an array of allowed certificate thumbprints) and specify the thumbprint in this array.
 
-## Self-signed credentials generator (Test only)
+## Self-signed certificates generator (for tests only)
 
 This starter kit is providing a [BasicStation Certificates Generation](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Tools/BasicStation-Certificates-Generation) tool for helping its users to generate LoRaWAN Network Server certificates and Basics Station certificates for **testing** secure communication between a Basics Station client and the CUPS/LNS Protocol Endpoint in Network Server.
 

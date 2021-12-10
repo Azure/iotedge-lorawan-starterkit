@@ -1,4 +1,4 @@
-# Basics Station IoT Edge Module configuration parameters
+# 'LoRaBasicsStationModule' IoT Edge Module configuration parameters
 
 The following table is providing a list of configuration options, to be provided as environment variables for manual configuration of the 'LoRaBasicsStationModule':
 
