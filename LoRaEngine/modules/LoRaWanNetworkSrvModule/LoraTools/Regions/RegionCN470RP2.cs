@@ -235,13 +235,13 @@ namespace LoRaTools.Regions
             {
                 case <= 7: // 20 MHz plan A
                 {
-                    var channelNumber = upstreamFrequency < Mega(500) ? GetChannelNumber(upstreamFrequency, Mega(470.3)) : GetChannelNumber(upstreamFrequency, Mega(503.5), 32);
+                    var channelNumber = upstreamFrequency < Mega(500) ? GetChannelNumber(upstreamFrequency, Mega(470.3)) : 32 + GetChannelNumber(upstreamFrequency, Mega(503.5));
                     downstreamFrequency = this.downstreamFrequenciesByPlanType[0][channelNumber];
                     return true;
                 }
                 case <= 9: // 20 MHz plan B
                 {
-                    var channelNumber = upstreamFrequency < Mega(490) ? GetChannelNumber(upstreamFrequency, Mega(476.9)) : GetChannelNumber(upstreamFrequency, Mega(496.9), 32);
+                    var channelNumber = upstreamFrequency < Mega(490) ? GetChannelNumber(upstreamFrequency, Mega(476.9)) : 32 + GetChannelNumber(upstreamFrequency, Mega(496.9));
                     downstreamFrequency = this.downstreamFrequenciesByPlanType[1][channelNumber];
                     return true;
                 }
@@ -261,6 +261,9 @@ namespace LoRaTools.Regions
                     downstreamFrequency = default;
                     return false;
             }
+
+            static int GetChannelNumber(Hertz upstreamChannelFrequency, Hertz startUpstreamFreq) =>
+                (int)Math.Round((upstreamChannelFrequency - startUpstreamFreq) / FrequencyIncrement.Units, 0, MidpointRounding.AwayFromZero);
         }
 
         /// <summary>
@@ -327,7 +330,5 @@ namespace LoRaTools.Regions
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         private static int GetChannelNumber(Rxpk upstreamChannel, double startUpstreamFreq, int startChannelNumber = 0) =>
             startChannelNumber + (int)Math.Round((upstreamChannel.Freq - startUpstreamFreq) / FrequencyIncrement.Value, 0, MidpointRounding.AwayFromZero);
-        private static int GetChannelNumber(Hertz upstreamChannelFrequency, Hertz startUpstreamFreq, int startChannelNumber = 0) =>
-            startChannelNumber + (int)Math.Round((upstreamChannelFrequency - startUpstreamFreq) / FrequencyIncrement.Units, 0, MidpointRounding.AwayFromZero);
     }
 }
