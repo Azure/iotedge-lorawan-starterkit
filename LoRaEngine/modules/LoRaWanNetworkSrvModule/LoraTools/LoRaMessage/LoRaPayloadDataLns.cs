@@ -29,23 +29,23 @@ namespace LoRaTools.LoRaMessage
             DevAddr.Span.Reverse();
 
             // Parsing LoRaMessageType in legacy format
-            LoRaMessageType = macHeader.MessageType switch
+            var messageType = macHeader.MessageType;
+            if (messageType is not MacMessageType.JoinRequest and
+                               not MacMessageType.JoinAccept and
+                               not MacMessageType.UnconfirmedDataUp and
+                               not MacMessageType.UnconfirmedDataDown and
+                               not MacMessageType.ConfirmedDataUp and
+                               not MacMessageType.ConfirmedDataDown)
             {
-                MacMessageType.JoinRequest => LoRaMessageType.JoinRequest,
-                MacMessageType.JoinAccept => LoRaMessageType.JoinAccept,
-                MacMessageType.UnconfirmedDataUp => LoRaMessageType.UnconfirmedDataUp,
-                MacMessageType.UnconfirmedDataDown => LoRaMessageType.UnconfirmedDataDown,
-                MacMessageType.ConfirmedDataUp => LoRaMessageType.ConfirmedDataUp,
-                MacMessageType.ConfirmedDataDown => LoRaMessageType.ConfirmedDataDown,
-                MacMessageType.RejoinRequest => throw new NotImplementedException(),
-                MacMessageType.Proprietary => throw new NotImplementedException(),
-                _ => throw new NotImplementedException(),
+                throw new NotImplementedException();
             };
 
+            LoRaMessageType = messageType;
+
             // in this case the payload is not downlink of our type
-            Direction = macHeader.MessageType is MacMessageType.ConfirmedDataDown or
-                                                 MacMessageType.JoinAccept or
-                                                 MacMessageType.UnconfirmedDataDown ? 1 : 0;
+            Direction = messageType is MacMessageType.ConfirmedDataDown or
+                                       MacMessageType.JoinAccept or
+                                       MacMessageType.UnconfirmedDataDown ? 1 : 0;
 
             // Setting MHdr value
             Mhdr = new byte[1];

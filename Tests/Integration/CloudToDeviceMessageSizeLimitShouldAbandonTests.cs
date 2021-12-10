@@ -118,7 +118,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(payloadDataDown.IsDownlinkFramePending);
 
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // Expected Mac command is present
             if (hasMacInUpstream)

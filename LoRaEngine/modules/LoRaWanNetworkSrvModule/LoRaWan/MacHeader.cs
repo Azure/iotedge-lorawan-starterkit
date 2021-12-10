@@ -19,6 +19,9 @@ namespace LoRaWan
 
         public MacHeader(byte value) => this.value = value;
 
+        public MacHeader(MacMessageType messageType, int major = 0) =>
+            this.value = unchecked((byte)((((int)messageType) << 5) | major));
+
         /// <summary>
         /// Gets the message type (MType).
         /// </summary>
@@ -36,5 +39,7 @@ namespace LoRaWan
             buffer[0] = this.value;
             return buffer[Size..];
         }
+
+        public static explicit operator byte(MacHeader header) => header.value;
     }
 }

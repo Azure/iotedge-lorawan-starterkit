@@ -120,7 +120,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
@@ -232,7 +232,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
                 Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
                 Assert.False(payloadDataDown.IsConfirmed);
-                Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+                Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
                 // 4. Frame counter up was updated
                 Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
@@ -323,7 +323,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
@@ -369,7 +369,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
@@ -499,7 +499,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 

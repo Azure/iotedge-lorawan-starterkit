@@ -100,17 +100,11 @@ namespace LoRaWan.NetworkServer
 
             var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>(), this.d2cMessageDeliveryLatencyHistogram);
 
-            if (request.Payload.LoRaMessageType == LoRaMessageType.JoinRequest)
+            switch (request.Payload.LoRaMessageType)
             {
-                DispatchLoRaJoinRequest(loggingRequest);
-            }
-            else if (request.Payload.LoRaMessageType is LoRaMessageType.UnconfirmedDataUp or LoRaMessageType.ConfirmedDataUp)
-            {
-                DispatchLoRaDataMessage(loggingRequest);
-            }
-            else
-            {
-                this.logger.LogError("Unknwon message type in rxpk, message ignored");
+                case MacMessageType.JoinRequest: DispatchLoRaJoinRequest(loggingRequest); break;
+                case MacMessageType.UnconfirmedDataUp or MacMessageType.ConfirmedDataUp: DispatchLoRaDataMessage(loggingRequest); break;
+                default: this.logger.LogError("Unknwon message type in rxpk, message ignored"); break;
             }
         }
 
