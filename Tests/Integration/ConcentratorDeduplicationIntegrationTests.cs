@@ -125,7 +125,7 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, 0, 2, 2, 1, 2, 2)]                   // resubmission 
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null,                   0, 2, 2, 1, 2, 2)] // resubmission
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 0, 1, 1, 1, 1, 1)] // duplicate
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 0, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 0, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
@@ -153,7 +153,7 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null, 1, 2, 2, 1, 2, 2)]                   // resubmission 
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null,                   1, 2, 2, 1, 2, 2)] // resubmission
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 1, 1, 1, 1)] // duplicate
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
@@ -232,17 +232,16 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2, 0)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 0)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1)]
         public async Task When_Mac_Command_Should_Not_Send_Upstream_Messages_And_Should_Skip_Calls_To_FrameCounterDown_When_SoftDuplicate(
             string station1,
             string station2,
-            int expectedNumberOfFrameCounterDownCalls,
-            int expectedMessagesUp)
+            int expectedNumberOfFrameCounterDownCalls)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
+            var dataPayload = simulatedDevice.CreateUnconfirmedDataUpMessage("payload");
             // MAC command
             dataPayload.Fport = new byte[1] { 0 };
             dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
@@ -253,7 +252,7 @@ namespace LoRaWan.Tests.Integration
             this.device.NwkSKey = station1;
 
             // act/assert
-            await TestAssertions(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: expectedMessagesUp);
+            await TestAssertions(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: 0);
         }
 
         private (LoRaRequest request1, LoRaRequest request2) SetupRequests(LoRaPayloadData dataPayload, string station1, string station2)
@@ -284,7 +283,7 @@ namespace LoRaWan.Tests.Integration
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request1, device);
 
             // act
-            var actual = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request2, device);
+            _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request2, device);
 
             // assert
             if (expectedFrameCounterResets is int frameCounterResets)
