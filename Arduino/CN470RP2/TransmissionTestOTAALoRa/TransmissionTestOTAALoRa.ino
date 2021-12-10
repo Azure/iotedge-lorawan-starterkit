@@ -35,28 +35,22 @@ void setup(void)
     while(!SerialUSB);
     lora.init();
     lora.setDeviceDefault();
-
+    delay(1000);
+    lora.setPower(6);
     lora.setId(NULL,deviceId , appEui);
     lora.setKey(NULL, NULL, appKey);
 
     lora.setDeciveMode(LWOTAA);
     lora.setDataRate(dr, physicalType);
 
-    lora.setChannel(0, 479.9);
-    lora.setChannel(1, 478.7);
-    lora.setChannel(2, 478.9);
-    lora.setChannel(3, 479.1);
-    lora.setChannel(4, 479.2);
-    lora.setChannel(5, 479.4);
-    lora.setChannel(6, 479.6);
-    lora.setChannel(7, 479.8);
-    lora.setReceiceWindowSecond(478.3, drrx2);
+    lora.setChannel(0, 499.9);
+
+    lora.setReceiceWindowSecond(498.3, drrx2);
 
   lora.setAdaptiveDataRate(false);
 
   lora.setDutyCycle(false);
   lora.setJoinDutyCycle(false);
-
 
     lora.setPower(2);
 
@@ -65,6 +59,13 @@ void setup(void)
 
 void loop(void)
 {
+    lora.setChannel(1, 499.7);
+    lora.setChannel(2, 499.5);
+    lora.setChannel(3, 499.3);
+    lora.setChannel(4, 499.1);
+    lora.setChannel(5, 498.9);
+    lora.setChannel(6, 498.7);
+    lora.setChannel(7, 498.3);
   if((millis()-lastCall)>5000){
     lastCall=millis();
     bool result = false;
