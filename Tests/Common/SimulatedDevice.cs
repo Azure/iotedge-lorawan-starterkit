@@ -94,16 +94,16 @@ namespace LoRaWan.Tests.Common
             return joinRequest;
         }
 
-        public UplinkPktFwdMessage CreateUnconfirmedMessageUplink(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0) => CreateUnconfirmedDataUpMessage(data, fcnt, fport, fctrl).SerializeUplink(AppSKey, NwkSKey);
+        public UplinkPktFwdMessage CreateUnconfirmedMessageUplink(string data, uint? fcnt = null, byte fport = 1, FrameControlFlags fctrl = default) =>
+            CreateUnconfirmedDataUpMessage(data, fcnt, fport, fctrl).SerializeUplink(AppSKey, NwkSKey);
 
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0, bool isHexPayload = false, IList<MacCommand> macCommands = null)
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, FrameControlFlags fctrlFlags = FrameControlFlags.None, bool isHexPayload = false, IList<MacCommand> macCommands = null)
         {
             var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
-            var fCtrl = new byte[] { fctrl };
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
@@ -132,7 +132,7 @@ namespace LoRaWan.Tests.Common
             var payloadData = new LoRaPayloadData(
                 LoRaMessageType.UnconfirmedDataUp,
                 devAddr,
-                fCtrl,
+                fctrlFlags,
                 fcntBytes,
                 macCommands,
                 fPort,
@@ -152,7 +152,6 @@ namespace LoRaWan.Tests.Common
         {
             var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
-            var fCtrl = new byte[] { 0x80 };
 
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
@@ -179,7 +178,7 @@ namespace LoRaWan.Tests.Common
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction, Supports32BitFCnt ? fcnt : null);
+            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.Adr, fcntBytes, null, fPort, payload, direction, Supports32BitFCnt ? fcnt : null);
 
             return payloadData;
         }
