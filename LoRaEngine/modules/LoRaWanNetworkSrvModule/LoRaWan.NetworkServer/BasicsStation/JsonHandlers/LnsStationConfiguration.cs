@@ -13,9 +13,18 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     internal static class LnsStationConfiguration
     {
+        private enum Radio { Zero, One }
+
+        private static T Map<T>(this Radio radio, T zero, T one) => radio switch
+        {
+            Radio.Zero => zero,
+            Radio.One => one,
+            _ => throw new ArgumentException(null, nameof(radio))
+        };
+
         private class ChannelConfig
         {
-            public ChannelConfig(bool enable, bool radio, int @if)
+            public ChannelConfig(bool enable, Radio radio, int @if)
             {
                 Enable = enable;
                 Radio = radio;
@@ -23,13 +32,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             }
 
             public bool Enable { get; }
-            public bool Radio { get; }
+            public Radio Radio { get; }
             public int If { get; }
         }
 
         private class StandardConfig
         {
-            public StandardConfig(bool enable, bool radio, int @if, Bandwidth bandwidth, SpreadingFactor spreadingFactor)
+            public StandardConfig(bool enable, Radio radio, int @if, Bandwidth bandwidth, SpreadingFactor spreadingFactor)
             {
                 Enable = enable;
                 Radio = radio;
@@ -39,7 +48,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             }
 
             public bool Enable { get; }
-            public bool Radio { get; }
+            public Radio Radio { get; }
             public int If { get; }
             public Bandwidth Bandwidth { get; }
             public SpreadingFactor SpreadingFactor { get; }
@@ -100,19 +109,29 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             public ChannelConfig ChannelMultiSf7 { get; }
         }
 
+        private static readonly IJsonProperty<Radio> RadioProperty =
+            JsonReader.Property("radio",
+                                from r in JsonReader.Int32()
+                                select r switch
+                                {
+                                    0 => Radio.Zero,
+                                    1 => Radio.One,
+                                    var n => throw new JsonException($"Invalid value for radio: {n}"),
+                                });
+
         private static readonly IJsonReader<ChannelConfig> ChannelConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
-                              JsonReader.Property("radio", JsonReader.Int32()),
+                              RadioProperty,
                               JsonReader.Property("if", JsonReader.Int32()),
-                              (e, r, i) => new ChannelConfig(e, r == 1, i));
+                              (e, r, i) => new ChannelConfig(e, r, i));
 
         private static readonly IJsonReader<StandardConfig> StandardConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
-                              JsonReader.Property("radio", JsonReader.Int32()),
+                              RadioProperty,
                               JsonReader.Property("if", JsonReader.Int32()),
                               JsonReader.Property("bandwidth", JsonReader.UInt32()),
                               JsonReader.Property("spread_factor", JsonReader.UInt32()),
-                              (e, r, i, b, sf) => new StandardConfig(e, r == 1, i, GetBandwidth(b), CastToEnumIfDefined<SpreadingFactor>((int)sf)));
+                              (e, r, i, b, sf) => new StandardConfig(e, r, i, GetBandwidth(b), CastToEnumIfDefined<SpreadingFactor>((int)sf)));
 
         private static readonly IJsonReader<RadioConfig> RadioConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
@@ -170,11 +189,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                   {
                                       if (region is RegionAS923 as923 && radioConf.FirstOrDefault() is { } configuration)
                                       {
-                                          var chan0CentralFreq = configuration.ChannelMultiSf0.Radio ? configuration.Radio0.Freq
-                                                                                                     : configuration.Radio1.Freq;
+                                          var chan0CentralFreq = configuration.ChannelMultiSf0.Radio.Map(configuration.Radio0.Freq,
+                                                                                                         configuration.Radio1.Freq);
                                           var chan0Freq = chan0CentralFreq + configuration.ChannelMultiSf0.If;
-                                          var chan1CentralFreq = configuration.ChannelMultiSf1.Radio ? configuration.Radio0.Freq
-                                                                                                     : configuration.Radio1.Freq;
+                                          var chan1CentralFreq = configuration.ChannelMultiSf1.Radio.Map(configuration.Radio0.Freq,
+                                                                                                         configuration.Radio1.Freq);
                                           var chan1Freq = chan1CentralFreq + configuration.ChannelMultiSf1.If;
                                           return as923.WithFrequencyOffset(chan0Freq, chan1Freq);
                                       }
@@ -326,7 +345,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             {
                 writer.WriteStartObject(property);
                 writer.WriteBoolean("enable", sxConf.Enable);
-                writer.WriteNumber("radio", sxConf.Radio ? 1 : 0);
+                writer.WriteNumber("radio", (int)sxConf.Radio);
                 writer.WriteNumber("if", sxConf.If);
                 writer.WriteEndObject();
             }
@@ -335,7 +354,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             {
                 writer.WriteStartObject(property);
                 writer.WriteBoolean("enable", chanConf.Enable);
-                writer.WriteNumber("radio", chanConf.Radio ? 1 : 0);
+                writer.WriteNumber("radio", (int)chanConf.Radio);
                 writer.WriteNumber("if", chanConf.If);
                 if (chanConf.Bandwidth != Bandwidth.Undefined)
                     writer.WriteNumber("bandwidth", chanConf.Bandwidth.ToHertz().AsUInt64);
