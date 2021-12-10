@@ -45,7 +45,7 @@ Same can be done for a cups.trust file by overriding the **'CUPS_TRUST_PATH'** e
 
 The LoRaWan Network Server implementation provided by this starter kit is allowing client authentication from a Basics Station client.
 
-### Importing 'tc.crt/tc.key' in bundled 'LoRaBasicsStationModule'
+### Importing 'tc.crt/tc.key/cups.crt/cups.key' in bundled 'LoRaBasicsStationModule'
 
 If you are making use of the bundled 'LoRaBasicsStationModule', it's possible to import a client certificate (.crt + .key files) in the module itself.
 
