@@ -65,7 +65,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             from x in new (Hertz Frequency, ushort DataRate)[]
             {
                 (Mega(470.0),   8),
-                (Mega(510.9),  10),
+                (Mega(510.0),  10),
                 (Mega(509.8), 100),
                 (Mega(469.9), 110),
             }
