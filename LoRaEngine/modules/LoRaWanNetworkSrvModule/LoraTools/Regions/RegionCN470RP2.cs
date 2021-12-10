@@ -328,6 +328,6 @@ namespace LoRaTools.Regions
         private static int GetChannelNumber(Rxpk upstreamChannel, double startUpstreamFreq, int startChannelNumber = 0) =>
             startChannelNumber + (int)Math.Round((upstreamChannel.Freq - startUpstreamFreq) / FrequencyIncrement.Value, 0, MidpointRounding.AwayFromZero);
         private static int GetChannelNumber(Hertz upstreamChannelFrequency, Hertz startUpstreamFreq, int startChannelNumber = 0) =>
-            startChannelNumber + (int)Math.Round((upstreamChannelFrequency - startUpstreamFreq) / FrequencyIncrement.Value, 0, MidpointRounding.AwayFromZero);
+            startChannelNumber + (int)Math.Round((upstreamChannelFrequency - startUpstreamFreq) / FrequencyIncrement.Units, 0, MidpointRounding.AwayFromZero);
     }
 }
