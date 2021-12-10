@@ -84,6 +84,8 @@ namespace LoRaWan.Tests.Integration
         private readonly Mock<TestDefaultLoRaRequestHandler> dataRequestHandlerMock;
         private readonly Mock<ILoRaDeviceFrameCounterUpdateStrategyProvider> frameCounterProviderMock;
         private readonly MemoryCache cache;
+        private readonly SimulatedDevice simulatedDevice;
+        private readonly LoRaDevice device;
 
         public ConcentratorDeduplicationIntegrationTests()
         {
@@ -114,6 +116,12 @@ namespace LoRaWan.Tests.Integration
                 { IsDuplicate = false, CanProcess = true },
                 NextFCntDown = null
             });
+
+            this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
+            this.device = new LoRaDevice(this.simulatedDevice.DevAddr, this.simulatedDevice.DevEUI, ConnectionManager);
+
+            _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(this.device, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
+            _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(this.device.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
         }
 
         [Theory]
@@ -133,7 +141,6 @@ namespace LoRaWan.Tests.Integration
           int expectedTwinSaves)
         {
             // arrange
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
 
             using var loraRequest1 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
@@ -144,14 +151,11 @@ namespace LoRaWan.Tests.Integration
             loraRequest2.SetStationEui(StationEui.Parse(station2));
             loraRequest2.SetPayload(dataPayload);
 
-            using var loRaDevice = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
-            {
-                Deduplication = deduplicationMode ?? DeduplicationMode.Drop, // fallback to default
-                NwkSKey = station1
-            };
+            this.device.Deduplication = deduplicationMode ?? DeduplicationMode.Drop; // fallback to default
+            this.device.NwkSKey = station1;
 
             // act/assert
-            await TestAssertions(loraRequest1, loraRequest2, loRaDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await TestAssertions(loraRequest1, loraRequest2, this.device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
         [Theory]
@@ -175,14 +179,11 @@ namespace LoRaWan.Tests.Integration
             request2.SetStationEui(StationEui.Parse(station2));
             request2.SetPayload(dataPayload);
 
-            using var device = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
-            {
-                Deduplication = DeduplicationMode.Mark, // or None
-                NwkSKey = station1
-            };
+            this.device.Deduplication = DeduplicationMode.Mark; // or None
+            this.device.NwkSKey = station1;
 
             // act/assert
-            await TestAssertions(request1, request2, device);
+            await TestAssertions(request1, request2, this.device);
             this.dataRequestHandlerMock.Verify(x => x.PerformADRAssert(), Times.Exactly(expectedNumberOfADRCalls));
         }
 
@@ -206,11 +207,8 @@ namespace LoRaWan.Tests.Integration
             request2.SetStationEui(StationEui.Parse(station2));
             request2.SetPayload(dataPayload);
 
-            using var device = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
-            {
-                Deduplication = DeduplicationMode.Mark, // or Drop, None
-                NwkSKey = station1
-            };
+            this.device.Deduplication = DeduplicationMode.Mark; // or Drop or None
+            this.device.NwkSKey = station1;
 
             _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
             {
@@ -220,7 +218,7 @@ namespace LoRaWan.Tests.Integration
             });
 
             // act/assert
-            await TestAssertions(request1, request2, device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls);
+            await TestAssertions(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls);
         }
 
         [Theory]
@@ -247,14 +245,11 @@ namespace LoRaWan.Tests.Integration
             request2.SetStationEui(StationEui.Parse(station2));
             request2.SetPayload(dataPayload);
 
-            using var device = new LoRaDevice(simulatedDevice.DevAddr, simulatedDevice.DevEUI, ConnectionManager)
-            {
-                Deduplication = DeduplicationMode.None, // or Mark
-                NwkSKey = station1
-            };
+            this.device.Deduplication = DeduplicationMode.None; // or Mark
+            this.device.NwkSKey = station1;
 
             // act/assert
-            await TestAssertions(request1, request2, device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: expectedMessagesUp);
+            await TestAssertions(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: expectedMessagesUp);
         }
 
         private async Task TestAssertions(
@@ -268,9 +263,6 @@ namespace LoRaWan.Tests.Integration
             int? expectedMessagesDown = null,
             int? expectedTwinSaves = null)
         {
-            _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(device, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
-            _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(device.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
-
             // first request
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request1, device);
 
@@ -299,6 +291,7 @@ namespace LoRaWan.Tests.Integration
             if (disposing)
             {
                 this.cache.Dispose();
+                this.device.Dispose();
             }
         }
     }
