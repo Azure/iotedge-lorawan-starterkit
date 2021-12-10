@@ -569,7 +569,7 @@
                   }
                 },
                 "customWidth": "15",
-                "name": "query - 3"
+                "name": "Join requests"
               },
               {
                 "type": 3,
@@ -617,7 +617,7 @@
                   }
                 },
                 "customWidth": "15",
-                "name": "query - 4"
+                "name": "D2C message size"
               },
               {
                 "type": 3,
@@ -823,7 +823,7 @@
                   "comparison": "isEqualTo",
                   "value": "yes"
                 },
-                "name": "links - 8 - Copy"
+                "name": "Main action tab"
               },
               {
                 "type": 12,
