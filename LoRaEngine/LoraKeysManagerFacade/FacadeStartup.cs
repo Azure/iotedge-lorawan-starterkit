@@ -54,10 +54,11 @@ namespace LoraKeysManagerFacade
             var deviceCacheStore = new LoRaDeviceCacheRedisStore(redisCache);
 
             builder.Services.AddAzureClients(builder =>
-                       {
-                           _ = builder.AddBlobServiceClient(configHandler.StorageConnectionString)
-                                      .WithName(WebJobsStorageClientName);
-                       });
+            {
+                _ = builder.AddBlobServiceClient(configHandler.StorageConnectionString)
+                           .WithName(WebJobsStorageClientName);
+            });
+
             _ = builder.Services
                     .AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore)
                     .AddSingleton<ILoRaADRManager>(sp => new LoRaADRServerManager(new LoRaADRRedisStore(redisCache, sp.GetRequiredService<ILogger<LoRaADRRedisStore>>()),
