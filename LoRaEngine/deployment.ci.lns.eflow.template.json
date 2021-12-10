@@ -103,6 +103,9 @@
               },
               "APPINSIGHTS_INSTRUMENTATIONKEY": {
                 "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
+              },
+              "LNS_VERSION": {
+                "value": "$IMAGE_TAG"
               }
             },
             "status": "running",
