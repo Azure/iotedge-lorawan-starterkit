@@ -49,8 +49,10 @@ namespace LoraKeysManagerFacade
 
             // Get function facade key
             var base64Auth = Convert.ToBase64String(Encoding.Default.GetBytes($"{publishingUserName}:{publishingPassword}"));
-            var apiUrl = new Uri($"https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.scm.azurewebsites.net/api");
-            var siteUrl = new Uri($"https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net");
+            var facadeHostname = GetEnvironmentVariable("FACADE_HOST_NAME");
+
+            var apiUrl = new Uri($"https://{facadeHostname}.scm.azurewebsites.net/api");
+            var siteUrl = new Uri($"https://{facadeHostname}.azurewebsites.net");
 
             string jwt;
             using (var client = new HttpClient())
