@@ -521,7 +521,7 @@
                   }
                 },
                 "customWidth": "15",
-                "name": "Delivery Latenciees"
+                "name": "Delivery Latencies"
               },
               {
                 "type": 3,
