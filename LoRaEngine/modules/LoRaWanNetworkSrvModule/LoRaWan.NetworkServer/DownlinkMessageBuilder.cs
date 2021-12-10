@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
 
             // default fport
             var fctrl = FrameControlFlags.None;
-            if (upstreamPayload.LoRaMessageType is LoRaMessageType.ConfirmedDataUp)
+            if (upstreamPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
                 fctrl = FrameControlFlags.Ack;

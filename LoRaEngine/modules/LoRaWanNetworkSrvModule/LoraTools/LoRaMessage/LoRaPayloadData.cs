@@ -129,9 +129,9 @@ namespace LoRaTools.LoRaMessage
             LoRaMessageType = new MacHeader(RawMessage[0]).MessageType;
 
             // in this case the payload is not downlink of our type
-            if (LoRaMessageType is LoRaMessageType.ConfirmedDataDown
-                                or LoRaMessageType.JoinAccept
-                                or LoRaMessageType.UnconfirmedDataDown)
+            if (LoRaMessageType is LoRaMessageType.ConfirmedDataDown or
+                LoRaMessageType.JoinAccept or
+                LoRaMessageType.UnconfirmedDataDown)
             {
                 Direction = 1;
             }
