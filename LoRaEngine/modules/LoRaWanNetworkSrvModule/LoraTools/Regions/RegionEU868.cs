@@ -8,6 +8,7 @@ namespace LoRaTools.Regions
     using LoRaWan;
     using System;
     using System.Collections.Generic;
+    using static LoRaWan.Metric;
 
     public class RegionEU868 : Region
     {
@@ -56,7 +57,7 @@ namespace LoRaTools.Regions
             };
 
             MaxADRDataRate = 5;
-            RegionLimits = new RegionLimits((min: 863, max: 870), validDataRangeUpAndDownstream, validDataRangeUpAndDownstream, 0, 0);
+            RegionLimits = new RegionLimits((Min: Mega(863), Max: Mega(870)), validDataRangeUpAndDownstream, validDataRangeUpAndDownstream, 0, 0);
         }
 
         /// <summary>
@@ -83,7 +84,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
         /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
@@ -97,6 +98,6 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(869.525, 0);
+        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(Mega(869.525), 0);
     }
 }
