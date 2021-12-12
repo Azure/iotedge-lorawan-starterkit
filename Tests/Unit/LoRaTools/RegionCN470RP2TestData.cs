@@ -4,43 +4,42 @@
 namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 {
     using System.Collections.Generic;
+    using System.Linq;
     using global::LoRaTools.Regions;
+    using static LoRaWan.Metric;
 
     public static class RegionCN470RP2TestData
     {
         private static readonly Region region = RegionManager.CN470RP2;
 
-        public static IEnumerable<object[]> TestRegionFrequencyData()
-        {
-            var dataRate = 0;
-
-            return new List<object[]>
+        public static IEnumerable<object[]> TestRegionFrequencyData =>
+            from p in new[]
             {
                 // 20 MHz plan A
-                new object[] { region, 470.3, dataRate, 483.9, 0 },
-                new object[] { region, 471.5, dataRate, 485.1, 1 },
-                new object[] { region, 476.5, dataRate, 490.1, 2 },
-                new object[] { region, 503.9, dataRate, 490.7, 3 },
-                new object[] { region, 503.5, dataRate, 490.3, 4 },
-                new object[] { region, 504.5, dataRate, 491.3, 5 },
-                new object[] { region, 509.7, dataRate, 496.5, 7 },
-                // 20 MHz plan B                                 
-                new object[] { region, 476.9, dataRate, 476.9, 8 }, 
-                new object[] { region, 479.9, dataRate, 479.9, 8 },
-                new object[] { region, 503.1, dataRate, 503.1, 9 },
+                new { Frequency = new { Input = Mega(470.3), Output = Mega(483.9) }, JoinChannel = 0 },
+                new { Frequency = new { Input = Mega(471.5), Output = Mega(485.1) }, JoinChannel = 1 },
+                new { Frequency = new { Input = Mega(476.5), Output = Mega(490.1) }, JoinChannel = 2 },
+                new { Frequency = new { Input = Mega(503.9), Output = Mega(490.7) }, JoinChannel = 3 },
+                new { Frequency = new { Input = Mega(503.5), Output = Mega(490.3) }, JoinChannel = 4 },
+                new { Frequency = new { Input = Mega(504.5), Output = Mega(491.3) }, JoinChannel = 5 },
+                new { Frequency = new { Input = Mega(509.7), Output = Mega(496.5) }, JoinChannel = 7 },
+                // 20 MHz plan B
+                new { Frequency = new { Input = Mega(476.9), Output = Mega(476.9) }, JoinChannel = 8 },
+                new { Frequency = new { Input = Mega(479.9), Output = Mega(479.9) }, JoinChannel = 8 },
+                new { Frequency = new { Input = Mega(503.1), Output = Mega(503.1) }, JoinChannel = 9 },
                 // 26 MHz plan A
-                new object[] { region, 470.3, dataRate, 490.1, 10 },
-                new object[] { region, 473.3, dataRate, 493.1, 11 },
-                new object[] { region, 475.1, dataRate, 490.1, 12 },
-                new object[] { region, 471.1, dataRate, 490.9, 14 },
-                // 26 MHz plan B                                  
-                new object[] { region, 480.3, dataRate, 500.1, 15 },
-                new object[] { region, 485.1, dataRate, 500.1, 16 },
-                new object[] { region, 485.3, dataRate, 500.3, 17 },
-                new object[] { region, 489.7, dataRate, 504.7, 18 },
-                new object[] { region, 488.9, dataRate, 503.9, 19 },
-            };
-        }
+                new { Frequency = new { Input = Mega(470.3), Output = Mega(490.1) }, JoinChannel = 10 },
+                new { Frequency = new { Input = Mega(473.3), Output = Mega(493.1) }, JoinChannel = 11 },
+                new { Frequency = new { Input = Mega(475.1), Output = Mega(490.1) }, JoinChannel = 12 },
+                new { Frequency = new { Input = Mega(471.1), Output = Mega(490.9) }, JoinChannel = 14 },
+                // 26 MHz plan B
+                new { Frequency = new { Input = Mega(480.3), Output = Mega(500.1) }, JoinChannel = 15 },
+                new { Frequency = new { Input = Mega(485.1), Output = Mega(500.1) }, JoinChannel = 16 },
+                new { Frequency = new { Input = Mega(485.3), Output = Mega(500.3) }, JoinChannel = 17 },
+                new { Frequency = new { Input = Mega(489.7), Output = Mega(504.7) }, JoinChannel = 18 },
+                new { Frequency = new { Input = Mega(488.9), Output = Mega(503.9) }, JoinChannel = 19 },
+            }
+            select new object[] { region, p.Frequency.Input, /* data rate */ 0, p.Frequency.Output, p.JoinChannel };
 
         public static IEnumerable<object[]> TestRegionDataRateData =>
            new List<object[]>
@@ -63,13 +62,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
-           new List<object[]>
-           {
-               new object[] { region, 470, 8, 0 },
-               new object[] { region, 510, 10, 0 },
-               new object[] { region, 509.8, 100, 0 },
-               new object[] { region, 469.9, 110, 0 },
-           };
+            from x in new (Hertz Frequency, ushort DataRate)[]
+            {
+                (Mega(470.0),   8),
+                (Mega(510.0),  10),
+                (Mega(509.8), 100),
+                (Mega(469.9), 110),
+            }
+            select new object[] { region, x.Frequency, x.DataRate, 0 };
 
         public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
            new List<object[]>
@@ -84,31 +84,39 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
-           new List<object[]>
+           from x in new[]
            {
                // OTAA devices
-               new object[] { region, null, 485.3, 0, null },
-               new object[] { region, null, 486.9, 1, 9 },
-               new object[] { region, null, 496.5, 7, null },
-               new object[] { region, null, 498.3, 9, 8 },
-               new object[] { region, null, 492.5, 10, null },
-               new object[] { region, null, 492.5, 12, null },
-               new object[] { region, null, 492.5, 14, 14 },
-               new object[] { region, null, 502.5, 17, null },
-               new object[] { region, null, 502.5, 19, 18 },
-               new object[] { region, 498.3, 498.3, 7, null },
-               new object[] { region, 485.3, 485.3, 15, null },
-               new object[] { region, 492.5, 492.5, 15, 15 },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 485.3, JoinChannel = new { Reported = (int?) 0, Desired = (int?)null } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 486.9, JoinChannel = new { Reported = (int?) 1, Desired = (int?)9    } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 496.5, JoinChannel = new { Reported = (int?) 7, Desired = (int?)null } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 498.3, JoinChannel = new { Reported = (int?) 9, Desired = (int?)8    } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 492.5, JoinChannel = new { Reported = (int?)10, Desired = (int?)null } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 492.5, JoinChannel = new { Reported = (int?)12, Desired = (int?)null } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 492.5, JoinChannel = new { Reported = (int?)14, Desired = (int?)14   } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 502.5, JoinChannel = new { Reported = (int?)17, Desired = (int?)null } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 502.5, JoinChannel = new { Reported = (int?)19, Desired = (int?)18   } },
+               new { NwkSrvRx2Freq = 498.3     , ExpectedFreq = 498.3, JoinChannel = new { Reported = (int?) 7, Desired = (int?)null } },
+               new { NwkSrvRx2Freq = 485.3     , ExpectedFreq = 485.3, JoinChannel = new { Reported = (int?)15, Desired = (int?)null } },
+               new { NwkSrvRx2Freq = 492.5     , ExpectedFreq = 492.5, JoinChannel = new { Reported = (int?)15, Desired = (int?)15   } },
                // ABP devices
-               new object[] { region, null, 486.9, null, 0 },
-               new object[] { region, null, 486.9, null, 7 },
-               new object[] { region, null, 498.3, null, 8 },
-               new object[] { region, null, 498.3, null, 9 },
-               new object[] { region, null, 492.5, null, 14 },
-               new object[] { region, null, 502.5, null, 15 },
-               new object[] { region, null, 502.5, null, 19 },
-               new object[] { region, 486.9, 486.9, null, 12 },
-               new object[] { region, 502.5, 502.5, null, 17 },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 486.9, JoinChannel = new { Reported = (int?)null, Desired = (int?)0  } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 486.9, JoinChannel = new { Reported = (int?)null, Desired = (int?)7  } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 498.3, JoinChannel = new { Reported = (int?)null, Desired = (int?)8  } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 498.3, JoinChannel = new { Reported = (int?)null, Desired = (int?)9  } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 492.5, JoinChannel = new { Reported = (int?)null, Desired = (int?)14 } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 502.5, JoinChannel = new { Reported = (int?)null, Desired = (int?)15 } },
+               new { NwkSrvRx2Freq = double.NaN, ExpectedFreq = 502.5, JoinChannel = new { Reported = (int?)null, Desired = (int?)19 } },
+               new { NwkSrvRx2Freq = 486.9     , ExpectedFreq = 486.9, JoinChannel = new { Reported = (int?)null, Desired = (int?)12 } },
+               new { NwkSrvRx2Freq = 502.5     , ExpectedFreq = 502.5, JoinChannel = new { Reported = (int?)null, Desired = (int?)17 } },
+           }
+           select new object[]
+           {
+               region,
+               !double.IsNaN(x.NwkSrvRx2Freq) ? Hertz.Mega(x.NwkSrvRx2Freq) : (Hertz?)null,
+               Hertz.Mega(x.ExpectedFreq),
+               x.JoinChannel.Reported,
+               x.JoinChannel.Desired,
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
@@ -135,19 +143,25 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
-           new List<object[]>
-           {
-                new object[] { region, 470.9, 0 },
-                new object[] { region, 472.5, 1 },
-                new object[] { region, 475.7, 3 },
-                new object[] { region, 507.3, 6 },
-                new object[] { region, 479.9, 8 },
-                new object[] { region, 499.9, 9 },
-                new object[] { region, 478.3, 14 },
-                new object[] { region, 482.3, 16 },
-                new object[] { region, 486.3, 18 },
-                new object[] { region, 488.3, 19 },
-           };
+            from x in new[]
+            {
+                new { Freq = 470.9, ExpectedIndex =  0 },
+                new { Freq = 472.5, ExpectedIndex =  1 },
+                new { Freq = 475.7, ExpectedIndex =  3 },
+                new { Freq = 507.3, ExpectedIndex =  6 },
+                new { Freq = 479.9, ExpectedIndex =  8 },
+                new { Freq = 499.9, ExpectedIndex =  9 },
+                new { Freq = 478.3, ExpectedIndex = 14 },
+                new { Freq = 482.3, ExpectedIndex = 16 },
+                new { Freq = 486.3, ExpectedIndex = 18 },
+                new { Freq = 488.3, ExpectedIndex = 19 },
+            }
+            select new object[]
+            {
+                region,
+                Hertz.Mega(x.Freq),
+                x.ExpectedIndex,
+            };
 
         public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>
            new List<object[]>

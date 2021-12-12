@@ -274,6 +274,7 @@
             "name": "azuremonitoralerts",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "[variables('deploymentsAPIVersion')]",
+            "condition": "[parameters('useAzureMonitorOnEdge')]",
             "dependsOn": [                
                 "[resourceId('microsoft.insights/components/', variables('appInsightName'))]",
                 "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"  
@@ -293,7 +294,32 @@
                     }
                 }
             }
-        },        
+        },
+        {
+            "name": "azuremonitorworkbook",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('deploymentsAPIVersion')]",
+            "condition": "[parameters('useAzureMonitorOnEdge')]",
+            "dependsOn": [                
+                "[resourceId('microsoft.insights/components/', variables('appInsightName'))]",
+                "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"  
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit/',variables('gitBranch'),'/Template/workbook.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "iotHubResourceId": {
+                        "value": "[resourceId('microsoft.devices/iothubs/', variables('iotHubName'))]"
+                    },
+                    "appInsightsResourceId": {
+                        "value": "[resourceId('microsoft.insights/components/', variables('appInsightName'))]"
+                    }
+                }
+            }
+        },      
         {
             "type": "Microsoft.OperationalInsights/workspaces",
             "apiVersion": "2021-06-01",
