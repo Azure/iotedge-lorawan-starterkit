@@ -36,13 +36,24 @@ void setup(void)
     lora.init();
     lora.setDeviceDefault();
     delay(1000);
+    lora.SetDebug();
+    delay(1000);
     lora.setPower(6);
     lora.setId(NULL,deviceId , appEui);
     lora.setKey(NULL, NULL, appKey);
 
     lora.setDeciveMode(LWOTAA);
     lora.setDataRate(dr, physicalType);
-
+       lora.setChannel(1, 499.7);
+    lora.setChannel(2, 499.5);
+    lora.setChannel(3, 499.3);
+    lora.setChannel(4, 499.1);
+    lora.setChannel(5, 498.9);
+    lora.setChannel(6, 498.7);
+    lora.setChannel(7, 498.3);
+    for (int i = 1 ; i<8; i++){
+      lora.setChannelOFF(i);
+    }
     lora.setChannel(0, 499.9);
 
     lora.setReceiceWindowSecond(498.3, drrx2);
@@ -55,17 +66,14 @@ void setup(void)
     lora.setPower(2);
 
     while(!lora.setOTAAJoin(JOIN,20000));
+    for (int i = 1 ; i<8; i++){
+      lora.setChannelON(i);
+    }
 }
 
 void loop(void)
 {
-    lora.setChannel(1, 499.7);
-    lora.setChannel(2, 499.5);
-    lora.setChannel(3, 499.3);
-    lora.setChannel(4, 499.1);
-    lora.setChannel(5, 498.9);
-    lora.setChannel(6, 498.7);
-    lora.setChannel(7, 498.3);
+ 
   if((millis()-lastCall)>5000){
     lastCall=millis();
     bool result = false;
