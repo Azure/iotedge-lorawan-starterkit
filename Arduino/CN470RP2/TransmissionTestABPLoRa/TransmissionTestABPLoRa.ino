@@ -1,5 +1,10 @@
 
 #include <LoRaWan.h>
+// THOSE ARDUINO SAMPLE REQUIRES CHANGES IN THE ARDUINO CODE TO RUN DESCRIBED IN THE MAIN REPO
+// THE CONCENTRATOR IS EXPECTED TO HAVE THE FOLLOWING FREQUENCIES ACTIVATED
+// 498.3, 498.7, 498.9, 499.1, 499.3, 499.5, 499.7, 499.9
+// please refer to the repo documentation for further information
+
 //set to true to send confirmed data up messages
 bool confirmed = true;
 //application information, should be similar to what was provisiionned in the device twins
@@ -22,7 +27,7 @@ char * nwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
 
 //set initial datarate and physical information for the device
 _data_rate_t dr = DR6;
-_physical_type_t physicalType = EU868 ;
+_physical_type_t physicalType = CN470PREQUEL ;
 
 //internal variables
 char data[10];
@@ -43,19 +48,24 @@ void setup(void)
 
   lora.setDeciveMode(LWABP);
   lora.setDataRate(dr, physicalType);
-  lora.setChannel(0, 868.1);
-  lora.setChannel(1, 868.3);
-  lora.setChannel(2, 868.5);
+  lora.setChannel(0, 499.9);
+  lora.setChannel(1, 499.7);
+  lora.setChannel(2, 499.5);
+  lora.setChannel(3, 499.3);
+  lora.setChannel(4, 499.1);
+  lora.setChannel(5, 498.9);
+  lora.setChannel(6, 498.7);
+  lora.setChannel(7, 498.3);
 
   lora.setReceiceWindowFirst(0, 868.1);
 
-  lora.setAdaptiveDataRate(false);
+  lora.setReceiceWindowSecond(498.3, DR1);
 
   lora.setDutyCycle(false);
   lora.setJoinDutyCycle(false);
 
 
-  lora.setPower(14);
+  lora.setPower(6);
 
 
 }

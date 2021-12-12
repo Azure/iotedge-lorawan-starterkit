@@ -1,9 +1,14 @@
 
 #include <LoRaWan.h>
 //set to true to send confirmed data up messages
+// THOSE ARDUINO SAMPLE REQUIRES CHANGES IN THE ARDUINO CODE TO RUN DESCRIBED IN THE MAIN REPO
+// THE CONCENTRATOR IS EXPECTED TO HAVE THE FOLLOWING FREQUENCIES ACTIVATED
+// 498.3, 498.7, 498.9, 499.1, 499.3, 499.5, 499.7, 499.9
+// please refer to the repo documentation for further information
+
 bool confirmed=true;
 //application information, should be similar to what was provisiionned in the device twins
-char * deviceId ="04AAC86800430028";
+char * deviceId ="47AAC86800430028";
 char * appKey="0AFE71A145B253E49C3031AD068277A1";
 char * appEui ="0E7A0000000014E2";
 
@@ -20,7 +25,7 @@ iot hub OTAA tags for deviceid: 47AAC86800430028
 //set initial datarate and physical information for the device
 _data_rate_t dr=DR0;
 _data_rate_t drrx2=DR1;
-_physical_type_t physicalType =CN470PREQUEL ;
+_physical_type_t physicalType=CN470PREQUEL ;
 
 //internal variables
 char data[10];
@@ -44,17 +49,19 @@ void setup(void)
 
     lora.setDeciveMode(LWOTAA);
     lora.setDataRate(dr, physicalType);
-       lora.setChannel(1, 499.7);
+    lora.setChannel(0, 499.9);
+    lora.setChannel(1, 499.7);
     lora.setChannel(2, 499.5);
     lora.setChannel(3, 499.3);
     lora.setChannel(4, 499.1);
     lora.setChannel(5, 498.9);
     lora.setChannel(6, 498.7);
     lora.setChannel(7, 498.3);
+
+    //disable channels for OTAA
     for (int i = 1 ; i<8; i++){
       lora.setChannelOFF(i);
     }
-    lora.setChannel(0, 499.9);
 
     lora.setReceiceWindowSecond(498.3, drrx2);
 
@@ -66,6 +73,8 @@ void setup(void)
     lora.setPower(2);
 
     while(!lora.setOTAAJoin(JOIN,20000));
+
+    // reenable channels after OTAA
     for (int i = 1 ; i<8; i++){
       lora.setChannelON(i);
     }
