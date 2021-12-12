@@ -207,7 +207,7 @@ namespace LoRaTools.LoRaMessage
             throw new NotImplementedException();
         }
 
-        public DownlinkPktFwdMessage Serialize(string appKey, string datr, double freq, string devEui, long tmst, ushort lnsRxDelay = 0, uint? rfch = 0, string time = "", StationEui stationEui = default, DeviceJoinInfo deviceJoinInfo = null)
+        public DownlinkPktFwdMessage Serialize(string appKey, string datr, Hertz freq, string devEui, long tmst, ushort lnsRxDelay = 0, uint? rfch = 0, string time = "", StationEui stationEui = default, DeviceJoinInfo deviceJoinInfo = null)
         {
             var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)

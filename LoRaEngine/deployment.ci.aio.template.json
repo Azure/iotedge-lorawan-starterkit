@@ -118,6 +118,9 @@
               },
               "LNS_SERVER_PFX_PASSWORD": {
                 "value": "$SERVER_PFX_PASSWORD"
+              },
+              "LNS_VERSION": {
+                "value": "$NET_SRV_VERSION"
               }
             },
             "status": "running",
@@ -160,6 +163,9 @@
               },
               "TLS_SNI": {
                 "value": "false"
+              },
+              "LNS_VERSION": {
+                "value": "$NET_SRV_VERSION"
               }
             },
             "version": "1.0",
