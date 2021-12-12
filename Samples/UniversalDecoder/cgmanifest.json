@@ -1,0 +1,14 @@
+{
+  "Registrations": [
+    {
+      "Component": {
+        "Type": "git",
+          "RepositoryUrl": "https://github.com/TheThingsNetwork/lorawan-devices",
+          "CommitHash": "2426c47df1bf8dbc8e4ba2d6754e56ca9d98a9f5"
+      },
+      "DevelopmentDependency": [
+        false
+      ]
+    }
+  ]
+}

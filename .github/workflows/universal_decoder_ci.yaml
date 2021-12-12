@@ -13,6 +13,10 @@ on:
     paths:
       - 'Samples/UniversalDecoder/**'
   workflow_dispatch:
+   inputs:
+    Push_Containers:
+      description: 'Push containers in the registry'
+      default: false
 
 jobs:
   Build_And_Test:
@@ -71,16 +75,24 @@ jobs:
       - name: Get the image version
         id: vars
         run: echo ::set-output name=tag::0.0.$(echo ${GITHUB_SHA})
-      - name: Build and push the tagged Docker image
+      - if: "!github.event.inputs.Push_Containers"
+        name: Build and push the tagged Docker image
+        run: |
+          docker login -u ${{ secrets.DOCKER_LOGIN }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker buildx build -f "Dockerfile.${{ matrix.image }}" -t ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{steps.vars.outputs.tag}}-${{ matrix.image }} "."
+      - if: github.event.inputs.Push_Containers
+        name: Build and push the tagged Docker image
         run: |
           docker login -u ${{ secrets.DOCKER_LOGIN }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker buildx build -f "Dockerfile.${{ matrix.image }}" -t ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{steps.vars.outputs.tag}}-${{ matrix.image }} --output type=image,push=true "."
+
 
 
   Docker_Manifests:
     name: Create manifests
     runs-on: ubuntu-latest
     needs: Build_And_Push
+    if: github.event.inputs.Push_Containers
     steps:
       - run: echo "output ${{needs.Test_And_Push.outputs.tag}}"
       - name: Login to docker registry
