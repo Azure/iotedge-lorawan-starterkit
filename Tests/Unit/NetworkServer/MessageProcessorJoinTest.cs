@@ -59,6 +59,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             simulatedDevice.LoRaDevice.NwkSKey = string.Empty;
             simulatedDevice.LoRaDevice.AppSKey = string.Empty;
             var joinRequest = simulatedDevice.CreateJoinRequest();
+            joinRequest.DevNonce = new DevNonce(0x9786);
 
             // Create Rxpk
             var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];

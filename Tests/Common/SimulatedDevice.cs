@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Common
 
         public PhysicalPayload LastPayload { get; set; }
 
-        public string DevNonce { get; private set; }
+        public DevNonce? DevNonce { get; private set; }
 
         public bool IsJoined => !string.IsNullOrEmpty(LoRaDevice.DevAddr);
 
@@ -60,8 +60,6 @@ namespace LoRaWan.Tests.Common
             set => LoRaDevice.Supports32BitFCnt = value;
         }
 
-        private bool isFirstJoinRequest = true;
-
         public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0)
         {
             LoRaDevice = testDeviceInfo;
@@ -71,24 +69,18 @@ namespace LoRaWan.Tests.Common
 
         public LoRaPayloadJoinRequest CreateJoinRequest()
         {
-            var devNonceBytes = new byte[2];
-            if (string.IsNullOrEmpty(DevNonce) || (!this.isFirstJoinRequest))
+            if (DevNonce is null)
             {
+                var devNonceBytes = new byte[2];
                 using var random = RandomNumberGenerator.Create();
-                // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
                 random.GetBytes(devNonceBytes);
-                DevNonce = BitConverter.ToString(devNonceBytes).Replace("-", string.Empty, StringComparison.Ordinal);
-                Array.Reverse(devNonceBytes);
-                this.isFirstJoinRequest = false;
-            }
-            else
-            {
-                devNonceBytes = ConversionHelper.StringToByteArray(DevNonce);
-                Array.Reverse(devNonceBytes);
+                DevNonce = LoRaWan.DevNonce.Read(devNonceBytes);
             }
 
-            TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {BitConverter.ToString(devNonceBytes).Replace("-", string.Empty, StringComparison.Ordinal)} / {DevNonce}");
-            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, LoRaWan.DevNonce.Read(devNonceBytes));
+            TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
+#pragma warning disable CA1508 // Avoid dead conditional code
+            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce ?? throw new InvalidOperationException("DevNonce must not be null at this point."));
+#pragma warning restore CA1508 // Avoid dead conditional code
             joinRequest.SetMic(LoRaDevice.AppKey);
 
             return joinRequest;
@@ -269,8 +261,7 @@ namespace LoRaWan.Tests.Common
                 Array.Reverse(netid);
                 var appNonce = payload.AppNonce.ToArray();
                 Array.Reverse(appNonce);
-                _ = Hexadecimal.TryParse(DevNonce, out var devNonceRaw);
-                var devNonce = new DevNonce(checked((ushort)devNonceRaw));
+                var devNonce = DevNonce ?? throw new InvalidOperationException("DevNonce should not be null at this point.");
                 var deviceAppKey = ConversionHelper.StringToByteArray(LoRaDevice.AppKey);
                 var appSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.AppSKey, appNonce, netid, devNonce, deviceAppKey);
                 var nwkSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netid, devNonce, deviceAppKey);
