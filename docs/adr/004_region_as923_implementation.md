@@ -122,3 +122,4 @@ Cons:
 - Works only for single gateway or OTAA join, multi-gateway would be more complex (if we decide to implement it)
 
 [dwell-time-bug]: https://github.com/Lora-net/LoRaMac-node/issues/614
+[rp2-103]: https://lora-alliance.org/wp-content/uploads/2021/05/RP002-1.0.3-FINAL-1.pdf
