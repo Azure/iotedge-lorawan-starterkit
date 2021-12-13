@@ -325,7 +325,7 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
                 {
                     var devNonceString = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
-                    var buffer = new byte[DevEui.Size];
+                    var buffer = new byte[LoRaWan.DevNonce.Size];
                     _ = Hexadecimal.TryParse(devNonceString, buffer);
                     DevNonce = LoRaWan.DevNonce.Read(buffer);
                 }
