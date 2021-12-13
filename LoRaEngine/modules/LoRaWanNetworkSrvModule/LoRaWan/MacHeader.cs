@@ -19,8 +19,15 @@ namespace LoRaWan
 
         public MacHeader(byte value) => this.value = value;
 
-        public MacHeader(MacMessageType messageType, int major = 0) =>
-            this.value = unchecked((byte)((((int)messageType) << 5) | major));
+        public MacHeader(MacMessageType messageType, DataMessageVersion major = DataMessageVersion.R1)
+#pragma warning disable format
+            : this((unchecked((uint)messageType), unchecked((uint)major)) switch
+                   {
+                       (> 7, _) => throw new ArgumentException(null, nameof(messageType)),
+                       (_, > 3) => throw new ArgumentException(null, nameof(major)),
+                       _ => unchecked((byte)((((byte)messageType) << 5) | (byte)major))
+                   }) { }
+#pragma warning restore format
 
         /// <summary>
         /// Gets the message type (MType).
@@ -30,7 +37,7 @@ namespace LoRaWan
         /// <summary>
         /// Gets the major version (Major) of the frame format of the LoRaWAN layer specification.
         /// </summary>
-        public int Major => this.value & 0b11;
+        public DataMessageVersion Major => (DataMessageVersion)(this.value & 0b11);
 
         public override string ToString() => this.value.ToString("X2", CultureInfo.InvariantCulture);
 
