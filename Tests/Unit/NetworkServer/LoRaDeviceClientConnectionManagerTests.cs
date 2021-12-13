@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
+    using System;
     using System.Linq;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -42,6 +43,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 c.Verify(client => client.Dispose(), Times.Exactly(2));
             }
+        }
+
+        [Fact]
+        public void When_Registering_Existing_Connection_Throws()
+        {
+            // arrange
+            using var cache = new MemoryCache(new MemoryCacheOptions());
+            using var connectionManager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
+
+            using var loraDevice = new LoRaDevice(null, "0000000000000000", null);
+            connectionManager.Register(loraDevice, new Mock<ILoRaDeviceClient>().Object);
+            Assert.Throws<InvalidOperationException>(() => connectionManager.Register(loraDevice, new Mock<ILoRaDeviceClient>().Object));
         }
     }
 }

@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer
                     HandlePreferredGatewayChanges(request, loRaDevice, bundlerResult);
                 }
 
-                if (loraPayload.IsAdrReq)
+                if (loraPayload.IsAdrAckRequested)
                 {
                     this.logger.LogDebug("ADR ack request received");
                 }
@@ -128,12 +128,12 @@ namespace LoRaWan.NetworkServer
                 // ADR should be performed before the deduplication
                 // as we still want to collect the signal info, even if we drop
                 // it in the next step
-                if (loRaADRResult == null && loraPayload.IsAdrEnabled)
+                if (loRaADRResult == null && loraPayload.IsDataRateNetworkControlled)
                 {
                     loRaADRResult = await PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }
 
-                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
+                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrAckRequested)
                 {
                     // if we got an ADR result or request, we have to send the update to the device
                     requiresConfirmation = true;
@@ -555,7 +555,7 @@ namespace LoRaWan.NetworkServer
                     this.logger.LogError("Failed to get downstream data rate");
                     return false;
                 }
-                maxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDataRate(rxpk));
+                maxPayload = loRaRegion.GetMaxPayloadSize(downstreamDataRate);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
 
@@ -600,7 +600,7 @@ namespace LoRaWan.NetworkServer
             }
 
             Dictionary<string, string> eventProperties = null;
-            if (loRaPayloadData.IsUpwardAck())
+            if (loRaPayloadData.IsUpwardAck)
             {
                 eventProperties = new Dictionary<string, string>();
                 this.logger.LogInformation($"message ack received for cloud to device message id {loRaDevice.LastConfirmedC2DMessageID}");
@@ -711,7 +711,7 @@ namespace LoRaWan.NetworkServer
             };
 
             // If the ADR req bit is not set we don't perform rate adaptation.
-            if (!loraPayload.IsAdrReq)
+            if (!loraPayload.IsAdrAckRequested)
             {
                 _ = loRaADRManager.StoreADREntryAsync(loRaADRTableEntry);
             }

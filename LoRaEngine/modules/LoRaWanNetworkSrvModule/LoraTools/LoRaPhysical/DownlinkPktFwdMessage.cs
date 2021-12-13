@@ -40,7 +40,7 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used in case of a response to a upstream message.
         /// </summary>
         /// <returns>DownlinkPktFwdMessage object ready to be sent.</returns>
-        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, string devEui, long tmst = 0, ushort lnsRxDelay = 0, uint? rfch = null, string time = "", StationEui stationEui = default)
+        public DownlinkPktFwdMessage(byte[] loRaData, string datr, Hertz freq, string devEui, long tmst = 0, ushort lnsRxDelay = 0, uint? rfch = null, string time = "", StationEui stationEui = default)
         {
             if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
 
@@ -50,7 +50,7 @@ namespace LoRaTools.LoRaPhysical
                 Tmst = tmst,
                 Data = Convert.ToBase64String(loRaData),
                 Size = (uint)loRaData.Length,
-                Freq = freq,
+                FreqHertz = freq,
                 Rfch = 0,
                 Modu = "LORA",
                 Datr = datr,
