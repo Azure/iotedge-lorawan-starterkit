@@ -130,7 +130,7 @@ namespace LoRaWan.Tests.Common
             var direction = 0;
 
             var payloadData = new LoRaPayloadData(
-                LoRaMessageType.UnconfirmedDataUp,
+                MacMessageType.UnconfirmedDataUp,
                 devAddr,
                 fctrlFlags,
                 fcntBytes,
@@ -178,7 +178,7 @@ namespace LoRaWan.Tests.Common
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.Adr, fcntBytes, null, fPort, payload, direction, Supports32BitFCnt ? fcnt : null);
+            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.Adr, fcntBytes, null, fPort, payload, direction, Supports32BitFCnt ? fcnt : null);
 
             return payloadData;
         }

@@ -7,7 +7,7 @@ namespace LoRaWan
     /// MAC message type (MType) per section 4.2.1 of LoRaWAN Specification 1.0.3.
     /// </summary>
 
-    public enum LoRaMessageType
+    public enum MacMessageType
     {
 #pragma warning disable format
         JoinRequest         = 0, // 000

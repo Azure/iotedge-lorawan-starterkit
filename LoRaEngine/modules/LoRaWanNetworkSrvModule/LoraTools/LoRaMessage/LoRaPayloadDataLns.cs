@@ -30,12 +30,12 @@ namespace LoRaTools.LoRaMessage
 
             // Parsing LoRaMessageType in legacy format
             var messageType = macHeader.MessageType;
-            if (messageType is not LoRaMessageType.JoinRequest and
-                               not LoRaMessageType.JoinAccept and
-                               not LoRaMessageType.UnconfirmedDataUp and
-                               not LoRaMessageType.UnconfirmedDataDown and
-                               not LoRaMessageType.ConfirmedDataUp and
-                               not LoRaMessageType.ConfirmedDataDown)
+            if (messageType is not MacMessageType.JoinRequest and
+                               not MacMessageType.JoinAccept and
+                               not MacMessageType.UnconfirmedDataUp and
+                               not MacMessageType.UnconfirmedDataDown and
+                               not MacMessageType.ConfirmedDataUp and
+                               not MacMessageType.ConfirmedDataDown)
             {
                 throw new NotImplementedException();
             };
@@ -43,9 +43,9 @@ namespace LoRaTools.LoRaMessage
             LoRaMessageType = messageType;
 
             // in this case the payload is not downlink of our type
-            Direction = messageType is LoRaMessageType.ConfirmedDataDown or
-                                       LoRaMessageType.JoinAccept or
-                                       LoRaMessageType.UnconfirmedDataDown ? 1 : 0;
+            Direction = messageType is MacMessageType.ConfirmedDataDown or
+                                       MacMessageType.JoinAccept or
+                                       MacMessageType.UnconfirmedDataDown ? 1 : 0;
 
             // Setting MHdr value
             Mhdr = new byte[1];

@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
 
             // default fport
             var fctrl = FrameControlFlags.None;
-            if (upstreamPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+            if (upstreamPayload.LoRaMessageType == MacMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
                 fctrl = FrameControlFlags.Ack;
@@ -208,7 +208,7 @@ namespace LoRaWan.NetworkServer
                 reversedDevAddr[i] = srcDevAddr[^(1 + i)];
             }
 
-            var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
+            var msgType = requiresDeviceAcknowlegement ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
                 reversedDevAddr,
@@ -321,7 +321,7 @@ namespace LoRaWan.NetworkServer
                 reversedDevAddr[i] = payloadDevAddr[^(1 + i)];
             }
 
-            var msgType = cloudToDeviceMessage.Confirmed ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
+            var msgType = cloudToDeviceMessage.Confirmed ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
                 reversedDevAddr,

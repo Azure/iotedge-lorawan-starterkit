@@ -19,7 +19,7 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public abstract class LoRaPayload
     {
-        public LoRaMessageType LoRaMessageType { get; set; }
+        public MacMessageType LoRaMessageType { get; set; }
 
         /// <summary>
         /// Gets or sets raw byte of the message.
@@ -147,8 +147,8 @@ namespace LoRaTools.LoRaMessage
             loRaPayloadMessage = messageType switch
 #pragma warning restore IDE0072 // Add missing cases
             {
-                LoRaMessageType.UnconfirmedDataUp or LoRaMessageType.ConfirmedDataUp => new LoRaPayloadData(convertedInputMessage),
-                LoRaMessageType.JoinRequest => new LoRaPayloadJoinRequest(convertedInputMessage),
+                MacMessageType.UnconfirmedDataUp or MacMessageType.ConfirmedDataUp => new LoRaPayloadData(convertedInputMessage),
+                MacMessageType.JoinRequest => new LoRaPayloadJoinRequest(convertedInputMessage),
                 _ => (LoRaPayload)null,
             };
 

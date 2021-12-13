@@ -100,11 +100,11 @@ namespace LoRaWan.NetworkServer
 
             var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>(), this.d2cMessageDeliveryLatencyHistogram);
 
-            if (request.Payload.LoRaMessageType == LoRaMessageType.JoinRequest)
+            if (request.Payload.LoRaMessageType == MacMessageType.JoinRequest)
             {
                 DispatchLoRaJoinRequest(loggingRequest);
             }
-            else if (request.Payload.LoRaMessageType is LoRaMessageType.UnconfirmedDataUp or LoRaMessageType.ConfirmedDataUp)
+            else if (request.Payload.LoRaMessageType is MacMessageType.UnconfirmedDataUp or MacMessageType.ConfirmedDataUp)
             {
                 DispatchLoRaDataMessage(loggingRequest);
             }
