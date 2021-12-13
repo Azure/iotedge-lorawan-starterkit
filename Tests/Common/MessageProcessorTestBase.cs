@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Common
 
     public class MessageProcessorTestBase : IDisposable
     {
-        protected const string ServerGatewayID = "test-gateway";
+        public const string ServerGatewayID = "test-gateway";
 
         private readonly MemoryCache cache;
         private readonly byte[] macAddress;
@@ -48,6 +48,8 @@ namespace LoRaWan.Tests.Common
 
         protected LoRaDeviceClientConnectionManager ConnectionManager { get; }
 
+        protected LoRaDeviceCache DeviceCache { get; } = new LoRaDeviceCache(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration { GatewayID = MessageProcessorTestBase.ServerGatewayID }, NullLogger<LoRaDeviceCache>.Instance);
+
         public MessageProcessorTestBase()
         {
             this.startTime = DateTimeOffset.UtcNow.Ticks;
@@ -69,10 +71,11 @@ namespace LoRaWan.Tests.Common
             var adrManagerFactory = new LoRAADRManagerFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance);
             var functionBundlerProvider = new FunctionBundlerProvider(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance);
             RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance, null);
-            LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            LoRaDeviceClient = new Mock<ILoRaDeviceClient>();
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
             ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, ConnectionManager);
+            var requestHandler = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance, meter: null);
+            LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, LoRaDeviceClient.Object, ConnectionManager, DeviceCache, requestHandler);
 
             // By default we pick EU868 region.
             Region = Enum.TryParse<LoRaRegionType>(Environment.GetEnvironmentVariable("REGION"), out var loraRegionType) ?
@@ -84,25 +87,26 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Creates a <see cref="IMemoryCache"/> containing the <paramref name="loRaDevice"/> already available.
         /// </summary>
-        public static IMemoryCache NewNonEmptyCache(LoRaDevice loRaDevice)
+        public static LoRaDeviceCache CreateDeviceCache(LoRaDevice loRaDevice)
         {
-            var cache = new MemoryCache(new MemoryCacheOptions());
-
-            // add by dev addr
-            var dictionary = new DevEUIToLoRaDeviceDictionary();
-            dictionary.TryAdd(loRaDevice.DevEUI, loRaDevice);
-            cache.Set(loRaDevice.DevAddr, dictionary);
-
-            // add device by deveui
-            cache.Set(LoRaDeviceRegistry.CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice);
-
+            var cache = LoRaDeviceCacheDefault.CreateDefault();
+            cache.Register(loRaDevice);
             return cache;
         }
 
-        public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice)
+        public static IMemoryCache EmptyMemoryCache()
+        {
+            return new MemoryCache(new MemoryCacheOptions());
+        }
+
+        public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice, bool registerConnection = true)
         {
             var device = TestUtils.CreateFromSimulatedDevice(simulatedDevice, ConnectionManager, RequestHandlerImplementation);
-            ConnectionManager.Register(device, LoRaDeviceClient.Object);
+            if (registerConnection)
+            {
+                ConnectionManager.Register(device, LoRaDeviceClient.Object);
+            }
+
             return device;
         }
 
@@ -129,6 +133,7 @@ namespace LoRaWan.Tests.Common
                 if (disposing)
                 {
                     this.cache.Dispose();
+                    this.DeviceCache.Dispose();
                 }
 
                 this.disposedValue = true;

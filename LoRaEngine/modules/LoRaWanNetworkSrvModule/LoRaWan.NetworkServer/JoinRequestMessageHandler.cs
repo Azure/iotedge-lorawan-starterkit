@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer
 
                 try
                 {
-                    var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
+                    var timeWatcher = request.GetTimeWatcher();
 
                     var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
@@ -102,16 +102,14 @@ namespace LoRaWan.NetworkServer
                             this.logger.LogError("join refused: DevNonce already used by this device");
                         }
 
-                        loRaDevice.IsOurDevice = false;
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.JoinDevNonceAlreadyUsed);
                         return;
                     }
 
                     // Check that the device is joining through the linked gateway and not another
-                    if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase))
+                    if (!loRaDevice.IsOurDevice)
                     {
                         this.logger.LogInformation("join refused: trying to join not through its linked gateway, ignoring join request");
-                        loRaDevice.IsOurDevice = false;
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
                         return;
                     }
@@ -227,7 +225,6 @@ namespace LoRaWan.NetworkServer
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     }
 
-                    loRaDevice.IsOurDevice = true;
                     this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                     // Build join accept downlink message

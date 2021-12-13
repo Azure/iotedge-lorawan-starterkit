@@ -4,6 +4,8 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Diagnostics.Metrics;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
@@ -13,6 +15,7 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDataRequestHandler dataRequestHandler;
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
+        private readonly LoRaDeviceCache loRaDeviceCache;
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<LoRaDeviceFactory> logger;
         private readonly Meter meter;
@@ -20,6 +23,7 @@ namespace LoRaWan.NetworkServer
         public LoRaDeviceFactory(NetworkServerConfiguration configuration,
                                  ILoRaDataRequestHandler dataRequestHandler,
                                  ILoRaDeviceClientConnectionManager connectionManager,
+                                 LoRaDeviceCache loRaDeviceCache,
                                  ILoggerFactory loggerFactory,
                                  ILogger<LoRaDeviceFactory> logger,
                                  Meter meter)
@@ -30,35 +34,66 @@ namespace LoRaWan.NetworkServer
             this.loggerFactory = loggerFactory;
             this.logger = logger;
             this.meter = meter;
+            this.loRaDeviceCache = loRaDeviceCache;
         }
 
-        public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
+        public Task<LoRaDevice> CreateAndRegisterAsync(IoTHubDeviceInfo deviceInfo, CancellationToken cancellationToken)
         {
-            if (deviceInfo is null) throw new ArgumentNullException(nameof(deviceInfo));
+            _ = deviceInfo ?? throw new ArgumentNullException(nameof(deviceInfo));
 
-            var loRaDevice = new LoRaDevice(
-                deviceInfo.DevAddr,
-                deviceInfo.DevEUI,
-                this.connectionManager,
-                this.loggerFactory.CreateLogger<LoRaDevice>(),
-                meter)
-            {
-                GatewayID = deviceInfo.GatewayId,
-                NwkSKey = deviceInfo.NwkSKey
-            };
+            if (string.IsNullOrEmpty(deviceInfo.PrimaryKey) || string.IsNullOrEmpty(deviceInfo.DevEUI))
+                throw new ArgumentException($"Incomplete {nameof(IoTHubDeviceInfo)}", nameof(deviceInfo));
 
-            var isOurDevice = string.IsNullOrEmpty(deviceInfo.GatewayId) || string.Equals(deviceInfo.GatewayId, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
-            if (isOurDevice)
+            if (this.loRaDeviceCache.TryGetByDevEui(deviceInfo.DevEUI, out _))
+                throw new InvalidOperationException($"Device {deviceInfo.DevEUI} already registered");
+
+            return RegisterCoreAsync(deviceInfo, cancellationToken);
+        }
+
+        private async Task<LoRaDevice> RegisterCoreAsync(IoTHubDeviceInfo deviceInfo, CancellationToken cancellationToken)
+        {
+            var loRaDevice = CreateDevice(deviceInfo);
+            try
             {
-#pragma warning disable CA2000 // Dispose objects before losing scope
+                // we always want to register the connection if we have a key.
+                // the connection is not opened, unless there is a
+                // request made. This allows us to refresh the twins,
+                // even though, we don't own it, to detect ownership
+                // changes.
                 // Ownership is transferred to connection manager.
                 this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
-#pragma warning restore CA2000 // Dispose objects before losing scope
+
+                loRaDevice.SetRequestHandler(this.dataRequestHandler);
+
+                if (loRaDevice.UpdateIsOurDevice(this.configuration.GatewayID) &&
+                    !await loRaDevice.InitializeAsync(this.configuration, cancellationToken))
+                {
+                    throw new LoRaProcessingException("Failed to initialize device twins.", LoRaProcessingErrorCode.DeviceInitializationFailed);
+                }
+                this.loRaDeviceCache.Register(loRaDevice);
+                return loRaDevice;
             }
+            catch
+            {
+                this.connectionManager.Release(loRaDevice);
+                loRaDevice.Dispose();
+                throw;
+            }
+        }
 
-            loRaDevice.SetRequestHandler(this.dataRequestHandler);
-
-            return loRaDevice;
+        protected virtual LoRaDevice CreateDevice(IoTHubDeviceInfo deviceInfo)
+        {
+            return deviceInfo == null
+                    ? throw new ArgumentNullException(nameof(deviceInfo))
+                    : new LoRaDevice(deviceInfo.DevAddr,
+                                     deviceInfo.DevEUI,
+                                     this.connectionManager,
+                                     this.loggerFactory.CreateLogger<LoRaDevice>(),
+                                     this.meter)
+                    {
+                        GatewayID = deviceInfo.GatewayId,
+                        NwkSKey = deviceInfo.NwkSKey,
+                    };
         }
 
         private string CreateIoTHubConnectionString()
@@ -85,7 +120,7 @@ namespace LoRaWan.NetworkServer
             return connectionString;
         }
 
-        public ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey)
+        public virtual ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey)
         {
             try
             {
@@ -106,7 +141,7 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(eui, deviceConnectionStr, transportSettings, this.loggerFactory.CreateLogger<LoRaDeviceClient>());
+                return new LoRaDeviceClient(eui, deviceConnectionStr, transportSettings, primaryKey, this.loggerFactory.CreateLogger<LoRaDeviceClient>());
             }
             catch (Exception ex)
             {

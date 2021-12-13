@@ -3,10 +3,23 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public interface ILoRaDeviceFactory
     {
-        // Creates and initializes a new lora device
-        LoRaDevice Create(IoTHubDeviceInfo deviceInfo);
+        /// <summary>
+        /// Creates, initializes and registers a new <see cref="LoRaDevice"/>. The device is added
+        /// to the local cache and initialized, if we own the device (matching gateway). The connection
+        /// is added to the connection manager in any case to have a way to refresh the information and
+        /// detect owner change for cached devices.
+        /// </summary>
+        /// <returns>A new <see cref="LoRaDevice"/></returns>
+        /// <exception cref="InvalidOperationException">If the device was previously registered.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="deviceInfo"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="deviceInfo"/> is incomplete.</exception>
+        Task<LoRaDevice> CreateAndRegisterAsync(IoTHubDeviceInfo deviceInfo, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates a device client based on the devEUI and primary key.
