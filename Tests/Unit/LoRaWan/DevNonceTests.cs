@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit
 {
     using System;
+    using System.Globalization;
     using LoRaWan;
     using Xunit;
 
@@ -63,6 +64,65 @@ namespace LoRaWan.Tests.Unit
 #pragma warning restore CS1718 // Comparison made to same variable
             Assert.True(greater >= lesser);
             Assert.False(lesser >= greater);
+        }
+
+        [Theory]
+        [InlineData("{0}", "43794")]
+        [InlineData("{0:G}", "43794")]
+        [InlineData("{0:D}", "43794")]
+        [InlineData("{0:g}", "43794")]
+        [InlineData("{0:d}", "43794")]
+        [InlineData("{0:N}", "12AB")]
+        [InlineData("{0:n}", "12ab")]
+        public void String_Interpolation_Success_Case(string format, string expected)
+        {
+            var subject = new DevNonce(0xAB12);
+            var result = string.Format(CultureInfo.InvariantCulture, format, subject);
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData(null, "43794")]
+        [InlineData("G", "43794")]
+        [InlineData("D", "43794")]
+        [InlineData("g", "43794")]
+        [InlineData("d", "43794")]
+        [InlineData("N", "12AB")]
+        [InlineData("n", "12ab")]
+        public void ToString_Returns_Correctly_Formatted_String(string format, string expectedRepresentation)
+        {
+            var subject = new DevNonce(0xAB12);
+            Assert.Equal(expectedRepresentation, subject.ToString(format, null));
+        }
+
+        [Fact]
+        public void ToString_Throws_On_Unsupported_Format()
+        {
+            _ = Assert.Throws<FormatException>(() => this.subject.ToString("foo", null));
+        }
+
+        [Fact]
+        public void ToString_Parse_Preserves_Information()
+        {
+            // arrange
+            var subject = new DevNonce(0xAB12);
+            var hexString = "12AB";
+
+            // act
+            var obj = Parse(hexString);
+            var stringResult = obj.ToString("N", null);
+            var objResult = Parse(stringResult);
+
+            // assert
+            Assert.Equal(subject, objResult);
+            Assert.Equal(hexString, stringResult);
+
+            static DevNonce Parse(string input)
+            {
+                var buffer = new byte[DevNonce.Size];
+                _ = Hexadecimal.TryParse(input, buffer);
+                return DevNonce.Read(buffer);
+            }
         }
     }
 }
