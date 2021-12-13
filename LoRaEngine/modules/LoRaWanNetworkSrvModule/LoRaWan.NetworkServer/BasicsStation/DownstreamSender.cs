@@ -85,8 +85,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 writer.WriteNumber("RxDelay", message.LnsRxDelay);
                 writer.WriteNumber("RX1DR", dataRate);
                 writer.WriteNumber("RX1Freq", (ulong)(message.Txpk.Freq * 1e6));
-                writer.WriteNumber("RX2DR", region.GetDefaultRX2ReceiveWindow(message.DeviceJoinInfo).DataRate);
-                writer.WriteNumber("RX2Freq", (ulong)region.GetDefaultRX2ReceiveWindow(message.DeviceJoinInfo).Frequency);
+                var rx2receivewindow = region.GetDefaultRX2ReceiveWindow(message.DeviceJoinInfo);
+                writer.WriteNumber("RX2DR", rx2receivewindow.DataRate);
+                writer.WriteNumber("RX2Freq", (ulong)rx2receivewindow.Frequency);
                 writer.WriteNumber("xtime", message.Xtime);
             }
             else if (deviceClassType is LoRaDeviceClassType.C)

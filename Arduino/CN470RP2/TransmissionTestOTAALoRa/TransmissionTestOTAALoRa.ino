@@ -82,7 +82,7 @@ void setup(void)
 
 void loop(void)
 {
- 
+
   if((millis()-lastCall)>5000){
     lastCall=millis();
     bool result = false;
@@ -102,8 +102,8 @@ void loop(void)
         short length;
         short rssi;
 
-        memset(buffer, 0, 256);
-        length = lora.receivePacket(buffer, 256, &rssi);
+        memset(buffer, 0, sizeof(buffer));
+        length = lora.receivePacket(buffer, sizeof(buffer), &rssi);
 
         if(length)
         {
