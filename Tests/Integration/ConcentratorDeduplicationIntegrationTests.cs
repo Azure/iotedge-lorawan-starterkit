@@ -288,15 +288,15 @@ namespace LoRaWan.Tests.Integration
 
         private (LoRaRequest request1, LoRaRequest request2) SetupRequests(LoRaPayloadData dataPayload, string station1, string station2)
         {
-            using var loraRequest1 = CreateWaitableRequest(dataPayload.SerializeUplink(this.simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
-            loraRequest1.SetStationEui(StationEui.Parse(station1));
-            loraRequest1.SetPayload(dataPayload);
+            return (CreateRequest(station1), CreateRequest(station2));
 
-            using var loraRequest2 = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
-            loraRequest2.SetStationEui(StationEui.Parse(station2));
-            loraRequest2.SetPayload(dataPayload);
-
-            return (loraRequest1, loraRequest2);
+            WaitableLoRaRequest CreateRequest(string stationEui)
+            {
+                var loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(this.simulatedDevice.AppSKey, this.simulatedDevice.NwkSKey).Rxpk[0]);
+                loraRequest.SetStationEui(StationEui.Parse(stationEui));
+                loraRequest.SetPayload(dataPayload);
+                return loraRequest;
+            }
         }
 
         private async Task TestAssertions(
