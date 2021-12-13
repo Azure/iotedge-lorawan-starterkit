@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Common
 
         public PhysicalPayload LastPayload { get; set; }
 
-        public DevNonce? DevNonce { get; private set; }
+        public DevNonce DevNonce { get; private set; }
 
         public bool IsJoined => !string.IsNullOrEmpty(LoRaDevice.DevAddr);
 
@@ -69,17 +69,14 @@ namespace LoRaWan.Tests.Common
 
         public LoRaPayloadJoinRequest CreateJoinRequest()
         {
-            if (DevNonce is null)
-            {
-                var devNonceBytes = new byte[2];
-                using var random = RandomNumberGenerator.Create();
-                random.GetBytes(devNonceBytes);
-                DevNonce = LoRaWan.DevNonce.Read(devNonceBytes);
-            }
+            var devNonceBytes = new byte[2];
+            using var random = RandomNumberGenerator.Create();
+            random.GetBytes(devNonceBytes);
+            DevNonce = DevNonce.Read(devNonceBytes);
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
 #pragma warning disable CA1508 // Avoid dead conditional code
-            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce ?? throw new InvalidOperationException("DevNonce must not be null at this point."));
+            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce);
 #pragma warning restore CA1508 // Avoid dead conditional code
             joinRequest.SetMic(LoRaDevice.AppKey);
 
@@ -261,7 +258,7 @@ namespace LoRaWan.Tests.Common
                 Array.Reverse(netid);
                 var appNonce = payload.AppNonce.ToArray();
                 Array.Reverse(appNonce);
-                var devNonce = DevNonce ?? throw new InvalidOperationException("DevNonce should not be null at this point.");
+                var devNonce = DevNonce;
                 var deviceAppKey = ConversionHelper.StringToByteArray(LoRaDevice.AppKey);
                 var appSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.AppSKey, appNonce, netid, devNonce, deviceAppKey);
                 var nwkSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netid, devNonce, deviceAppKey);
