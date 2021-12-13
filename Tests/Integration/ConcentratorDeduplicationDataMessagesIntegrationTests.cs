@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Integration
     using Moq;
     using Xunit;
 
-    public sealed class ConcentratorDeduplicationIntegrationTests : MessageProcessorTestBase
+    public sealed class ConcentratorDeduplicationDataMessagesIntegrationTests : MessageProcessorTestBase
     {
         internal class TestDefaultLoRaRequestHandler : DefaultLoRaDataRequestHandler
         {
@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Integration
         private readonly SimulatedDevice simulatedDevice;
         private readonly LoRaDevice device;
 
-        public ConcentratorDeduplicationIntegrationTests()
+        public ConcentratorDeduplicationDataMessagesIntegrationTests()
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
             var concentratorDeduplication = new ConcentratorDeduplication(this.cache, NullLogger<IConcentratorDeduplication>.Instance);
@@ -145,7 +145,7 @@ namespace LoRaWan.Tests.Integration
         {
             var dataPayload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload");
 
-            await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await ArrangeActAndAssert(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
         [Theory]
@@ -168,7 +168,7 @@ namespace LoRaWan.Tests.Integration
         {
             var dataPayload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload", 10);
 
-            await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await ArrangeActAndAssert(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
         #endregion
 
@@ -193,7 +193,7 @@ namespace LoRaWan.Tests.Integration
         {
             var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload");
 
-            await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await ArrangeActAndAssert(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
         [Theory]
@@ -216,7 +216,7 @@ namespace LoRaWan.Tests.Integration
         {
             var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload", 10);
 
-            await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await ArrangeActAndAssert(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
         #endregion
 
@@ -229,8 +229,7 @@ namespace LoRaWan.Tests.Integration
             int expectedNumberOfADRCalls)
         {
             // arrange
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
+            var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload");
             dataPayload.FrameControlFlags = FrameControlFlags.Adr; // adr enabled
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
@@ -251,8 +250,7 @@ namespace LoRaWan.Tests.Integration
             int expectedNumberOfFrameCounterDownCalls)
         {
             // arrange
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
+            var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload");
 
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
@@ -279,8 +277,7 @@ namespace LoRaWan.Tests.Integration
             int expectedNumberOfFrameCounterDownCalls)
         {
             // arrange
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            var dataPayload = simulatedDevice.CreateUnconfirmedDataUpMessage("payload");
+            var dataPayload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload");
             // MAC command
             dataPayload.Fport = new byte[1] { 0 };
             dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
@@ -294,7 +291,7 @@ namespace LoRaWan.Tests.Integration
             await ActAndAssert(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: 0);
         }
 
-        private async Task TestAll(
+        private async Task ArrangeActAndAssert(
             LoRaPayloadData dataPayload,
             string station1,
             string station2,
@@ -359,7 +356,6 @@ namespace LoRaWan.Tests.Integration
                 this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAssert(), Times.Exactly(twinSaves));
         }
 
-        // Protected implementation of Dispose pattern.
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
