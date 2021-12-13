@@ -274,7 +274,7 @@ namespace LoRaWan.Tests.Common
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "bash",
-                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'cd {tempDirectory} && STATION_PATH={tempDirectory} {expandedParams} ./{scriptName} &>{tempDirectory}/logs.txt &'\"",
+                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'cd {tempDirectory} && chmod +x ./{scriptName} && STATION_PATH={tempDirectory} {expandedParams} ./{scriptName} &>{tempDirectory}/logs.txt &'\"",
                     RedirectStandardOutput = false,
                     UseShellExecute = false,
                     CreateNoWindow = true
