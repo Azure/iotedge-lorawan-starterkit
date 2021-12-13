@@ -213,7 +213,7 @@ jobs:
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$RPI_HOST.pfx $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/server.pfx
 
-    - id: get_itestup_ip_address
+    - id: get_self_hosted_runner_ip_address
       shell: bash
       name: Get internal Ip address of the itestup device
       run: |
