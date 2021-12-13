@@ -129,6 +129,7 @@ namespace LoRaWan.Tests.Integration
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", true, DeduplicationMode.Drop,  0, 1, 1, 1, 1, 1)] // duplicate
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", true, DeduplicationMode.Mark,  0, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", true, DeduplicationMode.None,  0, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", false, null,                   0, 1, 0, 1, 0, 1)] // resubmission
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", false, DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // duplicate
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", false, DeduplicationMode.Mark, 0, 1, 0, 2, 0, 2)] // soft duplicate, due to DeduplicationMode.Mark
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", false, DeduplicationMode.None, 0, 1, 0, 2, 0, 2)] // soft duplicate but due to DeduplicationMode.None
