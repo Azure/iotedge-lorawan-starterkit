@@ -8,14 +8,16 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
+    using static LoRaWan.Metric;
 
     // Frequency plan for region CN470-510 using version 1 of LoRaWAN 1.0.3 Regional Parameters specification
     public class RegionCN470RP1 : Region
     {
-        private const double StartingUpstreamFrequency = 470.3;
-        private const double StartingDownstreamFrequency = 500.3;
+        private static readonly Hertz StartingUpstreamFrequency = Mega(470.3);
+        private static readonly Hertz StartingDownstreamFrequency = Mega(500.3);
+        private static readonly Mega FrequencyIncrement = new(0.2);
+
         private const int DownstreamChannelCount = 48;
-        private const double FrequencyIncrement = 0.2;
 
         public RegionCN470RP1()
             : base(LoRaRegionType.CN470RP1)
@@ -50,14 +52,14 @@ namespace LoRaTools.Regions
             {
                 "SF12BW125", // 0
                 "SF11BW125", // 1
-                "SF10BW125", // 2 
+                "SF10BW125", // 2
                 "SF9BW125",  // 3
                 "SF8BW125",  // 4
                 "SF7BW125"  // 5
             };
 
             MaxADRDataRate = 5;
-            RegionLimits = new RegionLimits((min: 470, max: 510), validDatarates, validDatarates, 0, 0);
+            RegionLimits = new RegionLimits((Min: Mega(470), Max: Mega(510)), validDatarates, validDatarates, 0, 0);
         }
 
         /// <summary>
@@ -66,20 +68,17 @@ namespace LoRaTools.Regions
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         /// </summary>
-        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
             var upstreamChannelNumber = (int)Math.Round(
-                (upstreamFrequency - StartingUpstreamFrequency) / FrequencyIncrement,
+                (upstreamFrequency - StartingUpstreamFrequency) / FrequencyIncrement.Units,
                 0,
                 MidpointRounding.AwayFromZero);
 
-            downstreamFrequency = Math.Round(
-                StartingDownstreamFrequency + ((upstreamChannelNumber % DownstreamChannelCount) * FrequencyIncrement),
-                1,
-                MidpointRounding.AwayFromZero);
+            downstreamFrequency = StartingDownstreamFrequency + checked((long)((upstreamChannelNumber % DownstreamChannelCount) * FrequencyIncrement.Units));
 
             return true;
         }
@@ -97,13 +96,15 @@ namespace LoRaTools.Regions
             if (!IsValidUpstreamRxpk(upstreamChannel))
                 throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
 
-            return TryGetDownstreamChannelFrequency(upstreamChannel.Freq, out frequency);
+            (var result, frequency) = TryGetDownstreamChannelFrequency(upstreamChannel.FreqHertz, out var downstream)
+                                    ? (true, downstream.InMega) : default;
+            return result;
         }
 
         /// <summary>
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
-        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(505.3, 0);
+        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(Mega(505.3), 0);
     }
 }

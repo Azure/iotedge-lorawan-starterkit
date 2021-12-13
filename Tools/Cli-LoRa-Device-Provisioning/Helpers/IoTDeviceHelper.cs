@@ -958,7 +958,10 @@ namespace LoRaWan.Tools.CLI.Helpers
                     [TwinProperty.CupsUri] = opts.CupsUri,
                     [TwinProperty.TcUri] = opts.TcUri,
                 };
+            }
 
+            if (opts.ClientCertificateThumbprints is not null && opts.ClientCertificateThumbprints.Any())
+            {
                 // Add client certificate thumbprints
                 twinProperties.Desired[TwinProperty.ClientThumbprint] = new JArray(opts.ClientCertificateThumbprints);
             }
