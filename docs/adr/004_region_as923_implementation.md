@@ -15,7 +15,7 @@ In addition to sub-bands and frequency offsets, the [regional parameter specific
 - End device sends `TxParamSetupAns` MAC Command with empty payload as acknowledgement
 - Both end device and gateway adhere to the limitations from there on
 
-With the LoRaWAN specification 1.0.3, the `TxParamSetupReq/Ans` MAC Command exchange [is subject to a bug if the `TxParamSetupAns` is lost](https://github.com/Lora-net/LoRaMac-node/issues/614), which leaves the end devices unable to receive downlink messages. The bug will only be fixed in LoRaWAN specification version 1.0.4.
+With the LoRaWAN specification 1.0.3, the `TxParamSetupReq/Ans` MAC Command exchange [is subject to a bug if the `TxParamSetupAns` is lost][dwell-time-bug], which leaves the end devices unable to receive downlink messages. The bug will only be fixed in LoRaWAN specification version 1.0.4.
 
 This document summarizes decisions taken for the purpose of implementing support for region AS923.
 
@@ -85,7 +85,7 @@ Pros:
 Cons:
 
 - A lot of manual steps involved/cumbersome for the user
-- Does not resolve bug [if the `TxParamSetupAns` is lost](https://github.com/Lora-net/LoRaMac-node/issues/614) and the user does not have access to the serial output of the device
+- Does not resolve bug [if the `TxParamSetupAns` is lost][dwell-time-bug] and the user does not have access to the serial output of the device
 - Messages between successful C2D `TxParamSetupReq` transmission and device cache refresh might have inconsistent dwell time settings
 
 #### Semi-automatic dwell time management
@@ -112,5 +112,7 @@ Pros:
 Cons:
 
 - Complexity
-- Does not resolve bug [if the `TxParamSetupAns` is lost](https://github.com/Lora-net/LoRaMac-node/issues/614)
+- Does not resolve bug [if the `TxParamSetupAns` is lost][dwell-time-bug]
 - Works only for single gateway or OTAA join, multi-gateway would be more complex (if we decide to implement it)
+
+[dwell-time-bug]: https://github.com/Lora-net/LoRaMac-node/issues/614
