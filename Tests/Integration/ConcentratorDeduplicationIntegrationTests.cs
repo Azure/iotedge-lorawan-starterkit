@@ -124,7 +124,7 @@ namespace LoRaWan.Tests.Integration
             _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(this.device.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
         }
 
-
+        #region UnconfirmedDataMessage
         [Theory]
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 1, 2, 0, 1, 0, 2)] // resubmission with drop
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 1, 2, 0, 2, 0, 2)] // resubmission
@@ -149,9 +149,9 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // second message is invalid
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 0, 1, 0, 1, 0, 1)] // second message is invalid
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 0, 1, 0, 1, 0, 1)] // second message is invalid
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // resubmission for unconfirmed message is dropped
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 0, 1, 0, 1, 0, 1)] // resubmission for unconfirmed message is dropped
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 0, 1, 0, 1, 0, 1)] // resubmission for unconfirmed message is dropped
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // duplicate
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 0, 1, 0, 2, 0, 2)] // soft duplicate
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 0, 1, 0, 2, 0, 2)] // soft duplicate
@@ -170,14 +170,16 @@ namespace LoRaWan.Tests.Integration
 
             await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
+        #endregion
 
+        #region ConfirmedDataMessage
         [Theory]
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 1, 2, 2, 1, 2, 2)] // resubmission with drop
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 1, 2, 2, 2, 2, 2)] // resubmission
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 1, 2, 2, 2, 2, 2)] // resubmission
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 1, 1, 1, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 1, 2, 1, 2)] // soft duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 1, 2, 1, 2)] // soft duplicate
         public async Task When_First_Confirmed_Data_Message_Test_All_Different_DeduplicationModes(
             string station1,
             string station2,
@@ -199,8 +201,8 @@ namespace LoRaWan.Tests.Integration
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 0, 2, 2, 2, 2, 2)] // resubmission
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 0, 2, 2, 2, 2, 2)] // resubmission
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 0, 1, 1, 1, 1, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 0, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 0, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 0, 1, 1, 2, 1, 2)] // soft duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 0, 1, 1, 2, 1, 2)] // soft duplicate
         public async Task When_Subsequent_Confirmed_Data_Message_Test_All_Different_DeduplicationModes(
           string station1,
           string station2,
@@ -216,26 +218,7 @@ namespace LoRaWan.Tests.Integration
 
             await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
-
-        private async Task TestAll(
-            LoRaPayloadData dataPayload,
-            string station1,
-            string station2,
-            DeduplicationMode deduplicationMode,
-            int expectedNumberOfFrameCounterResets,
-            int expectedNumberOfBundlerCalls,
-            int expectedNumberOfFrameCounterDownCalls,
-            int expectedMessagesUp,
-            int expectedMessagesDown,
-            int expectedTwinSaves)
-        {
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
-
-            this.device.Deduplication = deduplicationMode;
-            this.device.NwkSKey = station1;
-
-            await TestAssertions(request1, request2, this.device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
-        }
+        #endregion
 
         [Theory]
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2)]
@@ -255,7 +238,7 @@ namespace LoRaWan.Tests.Integration
             this.device.NwkSKey = station1;
 
             // act/assert
-            await TestAssertions(request1, request2, this.device);
+            await ActAndAssert(request1, request2, this.device);
             this.dataRequestHandlerMock.Verify(x => x.PerformADRAssert(), Times.Exactly(expectedNumberOfADRCalls));
         }
 
@@ -284,7 +267,7 @@ namespace LoRaWan.Tests.Integration
             });
 
             // act/assert
-            await TestAssertions(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls);
+            await ActAndAssert(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls);
         }
 
         [Theory]
@@ -308,7 +291,27 @@ namespace LoRaWan.Tests.Integration
             this.device.NwkSKey = station1;
 
             // act/assert
-            await TestAssertions(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: 0);
+            await ActAndAssert(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: 0);
+        }
+
+        private async Task TestAll(
+            LoRaPayloadData dataPayload,
+            string station1,
+            string station2,
+            DeduplicationMode deduplicationMode,
+            int expectedNumberOfFrameCounterResets,
+            int expectedNumberOfBundlerCalls,
+            int expectedNumberOfFrameCounterDownCalls,
+            int expectedMessagesUp,
+            int expectedMessagesDown,
+            int expectedTwinSaves)
+        {
+            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+
+            this.device.Deduplication = deduplicationMode;
+            this.device.NwkSKey = station1;
+
+            await ActAndAssert(request1, request2, this.device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
         private (LoRaRequest request1, LoRaRequest request2) SetupRequests(LoRaPayloadData dataPayload, string station1, string station2)
@@ -324,7 +327,7 @@ namespace LoRaWan.Tests.Integration
             }
         }
 
-        private async Task TestAssertions(
+        private async Task ActAndAssert(
             LoRaRequest request1,
             LoRaRequest request2,
             LoRaDevice device,
