@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
@@ -18,7 +19,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets the twin properties for the device.
         /// </summary>
-        Task<Twin> GetTwinAsync();
+        Task<Twin> GetTwinAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends a telemetry/event.
@@ -59,5 +60,7 @@ namespace LoRaWan.NetworkServer
         /// Ensures the device client is connected.
         /// </summary>
         bool EnsureConnected();
+
+        bool IsMatchingKey(string primaryKey);
     }
 }
