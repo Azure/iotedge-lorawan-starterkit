@@ -48,7 +48,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp).
         /// </summary>
-        public bool IsConfirmed => LoRaMessageType is MacMessageType.ConfirmedDataDown or MacMessageType.ConfirmedDataUp;
+        public bool IsConfirmed => MessageType is MacMessageType.ConfirmedDataDown or MacMessageType.ConfirmedDataUp;
 
         /// <summary>
         /// Gets a value indicating whether does a Mac command require an answer?.
@@ -126,10 +126,10 @@ namespace LoRaTools.LoRaMessage
             // address correct but inversed
             Array.Reverse(addrbytes);
             DevAddr = addrbytes;
-            LoRaMessageType = new MacHeader(RawMessage[0]).MessageType;
+            MessageType = new MacHeader(RawMessage[0]).MessageType;
 
             // in this case the payload is not downlink of our type
-            if (LoRaMessageType is MacMessageType.ConfirmedDataDown or
+            if (MessageType is MacMessageType.ConfirmedDataDown or
                 MacMessageType.JoinAccept or
                 MacMessageType.UnconfirmedDataDown)
             {
@@ -208,7 +208,7 @@ namespace LoRaTools.LoRaMessage
             RawMessage = new byte[1 + macPyldSize + 4];
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
             RawMessage[0] = (byte)(new MacHeader(messageType));
-            LoRaMessageType = messageType;
+            MessageType = messageType;
             // Array.Copy(mhdr, 0, RawMessage, 0, 1);
             Array.Reverse(devAddr);
             DevAddr = new Memory<byte>(RawMessage, 1, 4);

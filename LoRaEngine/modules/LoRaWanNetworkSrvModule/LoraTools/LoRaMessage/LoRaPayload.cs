@@ -19,7 +19,7 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public abstract class LoRaPayload
     {
-        public MacMessageType LoRaMessageType { get; set; }
+        public MacMessageType MessageType { get; set; }
 
         /// <summary>
         /// Gets or sets raw byte of the message.
@@ -155,7 +155,7 @@ namespace LoRaTools.LoRaMessage
             if (loRaPayloadMessage is null)
                 return false;
 
-            loRaPayloadMessage.LoRaMessageType = messageType;
+            loRaPayloadMessage.MessageType = messageType;
             return true;
         }
 

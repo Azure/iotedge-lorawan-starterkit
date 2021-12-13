@@ -40,7 +40,7 @@ namespace LoRaTools.LoRaMessage
                 throw new NotImplementedException();
             };
 
-            LoRaMessageType = messageType;
+            MessageType = messageType;
 
             // in this case the payload is not downlink of our type
             Direction = messageType is MacMessageType.ConfirmedDataDown or

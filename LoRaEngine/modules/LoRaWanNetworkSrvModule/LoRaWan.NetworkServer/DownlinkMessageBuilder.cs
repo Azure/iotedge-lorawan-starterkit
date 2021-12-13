@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
 
             // default fport
             var fctrl = FrameControlFlags.None;
-            if (upstreamPayload.LoRaMessageType == MacMessageType.ConfirmedDataUp)
+            if (upstreamPayload.MessageType == MacMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
                 fctrl = FrameControlFlags.Ack;
@@ -226,7 +226,7 @@ namespace LoRaWan.NetworkServer
             var downlinkPktFwdMessage = ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, lnsRxDelay, rxpk.Rfch, rxpk.Time, request.StationEui);
 
             if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug($"{ackLoRaMessage.LoRaMessageType} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+                logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
 
             return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong, receiveWindow);
         }
@@ -344,7 +344,7 @@ namespace LoRaWan.NetworkServer
                                          stationEui: loRaDevice.LastProcessingStationEui);
 
             if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug($"{ackLoRaMessage.LoRaMessageType} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+                logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
 
             // Class C always uses RX2.
             return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong, Constants.ReceiveWindow2);
