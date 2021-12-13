@@ -574,7 +574,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             'nodc': true,
             'nodwell': true}}";
 
-            var config = JsonUtil.Strictify(String.Format(CultureInfo.InvariantCulture, input, radio0Freq, radio1Freq, multiSf0If, multiSf1If));
+            var config = JsonUtil.Strictify(string.Format(CultureInfo.InvariantCulture, input, radio0Freq, radio1Freq, multiSf0If, multiSf1If));
             var region = LnsStationConfiguration.GetRegion(config);
 
             Assert.Equal(typeof(RegionAS923), region.GetType());
