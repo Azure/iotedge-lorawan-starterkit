@@ -19,8 +19,8 @@ namespace LoRaWan
 
         public MacHeader(byte value) => this.value = value;
 
-        public MacHeader(MacMessageType messageType, int major = 0) =>
-            this.value = unchecked((byte)((((int)messageType) << 5) | major));
+        public MacHeader(MacMessageType messageType, DataMessageVersion major = DataMessageVersion.R1) =>
+            this.value = unchecked((byte)((((int)messageType) << 5) | (int)major));
 
         /// <summary>
         /// Gets the message type (MType).
