@@ -76,8 +76,8 @@ namespace LoRaWan.Tests.Unit
         [InlineData("{0:n}", "12ab")]
         public void String_Interpolation_Success_Case(string format, string expected)
         {
-            var subject = new DevNonce(0xAB12);
-            var result = string.Format(CultureInfo.InvariantCulture, format, subject);
+            var devNonce = new DevNonce(0xAB12);
+            var result = string.Format(CultureInfo.InvariantCulture, format, devNonce);
             Assert.Equal(expected, result);
         }
 
@@ -91,8 +91,8 @@ namespace LoRaWan.Tests.Unit
         [InlineData("n", "12ab")]
         public void ToString_Returns_Correctly_Formatted_String(string format, string expectedRepresentation)
         {
-            var subject = new DevNonce(0xAB12);
-            Assert.Equal(expectedRepresentation, subject.ToString(format, null));
+            var devNonce = new DevNonce(0xAB12);
+            Assert.Equal(expectedRepresentation, devNonce.ToString(format, null));
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace LoRaWan.Tests.Unit
         public void ToString_Parse_Preserves_Information()
         {
             // arrange
-            var subject = new DevNonce(0xAB12);
+            var devNonce = new DevNonce(0xAB12);
             var hexString = "12AB";
 
             // act
@@ -114,7 +114,7 @@ namespace LoRaWan.Tests.Unit
             var objResult = Parse(stringResult);
 
             // assert
-            Assert.Equal(subject, objResult);
+            Assert.Equal(devNonce, objResult);
             Assert.Equal(hexString, stringResult);
 
             static DevNonce Parse(string input)
