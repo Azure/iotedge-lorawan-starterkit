@@ -52,7 +52,7 @@ namespace LoRaWan.NetworkServer
             if (EnsureFirstMessageInCache(key, loRaRequest, out var previousStation))
                 return ConcentratorDeduplicationResult.NotDuplicate;
 
-            if (loRaRequest.Payload.RequiresConfirmation() && previousStation == loRaRequest.StationEui)
+            if (previousStation == loRaRequest.StationEui)
             {
                 this.logger.LogDebug($"Message was received previously from the same EUI {loRaRequest.StationEui} (\"confirmedResubmit\").");
                 return ConcentratorDeduplicationResult.DuplicateDueToResubmission;

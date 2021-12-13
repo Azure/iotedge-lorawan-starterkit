@@ -286,8 +286,12 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    // In case it is a Mac Command only we don't want to send it to the IoT Hub
-                    if (payloadPort != LoRaFPort.MacCommand)
+                    var sendUpstream = concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || loRaDevice.Deduplication is not DeduplicationMode.Drop;
+
+                    // We send it to the IoT Hub:
+                    // - when it's a new message or it's a resubmission/duplicate but with a strategy that is not drop
+                    // - and it's not a MAC command
+                    if (sendUpstream && payloadPort != LoRaFPort.MacCommand)
                     {
                         // combine the results of the 2 deduplications: on the concentrator level and on the network server layer
                         var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplicationResult.NotDuplicate || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);

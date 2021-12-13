@@ -126,15 +126,16 @@ namespace LoRaWan.Tests.Integration
 
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 1,  null,                   1, 1, 0, 1, 0, 1)] // resubmission of first message
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 10, DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1,  DeduplicationMode.Mark, 1, 1, 0, 2, 0, 2)] // soft duplicate, due to DeduplicationMode.Mark of first message
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 10, DeduplicationMode.None, 0, 1, 0, 2, 0, 2)] // soft duplicate but due to DeduplicationMode.None
-        public async Task When_Unconfirmed_Data_Message_Test_All_Different_DeduplicationModes(
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 1, 2, 0, 1, 0, 2)] // resubmission with drop
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 1, 2, 0, 2, 0, 2)] // resubmission
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 1, 2, 0, 2, 0, 2)] // resubmission
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 0, 1, 0, 1)] // duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 0, 2, 0, 2)] // soft duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 0, 2, 0, 2)] // soft duplicate
+        public async Task When_Unconfirmed_First_Data_Message_Test_All_Different_DeduplicationModes(
             string station1,
             string station2,
-            int frameCounterUp,
-            DeduplicationMode? deduplicationMode,
+            DeduplicationMode deduplicationMode,
             int expectedNumberOfFrameCounterResets,
             int expectedNumberOfBundlerCalls,
             int expectedNumberOfFrameCounterDownCalls,
@@ -142,28 +143,68 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown,
             int expectedTwinSaves)
         {
-            // arrange
-            var dataPayload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload", (uint)frameCounterUp);
+            var dataPayload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload");
 
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
-
-            this.device.Deduplication = deduplicationMode ?? DeduplicationMode.Drop; // fallback to default
-            this.device.NwkSKey = station1;
-
-            // act/assert
-            await TestAssertions(request1, request2, this.device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
+        [Theory]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // second message is invalid
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 0, 1, 0, 1, 0, 1)] // second message is invalid
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 0, 1, 0, 1, 0, 1)] // second message is invalid
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 0, 1, 0, 2, 0, 2)] // soft duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 0, 1, 0, 2, 0, 2)] // soft duplicate
+        public async Task When_Unconfirmed_Subsequent_Data_Message_Test_All_Different_DeduplicationModes(
+            string station1,
+            string station2,
+            DeduplicationMode deduplicationMode,
+            int expectedNumberOfFrameCounterResets,
+            int expectedNumberOfBundlerCalls,
+            int expectedNumberOfFrameCounterDownCalls,
+            int expectedMessagesUp,
+            int expectedMessagesDown,
+            int expectedTwinSaves)
+        {
+            var dataPayload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload", 10);
+
+            await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+        }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null,                    0, 2, 2, 2, 2, 2)] // resubmission
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop,  0, 1, 1, 1, 1, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark,  0, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None,  0, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
-        public async Task When_Default_Confirmed_Data_Message_Test_All_Different_DeduplicationModes(
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 1, 2, 2, 1, 2, 2)] // resubmission with drop
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 1, 2, 2, 2, 2, 2)] // resubmission
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 1, 2, 2, 2, 2, 2)] // resubmission
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 1, 1, 1, 1)] // duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
+        public async Task When_First_Confirmed_Data_Message_Test_All_Different_DeduplicationModes(
+            string station1,
+            string station2,
+            DeduplicationMode deduplicationMode,
+            int expectedNumberOfFrameCounterResets,
+            int expectedNumberOfBundlerCalls,
+            int expectedNumberOfFrameCounterDownCalls,
+            int expectedMessagesUp,
+            int expectedMessagesDown,
+            int expectedTwinSaves)
+        {
+            var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload");
+
+            await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+        }
+
+        [Theory]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 0, 2, 2, 1, 2, 2)] // resubmission with drop
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 0, 2, 2, 2, 2, 2)] // resubmission
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 0, 2, 2, 2, 2, 2)] // resubmission
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 0, 1, 1, 1, 1, 1)] // duplicate
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 0, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 0, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
+        public async Task When_Subsequent_Confirmed_Data_Message_Test_All_Different_DeduplicationModes(
           string station1,
           string station2,
-          DeduplicationMode? deduplicationMode,
+          DeduplicationMode deduplicationMode,
           int expectedNumberOfFrameCounterResets,
           int expectedNumberOfBundlerCalls,
           int expectedNumberOfFrameCounterDownCalls,
@@ -171,27 +212,16 @@ namespace LoRaWan.Tests.Integration
           int expectedMessagesDown,
           int expectedTwinSaves)
         {
-            // arrange
             var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload", 10);
 
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
-
-            this.device.Deduplication = deduplicationMode ?? DeduplicationMode.Drop; // fallback to default
-            this.device.NwkSKey = station1;
-
-            // act/assert
-            await TestAssertions(request1, request2, this.device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await TestAll(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
-        [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null,                   1, 2, 2, 2, 2, 2)] // resubmission
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 1, 1, 1, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
-        public async Task When_First_Confirmed_Data_Message_Test_All_Different_DeduplicationModes(
+        private async Task TestAll(
+            LoRaPayloadData dataPayload,
             string station1,
             string station2,
-            DeduplicationMode? deduplicationMode,
+            DeduplicationMode deduplicationMode,
             int expectedNumberOfFrameCounterResets,
             int expectedNumberOfBundlerCalls,
             int expectedNumberOfFrameCounterDownCalls,
@@ -199,15 +229,11 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown,
             int expectedTwinSaves)
         {
-            // arrange
-            var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload");
-
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
-            this.device.Deduplication = deduplicationMode ?? DeduplicationMode.Drop; // fallback to default
+            this.device.Deduplication = deduplicationMode;
             this.device.NwkSKey = station1;
 
-            // act/assert
             await TestAssertions(request1, request2, this.device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
