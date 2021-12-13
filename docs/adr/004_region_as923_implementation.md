@@ -49,13 +49,13 @@ In the implementation of region AS923 the frequencies for channel 0 and 1 will b
 
 tbd
 
-# Appendix
+## Appendix
 
-## Dwell times
+### Dwell times
 
 We discuss different approaches to handle dwell time limitations.
 
-### No `TxParamSetupReq` support
+#### No `TxParamSetupReq` support
 
 If we do not support the `TxParamSetupReq` MAC Command as part of the initial version of the AS923 region implementation. One implication is that the maximum Equivalent Isotropically Radiated Power (EIRP), which is normally configurable through `TxParamSetupReq`, will be static and non-configurable. We introduce a Boolean configuration value in the concentrator device twin that specifies whether a dwell time limitation applies to that concentrator. Based on this configuration value, the gateway will apply a different set of regional parameters, which take the dwell time limitations into account. It will be the responsibility of the starter kit user to ensure that end devices are configured with the same dwell time settings as the concentrator to which they are connected, as it will not be automatically propagated to the end device through `TxParamSetupReq`.
 
@@ -68,7 +68,7 @@ Cons:
 - End devices (e.g. by Netvox) cannot be updated with different dwell time limitation defaults after shipping. If local regulations change, such devices cannot be used any longer with the starter kit
 - Static EIRP
 
-### Manual dwell time management
+#### Manual dwell time management
 
 The user configures the dwell time settings on a device-per-device basis by issuing a C2D messages, which gets translated to a `TxParamSetupReq` MAC command. Updating which dwell time setting is used happens as a separate manual step after the device settings were successfully updated. The flow looks as follows:
 
@@ -88,9 +88,9 @@ Cons:
 - Does not resolve bug [if the `TxParamSetupAns` is lost](https://github.com/Lora-net/LoRaMac-node/issues/614) and the user does not have access to the serial output of the device
 - Messages between successful C2D `TxParamSetupReq` transmission and device cache refresh might have inconsistent dwell time settings
 
-### Semi-automatic dwell time management
+#### Semi-automatic dwell time management
 
-The user configures the dwell time settings on a device basis by issuing a C2D messages, which gets translated to a `TxParamSetupReq` MAC command. After the MAC command was sent, the LNS waits for the `TxParamSetupAns`. Based on whether the MAC answer was received, the LNS updates the reported properties of the device twin and conditionally applies regional parameters based on the dwell time setting (e.g. for the receive window channels). A visualization for this flow looks as follows: 
+The user configures the dwell time settings on a device basis by issuing a C2D messages, which gets translated to a `TxParamSetupReq` MAC command. After the MAC command was sent, the LNS waits for the `TxParamSetupAns`. Based on whether the MAC answer was received, the LNS updates the reported properties of the device twin and conditionally applies regional parameters based on the dwell time setting (e.g. for the receive window channels). A visualization for this flow looks as follows:
 
 ```mermaid
 sequenceDiagram
@@ -98,17 +98,16 @@ sequenceDiagram
 Iot Hub ->> LNS: C2D `TxParamSetupReq` message
 LNS ->> endDevice: `TxParamSetupReq` MAC Command
 alt endDevice sends acknowledgement `TxParamSetupAns`
-	endDevice ->> LNS: `TxParamSetupAns`
-	LNS ->> LNS: Updates in-memory state of dwell time setting (force persist in device twin reported properties -> error case needs to be handled)
+    endDevice ->> LNS: `TxParamSetupAns`
+    LNS ->> LNS: Updates in-memory state of dwell time setting (force persist in device twin reported properties -> error case needs to be handled)
 else
-	LNS ->> LNS: Continues to use default dwell time parameters (no modification of internal state)
+    LNS ->> LNS: Continues to use default dwell time parameters (no modification of internal state)
 end
 ```
 
 Pros:
 
 - Easiest solution of the three for the user
-- Most consistent solution
 
 Cons:
 
