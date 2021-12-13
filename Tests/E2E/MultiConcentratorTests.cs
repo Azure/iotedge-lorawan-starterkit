@@ -82,7 +82,8 @@ namespace LoRaWan.Tests.E2E
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 // 0000000000000031: message '{"value": 101}' sent to hub
-                await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+                var expectedPayload = $"{{\"value\":{msg}}}";
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
                 droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
                     (log) => log.IndexOf(NetworkServer.Constants.DuplicateMessageFromAnotherStationMsg, StringComparison.Ordinal) != -1);
