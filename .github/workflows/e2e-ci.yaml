@@ -39,6 +39,7 @@ env:
   BUILD_BUILDID: ${{ github.run_id }}
   DEV_IMAGE_TAG: dev
   MASTER_IMAGE_TAG: master
+  MAJOR_VERSION: 2
 
 jobs:
   env_var:
@@ -151,7 +152,7 @@ jobs:
         IMAGE_TAG="custom-${GITHUB_REF##*/}"
         fi
         echo "Using image tag prefix $IMAGE_TAG"
-        IMAGE_TAG="$IMAGE_TAG-${{ github.run_number }}"
+        IMAGE_TAG="$MAJOR_VERSION.${{ github.run_number }}.$IMAGE_TAG-${{ github.run_attempt }}"
         echo "Using image tag $IMAGE_TAG"
         echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
         echo "::set-env name=LBS_VERSION::$IMAGE_TAG"

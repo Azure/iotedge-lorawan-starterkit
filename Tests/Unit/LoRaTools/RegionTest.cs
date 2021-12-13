@@ -20,7 +20,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestRegionFrequencyData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestRegionFrequencyData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionFrequencyData), MemberType = typeof(RegionAS923TestData))]
-        public void TestDownstreamFrequency(Region region, double inputFrequency, ushort inputDataRate, double outputFreq, int? joinChannel = null)
+        public void TestDownstreamFrequency(Region region, Hertz inputFrequency, ushort inputDataRate, Hertz outputFreq, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
             Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, out var frequency, inputDataRate, deviceJoinInfo));
@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestRegionLimitData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestRegionLimitData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionLimitData), MemberType = typeof(RegionAS923TestData))]
-        public void TestRegionLimit(Region region, double inputFrequency, ushort datarate, int? joinChannel = null)
+        public void TestRegionLimit(Region region, Hertz inputFrequency, ushort datarate, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
             var ex = Assert.Throws<LoRaProcessingException>(() => region.TryGetDownstreamChannelFrequency(inputFrequency, out _, datarate, deviceJoinInfo));
@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionAS923TestData))]
-        public void TestDownstreamRX2Frequency(Region region, double? nwksrvrx2freq, double expectedFreq, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
+        public void TestDownstreamRX2Frequency(Region region, Hertz? nwksrvrx2freq, Hertz expectedFreq, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
             var freq = region.GetDownstreamRX2Freq(nwksrvrx2freq, NullLogger.Instance, deviceJoinInfo);
@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestTryGetJoinChannelIndexData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestTryGetJoinChannelIndexData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestTryGetJoinChannelIndexData), MemberType = typeof(RegionAS923TestData))]
-        public void TestTryGetJoinChannelIndex(Region region, double freq, int expectedIndex)
+        public void TestTryGetJoinChannelIndex(Region region, Hertz freq, int expectedIndex)
         {
             Assert.Equal(expectedIndex != -1, region.TryGetJoinChannelIndex(freq, out var channelIndex));
             Assert.Equal(expectedIndex, channelIndex);

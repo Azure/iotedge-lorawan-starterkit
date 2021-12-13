@@ -8,11 +8,11 @@
       "FFFFFFFFFFFFFFFF"
     ]
   ],
-  "region": " EU863",
+  "region": "CN470RP1",
   "hwspec": "sx1301/1",
   "freq_range": [
-    863000000,
-    870000000
+    470000000,
+    510000000
   ],
   "DRs": [
     [
@@ -47,7 +47,7 @@
     ],
     [
       7,
-      250,
+      500,
       0
     ]
   ],
@@ -55,63 +55,63 @@
     {
       "radio_0": {
         "enable": true,
-        "freq": 867500000
+        "freq": 470600000
       },
       "radio_1": {
         "enable": true,
-        "freq": 868500000
+        "freq": 478400000
       },
       "chan_FSK": {
-        "enable": true,
-        "radio": 1,
-        "if": 300000
+        "enable": false,
+        "radio": 0,
+        "if": 1
       },
       "chan_Lora_std": {
-        "enable": true,
-        "radio": 1,
-        "if": -200000,
-        "bandwidth": 250000,
+        "enable": false,
+        "radio": 0,
+        "if": 1,
+        "bandwidth": 125000,
         "spread_factor": 7
       },
       "chan_multiSF_0": {
         "enable": true,
-        "radio": 1,
-        "if": -400000
+        "radio": 0,
+        "if": -300000
       },
       "chan_multiSF_1": {
         "enable": true,
-        "radio": 1,
-        "if": -200000
+        "radio": 0,
+        "if": -100000
       },
       "chan_multiSF_2": {
         "enable": true,
-        "radio": 1,
-        "if": 0
+        "radio": 0,
+        "if": 100000
       },
       "chan_multiSF_3": {
         "enable": true,
         "radio": 0,
-        "if": -400000
+        "if": 300000
       },
       "chan_multiSF_4": {
         "enable": true,
-        "radio": 0,
-        "if": -200000
+        "radio": 1,
+        "if": -300000
       },
       "chan_multiSF_5": {
         "enable": true,
-        "radio": 0,
-        "if": 0
+        "radio": 1,
+        "if": -100000
       },
       "chan_multiSF_6": {
         "enable": true,
-        "radio": 0,
-        "if": 200000
+        "radio": 1,
+        "if": 100000
       },
       "chan_multiSF_7": {
         "enable": true,
-        "radio": 0,
-        "if": 400000
+        "radio": 1,
+        "if": 300000
       }
     }
   ],

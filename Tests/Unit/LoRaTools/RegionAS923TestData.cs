@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using global::LoRaTools.Regions;
+    using static LoRaWan.Metric;
 
     public static class RegionAS923TestData
     {
@@ -25,7 +26,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             foreach (var dr in dataRates)
             {
                 foreach (var freq in frequencies)
-                    yield return new object[] { region, freq.Mega, dr.AsInt32, freq.Mega };
+                    yield return new object[] { region, freq, dr.AsInt32, freq };
             }
         }
 
@@ -63,15 +64,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
-          new List<object[]>
-          {
-               new object[] { region, 900, 8 },
-               new object[] { region, 914.5, 9 },
-               new object[] { region, 930, 10 },
-               new object[] { region, 928.4, 18 },
-               new object[] { region, 928.5, 90 },
-               new object[] { region, 928.2, 100 },
-          };
+            from x in new (Hertz Frequency, ushort DataRate)[]
+            {
+                (Mega(900.0),   8),
+                (Mega(914.5),   9),
+                (Mega(930.0),  10),
+                (Mega(928.4),  18),
+                (Mega(928.5),  90),
+                (Mega(928.2), 100),
+            }
+            select new object[] { region, x.Frequency, x.DataRate };
 
         public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
            new List<object[]>
@@ -93,12 +95,13 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
-           new List<object[]>
+           from x in new (Hertz? NwkSrvRx2Freq, Hertz ExpectedFreq)[]
            {
-               new object[] { region, null, 923.2 },
-               new object[] { region, 923.4, 923.4 },
-               new object[] { region, 925, 925 },
-           };
+               (null       , Mega(923.2)),
+               (Mega(923.4), Mega(923.4)),
+               (Mega(925.0), Mega(925.0)),
+           }
+           select new object[] { region, x.NwkSrvRx2Freq, x.ExpectedFreq };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
             new List<object[]>
@@ -119,11 +122,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
-            new List<object[]>
-            {
-                new object[] { region, 923.4, -1 },
-                new object[] { region, 928, -1 },
-            };
+            from freq in new Hertz[] { Mega(923.4), Mega(928.0) }
+            select new object[] { region, freq, /* expected index */ -1 };
 
         public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>
            new List<object[]>
