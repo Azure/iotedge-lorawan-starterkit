@@ -43,7 +43,7 @@ namespace LoRaWan.Tests.Unit
             var appkey = "00112233445566778899AABBCCDDEEFF";
             var devEui = "AABBCCDDDDCCBBAA";
             var joinAccept = new LoRaPayloadJoinAccept(netId, devAddr, appNonce, new byte[] { 0 }, 0, null);
-            var joinacceptbyte = joinAccept.Serialize(appkey, "SF10BW125", 866.349812, devEui, 10000);
+            var joinacceptbyte = joinAccept.Serialize(appkey, "SF10BW125", Hertz.Mega(866.349812), devEui, 10000);
             var decodedJoinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinacceptbyte.Txpk.Data), appkey);
             var joinAcceptMic = new byte[4]
             {
@@ -221,10 +221,6 @@ namespace LoRaWan.Tests.Unit
                     4, 3, 2, 1
                 };
 
-            var fctrl = new byte[1]
-            {
-                0,
-            };
             var fcnt = new byte[2]
             {
                 0, 0
@@ -241,7 +237,7 @@ namespace LoRaWan.Tests.Unit
             var nwkkey = new byte[16] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
             var appkey = new byte[16] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
-            var lora = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
+            var lora = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.None, fcnt, null, fport, frmPayload, 0);
             _ = lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
             var testEncrypt = new byte[4]
             {
@@ -354,7 +350,6 @@ namespace LoRaWan.Tests.Unit
             ushort fcnt = 12;
             var devAddr = ConversionHelper.StringToByteArray(devAddrText);
             Array.Reverse(devAddr);
-            var fCtrl = new byte[] { 0x80 };
             var fcntBytes = BitConverter.GetBytes(fcnt);
             var fopts = new List<MacCommand>();
             var fPort = new byte[] { 1 };
@@ -363,7 +358,7 @@ namespace LoRaWan.Tests.Unit
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var devicePayloadData = new LoRaPayloadData(loRaMessageType, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
+            var devicePayloadData = new LoRaPayloadData(loRaMessageType, devAddr, FrameControlFlags.Adr, fcntBytes, fopts, fPort, payload, direction);
 
             Assert.Equal(12, devicePayloadData.GetFcnt());
             Assert.Equal(0, devicePayloadData.Direction);

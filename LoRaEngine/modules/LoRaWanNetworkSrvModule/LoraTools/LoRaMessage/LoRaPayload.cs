@@ -162,41 +162,6 @@ namespace LoRaTools.LoRaMessage
             return true;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LoRaPayload"/> class.
-        /// Constructor used by the simulator.
-        /// </summary>
-        public static bool TryCreateLoRaPayloadForSimulator(Txpk txpk, string appKey, out LoRaPayload loRaPayload)
-        {
-            if (txpk is null) throw new ArgumentNullException(nameof(txpk));
-
-            if (txpk.Data != null)
-            {
-                var convertedInputMessage = Convert.FromBase64String(txpk.Data);
-                switch ((LoRaMessageType)convertedInputMessage[0])
-                {
-                    case LoRaMessageType.JoinRequest:
-                        loRaPayload = new LoRaPayloadJoinRequest();
-                        return true;
-                    case LoRaMessageType.JoinAccept:
-                        loRaPayload = new LoRaPayloadJoinAccept(convertedInputMessage, appKey);
-                        return true;
-                    case LoRaMessageType.UnconfirmedDataDown:
-                    case LoRaMessageType.UnconfirmedDataUp:
-                    case LoRaMessageType.ConfirmedDataUp:
-                    case LoRaMessageType.ConfirmedDataDown:
-                        loRaPayload = new LoRaPayloadData();
-                        return true;
-                    default:
-                        loRaPayload = null;
-                        return false;
-                }
-            }
-
-            loRaPayload = null;
-            return false;
-        }
-
         public void Reset32BitBlockInfo()
         {
             Server32BitFcnt = null;

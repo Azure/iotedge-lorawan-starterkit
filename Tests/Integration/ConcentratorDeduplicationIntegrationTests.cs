@@ -222,8 +222,7 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = simulatedDevice.CreateConfirmedDataUpMessage("payload");
-            dataPayload.Fctrl.Span[0] = 250; // adr enabled
-
+            dataPayload.FrameControlFlags = FrameControlFlags.Adr; // adr enabled
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
             this.device.Deduplication = DeduplicationMode.Mark; // or None

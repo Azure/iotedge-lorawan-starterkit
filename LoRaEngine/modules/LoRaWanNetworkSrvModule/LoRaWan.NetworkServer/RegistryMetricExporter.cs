@@ -59,11 +59,6 @@ namespace LoRaWan.NetworkServer
                     {
                         this.listener.RecordObservableInstruments();
                     }
-                    catch (TaskCanceledException)
-                    {
-                        // exception raised after disposal.
-                        return;
-                    }
 #pragma warning disable CA1031 // Do not catch general exception types (continue observing metrics even on error)
                     catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -71,7 +66,15 @@ namespace LoRaWan.NetworkServer
                         this.logger.LogInformation(ex, "Exception when recording observable metrics.");
                     }
 
-                    await Task.Delay(ObserveInterval, this.cancellationTokenSource.Token);
+                    try
+                    {
+                        await Task.Delay(ObserveInterval, this.cancellationTokenSource.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // exception raised after disposal.
+                        return;
+                    }
                 }
             });
         }

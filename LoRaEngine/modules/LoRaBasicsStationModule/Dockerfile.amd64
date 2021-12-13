@@ -11,6 +11,7 @@ RUN make platform=linux variant=std
 FROM amd64/debian:buster-slim
 WORKDIR /basicstation
 COPY --from=build /basicstation/build-linux-std/bin/station ./station.std
+COPY LoRaEngine/modules/LoRaBasicsStationModule/helper-functions.sh .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basicsstation.sh .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
 COPY --from=build /basicstation/deps/lgw/platform-linux/reset_lgw.sh .

@@ -140,7 +140,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 #region ADR
-                if (loraPayload.IsAdrReq)
+                if (loraPayload.IsAdrAckRequested)
                 {
                     this.logger.LogDebug("ADR ack request received");
                 }
@@ -148,13 +148,13 @@ namespace LoRaWan.NetworkServer
                 // ADR should be performed before the gateway deduplication as we still want to collect the signal info,
                 // even if we drop it in the next step.
                 // ADR is skipped for soft duplicates and will be enabled again in https://github.com/Azure/iotedge-lorawan-starterkit/issues/1017
-                if (loRaADRResult == null && loraPayload.IsAdrEnabled && concentratorDeduplicationResult is not ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
+                if (loRaADRResult == null && loraPayload.IsDataRateNetworkControlled && concentratorDeduplicationResult is not ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
                 {
                     loRaADRResult = await PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }
                 #endregion
 
-                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
+                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrAckRequested)
                 {
                     // if we got an ADR result or request, we have to send the update to the device
                     requiresConfirmation = true;
@@ -592,7 +592,7 @@ namespace LoRaWan.NetworkServer
                 // Get max. payload size for RX2, considering possible user provided Rx2DataRate
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
                 {
-                    if (loRaRegion.LoRaRegion == LoRaRegionType.CN470)
+                    if (loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2)
                     {
                         var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel));
                         maxPayload = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate].maxPyldSize;
@@ -621,7 +621,7 @@ namespace LoRaWan.NetworkServer
                     this.logger.LogError("Failed to get downstream data rate");
                     return false;
                 }
-                maxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDataRate(rxpk));
+                maxPayload = loRaRegion.GetMaxPayloadSize(downstreamDataRate);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
 
@@ -670,7 +670,7 @@ namespace LoRaWan.NetworkServer
             }
 
             Dictionary<string, string> eventProperties = null;
-            if (loRaPayloadData.IsUpwardAck())
+            if (loRaPayloadData.IsUpwardAck)
             {
                 eventProperties = new Dictionary<string, string>();
                 this.logger.LogInformation($"message ack received for cloud to device message id {loRaDevice.LastConfirmedC2DMessageID}");
@@ -786,7 +786,7 @@ namespace LoRaWan.NetworkServer
             };
 
             // If the ADR req bit is not set we don't perform rate adaptation.
-            if (!loraPayload.IsAdrReq)
+            if (!loraPayload.IsAdrAckRequested)
             {
                 _ = loRaADRManager.StoreADREntryAsync(loRaADRTableEntry);
             }

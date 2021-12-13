@@ -95,10 +95,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
+                        .AddSingleton<LoRaDeviceCache>()
+                        .AddSingleton(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
                         .AddTransient<ICupsProtocolMessageProcessor, CupsProtocolMessageProcessor>()
                         .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>()
-                        .AddSingleton(new RegistryMetricTagBag())
+                        .AddSingleton(new RegistryMetricTagBag(NetworkServerConfiguration))
                         .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
                         .AddHostedService(sp =>
                             new MetricExporterHostedService(
@@ -139,6 +141,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                    .UseWebSockets()
                    .UseEndpoints(endpoints =>
                    {
+                       _ = endpoints.MapMetrics();
+
                        Map(HttpMethod.Get, BasicsStationNetworkServer.DiscoveryEndpoint,
                            context => context.Request.Host.Port is BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort,
                            (ILnsProtocolMessageProcessor processor) => processor.HandleDiscoveryAsync);
@@ -168,8 +172,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
                            });
                        }
                    });
-
-            _ = app.UseMetricServer();
         }
     }
 }
