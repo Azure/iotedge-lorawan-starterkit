@@ -34,7 +34,8 @@ namespace LoRaWan.Tests.E2E
             {
                 { "TLS_SNI", "false" },
                 { "TC_URI", TestFixture.Configuration.SharedLnsEndpoint },
-                { "FIXED_STATION_EUI", TestFixture.Configuration.DefaultBasicStationEui }
+                { "FIXED_STATION_EUI", TestFixture.Configuration.DefaultBasicStationEui },
+                { "RADIODEV", TestFixture.Configuration.RadioDev }
             }, out this.temporaryDirectoryName);
             // Waiting 5 seconds for the BasicsStation to connect
             await Task.Delay(5_000);

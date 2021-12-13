@@ -81,6 +81,7 @@ namespace LoRaWan.Tests.Common
 
         public string RemoteConcentratorConnection { get; set; } //i.e. pi@raspberrypi
 
+        public string RadioDev { get; set; } // i.e. "/dev/ttyACM0"
         public string DefaultBasicStationEui { get; set; } //i.e. "ABC111FFFEDEF000"
 
         // The path of where the station binary is located on local pc
