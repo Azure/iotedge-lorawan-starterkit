@@ -211,9 +211,10 @@ jobs:
       run: |
         chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
-        sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R $(whoami) $CERT_REMOTE_PATH
+        # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/tc.trust
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/cups.trust
+        # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$RPI_HOST.pfx $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/server.pfx
