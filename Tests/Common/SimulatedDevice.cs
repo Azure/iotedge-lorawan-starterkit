@@ -71,24 +71,24 @@ namespace LoRaWan.Tests.Common
 
         public LoRaPayloadJoinRequest CreateJoinRequest()
         {
-            var devNonce = new byte[2];
+            var devNonceBytes = new byte[2];
             if (string.IsNullOrEmpty(DevNonce) || (!this.isFirstJoinRequest))
             {
                 using var random = RandomNumberGenerator.Create();
                 // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
-                random.GetBytes(devNonce);
-                DevNonce = BitConverter.ToString(devNonce).Replace("-", string.Empty, StringComparison.Ordinal);
-                Array.Reverse(devNonce);
+                random.GetBytes(devNonceBytes);
+                DevNonce = BitConverter.ToString(devNonceBytes).Replace("-", string.Empty, StringComparison.Ordinal);
+                Array.Reverse(devNonceBytes);
                 this.isFirstJoinRequest = false;
             }
             else
             {
-                devNonce = ConversionHelper.StringToByteArray(DevNonce);
-                Array.Reverse(devNonce);
+                devNonceBytes = ConversionHelper.StringToByteArray(DevNonce);
+                Array.Reverse(devNonceBytes);
             }
 
-            TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {BitConverter.ToString(devNonce).Replace("-", string.Empty, StringComparison.Ordinal)} / {DevNonce}");
-            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, devNonce);
+            TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {BitConverter.ToString(devNonceBytes).Replace("-", string.Empty, StringComparison.Ordinal)} / {DevNonce}");
+            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, LoRaWan.DevNonce.Read(devNonceBytes));
             joinRequest.SetMic(LoRaDevice.AppKey);
 
             return joinRequest;
@@ -269,8 +269,8 @@ namespace LoRaWan.Tests.Common
                 Array.Reverse(netid);
                 var appNonce = payload.AppNonce.ToArray();
                 Array.Reverse(appNonce);
-                var devNonce = ConversionHelper.StringToByteArray(DevNonce);
-                Array.Reverse(devNonce);
+                _ = Hexadecimal.TryParse(DevNonce, out var devNonceRaw);
+                var devNonce = new DevNonce(checked((ushort)devNonceRaw));
                 var deviceAppKey = ConversionHelper.StringToByteArray(LoRaDevice.AppKey);
                 var appSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.AppSKey, appNonce, netid, devNonce, deviceAppKey);
                 var nwkSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netid, devNonce, deviceAppKey);

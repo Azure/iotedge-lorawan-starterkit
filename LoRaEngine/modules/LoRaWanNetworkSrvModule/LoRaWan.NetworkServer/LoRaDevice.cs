@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -982,7 +983,7 @@ namespace LoRaWan.NetworkServer
                 NwkSKey = updateProperties.NwkSKey;
                 AppSKey = updateProperties.AppSKey;
                 AppNonce = updateProperties.AppNonce;
-                DevNonce = updateProperties.DevNonce;
+                DevNonce = updateProperties.DevNonce.ToString("N", CultureInfo.InvariantCulture);
                 NetID = updateProperties.NetID;
 
                 if (currentRegion.IsValidRX1DROffset(DesiredRX1DROffset))

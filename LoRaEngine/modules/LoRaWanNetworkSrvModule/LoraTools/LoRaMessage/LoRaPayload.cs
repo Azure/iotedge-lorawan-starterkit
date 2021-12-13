@@ -10,6 +10,7 @@ namespace LoRaTools.LoRaMessage
     using System.Security.Cryptography;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using LoRaWan;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
@@ -109,7 +110,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC.
         /// </summary>
-        public static byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
+        public static byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, DevNonce devnonce, byte[] appKey)
         {
             if (keyType == LoRaPayloadKeyType.None) throw new InvalidOperationException("No key type selected.");
 
@@ -124,7 +125,10 @@ namespace LoRaTools.LoRaMessage
             aes.Padding = PaddingMode.None;
             aes.IV = new byte[16];
 
-            var pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
+            var devNonceBytes = new byte[DevNonce.Size];
+            _ = devnonce.Write(devNonceBytes);
+
+            var pt = type.Concat(appnonce).Concat(netid).Concat(devNonceBytes).Concat(new byte[7]).ToArray();
 
             ICryptoTransform cipher;
 #pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV

@@ -30,6 +30,25 @@ namespace LoRaWan
 
         public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
 
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            return format switch
+            {
+                "N" => ToHex(LetterCase.Upper),
+                "n" => ToHex(LetterCase.Lower),
+                _ => this.value.ToString(formatProvider)
+            };
+        }
+
+        private string ToHex(LetterCase letterCase)
+        {
+            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
+            BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
+            Span<char> chars = stackalloc char[bytes.Length * 2];
+            Hexadecimal.Write(bytes, chars, letterCase);
+            return new string(chars);
+        }
+
         public int CompareTo(DevNonce other) => this.value.CompareTo(other.value);
 
         public static bool operator >(DevNonce left, DevNonce right) => left.CompareTo(right) > 0;

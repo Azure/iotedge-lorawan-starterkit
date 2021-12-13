@@ -201,11 +201,11 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Searchs for devices that match the join request.
         /// </summary>
-        public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string devNonce)
+        public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, DevNonce devNonce)
         {
-            if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(devNonce))
+            if (string.IsNullOrEmpty(devEUI))
             {
-                this.logger.LogError("join refused: missing devEUI/AppEUI/DevNonce in request");
+                this.logger.LogError("join refused: missing devEUI/AppEUI in request");
                 return null;
             }
 

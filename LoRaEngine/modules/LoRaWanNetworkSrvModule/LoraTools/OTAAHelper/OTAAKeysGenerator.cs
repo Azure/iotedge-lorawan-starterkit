@@ -7,6 +7,7 @@ namespace LoRaTools
     using System.Linq;
     using System.Security.Cryptography;
     using LoRaTools.Utils;
+    using LoRaWan;
 
     public static class OTAAKeysGenerator
     {
@@ -26,7 +27,7 @@ namespace LoRaTools
         }
 
         // don't work with CFLIST atm
-        public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
+        public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devnonce, byte[] appKey)
         {
             using var aes = Aes.Create("AesManaged");
             aes.Key = appKey;
@@ -36,7 +37,10 @@ namespace LoRaTools
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
             aes.Padding = PaddingMode.None;
 
-            var pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
+            var devNonceBytes = new byte[DevNonce.Size];
+            _ = devnonce.Write(devNonceBytes);
+
+            var pt = type.Concat(appnonce).Concat(netid).Concat(devNonceBytes).Concat(new byte[7]).ToArray();
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
