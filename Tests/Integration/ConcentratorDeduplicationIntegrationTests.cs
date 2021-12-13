@@ -156,7 +156,7 @@ namespace LoRaWan.Tests.Integration
 
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null,                    0, 2, 2, 1, 2, 2)] // resubmission
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null,                    0, 2, 2, 2, 2, 2)] // resubmission
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop,  0, 1, 1, 1, 1, 1)] // duplicate
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark,  0, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None,  0, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None
@@ -184,7 +184,7 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null,                   1, 2, 2, 1, 2, 2)] // resubmission
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", null,                   1, 2, 2, 2, 2, 2)] // resubmission
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 1, 1, 1, 1)] // duplicate
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 1, 2, 1, 2)] // soft duplicate, due to DeduplicationMode.Mark
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 1, 2, 1, 2)] // soft duplicate but due to DeduplicationMode.None

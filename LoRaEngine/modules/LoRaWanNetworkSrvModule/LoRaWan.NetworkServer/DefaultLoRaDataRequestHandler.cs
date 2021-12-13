@@ -286,26 +286,19 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    // when we have a confirmed resubmit message and it is marked as a duplicate
-                    // from another station (concentrator) - we do not want to send it upstream.
-                    var skipUpStream = isConfirmedResubmit && concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission;
-
-                    if (!skipUpStream)
+                    // In case it is a Mac Command only we don't want to send it to the IoT Hub
+                    if (payloadPort != LoRaFPort.MacCommand)
                     {
-                        // In case it is a Mac Command only we don't want to send it to the IoT Hub
-                        if (payloadPort != LoRaFPort.MacCommand)
+                        // combine the results of the 2 deduplications: on the concentrator level and on the network server layer
+                        var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplicationResult.NotDuplicate || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);
+                        if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, isDuplicate, decryptedPayloadData))
                         {
-                            // combine the results of the 2 deduplications: on the concentrator level and on the network server layer
-                            var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplicationResult.NotDuplicate || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);
-                            if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, isDuplicate, decryptedPayloadData))
-                            {
-                                // failed to send event to IoT Hub, stop now
-                                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
-                            }
+                            // failed to send event to IoT Hub, stop now
+                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
                         }
-
-                        loRaDevice.SetFcntUp(payloadFcntAdjusted);
                     }
+
+                    loRaDevice.SetFcntUp(payloadFcntAdjusted);
                 }
 
                 #region Downstream
@@ -889,8 +882,7 @@ namespace LoRaWan.NetworkServer
                         if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate)
                             _ = await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
 
-                        if (concentratorDeduplicationResult is not ConcentratorDeduplicationResult.DuplicateDueToResubmission)
-                            isFrameCounterFromNewlyStartedDevice = true;
+                        isFrameCounterFromNewlyStartedDevice = true;
                     }
                 }
                 else if (loRaDevice.FCntUp == payloadFcnt && payloadFcnt == 0)
