@@ -17,6 +17,7 @@ namespace LoRaWan.Tests.E2E
     public sealed class MultiConcentratorTests : IntegrationTestBaseCi, IAsyncLifetime
     {
         private string temporaryDirectoryName;
+        private bool initializationSucceeded;
         public MultiConcentratorTests(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
         {
@@ -39,12 +40,13 @@ namespace LoRaWan.Tests.E2E
             }, out this.temporaryDirectoryName);
             var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
                 (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1);
-            Assert.NotNull(log.MatchedEvent);
+            initializationSucceeded = log.Found;
         }
 
         [RetryFact]
         public async Task Test_Concentrator_Deduplication_OTAA()
         {
+            Assert.True(initializationSucceeded);
             var device = TestFixtureCi.GetDeviceByPropertyName("Device31_OTAA");
             LogTestStart(device);
 
