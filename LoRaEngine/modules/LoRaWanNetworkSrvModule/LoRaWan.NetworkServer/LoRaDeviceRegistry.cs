@@ -32,6 +32,8 @@ namespace LoRaWan.NetworkServer
         private readonly object getOrCreateLoadingDevicesRequestQueueLock;
         private readonly object getOrCreateJoinDeviceLoaderLock;
         private readonly Meter meter;
+        private readonly Counter<int> deviceCacheHits;
+        private readonly Counter<int> deviceLoadRequests;
         private readonly IMemoryCache cache;
         private readonly LoRaDeviceCache deviceCache;
 
@@ -62,6 +64,8 @@ namespace LoRaWan.NetworkServer
             this.getOrCreateLoadingDevicesRequestQueueLock = new object();
             this.getOrCreateJoinDeviceLoaderLock = new object();
             this.meter = meter;
+            this.deviceCacheHits = meter?.CreateCounter<int>(MetricRegistry.DeviceCacheHits);
+            this.deviceLoadRequests = meter?.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
             this.deviceCache = deviceCache;
         }
 
@@ -128,6 +132,8 @@ namespace LoRaWan.NetworkServer
         {
             if (request is null) throw new ArgumentNullException(nameof(request));
 
+            this.deviceLoadRequests?.Add(1);
+
             var devAddr = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
 
             if (this.cache.TryGetValue<DeviceLoaderSynchronizer>(GetDevLoaderCacheKey(devAddr), out var deviceLoader))
@@ -138,6 +144,7 @@ namespace LoRaWan.NetworkServer
             if (this.deviceCache.TryGetForPayload(request.Payload, out var cachedDevice))
             {
                 this.logger.LogDebug("device in cache");
+                this.deviceCacheHits?.Add(1);
                 if (cachedDevice.IsOurDevice)
                 {
                     return cachedDevice;
@@ -155,8 +162,13 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<LoRaDevice> GetDeviceByDevEUIAsync(string devEUI)
         {
+            this.deviceLoadRequests?.Add(1);
+
             if (this.deviceCache.TryGetByDevEui(devEUI, out var cachedDevice))
+            {
+                this.deviceCacheHits?.Add(1);
                 return cachedDevice;
+            }
 
             var searchResult = await this.loRaDeviceAPIService.SearchByEuiAsync(DevEui.Parse(devEUI));
             if (searchResult == null || searchResult.Count == 0)

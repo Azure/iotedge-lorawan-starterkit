@@ -21,6 +21,7 @@ namespace LoRaWan.NetworkServer
         private readonly Counter<int> receiveWindowHits;
         private readonly Counter<int> receiveWindowMisses;
         private readonly Counter<int> unhandledExceptionCount;
+        private readonly Counter<int> deviceLoadRequests;
         private readonly NetworkServerConfiguration configuration;
 
         public JoinRequestMessageHandler(NetworkServerConfiguration configuration,
@@ -34,6 +35,7 @@ namespace LoRaWan.NetworkServer
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
             this.receiveWindowMisses = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowMisses);
             this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
+            this.deviceLoadRequests = meter?.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
         }
 
         public void DispatchRequest(LoRaRequest request)
@@ -62,6 +64,7 @@ namespace LoRaWan.NetworkServer
                     this.logger.LogInformation("join request received");
 
                     loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, devNonce);
+                    this.deviceLoadRequests?.Add(1);
                     if (loRaDevice == null)
                     {
                         request.NotifyFailed(devEUI, LoRaDeviceRequestFailedReason.UnknownDevice);
