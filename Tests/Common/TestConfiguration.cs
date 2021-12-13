@@ -81,7 +81,7 @@ namespace LoRaWan.Tests.Common
 
         public string RemoteConcentratorConnection { get; set; } //i.e. pi@raspberrypi
 
-        public string FixedBasicStationEui { get; set; } //i.e. "ABC111FFFEDEF000"
+        public string DefaultBasicStationEui { get; set; } //i.e. "ABC111FFFEDEF000"
 
         // The path of where the station binary is located on local pc
         public string BasicStationExecutablePath { get; set; } //i.e. "C:\\folder\\station"

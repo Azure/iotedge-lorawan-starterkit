@@ -33,12 +33,12 @@ namespace LoRaWan.Tests.E2E
             {
                 { "TLS_SNI", "false" },
                 { "TC_URI", TestFixture.Configuration.SharedLnsEndpoint },
-                { "FIXED_STATION_EUI", TestFixture.Configuration.FixedBasicStationEui }
+                { "FIXED_STATION_EUI", TestFixture.Configuration.DefaultBasicStationEui }
             });
             // Waiting 5 seconds for the BasicsStation to connect
             await Task.Delay(5_000);
             var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                (log) => log.IndexOf(TestFixture.Configuration.FixedBasicStationEui, StringComparison.Ordinal) != -1);
+                (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1);
             Assert.NotNull(log.MatchedEvent);
         }
 
