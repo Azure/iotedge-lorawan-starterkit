@@ -47,7 +47,13 @@ In the implementation of region AS923 the frequencies for channel 0 and 1 will b
 
 ### Dwell Times
 
-tbd
+We will support dwell times through the following process: The user configures the dwell time settings on a device-per-device basis by issuing a C2D messages. A C2D message gets translated to a `TxParamSetupReq` MAC command. Updating the dwell time setting that the gateway uses is used happens as a separate manual step after the device settings were successfully updated. The flow looks as follows:
+
+- The user issues a `TxParamSetupReq` through a C2D message to change the dwell time limitations on the end device
+- The user (manually) checks whether the device picked up the correct dwell time limitations
+- The user (manually) updates the device twin desired properties with the actual dwell time limitation flag
+  - Either the user (manually) needs to refresh all gateway caches and Redis or we only allow single gateway or OTAA joins
+- The LNS fetches the desired properties from the device and uses the correct set of regional parameters based on the dwell time settings
 
 ## Appendix
 
