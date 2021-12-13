@@ -16,6 +16,7 @@ namespace LoRaWan.Tests.E2E
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class MultiConcentratorTests : IntegrationTestBaseCi, IAsyncLifetime
     {
+        private string temporaryDirectoryName;
         public MultiConcentratorTests(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
         {
@@ -23,7 +24,7 @@ namespace LoRaWan.Tests.E2E
 
         public Task DisposeAsync()
         {
-            TestUtils.KillBasicsStation(TestFixture.Configuration);
+            TestUtils.KillBasicsStation(TestFixture.Configuration, this.temporaryDirectoryName);
             return Task.CompletedTask;
         }
 
@@ -34,7 +35,7 @@ namespace LoRaWan.Tests.E2E
                 { "TLS_SNI", "false" },
                 { "TC_URI", TestFixture.Configuration.SharedLnsEndpoint },
                 { "FIXED_STATION_EUI", TestFixture.Configuration.DefaultBasicStationEui }
-            });
+            }, out this.temporaryDirectoryName);
             // Waiting 5 seconds for the BasicsStation to connect
             await Task.Delay(5_000);
             var log = await TestFixtureCi.SearchNetworkServerModuleAsync(

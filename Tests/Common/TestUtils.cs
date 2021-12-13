@@ -196,7 +196,7 @@ namespace LoRaWan.Tests.Common
             return directory;
         }
 
-        public static void KillBasicsStation(TestConfiguration config)
+        public static void KillBasicsStation(TestConfiguration config, string temporaryDirectoryName)
         {
             if (config is null) throw new ArgumentNullException(nameof(config));
 
@@ -207,7 +207,7 @@ namespace LoRaWan.Tests.Common
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "bash",
-                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)'\"",
+                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)' && rm -rf /tmp/{temporaryDirectoryName}\"",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
@@ -220,7 +220,7 @@ namespace LoRaWan.Tests.Common
             }
         }
 
-        public static void StartBasicsStation(TestConfiguration config, Dictionary<string, string> scriptParameters)
+        public static void StartBasicsStation(TestConfiguration config, Dictionary<string, string> scriptParameters, out string randomDirectoryName)
         {
             if (config is null) throw new ArgumentNullException(nameof(config));
 
@@ -235,7 +235,7 @@ namespace LoRaWan.Tests.Common
 
             // Copying needed files in a local temporary path
             var localTempPath = Path.GetTempPath();
-            var randomDirectoryName = Path.GetRandomFileName();
+            randomDirectoryName = Path.GetRandomFileName();
             var tempDirectory = Path.Combine(localTempPath, randomDirectoryName);
             _ = Directory.CreateDirectory(tempDirectory);
             File.Copy(config.BasicStationExecutablePath, Path.Combine(tempDirectory, "station.std"));
