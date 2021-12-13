@@ -224,7 +224,7 @@ jobs:
       run: |
         echo "::set-output name=itestupip::$(ip address list tun0 | grep -Po 'inet \K[\d.]+')"
     outputs:
-      itestupip: ${{ steps.get_itestup_ip_address.outputs.itestupip }}
+      itestupip: ${{ steps.get_self_hosted_runner_ip_address.outputs.itestupip }}
 
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
@@ -260,6 +260,7 @@ jobs:
           APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_INSTRUMENTATIONKEY }}
           CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
           SERVER_PFX_PASSWORD: ${{ secrets.SERVER_PFX_PASSWORD }}
+          NET_SRV_LOG_TO_TCP_ADDRESS: "itestup"
         with:
           deployment_file_name: '${{ secrets.DEPLOYMENT_FILE_NAME }}'
           architecture: '${{ secrets.ARCHITECTURE }}'
