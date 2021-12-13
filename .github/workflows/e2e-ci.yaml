@@ -378,7 +378,7 @@ jobs:
       E2ETESTS_SharedLnsEndpoint: ${{ secrets.SHAREDLNSENDPOINT }}
       E2ETESTS_SharedCupsEndpoint: ${{ secrets.SHAREDCUPSENDPOINT }}
       E2ETESTS_DefaultBasicStationEui: ${{ secrets.DEFAULTCISTATIONEUI }}
-      E2ETESTS_RadioDev: "/dev/ttyUSB0"
+      E2ETESTS_RadioDev: ${{ secrets.CIBASICSTATIONRADIODEV }}
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
       E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 
