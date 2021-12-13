@@ -995,6 +995,7 @@ namespace LoRaWan.Tests.Integration
                                                            inTimeForC2DMessageCheck: true,
                                                            inTimeForAdditionalMessageCheck: false,
                                                            inTimeForDownlinkDelivery: false);
+            request.SetRegion(this.Region);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 

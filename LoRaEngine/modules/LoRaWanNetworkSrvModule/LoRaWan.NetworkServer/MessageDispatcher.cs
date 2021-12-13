@@ -19,7 +19,6 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
-        private volatile Region loraRegion;
         private readonly IJoinRequestMessageHandler joinRequestHandler;
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<MessageDispatcher> logger;
@@ -81,20 +80,14 @@ namespace LoRaWan.NetworkServer
                 request.SetPayload(loRaPayload);
             }
 
-            if (this.loraRegion == null)
+            if (request.Region is null)
             {
-                if (request.Region is null)
-                {
-                    // log is generated in Region factory
-                    // move here once V2 goes GA
-                    request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRegion);
-                    return;
-                }
-
-                this.loraRegion = request.Region;
+                // log is generated in Region factory
+                // move here once V2 goes GA
+                request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRegion);
+                return;
             }
 
-            request.SetRegion(this.loraRegion);
 
             var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>(), this.d2cMessageDeliveryLatencyHistogram);
 

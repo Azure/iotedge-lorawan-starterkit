@@ -84,11 +84,8 @@ namespace LoRaWan.Tests.Common
 
             if (!useRealTimer)
             {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                if (!RegionManager.TryResolveRegion(rxpk, out var region))
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                    throw new InvalidOperationException("Could not resolve region.");
-                var timeWatcher = new TestLoRaOperationTimeWatcher(region, elapsedTimes);
+                // This will be removed as part of #1053
+                var timeWatcher = new TestLoRaOperationTimeWatcher(RegionManager.EU868, elapsedTimes);
                 request.UseTimeWatcher(timeWatcher);
             }
 
