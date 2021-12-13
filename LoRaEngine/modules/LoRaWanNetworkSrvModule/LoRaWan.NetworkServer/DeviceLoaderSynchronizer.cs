@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
@@ -48,6 +49,7 @@ namespace LoRaWan.NetworkServer
         private volatile LoaderState state;
         private readonly object queueLock;
         private volatile List<LoRaRequest> queuedRequests;
+        private readonly Counter<int> deviceCacheHits;
 
         protected virtual bool LoadingDevicesFailed { get; set; }
 
@@ -58,7 +60,8 @@ namespace LoRaWan.NetworkServer
             NetworkServerConfiguration configuration,
             LoRaDeviceCache deviceCache,
             HashSet<ILoRaDeviceInitializer> initializers,
-            ILogger<DeviceLoaderSynchronizer> logger)
+            ILogger<DeviceLoaderSynchronizer> logger,
+            Meter meter)
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
@@ -70,6 +73,7 @@ namespace LoRaWan.NetworkServer
             this.state = LoaderState.QueryingDevices;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
+            this.deviceCacheHits = meter?.CreateCounter<int>(MetricRegistry.DeviceCacheHits);
         }
 
         internal async Task LoadAsync()
@@ -137,6 +141,7 @@ namespace LoRaWan.NetworkServer
                     }
                     else
                     {
+                        this.deviceCacheHits?.Add(1);
                         if (string.IsNullOrEmpty(cachedDevice.DevAddr))
                         {
                             // device in cache from a previous join that we didn't complete
@@ -243,6 +248,7 @@ namespace LoRaWan.NetworkServer
 
             if (this.loraDeviceCache.TryGetForPayload(request.Payload, out var device))
             {
+                this.deviceCacheHits?.Add(1);
                 if (device.IsOurDevice)
                 {
                     device.Queue(request);

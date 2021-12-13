@@ -18,7 +18,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
-            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
+            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance, TestMeter.Instance);
 
             await joinDeviceLoader.LoadAsync();
             factory.Verify(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()), Times.Once);
@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
-            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
+            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance, TestMeter.Instance);
 
             using var device = new LoRaDevice(DefaultDeviceInfo.DevAddr, DefaultDeviceInfo.DevEUI, null);
             cache.Register(device);
@@ -48,7 +48,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             factory.Setup(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()))
                    .ThrowsAsync(new LoRaProcessingException());
 
-            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
+            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance, TestMeter.Instance);
 
             Assert.Null(await joinDeviceLoader.LoadAsync());
             Assert.False(joinDeviceLoader.CanCache);
@@ -69,7 +69,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                         return device;
                     });
 
-            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
+            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance, TestMeter.Instance);
 
             var t1 = joinDeviceLoader.LoadAsync();
             var t2 = joinDeviceLoader.LoadAsync();
