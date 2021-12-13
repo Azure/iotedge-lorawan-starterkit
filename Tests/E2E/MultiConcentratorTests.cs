@@ -40,13 +40,13 @@ namespace LoRaWan.Tests.E2E
             }, out this.temporaryDirectoryName);
             var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
                 (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1);
-            initializationSucceeded = log.Found;
+            this.initializationSucceeded = log.Found;
         }
 
         [RetryFact]
         public async Task Test_Concentrator_Deduplication_OTAA()
         {
-            Assert.True(initializationSucceeded);
+            Assert.True(this.initializationSucceeded);
             var device = TestFixtureCi.GetDeviceByPropertyName("Device31_OTAA");
             LogTestStart(device);
 
