@@ -12,27 +12,27 @@ namespace LoRaWan.Tests.Unit
         private readonly MacHeader unconfirmedDataUp = new(64);
 
         [Theory]
-        [InlineData(  0, MacMessageType.JoinRequest        )]
-        [InlineData( 31, MacMessageType.JoinRequest        )]
-        [InlineData( 32, MacMessageType.JoinAccept         )]
-        [InlineData( 63, MacMessageType.JoinAccept         )]
-        [InlineData( 64, MacMessageType.UnconfirmedDataUp  )]
-        [InlineData( 95, MacMessageType.UnconfirmedDataUp  )]
-        [InlineData( 96, MacMessageType.UnconfirmedDataDown)]
-        [InlineData(127, MacMessageType.UnconfirmedDataDown)]
-        [InlineData(128, MacMessageType.ConfirmedDataUp    )]
-        [InlineData(159, MacMessageType.ConfirmedDataUp    )]
-        [InlineData(160, MacMessageType.ConfirmedDataDown  )]
-        [InlineData(191, MacMessageType.ConfirmedDataDown  )]
-        [InlineData(192, MacMessageType.RejoinRequest      )]
-        [InlineData(223, MacMessageType.RejoinRequest      )]
-        [InlineData(224, MacMessageType.Proprietary        )]
-        [InlineData(255, MacMessageType.Proprietary        )]
-        public void Properties_Return_Corresponding_Parts(byte value, MacMessageType macMessageType)
+        [InlineData(  0, MacMessageType.JoinRequest        , 0)]
+        [InlineData( 31, MacMessageType.JoinRequest        , 3)]
+        [InlineData( 32, MacMessageType.JoinAccept         , 0)]
+        [InlineData( 63, MacMessageType.JoinAccept         , 3)]
+        [InlineData( 64, MacMessageType.UnconfirmedDataUp  , 0)]
+        [InlineData( 95, MacMessageType.UnconfirmedDataUp  , 3)]
+        [InlineData( 96, MacMessageType.UnconfirmedDataDown, 0)]
+        [InlineData(127, MacMessageType.UnconfirmedDataDown, 3)]
+        [InlineData(128, MacMessageType.ConfirmedDataUp    , 0)]
+        [InlineData(159, MacMessageType.ConfirmedDataUp    , 3)]
+        [InlineData(160, MacMessageType.ConfirmedDataDown  , 0)]
+        [InlineData(191, MacMessageType.ConfirmedDataDown  , 3)]
+        [InlineData(192, MacMessageType.RejoinRequest      , 0)]
+        [InlineData(223, MacMessageType.RejoinRequest      , 3)]
+        [InlineData(224, MacMessageType.Proprietary        , 0)]
+        [InlineData(255, MacMessageType.Proprietary        , 3)]
+        public void Properties_Return_Corresponding_Parts(byte value, MacMessageType macMessageType, int major)
         {
             var subject = new MacHeader(value);
             Assert.Equal(macMessageType, subject.MessageType);
-            Assert.Equal(DataMessageVersion.R1, subject.Major);
+            Assert.Equal(major, subject.Major);
         }
 
         [Fact]

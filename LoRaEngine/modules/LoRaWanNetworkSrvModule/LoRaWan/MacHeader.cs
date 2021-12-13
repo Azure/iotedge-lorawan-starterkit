@@ -30,7 +30,7 @@ namespace LoRaWan
         /// <summary>
         /// Gets the major version (Major) of the frame format of the LoRaWAN layer specification.
         /// </summary>
-        public DataMessageVersion Major => (DataMessageVersion)(this.value & 0b11);
+        public int Major => this.value & 0b11;
 
         public override string ToString() => this.value.ToString("X2", CultureInfo.InvariantCulture);
 
