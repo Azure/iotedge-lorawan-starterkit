@@ -227,10 +227,11 @@ namespace LoRaWan.Tests.Common
             var connection = config.RemoteConcentratorConnection;
             var sshPrivateKeyPath = config.SshPrivateKeyPath;
             var rootPath = TryGetSolutionDirectoryInfo().FullName;
+            var loRaBasicsStationModulePath = Path.Combine(rootPath, "LoRaEngine", "modules", "LoRaBasicsStationModule");
             var scriptName = "start_basicsstation.sh";
-            var startScript = new FileInfo(Path.Combine(rootPath, $".\\LoRaEngine\\modules\\LoRaBasicsStationModule\\{scriptName}"));
-            var helperFunctions = new FileInfo(Path.Combine(rootPath, $".\\LoRaEngine\\modules\\LoRaBasicsStationModule\\helper-functions.sh"));
-            var stationConf = new FileInfo(Path.Combine(rootPath, $".\\LoRaEngine\\modules\\LoRaBasicsStationModule\\station.conf"));
+            var startScript = new FileInfo(Path.Combine(loRaBasicsStationModulePath, scriptName));
+            var helperFunctions = new FileInfo(Path.Combine(loRaBasicsStationModulePath, "helper-functions.sh"));
+            var stationConf = new FileInfo(Path.Combine(loRaBasicsStationModulePath, "station.conf"));
 
             // Copying needed files in a local temporary path
             var localTempPath = Path.GetTempPath();
