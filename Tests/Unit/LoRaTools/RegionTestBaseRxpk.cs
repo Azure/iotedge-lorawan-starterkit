@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using global::LoRaTools.Regions;
     using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
+    using static LoRaWan.Metric;
 
     public abstract class RegionTestBaseRxpk
     {
@@ -91,11 +92,11 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         protected void TestDownstreamRX2FrequencyAndDataRate(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins,
             double expectedFreq, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
         {
-            TestDownstreamRX2Frequency(nwksrvrx2freq, expectedFreq, deviceJoinInfo);
+            TestDownstreamRX2Frequency(nwksrvrx2freq is { } someFreq ? Mega(someFreq) : null, Mega(expectedFreq), deviceJoinInfo);
             TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr);
         }
 
-        protected void TestDownstreamRX2Frequency(double? nwksrvrx2freq, double expectedFreq, DeviceJoinInfo deviceJoinInfo = null)
+        protected void TestDownstreamRX2Frequency(Hertz? nwksrvrx2freq, Hertz expectedFreq, DeviceJoinInfo deviceJoinInfo = null)
         {
             var freq = Region.GetDownstreamRX2Freq(nwksrvrx2freq, NullLogger.Instance, deviceJoinInfo);
             Assert.Equal(expectedFreq, freq);
@@ -124,6 +125,19 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             var rxpk = GenerateRxpk(dr, freq);
             Assert.False(Region.TryGetJoinChannelIndex(rxpk[0], out var channelIndex));
             Assert.Equal(expectedIndex, channelIndex);
+        }
+
+        protected void TestIsDRValueWithinAcceptableValues(string dataRate, bool upstream, bool isValid)
+        {
+            if (upstream)
+            {
+                Assert.NotNull(dataRate);
+                Assert.Equal(isValid, Region.RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(dataRate));
+            }
+            else
+            {
+                Assert.Equal(isValid, Region.RegionLimits.IsCurrentDownstreamDRValueWithinAcceptableValue(dataRate));
+            }
         }
     }
 }

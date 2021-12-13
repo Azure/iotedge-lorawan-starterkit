@@ -49,7 +49,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                            this.packetForwarder.Object,
                                                                            this.messageDispatcher.Object,
                                                                            loggerMock,
-                                                                           new RegistryMetricTagBag(),
+                                                                           new RegistryMetricTagBag(new NetworkServerConfiguration { GatewayID = "foogateway" }),
+                                                                           // Do not pass meter since metric testing will be unreliable due to interference from test classes running in parallel.
                                                                            null);
         }
 

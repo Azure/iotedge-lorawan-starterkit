@@ -92,7 +92,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 writer.WriteNumber("RX1DR", dataRate);
                 writer.WriteNumber("RX1Freq", (ulong)(message.Txpk.Freq * 1e6));
                 writer.WriteNumber("RX2DR", region.GetDefaultRX2ReceiveWindow().DataRate);
-                writer.WriteNumber("RX2Freq", (ulong)(region.GetDefaultRX2ReceiveWindow().Frequency * 1e6));
+                writer.WriteNumber("RX2Freq", (ulong)region.GetDefaultRX2ReceiveWindow().Frequency);
                 writer.WriteNumber("xtime", message.Xtime);
             }
             else if (deviceClassType is LoRaDeviceClassType.C)

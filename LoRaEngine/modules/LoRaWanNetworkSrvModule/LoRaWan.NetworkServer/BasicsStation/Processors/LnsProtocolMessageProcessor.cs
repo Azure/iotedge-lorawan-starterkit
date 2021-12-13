@@ -235,7 +235,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         var loraRequest = new LoRaRequest(rxpk, this.downstreamSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadDataLns(updf.DevAddr,
                                                                       updf.MacHeader,
-                                                                      updf.Control,
+                                                                      updf.FrameControlFlags,
                                                                       updf.Counter,
                                                                       updf.Options,
                                                                       updf.Payload,

@@ -65,7 +65,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         {
             var deviceTwin = new Twin(new TwinProperties { Desired = new TwinCollection(json) });
             var deviceClientMock = new Mock<ILoRaDeviceClient>();
-            deviceClientMock.Setup(dc => dc.GetTwinAsync()).Returns(Task.FromResult(deviceTwin));
+            deviceClientMock.Setup(dc => dc.GetTwinAsync(CancellationToken.None)).Returns(Task.FromResult(deviceTwin));
             this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(stationEui.ToString(), primaryKey))
                                       .Returns(deviceClientMock.Object);
         }

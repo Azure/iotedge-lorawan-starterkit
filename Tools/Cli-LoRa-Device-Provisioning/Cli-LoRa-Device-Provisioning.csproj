@@ -5,9 +5,6 @@
     <TargetFramework>$(TargetFramework)</TargetFramework>
     <RootNamespace>LoRaWan.Tools.CLI</RootNamespace>
     <AssemblyName>loradeviceprovisioning</AssemblyName>
-    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     <Authors>Sascha Corti (saschac@microsoft.com)</Authors>
     <Version>2.0.0-alpha</Version>
     <Company>Microsoft</Company>
