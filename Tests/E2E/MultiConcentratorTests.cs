@@ -37,8 +37,6 @@ namespace LoRaWan.Tests.E2E
                 { "FIXED_STATION_EUI", TestFixture.Configuration.DefaultBasicStationEui },
                 { "RADIODEV", TestFixture.Configuration.RadioDev }
             }, out this.temporaryDirectoryName);
-            // Waiting 5 seconds for the BasicsStation to connect
-            await Task.Delay(5_000);
             var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
                 (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1);
             Assert.NotNull(log.MatchedEvent);
