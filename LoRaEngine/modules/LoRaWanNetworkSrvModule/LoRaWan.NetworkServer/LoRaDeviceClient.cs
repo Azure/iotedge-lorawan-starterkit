@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
@@ -28,19 +29,29 @@ namespace LoRaWan.NetworkServer
         private readonly NoRetry noRetryPolicy;
         private readonly ExponentialBackoff exponentialBackoff;
 
-        public LoRaDeviceClient(string devEUI, string connectionString, ITransportSettings[] transportSettings, ILogger<LoRaDeviceClient> logger)
+        private readonly string primaryKey;
+
+        public LoRaDeviceClient(string devEUI, string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger)
         {
+            if (string.IsNullOrEmpty(devEUI)) throw new ArgumentException($"'{nameof(devEUI)}' cannot be null or empty.", nameof(devEUI));
+            if (string.IsNullOrEmpty(connectionString)) throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or empty.", nameof(connectionString));
+            if (string.IsNullOrEmpty(primaryKey)) throw new ArgumentException($"'{nameof(primaryKey)}' cannot be null or empty.", nameof(primaryKey));
+
+            this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
+
             this.devEUI = devEUI;
             this.noRetryPolicy = new NoRetry();
             this.exponentialBackoff = new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
 
             this.connectionString = connectionString;
-            this.transportSettings = transportSettings;
+            this.primaryKey = primaryKey;
             this.logger = logger;
             this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
 
             SetRetry(false);
         }
+
+        public bool IsMatchingKey(string primaryKey) => this.primaryKey == primaryKey;
 
         private void SetRetry(bool retryon)
         {
@@ -60,7 +71,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task<Twin> GetTwinAsync()
+        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -70,7 +81,7 @@ namespace LoRaWan.NetworkServer
 
                 this.logger.LogDebug("getting device twin");
 
-                var twins = await this.deviceClient.GetTwinAsync();
+                var twins = await this.deviceClient.GetTwinAsync(cancellationToken);
 
                 this.logger.LogDebug("done getting device twin");
 
