@@ -43,7 +43,7 @@ namespace LoRaWan
         private string ToHex(LetterCase letterCase)
         {
             Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-            BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
+            BinaryPrimitives.WriteUInt16LittleEndian(bytes, this.value);
             Span<char> chars = stackalloc char[bytes.Length * 2];
             Hexadecimal.Write(bytes, chars, letterCase);
             return new string(chars);

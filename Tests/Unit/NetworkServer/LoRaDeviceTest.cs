@@ -133,7 +133,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Empty(loRaDevice.AppSKey ?? string.Empty);
             Assert.Empty(loRaDevice.NwkSKey ?? string.Empty);
             Assert.Empty(loRaDevice.DevAddr ?? string.Empty);
-            Assert.Empty(loRaDevice.DevNonce ?? string.Empty);
+            Assert.Null(loRaDevice.DevNonce);
             Assert.Empty(loRaDevice.NetID ?? string.Empty);
             Assert.False(loRaDevice.IsABP);
             Assert.False(loRaDevice.IsOurDevice);
@@ -174,7 +174,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.False(loRaDevice.IsOurDevice);
             Assert.Equal("ABC02000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.NwkSKey);
             Assert.Equal("ABCD2000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.AppSKey);
-            Assert.Equal("0123", loRaDevice.DevNonce);
+            Assert.Equal(new DevNonce(0x2301), loRaDevice.DevNonce);
             Assert.Equal("0000AABB", loRaDevice.DevAddr);
         }
 
@@ -218,7 +218,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.False(loRaDevice.HasFrameCountChanges);
             Assert.Equal("ABC02000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.NwkSKey);
             Assert.Equal("ABCD2000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.AppSKey);
-            Assert.Empty(loRaDevice.DevNonce ?? string.Empty);
+            Assert.Null(loRaDevice.DevNonce);
             Assert.Equal("0000AABB", loRaDevice.DevAddr);
         }
 

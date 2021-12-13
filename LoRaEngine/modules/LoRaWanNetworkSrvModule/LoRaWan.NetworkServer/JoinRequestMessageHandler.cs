@@ -90,9 +90,7 @@ namespace LoRaWan.NetworkServer
                     }
 
                     // Make sure that is a new request and not a replay
-                    _ = Hexadecimal.TryParse(loRaDevice.DevNonce, out var deviceRawDevNonce);
-                    var loraDeviceDevNone = new DevNonce(checked((ushort)deviceRawDevNonce));
-                    if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loraDeviceDevNone == joinReq.DevNonce)
+                    if (loRaDevice.DevNonce == joinReq.DevNonce)
                     {
                         if (string.IsNullOrEmpty(loRaDevice.GatewayID))
                         {
