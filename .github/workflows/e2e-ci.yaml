@@ -208,6 +208,7 @@ jobs:
         RPI_HOST: ${{ secrets.RPI_HOST }}
         CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
         CUPS_STATION_EUI: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
+        CUPS_CREDENTIALS_BLOB_URL: ${{ secrets.CUPSCREDENTIALSBLOBURL }}
       run: |
         chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
@@ -217,6 +218,8 @@ jobs:
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/cups.trust
         cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.crt $CERT_REMOTE_PATH/cups.crt
         cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.key $CERT_REMOTE_PATH/cups.key
+        curl -X PUT -T ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.bundle -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_CREDENTIALS_BLOB_URL"
+        echo "::set-output name=clientbundlecrc::$(cat ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.bundle | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo)"
         echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
@@ -231,6 +234,7 @@ jobs:
     outputs:
       itestupip: ${{ steps.get_self_hosted_runner_ip_address.outputs.itestupip }}
       clientthumbprint: ${{ steps.generate_step.outputs.clientthumbprint }}
+      clientbundlecrc: ${{ steps.generate_step.outputs.clientbundlecrc }}
 
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
@@ -389,6 +393,7 @@ jobs:
       E2ETESTS_RadioDev: ${{ secrets.CIBASICSTATIONRADIODEV }}
       E2ETESTS_CupsBasicStationEui: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
       E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
+      E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
       E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 
