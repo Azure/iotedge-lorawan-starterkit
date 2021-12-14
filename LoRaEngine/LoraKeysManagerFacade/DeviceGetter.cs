@@ -89,7 +89,6 @@ namespace LoraKeysManagerFacade
                 // OTAA join
                 using var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId);
                 var cacheKeyDevNonce = string.Concat(devEUI, ":", devNonce);
-                var lockKeyDevNonce = string.Concat(cacheKeyDevNonce, ":joinlockdevnonce");
 
                 if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce, TimeSpan.FromMinutes(5), onlyIfNotExists: true))
                 {
