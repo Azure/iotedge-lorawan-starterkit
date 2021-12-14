@@ -174,7 +174,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void CreateKeyMethod_Should_Throw_When_Used_With_Wrong_Type()
         {
             // arrange
-            this.dataRequest.SetPayload(Mock.Of<LoRaPayloadJoinAccept>());
+            this.dataRequest.SetPayload(new Mock<LoRaPayloadJoinAccept>().Object);
 
             // act/assert
             Assert.Throws<ArgumentException>(() => ConcentratorDeduplication.CreateCacheKey(this.dataRequest));
