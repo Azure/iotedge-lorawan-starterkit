@@ -214,6 +214,7 @@ namespace LoRaWan.NetworkServer
                 return null;
             }
 
+            this.deviceLoadRequests?.Add(1);
             this.logger.LogDebug("querying the registry for OTAA device");
 
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
