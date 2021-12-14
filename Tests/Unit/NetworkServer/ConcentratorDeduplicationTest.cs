@@ -14,13 +14,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
     {
-        private readonly ConcentratorDeduplication concentratorDeduplication;
-        private readonly LoRaDeviceClientConnectionManager connectionManager;
-        private readonly LoRaDevice loRaDevice;
-        private readonly SimulatedDevice simulatedOTAADevice;
-        private readonly SimulatedDevice simulatedABPDevice;
-        private readonly WaitableLoRaRequest dataRequest;
         private readonly MemoryCache cache; // ownership passed to ConcentratorDeduplication
+        private readonly LoRaDeviceClientConnectionManager connectionManager;
+        private readonly ConcentratorDeduplication concentratorDeduplication;
+
+        private readonly LoRaDevice loRaDevice;
+        private readonly SimulatedDevice simulatedABPDevice;
+        private readonly SimulatedDevice simulatedOTAADevice;
+        private readonly WaitableLoRaRequest dataRequest;
         private readonly WaitableLoRaRequest joinRequest;
 
         public ConcentratorDeduplicationTest()
@@ -36,7 +37,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 Deduplication = DeduplicationMode.Drop // the default
             };
 
-            this.simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1));
+            this.simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
             var joinPayload = this.simulatedOTAADevice.CreateJoinRequest();
             this.joinRequest = WaitableLoRaRequest.Create(joinPayload.SerializeUplink(this.simulatedOTAADevice.AppKey).Rxpk[0]);
             this.joinRequest.SetPayload(joinPayload);
@@ -163,15 +164,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void CreateKeyMethod_Should_Produce_Expected_Key_For_JoinRequests()
         {
             // arrange
-            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
-            var joinPayload = simulatedOTAADevice.CreateJoinRequest();
+            var joinPayload = (LoRaPayloadJoinRequest)this.joinRequest.Payload;
             joinPayload.DevNonce = new Memory<byte>(new byte[2]);
-            this.dataRequest.SetPayload(joinPayload);
+            this.joinRequest.SetPayload(joinPayload);
 
             var expectedKey = "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4";
 
             // act/assert
-            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(this.dataRequest));
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(this.joinRequest));
         }
         #endregion
 
@@ -187,8 +187,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         public void Dispose()
         {
-            this.dataRequest.Dispose();
             this.loRaDevice.Dispose();
+            this.dataRequest.Dispose();
             this.joinRequest.Dispose();
 
             this.connectionManager.Dispose();
