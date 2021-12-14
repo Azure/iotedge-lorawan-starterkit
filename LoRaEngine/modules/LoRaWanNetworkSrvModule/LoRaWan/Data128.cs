@@ -32,8 +32,8 @@ namespace LoRaWan
             TryParse(input) is (true, var result) ? result : throw new FormatException();
 
         internal static (bool, Data128) TryParse(ReadOnlySpan<char> input) =>
-            input.Length == Size * 2 && Hexadecimal.TryParse(input[..16], out var hi)
-                                     && Hexadecimal.TryParse(input[16..], out var lo)
+            input.Length == Size * 2 && Hexadecimal.TryParse(input[..16], out ulong hi)
+                                     && Hexadecimal.TryParse(input[16..], out ulong lo)
                 ? (true, new Data128(hi, lo))
                 : default;
 

@@ -60,8 +60,7 @@ namespace LoraKeysManagerFacade
 
             try
             {
-                var devNonceBuffer = new byte[DevNonce.Size];
-                DevNonce? devNonce = Hexadecimal.TryParse(rawDevNonce, devNonceBuffer) ? DevNonce.Read(devNonceBuffer) : null;
+                DevNonce? devNonce = Hexadecimal.TryParse(rawDevNonce, out ushort d) ? new DevNonce(d) : null;
                 var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
                 var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);

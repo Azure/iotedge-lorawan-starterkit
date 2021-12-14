@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         private static IJsonProperty<T> EuiProperty<T>(string name, Func<ulong, T> factory, char separator = '-') =>
             JsonReader.Property(name,
                                 from s in JsonReader.String()
-                                select Hexadecimal.TryParse(s, out var eui, separator)
+                                select Hexadecimal.TryParse(s, out ulong eui, separator)
                                      ? factory(eui)
                                      : throw new JsonException($"Could not parse {name} as {typeof(T)}."));
 

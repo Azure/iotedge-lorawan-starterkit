@@ -324,9 +324,7 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
                 {
                     var devNonceString = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
-                    var buffer = new byte[LoRaWan.DevNonce.Size];
-                    _ = Hexadecimal.TryParse(devNonceString, buffer);
-                    DevNonce = LoRaWan.DevNonce.Read(buffer);
+                    DevNonce = Hexadecimal.TryParse(devNonceString, out ushort d) ? new DevNonce(d) : null;
                 }
 
                 // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
