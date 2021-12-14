@@ -15,8 +15,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
     internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable
     {
         private const string RouterConfigPropertyName = "routerConfig";
-        private const string CupsPropertyName = "cups";
         private const string ConcentratorTwinCachePrefixName = "concentratorTwin:";
+        internal const string CupsPropertyName = "cups";
         internal const string ClientThumbprintPropertyName = "clientThumbprint";
 
         private static readonly TimeSpan CacheTimeout = TimeSpan.FromHours(2);
