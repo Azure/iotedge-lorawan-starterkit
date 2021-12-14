@@ -137,13 +137,13 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Theory]
-        [InlineData("01aB", null, 19114957)]
-        [InlineData("01AB", null, 19114957)]
-        [InlineData("01-ab", '-', 19114957)]
-        [InlineData("01-aB", '-', 19114957)]
-        [InlineData("01-AB", '-', 19114957)]
-        [InlineData("01:AB", ':', 19114957)]
-        [InlineData("01,AB", ',', 19114957)]
+        [InlineData("01aB", null, 427)]
+        [InlineData("01AB", null, 427)]
+        [InlineData("01-ab", '-', 427)]
+        [InlineData("01-aB", '-', 427)]
+        [InlineData("01-AB", '-', 427)]
+        [InlineData("01:AB", ':', 427)]
+        [InlineData("01,AB", ',', 427)]
         public void TryParse_UInt16_With_Valid_Input(string input, char? separator, ushort expected)
         {
             var succeeded = Hexadecimal.TryParse(input, out ushort actual, separator);
