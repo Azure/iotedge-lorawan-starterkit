@@ -366,6 +366,7 @@ jobs:
       - deploy_facade_function
       - deploy_eflow_concentrator_iot_edge
       - env_var
+      - certificates_job
     runs-on: [ self-hosted, x64 ]
     env:
       E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
