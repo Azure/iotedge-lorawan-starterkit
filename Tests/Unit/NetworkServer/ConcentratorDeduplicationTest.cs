@@ -72,32 +72,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(true, true, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
-        [InlineData(true, false, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
-        [InlineData(false, true, ConcentratorDeduplicationResult.Duplicate)]
-        [InlineData(false, false, ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)]
-        public void When_Data_Message_Encountered_Should_Find_Duplicates_For_Different_Deduplication(bool sameStationAsBefore, bool dropDeduplicationStrategy, ConcentratorDeduplicationResult expectedResult)
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, ConcentratorDeduplicationResult.Duplicate)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)]
+        public void When_Data_Message_Encountered_Should_Find_Duplicates_For_Different_Deduplication(string station1, string station2, DeduplicationMode deduplicationMode, ConcentratorDeduplicationResult expectedResult)
         {
             // arrange
-            var stationEui = this.dataRequest.StationEui;
+            var station1Eui = StationEui.Parse(station1);
+            this.dataRequest.SetStationEui(station1Eui);
             _ = this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, this.loRaDevice);
 
-            var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
-            this.dataRequest.SetStationEui(anotherStation);
-
-            if (!dropDeduplicationStrategy)
-                this.loRaDevice.Deduplication = DeduplicationMode.Mark;
+            this.dataRequest.SetStationEui(StationEui.Parse(station2));
+            this.loRaDevice.Deduplication = deduplicationMode;
 
             // act/assert
             Assert.Equal(expectedResult, this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, this.loRaDevice));
             Assert.Equal(1, this.cache.Count);
             var key = ConcentratorDeduplication.CreateCacheKey(this.dataRequest);
-            Assert.True(this.cache.TryGetValue(key, out var addedStation));
-            Assert.Equal(
-                (expectedResult is ConcentratorDeduplicationResult.Duplicate || expectedResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
-                    ? stationEui
-                    : anotherStation,
-                addedStation);
+            Assert.True(this.cache.TryGetValue(key, out var foundStation));
+            Assert.Equal(station1Eui, foundStation);
         }
 
         [Fact]
@@ -115,7 +111,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void When_Join_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Should_Add_To_Cache(bool isCacheEmpty)
+        public void When_Join_Request_Not_Encountered_Should_Not_Find_Duplicates_And_Should_Add_To_Cache(bool isCacheEmpty)
         {
             // arrange
             if (!isCacheEmpty)
@@ -140,13 +136,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11")]
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22")]
-        public void When_Join_Encountered_Should_Find_Duplicates(string station1, string station2)
+        public void When_Join_Request_Encountered_Should_Find_Duplicate(string station1, string station2)
         {
             // arrange
             var station1Eui = StationEui.Parse(station1);
             this.joinRequest.SetStationEui(station1Eui);
             _ = this.concentratorDeduplication.CheckDuplicateJoin(this.joinRequest);
-            var expectedStation = station1Eui;
 
             this.joinRequest.SetStationEui(StationEui.Parse(station2));
 
@@ -157,7 +152,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(ConcentratorDeduplicationResult.Duplicate, result);
             var key = ConcentratorDeduplication.CreateCacheKey(this.joinRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
-            Assert.Equal(expectedStation, addedStation);
+            Assert.Equal(station1Eui, addedStation);
         }
 
         [Fact]
