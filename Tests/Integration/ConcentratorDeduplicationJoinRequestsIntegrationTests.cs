@@ -18,13 +18,31 @@ namespace LoRaWan.Tests.Integration
         private readonly MemoryCache cache;
         private readonly JoinRequestMessageHandler joinRequestHandler;
         private readonly SimulatedDevice simulatedDevice;
-        private readonly Mock<LoRaDevice> device;
+        private readonly Mock<LoRaDevice> deviceMock;
 
         public ConcentratorDeduplicationJoinRequestsIntegrationTests()
         {
+            this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
+            this.deviceMock = new Mock<LoRaDevice>(MockBehavior.Default,
+                this.simulatedDevice.DevAddr,
+                this.simulatedDevice.DevEUI,
+                ConnectionManager)
+            {
+                CallBase = true
+            };
+            this.deviceMock.Object.AppKey = this.simulatedDevice.AppKey;
+            this.deviceMock.Object.AppEUI = this.simulatedDevice.AppEUI;
+            this.deviceMock.Object.IsOurDevice = true;
+
             this.cache = new MemoryCache(new MemoryCacheOptions());
             var concentratorDeduplication = new ConcentratorDeduplication(this.cache, NullLogger<IConcentratorDeduplication>.Instance);
             var deviceRegistryMock = new Mock<ILoRaDeviceRegistry>();
+            _ = deviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(this.deviceMock.Object);
+
+            var clientMock = new Mock<ILoRaDeviceClient>();
+            _ = clientMock.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+            ConnectionManager.Register(this.deviceMock.Object, clientMock.Object);
 
             this.joinRequestHandler = new JoinRequestMessageHandler(
                 ServerConfiguration,
@@ -32,25 +50,6 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistryMock.Object,
                 NullLogger<JoinRequestMessageHandler>.Instance,
                 null);
-
-            this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
-            this.device = new Mock<LoRaDevice>(MockBehavior.Default,
-                this.simulatedDevice.DevAddr,
-                this.simulatedDevice.DevEUI,
-                ConnectionManager)
-            {
-                CallBase = true
-            };
-            this.device.Object.AppKey = this.simulatedDevice.AppKey;
-            this.device.Object.AppEUI = this.simulatedDevice.AppEUI;
-            this.device.Object.IsOurDevice = true;
-
-            var clientMock = new Mock<ILoRaDeviceClient>();
-            _ = clientMock.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
-            ConnectionManager.Register(this.device.Object, clientMock.Object);
-
-            _ = deviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(this.device.Object);
         }
 
         [Fact]
@@ -69,7 +68,7 @@ namespace LoRaWan.Tests.Integration
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
 
             // assert
-            this.device.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>()), Times.Once());
+            this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>()), Times.Once());
         }
     }
 }

@@ -32,10 +32,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.simulatedABPDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
             this.dataRequest = WaitableLoRaRequest.Create(dataPayload);
-            this.loRaDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, this.connectionManager)
-            {
-                Deduplication = DeduplicationMode.Drop // the default
-            };
+            this.loRaDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, this.connectionManager);
 
             this.simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
             var joinPayload = this.simulatedOTAADevice.CreateJoinRequest();
