@@ -207,7 +207,7 @@ namespace LoRaWan.Tests.Common
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "bash",
-                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)' && rm -rf /tmp/{temporaryDirectoryName}\"",
+                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)' {(string.IsNullOrEmpty(temporaryDirectoryName) ? string.Empty : $"&& rm -rf /tmp/{temporaryDirectoryName}")} \"",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
