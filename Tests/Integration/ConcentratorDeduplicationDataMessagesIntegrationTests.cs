@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Integration
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Reflection;
     using System.Threading.Tasks;
     using Common;
     using LoRaTools;
@@ -87,6 +88,37 @@ namespace LoRaWan.Tests.Integration
             public virtual bool SaveChangesToDeviceAssert() => true;
         }
 
+#pragma warning disable CA1813 // Avoid unsealed attributes
+        // needs to be inherited
+        private class DataAttribute : Xunit.Sdk.DataAttribute
+#pragma warning restore CA1813 // Avoid unsealed attributes
+        {
+            private readonly object[] args;
+
+            public DataAttribute(params object[] args) => this.args = args;
+
+            public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+            {
+                yield return this.args;
+            }
+        }
+
+        private sealed class DeduplicationTestDataAttribute : DataAttribute
+        {
+            public DeduplicationTestDataAttribute(
+                string station1,
+                string station2,
+                DeduplicationMode deduplicationMode,
+                int expectedFrameCounterResets,
+                int expectedBundlerCalls,
+                int expectedFrameCounterDownCalls,
+                int expectedMessagesUp,
+                int expectedMessagesDown,
+                int expectedTwinSaves)
+                : base(station1, station2, deduplicationMode, expectedFrameCounterResets, expectedBundlerCalls, expectedFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves)
+            { }
+        }
+
         public ConcentratorDeduplicationDataMessagesIntegrationTests()
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
@@ -126,12 +158,12 @@ namespace LoRaWan.Tests.Integration
 
         #region UnconfirmedDataMessage
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 1, 2, 0, 1, 0, 2)] // resubmission with drop
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 1, 2, 0, 2, 0, 2)] // resubmission
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 1, 2, 0, 2, 0, 2)] // resubmission
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 0, 1, 0, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 0, 2, 0, 2)] // soft duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 0, 2, 0, 2)] // soft duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 2)] // resubmission with drop
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // resubmission
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // resubmission
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
         public async Task When_Unconfirmed_First_Data_Message_Test_All_Different_DeduplicationModes(
             string station1,
             string station2,
@@ -149,12 +181,12 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // resubmission for unconfirmed message is dropped
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 0, 1, 0, 1, 0, 1)] // resubmission for unconfirmed message is dropped
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 0, 1, 0, 1, 0, 1)] // resubmission for unconfirmed message is dropped
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 0, 1, 0, 1, 0, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 0, 1, 0, 2, 0, 2)] // soft duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 0, 1, 0, 2, 0, 2)] // soft duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // resubmission for unconfirmed message is dropped
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // resubmission for unconfirmed message is dropped
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // resubmission for unconfirmed message is dropped
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
         public async Task When_Unconfirmed_Subsequent_Data_Message_Test_All_Different_DeduplicationModes(
             string station1,
             string station2,
@@ -172,14 +204,14 @@ namespace LoRaWan.Tests.Integration
         }
         #endregion
 
-        #region ConfirmedDataMessage
+        #region ConfirmedDataMessage                                                                                                       
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 1, 2, 2, 1, 2, 2)] // resubmission with drop
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 1, 2, 2, 2, 2, 2)] // resubmission
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 1, 2, 2, 2, 2, 2)] // resubmission
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 1, 1, 1, 1, 1, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 1, 1, 1, 2, 1, 2)] // soft duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 1, 1, 1, 2, 1, 2)] // soft duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 1, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission with drop
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 2, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 2, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 1, expectedMessagesUp: 1, expectedMessagesDown: 1, expectedTwinSaves: 1)] // duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 1, expectedMessagesUp: 2, expectedMessagesDown: 1, expectedTwinSaves: 2)] // soft duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 1, expectedMessagesUp: 2, expectedMessagesDown: 1, expectedTwinSaves: 2)] // soft duplicate
         public async Task When_First_Confirmed_Data_Message_Test_All_Different_DeduplicationModes(
             string station1,
             string station2,
@@ -197,12 +229,12 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, 0, 2, 2, 1, 2, 2)] // resubmission with drop
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, 0, 2, 2, 2, 2, 2)] // resubmission
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, 0, 2, 2, 2, 2, 2)] // resubmission
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, 0, 1, 1, 1, 1, 1)] // duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, 0, 1, 1, 2, 1, 2)] // soft duplicate
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, 0, 1, 1, 2, 1, 2)] // soft duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 0, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 1, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission with drop
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 0, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 2, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, expectedFrameCounterResets: 0, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 2, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 1, expectedMessagesUp: 1, expectedMessagesDown: 1, expectedTwinSaves: 1)] // duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 1, expectedMessagesUp: 2, expectedMessagesDown: 1, expectedTwinSaves: 2)] // soft duplicate
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 1, expectedMessagesUp: 2, expectedMessagesDown: 1, expectedTwinSaves: 2)] // soft duplicate
         public async Task When_Subsequent_Confirmed_Data_Message_Test_All_Different_DeduplicationModes(
           string station1,
           string station2,
