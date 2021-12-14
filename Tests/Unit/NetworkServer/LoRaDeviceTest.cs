@@ -174,7 +174,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.False(loRaDevice.IsOurDevice);
             Assert.Equal("ABC02000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.NwkSKey);
             Assert.Equal("ABCD2000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.AppSKey);
-            Assert.Equal(new DevNonce(0x2301), loRaDevice.DevNonce);
+            Assert.Equal(new DevNonce(123), loRaDevice.DevNonce);
             Assert.Equal("0000AABB", loRaDevice.DevAddr);
         }
 

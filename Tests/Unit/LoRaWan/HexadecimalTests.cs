@@ -136,21 +136,6 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(expected, actual);
         }
 
-        [Theory]
-        [InlineData("01aB", null, 427)]
-        [InlineData("01AB", null, 427)]
-        [InlineData("01-ab", '-', 427)]
-        [InlineData("01-aB", '-', 427)]
-        [InlineData("01-AB", '-', 427)]
-        [InlineData("01:AB", ':', 427)]
-        [InlineData("01,AB", ',', 427)]
-        public void TryParse_UInt16_With_Valid_Input(string input, char? separator, ushort expected)
-        {
-            var succeeded = Hexadecimal.TryParse(input, out ushort actual, separator);
-            Assert.True(succeeded);
-            Assert.Equal(expected, actual);
-        }
-
         public static TheoryData<string, char?> InvalidInput() => TheoryDataFactory.From(new[]
         {
             ("1", (char?)null),
@@ -169,13 +154,6 @@ namespace LoRaWan.Tests.Unit
             ("12-34-", '-'),
             ("12:E4:S6", ':')
         });
-
-        [Theory]
-        [MemberData(nameof(InvalidInput))]
-        public void TryParse_UInt16_With_Invalid_Input(string input, char? separator)
-        {
-            Assert.False(Hexadecimal.TryParse(input, out ushort _, separator));
-        }
 
         [Theory]
         [MemberData(nameof(InvalidInput))]

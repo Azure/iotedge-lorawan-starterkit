@@ -107,7 +107,7 @@ namespace LoRaWan.NetworkServer
                 ["DevAddr"] = devAddr,
                 ["DevEUI"] = devEUI,
                 ["AppEUI"] = appEUI,
-                ["DevNonce"] = devNonce?.ToString("N", CultureInfo.InvariantCulture)
+                ["DevNonce"] = devNonce?.ToString()
             });
 
             var response = await client.GetAsync(url);
