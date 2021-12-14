@@ -55,7 +55,6 @@ namespace LoRaWan.Tests.Integration
         [Fact]
         public async Task When_Same_Join_Request_Received_Multiple_Times_Succeeds_Only_Once()
         {
-            // arrange
             var joinRequest = this.simulatedDevice.CreateJoinRequest();
             var loraRequest = CreateWaitableRequest(joinRequest.SerializeUplink(this.simulatedDevice.AppKey).Rxpk[0]);
             loraRequest.SetPayload(joinRequest);
@@ -64,11 +63,17 @@ namespace LoRaWan.Tests.Integration
             // first request
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
 
-            // act
+            // repeat
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
 
             // assert
             this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>()), Times.Once());
+
+            // do another request
+            joinRequest = this.simulatedDevice.CreateJoinRequest();
+            loraRequest.SetPayload(joinRequest);
+            await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
+            this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>()), Times.Exactly(2));
         }
     }
 }
