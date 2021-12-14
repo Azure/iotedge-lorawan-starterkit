@@ -53,7 +53,7 @@ namespace LoRaTools.LoRaMessage
             // get the DevEUI
             DevEUI = new Memory<byte>(inputMessage, 9, 8);
             // get the DevNonce
-            DevNonce = DevNonce.Read(inputMessage[17..19].AsSpan());
+            DevNonce = DevNonce.Read(inputMessage.AsSpan(17));
         }
 
         public LoRaPayloadJoinRequest(string appEUI, string devEUI, DevNonce devNonce)
