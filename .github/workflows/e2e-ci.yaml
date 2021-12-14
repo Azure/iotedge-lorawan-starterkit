@@ -217,7 +217,7 @@ jobs:
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/cups.trust
         cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.crt $CERT_REMOTE_PATH/cups.crt
         cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.key $CERT_REMOTE_PATH/cups.key
-        echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/$CUPS_STATION_EUI.crt | awk '{print $1;}')"
+        echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
