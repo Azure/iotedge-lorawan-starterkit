@@ -98,5 +98,7 @@ namespace LoRaWan.Tests.Common
         public string CupsBasicStationEui { get; set; } //i.e. "ABC111FFFEDEF000" to be used for CUPS tests
 
         public string ClientThumbprint { get; set; } //i.e. 4a0639c9c67221919fdb9618fa6fa0680259eaf2 (SHA1 thumbprint of cups.crt)
+
+        public string ClientBundleCrc { get; set; } //i.e. 4004975634 (CRC32 of .bundle file)
     }
 }
