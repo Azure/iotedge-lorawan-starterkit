@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.E2E
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
+    using LoRaWan.Tests.Common;
     using Xunit;
     using XunitRetryHelper;
 
@@ -23,13 +24,17 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset_Single()
         {
-            return Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(nameof(TestFixtureCi.Device4_OTAA));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device4_OTAA));
+            LogTestStart(device);
+            return Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(device);
         }
 
         [RetryFact]
         public Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset_MultiGw()
         {
-            return Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(nameof(TestFixtureCi.Device4_OTAA_MultiGw));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device4_OTAA_MultiGw));
+            LogTestStart(device);
+            return Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(device);
         }
 
         // Performs a OTAA join and sends N confirmed and unconfirmed messages
@@ -37,12 +42,10 @@ namespace LoRaWan.Tests.E2E
         // - device message is available on IoT Hub
         // - frame counter validation is done
         // - Message is decoded
-        private async Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(string devicePropertyName)
+        private async Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(TestDeviceInfo device)
         {
-            var device = TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             const int MESSAGES_COUNT = 10;
 
-            LogTestStart(device);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
