@@ -13,6 +13,7 @@ namespace LoRaWan.Tests.Common
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using Xunit;
 
     /// <summary>
@@ -295,7 +296,7 @@ namespace LoRaWan.Tests.Common
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationEui);
-            var initialClientThumbprints = (string[])deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName];
+            var initialClientThumbprints = ((JArray)deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName]).ToObject<string[]>();
             if (condition(initialClientThumbprints))
             {
                 var arrayToList = new List<string>(initialClientThumbprints);
