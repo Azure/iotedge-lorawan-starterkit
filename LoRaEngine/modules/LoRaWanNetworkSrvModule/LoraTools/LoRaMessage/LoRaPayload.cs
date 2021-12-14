@@ -110,7 +110,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC.
         /// </summary>
-        public static byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, DevNonce devnonce, byte[] appKey)
+        public static byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, DevNonce devNonce, byte[] appKey)
         {
             if (keyType == LoRaPayloadKeyType.None) throw new InvalidOperationException("No key type selected.");
 
@@ -126,7 +126,7 @@ namespace LoRaTools.LoRaMessage
             aes.IV = new byte[16];
 
             var devNonceBytes = new byte[DevNonce.Size];
-            _ = devnonce.Write(devNonceBytes);
+            _ = devNonce.Write(devNonceBytes);
 
             var pt = type.Concat(appnonce).Concat(netid).Concat(devNonceBytes).Concat(new byte[7]).ToArray();
 
