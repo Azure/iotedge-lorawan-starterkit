@@ -3,12 +3,38 @@
 
 namespace LoRaWan.Tests.Unit
 {
+    using System;
     using LoRaWan;
     using Xunit;
 
     public class DevAddrTests
     {
         private readonly DevAddr subject = new(0xeb6f7bde);
+
+        [Theory]
+        [InlineData(uint.MaxValue)]
+        [InlineData(uint.MinValue)]
+        [InlineData(0xeb6f7bde)]
+        public void Init(uint value)
+        {
+            // arrange
+            var maxValue = new DevAddr(value);
+
+            // act
+            var result = new DevAddr(maxValue.NetworkId, maxValue.NetworkAddress);
+
+            // assert
+            Assert.Equal(maxValue, result);
+        }
+
+        [Fact]
+        public void Init_Validates_Limits()
+        {
+            var maxValue = new DevAddr(uint.MaxValue);
+
+            Assert.Throws<ArgumentException>(() => new DevAddr(maxValue.NetworkId + 1, maxValue.NetworkAddress));
+            Assert.Throws<ArgumentException>(() => new DevAddr(maxValue.NetworkId, maxValue.NetworkAddress + 1));
+        }
 
         [Fact]
         public void Size()

@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Integration
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
@@ -97,7 +98,7 @@ namespace LoRaWan.Tests.Integration
                 .Returns((string query, int pageSize) =>
                 {
                     hasMoreShouldReturn = true;
-                    currentDevAddrContext = currentDevices.Where(v => v.DevAddr == query.Split('\'')[1]).ToList();
+                    currentDevAddrContext = currentDevices.Where(v => v.DevAddr.ToString() == query.Split('\'')[1]).ToList();
                     return cacheMissQueryMock.Object;
                 });
 
@@ -141,7 +142,7 @@ namespace LoRaWan.Tests.Integration
         {
             var devAddrcache = new LoRaDevAddrCache(this.cache, null, null);
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake == null ? null : new[] { lockToTake });
-            var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = NewUniqueEUI64(), DevAddr = NewUniqueEUI32() } };
+            var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = NewUniqueEUI64(), DevAddr = CreateDevAddr() } };
             var registryManagerMock = InitRegistryManager(managerInput);
             registryManagerMock.Setup(x => x.CreateQuery(It.IsAny<string>())).Throws(new RedisException(string.Empty));
             await devAddrcache.PerformNeededSyncs(registryManagerMock.Object);
@@ -177,7 +178,7 @@ namespace LoRaWan.Tests.Integration
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32()
+                    DevAddr = CreateDevAddr()
                 });
             }
 
@@ -223,7 +224,7 @@ namespace LoRaWan.Tests.Integration
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32()
+                    DevAddr = CreateDevAddr()
                 });
             }
 
@@ -271,7 +272,7 @@ namespace LoRaWan.Tests.Integration
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     LastUpdatedTwins = dateTime
                 });
@@ -317,7 +318,7 @@ namespace LoRaWan.Tests.Integration
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     LastUpdatedTwins = dateTime
                 });
@@ -364,7 +365,7 @@ namespace LoRaWan.Tests.Integration
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     PrimaryKey = primaryKey,
                     LastUpdatedTwins = dateTime
@@ -411,14 +412,14 @@ namespace LoRaWan.Tests.Integration
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     PrimaryKey = primaryKey,
                     LastUpdatedTwins = dateTime
                 });
             }
 
-            var devAddrJoining = NewUniqueEUI32();
+            var devAddrJoining = CreateDevAddr();
             InitCache(this.cache, managerInput);
             var registryManagerMock = InitRegistryManager(managerInput);
 
@@ -455,7 +456,7 @@ namespace LoRaWan.Tests.Integration
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                 });
             }
@@ -503,7 +504,7 @@ namespace LoRaWan.Tests.Integration
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     LastUpdatedTwins = dateTime
                 });
@@ -565,13 +566,13 @@ namespace LoRaWan.Tests.Integration
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             var managerInput = new List<DevAddrCacheInfo>();
 
-            var adressForDuplicateDevAddr = NewUniqueEUI32();
+            var adressForDuplicateDevAddr = CreateDevAddr();
             for (var i = 0; i < 5; i++)
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = newGatewayId,
                     LastUpdatedTwins = dateTime
                 });
@@ -685,7 +686,7 @@ namespace LoRaWan.Tests.Integration
                 managerInput.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = newGatewayId,
                     LastUpdatedTwins = updateDateTime
                 });
@@ -749,13 +750,13 @@ namespace LoRaWan.Tests.Integration
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             var newValues = new List<DevAddrCacheInfo>();
 
-            var adressForDuplicateDevAddr = NewUniqueEUI32();
+            var adressForDuplicateDevAddr = CreateDevAddr();
             for (var i = 0; i < 5; i++)
             {
                 newValues.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = newGatewayId,
                     LastUpdatedTwins = dateTime
                 });
@@ -847,13 +848,13 @@ namespace LoRaWan.Tests.Integration
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             var newValues = new List<DevAddrCacheInfo>();
 
-            var adressForDuplicateDevAddr = NewUniqueEUI32();
+            var adressForDuplicateDevAddr = CreateDevAddr();
             for (var i = 0; i < 5; i++)
             {
                 newValues.Add(new DevAddrCacheInfo()
                 {
                     DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32(),
+                    DevAddr = CreateDevAddr(),
                     GatewayId = newGatewayId,
                     LastUpdatedTwins = updateDateTime
                 });
@@ -901,5 +902,7 @@ namespace LoRaWan.Tests.Integration
             // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
         }
+
+        private static DevAddr CreateDevAddr() => new DevAddr((uint)RandomNumberGenerator.GetInt32(int.MaxValue));
     }
 }

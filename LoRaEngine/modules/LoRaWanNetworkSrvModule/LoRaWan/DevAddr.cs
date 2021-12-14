@@ -27,6 +27,15 @@ namespace LoRaWan
 
         public DevAddr(uint value) => this.value = value;
 
+        public DevAddr(int networkId, int networkAddress)
+            : this((networkId, networkAddress) switch
+            {
+                ( > 0x7F, _) => throw new ArgumentException(null, nameof(networkId)),
+                (_, > (int)NetworkAddressMask) => throw new ArgumentException(null, nameof(networkAddress)),
+                _ => ((uint)networkId << 25) | (uint)networkAddress
+            })
+        { }
+
         /// <summary>
         /// The <c>NwkID</c> (bits 25..31).
         /// </summary>

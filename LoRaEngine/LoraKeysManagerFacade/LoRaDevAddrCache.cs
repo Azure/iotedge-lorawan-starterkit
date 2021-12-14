@@ -8,6 +8,7 @@ namespace LoraKeysManagerFacade
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Extensions.Logging;
@@ -53,7 +54,7 @@ namespace LoraKeysManagerFacade
         private readonly ILogger logger;
         private readonly string lockOwner;
 
-        private static string GenerateKey(string devAddr) => CacheKeyPrefix + devAddr;
+        private static string GenerateKey(DevAddr devAddr) => CacheKeyPrefix + devAddr;
 
         public LoRaDevAddrCache(ILoRaDeviceCacheStore cacheStore, RegistryManager registryManager, ILogger logger, string gatewayId)
         {
@@ -76,7 +77,7 @@ namespace LoraKeysManagerFacade
             this.lockOwner = gatewayId ?? Guid.NewGuid().ToString();
         }
 
-        public bool TryGetInfo(string devAddr, out IList<DevAddrCacheInfo> info)
+        public bool TryGetInfo(DevAddr devAddr, out IList<DevAddrCacheInfo> info)
         {
             var tmp = this.cacheStore.GetHashObject(GenerateKey(devAddr));
             if (tmp?.Length > 0)
@@ -228,14 +229,14 @@ namespace LoraKeysManagerFacade
                 {
                     if (twin.DeviceId != null)
                     {
-                        string currentDevAddr;
+                        var rawDevAddr = string.Empty;
                         if (twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
                         {
-                            currentDevAddr = twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
+                            rawDevAddr = twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
                         }
                         else if (twin.Properties.Reported.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
                         {
-                            currentDevAddr = twin.Properties.Reported[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
+                            rawDevAddr = twin.Properties.Reported[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
                         }
                         else
                         {
@@ -244,7 +245,7 @@ namespace LoraKeysManagerFacade
 
                         devAddrCacheInfos.Add(new DevAddrCacheInfo()
                         {
-                            DevAddr = currentDevAddr,
+                            DevAddr = Hexadecimal.TryParse(rawDevAddr, out uint v) ? new DevAddr(v) : throw new LoRaProcessingException($"Dev addr '{rawDevAddr}' is invalid.", LoRaProcessingErrorCode.InvalidFormat),
                             DevEUI = twin.DeviceId,
                             GatewayId = twin.GetGatewayID(),
                             NwkSKey = twin.GetNwkSKey(),
@@ -280,7 +281,7 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Method to make sure we keep information currently available in the cache and we don't perform unnessecary updates.
         /// </summary>
-        private static IDictionary<string, DevAddrCacheInfo> KeepExistingCacheInformation(HashEntry[] cacheDevEUIEntry, IGrouping<string, DevAddrCacheInfo> newDevEUIList, bool canDeleteExistingDevice)
+        private static IDictionary<string, DevAddrCacheInfo> KeepExistingCacheInformation(HashEntry[] cacheDevEUIEntry, IGrouping<DevAddr, DevAddrCacheInfo> newDevEUIList, bool canDeleteExistingDevice)
         {
             // if the new value are not different we want to ensure we don't save, to not update the TTL of the item.
             var toSyncValues = newDevEUIList.ToDictionary(x => x.DevEUI);
@@ -368,12 +369,12 @@ namespace LoraKeysManagerFacade
         /// Method to take a lock when querying IoT Hub for a primary key.
         /// It is blocking as only one should access it.
         /// </summary>
-        public async Task<bool> TryTakeDevAddrUpdateLock(string devAddr)
+        public async Task<bool> TryTakeDevAddrUpdateLock(DevAddr devAddr)
         {
             return await this.cacheStore.LockTakeAsync(string.Concat(DevAddrLockName, devAddr), this.lockOwner, DefaultSingleLockExpiry, block: true);
         }
 
-        public bool ReleaseDevAddrUpdateLock(string devAddr)
+        public bool ReleaseDevAddrUpdateLock(DevAddr devAddr)
         {
             return this.cacheStore.LockRelease(string.Concat(DevAddrLockName, devAddr), this.lockOwner);
         }
