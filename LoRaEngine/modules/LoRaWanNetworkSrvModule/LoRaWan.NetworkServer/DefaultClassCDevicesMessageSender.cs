@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
             var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(message.DevEUI);
             if (loRaDevice == null)
             {
-                this.logger.LogError($"[class-c] device {message.DevEUI} not found");
+                this.logger.LogError(message.DevEUI, $"[class-c] device {message.DevEUI} not found or not joined");
                 return false;
             }
 

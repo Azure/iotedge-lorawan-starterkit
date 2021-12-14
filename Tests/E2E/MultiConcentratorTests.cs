@@ -4,24 +4,49 @@
 namespace LoRaWan.Tests.E2E
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Threading.Tasks;
+    using LoRaWan.Tests.Common;
     using Xunit;
     using XunitRetryHelper;
 
     // Tests multi-concentrator scenarios
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-    public sealed class MultiConcentratorTests : IntegrationTestBaseCi
+    public sealed class MultiConcentratorTests : IntegrationTestBaseCi, IAsyncLifetime
     {
+        private string temporaryDirectoryName;
+        private bool initializationSucceeded;
         public MultiConcentratorTests(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
         {
         }
 
+        public Task DisposeAsync()
+        {
+            TestUtils.KillBasicsStation(TestFixture.Configuration, this.temporaryDirectoryName);
+            return Task.CompletedTask;
+        }
+
+        public async Task InitializeAsync()
+        {
+            TestUtils.StartBasicsStation(TestFixture.Configuration, new Dictionary<string, string>()
+            {
+                { "TLS_SNI", "false" },
+                { "TC_URI", TestFixture.Configuration.SharedLnsEndpoint },
+                { "FIXED_STATION_EUI", TestFixture.Configuration.DefaultBasicStationEui },
+                { "RADIODEV", TestFixture.Configuration.RadioDev }
+            }, out this.temporaryDirectoryName);
+            var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
+                (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1);
+            this.initializationSucceeded = log.Found;
+        }
+
         [RetryFact]
         public async Task Test_Concentrator_Deduplication_OTAA()
         {
+            Assert.True(this.initializationSucceeded);
             var device = TestFixtureCi.GetDeviceByPropertyName("Device31_OTAA");
             LogTestStart(device);
 
@@ -57,7 +82,8 @@ namespace LoRaWan.Tests.E2E
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 // 0000000000000031: message '{"value": 101}' sent to hub
-                await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+                var expectedPayload = $"{{\"value\":{msg}}}";
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
                 droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
                     (log) => log.IndexOf(NetworkServer.Constants.DuplicateMessageFromAnotherStationMsg, StringComparison.Ordinal) != -1);
