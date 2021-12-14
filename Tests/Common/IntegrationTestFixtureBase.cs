@@ -287,7 +287,7 @@ namespace LoRaWan.Tests.Common
             }
         }
 
-        public async Task UpdateExistingConcentratorThumbprint(string stationEui, Func<List<string>, bool> condition, Action<List<string>> action)
+        public async Task UpdateExistingConcentratorThumbprint(string stationEui, Func<string[], bool> condition, Action<List<string>> action)
         {
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
@@ -295,13 +295,12 @@ namespace LoRaWan.Tests.Common
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationEui);
-            var initialClientThumbprints = (string)deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName];
-            var thumbprintsList = JsonConvert.DeserializeObject<List<string>>(initialClientThumbprints);
-            if (condition(thumbprintsList))
+            var initialClientThumbprints = (string[])deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName];
+            if (condition(initialClientThumbprints))
             {
-                action(thumbprintsList);
-                var newList = JsonConvert.SerializeObject(thumbprintsList);
-                deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName] = newList;
+                var arrayToList = new List<string>(initialClientThumbprints);
+                action(arrayToList);
+                deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName] = arrayToList.ToArray();
                 await registryManager.UpdateTwinAsync(stationEui, deviceTwin, deviceTwin.ETag);
             }
         }

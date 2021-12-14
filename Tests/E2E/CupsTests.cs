@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.E2E
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.Linq;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Common;
     using Xunit;
@@ -36,7 +37,7 @@ namespace LoRaWan.Tests.E2E
 
                 //update allowed client thumbprints in IoT Hub Twin
                 await TestFixture.UpdateExistingConcentratorThumbprint(stationEui,
-                                                                       (originalList) => !originalList.Contains(clientThumbprint),
+                                                                       (originalArray) => !originalArray.Any(x => x.Equals(clientThumbprint, StringComparison.OrdinalIgnoreCase)),
                                                                        (originalList) => originalList.Add(clientThumbprint));
 
                 //setup the concentrator with CUPS_URI only (certificates are retrieved from default location)
@@ -94,7 +95,7 @@ namespace LoRaWan.Tests.E2E
                 TestUtils.KillBasicsStation(TestFixture.Configuration, temporaryDirectoryName);
                 //cleanup newly added client thumbprint
                 await TestFixture.UpdateExistingConcentratorThumbprint(stationEui,
-                                                                       (originalList) => originalList.Contains(clientThumbprint),
+                                                                       (originalArray) => originalArray.Any(x => x.Equals(clientThumbprint, StringComparison.OrdinalIgnoreCase)),
                                                                        (originalList) => originalList.Remove(clientThumbprint));
             }
         }
