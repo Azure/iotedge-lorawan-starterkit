@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Common
 
         protected LoRaDeviceClientConnectionManager ConnectionManager { get; }
 
-        protected LoRaDeviceCache DeviceCache { get; } = new LoRaDeviceCache(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration { GatewayID = MessageProcessorTestBase.ServerGatewayID }, NullLogger<LoRaDeviceCache>.Instance);
+        protected LoRaDeviceCache DeviceCache { get; } = new LoRaDeviceCache(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration { GatewayID = MessageProcessorTestBase.ServerGatewayID }, NullLogger<LoRaDeviceCache>.Instance, TestMeter.Instance);
 
         public MessageProcessorTestBase()
         {

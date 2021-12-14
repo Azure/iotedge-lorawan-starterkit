@@ -19,7 +19,7 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public abstract class LoRaPayload
     {
-        public LoRaMessageType LoRaMessageType { get; set; }
+        public MacMessageType MessageType { get; set; }
 
         /// <summary>
         /// Gets or sets raw byte of the message.
@@ -147,25 +147,21 @@ namespace LoRaTools.LoRaMessage
             if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
 
             var convertedInputMessage = Convert.FromBase64String(rxpk.Data);
-            var messageType = convertedInputMessage[0];
+            var messageType = new MacHeader(convertedInputMessage[0]).MessageType;
 
-            switch (messageType)
+#pragma warning disable IDE0072 // Add missing cases (handled by default case)
+            loRaPayloadMessage = messageType switch
+#pragma warning restore IDE0072 // Add missing cases
             {
-                case (int)LoRaMessageType.UnconfirmedDataUp:
-                case (int)LoRaMessageType.ConfirmedDataUp:
-                    loRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
-                    break;
+                MacMessageType.UnconfirmedDataUp or MacMessageType.ConfirmedDataUp => new LoRaPayloadData(convertedInputMessage),
+                MacMessageType.JoinRequest => new LoRaPayloadJoinRequest(convertedInputMessage),
+                _ => (LoRaPayload)null,
+            };
 
-                case (int)LoRaMessageType.JoinRequest:
-                    loRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
-                    break;
+            if (loRaPayloadMessage is null)
+                return false;
 
-                default:
-                    loRaPayloadMessage = null;
-                    return false;
-            }
-
-            loRaPayloadMessage.LoRaMessageType = (LoRaMessageType)messageType;
+            loRaPayloadMessage.MessageType = messageType;
             return true;
         }
 
