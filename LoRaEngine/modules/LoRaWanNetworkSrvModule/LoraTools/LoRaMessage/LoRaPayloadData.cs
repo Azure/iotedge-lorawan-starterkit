@@ -172,7 +172,7 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Downstream Constructor (build a LoRa Message).
         /// </summary>
-        public LoRaPayloadData(MacMessageType messageType, byte[] devAddr, FrameControlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
+        public LoRaPayloadData(MacMessageType messageType, byte[] devAddr, FrameControlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, FramePort[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
             if (devAddr is null) throw new ArgumentNullException(nameof(devAddr));
             if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
@@ -201,7 +201,7 @@ namespace LoRaTools.LoRaMessage
                 fOptsLen = 0;
                 frmPayloadLen = frmPayload.Length;
                 fPortLen = 1;
-                fPort = new byte[1] { 0 };
+                fPort = new FramePort[1] { new FramePort(0) };
             }
 
             var macPyldSize = devAddr.Length + FrameControl.Size + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;

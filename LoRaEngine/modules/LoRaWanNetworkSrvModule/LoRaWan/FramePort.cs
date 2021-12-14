@@ -14,6 +14,7 @@ namespace LoRaWan
 
         public bool IsMacCommandFPort => this.value == 0;
         public bool IsMacLayerTestFPort => this.value == 224;
+        public bool IsReservedForFutureAplicationsFPort => this.value >= 224;
 
         public Span<byte> Write(Span<byte> buffer)
         {
