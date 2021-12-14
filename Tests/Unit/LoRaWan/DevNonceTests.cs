@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit
 {
     using System;
-    using System.Globalization;
     using LoRaWan;
     using Xunit;
 
