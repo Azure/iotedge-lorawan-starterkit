@@ -55,8 +55,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 new NetworkServerConfiguration(),
                 deviceCache,
                 null,
-                NullLogger<DeviceLoaderSynchronizer>.Instance,
-                TestMeter.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             var ex = await Assert.ThrowsAsync<LoRaProcessingException>(async () => await target.LoadAsync());
             Assert.IsType<InvalidOperationException>(ex.InnerException);
@@ -98,8 +97,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 new NetworkServerConfiguration(),
                 deviceCache,
                 null,
-                NullLogger<DeviceLoaderSynchronizer>.Instance,
-                TestMeter.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             _ = target.LoadAsync();
 
@@ -146,8 +144,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 new NetworkServerConfiguration(),
                 deviceCache,
                 null,
-                NullLogger<DeviceLoaderSynchronizer>.Instance,
-                TestMeter.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             _ = target.LoadAsync();
 
@@ -193,8 +190,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 new NetworkServerConfiguration(),
                 deviceCache,
                 null,
-                NullLogger<DeviceLoaderSynchronizer>.Instance,
-                TestMeter.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             _ = target.LoadAsync();
 
@@ -243,8 +239,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 new NetworkServerConfiguration(),
                 deviceCache,
                 null,
-                NullLogger<DeviceLoaderSynchronizer>.Instance,
-                TestMeter.Instance);
+                NullLogger<DeviceLoaderSynchronizer>.Instance);
 
             _ = target.LoadAsync();
 
@@ -364,7 +359,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                   LoRaDeviceCache deviceCache,
                                                   LoRaRequest loRaRequest)
 #pragma warning disable CA2000 // ownership transferred
-                : base(ConversionHelper.ByteArrayToString(loRaRequest.Payload.DevAddr), loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache, null, NullLogger<DeviceLoaderSynchronizer>.Instance, TestMeter.Instance)
+                : base(ConversionHelper.ByteArrayToString(loRaRequest.Payload.DevAddr), loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache, null, NullLogger<DeviceLoaderSynchronizer>.Instance)
 #pragma warning restore CA2000
             { }
 
@@ -425,7 +420,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                   LoRaDeviceCache deviceCache = null,
                                                   HashSet<ILoRaDeviceInitializer> initializers = null)
 #pragma warning disable CA2000 // ownership transferred
-                : base(devAddr, loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache ?? LoRaDeviceCacheDefault.CreateDefault(), initializers, NullLogger<DeviceLoaderSynchronizer>.Instance, TestMeter.Instance)
+                : base(devAddr, loRaDeviceAPIService, deviceFactory, new NetworkServerConfiguration(), deviceCache ?? LoRaDeviceCacheDefault.CreateDefault(), initializers, NullLogger<DeviceLoaderSynchronizer>.Instance)
 #pragma warning restore CA2000
             { }
 

@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -21,18 +20,16 @@ namespace LoRaWan.NetworkServer
         private volatile bool canCache;
         private SemaphoreSlim joinLock = new SemaphoreSlim(1);
         private readonly ILogger<JoinDeviceLoader> logger;
-        private readonly Counter<int> deviceCacheHits;
 
         internal bool CanCache => this.canCache;
 
-        internal JoinDeviceLoader(IoTHubDeviceInfo ioTHubDevice, ILoRaDeviceFactory deviceFactory, LoRaDeviceCache deviceCache, ILogger<JoinDeviceLoader> logger, Meter meter)
+        internal JoinDeviceLoader(IoTHubDeviceInfo ioTHubDevice, ILoRaDeviceFactory deviceFactory, LoRaDeviceCache deviceCache, ILogger<JoinDeviceLoader> logger)
         {
             this.ioTHubDevice = ioTHubDevice;
             this.deviceFactory = deviceFactory;
             this.deviceCache = deviceCache;
             this.logger = logger;
             this.canCache = true;
-            this.deviceCacheHits = meter?.CreateCounter<int>(MetricRegistry.DeviceCacheHits);
         }
 
         internal async Task<LoRaDevice> LoadAsync()
@@ -42,7 +39,6 @@ namespace LoRaWan.NetworkServer
             {
                 if (this.deviceCache.TryGetByDevEui(this.ioTHubDevice.DevEUI, out var cachedDevice))
                 {
-                    this.deviceCacheHits?.Add(1);
                     return cachedDevice;
                 }
                 return await this.deviceFactory.CreateAndRegisterAsync(this.ioTHubDevice, CancellationToken.None);

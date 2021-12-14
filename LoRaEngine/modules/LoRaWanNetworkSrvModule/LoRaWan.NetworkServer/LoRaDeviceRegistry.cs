@@ -30,8 +30,6 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly object getOrCreateLoadingDevicesRequestQueueLock;
         private readonly object getOrCreateJoinDeviceLoaderLock;
-        private readonly Meter meter;
-        private readonly Counter<int> deviceCacheHits;
         private readonly Counter<int> deviceLoadRequests;
         private readonly IMemoryCache cache;
         private readonly LoRaDeviceCache deviceCache;
@@ -62,8 +60,6 @@ namespace LoRaWan.NetworkServer
             DevAddrReloadInterval = TimeSpan.FromSeconds(30);
             this.getOrCreateLoadingDevicesRequestQueueLock = new object();
             this.getOrCreateJoinDeviceLoaderLock = new object();
-            this.meter = meter;
-            this.deviceCacheHits = meter?.CreateCounter<int>(MetricRegistry.DeviceCacheHits);
             this.deviceLoadRequests = meter?.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
             this.deviceCache = deviceCache;
         }
@@ -104,8 +100,7 @@ namespace LoRaWan.NetworkServer
                                                     this.configuration,
                                                     this.deviceCache,
                                                     this.initializers,
-                                                    this.loggerFactory.CreateLogger<DeviceLoaderSynchronizer>(),
-                                                    this.meter);
+                                                    this.loggerFactory.CreateLogger<DeviceLoaderSynchronizer>());
 
                         _ = loader.LoadAsync().ContinueWith((t) =>
                         {
@@ -144,7 +139,6 @@ namespace LoRaWan.NetworkServer
             if (this.deviceCache.TryGetForPayload(request.Payload, out var cachedDevice))
             {
                 this.logger.LogDebug("device in cache");
-                this.deviceCacheHits?.Add(1);
                 if (cachedDevice.IsOurDevice)
                 {
                     return cachedDevice;
@@ -166,7 +160,6 @@ namespace LoRaWan.NetworkServer
 
             if (this.deviceCache.TryGetByDevEui(devEUI, out var cachedDevice))
             {
-                this.deviceCacheHits?.Add(1);
                 return cachedDevice;
             }
 
@@ -205,7 +198,7 @@ namespace LoRaWan.NetworkServer
                 return this.cache.GetOrCreate(GetJoinDeviceLoaderCacheKey(ioTHubDeviceInfo.DevEUI), (entry) =>
                 {
                     entry.SlidingExpiration = TimeSpan.FromMinutes(INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES);
-                    return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory, this.deviceCache, this.loggerFactory.CreateLogger<JoinDeviceLoader>(), this.meter);
+                    return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory, this.deviceCache, this.loggerFactory.CreateLogger<JoinDeviceLoader>());
                 });
             }
         }
@@ -244,7 +237,6 @@ namespace LoRaWan.NetworkServer
 
             if (deviceCache.TryGetByDevEui(matchingDeviceInfo.DevEUI, out var cachedDevice))
             {
-                this.deviceCacheHits?.Add(1);
                 // if we already have the device in the cache, then it is either from a previous
                 // join rquest or it's a re-join. Both scenarios are ok, and we can use the cached
                 // information.

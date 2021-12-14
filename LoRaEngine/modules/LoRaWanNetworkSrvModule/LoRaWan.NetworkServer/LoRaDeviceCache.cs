@@ -12,6 +12,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -26,8 +27,9 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<LoRaDeviceCache> logger;
         private CancellationTokenSource? ctsDispose;
         private readonly StatisticsTracker statisticsTracker = new StatisticsTracker();
+        private readonly Counter<int>? deviceCacheHits;
 
-        public LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, ILogger<LoRaDeviceCache> logger)
+        public LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, ILogger<LoRaDeviceCache> logger, Meter meter)
         {
             this.options = options;
             this.ctsDispose = new CancellationTokenSource();
@@ -36,6 +38,7 @@ namespace LoRaWan.NetworkServer
 
             this.configuration = configuration;
             this.logger = logger;
+            this.deviceCacheHits = meter?.CreateCounter<int>(MetricRegistry.DeviceCacheHits);
         }
 
         protected virtual void OnRefresh() { }
@@ -221,6 +224,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (this.devAddrCache.TryGetValue(devAddr, out var devices))
                 {
+                    this.deviceCacheHits?.Add(1);
                     device = devices.Values.FirstOrDefault(x => !string.IsNullOrEmpty(x.NwkSKey) && ValidateMic(x, payload));
                 }
             }
@@ -240,7 +244,10 @@ namespace LoRaWan.NetworkServer
         {
             lock (this.syncLock)
             {
-                _ = this.euiCache.TryGetValue(devEUI, out device);
+                if (this.euiCache.TryGetValue(devEUI, out device))
+                {
+                    this.deviceCacheHits?.Add(1);
+                }
             }
 
             TrackCacheStats(device);
