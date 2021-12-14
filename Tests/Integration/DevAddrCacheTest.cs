@@ -237,7 +237,6 @@ namespace LoRaWan.Tests.Integration
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
             // Simulate three queries
-            var devNonce = new DevNonce(0xABCD);
             var tasks =
                 from gw in new[] { gateway1, gateway2 }
                 select Enumerable.Repeat(gw, 2) into gws // repeat each gateway twice
@@ -334,7 +333,6 @@ namespace LoRaWan.Tests.Integration
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
-            var devNonce = new DevNonce(0xABCD);
             var tasks =
                 from gw in Enumerable.Repeat(gatewayId, 3)
                 select deviceGetter.GetDeviceList(null, gw, new DevNonce(0xABCD), devAddrJoining);
