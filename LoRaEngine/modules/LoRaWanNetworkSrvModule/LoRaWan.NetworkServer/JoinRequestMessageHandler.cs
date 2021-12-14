@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer
                     }
 
                     // Make sure that is a new request and not a replay
-                    if (loRaDevice.DevNonce is not null && loRaDevice.DevNonce == joinReq.DevNonce)
+                    if (loRaDevice.DevNonce is { } devNonce && devNonce == joinReq.DevNonce)
                     {
                         if (string.IsNullOrEmpty(loRaDevice.GatewayID))
                         {
