@@ -31,6 +31,8 @@ namespace LoRaWan.NetworkServer
 
         public LoRaDeviceCache(LoRaDeviceCacheOptions options, NetworkServerConfiguration configuration, ILogger<LoRaDeviceCache> logger, Meter meter)
         {
+            if (meter is null) throw new ArgumentNullException(nameof(meter));
+
             this.options = options;
             this.ctsDispose = new CancellationTokenSource();
 
@@ -38,7 +40,7 @@ namespace LoRaWan.NetworkServer
 
             this.configuration = configuration;
             this.logger = logger;
-            this.deviceCacheHits = meter?.CreateCounter<int>(MetricRegistry.DeviceCacheHits);
+            this.deviceCacheHits = meter.CreateCounter<int>(MetricRegistry.DeviceCacheHits);
         }
 
         protected virtual void OnRefresh() { }
@@ -244,10 +246,7 @@ namespace LoRaWan.NetworkServer
         {
             lock (this.syncLock)
             {
-                if (this.euiCache.TryGetValue(devEUI, out device))
-                {
-                    this.deviceCacheHits?.Add(1);
-                }
+                _ = this.euiCache.TryGetValue(devEUI, out device);
             }
 
             TrackCacheStats(device);
@@ -262,6 +261,7 @@ namespace LoRaWan.NetworkServer
             {
                 device.LastSeen = DateTimeOffset.UtcNow;
                 this.statisticsTracker.IncrementHit();
+                this.deviceCacheHits?.Add(1);
             }
             else
             {

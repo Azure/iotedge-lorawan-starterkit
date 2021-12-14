@@ -29,9 +29,11 @@ namespace LoRaWan.NetworkServer
                                     Meter meter)
             : base(configuration)
         {
+            if (meter is null) throw new ArgumentNullException(nameof(meter));
+
             this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;
             this.logger = logger;
-            this.deviceLoadRequests = meter?.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
+            this.deviceLoadRequests = meter.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
         }
 
         public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
