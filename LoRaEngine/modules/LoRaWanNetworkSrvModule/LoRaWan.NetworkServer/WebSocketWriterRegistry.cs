@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// A registry providing virtual handles over WebSocket writer objects.
     /// </summary>
-    public partial class WebSocketWriterRegistry<TKey, TMessage>
+    public sealed partial class WebSocketWriterRegistry<TKey, TMessage>
         where TKey : notnull
         where TMessage : notnull
     {

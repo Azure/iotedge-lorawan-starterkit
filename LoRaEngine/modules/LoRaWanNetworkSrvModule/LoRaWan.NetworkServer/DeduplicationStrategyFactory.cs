@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
         }
 
-        public virtual ILoRaDeviceMessageDeduplicationStrategy Create(LoRaDevice loRaDevice)
+        public ILoRaDeviceMessageDeduplicationStrategy Create(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 

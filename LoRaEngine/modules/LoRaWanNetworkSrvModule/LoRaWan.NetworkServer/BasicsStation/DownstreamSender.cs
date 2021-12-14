@@ -24,12 +24,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
         private readonly ILogger<DownstreamSender> logger;
         private readonly Random random = new Random();
 
-        /// <summary>
-        /// Use this constructor only for tests.
-        /// </summary>
-        internal DownstreamSender()
-        { }
-
         public DownstreamSender(WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                 IBasicsStationConfigurationService basicsStationConfigurationService,
                                 ILogger<DownstreamSender> logger)

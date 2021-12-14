@@ -54,12 +54,6 @@ namespace LoRaTools.LoRaMessage
 
         public int Rx2Dr => DlSettings.Span[0] & 0b00001111;
 
-        /// <summary>
-        /// Use this constructor only for tests.
-        /// </summary>
-        public LoRaPayloadJoinAccept()
-        { }
-
         public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
             var rxDelay = new byte[1];
