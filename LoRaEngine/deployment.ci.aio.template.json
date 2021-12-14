@@ -68,13 +68,22 @@
               "image": "${MODULES.LoRaWanNetworkSrvModule}",
               "createOptions": {
                 "ExposedPorts": {
-                  "5000/tcp": {}
+                  "5001/tcp": {},
+                  "5002/tcp": {}
                 },
                 "HostConfig": {
+                  "Binds":  [
+                    "$CERT_REMOTE_PATH:/var/lorastarterkit/certs/"
+                  ],
                   "PortBindings": {
-                    "5000/tcp": [
+                    "5001/tcp": [
                       {
-                        "HostPort": "5000"
+                        "HostPort": "5001"
+                      }
+                    ],
+                    "5002/tcp": [
+                      {
+                        "HostPort": "5002"
                       }
                     ]
                   }
@@ -103,6 +112,15 @@
               },
               "APPINSIGHTS_INSTRUMENTATIONKEY": {
                 "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
+              },
+              "LNS_SERVER_PFX_PATH": {
+                "value": "/var/lorastarterkit/certs/server.pfx"
+              },
+              "LNS_SERVER_PFX_PASSWORD": {
+                "value": "$SERVER_PFX_PASSWORD"
+              },
+              "LNS_VERSION": {
+                "value": "$NET_SRV_VERSION"
               }
             },
             "status": "running",
@@ -115,7 +133,10 @@
               "createOptions": {
                 "HostConfig": {
                   "NetworkMode": "host",
-                  "Privileged": true
+                  "Privileged": true,
+                  "Binds":  [
+                    "$CERT_REMOTE_PATH:/var/lorastarterkit/certs/"
+                  ]
                 },
                 "NetworkingConfig": {
                   "EndpointsConfig": {
@@ -132,13 +153,19 @@
                 "value": "$LBS_SPI_SPEED"
               },
               "TC_URI": {
-                "value": "ws://localhost:5000"
+                "value": "wss://localhost:5001"
               },
               "RESET_PIN": {
                 "value": "$RESET_PIN"
               },
               "FIXED_STATION_EUI": {
                 "value": "$LBS_FIXED_STATION_EUI"
+              },
+              "TLS_SNI": {
+                "value": "false"
+              },
+              "LNS_VERSION": {
+                "value": "$NET_SRV_VERSION"
               }
             },
             "version": "1.0",

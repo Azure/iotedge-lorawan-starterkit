@@ -92,7 +92,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             JsonReader.Object(MessageTypeProperty(LnsMessageType.UplinkDataFrame),
                               JsonReader.Property("MHdr", JsonReader.Byte()),
                               JsonReader.Property("DevAddr", JsonReader.UInt32()),
-                              JsonReader.Property("FCtrl", JsonReader.Byte()),
+                              JsonReader.Property("FCtrl", from b in JsonReader.Byte() select FrameControl.Decode(b).Flags),
                               JsonReader.Property("FCnt", JsonReader.UInt16()),
                               JsonReader.Property("FOpts", JsonReader.String()),
                               JsonReader.Property("FPort", JsonReader.Byte()),
@@ -101,8 +101,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               RadioMetadataProperties.DataRate,
                               RadioMetadataProperties.Freq,
                               RadioMetadataProperties.UpInfo,
-                              (_, mhdr, devAddr, ctrl, cnt, opts, port, payload, mic, dr, freq, upInfo) =>
-                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), new FrameControl(ctrl), cnt, opts, new FramePort(port), payload, mic,
+                              (_, mhdr, devAddr, fctrlFlags, cnt, opts, port, payload, mic, dr, freq, upInfo) =>
+                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), fctrlFlags, cnt, opts, new FramePort(port), payload, mic,
                                                       new RadioMetadata(dr, freq, upInfo)));
         /*
          * {

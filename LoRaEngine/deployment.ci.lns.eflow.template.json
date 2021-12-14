@@ -103,6 +103,9 @@
               },
               "APPINSIGHTS_INSTRUMENTATIONKEY": {
                 "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
+              },
+              "LNS_VERSION": {
+                "value": "$NET_SRV_VERSION"
               }
             },
             "status": "running",

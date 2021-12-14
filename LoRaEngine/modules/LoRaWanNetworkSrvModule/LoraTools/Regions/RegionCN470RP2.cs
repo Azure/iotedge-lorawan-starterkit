@@ -9,21 +9,23 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
+    using static LoRaWan.Metric;
 
-    public class RegionCN470 : Region
+    // Frequency plan for region CN470-510 using version RP002-1.0.3 of LoRaWAN Regional Parameters specification
+    public class RegionCN470RP2 : Region
     {
-        private const double FrequencyIncrement = 0.2;
+        private static readonly Mega FrequencyIncrement = new(0.2);
 
-        private readonly List<double> rx2OTAADefaultFrequencies;
+        private readonly List<Hertz> rx2OTAADefaultFrequencies;
 
-        private readonly List<List<double>> downstreamFrequenciesByPlanType;
+        private readonly List<List<Hertz>> downstreamFrequenciesByPlanType;
 
         // Dictionary mapping upstream join frequencies to a tuple containing
         // the corresponding downstream join frequency and the channel index
-        public Dictionary<double, (double downstreamFreq, int joinChannelIndex)> UpstreamJoinFrequenciesToDownstreamAndChannelIndex { get; }
+        public Dictionary<Hertz, (Hertz downstreamFreq, int joinChannelIndex)> UpstreamJoinFrequenciesToDownstreamAndChannelIndex { get; }
 
-        public RegionCN470()
-            : base(LoRaRegionType.CN470)
+        public RegionCN470RP2()
+            : base(LoRaRegionType.CN470RP2)
         {
             // Values assuming FOpts param is not used
             DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
@@ -60,7 +62,7 @@ namespace LoRaTools.Regions
             {
                 "SF12BW125", // 0
                 "SF11BW125", // 1
-                "SF10BW125", // 2 
+                "SF10BW125", // 2
                 "SF9BW125",  // 3
                 "SF8BW125",  // 4
                 "SF7BW125",  // 5
@@ -69,28 +71,58 @@ namespace LoRaTools.Regions
             };
 
             MaxADRDataRate = 7;
-            RegionLimits = new RegionLimits((min: 470.3, max: 509.7), validDatarates, validDatarates, 0, 0);
+            RegionLimits = new RegionLimits((Min: Mega(470.3), Max: Mega(509.7)), validDatarates, validDatarates, 0, 0);
 
-            UpstreamJoinFrequenciesToDownstreamAndChannelIndex = new Dictionary<double, (double, int)>
+            UpstreamJoinFrequenciesToDownstreamAndChannelIndex = new Dictionary<Hertz, (Hertz, int)>
             {
-                { 470.9, (484.5, 0) }, { 472.5, (486.1, 1) }, { 474.1, (487.7, 2) }, { 475.7, (489.3, 3) }, { 504.1, (490.9, 4) },
-                { 505.7, (492.5, 5) }, { 507.3, (494.1, 6) }, { 508.9, (495.7, 7) }, { 479.9, (479.9, 8) }, { 499.9, (499.9, 9) },
-                { 470.3, (492.5, 10) }, { 472.3, (492.5, 11) }, { 474.3, (492.5, 12) }, { 476.3, (492.5, 13) }, { 478.3, (492.5, 14) },
-                { 480.3, (502.5, 15) }, { 482.3, (502.5, 16) }, { 484.3, (502.5, 17) }, { 486.3, (502.5, 18) }, { 488.3, (502.5, 19) }
+                [Mega(470.9)] = (Mega(484.5), 0),
+                [Mega(472.5)] = (Mega(486.1), 1),
+                [Mega(474.1)] = (Mega(487.7), 2),
+                [Mega(475.7)] = (Mega(489.3), 3),
+                [Mega(504.1)] = (Mega(490.9), 4),
+                [Mega(505.7)] = (Mega(492.5), 5),
+                [Mega(507.3)] = (Mega(494.1), 6),
+                [Mega(508.9)] = (Mega(495.7), 7),
+                [Mega(479.9)] = (Mega(479.9), 8),
+                [Mega(499.9)] = (Mega(499.9), 9),
+                [Mega(470.3)] = (Mega(492.5), 10),
+                [Mega(472.3)] = (Mega(492.5), 11),
+                [Mega(474.3)] = (Mega(492.5), 12),
+                [Mega(476.3)] = (Mega(492.5), 13),
+                [Mega(478.3)] = (Mega(492.5), 14),
+                [Mega(480.3)] = (Mega(502.5), 15),
+                [Mega(482.3)] = (Mega(502.5), 16),
+                [Mega(484.3)] = (Mega(502.5), 17),
+                [Mega(486.3)] = (Mega(502.5), 18),
+                [Mega(488.3)] = (Mega(502.5), 19)
             };
 
-            this.downstreamFrequenciesByPlanType = new List<List<double>>
+            this.downstreamFrequenciesByPlanType = new List<List<Hertz>>
             {
-                BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
-                BuildFrequencyPlanList(476.9, 0, 31).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
-                BuildFrequencyPlanList(490.1, 0, 23),
-                BuildFrequencyPlanList(500.1, 0, 23)
+                ListFrequencyPlan(Mega(483.9), 0, 31).Concat(ListFrequencyPlan(Mega(490.3), 32, 63)).ToList(),
+                ListFrequencyPlan(Mega(476.9), 0, 31).Concat(ListFrequencyPlan(Mega(496.9), 32, 63)).ToList(),
+                ListFrequencyPlan(Mega(490.1), 0, 23).ToList(),
+                ListFrequencyPlan(Mega(500.1), 0, 23).ToList()
             };
 
-            this.rx2OTAADefaultFrequencies = new List<double>
+            static IEnumerable<Hertz> ListFrequencyPlan(Hertz startFrequency, int startChannel, int endChannel)
             {
-                485.3, 486.9, 488.5, 490.1, 491.7, 493.3, 494.9, 496.5, // 20 MHz plan A devices
-                478.3, 498.3                                            // 20 MHz plan B devices
+                var currentFreq = startFrequency;
+
+                for (var channel = startChannel; channel <= endChannel; ++channel)
+                {
+                    yield return currentFreq;
+                    currentFreq += FrequencyIncrement;
+                }
+            }
+
+            this.rx2OTAADefaultFrequencies = new List<Hertz>
+            {
+                // 20 MHz plan A devices
+                Mega(485.3), Mega(486.9), Mega(488.5), Mega(490.1),
+                Mega(491.7), Mega(493.3), Mega(494.9), Mega(496.5),
+                // 20 MHz plan B devices
+                Mega(478.3), Mega(498.3),
             };
         }
 
@@ -105,7 +137,7 @@ namespace LoRaTools.Regions
 
             channelIndex = -1;
 
-            if (UpstreamJoinFrequenciesToDownstreamAndChannelIndex.TryGetValue(joinChannel.Freq, out var elem))
+            if (UpstreamJoinFrequenciesToDownstreamAndChannelIndex.TryGetValue(joinChannel.FreqHertz, out var elem))
             {
                 channelIndex = elem.joinChannelIndex;
             }
@@ -116,7 +148,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Returns join channel index for region CN470 matching the frequency of the join request.
         /// </summary>
-        public override bool TryGetJoinChannelIndex(double frequency, out int channelIndex)
+        public override bool TryGetJoinChannelIndex(Hertz frequency, out int channelIndex)
         {
             channelIndex = -1;
 
@@ -156,28 +188,28 @@ namespace LoRaTools.Regions
             if (joinChannelIndex <= 7)
             {
                 channelNumber = upstreamChannel.Freq < 500 ? GetChannelNumber(upstreamChannel, 470.3) : GetChannelNumber(upstreamChannel, 503.5, 32);
-                frequency = this.downstreamFrequenciesByPlanType[0][channelNumber];
+                frequency = this.downstreamFrequenciesByPlanType[0][channelNumber].InMega;
                 return true;
             }
             // 20 MHz plan B
             if (joinChannelIndex <= 9)
             {
                 channelNumber = upstreamChannel.Freq < 490 ? GetChannelNumber(upstreamChannel, 476.9) : GetChannelNumber(upstreamChannel, 496.9, 32);
-                frequency = this.downstreamFrequenciesByPlanType[1][channelNumber];
+                frequency = this.downstreamFrequenciesByPlanType[1][channelNumber].InMega;
                 return true;
             }
             // 26 MHz plan A
             if (joinChannelIndex <= 14)
             {
                 channelNumber = GetChannelNumber(upstreamChannel, 470.3);
-                frequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24];
+                frequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24].InMega;
                 return true;
             }
             // 26 MHz plan B
             if (joinChannelIndex <= 19)
             {
                 channelNumber = GetChannelNumber(upstreamChannel, 480.3);
-                frequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
+                frequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24].InMega;
                 return true;
             }
 
@@ -190,54 +222,48 @@ namespace LoRaTools.Regions
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         /// </summary>
-        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = default)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = default)
         {
             if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
 
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
-            downstreamFrequency = 0;
-
             // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
             // over desired twin properties (set for APB devices).
-            var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
-
-            if (joinChannelIndex == null)
-                return false;
-
-            int channelNumber;
-
-            // 20 MHz plan A
-            if (joinChannelIndex <= 7)
+            switch (deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel)
             {
-                channelNumber = upstreamFrequency < 500 ? GetChannelNumber(upstreamFrequency, 470.3) : GetChannelNumber(upstreamFrequency, 503.5, 32);
-                downstreamFrequency = this.downstreamFrequenciesByPlanType[0][channelNumber];
-                return true;
-            }
-            // 20 MHz plan B
-            if (joinChannelIndex <= 9)
-            {
-                channelNumber = upstreamFrequency < 490 ? GetChannelNumber(upstreamFrequency, 476.9) : GetChannelNumber(upstreamFrequency, 496.9, 32);
-                downstreamFrequency = this.downstreamFrequenciesByPlanType[1][channelNumber];
-                return true;
-            }
-            // 26 MHz plan A
-            if (joinChannelIndex <= 14)
-            {
-                channelNumber = GetChannelNumber(upstreamFrequency, 470.3);
-                downstreamFrequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24];
-                return true;
-            }
-            // 26 MHz plan B
-            if (joinChannelIndex <= 19)
-            {
-                channelNumber = GetChannelNumber(upstreamFrequency, 480.3);
-                downstreamFrequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
-                return true;
+                case <= 7: // 20 MHz plan A
+                {
+                    var channelNumber = upstreamFrequency < Mega(500) ? GetChannelNumber(upstreamFrequency, Mega(470.3)) : 32 + GetChannelNumber(upstreamFrequency, Mega(503.5));
+                    downstreamFrequency = this.downstreamFrequenciesByPlanType[0][channelNumber];
+                    return true;
+                }
+                case <= 9: // 20 MHz plan B
+                {
+                    var channelNumber = upstreamFrequency < Mega(490) ? GetChannelNumber(upstreamFrequency, Mega(476.9)) : 32 + GetChannelNumber(upstreamFrequency, Mega(496.9));
+                    downstreamFrequency = this.downstreamFrequenciesByPlanType[1][channelNumber];
+                    return true;
+                }
+                case <= 14: // 26 MHz plan A
+                {
+                    var channelNumber = GetChannelNumber(upstreamFrequency, Mega(470.3));
+                    downstreamFrequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24];
+                    return true;
+                }
+                case <= 19: // 26 MHz plan B
+                {
+                    var channelNumber = GetChannelNumber(upstreamFrequency, Mega(480.3));
+                    downstreamFrequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
+                    return true;
+                }
+                default:
+                    downstreamFrequency = default;
+                    return false;
             }
 
-            return false;
+            static int GetChannelNumber(Hertz upstreamChannelFrequency, Hertz startUpstreamFreq) =>
+                (int)Math.Round((upstreamChannelFrequency - startUpstreamFreq) / FrequencyIncrement.Units, 0, MidpointRounding.AwayFromZero);
         }
 
         /// <summary>
@@ -264,12 +290,12 @@ namespace LoRaTools.Regions
                 // 26 MHz plan A
                 else if (deviceJoinInfo.ReportedCN470JoinChannel <= 14)
                 {
-                    return new RX2ReceiveWindow(492.5, dataRate);
+                    return new RX2ReceiveWindow(Mega(492.5), dataRate);
                 }
                 // 26 MHz plan B
                 else if (deviceJoinInfo.ReportedCN470JoinChannel <= 19)
                 {
-                    return new RX2ReceiveWindow(502.5, dataRate);
+                    return new RX2ReceiveWindow(Mega(502.5), dataRate);
                 }
             }
 
@@ -279,46 +305,30 @@ namespace LoRaTools.Regions
                 // 20 MHz plan A
                 if (deviceJoinInfo.DesiredCN470JoinChannel <= 7)
                 {
-                    return new RX2ReceiveWindow(486.9, dataRate);
+                    return new RX2ReceiveWindow(Mega(486.9), dataRate);
                 }
                 // 20 MHz plan B
                 else if (deviceJoinInfo.DesiredCN470JoinChannel <= 9)
                 {
-                    return new RX2ReceiveWindow(498.3, dataRate);
+                    return new RX2ReceiveWindow(Mega(498.3), dataRate);
                 }
                 // 26 MHz plan A
                 else if (deviceJoinInfo.DesiredCN470JoinChannel <= 14)
                 {
-                    return new RX2ReceiveWindow(492.5, dataRate);
+                    return new RX2ReceiveWindow(Mega(492.5), dataRate);
                 }
                 // 26 MHz plan B
                 else if (deviceJoinInfo.DesiredCN470JoinChannel <= 19)
                 {
-                    return new RX2ReceiveWindow(502.5, dataRate);
+                    return new RX2ReceiveWindow(Mega(502.5), dataRate);
                 }
             }
 
             return rx2Window;
         }
 
-        private static List<double> BuildFrequencyPlanList(double startFrequency, int startChannel, int endChannel)
-        {
-            var frequencies = new List<double>();
-            var currentFreq = startFrequency;
-
-            for (var channel = startChannel; channel <= endChannel; ++channel)
-            {
-                frequencies.Add(Math.Round(currentFreq, 1, MidpointRounding.AwayFromZero));
-                currentFreq += FrequencyIncrement;
-            }
-
-            return frequencies;
-        }
-
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         private static int GetChannelNumber(Rxpk upstreamChannel, double startUpstreamFreq, int startChannelNumber = 0) =>
-            startChannelNumber + (int)Math.Round((upstreamChannel.Freq - startUpstreamFreq) / FrequencyIncrement, 0, MidpointRounding.AwayFromZero);
-        private static int GetChannelNumber(double upstreamChannelFrequency, double startUpstreamFreq, int startChannelNumber = 0) =>
-            startChannelNumber + (int)Math.Round((upstreamChannelFrequency - startUpstreamFreq) / FrequencyIncrement, 0, MidpointRounding.AwayFromZero);
+            startChannelNumber + (int)Math.Round((upstreamChannel.Freq - startUpstreamFreq) / FrequencyIncrement.Value, 0, MidpointRounding.AwayFromZero);
     }
 }
