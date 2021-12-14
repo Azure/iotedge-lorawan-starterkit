@@ -335,12 +335,9 @@ namespace LoRaWan.Tests.Integration
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
             var devNonce = new DevNonce(0xABCD);
-            var tasks = new Task[3]
-            {
-                deviceGetter.GetDeviceList(null, gatewayId, devNonce, devAddrJoining),
-                deviceGetter.GetDeviceList(null, gatewayId, devNonce, devAddrJoining),
-                deviceGetter.GetDeviceList(null, gatewayId, devNonce, devAddrJoining),
-            };
+            var tasks =
+                from gw in Enumerable.Repeat(gatewayId, 3)
+                select deviceGetter.GetDeviceList(null, gw, new DevNonce(0xABCD), devAddrJoining);
 
             await Task.WhenAll(tasks);
             // Iot hub should never have been called.
