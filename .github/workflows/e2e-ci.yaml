@@ -207,12 +207,17 @@ jobs:
         RPI_USERNAME: ${{ secrets.RPI_USERNAME }}
         RPI_HOST: ${{ secrets.RPI_HOST }}
         CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
+        CUPS_STATION_EUI: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
       run: |
         chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
-        # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location
+        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh client $CUPS_STATION_EUI
+        # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location in local ci
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/tc.trust
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/cups.trust
+        cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.crt $CERT_REMOTE_PATH/cups.crt
+        cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.key $CERT_REMOTE_PATH/cups.key
+        echo "::set-output name=clientthumbprint::$(sha1sum $CUPS_STATION_EUI.crt | awk '{print $1;}')"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
@@ -225,6 +230,7 @@ jobs:
         echo "::set-output name=itestupip::$(ip address list tun0 | grep -Po 'inet \K[\d.]+')"
     outputs:
       itestupip: ${{ steps.get_self_hosted_runner_ip_address.outputs.itestupip }}
+      clientthumbprint: ${{ steps.generate_step.outputs.clientthumbprint }}
 
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
@@ -380,6 +386,8 @@ jobs:
       E2ETESTS_SharedCupsEndpoint: ${{ secrets.SHAREDCUPSENDPOINT }}
       E2ETESTS_DefaultBasicStationEui: ${{ secrets.DEFAULTCISTATIONEUI }}
       E2ETESTS_RadioDev: ${{ secrets.CIBASICSTATIONRADIODEV }}
+      E2ETESTS_CupsBasicStationEui: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
+      E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
       E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 
