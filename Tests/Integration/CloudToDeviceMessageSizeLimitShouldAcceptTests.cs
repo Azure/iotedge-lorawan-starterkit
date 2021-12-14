@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Integration
 
             // 3. downlink message payload contains expected message type and DevAddr
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Expected Mac commands are present
             var expectedMacCommandsCount = 0;
