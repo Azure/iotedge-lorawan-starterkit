@@ -210,6 +210,10 @@ jobs:
       run: |
         chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
+        # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location
+        cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/tc.trust
+        cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/cups.trust
+        # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$RPI_HOST.pfx $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/server.pfx
@@ -368,6 +372,14 @@ jobs:
       E2ETESTS_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
       E2ETESTS_FunctionAppCode: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
       E2ETESTS_FunctionAppBaseUrl: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
+      E2ETESTS_RunningInCI: true
+      E2ETESTS_RemoteConcentratorConnection: ${{ secrets.REMOTECONCENTRATORCONNECTION }}
+      E2ETESTS_BasicStationExecutablePath: ${{ secrets.BASICSTATIONEXECUTABLEPATH }}
+      E2ETESTS_SshPrivateKeyPath: ${{ secrets.SSHPRIVATEKEYPATH }}
+      E2ETESTS_SharedLnsEndpoint: ${{ secrets.SHAREDLNSENDPOINT }}
+      E2ETESTS_SharedCupsEndpoint: ${{ secrets.SHAREDCUPSENDPOINT }}
+      E2ETESTS_DefaultBasicStationEui: ${{ secrets.DEFAULTCISTATIONEUI }}
+      E2ETESTS_RadioDev: ${{ secrets.CIBASICSTATIONRADIODEV }}
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
       E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 
