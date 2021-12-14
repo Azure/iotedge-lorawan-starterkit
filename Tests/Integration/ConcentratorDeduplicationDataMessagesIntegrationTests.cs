@@ -221,6 +221,30 @@ namespace LoRaWan.Tests.Integration
         #endregion
 
         [Theory]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2, 1, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 1, 1)]
+        public async Task When_SingleGateway_Deduplication_Should_Work_The_Same_Way(
+            string station1,
+            string station2,
+            int expectedNumberOfBundlerCalls,
+            int expectedMessagesUp,
+            int expectedMessagesDown)
+        {
+            // arrange
+            var dataPayload = this.simulatedDevice.CreateConfirmedDataUpMessage("payload", 10);
+            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+
+            var gwId = "foo";
+            this.loraDevice.GatewayID = gwId;
+            _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(gwId)).Returns(this.frameCounterStrategyMock.Object);
+            this.loraDevice.Deduplication = DeduplicationMode.Drop; // default
+            this.loraDevice.NwkSKey = station1;
+
+            // act/assert
+            await ActAndAssert(request1, request2, this.loraDevice, null, expectedNumberOfBundlerCalls, null, expectedMessagesUp, expectedMessagesDown, null);
+        }
+
+        [Theory]
         [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2)]
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1)]
         public async Task When_ADR_Enabled_PerformADR_Should_Be_Disabled_For_SoftDuplicate(
