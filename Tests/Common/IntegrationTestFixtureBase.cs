@@ -306,6 +306,21 @@ namespace LoRaWan.Tests.Common
             }
         }
 
+        public async Task UpdateExistingConcentratorCrcValues(string stationEui, uint crc)
+        {
+            TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
+            var registryManager = GetRegistryManager();
+            var getDeviceResult = await registryManager.GetDeviceAsync(stationEui);
+            if (getDeviceResult == null)
+                throw new InvalidOperationException("Concentrator should exist in IoT Hub");
+            var deviceTwin = await registryManager.GetTwinAsync(stationEui);
+            var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
+            var deserializedCupsTwinInfo = System.Text.Json.JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson);
+            var newCupsInfo = new CupsTwinInfo(deserializedCupsTwinInfo.CupsUri, deserializedCupsTwinInfo.TcUri, crc, crc);
+            deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = System.Text.Json.JsonSerializer.Serialize(newCupsInfo);
+            await registryManager.UpdateTwinAsync(stationEui, deviceTwin, deviceTwin.ETag);
+        }
+
         private async Task CreateOrUpdateDevicesAsync()
         {
             TestLogger.Log($"Creating or updating IoT Hub devices...");
