@@ -3,7 +3,10 @@
 
 namespace LoRaWan.Tests.Unit
 {
+    using System;
+    using System.Linq;
     using LoRaWan;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class MacHeaderTest
@@ -11,28 +14,65 @@ namespace LoRaWan.Tests.Unit
         private readonly MacHeader confirmedDataDown = new(128);
         private readonly MacHeader unconfirmedDataUp = new(64);
 
+        public static readonly TheoryData<MacMessageType, DataMessageVersion> InitTestData =
+            TheoryDataFactory.From(
+                from t in Enum.GetValues<MacMessageType>()
+                from v in Enum.GetValues<DataMessageVersion>()
+                select (t, v));
+
         [Theory]
-        [InlineData(  0, MacMessageType.JoinRequest        , 0)]
-        [InlineData( 31, MacMessageType.JoinRequest        , 3)]
-        [InlineData( 32, MacMessageType.JoinAccept         , 0)]
-        [InlineData( 63, MacMessageType.JoinAccept         , 3)]
-        [InlineData( 64, MacMessageType.UnconfirmedDataUp  , 0)]
-        [InlineData( 95, MacMessageType.UnconfirmedDataUp  , 3)]
-        [InlineData( 96, MacMessageType.UnconfirmedDataDown, 0)]
-        [InlineData(127, MacMessageType.UnconfirmedDataDown, 3)]
-        [InlineData(128, MacMessageType.ConfirmedDataUp    , 0)]
-        [InlineData(159, MacMessageType.ConfirmedDataUp    , 3)]
-        [InlineData(160, MacMessageType.ConfirmedDataDown  , 0)]
-        [InlineData(191, MacMessageType.ConfirmedDataDown  , 3)]
-        [InlineData(192, MacMessageType.RejoinRequest      , 0)]
-        [InlineData(223, MacMessageType.RejoinRequest      , 3)]
-        [InlineData(224, MacMessageType.Proprietary        , 0)]
-        [InlineData(255, MacMessageType.Proprietary        , 3)]
-        public void Properties_Return_Corresponding_Parts(byte value, MacMessageType macMessageType, int major)
+        [MemberData(nameof(InitTestData))]
+        public void Init(MacMessageType messageType, DataMessageVersion major)
         {
-            var subject = new MacHeader(value);
-            Assert.Equal(macMessageType, subject.MessageType);
+            var subject = new MacHeader(messageType, major);
+
+            Assert.Equal(messageType, subject.MessageType);
             Assert.Equal(major, subject.Major);
+        }
+
+        [Theory]
+        [InlineData("messageType", -1, 0)]
+        [InlineData("messageType", 8, 0)]
+        [InlineData("major", 0, -1)]
+        [InlineData("major", 0, 4)]
+        public void Init_Throws_When_Arg_Is_Invalid(string expectedParamName, int messageType, int major)
+        {
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _ = new MacHeader((MacMessageType)messageType, (DataMessageVersion)major));
+
+            Assert.Equal(expectedParamName, ex.ParamName);
+        }
+
+        public static readonly TheoryData<MacMessageType, byte> MessageTypeTestData =
+            TheoryDataFactory.From(
+                from n in Enumerable.Range(0, 256)
+                select checked((byte)n) into b
+                select ((MacMessageType)(b >> 5), b));
+
+        [Theory]
+        [MemberData(nameof(MessageTypeTestData))]
+        public void MessageType(MacMessageType expectedMessageType, byte input)
+        {
+            var subject = new MacHeader(input);
+            var result = subject.MessageType;
+
+            Assert.Equal(expectedMessageType, result);
+        }
+
+        public static readonly TheoryData<int, byte> MajorTestData =
+            TheoryDataFactory.From(
+                from n in Enumerable.Range(0, 256)
+                select checked((byte)n) into b
+                select (b & 0b11, b));
+
+        [Theory]
+        [MemberData(nameof(MajorTestData))]
+        public void Major(int expectedMajor, byte input)
+        {
+            var subject = new MacHeader(input);
+            var result = (int)subject.Major;
+
+            Assert.Equal(expectedMajor, result);
         }
 
         [Fact]
@@ -49,6 +89,21 @@ namespace LoRaWan.Tests.Unit
             remainingBytes.Fill(0xff);
             Assert.Equal(3, remainingBytes.Length);
             Assert.Equal(new byte[] { 0x40, 0xff, 0xff, 0xff }, bytes);
+        }
+
+        public static readonly TheoryData<byte, MacHeader> ByteConversionTestData =
+            TheoryDataFactory.From(
+                from b in Enumerable.Range(0, 256)
+                select (byte)b into b
+                select (b, new MacHeader(b)));
+
+        [Theory]
+        [MemberData(nameof(ByteConversionTestData))]
+        public void ByteConversion(byte expected, MacHeader subject)
+        {
+            var result = (byte)subject;
+
+            Assert.Equal(expected, result);
         }
     }
 }

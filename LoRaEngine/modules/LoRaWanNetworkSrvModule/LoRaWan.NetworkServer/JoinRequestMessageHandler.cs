@@ -302,7 +302,7 @@ namespace LoRaWan.NetworkServer
                     if (this.logger.IsEnabled(LogLevel.Debug))
                     {
                         var jsonMsg = JsonConvert.SerializeObject(joinAccept);
-                        this.logger.LogDebug($"{LoRaMessageType.JoinAccept} {jsonMsg}");
+                        this.logger.LogDebug($"{MacMessageType.JoinAccept} {jsonMsg}");
                     }
                     else
                     {
