@@ -88,25 +88,11 @@ namespace LoRaWan.Tests.Integration
             public virtual bool SaveChangesToDeviceAssert() => true;
         }
 
-#pragma warning disable CA1813 // Avoid unsealed attributes
-        // needs to be inherited
-        private class DataAttribute : Xunit.Sdk.DataAttribute
-#pragma warning restore CA1813 // Avoid unsealed attributes
+        private sealed class DeduplicationTestDataAttribute : Xunit.Sdk.DataAttribute
         {
             private readonly object[] args;
 
-            public DataAttribute(params object[] args) => this.args = args;
-
-            public override IEnumerable<object[]> GetData(MethodInfo testMethod)
-            {
-                yield return this.args;
-            }
-        }
-
-        private sealed class DeduplicationTestDataAttribute : DataAttribute
-        {
-            public DeduplicationTestDataAttribute(
-                string station1,
+            public DeduplicationTestDataAttribute(string station1,
                 string station2,
                 DeduplicationMode deduplicationMode,
                 int expectedFrameCounterResets,
@@ -115,8 +101,14 @@ namespace LoRaWan.Tests.Integration
                 int expectedMessagesUp,
                 int expectedMessagesDown,
                 int expectedTwinSaves)
-                : base(station1, station2, deduplicationMode, expectedFrameCounterResets, expectedBundlerCalls, expectedFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves)
-            { }
+            {
+                this.args = new object[] { station1, station2, deduplicationMode, expectedFrameCounterResets, expectedBundlerCalls, expectedFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves };
+            }
+
+            public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+            {
+                yield return this.args;
+            }
         }
 
         public ConcentratorDeduplicationDataMessagesIntegrationTests()
