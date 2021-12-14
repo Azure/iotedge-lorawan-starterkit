@@ -29,16 +29,27 @@ namespace LoRaWan.Tests.E2E
             var temporaryDirectoryName = string.Empty;
             var stationEui = TestFixture.Configuration.CupsBasicStationEui;
             var clientThumbprint = TestFixture.Configuration.ClientThumbprint;
-            Assert.NotNull(clientThumbprint);
+            var crcParseResult = uint.TryParse(TestFixture.Configuration.ClientBundleCrc, out var crc);
             try
             {
                 var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device33_OTAA));
                 LogTestStart(device, stationEui);
 
-                //update allowed client thumbprints in IoT Hub Twin
-                await TestFixture.UpdateExistingConcentratorThumbprint(stationEui,
-                                                                       (originalArray) => !originalArray.Any(x => x.Equals(clientThumbprint, StringComparison.OrdinalIgnoreCase)),
-                                                                       (originalList) => originalList.Add(clientThumbprint));
+                if (!string.IsNullOrEmpty(clientThumbprint))
+                {
+                    //if a test re-run, clientThumbprint will be empty, therefore there's nothing to do, previously generated certificates will be reused
+                    //update allowed client thumbprints in IoT Hub Twin to only have the one being added
+                    await TestFixture.UpdateExistingConcentratorThumbprint(stationEui,
+                                                                           condition: (originalArray) => !originalArray.Any(x => x.Equals(clientThumbprint, StringComparison.OrdinalIgnoreCase)),
+                                                                           action: (originalList) => originalList = new List<string> { clientThumbprint });
+                }
+
+                if (crcParseResult)
+                {
+                    //if a test re-run, crc field will be empty, therefore there's nothing to do, previously generated certificates will be reused
+                    //update crc value with the one being generated in ci
+                    await TestFixture.UpdateExistingConcentratorCrcValues(stationEui, crc);
+                }
 
                 //setup the concentrator with CUPS_URI only (certificates are retrieved from default location)
                 TestUtils.StartBasicsStation(TestFixture.Configuration, new Dictionary<string, string>()
@@ -93,10 +104,6 @@ namespace LoRaWan.Tests.E2E
             finally
             {
                 TestUtils.KillBasicsStation(TestFixture.Configuration, temporaryDirectoryName);
-                //cleanup newly added client thumbprint
-                await TestFixture.UpdateExistingConcentratorThumbprint(stationEui,
-                                                                       (originalArray) => originalArray.Any(x => x.Equals(clientThumbprint, StringComparison.OrdinalIgnoreCase)),
-                                                                       (originalList) => originalList.Remove(clientThumbprint));
             }
         }
     }
