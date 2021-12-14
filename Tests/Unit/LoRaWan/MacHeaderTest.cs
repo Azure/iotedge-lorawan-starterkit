@@ -90,5 +90,20 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(3, remainingBytes.Length);
             Assert.Equal(new byte[] { 0x40, 0xff, 0xff, 0xff }, bytes);
         }
+
+        public static readonly TheoryData<byte, MacHeader> ByteConversionTestData =
+            TheoryDataFactory.From(
+                from b in Enumerable.Range(0, 256)
+                select (byte)b into b
+                select (b, new MacHeader(b)));
+
+        [Theory]
+        [MemberData(nameof(ByteConversionTestData))]
+        public void ByteConversion(byte expected, MacHeader subject)
+        {
+            var result = (byte)subject;
+
+            Assert.Equal(expected, result);
+        }
     }
 }
