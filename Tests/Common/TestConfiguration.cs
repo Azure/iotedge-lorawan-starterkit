@@ -94,5 +94,9 @@ namespace LoRaWan.Tests.Common
         public string SharedLnsEndpoint { get; set; } //i.e. "wss://hostname:5001"
 
         public string SharedCupsEndpoint { get; set; } //i.e. "https://hostname:5002"
+
+        public string CupsBasicStationEui { get; set; } //i.e. "ABC111FFFEDEF000" to be used for CUPS tests
+
+        public string ClientThumbprint { get; set; } //i.e. 4a0639c9c67221919fdb9618fa6fa0680259eaf2 (SHA1 thumbprint of cups.crt)
     }
 }
