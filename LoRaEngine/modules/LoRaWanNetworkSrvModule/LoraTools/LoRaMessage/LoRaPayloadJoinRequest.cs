@@ -113,19 +113,22 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] GetByteMessage()
         {
-            var messageArray = new List<byte>(23);
-            messageArray.AddRange(Mhdr.ToArray());
-            messageArray.AddRange(AppEUI.ToArray());
-            messageArray.AddRange(DevEUI.ToArray());
-            var buffer = new byte[DevNonce.Size];
-            _ = DevNonce.Write(buffer);
-            messageArray.AddRange(buffer);
+            var messageArray = new byte[Mhdr.Length + AppEUI.Length + DevEUI.Length + DevNonce.Size + Mic.Length];
+            var start = 0;
+            Mhdr.Span.CopyTo(messageArray.AsSpan(start));
+            start += Mhdr.Length;
+            AppEUI.Span.CopyTo(messageArray.AsSpan(start));
+            start += AppEUI.Length;
+            DevEUI.Span.CopyTo(messageArray.AsSpan(start));
+            start += DevEUI.Length;
+            _ = DevNonce.Write(messageArray.AsSpan(start));
+            start += DevNonce.Size;
             if (!Mic.Span.IsEmpty)
             {
-                messageArray.AddRange(Mic.ToArray());
+                Mic.Span.CopyTo(messageArray.AsSpan(start));
             }
 
-            return messageArray.ToArray();
+            return messageArray;
         }
 
         /// <summary>
