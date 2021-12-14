@@ -5,7 +5,6 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
@@ -30,7 +29,6 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly object getOrCreateLoadingDevicesRequestQueueLock;
         private readonly object getOrCreateJoinDeviceLoaderLock;
-        private readonly Counter<int> deviceLoadRequests;
         private readonly IMemoryCache cache;
         private readonly LoRaDeviceCache deviceCache;
 
@@ -47,8 +45,7 @@ namespace LoRaWan.NetworkServer
             ILoRaDeviceFactory deviceFactory,
             LoRaDeviceCache deviceCache,
             ILoggerFactory loggerFactory,
-            ILogger<LoRaDeviceRegistry> logger,
-            Meter meter)
+            ILogger<LoRaDeviceRegistry> logger)
         {
             this.configuration = configuration;
             this.cache = cache;
@@ -60,7 +57,6 @@ namespace LoRaWan.NetworkServer
             DevAddrReloadInterval = TimeSpan.FromSeconds(30);
             this.getOrCreateLoadingDevicesRequestQueueLock = new object();
             this.getOrCreateJoinDeviceLoaderLock = new object();
-            this.deviceLoadRequests = meter?.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
             this.deviceCache = deviceCache;
         }
 
@@ -72,7 +68,7 @@ namespace LoRaWan.NetworkServer
                                     LoRaDeviceAPIServiceBase loRaDeviceAPIService,
                                     ILoRaDeviceFactory deviceFactory, LoRaDeviceCache deviceCache)
             : this(configuration, cache, loRaDeviceAPIService, deviceFactory, deviceCache,
-                   NullLoggerFactory.Instance, NullLogger<LoRaDeviceRegistry>.Instance, null)
+                   NullLoggerFactory.Instance, NullLogger<LoRaDeviceRegistry>.Instance)
         { }
 
         /// <summary>
@@ -127,8 +123,6 @@ namespace LoRaWan.NetworkServer
         {
             if (request is null) throw new ArgumentNullException(nameof(request));
 
-            this.deviceLoadRequests?.Add(1);
-
             var devAddr = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
 
             if (this.cache.TryGetValue<DeviceLoaderSynchronizer>(GetDevLoaderCacheKey(devAddr), out var deviceLoader))
@@ -156,8 +150,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<LoRaDevice> GetDeviceByDevEUIAsync(string devEUI)
         {
-            this.deviceLoadRequests?.Add(1);
-
             if (this.deviceCache.TryGetByDevEui(devEUI, out var cachedDevice))
             {
                 return cachedDevice;
@@ -214,7 +206,6 @@ namespace LoRaWan.NetworkServer
                 return null;
             }
 
-            this.deviceLoadRequests?.Add(1);
             this.logger.LogDebug("querying the registry for OTAA device");
 
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
