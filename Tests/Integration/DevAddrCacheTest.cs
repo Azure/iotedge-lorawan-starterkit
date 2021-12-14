@@ -238,13 +238,11 @@ namespace LoRaWan.Tests.Integration
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
             // Simulate three queries
             var devNonce = new DevNonce(0xABCD);
-            var tasks = new Task[4]
-              {
-                deviceGetter.GetDeviceList(null, gateway1, devNonce, devAddrJoining),
-                deviceGetter.GetDeviceList(null, gateway1, devNonce, devAddrJoining),
-                deviceGetter.GetDeviceList(null, gateway2, devNonce, devAddrJoining),
-                deviceGetter.GetDeviceList(null, gateway2, devNonce, devAddrJoining)
-              };
+            var tasks =
+                from gw in new[] { gateway1, gateway2 }
+                select Enumerable.Repeat(gw, 2) into gws // repeat each gateway twice
+                from gw in gws
+                select deviceGetter.GetDeviceList(null, gw, new DevNonce(0xABCD), devAddrJoining);
 
             await Task.WhenAll(tasks);
 
