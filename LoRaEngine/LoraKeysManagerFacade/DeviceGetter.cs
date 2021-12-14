@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
@@ -60,7 +61,7 @@ namespace LoraKeysManagerFacade
 
             try
             {
-                DevNonce? devNonce = ushort.TryParse(rawDevNonce, out var d) ? new DevNonce(d) : null;
+                DevNonce? devNonce = ushort.TryParse(rawDevNonce, NumberStyles.None, CultureInfo.InvariantCulture, out var d) ? new DevNonce(d) : null;
                 var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
                 var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);
