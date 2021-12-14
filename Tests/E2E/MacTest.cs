@@ -68,21 +68,24 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands_Single()
         {
-            return Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(nameof(TestFixtureCi.Device23_OTAA));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device23_OTAA));
+            LogTestStart(device);
+            return Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(device);
         }
 
         [RetryFact]
         public Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands_MultiGw()
         {
-            return Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(nameof(TestFixtureCi.Device23_OTAA_MultiGw));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device23_OTAA_MultiGw));
+            LogTestStart(device);
+            return Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(device);
         }
 
         // Ensures that Mac Commands C2D messages working
         // Uses Device23_OTAA
-        private async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(TestDeviceInfo device)
         {
-            var device = TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
-            LogTestStart(device);
+           
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);

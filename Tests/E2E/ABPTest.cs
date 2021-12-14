@@ -23,21 +23,23 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR_Single()
         {
-            return Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(nameof(TestFixtureCi.Device5_ABP));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device5_ABP));
+            LogTestStart(device);
+            return Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(device);
         }
 
         [RetryFact]
         public Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR_MultiGw()
         {
-            return Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(nameof(TestFixtureCi.Device5_ABP_MultiGw));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device5_ABP_MultiGw));
+            LogTestStart(device);
+            return Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(device);
         }
 
         // Verifies that ABP confirmed and unconfirmed messages are working
         // Uses Device5_ABP
-        private async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(string devicePropertyName)
+        private async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(TestDeviceInfo device)
         {
-            var device = TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
-
             if (device.IsMultiGw)
             {
                 Assert.True(await LoRaAPIHelper.ResetADRCache(device.DeviceID));
@@ -45,7 +47,6 @@ namespace LoRaWan.Tests.E2E
 
             await ArduinoDevice.setDeviceDefaultAsync();
             const int MESSAGES_COUNT = 10;
-            LogTestStart(device);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
