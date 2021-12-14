@@ -113,6 +113,8 @@ namespace LoRaTools.LoRaMessage
         public static byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, DevNonce devNonce, byte[] appKey)
         {
             if (keyType == LoRaPayloadKeyType.None) throw new InvalidOperationException("No key type selected.");
+            if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
+            if (netid is null) throw new ArgumentNullException(nameof(netid));
 
             var type = new byte[1];
             type[0] = (byte)keyType;
@@ -125,10 +127,11 @@ namespace LoRaTools.LoRaMessage
             aes.Padding = PaddingMode.None;
             aes.IV = new byte[16];
 
-            var devNonceBytes = new byte[DevNonce.Size];
-            _ = devNonce.Write(devNonceBytes);
-
-            var pt = type.Concat(appnonce).Concat(netid).Concat(devNonceBytes).Concat(new byte[7]).ToArray();
+            var pt = new byte[type.Length + appnonce.Length + netid.Length + DevNonce.Size + 7];
+            Array.Copy(type, pt, type.Length);
+            Array.Copy(appnonce, 0, pt, type.Length, appnonce.Length);
+            Array.Copy(netid, 0, pt, type.Length + appnonce.Length, netid.Length);
+            _ = devNonce.Write(pt.AsSpan(type.Length + appnonce.Length + netid.Length));
 
             ICryptoTransform cipher;
 #pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
