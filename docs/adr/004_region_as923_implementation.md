@@ -47,7 +47,7 @@ In the implementation of region AS923 the frequencies for channel 0 and 1 will b
 
 ### Dwell Times
 
-We will support dwell times through the automatic dwell time management process described in the appendix.
+We will support dwell times through the automatic dwell time management process described in the appendix. We will not support the automated cache refresh in a first version, but we will document the limitation that for multi-gateway support the device cache either needs to be manually invalidated or updated by waiting until it expires.
 
 ## Appendix
 
@@ -114,7 +114,6 @@ Cons:
 
 - Complexity
 - Does not resolve bug [if the `TxParamSetupAns` is lost][dwell-time-bug]
-- Works only for single gateway or OTAA join, multi-gateway would be more complex (if we decide to implement it)
 
 [dwell-time-bug]: https://github.com/Lora-net/LoRaMac-node/issues/614
 [rp2-103]: https://lora-alliance.org/wp-content/uploads/2021/05/RP002-1.0.3-FINAL-1.pdf
