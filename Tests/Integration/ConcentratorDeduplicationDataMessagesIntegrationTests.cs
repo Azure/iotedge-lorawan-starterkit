@@ -21,6 +21,13 @@ namespace LoRaWan.Tests.Integration
 
     public sealed class ConcentratorDeduplicationDataMessagesIntegrationTests : MessageProcessorTestBase
     {
+        private readonly Mock<ILoRaDeviceFrameCounterUpdateStrategy> frameCounterStrategyMock;
+        private readonly Mock<TestDefaultLoRaRequestHandler> dataRequestHandlerMock;
+        private readonly Mock<ILoRaDeviceFrameCounterUpdateStrategyProvider> frameCounterProviderMock;
+        private readonly MemoryCache cache;
+        private readonly SimulatedDevice simulatedDevice;
+        private readonly LoRaDevice loraDevice;
+
         internal class TestDefaultLoRaRequestHandler : DefaultLoRaDataRequestHandler
         {
             public TestDefaultLoRaRequestHandler(
@@ -80,13 +87,6 @@ namespace LoRaWan.Tests.Integration
             public virtual bool SaveChangesToDeviceAssert() => true;
         }
 
-        private readonly Mock<ILoRaDeviceFrameCounterUpdateStrategy> frameCounterStrategyMock;
-        private readonly Mock<TestDefaultLoRaRequestHandler> dataRequestHandlerMock;
-        private readonly Mock<ILoRaDeviceFrameCounterUpdateStrategyProvider> frameCounterProviderMock;
-        private readonly MemoryCache cache;
-        private readonly SimulatedDevice simulatedDevice;
-        private readonly LoRaDevice device;
-
         public ConcentratorDeduplicationDataMessagesIntegrationTests()
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
@@ -118,10 +118,10 @@ namespace LoRaWan.Tests.Integration
             });
 
             this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            this.device = new LoRaDevice(this.simulatedDevice.DevAddr, this.simulatedDevice.DevEUI, ConnectionManager);
+            this.loraDevice = new LoRaDevice(this.simulatedDevice.DevAddr, this.simulatedDevice.DevEUI, ConnectionManager);
 
-            _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(this.device, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
-            _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(this.device.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
+            _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(this.loraDevice, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
+            _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(this.loraDevice.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
         }
 
         #region UnconfirmedDataMessage
@@ -233,11 +233,11 @@ namespace LoRaWan.Tests.Integration
             dataPayload.FrameControlFlags = FrameControlFlags.Adr; // adr enabled
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
-            this.device.Deduplication = DeduplicationMode.Mark; // or None
-            this.device.NwkSKey = station1;
+            this.loraDevice.Deduplication = DeduplicationMode.Mark; // or None
+            this.loraDevice.NwkSKey = station1;
 
             // act/assert
-            await ActAndAssert(request1, request2, this.device);
+            await ActAndAssert(request1, request2, this.loraDevice);
             this.dataRequestHandlerMock.Verify(x => x.PerformADRAssert(), Times.Exactly(expectedNumberOfADRCalls));
         }
 
@@ -254,8 +254,8 @@ namespace LoRaWan.Tests.Integration
 
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
-            this.device.Deduplication = DeduplicationMode.Mark; // or Drop or None
-            this.device.NwkSKey = station1;
+            this.loraDevice.Deduplication = DeduplicationMode.Mark; // or Drop or None
+            this.loraDevice.NwkSKey = station1;
 
             _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
             {
@@ -265,7 +265,7 @@ namespace LoRaWan.Tests.Integration
             });
 
             // act/assert
-            await ActAndAssert(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls);
+            await ActAndAssert(request1, request2, this.loraDevice, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls);
         }
 
         [Theory]
@@ -284,11 +284,11 @@ namespace LoRaWan.Tests.Integration
 
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
-            this.device.Deduplication = DeduplicationMode.None; // or Mark
-            this.device.NwkSKey = station1;
+            this.loraDevice.Deduplication = DeduplicationMode.None; // or Mark
+            this.loraDevice.NwkSKey = station1;
 
             // act/assert
-            await ActAndAssert(request1, request2, this.device, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: 0);
+            await ActAndAssert(request1, request2, this.loraDevice, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: 0);
         }
 
         private async Task ArrangeActAndAssert(
@@ -305,10 +305,10 @@ namespace LoRaWan.Tests.Integration
         {
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
-            this.device.Deduplication = deduplicationMode;
-            this.device.NwkSKey = station1;
+            this.loraDevice.Deduplication = deduplicationMode;
+            this.loraDevice.NwkSKey = station1;
 
-            await ActAndAssert(request1, request2, this.device, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await ActAndAssert(request1, request2, this.loraDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
         private (LoRaRequest request1, LoRaRequest request2) SetupRequests(LoRaPayloadData dataPayload, string station1, string station2)
@@ -362,7 +362,7 @@ namespace LoRaWan.Tests.Integration
             if (disposing)
             {
                 this.cache.Dispose();
-                this.device.Dispose();
+                this.loraDevice.Dispose();
             }
         }
     }

@@ -92,7 +92,7 @@ namespace LoRaWan.NetworkServer
             {
                 LoRaPayloadData asDataPayload => CreateCacheKey(asDataPayload),
                 LoRaPayloadJoinRequest asJoinPayload => CreateCacheKey(asJoinPayload),
-                _ => throw new ArgumentException($"{loRaRequest} with invalid type.")
+                _ => throw new ArgumentException($"Provided request is of type {loRaRequest.GetType()} which is not valid for deduplication.")
             };
 
         private static string CreateCacheKey(LoRaPayloadData payload)
@@ -130,7 +130,7 @@ namespace LoRaWan.NetworkServer
 
             buffer = joinEui.Write(buffer);
             buffer = devEui.Write(buffer);
-            buffer = devNonce.Write(buffer);
+            _ = devNonce.Write(buffer);
 
             var key = Sha256.ComputeHash(head.ToArray());
 
