@@ -57,7 +57,7 @@ We discuss different approaches to handle dwell time limitations.
 
 #### No `TxParamSetupReq` support
 
-If we do not support the `TxParamSetupReq` MAC Command as part of the initial version of the AS923 region implementation. One implication is that the maximum Equivalent Isotropically Radiated Power (EIRP), which is normally configurable through `TxParamSetupReq`, will be static and non-configurable. We introduce a Boolean configuration value in the concentrator device twin that specifies whether a dwell time limitation applies to that concentrator. Based on this configuration value, the gateway will apply a different set of regional parameters, which take the dwell time limitations into account. It will be the responsibility of the starter kit user to ensure that end devices are configured with the same dwell time settings as the concentrator to which they are connected, as it will not be automatically propagated to the end device through `TxParamSetupReq`.
+One option is to not support the `TxParamSetupReq` MAC Command as part of the initial version of the AS923 region implementation. One implication is that the maximum Equivalent Isotropically Radiated Power (EIRP), which is normally configurable through `TxParamSetupReq`, will be static and non-configurable. We introduce a Boolean configuration value in the concentrator device twin that specifies whether a dwell time limitation applies to that concentrator. Based on this configuration value, the gateway will apply a different set of regional parameters, which take the dwell time limitations into account. It will be the responsibility of the starter kit user to ensure that end devices are configured with the same dwell time settings as the concentrator to which they are connected, as it will not be automatically propagated to the end device through `TxParamSetupReq`.
 
 Pros:
 
@@ -90,7 +90,7 @@ Cons:
 
 #### Automatic dwell time management
 
-The user configures the dwell time settings for each concentrator in the concentrator configuration. The LNS sends automated `TxParamSetupReq` MAC commands as a response to uplink messages. After a MAC command was sent, the LNS waits for the `TxParamSetupAns`. If the MAC answer was received, the LNS updates the reported properties of the device twin and uses a different set of regional parameters based on the dwell time setting (e.g. for the receive window channels). Also, the LNS invalidates the cache entries for that specific device in all other gateways. A visualization for this flow looks as follows:
+The user configures the dwell time settings for all devices connected to a concentrator as part of the concentrator configuration. The LNS sends automated `TxParamSetupReq` MAC commands as a response to uplink messages. After a MAC command was sent, the LNS waits for the `TxParamSetupAns`. If the MAC answer was received, the LNS updates the reported properties of the device twin and uses a different set of regional parameters based on the dwell time setting (e.g. for the receive window channels). Also, the LNS invalidates the cache entries for that specific device in all other gateways. A visualization for this flow looks as follows:
 
 ```mermaid
 sequenceDiagram
