@@ -28,10 +28,12 @@ namespace LoRaWan
         public DevAddr(uint value) => this.value = value;
 
         public DevAddr(int networkId, int networkAddress)
+#pragma warning disable IDE0072 // Add missing cases (false positive)
             : this((networkId, networkAddress) switch
+#pragma warning restore IDE0072 // Add missing cases
             {
-                ( > 0x7F, _) => throw new ArgumentException(null, nameof(networkId)),
-                (_, > (int)NetworkAddressMask) => throw new ArgumentException(null, nameof(networkAddress)),
+                ( < 0 or > 0x7F, _) => throw new ArgumentException(null, nameof(networkId)),
+                (_, < 0 or > (int)NetworkAddressMask) => throw new ArgumentException(null, nameof(networkAddress)),
                 var (id, addr) => unchecked(((uint)id << 25) | (uint)addr)
             })
         { }

@@ -12,29 +12,42 @@ namespace LoRaWan.Tests.Unit
     {
         private readonly DevAddr subject = new(0xeb6f7bde);
 
+        [Fact]
+        public void Init()
+        {
+            var networkId = 123;
+            var networkAddress = 456;
+            var result = new DevAddr(networkId, networkAddress);
+
+            Assert.Equal(networkId, result.NetworkId);
+            Assert.Equal(networkAddress, result.NetworkAddress);
+        }
+
         [Theory]
         [InlineData(uint.MaxValue)]
         [InlineData(uint.MinValue)]
         [InlineData(0xeb6f7bde)]
-        public void Init(uint value)
+        public void Constructor_NetworkId_NetworkAddress_Is_Equivalent_To_Value_Constructor(uint value)
         {
             // arrange
-            var maxValue = new DevAddr(value);
+            var subject = new DevAddr(value);
 
             // act
-            var result = new DevAddr(maxValue.NetworkId, maxValue.NetworkAddress);
+            var result = new DevAddr(subject.NetworkId, subject.NetworkAddress);
 
             // assert
-            Assert.Equal(maxValue, result);
+            Assert.Equal(subject, result);
         }
 
-        [Fact]
-        public void Init_Validates_Limits()
+        [Theory]
+        [InlineData("networkId", -1, 0)]
+        [InlineData("networkId", 0x80, 0)]
+        [InlineData("networkAddress", 0, -1)]
+        [InlineData("networkAddress", 0, 0x2000000)]
+        public void Init_Throws_When_Arg_Is_Invalid(string expectedParamName, int networkId, int networkAddress)
         {
-            var maxValue = new DevAddr(uint.MaxValue);
-
-            Assert.Throws<ArgumentException>(() => new DevAddr(maxValue.NetworkId + 1, maxValue.NetworkAddress));
-            Assert.Throws<ArgumentException>(() => new DevAddr(maxValue.NetworkId, maxValue.NetworkAddress + 1));
+            var ex = Assert.Throws<ArgumentException>(() => new DevAddr(networkId, networkAddress));
+            Assert.Equal(expectedParamName, ex.ParamName);
         }
 
         [Fact]
