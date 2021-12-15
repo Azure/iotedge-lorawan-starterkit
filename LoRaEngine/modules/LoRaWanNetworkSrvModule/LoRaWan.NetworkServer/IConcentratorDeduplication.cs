@@ -38,10 +38,10 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         DuplicateDueToResubmission,
         /// <summary>
-        /// Detected as a duplicate but due to the DeduplicationStrategy,
-        /// marked only as a "soft" duplicate - allow upstream (Mark and None)
+        /// Detected as a duplicate but due to the DeduplicationStrategy (Mark and None),
+        /// allowed upstream.
         /// </summary>
-        SoftDuplicateDueToDeduplicationStrategy,
+        DuplicateAllowUpstream,
         /// <summary>
         /// Message is a duplicate and does not need to be
         /// sent upstream.

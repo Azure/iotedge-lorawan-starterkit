@@ -65,7 +65,7 @@ namespace LoRaWan.NetworkServer
             }
 
             this.logger.LogDebug($"Message from station with EUI {loRaRequest.StationEui} marked as soft duplicate due to DeduplicationStrategy.");
-            return ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy;
+            return ConcentratorDeduplicationResult.DuplicateAllowUpstream;
         }
 
         private bool EnsureFirstMessageInCache(string key, LoRaRequest loRaRequest, out StationEui previousStation)

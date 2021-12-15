@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
             }
-            else if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
+            else if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateAllowUpstream)
             {
                 // Request is allowed upstream but confirmation is skipped to avoid sending the answer to the device multiple times and potentially cause collisions on the air.
                 skipDownstreamToAvoidCollisions = true;
@@ -148,7 +148,7 @@ namespace LoRaWan.NetworkServer
                 // ADR should be performed before the gateway deduplication as we still want to collect the signal info,
                 // even if we drop it in the next step.
                 // ADR is skipped for soft duplicates and will be enabled again in https://github.com/Azure/iotedge-lorawan-starterkit/issues/1017
-                if (loRaADRResult == null && loraPayload.IsDataRateNetworkControlled && concentratorDeduplicationResult is not ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
+                if (loRaADRResult == null && loraPayload.IsDataRateNetworkControlled && concentratorDeduplicationResult is not ConcentratorDeduplicationResult.DuplicateAllowUpstream)
                 {
                     loRaADRResult = await PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }
@@ -198,7 +198,7 @@ namespace LoRaWan.NetworkServer
 
                 var canSendUpstream = isFrameCounterFromNewlyStartedDevice
                                   || payloadFcntAdjusted > loRaDevice.FCntUp
-                                  || (payloadFcntAdjusted == loRaDevice.FCntUp && concentratorDeduplicationResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy);
+                                  || (payloadFcntAdjusted == loRaDevice.FCntUp && concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateAllowUpstream);
                 if (canSendUpstream || isConfirmedResubmit)
                 {
                     if (!isConfirmedResubmit)
@@ -837,7 +837,7 @@ namespace LoRaWan.NetworkServer
                     isConfirmedResubmit = true;
                     this.logger.LogInformation($"resubmit from confirmed message detected, msg: {payloadFcnt} server: {loRaDevice.FCntUp}");
                 }
-                else if (payloadFcnt == loRaDevice.FCntUp && concentratorDeduplicationResult == ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
+                else if (payloadFcnt == loRaDevice.FCntUp && concentratorDeduplicationResult == ConcentratorDeduplicationResult.DuplicateAllowUpstream)
                 {
                     // multi concentrator receive, with dedup strategy to send upstream
                     return true;
