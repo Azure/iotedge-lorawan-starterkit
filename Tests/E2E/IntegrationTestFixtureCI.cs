@@ -571,7 +571,8 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = "0000000000000031",
                 AppEUI = "0000000000000031",
                 AppKey = "00000000000000000000000000000031",
-                IsIoTHubDevice = true
+                IsIoTHubDevice = true,
+                Deduplication = "Drop"
             };
 
             Device32_ABP = new TestDeviceInfo()

@@ -63,7 +63,7 @@ namespace LoRaWan.Tests.E2E
             Assert.True(joinSucceeded, "Join failed");
 
             var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                (log) => log.IndexOf(expectedLog, StringComparison.Ordinal) != -1);
+                (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1);
             Assert.NotNull(droppedLog.MatchedEvent);
 
             // wait 1 second after joined
@@ -89,7 +89,7 @@ namespace LoRaWan.Tests.E2E
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
                 droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(expectedLog, StringComparison.Ordinal) != -1);
+                    (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1);
                 Assert.NotNull(droppedLog.MatchedEvent);
 
                 TestFixtureCi.ClearLogs();
