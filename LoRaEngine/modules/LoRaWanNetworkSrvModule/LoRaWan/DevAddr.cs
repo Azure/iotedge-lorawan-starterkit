@@ -32,7 +32,7 @@ namespace LoRaWan
             : this((networkId, networkAddress) switch
 #pragma warning restore IDE0072 // Add missing cases
             {
-                ( < 0 or > 0x7F, _) => throw new ArgumentException(null, nameof(networkId)),
+                ( < 0 or >= 0x80, _) => throw new ArgumentException(null, nameof(networkId)),
                 (_, < 0 or > (int)NetworkAddressMask) => throw new ArgumentException(null, nameof(networkAddress)),
                 var (id, addr) => unchecked(((uint)id << 25) | (uint)addr)
             })
