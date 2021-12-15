@@ -63,11 +63,11 @@ namespace LoRaWan.Tests.E2E
                     { "RADIODEV", TestFixture.Configuration.RadioDev }
                 }, out temporaryDirectoryName);
                 var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(stationEui, StringComparison.Ordinal) != -1);
+                    (log) => log.IndexOf($"{stationEui}: Received 'version' message for station", StringComparison.Ordinal) != -1);
                 Assert.True(log.Found);
 
-                // Waiting one minute for being sure that BasicStation actually started up
-                await Task.Delay(60_000);
+                // Waiting 30s for being sure that BasicStation actually started up
+                await Task.Delay(30_000);
 
                 //the concentrator should be ready at this point to receive messages
                 //if receiving 'updf' is succeeding, cups worked successfully
@@ -87,16 +87,12 @@ namespace LoRaWan.Tests.E2E
                 // wait 1 second after joined
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
-                Log($"{device.DeviceID}: Sending OTAA confirmed message");
+                Log($"{device.DeviceID}: Sending OTAA unconfirmed message");
 
                 var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
-                await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
+                await ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
-
-                // After transferPacketWithConfirmed: Expectation from serial
-                // +CMSG: ACK Received
-                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 var expectedPayload = $"{{\"value\":{msg}}}";
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
