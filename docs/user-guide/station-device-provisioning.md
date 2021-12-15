@@ -4,7 +4,7 @@ Following the LoRaWAN Network Server (LNS) specification, each Basics Station (L
 
 ## Use LoRa Device Provisioning CLI
 
-In the following we describe how to register an LBS in IoT Hub by using the LoRa Device Provisioning CLI.
+In the following we describe how to register an LBS in IoT Hub by using the [LoRa Device Provisioning CLI](../tools/device-provisioning.md).
 
 1. Retrieve the LBS EUI in its hex-representation (e.g. `AABBCCFFFE001122`). If you are running a dev kit on a Linux machine, the EUI can be retrieved from the MAC address of the eth0 interface as follows:
 
