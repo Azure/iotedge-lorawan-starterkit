@@ -196,10 +196,10 @@ namespace LoRaWan.NetworkServer
                 }
                 #endregion
 
-                var validFcntUp = isFrameCounterFromNewlyStartedDevice
+                var canSendUpstream = isFrameCounterFromNewlyStartedDevice
                                   || payloadFcntAdjusted > loRaDevice.FCntUp
                                   || (payloadFcntAdjusted == loRaDevice.FCntUp && concentratorDeduplicationResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy);
-                if (validFcntUp || isConfirmedResubmit)
+                if (canSendUpstream || isConfirmedResubmit)
                 {
                     if (!isConfirmedResubmit)
                     {
