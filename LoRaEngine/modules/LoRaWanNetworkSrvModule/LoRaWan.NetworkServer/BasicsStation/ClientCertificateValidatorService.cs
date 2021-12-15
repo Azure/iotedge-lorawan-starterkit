@@ -52,7 +52,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             // Only validation is currently done on thumprint
             var thumbprints = await this.stationConfigurationService.GetAllowedClientThumbprintsAsync(stationEui, token);
-            return thumbprints.Any(t => t.Equals(certificate.Thumbprint, StringComparison.OrdinalIgnoreCase));
+            var thumbprintFound = thumbprints.Any(t => t.Equals(certificate.Thumbprint, StringComparison.OrdinalIgnoreCase));
+            if (!thumbprintFound)
+                this.logger.LogDebug($"'{certificate.Thumbprint}' was not found as allowed thumbprint for {stationEui}");
+            return thumbprintFound;
         }
     }
 }
