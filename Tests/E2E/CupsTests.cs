@@ -111,6 +111,7 @@ namespace LoRaWan.Tests.E2E
                     Log("[INFO] ** Basic Station Logs Start **");
                     Log(await File.ReadAllTextAsync(logFilePath));
                     Log("[INFO] ** Basic Station Logs End **");
+                    File.Delete(logFilePath);
                 }
             }
             TestFixtureCi.ClearLogs();
