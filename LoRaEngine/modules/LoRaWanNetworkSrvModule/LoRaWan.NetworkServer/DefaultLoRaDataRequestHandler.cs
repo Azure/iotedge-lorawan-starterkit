@@ -180,6 +180,7 @@ namespace LoRaWan.NetworkServer
                 #region FrameCounterDown
                 // if deduplication already processed the next framecounter down, use that
                 var fcntDown = loRaADRResult?.FCntDown != null ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
+                LogNotNullFrameCounterDownState(loRaDevice, fcntDown);
 
                 // If we can send message downstream, we need to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
@@ -720,25 +721,24 @@ namespace LoRaWan.NetworkServer
         {
             if (fcntDown.HasValue)
             {
-                LogFrameCounterDownState(loRaDevice, fcntDown.Value);
                 return fcntDown.Value;
             }
 
             var newFcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, payloadFcnt);
-            LogFrameCounterDownState(loRaDevice, newFcntDown);
+            LogNotNullFrameCounterDownState(loRaDevice, newFcntDown);
 
             return newFcntDown;
+        }
 
-            void LogFrameCounterDownState(LoRaDevice loRaDevice, uint newFcntDown)
+        private void LogNotNullFrameCounterDownState(LoRaDevice loRaDevice, uint? newFcntDown)
+        {
+            if (newFcntDown <= 0)
             {
-                if (newFcntDown <= 0)
-                {
-                    this.logger.LogDebug("another gateway has already sent ack or downlink msg");
-                }
-                else
-                {
-                    this.logger.LogDebug($"down frame counter: {loRaDevice.FCntDown}");
-                }
+                this.logger.LogDebug("another gateway has already sent ack or downlink msg");
+            }
+            else
+            {
+                this.logger.LogDebug($"down frame counter: {loRaDevice.FCntDown}");
             }
         }
 
