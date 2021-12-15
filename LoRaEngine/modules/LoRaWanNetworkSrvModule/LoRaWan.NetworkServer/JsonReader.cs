@@ -75,6 +75,23 @@ namespace LoRaWan.NetworkServer
                 return result;
             });
 
+        public static IJsonReader<TEnum> Enum<TSource, TEnum>(this IJsonReader<TSource> reader, Func<TSource, TEnum> selector) where TEnum : struct, Enum =>
+            from n in reader
+            select selector(n) into value
+            select System.Enum.IsDefined(value)
+                 ? value
+                 : throw new JsonException(@$"Invalid member for {typeof(TEnum)}: {value}");
+
+        public static IJsonReader<T> Validate<T>(this IJsonReader<T> reader, Func<T, bool> predicate) =>
+            reader.When("Invalid value in JSON: {0}", predicate);
+
+        public static IJsonReader<T> When<T>(this IJsonReader<T> reader, string messageFormat, Func<T, bool> predicate) =>
+            from v in reader
+            select predicate(v) ? v
+#pragma warning disable CA1305 // Specify IFormatProvider (not used for error messages)
+                 : throw new JsonException(string.Format(messageFormat, v));
+#pragma warning restore CA1305 // Specify IFormatProvider
+
         public static IJsonReader<object> AsObject<T>(this IJsonReader<T> reader) =>
             from v in reader select (object)v;
 
@@ -254,6 +271,27 @@ namespace LoRaWan.NetworkServer
                                      (true, var v16))
                      ? projector(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16)
                      : throw new JsonException();
+            });
+
+        public static IJsonReader<(T1, T2, T3)>
+            Tuple<T1, T2, T3>(IJsonReader<T1> item1Reader,
+                              IJsonReader<T2> item2Reader,
+                              IJsonReader<T3> item3Reader) =>
+            Create((ref Utf8JsonReader reader) =>
+            {
+                if (reader.TokenType != JsonTokenType.StartArray)
+                    throw new JsonException();
+
+                _ = reader.Read(); // "["
+
+                var result = (item1Reader.Read(ref reader), item2Reader.Read(ref reader), item3Reader.Read(ref reader));
+
+                if (reader.TokenType != JsonTokenType.EndArray)
+                    throw new JsonException();
+
+                _ = reader.Read(); // "]"
+
+                return result;
             });
 
 #pragma warning restore CA1720 // Identifier contains type name
