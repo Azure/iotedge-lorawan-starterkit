@@ -15,13 +15,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
         // Firmware management features could require to define fields in twin in a different way than the station/model/package ones
         public CupsTwinInfo(Uri cupsUri,
                             Uri tcUri,
-                            uint cupsCredentialsChecksum,
-                            uint tcCredentialsChecksum)
+                            uint cupsCredCrc,
+                            uint tcCredCrc)
         {
             CupsUri = cupsUri ?? throw new ArgumentNullException(nameof(cupsUri));
             TcUri = tcUri ?? throw new ArgumentNullException(nameof(tcUri));
-            CupsCredentialsChecksum = cupsCredentialsChecksum;
-            TcCredentialsChecksum = tcCredentialsChecksum;
+            CupsCredCrc = cupsCredCrc;
+            TcCredCrc = tcCredCrc;
         }
 
         [JsonPropertyName("cupsUri")]
@@ -31,9 +31,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public Uri TcUri { get; }
 
         [JsonPropertyName("cupsCredCrc")]
-        public uint CupsCredentialsChecksum { get; }
+        public uint CupsCredCrc { get; }
 
         [JsonPropertyName("tcCredCrc")]
-        public uint TcCredentialsChecksum { get; }
+        public uint TcCredCrc { get; }
     }
 }
