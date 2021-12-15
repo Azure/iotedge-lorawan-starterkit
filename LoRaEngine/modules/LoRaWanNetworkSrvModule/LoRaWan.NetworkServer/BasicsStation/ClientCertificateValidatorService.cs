@@ -6,7 +6,6 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
@@ -51,11 +50,18 @@ namespace LoRaWan.NetworkServer.BasicsStation
             }
 
             // Only validation is currently done on thumprint
-            var thumbprints = await this.stationConfigurationService.GetAllowedClientThumbprintsAsync(stationEui, token);
-            var thumbprintFound = thumbprints.Any(t => t.Equals(certificate.Thumbprint, StringComparison.OrdinalIgnoreCase));
-            if (!thumbprintFound)
-                this.logger.LogDebug($"'{certificate.Thumbprint}' was not found as allowed thumbprint for {stationEui}");
-            return thumbprintFound;
+            try
+            {
+                var thumbprints = await this.stationConfigurationService.GetAllowedClientThumbprintsAsync(stationEui, token);
+                var thumbprintFound = thumbprints.Any(t => t.Equals(certificate.Thumbprint, StringComparison.OrdinalIgnoreCase));
+                if (!thumbprintFound)
+                    this.logger.LogDebug($"'{certificate.Thumbprint}' was not found as allowed thumbprint for {stationEui}");
+                return thumbprintFound;
+            }
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex)))
+            {
+                return false;
+            }
         }
     }
 }
