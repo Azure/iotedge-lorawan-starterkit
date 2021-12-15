@@ -4,8 +4,8 @@ The following table is providing a list of configuration options, to be provided
 
 | Environment variable name | Description                                                  | Mandatory                                                    |
 | ------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| TC_URI                    | The URI to the LNS Server implementation                     | **Yes** (i.e.: 'ws://IP_or_DNS:5000' or 'wss://IP_OR_DNS:5001') |
-| CUPS_URI                  | The URI to the CUPS Server implementation                    | Yes, if CUPS endpoint is required (i.e.: 'https://IP_or_DNS:5002') |
+| TC_URI                    | The URI to the LNS Server implementation                     | **Yes** (i.e.: 'ws://IP_or_DNS:5000' or 'wss:// IP_OR_DNS :5001') |
+| CUPS_URI                  | The URI to the CUPS Server implementation                    | Yes, if CUPS endpoint is required (i.e.: 'https:// IP_or_DNS :5002') |
 | TC_TRUST_PATH             | The path to the tc.trust file. Refer to [this file](.\station-authentication-modes.md) for more information | No (if not set, defaulting to '/var/lorastarterkit/certs/tc.trust') |
 | TC_CRT_PATH               | The path to the tc.crt file. Refer to [this file](.\station-authentication-modes.md) for more information | No (if not set, defaulting to '/var/lorastarterkit/certs/tc.crt') |
 | TC_KEY_PATH               | The path to the tc.key file. Refer to [this file](.\station-authentication-modes.md) for more information | No (if not set, defaulting to '/var/lorastarterkit/certs/tc.key') |
