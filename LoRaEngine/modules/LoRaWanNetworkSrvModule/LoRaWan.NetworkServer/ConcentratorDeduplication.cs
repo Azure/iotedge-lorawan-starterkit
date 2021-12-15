@@ -40,8 +40,10 @@ namespace LoRaWan.NetworkServer
             if (EnsureFirstMessageInCache(key, loRaRequest, out _))
                 return ConcentratorDeduplicationResult.NotDuplicate;
 
-            this.logger.LogDebug($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {loRaRequest.StationEui}.");
-            return ConcentratorDeduplicationResult.Duplicate;
+            var result = ConcentratorDeduplicationResult.Duplicate;
+
+            this.logger.LogDebug($"Join received from station {loRaRequest.StationEui}. Marked as {result} {Constants.MessageAlreadyEncountered}.");
+            return result;
         }
 
         public ConcentratorDeduplicationResult CheckDuplicateData(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
@@ -52,20 +54,19 @@ namespace LoRaWan.NetworkServer
             if (EnsureFirstMessageInCache(key, loRaRequest, out var previousStation))
                 return ConcentratorDeduplicationResult.NotDuplicate;
 
+            var result = ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy;
+
             if (previousStation == loRaRequest.StationEui)
             {
-                this.logger.LogDebug($"Message was received previously from the same EUI {loRaRequest.StationEui} (\"confirmedResubmit\").");
-                return ConcentratorDeduplicationResult.DuplicateDueToResubmission;
+                result = ConcentratorDeduplicationResult.DuplicateDueToResubmission;
             }
-
-            if (loRaDevice.Deduplication == DeduplicationMode.Drop)
+            else if (loRaDevice.Deduplication == DeduplicationMode.Drop)
             {
-                this.logger.LogDebug($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {loRaRequest.StationEui}.");
-                return ConcentratorDeduplicationResult.Duplicate;
+                result = ConcentratorDeduplicationResult.Duplicate;
             }
 
-            this.logger.LogDebug($"Message from station with EUI {loRaRequest.StationEui} marked as soft duplicate due to DeduplicationStrategy.");
-            return ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy;
+            this.logger.LogDebug($"Data message received from station {loRaRequest.StationEui}. Marked as {result} {Constants.MessageAlreadyEncountered}.");
+            return result;
         }
 
         private bool EnsureFirstMessageInCache(string key, LoRaRequest loRaRequest, out StationEui previousStation)
