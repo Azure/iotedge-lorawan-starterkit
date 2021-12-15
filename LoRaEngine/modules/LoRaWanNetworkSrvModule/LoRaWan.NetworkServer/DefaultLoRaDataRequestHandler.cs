@@ -475,7 +475,7 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    await SaveChangesToDevice(loRaDevice, stationEuiChanged);
+                    await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged);
                 }
                 catch (OperationCanceledException saveChangesException)
                 {
@@ -514,7 +514,7 @@ namespace LoRaWan.NetworkServer
             return request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
         }
 
-        protected virtual async Task SaveChangesToDevice(LoRaDevice loRaDevice, bool stationEuiChanged)
+        protected virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 

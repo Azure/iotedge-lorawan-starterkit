@@ -74,8 +74,8 @@ namespace LoRaWan.Tests.Integration
             protected override Task SendMessageDownstreamAsync(LoRaRequest request, DownlinkMessageBuilderResponse confirmDownlinkMessageBuilderResp)
                 => Task.FromResult(SendMessageDownstreamAsyncAssert());
 
-            protected override Task SaveChangesToDevice(LoRaDevice loRaDevice, bool stationEuiChanged)
-                => Task.FromResult(SaveChangesToDeviceAssert());
+            protected override Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
+                => Task.FromResult(SaveChangesToDeviceAsyncAssert());
 
             public virtual LoRaADRResult PerformADRAssert() => null;
 
@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Integration
 
             public virtual Task SendMessageDownstreamAsyncAssert() => null;
 
-            public virtual bool SaveChangesToDeviceAssert() => true;
+            public virtual bool SaveChangesToDeviceAsyncAssert() => true;
         }
 
         private sealed class DeduplicationTestDataAttribute : Xunit.Sdk.DataAttribute
@@ -401,7 +401,7 @@ namespace LoRaWan.Tests.Integration
             if (expectedMessagesDown is int messagesDown)
                 this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Exactly(messagesDown));
             if (expectedTwinSaves is int twinSaves)
-                this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAssert(), Times.Exactly(twinSaves));
+                this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Exactly(twinSaves));
         }
 
         protected override void Dispose(bool disposing)
