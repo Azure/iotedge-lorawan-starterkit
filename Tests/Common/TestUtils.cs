@@ -196,10 +196,11 @@ namespace LoRaWan.Tests.Common
             return directory;
         }
 
-        public static void KillBasicsStation(TestConfiguration config, string temporaryDirectoryName)
+        public static void KillBasicsStation(TestConfiguration config, string temporaryDirectoryName, out string logFilePath)
         {
             if (config is null) throw new ArgumentNullException(nameof(config));
 
+            logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "concentratorlogs.txt");
             var connection = config.RemoteConcentratorConnection;
             var sshPrivateKeyPath = config.SshPrivateKeyPath;
             using var killProcess = new Process()
@@ -207,7 +208,7 @@ namespace LoRaWan.Tests.Common
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "bash",
-                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)' {(string.IsNullOrEmpty(temporaryDirectoryName) ? string.Empty : $"&& rm -rf /tmp/{temporaryDirectoryName}")} \"",
+                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)' {(string.IsNullOrEmpty(temporaryDirectoryName) ? string.Empty : $"cat /tmp/{temporaryDirectoryName}/logs.txt && rm -rf /tmp/{temporaryDirectoryName}")} \" > {logFilePath}",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,

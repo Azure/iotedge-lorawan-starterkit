@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.E2E
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Common;
@@ -105,7 +106,13 @@ namespace LoRaWan.Tests.E2E
             }
             finally
             {
-                TestUtils.KillBasicsStation(TestFixture.Configuration, temporaryDirectoryName);
+                TestUtils.KillBasicsStation(TestFixture.Configuration, temporaryDirectoryName, out var logFilePath);
+                if (string.IsNullOrEmpty(logFilePath) && File.Exists(logFilePath))
+                {
+                    Log("[INFO] ** Basic Station Logs Start **");
+                    Log(await File.ReadAllTextAsync(logFilePath));
+                    Log("[INFO] ** Basic Station Logs End **");
+                }
             }
         }
     }
