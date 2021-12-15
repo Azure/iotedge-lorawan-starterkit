@@ -2,7 +2,7 @@
 
 Following the LoRaWAN Network Server (LNS) specification, each Basics Station (LBS) will at some point invoke the discovery endpoint on a LNS. Subsequently, it will establish a data connection on the data endpoint to receive its setup information. To ensure that the LBS is able to receive the setup information, you will need to add the LBS configuration to IoT Hub. An LBS that does not have its configuration stored in IoT Hub will not be able to connect to the LNS.
 
-### Use LoRa Device Provisioning CLI
+## Use LoRa Device Provisioning CLI
 
 In the following we describe how to register an LBS in IoT Hub by using the LoRa Device Provisioning CLI.
 
@@ -42,7 +42,7 @@ In the following we describe how to register an LBS in IoT Hub by using the LoRa
 
 Please note that currently supported regions for the LoRa Device Provisioning CLI are EU863, US902, CN470RP1 and CN470RP2. Nevertheless, the tool is extensible and you can bring your own 'region.json' in the Cli-LoRa-Device-Provisioning\DefaultRouterConfig folder.
 
-### Manual configuration
+## Manual configuration
 
 If you don't want to use the LoRa Device Provisioning CLI, in the following section we describe how to register an LBS in IoT Hub and how to store its configuration.
 
@@ -193,11 +193,11 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
     with
 
     **'cupsCredCrc'**: computed as CRC32 checksum calculated over the concatenated credentials files `cups.{trust,cert,key}` (or the .bundle file if certificates were generated with the tool provided in this kit)  
-    
+
     **'tcCredCrc'**: computed as CRC32 checksum calculated over the concatenated credentials files `tc.{trust,cert,key}` (or the .bundle file if certificates were generated with the tool provided in this kit)  
-    
+
     **'cupsCredentialUrl'**: should point to the blob in the Azure Function storage account containing the concatenated credentials (i.e.: .bundle file generated with the tool provided in this kit)  
-    
+
     **'tcCredentialUrl'**: should point to the blob in the Azure Function storage account containing the concatenated credentials (i.e.: .bundle file generated with the tool provided in this kit)  
 
 By saving the configuration per LBS in its device twin, the LBS will be able to successfully connect to the LNS and it can start sending frames.
