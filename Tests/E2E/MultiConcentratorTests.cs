@@ -27,11 +27,12 @@ namespace LoRaWan.Tests.E2E
         public async Task DisposeAsync()
         {
             TestUtils.KillBasicsStation(TestFixture.Configuration, this.temporaryDirectoryName, out var logFilePath);
-            if (string.IsNullOrEmpty(logFilePath) && File.Exists(logFilePath))
+            if (!string.IsNullOrEmpty(logFilePath) && File.Exists(logFilePath))
             {
                 Log("[INFO] ** Basic Station Logs Start **");
                 Log(await File.ReadAllTextAsync(logFilePath));
                 Log("[INFO] ** Basic Station Logs End **");
+                File.Delete(logFilePath);
             }
         }
 
