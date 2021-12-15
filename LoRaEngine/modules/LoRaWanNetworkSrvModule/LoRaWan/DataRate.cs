@@ -5,24 +5,27 @@
 
 namespace LoRaWan
 {
-    using System;
-    using System.Globalization;
-
     /// <summary>
     /// An integer value between 0 and 15 that influences modulation (LoRa or FSK), the spreading
     /// factor (SF) and the bandwidth (BW).
     /// </summary>
-    public readonly record struct DataRate
+    public enum DataRate
     {
-        private readonly byte value;
-
-        public DataRate(int value) =>
-            this.value = value is var v and >= 0 and <= 15
-                ? unchecked((byte)v)
-                : throw new ArgumentOutOfRangeException(nameof(value), value, null);
-
-        public int AsInt32 => this.value;
-
-        public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
+        DR0,
+        DR1,
+        DR2,
+        DR3,
+        DR4,
+        DR5,
+        DR6,
+        DR7,
+        DR8,
+        DR9,
+        DR10,
+        DR11,
+        DR12,
+        DR13,
+        DR14,
+        DR15,
     }
 }

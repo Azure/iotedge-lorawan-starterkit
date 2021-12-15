@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using global::LoRaTools.Regions;
+    using static LoRaWan.DataRate;
     using static LoRaWan.Metric;
 
     public static class RegionCN470RP2TestData
@@ -122,18 +123,18 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
             new List<object[]>
             {
-                new object[] { region, null, null, 1, 0, null },
-                new object[] { region, null, null, 1, 8, null },
-                new object[] { region, null, null, 1, 10, null },
-                new object[] { region, null, null, 1, 19, null },
-                new object[] { region, null, null, 1, null, 5 },
-                new object[] { region, null, null, 1, null, 12 },
-                new object[] { region, null, null, 1, 10, 14 },
-                new object[] { region, null, (ushort)2, 2, 0, null },
-                new object[] { region, (ushort)3, null, 3, 0, null },
-                new object[] { region, (ushort)3, (ushort)2, 2, 0, null },
-                new object[] { region, (ushort)4, (ushort)3, 3, 0, 8 },
-                new object[] { region, null, (ushort)9, 1, 11, null },
+                new object[] { region, null, null, DR1, 0, null },
+                new object[] { region, null, null, DR1, 8, null },
+                new object[] { region, null, null, DR1, 10, null },
+                new object[] { region, null, null, DR1, 19, null },
+                new object[] { region, null, null, DR1, null, 5 },
+                new object[] { region, null, null, DR1, null, 12 },
+                new object[] { region, null, null, DR1, 10, 14 },
+                new object[] { region, null, DR2 , DR2, 0, null },
+                new object[] { region, DR3 , null, DR3, 0, null },
+                new object[] { region, DR3 , DR2 , DR2, 0, null },
+                new object[] { region, DR4 , DR3 , DR3, 0, 8 },
+                new object[] { region, null, DR9 , DR1, 11, null },
             };
 
         public static IEnumerable<object[]> TestTranslateToRegionData =>
@@ -174,14 +175,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public static IEnumerable<object[]> TestIsDRIndexWithinAcceptableValuesData =>
             new List<object[]>
             {
-                new object[] { region, (ushort)0, true, true },
-                new object[] { region, (ushort)2, true, true },
-                new object[] { region, (ushort)7, true, true },
-                new object[] { region, (ushort)0, false, true },
-                new object[] { region, (ushort)2, false, true },
-                new object[] { region, (ushort)7, false, true },
-                new object[] { region, (ushort)9, true, false },
-                new object[] { region, (ushort)10, false, false },
+                new object[] { region, DR0, true, true },
+                new object[] { region, DR2, true, true },
+                new object[] { region, DR7, true, true },
+                new object[] { region, DR0, false, true },
+                new object[] { region, DR2, false, true },
+                new object[] { region, DR7, false, true },
+                new object[] { region, DR9, true, false },
+                new object[] { region, DR10, false, false },
                 new object[] { region, null, false, false },
             };
     }

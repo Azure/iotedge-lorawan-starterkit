@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System;
     using global::LoRaTools.Regions;
     using Xunit;
+    using static LoRaWan.DataRate;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
     public class RegionCN470RP2TestWithRxpk : RegionTestBaseRxpk
@@ -111,11 +112,11 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [InlineData(null, null, null, 5, "SF11BW125")]
         [InlineData(null, null, null, 12, "SF11BW125")]
         [InlineData(null, null, 10, 14, "SF11BW125")]
-        [InlineData(null, (ushort)2, 0, null, "SF10BW125")]
+        [InlineData(null, DR2, 0, null, "SF10BW125")]
         [InlineData("SF9BW125", null, 0, null, "SF9BW125")]
-        [InlineData("SF9BW125", (ushort)2, 0, null, "SF10BW125")]
-        [InlineData("SF8BW125", (ushort)3, 0, 8, "SF9BW125")]
-        public void TestRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, string expectedDr)
+        [InlineData("SF9BW125", DR2, 0, null, "SF10BW125")]
+        [InlineData("SF8BW125", DR3, 0, 8, "SF9BW125")]
+        public void TestRX2DataRate(string nwksrvrx2dr, DataRate? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, string expectedDr)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
             TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);

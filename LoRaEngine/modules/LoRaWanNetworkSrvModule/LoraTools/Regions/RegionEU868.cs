@@ -8,6 +8,7 @@ namespace LoRaTools.Regions
     using LoRaWan;
     using System;
     using System.Collections.Generic;
+    using static LoRaWan.DataRate;
     using static LoRaWan.Metric;
 
     public class RegionEU868 : Region
@@ -15,14 +16,14 @@ namespace LoRaTools.Regions
         public RegionEU868()
             : base(LoRaRegionType.EU868)
         {
-            DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
-            DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 230));
-            DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 230));
-            DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
-            DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); // USED FOR GFSK
+            DRtoConfiguration.Add(DR0, (configuration: "SF12BW125", maxPyldSize: 59));
+            DRtoConfiguration.Add(DR1, (configuration: "SF11BW125", maxPyldSize: 59));
+            DRtoConfiguration.Add(DR2, (configuration: "SF10BW125", maxPyldSize: 59));
+            DRtoConfiguration.Add(DR3, (configuration: "SF9BW125", maxPyldSize: 123));
+            DRtoConfiguration.Add(DR4, (configuration: "SF8BW125", maxPyldSize: 230));
+            DRtoConfiguration.Add(DR5, (configuration: "SF7BW125", maxPyldSize: 230));
+            DRtoConfiguration.Add(DR6, (configuration: "SF7BW250", maxPyldSize: 230));
+            DRtoConfiguration.Add(DR7, (configuration: "50", maxPyldSize: 230)); // USED FOR GFSK
 
             TXPowertoMaxEIRP.Add(0, 16);
             TXPowertoMaxEIRP.Add(1, 14);
@@ -33,16 +34,16 @@ namespace LoRaTools.Regions
             TXPowertoMaxEIRP.Add(6, 4);
             TXPowertoMaxEIRP.Add(7, 2);
 
-            RX1DROffsetTable = new int[8][]
+            RX1DROffsetTable = new[]
             {
-                new int[] { 0, 0, 0, 0, 0, 0 },
-                new int[] { 1, 0, 0, 0, 0, 0 },
-                new int[] { 2, 1, 0, 0, 0, 0 },
-                new int[] { 3, 2, 1, 0, 0, 0 },
-                new int[] { 4, 3, 2, 1, 0, 0 },
-                new int[] { 5, 4, 3, 2, 1, 0 },
-                new int[] { 6, 5, 4, 3, 2, 1 },
-                new int[] { 7, 6, 5, 4, 3, 2 }
+                new[] { DR0, DR0, DR0, DR0, DR0, DR0 },
+                new[] { DR1, DR0, DR0, DR0, DR0, DR0 },
+                new[] { DR2, DR1, DR0, DR0, DR0, DR0 },
+                new[] { DR3, DR2, DR1, DR0, DR0, DR0 },
+                new[] { DR4, DR3, DR2, DR1, DR0, DR0 },
+                new[] { DR5, DR4, DR3, DR2, DR1, DR0 },
+                new[] { DR6, DR5, DR4, DR3, DR2, DR1 },
+                new[] { DR7, DR6, DR5, DR4, DR3, DR2 }
             };
             var validDataRangeUpAndDownstream = new HashSet<string>()
             {
@@ -56,7 +57,7 @@ namespace LoRaTools.Regions
                 "50" // 7 FSK 50
             };
 
-            MaxADRDataRate = 5;
+            MaxADRDataRate = DR5;
             RegionLimits = new RegionLimits((Min: Mega(863), Max: Mega(870)), validDataRangeUpAndDownstream, validDataRangeUpAndDownstream, 0, 0);
         }
 
@@ -84,7 +85,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
         /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRate? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);

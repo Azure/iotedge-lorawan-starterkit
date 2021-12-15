@@ -13,6 +13,7 @@ namespace LoRaWan.Tests.Unit
     using Moq;
     using Xunit;
     using Xunit.Abstractions;
+    using static LoRaWan.DataRate;
 
     public class ADRTest
     {
@@ -116,7 +117,7 @@ namespace LoRaWan.Tests.Unit
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             var adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            Assert.Equal(5, adrResult.DataRate);
+            Assert.Equal(DR5, adrResult.DataRate);
             Assert.Equal(7, adrResult.TxPower);
             Assert.Equal(1, adrResult.NbRepetition);
 
@@ -134,7 +135,7 @@ namespace LoRaWan.Tests.Unit
                 GatewayId = "gateway"
             });
 
-            Assert.Equal(5, adrResult.DataRate);
+            Assert.Equal(DR5, adrResult.DataRate);
             Assert.Equal(0, adrResult.TxPower);
             Assert.Equal(1, adrResult.NbRepetition);
 

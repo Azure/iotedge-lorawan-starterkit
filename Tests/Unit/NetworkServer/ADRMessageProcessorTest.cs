@@ -14,20 +14,21 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Xunit;
-    using static SpreadingFactor;
     using static Bandwidth;
+    using static DataRate;
+    using static SpreadingFactor;
 
     public class ADRMessageProcessorTest : MessageProcessorTestBase
     {
         [Theory]
         // deviceId, # messages sent, ExpectedDR, expectedPower, expectedNbRep
         // Enough Messages, Perform ADR
-        [InlineData(10, 70, 5, 7, 1, 9U)]
+        [InlineData(10, 70, DR5, 7, 1, 9U)]
         // Not Enough Messages and fcnt too low, receives empty payload
-        [InlineData(11, 15, 2, 0, 1, 9U)]
+        [InlineData(11, 15, DR2, 0, 1, 9U)]
         // Not Enough Messages and fcnt high, receives default values, stay on DR 2, max tx pow
-        [InlineData(12, 15, 2, 0, 1, 21U)]
-        public async Task Perform_Rate_Adapatation_When_Possible(uint deviceId, int count, int expectedDR, int expectedTXPower, int expectedNbRep, uint initialDeviceFcntUp)
+        [InlineData(12, 15, DR2, 0, 1, 21U)]
+        public async Task Perform_Rate_Adapatation_When_Possible(uint deviceId, int count, DataRate expectedDR, int expectedTXPower, int expectedNbRep, uint initialDeviceFcntUp)
         {
             uint payloadFcnt = 0;
             const uint InitialDeviceFcntDown = 0;
@@ -137,18 +138,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         // DR5 with poor lsnr can't degrade DR
         // [InlineData(221, -20, "SF7BW125", 5, 0)]
         // DR0 with high lsnr will result in move to DR5
-        [InlineData(2, 20, "SF12BW125", 5, 7)]
+        [InlineData(2, 20, "SF12BW125", DR5, 7)]
         // DR1 with high lsnr will result in move to DR5
-        [InlineData(3, 20, "SF11BW125", 5, 7)]
+        [InlineData(3, 20, "SF11BW125", DR5, 7)]
         // DR3 with high lsnr will result in move to DR5
-        [InlineData(4, 20, "SF9BW125", 5, 7)]
+        [InlineData(4, 20, "SF9BW125", DR5, 7)]
         // DR5 with high lsnr will result in reduce the TxPower to 7
-        [InlineData(5, 20, "SF9BW125", 5, 7)]
+        [InlineData(5, 20, "SF9BW125", DR5, 7)]
         // DR5 with low lsnr will not try to modify dr and already at maxTxPower
-        [InlineData(6, -10, "SF7BW125", 5, 0)]
+        [InlineData(6, -10, "SF7BW125", DR5, 0)]
         // Device 5 massive increase in txpower due to very bad lsnr
-        [InlineData(5, -30, "SF9BW125", 3, 0)]
-        public async Task Perform_DR_Adaptation_When_Needed(uint deviceId, float currentLsnr, string currentDRString, int expectedDR, int expectedTxPower)
+        [InlineData(5, -30, "SF9BW125", DR3, 0)]
+        public async Task Perform_DR_Adaptation_When_Needed(uint deviceId, float currentLsnr, string currentDRString, DataRate expectedDR, int expectedTxPower)
         {
             var currentDR = LoRaDataRate.Parse(currentDRString);
             var messageCount = 21;
@@ -168,7 +169,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var twinDR = 0;
+            var twinDR = DR0;
             var twinTxPower = 0;
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
@@ -268,14 +269,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var reportedDR = 0;
+            var reportedDR = DR0;
             var reportedTxPower = 0;
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
             .Callback<TwinCollection>((t) =>
             {
                 if (t.Contains(TwinProperty.DataRate))
-                    reportedDR = t[TwinProperty.DataRate].Value;
+                    reportedDR = (DataRate)(int)(object)t[TwinProperty.DataRate].Value;
                 if (t.Contains(TwinProperty.TxPower))
                     reportedTxPower = t[TwinProperty.TxPower].Value;
             })
@@ -320,9 +321,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);
-            Assert.Equal(5, linkAdr.DataRate);
-            Assert.Equal(5, loraDevice.DataRate);
-            Assert.Equal(5, reportedDR);
+            Assert.Equal(DR5, linkAdr.DataRate);
+            Assert.Equal(DR5, loraDevice.DataRate);
+            Assert.Equal(DR5, reportedDR);
             Assert.Equal(7, linkAdr.TxPower);
             Assert.Equal(7, loraDevice.TxPower);
             Assert.Equal(7, reportedTxPower);
@@ -366,9 +367,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
-            Assert.Equal(5, linkAdr.DataRate);
-            Assert.Equal(5, loraDevice.DataRate);
-            Assert.Equal(5, reportedDR);
+            Assert.Equal(DR5, linkAdr.DataRate);
+            Assert.Equal(DR5, loraDevice.DataRate);
+            Assert.Equal(DR5, reportedDR);
             Assert.Equal(0, linkAdr.TxPower);
             Assert.Equal(0, loraDevice.TxPower);
             Assert.Equal(0, reportedTxPower);

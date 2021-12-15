@@ -16,14 +16,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (region is null) throw new ArgumentNullException(nameof(region));
 
             Freq = radioMetadata.Frequency.InMega;
-            Datr = region.DRtoConfiguration[(ushort)radioMetadata.DataRate.AsInt32].configuration;
+            Datr = region.DRtoConfiguration[radioMetadata.DataRate].configuration;
             Rssi = Convert.ToInt32(radioMetadata.UpInfo.ReceivedSignalStrengthIndication);
             Lsnr = radioMetadata.UpInfo.SignalNoiseRatio;
             Rfch = radioMetadata.UpInfo.AntennaPreference;
             Time = radioMetadata.UpInfo.Xtime.ToString(CultureInfo.InvariantCulture); // This field was just used for telemetry in rxpk. Now it's being used for bringing unaltered the Xtime.
 
             Tmst = unchecked((uint)radioMetadata.UpInfo.Xtime); // This is used by former computation only. Should go away when we drop PktFwd support.
-            Chan = unchecked((uint)radioMetadata.DataRate.AsInt32); // This is not used in any computation. It is only reported in the device telemetry.
+            Chan = checked((uint)radioMetadata.DataRate); // This is not used in any computation. It is only reported in the device telemetry.
             Stat = 1; // This is not used in any computation. It is only reported in the device telemetry.
             Tmms = radioMetadata.UpInfo.GpsTime; // This is not used in any computation. It is only reported in the device telemetry.
             Codr = "4/5"; // This is not used in any computation. It is only reported in the device telemetry.

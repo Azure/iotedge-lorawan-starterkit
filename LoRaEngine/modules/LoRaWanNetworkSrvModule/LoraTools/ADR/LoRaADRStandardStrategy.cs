@@ -4,6 +4,7 @@
 namespace LoRaTools.ADR
 {
     using System.Linq;
+    using LoRaWan;
     using Microsoft.Extensions.Logging;
 
     /// <summary>
@@ -39,7 +40,7 @@ namespace LoRaTools.ADR
             this.logger = logger;
         }
 
-        public LoRaADRResult ComputeResult(string devEUI, LoRaADRTable table, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr)
+        public LoRaADRResult ComputeResult(string devEUI, LoRaADRTable table, float requiredSnr, DataRate upstreamDataRate, int minTxPower, DataRate maxDr)
         {
             // We do not have enough frame to calculate ADR. We can assume that a crash was the cause.
             if (table == null || table.Entries.Count < 20)
@@ -72,7 +73,7 @@ namespace LoRaTools.ADR
             return null;
         }
 
-        private static (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex, int maxDr)
+        private static (int txPower, DataRate datarate) GetPowerAndDRConfiguration(float requiredSnr, DataRate dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex, DataRate maxDr)
         {
             var snrMargin = maxSnr - requiredSnr - MarginDb;
 

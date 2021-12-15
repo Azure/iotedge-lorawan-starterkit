@@ -4,12 +4,13 @@
 namespace LoRaTools.ADR
 {
     using System.Threading.Tasks;
+    using LoRaWan;
 
     public interface ILoRaADRManager
     {
         Task StoreADREntryAsync(LoRaADRTableEntry newEntry);
 
-        Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, int dataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null);
+        Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, DataRate dataRate, int minTxPower, DataRate maxDr, LoRaADRTableEntry newEntry = null);
 
         Task<LoRaADRResult> GetLastResultAsync(string devEUI);
 

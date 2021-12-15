@@ -29,7 +29,7 @@ namespace LoRaWan.NetworkServer.ADR
             return Task.CompletedTask;
         }
 
-        public override Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, int dataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null)
+        public override Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, DataRate dataRate, int minTxPower, DataRate maxDr, LoRaADRTableEntry newEntry = null)
         {
             return Task.FromResult<LoRaADRResult>(null);
         }

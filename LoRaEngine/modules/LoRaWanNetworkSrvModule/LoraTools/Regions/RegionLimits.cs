@@ -17,11 +17,12 @@ namespace LoRaTools.Regions
 
         private readonly HashSet<string> upstreamValidDR;
 
-        private readonly uint startUpstreamDRIndex;
+        private readonly DataRate startUpstreamDRIndex;
 
-        private readonly uint startDownstreamDRIndex;
+        private readonly DataRate startDownstreamDRIndex;
 
-        public RegionLimits((Hertz Min, Hertz Max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR, uint startUpstreamDRIndex, uint startDownstreamDRIndex)
+        public RegionLimits((Hertz Min, Hertz Max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR,
+                            DataRate startUpstreamDRIndex, DataRate startDownstreamDRIndex)
         {
             FrequencyRange = frequencyRange;
             this.downstreamValidDR = downstreamValidDR;
@@ -34,8 +35,8 @@ namespace LoRaTools.Regions
 
         public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string dr) => this.downstreamValidDR.Contains(dr);
 
-        public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(ushort dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
+        public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(DataRate dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
 
-        public bool IsCurrentDownstreamDRIndexWithinAcceptableValue(ushort? dr) => (dr >= this.startDownstreamDRIndex) && dr < this.startDownstreamDRIndex + this.downstreamValidDR.Count;
+        public bool IsCurrentDownstreamDRIndexWithinAcceptableValue(DataRate? dr) => (dr >= this.startDownstreamDRIndex) && dr < this.startDownstreamDRIndex + this.downstreamValidDR.Count;
     }
 }

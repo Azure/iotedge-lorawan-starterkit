@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using global::LoRaTools.Regions;
     using Xunit;
+    using static LoRaWan.DataRate;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
     public class RegionUS915TestWithRxpk : RegionTestBaseRxpk
@@ -105,8 +106,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [Theory]
         [InlineData("", null, null, 923.3, "SF12BW500")] // Standard US.
         [InlineData("SF9BW500", null, null, 923.3, "SF9BW500")] // Standard EU.
-        [InlineData("SF9BW500", 920.0, (ushort)12, 920.0, "SF8BW500")] // Standard EU.
-        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        [InlineData("SF9BW500", 920.0, DR12, 920.0, "SF8BW500")] // Standard EU.
+        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, DataRate? rx2drfromtwins, double expectedFreq, string expectedDr)
         {
             TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
         }

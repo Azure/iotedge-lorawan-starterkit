@@ -5,6 +5,7 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using LoRaWan;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -23,7 +24,7 @@ namespace LoRaTools
 
         public override int Length => 5;
 
-        public int DataRate => (DataRateTXPower >> 4) & 0b00001111;
+        public DataRate DataRate => (DataRate)((DataRateTXPower >> 4) & 0b00001111);
 
         public int TxPower => DataRateTXPower & 0b00001111;
 

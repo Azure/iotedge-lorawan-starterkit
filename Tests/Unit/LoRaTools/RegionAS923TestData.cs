@@ -6,13 +6,12 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using global::LoRaTools.Regions;
+    using static LoRaWan.DataRate;
     using static LoRaWan.Metric;
 
     public static class RegionAS923TestData
     {
-        private static readonly List<DataRate> dataRates =
-            new List<int> { 0, 1, 2, 3, 4, 5, 6, 7 }
-            .Select(dr => new DataRate(dr)).ToList();
+        private static readonly List<DataRate> dataRates = new() { DR0, DR1, DR2, DR3, DR4, DR5, DR6, DR7 };
 
         private static readonly List<Hertz> frequencies =
             new List<ulong> { 923_200_000, 923_400_000, 921_400_000, 916_600_000, 917_500_000 }
@@ -26,7 +25,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             foreach (var dr in dataRates)
             {
                 foreach (var freq in frequencies)
-                    yield return new object[] { region, freq, dr.AsInt32, freq };
+                    yield return new object[] { region, freq, dr, freq };
             }
         }
 
@@ -107,12 +106,12 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             new List<object[]>
             {
                 new object[] { region, null, null, 2 },
-                new object[] { region, null, (ushort)2, 2 },
-                new object[] { region, null, (ushort)5, 5 },
-                new object[] { region, (ushort)3, null, 3 },
-                new object[] { region, (ushort)3, (ushort)4, 4 },
-                new object[] { region, (ushort)2, (ushort)3, 3 },
-                new object[] { region, null, (ushort)9, 2 },
+                new object[] { region, null, DR2, 2 },
+                new object[] { region, null, DR5, 5 },
+                new object[] { region, DR3, null, 3 },
+                new object[] { region, DR3, DR4, 4 },
+                new object[] { region, DR2, DR3, 3 },
+                new object[] { region, null, DR9, 2 },
             };
 
         public static IEnumerable<object[]> TestTranslateToRegionData =>
@@ -137,14 +136,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public static IEnumerable<object[]> TestIsDRIndexWithinAcceptableValuesData =>
             new List<object[]>
             {
-                new object[] { region, (ushort)0, true, true },
-                new object[] { region, (ushort)2, true, true },
-                new object[] { region, (ushort)7, true, true },
-                new object[] { region, (ushort)0, false, true },
-                new object[] { region, (ushort)2, false, true },
-                new object[] { region, (ushort)7, false, true },
-                new object[] { region, (ushort)9, true, false },
-                new object[] { region, (ushort)10, false, false },
+                new object[] { region, DR0, true, true },
+                new object[] { region, DR2, true, true },
+                new object[] { region, DR7, true, true },
+                new object[] { region, DR0, false, true },
+                new object[] { region, DR2, false, true },
+                new object[] { region, DR7, false, true },
+                new object[] { region, DR9, true, false },
+                new object[] { region, DR10, false, false },
                 new object[] { region, null, false, false },
             };
     }

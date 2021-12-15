@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using global::LoRaTools.Regions;
+    using static LoRaWan.DataRate;
     using static LoRaWan.Metric;
 
     public static class RegionEU868TestData
@@ -70,9 +71,9 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
             new List<object[]>
             {
-                new object[] { region, null, null, (ushort)0 }, // Standard EU.
-                new object[] { region, (ushort)3, null, (ushort)3 }, // nwksrvDR is correctly applied if no device twins.
-                new object[] { region, (ushort)3, (ushort)6, (ushort)6 }, // device twins are applied in priority.
+                new object[] { region, null, null, DR0 }, // Standard EU.
+                new object[] { region, DR3, null, DR3 }, // nwksrvDR is correctly applied if no device twins.
+                new object[] { region, DR3, DR6, DR6 }, // device twins are applied in priority.
             };
 
         public static IEnumerable<object[]> TestTranslateToRegionData =>
@@ -97,14 +98,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public static IEnumerable<object[]> TestIsDRIndexWithinAcceptableValuesData =>
             new List<object[]>
             {
-                new object[] { region, (ushort)0, true, true },
-                new object[] { region, (ushort)1, true, true },
-                new object[] { region, (ushort)3, true, true },
-                new object[] { region, (ushort)5, false, true },
-                new object[] { region, (ushort)8, true, false },
-                new object[] { region, (ushort)8, false, false },
-                new object[] { region, (ushort)10, true, false },
-                new object[] { region, (ushort)10, false, false },
+                new object[] { region, DR0, true, true },
+                new object[] { region, DR1, true, true },
+                new object[] { region, DR3, true, true },
+                new object[] { region, DR5, false, true },
+                new object[] { region, DR8, true, false },
+                new object[] { region, DR8, false, false },
+                new object[] { region, DR10, true, false },
+                new object[] { region, DR10, false, false },
                 new object[] { region, null, false, false },
             };
     }

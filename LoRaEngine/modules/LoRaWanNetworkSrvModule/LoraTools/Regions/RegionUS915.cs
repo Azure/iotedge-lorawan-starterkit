@@ -8,6 +8,7 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
+    using static LoRaWan.DataRate;
     using static LoRaWan.Metric;
 
     public class RegionUS915 : Region
@@ -30,30 +31,30 @@ namespace LoRaTools.Regions
         public RegionUS915()
             : base(LoRaRegionType.US915)
         {
-            DRtoConfiguration.Add(0, (configuration: "SF10BW125", maxPyldSize: 19));
-            DRtoConfiguration.Add(1, (configuration: "SF9BW125", maxPyldSize: 61));
-            DRtoConfiguration.Add(2, (configuration: "SF8BW125", maxPyldSize: 133));
-            DRtoConfiguration.Add(3, (configuration: "SF7BW125", maxPyldSize: 250));
-            DRtoConfiguration.Add(4, (configuration: "SF8BW500", maxPyldSize: 250));
-            DRtoConfiguration.Add(8, (configuration: "SF12BW500", maxPyldSize: 61));
-            DRtoConfiguration.Add(9, (configuration: "SF11BW500", maxPyldSize: 137));
-            DRtoConfiguration.Add(10, (configuration: "SF10BW500", maxPyldSize: 250));
-            DRtoConfiguration.Add(11, (configuration: "SF9BW500", maxPyldSize: 250));
-            DRtoConfiguration.Add(12, (configuration: "SF8BW500", maxPyldSize: 250));
-            DRtoConfiguration.Add(13, (configuration: "SF7BW500", maxPyldSize: 250));
+            DRtoConfiguration.Add(DR0, (configuration: "SF10BW125", maxPyldSize: 19));
+            DRtoConfiguration.Add(DR1, (configuration: "SF9BW125", maxPyldSize: 61));
+            DRtoConfiguration.Add(DR2, (configuration: "SF8BW125", maxPyldSize: 133));
+            DRtoConfiguration.Add(DR3, (configuration: "SF7BW125", maxPyldSize: 250));
+            DRtoConfiguration.Add(DR4, (configuration: "SF8BW500", maxPyldSize: 250));
+            DRtoConfiguration.Add(DR8, (configuration: "SF12BW500", maxPyldSize: 61));
+            DRtoConfiguration.Add(DR9, (configuration: "SF11BW500", maxPyldSize: 137));
+            DRtoConfiguration.Add(DR10, (configuration: "SF10BW500", maxPyldSize: 250));
+            DRtoConfiguration.Add(DR11, (configuration: "SF9BW500", maxPyldSize: 250));
+            DRtoConfiguration.Add(DR12, (configuration: "SF8BW500", maxPyldSize: 250));
+            DRtoConfiguration.Add(DR13, (configuration: "SF7BW500", maxPyldSize: 250));
 
             for (uint i = 0; i < 14; i++)
             {
                 TXPowertoMaxEIRP.Add(i, 30 - i);
             }
 
-            RX1DROffsetTable = new int[5][]
+            RX1DROffsetTable = new[]
             {
-                new int[] { 10, 9, 8, 8 },
-                new int[] { 11, 10, 9, 8 },
-                new int[] { 12, 11, 10, 9 },
-                new int[] { 13, 12, 11, 10 },
-                new int[] { 13, 13, 12, 11 },
+                new[] { DR10, DR9,  DR8,  DR8  },
+                new[] { DR11, DR10, DR9,  DR8  },
+                new[] { DR12, DR11, DR10, DR9  },
+                new[] { DR13, DR12, DR11, DR10 },
+                new[] { DR13, DR13, DR12, DR11 },
             };
 
             var upstreamValidDataranges = new HashSet<string>()
@@ -75,8 +76,8 @@ namespace LoRaTools.Regions
                 "SF7BW500" // 13
             };
 
-            MaxADRDataRate = 3;
-            RegionLimits = new RegionLimits((Min: Mega(902.3), Max: Mega(927.5)), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
+            MaxADRDataRate = DR3;
+            RegionLimits = new RegionLimits((Min: Mega(902.3), Max: Mega(927.5)), upstreamValidDataranges, downstreamValidDataranges, DR0, DR8);
         }
 
         /// <summary>
@@ -115,19 +116,19 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
         /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRate? upstreamDataRate, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (upstreamDataRate is null) throw new ArgumentNullException(nameof(upstreamDataRate));
 
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
-            if (!IsValidUpstreamDataRate((ushort)upstreamDataRate))
+            if (!IsValidUpstreamDataRate(upstreamDataRate.Value))
                 throw new LoRaProcessingException($"Invalid upstream data rate {upstreamDataRate}", LoRaProcessingErrorCode.InvalidDataRate);
 
             int upstreamChannelNumber;
-            upstreamChannelNumber = upstreamDataRate == 4 ? 64 + (int)Math.Round((upstreamFrequency.InMega - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
-                                                    : (int)Math.Round((upstreamFrequency.InMega - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
+            upstreamChannelNumber = upstreamDataRate == DR4 ? 64 + (int)Math.Round((upstreamFrequency.InMega - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
+                                                            : (int)Math.Round((upstreamFrequency.InMega - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
             downstreamFrequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
             return true;
         }
@@ -136,6 +137,6 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(Mega(923.3), 8);
+        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(Mega(923.3), DR8);
     }
 }

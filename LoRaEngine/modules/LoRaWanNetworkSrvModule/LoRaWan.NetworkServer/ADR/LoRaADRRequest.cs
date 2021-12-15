@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer.ADR
 {
     public class LoRaADRRequest
     {
-        public int DataRate { get; set; }
+        public DataRate DataRate { get; set; }
 
         public float RequiredSnr { get; set; }
 

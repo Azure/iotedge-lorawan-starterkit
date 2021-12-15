@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit
     using global::LoRaTools.ADR;
     using global::LoRaTools.LoRaPhysical;
     using Xunit;
+    using static LoRaWan.DataRate;
 
 #pragma warning disable CA1812 // Unused class
     // Used as Theory Data
@@ -38,7 +39,7 @@ namespace LoRaWan.Tests.Unit
             };
             AddRow("Not enough entries to calculate ADR", deviceNameNotEnoughEntries, tableentries, rxpk, true, new LoRaADRResult()
             {
-                DataRate = 5,
+                DataRate = DR5,
                 TxPower = 0,
                 NbRepetition = 1,
                 FCntDown = 1
@@ -99,7 +100,7 @@ namespace LoRaWan.Tests.Unit
             };
             var increaseNbReploRaADRResult = new LoRaADRResult()
             {
-                DataRate = 5,
+                DataRate = DR5,
                 NbRepetition = 3,
                 TxPower = 0,
                 FCntDown = 1
@@ -146,7 +147,7 @@ namespace LoRaWan.Tests.Unit
             };
             var decreaseNbReploRaADRResult = new LoRaADRResult()
             {
-                DataRate = 5,
+                DataRate = DR5,
                 NbRepetition = 1,
                 TxPower = 2,
                 FCntDown = 1

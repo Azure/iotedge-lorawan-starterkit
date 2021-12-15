@@ -290,7 +290,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static Rxpk GetExpectedRxpk()
         {
             var radioMetadataUpInfo = new RadioMetadataUpInfo(0, 68116944405337035, 0, -53, (float)8.25);
-            var radioMetadata = new RadioMetadata(new DataRate(5), new Hertz(868300000), radioMetadataUpInfo);
+            var radioMetadata = new RadioMetadata(DataRate.DR5, new Hertz(868300000), radioMetadataUpInfo);
             return new BasicStationToRxpk(radioMetadata, RegionManager.EU868);
         }
 
