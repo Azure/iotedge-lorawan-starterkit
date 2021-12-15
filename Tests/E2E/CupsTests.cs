@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.E2E
     using System.Threading.Tasks;
     using LoRaWan.Tests.Common;
     using Xunit;
-    using XunitRetryHelper;
 
     // Tests cups scenarios
     [Collection(Constants.TestCollectionName)] // run in serial
@@ -23,7 +22,7 @@ namespace LoRaWan.Tests.E2E
         {
         }
 
-        [RetryFact]
+        [Fact]
         public async Task Test_Concentrator_Can_Receive_Updates_Then_Connect_To_Lns_And_Receive_Messages()
         {
             //arrange
@@ -106,7 +105,7 @@ namespace LoRaWan.Tests.E2E
             finally
             {
                 TestUtils.KillBasicsStation(TestFixture.Configuration, temporaryDirectoryName, out var logFilePath);
-                if (string.IsNullOrEmpty(logFilePath) && File.Exists(logFilePath))
+                if (!string.IsNullOrEmpty(logFilePath) && File.Exists(logFilePath))
                 {
                     Log("[INFO] ** Basic Station Logs Start **");
                     Log(await File.ReadAllTextAsync(logFilePath));
