@@ -120,17 +120,17 @@ namespace LoraKeysManagerFacade
                     throw new DeviceNonceUsedException();
                 }
             }
-            else if (devAddr is { } da)
+            else if (devAddr is { } someDevAddr)
             {
                 // ABP or normal message
 
                 // TODO check for sql injection
                 var devAddrCache = new LoRaDevAddrCache(this.cacheStore, this.registryManager, log, gatewayId);
-                if (await devAddrCache.TryTakeDevAddrUpdateLock(da))
+                if (await devAddrCache.TryTakeDevAddrUpdateLock(someDevAddr))
                 {
                     try
                     {
-                        if (devAddrCache.TryGetInfo(da, out var devAddressesInfo))
+                        if (devAddrCache.TryGetInfo(someDevAddr, out var devAddressesInfo))
                         {
                             for (var i = 0; i < devAddressesInfo.Count; i++)
                             {
@@ -159,7 +159,7 @@ namespace LoraKeysManagerFacade
                         // if the device is not found is the cache we query, if there was something, it is probably not our device.
                         if (results.Count == 0 && devAddressesInfo == null)
                         {
-                            var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{da}' OR properties.reported.DevAddr ='{da}'", 100);
+                            var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{someDevAddr}' OR properties.reported.DevAddr ='{someDevAddr}'", 100);
                             var resultCount = 0;
                             while (query.HasMoreResults)
                             {
@@ -172,7 +172,7 @@ namespace LoraKeysManagerFacade
                                         var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
                                         var iotHubDeviceInfo = new DevAddrCacheInfo
                                         {
-                                            DevAddr = da,
+                                            DevAddr = someDevAddr,
                                             DevEUI = twin.DeviceId,
                                             PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey,
                                             GatewayId = twin.GetGatewayID(),
@@ -192,7 +192,7 @@ namespace LoraKeysManagerFacade
                             {
                                 _ = devAddrCache.StoreInfo(new DevAddrCacheInfo()
                                 {
-                                    DevAddr = da,
+                                    DevAddr = someDevAddr,
                                     DevEUI = string.Empty
                                 });
                             }
@@ -200,7 +200,7 @@ namespace LoraKeysManagerFacade
                     }
                     finally
                     {
-                        _ = devAddrCache.ReleaseDevAddrUpdateLock(da);
+                        _ = devAddrCache.ReleaseDevAddrUpdateLock(someDevAddr);
                     }
                 }
             }
