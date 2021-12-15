@@ -231,7 +231,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         private static T CastToEnumIfDefined<T>(int value) where T : Enum =>
             Enum.IsDefined(typeof(T), value)
                 ? (T)(object)value
-                : throw new JsonException($"'{value}' is not defined in enum '{nameof(T)}'.");
+                : throw new JsonException($"'{value}' is not defined in enum '{typeof(T)}'.");
 
         private static string WriteRouterConfig(IEnumerable<NetId> allowedNetIds,
                                                 IEnumerable<(JoinEui Min, JoinEui Max)> joinEuiRanges,
