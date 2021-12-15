@@ -8,19 +8,17 @@ In the following we describe how to register an LBS in IoT Hub by using the [LoR
 
 1. Retrieve the LBS EUI in its hex-representation (e.g. `AABBCCFFFE001122`). If you are running a dev kit on a Linux machine, the EUI can be retrieved from the MAC address of the eth0 interface as follows:
 
+  !!! info Eth
+      Assuming aa:bb:cc:00:11:22 is the returned MAC Address your EUI will be AABBCCFFFE001122.  
+      Please note the insertion of the literals 'FFFE' in the middle, as per [Basic Station Glossary](https://doc.sm.tc/station/glossary.html?highlight=mac)
+
    ```bash
    cat /sys/class/net/eth0/address # prints the MAC Address of eth0
-   # Assuming aa:bb:cc:00:11:22 is the returned MAC Address
-   # your EUI will be AABBCCFFFE001122 
-   # Please note the insertion of the literals 'FFFE'  in the middle, as per https://doc.sm.tc/station/glossary.html?highlight=mac
    ```
+<!-- markdownlint-disable MD029 -->
+2. Download the [LoRa Device Provisioning CLI](../tools/device-provisioning.md) and populate the appsettings.json with the required connection strings of the services deployed by the starter kit.
 
-2. Download the CLI and populate the appsettings.json with the required connection strings of the services deployed by the starter kit:
-
-   1. Instructions on how to retrieve IoT Hub connection string can be found here ([Get started with Azure IoT Hub device twins (.NET/.NET) | Microsoft Docs](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-twin-getstarted#get-the-iot-hub-connection-string))
-   2. Instructions on how to retrieve Azure Storage connection string can be found here ([Quickstart: Azure Blob Storage library v12 - .NET | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-dotnet#copy-your-credentials-from-the-azure-portal))
-
-3. As soon as the appsettings.json is filled, execute the CLI and pass the parameters for the desired configuration.
+3. Execute the CLI and pass the parameters for the desired configuration.
 
    1. e.g.: if you want to register a EU863 concentrator, not using CUPS, you should issue
 
@@ -55,128 +53,119 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
     # Please note the insertion of the literals 'FFFE'  in the middle, as per https://doc.sm.tc/station/glossary.html?highlight=mac
     ```
 
-2. The radio configuration needs to be stored as a desired twin property of the newly created LBS device. Make sure to store the configuration under `properties.desired.routerConfig`.
-   1. The configuration follows the `router_config` format from the LNS protocol as closely as possible. However, since device twins encode numbers as 32-bit values and given some configuration properties (such as EUIs) are 64-bit numbers, there are some minor differences.
+2. The radio configuration needs to be stored as a desired twin property of the newly created LBS device. Make sure to store the configuration under `properties.desired.routerConfig`
+   - The configuration follows the `router_config` format from the LNS protocol as closely as possible. However, since device twins encode numbers as 32-bit values and given some configuration properties (such as EUIs) are 64-bit numbers, there are some minor differences.
 
-   2. The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]`
+   - The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]`
 
-   3. A full configuration example might look like this, relative to the desired twin property path `properties.desired`:
+   - A full configuration example might look like this, relative to the desired twin property path `properties.desired`: <!-- markdownlint-disable MD046 -->
 
-      <details>
-        <summary>EU863 Example Configuration</summary>
+    === "EU863 Example Configuration"
 
-        ```json
-        {
-          "routerConfig": {
-            "NetID": [1],
-            "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
-            "region": "EU863",
-            "hwspec": "sx1301/1",
-            "freq_range": [863000000, 870000000],
-            "DRs": [
-              [11, 125, 0],
-              [10, 125, 0],
-              [9, 125, 0],
-              [8, 125, 0],
-              [7, 125, 0],
-              [7, 250, 0]
-            ],
-            "sx1301_conf": [
-              {
-                "radio_0": { "enable": true, "freq": 867500000 },
-                "radio_1": { "enable": true, "freq": 868500000 },
-                "chan_FSK": { "enable": true, "radio": 1, "if": 300000 },
-                "chan_Lora_std": {
-                  "enable": true,
-                  "radio": 1,
-                  "if": -200000,
-                  "bandwidth": 250000,
-                  "spread_factor": 7
-                },
-                "chan_multiSF_0": { "enable": true, "radio": 1, "if": -400000 },
-                "chan_multiSF_1": { "enable": true, "radio": 1, "if": -200000 },
-                "chan_multiSF_2": { "enable": true, "radio": 1, "if": 0 },
-                "chan_multiSF_3": { "enable": true, "radio": 0, "if": -400000 },
-                "chan_multiSF_4": { "enable": true, "radio": 0, "if": -200000 },
-                "chan_multiSF_5": { "enable": true, "radio": 0, "if": 0 },
-                "chan_multiSF_6": { "enable": true, "radio": 0, "if": 200000 },
-                "chan_multiSF_7": { "enable": true, "radio": 0, "if": 400000 }
-              }
-            ],
-            "nocca": true,
-            "nodc": true,
-            "nodwell": true
-          }
+        ``` json
+        "routerConfig": {
+          "NetID": [1],
+          "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
+          "region": "EU863",
+          "hwspec": "sx1301/1",
+          "freq_range": [863000000, 870000000],
+          "DRs": [
+            [11, 125, 0],
+            [10, 125, 0],
+            [9, 125, 0],
+            [8, 125, 0],
+            [7, 125, 0],
+            [7, 250, 0]
+          ],
+          "sx1301_conf": [
+            {
+              "radio_0": { "enable": true, "freq": 867500000 },
+              "radio_1": { "enable": true, "freq": 868500000 },
+              "chan_FSK": { "enable": true, "radio": 1, "if": 300000 },
+              "chan_Lora_std": {
+                "enable": true,
+                "radio": 1,
+                "if": -200000,
+                "bandwidth": 250000,
+                "spread_factor": 7
+              },
+              "chan_multiSF_0": { "enable": true, "radio": 1, "if": -400000 },
+              "chan_multiSF_1": { "enable": true, "radio": 1, "if": -200000 },
+              "chan_multiSF_2": { "enable": true, "radio": 1, "if": 0 },
+              "chan_multiSF_3": { "enable": true, "radio": 0, "if": -400000 },
+              "chan_multiSF_4": { "enable": true, "radio": 0, "if": -200000 },
+              "chan_multiSF_5": { "enable": true, "radio": 0, "if": 0 },
+              "chan_multiSF_6": { "enable": true, "radio": 0, "if": 200000 },
+              "chan_multiSF_7": { "enable": true, "radio": 0, "if": 400000 }
+            }
+          ],
+          "nocca": true,
+          "nodc": true,
+          "nodwell": true
         }
         ```
 
-      </details>
+    === "US902 Example Configuration"
 
-      <details>
-        <summary>US902 Example Configuration</summary>
-
-        ```json
-        {
-          "routerConfig": {
-            "NetID": [1],
-            "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
-            "region": "US902",
-            "hwspec": "sx1301/1",
-            "freq_range": [902000000, 928000000],
-            "DRs": [
-              [10, 125, 0],
-              [9, 125, 0],
-              [8, 125, 0],
-              [7, 125, 0],
-              [8, 500, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-              [12, 500, 1],
-              [11, 500, 1],
-              [10, 500, 1],
-              [9, 500, 1],
-              [8, 500, 1],
-              [8, 500, 1]
-            ],
-            "sx1301_conf": [
-              {
-                "radio_0": { "enable": true, "freq": 902700000 },
-                "radio_1": { "enable": true, "freq": 903400000 },
-                "chan_FSK": { "enable": true, "radio": 1, "if": 300000 },
-                "chan_Lora_std": {
-                  "enable": true,
-                  "radio": 0,
-                  "if": 300000,
-                  "bandwidth": 500000,
-                  "spread_factor": 8
-                },
-                "chan_multiSF_0": { "enable": true, "radio": 0, "if": -400000 },
-                "chan_multiSF_1": { "enable": true, "radio": 0, "if": -200000 },
-                "chan_multiSF_2": { "enable": true, "radio": 0, "if": 0 },
-                "chan_multiSF_3": { "enable": true, "radio": 0, "if": 200000 },
-                "chan_multiSF_4": { "enable": true, "radio": 1, "if": -300000 },
-                "chan_multiSF_5": { "enable": true, "radio": 1, "if": -100000 },
-                "chan_multiSF_6": { "enable": true, "radio": 1, "if": 100000 },
-                "chan_multiSF_7": { "enable": true, "radio": 1, "if": 300000 }
-              }
-            ],
-            "nocca": true,
-            "nodc": true,
-            "nodwell": true
-          }
+        ``` json
+        "routerConfig": {
+          "NetID": [1],
+          "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
+          "region": "US902",
+          "hwspec": "sx1301/1",
+          "freq_range": [902000000, 928000000],
+          "DRs": [
+            [10, 125, 0],
+            [9, 125, 0],
+            [8, 125, 0],
+            [7, 125, 0],
+            [8, 500, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            [12, 500, 1],
+            [11, 500, 1],
+            [10, 500, 1],
+            [9, 500, 1],
+            [8, 500, 1],
+            [8, 500, 1]
+          ],
+          "sx1301_conf": [
+            {
+              "radio_0": { "enable": true, "freq": 902700000 },
+              "radio_1": { "enable": true, "freq": 903400000 },
+              "chan_FSK": { "enable": true, "radio": 1, "if": 300000 },
+              "chan_Lora_std": {
+                "enable": true,
+                "radio": 0,
+                "if": 300000,
+                "bandwidth": 500000,
+                "spread_factor": 8
+              },
+              "chan_multiSF_0": { "enable": true, "radio": 0, "if": -400000 },
+              "chan_multiSF_1": { "enable": true, "radio": 0, "if": -200000 },
+              "chan_multiSF_2": { "enable": true, "radio": 0, "if": 0 },
+              "chan_multiSF_3": { "enable": true, "radio": 0, "if": 200000 },
+              "chan_multiSF_4": { "enable": true, "radio": 1, "if": -300000 },
+              "chan_multiSF_5": { "enable": true, "radio": 1, "if": -100000 },
+              "chan_multiSF_6": { "enable": true, "radio": 1, "if": 100000 },
+              "chan_multiSF_7": { "enable": true, "radio": 1, "if": 300000 }
+            }
+          ],
+          "nocca": true,
+          "nodc": true,
+          "nodwell": true
         }
         ```
 
-      </details>
-
-   4. A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
+   - <!-- markdownlint-enable MD046 --> A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
 
 3. If you want to enable client certificate validation for this device, make sure to define the `properties.desired.clientThumbprint` desired property as an array of strings (each of them being one of the allowed thumbprints for client certificates of this device)
 
-4. If you want to enable CUPS for this device, you will need to:
+4. If you want to enable CUPS for this device, after generating the certificates, you will need to:
 
-    1. upload the .bundle credential file to the 'stationcredentials' container in the Azure Function Storage Account created by the Starter Kit template ([Quickstart: Upload, download, and list blobs - Azure portal - Azure Storage | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal#upload-a-block-blob))
+    1. upload the .bundle credential file to the 'stationcredentials' container in the Azure Function Storage Account created by the Starter Kit template ([Quickstart: Upload, download, and list blobs - Azure portal - Azure Storage | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal#upload-a-block-blob))  
+    The .bundle file is the concatenation of the .trust, .crt and .key files in DER format as described in official [Basics Station documentation](https://doc.sm.tc/station/cupsproto.html)
     2. make sure to define the `properties.desired.cups` desired property as follows:
 
     ```json
@@ -199,5 +188,6 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
     **'cupsCredentialUrl'**: should point to the blob in the Azure Function storage account containing the concatenated credentials (i.e.: .bundle file generated with the tool provided in this kit)  
 
     **'tcCredentialUrl'**: should point to the blob in the Azure Function storage account containing the concatenated credentials (i.e.: .bundle file generated with the tool provided in this kit)  
+<!-- markdownlint-disable MD029 -->
 
 By saving the configuration per LBS in its device twin, the LBS will be able to successfully connect to the LNS and it can start sending frames.
