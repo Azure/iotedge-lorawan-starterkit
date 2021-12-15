@@ -91,7 +91,9 @@ This starter kit is providing a [BasicStation Certificates Generation](https://g
 
 The starter kit and, therefore, this tool are expecting the same certificate sets for both CUPS and LNS endpoints.
 
-In a production environment, you should not use certificates provided by this tool, but generate and sign certificates with a trusted root authority.
+!!! danger "Only for testing"
+
+    In a production environment, you should not use certificates provided by this tool, but generate and sign certificates with a trusted root authority.
 
 ### Generate a server certificate
 
@@ -101,7 +103,8 @@ As an example, if you want to generate a server certificate for a LoRaWAN Networ
 ./certificate-generate.sh server mytest.endpoint.com chosenPfxPassword
 ```
 
-**IMPORTANT:** when running the Basic Station client with Server Authentication enabled, the common name of the Server Certificate should exactly match the hostname specified in cups.uri/tc.uri. Even though this is decreasing security, it is possible to disable [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) by setting the '**TLS_SNI**' environment variable to false when executing the Basic Station client (or provided LoRaBasicsStationModule)
+!!! warning "IMPORTANT"
+    when running the Basic Station client with Server Authentication enabled, the common name of the Server Certificate should exactly match the hostname specified in cups.uri/tc.uri. Even though this is decreasing security, it is possible to disable [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) by setting the '**TLS_SNI**' environment variable to false when executing the Basic Station client (or provided LoRaBasicsStationModule)
 
 The previous command will both generate a self-signed certificate authority (located in the 'ca' folder) and a mytest.endpoint.com.pfx (located in 'server' folder)
 
@@ -115,7 +118,8 @@ As an example, if you want to generate a client certificate for a Basic Station 
 ./certificate-generate.sh client AABBCCFFFE001122
 ```
 
-**IMPORTANT:** for client authentication to successfully work, the Common Name of the certificate should exactly match the DevEUI of the Basic Station.
+!!! warning "IMPORTANT"
+    for client authentication to successfully work, the Common Name of the certificate should exactly match the DevEUI of the Basic Station.
 
 The previous command will generate the following files in the 'client' subfolder:
 
