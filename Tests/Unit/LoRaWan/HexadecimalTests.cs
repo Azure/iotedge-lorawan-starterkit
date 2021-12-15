@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit
 {
     using System;
     using LoRaWan;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class HexadecimalTests
@@ -135,22 +136,27 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(expected, actual);
         }
 
+        public static TheoryData<string, char?> InvalidInput() => TheoryDataFactory.From(new[]
+        {
+            ("1", (char?)null),
+            ("l2", null),
+            ("123", null),
+            ("12345", null),
+            ("12:34", '-'),
+            ("12--34", '-'),
+            ("123-456", '-'),
+            ("1", '-'),
+            ("123", '-'),
+            ("12345", '-'),
+            ("12-", '-'),
+            ("-12", '-'),
+            ("-12-", '-'),
+            ("12-34-", '-'),
+            ("12:E4:S6", ':')
+        });
+
         [Theory]
-        [InlineData("1", null)]
-        [InlineData("l2", null)]
-        [InlineData("123", null)]
-        [InlineData("12345", null)]
-        [InlineData("12:34", '-')]
-        [InlineData("12--34", '-')]
-        [InlineData("123-456", '-')]
-        [InlineData("1", '-')]
-        [InlineData("123", '-')]
-        [InlineData("12345", '-')]
-        [InlineData("12-", '-')]
-        [InlineData("-12", '-')]
-        [InlineData("-12-", '-')]
-        [InlineData("12-34-", '-')]
-        [InlineData("12:E4:S6", ':')]
+        [MemberData(nameof(InvalidInput))]
         public void TryParse_With_Invalid_Input(string input, char? separator)
         {
             var succeeded = Hexadecimal.TryParse(input, new byte[100], separator);

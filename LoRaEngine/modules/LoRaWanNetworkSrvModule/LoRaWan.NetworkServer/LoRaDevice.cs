@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -55,7 +56,7 @@ namespace LoRaWan.NetworkServer
 
         public string AppNonce { get; set; }
 
-        public string DevNonce { get; set; }
+        public DevNonce? DevNonce { get; set; }
 
         public string NetID { get; set; }
 
@@ -322,7 +323,10 @@ namespace LoRaWan.NetworkServer
                     NetID = twin.Properties.Reported[TwinProperty.NetID].Value as string;
 
                 if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
-                    DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
+                {
+                    var devNonceString = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
+                    DevNonce = ushort.TryParse(devNonceString, NumberStyles.None, CultureInfo.InvariantCulture, out var d) ? new DevNonce(d) : null;
+                }
 
                 // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
                 if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))

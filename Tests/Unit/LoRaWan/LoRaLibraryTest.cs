@@ -64,12 +64,10 @@ namespace LoRaWan.Tests.Unit
             var appEUIText = "0005100000000004";
             var devEUIText = "0005100000000004";
 
-            var devNonceText = "ABCD";
-            var devNonceBytes = ConversionHelper.StringToByteArray(devNonceText);
-
+            var devNonce = new DevNonce(0xABCD);
             var appKey = "00000000000000000005100000000004";
 
-            var joinRequest = new LoRaPayloadJoinRequest(appEUIText, devEUIText, devNonceBytes);
+            var joinRequest = new LoRaPayloadJoinRequest(appEUIText, devEUIText, devNonce);
             joinRequest.SetMic(appKey);
             Assert.True(joinRequest.CheckMic(appKey));
             Assert.True(joinRequest.CheckMic(appKey)); // ensure multiple calls work!
@@ -150,17 +148,13 @@ namespace LoRaWan.Tests.Unit
             {
                2, 3, 4, 5, 2, 3, 4, 5
             };
-            var joinRequestDevNonce = new byte[2]
-            {
-                16, 45
-            };
+            var expectedJoinRequestDevNonce = DevNonce.Read(new byte[2] { 45, 16 });
 
             Array.Reverse(joinRequestAppEui);
             Array.Reverse(joinRequestDevEUI);
-            Array.Reverse(joinRequestDevNonce);
             Assert.True(joinRequestMessage.AppEUI.ToArray().SequenceEqual(joinRequestAppEui));
             Assert.True(joinRequestMessage.DevEUI.ToArray().SequenceEqual(joinRequestDevEUI));
-            Assert.True(joinRequestMessage.DevNonce.ToArray().SequenceEqual(joinRequestDevNonce));
+            Assert.Equal(expectedJoinRequestDevNonce, joinRequestMessage.DevNonce);
         }
 
         /// <summary>
@@ -294,10 +288,7 @@ namespace LoRaWan.Tests.Unit
             {
                 8, 7, 6, 5, 4, 3, 2, 1,
             };
-            joinReq.DevNonce = new byte[2]
-            {
-                2, 1,
-            };
+            joinReq.DevNonce = DevNonce.Read(new byte[2] { 2, 1 });
             joinReq.AppEUI = new byte[8]
             {
                 1, 2, 3, 4, 5, 6, 7, 8,
@@ -315,7 +306,7 @@ namespace LoRaWan.Tests.Unit
             {
                 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
             };
-            var key = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netId, joinReq.DevNonce.ToArray(), appKey);
+            var key = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netId, joinReq.DevNonce, appKey);
             Assert.Equal(
                 key,
                 new byte[16] { 223, 83, 195, 95, 48, 52, 204, 206, 208, 255, 53, 76, 112, 222, 4, 223, });
@@ -327,7 +318,7 @@ namespace LoRaWan.Tests.Unit
             var result = Assert.Throws<InvalidOperationException>(() => LoRaPayload.CalculateKey(LoRaPayloadKeyType.None,
                                                                                                  Array.Empty<byte>(),
                                                                                                  Array.Empty<byte>(),
-                                                                                                 Array.Empty<byte>(),
+                                                                                                 new DevNonce(),
                                                                                                  Array.Empty<byte>()));
             Assert.Equal("No key type selected.", result.Message);
         }
@@ -421,19 +412,18 @@ namespace LoRaWan.Tests.Unit
 
         // When creating a join request using simulated devices, rebuilding it should pass the mic check
         [Theory]
-        [InlineData("000000000000AABB", "0000000000001111", "00000000000000000000000000002222", "5060")]
-        [InlineData("0000000000000001", "0000000000000001", "00000000000000000000000000000001", "C39F")]
+        [InlineData("000000000000AABB", "0000000000001111", "00000000000000000000000000002222", 0x6050)]
+        [InlineData("0000000000000001", "0000000000000001", "00000000000000000000000000000001", 0x9FC3)]
         public void When_Creating_Join_Request_Recreating_Should_Pass_Mic_Check(
             string appEUIText,
             string devEUIText,
             string appKeyText,
-            string devNonceText)
+            ushort devNonceRawValue)
         {
             var wrongAppKeyText = "00000000000000000000000000003333";
 
             // create a join request
-            var devNonce = ConversionHelper.StringToByteArray(devNonceText);
-            Array.Reverse(devNonce);
+            var devNonce = new DevNonce(devNonceRawValue);
 
             var join = new LoRaPayloadJoinRequest(appEUIText, devEUIText, devNonce);
             Assert.Equal(appEUIText, join.GetAppEUIAsString());
