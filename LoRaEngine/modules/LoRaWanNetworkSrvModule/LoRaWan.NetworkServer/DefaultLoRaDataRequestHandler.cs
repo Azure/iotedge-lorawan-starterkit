@@ -105,7 +105,7 @@ namespace LoRaWan.NetworkServer
             }
             else if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
             {
-                // Request is allowed upstream but confirmation is skipped to avoid collisions on the air.
+                // Request is allowed upstream but confirmation is skipped to avoid sending the answer to the device multiple times and potentially cause collisions on the air.
                 skipDownstreamToAvoidCollisions = true;
             }
 
