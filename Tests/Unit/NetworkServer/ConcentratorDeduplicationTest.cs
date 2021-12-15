@@ -157,7 +157,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             var joinPayload = (LoRaPayloadJoinRequest)this.joinRequest.Payload;
-            joinPayload.DevNonce = new Memory<byte>(new byte[2]);
+            joinPayload.DevNonce = new DevNonce(0);
             this.joinRequest.SetPayload(joinPayload);
 
             var expectedKey = "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4";

@@ -123,7 +123,6 @@ namespace LoRaWan.NetworkServer
         {
             var joinEui = JoinEui.Read(payload.AppEUI.Span);
             var devEui = DevEui.Read(payload.DevEUI.Span);
-            var devNonce = DevNonce.Read(payload.DevNonce.Span);
 
             var totalBufferLength = JoinEui.Size + DevEui.Size + DevNonce.Size;
             Span<byte> buffer = stackalloc byte[totalBufferLength];
@@ -131,7 +130,7 @@ namespace LoRaWan.NetworkServer
 
             buffer = joinEui.Write(buffer);
             buffer = devEui.Write(buffer);
-            _ = devNonce.Write(buffer);
+            _ = payload.DevNonce.Write(buffer);
 
             var key = Sha256.ComputeHash(head.ToArray());
 
