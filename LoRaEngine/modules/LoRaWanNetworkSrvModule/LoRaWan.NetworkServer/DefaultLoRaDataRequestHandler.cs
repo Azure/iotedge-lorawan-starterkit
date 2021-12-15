@@ -308,7 +308,7 @@ namespace LoRaWan.NetworkServer
                 #region Downstream
                 if (skipDownstreamToAvoidCollisions)
                 {
-                    this.logger.LogInformation($"skipping downstream messages due to deduplication ({timeWatcher.GetElapsedTime()})");
+                    this.logger.LogDebug($"skipping downstream messages due to deduplication ({timeWatcher.GetElapsedTime()})");
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                 }
 
