@@ -92,7 +92,6 @@ This starter kit is providing a [BasicStation Certificates Generation](https://g
 The starter kit and, therefore, this tool are expecting the same certificate sets for both CUPS and LNS endpoints.
 
 !!! danger "Only for testing"
-
     In a production environment, you should not use certificates provided by this tool, but generate and sign certificates with a trusted root authority.
 
 ### Generate a server certificate
