@@ -32,7 +32,7 @@ namespace LoRaWan.NetworkServer
                                                                                  BucketStart: 5, BucketWidth: 10, BucketCount: 26);
         public static readonly CustomMetric C2DMessageTooLong = new CustomMetric("C2DMessageTooLong", "Number of C2D messages that were too long to be sent downstream", MetricType.Counter, new[] { GatewayIdTagName, ConcentratorIdTagName });
 
-        public static readonly CustomMetric DeviceCacheHits = new CustomMetric("DeviceCacheHits", "Number of device cache hits", MetricType.Counter, new[] { GatewayIdTagName, ConcentratorIdTagName });
+        public static readonly CustomMetric DeviceCacheHits = new CustomMetric("DeviceCacheHits", "Number of device cache hits", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric DeviceLoadRequests = new CustomMetric("DeviceLoadRequests", "Number of device load requests issued against an API service", MetricType.Counter, new[] { GatewayIdTagName });
 
         private static readonly ICollection<CustomMetric> Registry = new[]
