@@ -83,7 +83,7 @@ namespace LoRaWan.NetworkServer
             this.logger.LogDebug($"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}");
 
             var payloadPort = loraPayload.FPortValue;
-            var requiresConfirmation = request.Payload.RequiresConfirmation();
+            var requiresConfirmation = request.Payload.RequiresConfirmation;
 
             LoRaADRResult loRaADRResult = null;
 
@@ -825,7 +825,7 @@ namespace LoRaWan.NetworkServer
             if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
             {
                 // most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
-                if (request.Payload.RequiresConfirmation() && payloadFcnt == loRaDevice.FCntUp)
+                if (request.Payload.RequiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
                 {
                     if (!loRaDevice.ValidateConfirmResubmit(payloadFcnt))
                     {

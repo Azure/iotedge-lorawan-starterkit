@@ -18,7 +18,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.LoRaMessage
             using var loraRequest = WaitableLoRaRequest.Create(dataPayload);
 
             // act/assert
-            Assert.True(loraRequest.Payload.RequiresConfirmation());
+            Assert.True(loraRequest.Payload.RequiresConfirmation);
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.LoRaMessage
             loraRequest.SetPayload(new LoRaPayloadJoinRequest());
 
             // act/assert
-            Assert.False(loraRequest.Payload.RequiresConfirmation());
+            Assert.False(loraRequest.Payload.RequiresConfirmation);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.LoRaMessage
             using var loraRequest = WaitableLoRaRequest.Create(dataPayload);
 
             // act/assert
-            Assert.False(loraRequest.Payload.RequiresConfirmation());
+            Assert.False(loraRequest.Payload.RequiresConfirmation);
         }
     }
 }

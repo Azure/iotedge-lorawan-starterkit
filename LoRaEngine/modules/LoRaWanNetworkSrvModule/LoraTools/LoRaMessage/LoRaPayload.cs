@@ -193,7 +193,7 @@ namespace LoRaTools.LoRaMessage
             return fcntServerUpper | payloadFcnt;
         }
 
-        public virtual bool RequiresConfirmation()
+        public virtual bool RequiresConfirmation
             => false;
     }
 }
