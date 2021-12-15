@@ -32,7 +32,7 @@ namespace LoRaWan
             {
                 ( > 0x7F, _) => throw new ArgumentException(null, nameof(networkId)),
                 (_, > (int)NetworkAddressMask) => throw new ArgumentException(null, nameof(networkAddress)),
-                _ => ((uint)networkId << 25) | (uint)networkAddress
+                var (id, addr) => unchecked(((uint)id << 25) | (uint)addr)
             })
         { }
 
