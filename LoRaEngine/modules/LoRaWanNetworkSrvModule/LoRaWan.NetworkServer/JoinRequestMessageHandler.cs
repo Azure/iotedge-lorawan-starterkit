@@ -58,10 +58,9 @@ namespace LoRaWan.NetworkServer
 
                     using var scope = this.logger.BeginDeviceScope(devEUI);
 
-                    var devNonce = joinReq.GetDevNonceAsString();
                     this.logger.LogInformation("join request received");
 
-                    loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, devNonce);
+                    loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, joinReq.DevNonce);
                     if (loRaDevice == null)
                     {
                         request.NotifyFailed(devEUI, LoRaDeviceRequestFailedReason.UnknownDevice);
@@ -91,7 +90,7 @@ namespace LoRaWan.NetworkServer
                     }
 
                     // Make sure that is a new request and not a replay
-                    if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loRaDevice.DevNonce == devNonce)
+                    if (loRaDevice.DevNonce is { } devNonce && devNonce == joinReq.DevNonce)
                     {
                         if (string.IsNullOrEmpty(loRaDevice.GatewayID))
                         {
@@ -146,7 +145,7 @@ namespace LoRaWan.NetworkServer
                         NwkSKey = nwkSKey,
                         AppSKey = appSKey,
                         AppNonce = appNonce,
-                        DevNonce = devNonce,
+                        DevNonce = joinReq.DevNonce,
                         NetID = ConversionHelper.ByteArrayToString(netId),
                         Region = request.Region.LoRaRegion,
                         PreferredGatewayID = this.configuration.GatewayID,

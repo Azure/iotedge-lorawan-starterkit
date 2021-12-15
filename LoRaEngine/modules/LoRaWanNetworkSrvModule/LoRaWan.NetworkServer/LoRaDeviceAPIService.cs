@@ -91,7 +91,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string devNonce)
+        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, DevNonce devNonce)
             => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, devNonce: devNonce);
 
         /// <inheritdoc />
@@ -101,7 +101,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Helper method that calls the API GetDevice method.
         /// </summary>
-        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
+        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, DevNonce? devNonce = null)
         {
             this.deviceLoadRequests?.Add(1);
 
@@ -114,7 +114,7 @@ namespace LoRaWan.NetworkServer
                 ["DevAddr"] = devAddr,
                 ["DevEUI"] = devEUI,
                 ["AppEUI"] = appEUI,
-                ["DevNonce"] = devNonce
+                ["DevNonce"] = devNonce?.ToString()
             });
 
             var response = await client.GetAsync(url);
