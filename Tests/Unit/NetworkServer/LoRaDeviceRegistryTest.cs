@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task GetDeviceForJoinRequestAsync_When_Device_Api_Throws_Error_Should_Not_Catch()
         {
             const string devEUI = "0000000000000001";
-            const string devNonce = "0001";
+            var devNonce = new DevNonce(1);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             apiService.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))

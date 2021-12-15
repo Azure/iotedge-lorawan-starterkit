@@ -108,7 +108,7 @@ namespace LoRaWan.Tests.Integration
                 payloadDataDown.PerformEncryption(loraDevice.AppSKey);
 
                 Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-                Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+                Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
                 if (hasMacInUpstream)
                 {

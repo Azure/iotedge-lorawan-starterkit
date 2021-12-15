@@ -64,12 +64,10 @@ namespace LoRaWan.Tests.Unit
             var appEUIText = "0005100000000004";
             var devEUIText = "0005100000000004";
 
-            var devNonceText = "ABCD";
-            var devNonceBytes = ConversionHelper.StringToByteArray(devNonceText);
-
+            var devNonce = new DevNonce(0xABCD);
             var appKey = "00000000000000000005100000000004";
 
-            var joinRequest = new LoRaPayloadJoinRequest(appEUIText, devEUIText, devNonceBytes);
+            var joinRequest = new LoRaPayloadJoinRequest(appEUIText, devEUIText, devNonce);
             joinRequest.SetMic(appKey);
             Assert.True(joinRequest.CheckMic(appKey));
             Assert.True(joinRequest.CheckMic(appKey)); // ensure multiple calls work!
@@ -128,7 +126,7 @@ namespace LoRaWan.Tests.Unit
         private static void TestRxpk(Rxpk rxpk)
         {
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk, out var loRaPayload));
-            Assert.Equal(LoRaMessageType.JoinRequest, loRaPayload.LoRaMessageType);
+            Assert.Equal(MacMessageType.JoinRequest, loRaPayload.MessageType);
             var joinRequestMessage = (LoRaPayloadJoinRequest)loRaPayload;
 
             var joinRequestAppKey = new byte[16]
@@ -150,17 +148,13 @@ namespace LoRaWan.Tests.Unit
             {
                2, 3, 4, 5, 2, 3, 4, 5
             };
-            var joinRequestDevNonce = new byte[2]
-            {
-                16, 45
-            };
+            var expectedJoinRequestDevNonce = DevNonce.Read(new byte[2] { 45, 16 });
 
             Array.Reverse(joinRequestAppEui);
             Array.Reverse(joinRequestDevEUI);
-            Array.Reverse(joinRequestDevNonce);
             Assert.True(joinRequestMessage.AppEUI.ToArray().SequenceEqual(joinRequestAppEui));
             Assert.True(joinRequestMessage.DevEUI.ToArray().SequenceEqual(joinRequestDevEUI));
-            Assert.True(joinRequestMessage.DevNonce.ToArray().SequenceEqual(joinRequestDevNonce));
+            Assert.Equal(expectedJoinRequestDevNonce, joinRequestMessage.DevNonce);
         }
 
         /// <summary>
@@ -193,7 +187,7 @@ namespace LoRaWan.Tests.Unit
             var rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(jsonUplinkUnconfirmedDataUpBytes).ToArray());
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk[0], out var loRaPayload));
 
-            Assert.Equal(LoRaMessageType.UnconfirmedDataUp, loRaPayload.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataUp, loRaPayload.MessageType);
 
             var loRaPayloadUplinkObj = (LoRaPayloadData)loRaPayload;
             Assert.True(loRaPayloadUplinkObj.Fcnt.Span.SequenceEqual(new byte[2] { 1, 0 }));
@@ -237,7 +231,7 @@ namespace LoRaWan.Tests.Unit
             var nwkkey = new byte[16] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
             var appkey = new byte[16] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
-            var lora = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.None, fcnt, null, fport, frmPayload, 0);
+            var lora = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.None, fcnt, null, fport, frmPayload, 0);
             _ = lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
             var testEncrypt = new byte[4]
             {
@@ -284,7 +278,7 @@ namespace LoRaWan.Tests.Unit
             physicalUpstreamPyld[0] = 2;
             var rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk[0], out var loRaPayload));
-            Assert.Equal(LoRaMessageType.JoinRequest, loRaPayload.LoRaMessageType);
+            Assert.Equal(MacMessageType.JoinRequest, loRaPayload.MessageType);
             var joinReq = (LoRaPayloadJoinRequest)loRaPayload;
             joinReq.DevAddr = new byte[4]
             {
@@ -294,10 +288,7 @@ namespace LoRaWan.Tests.Unit
             {
                 8, 7, 6, 5, 4, 3, 2, 1,
             };
-            joinReq.DevNonce = new byte[2]
-            {
-                2, 1,
-            };
+            joinReq.DevNonce = DevNonce.Read(new byte[2] { 2, 1 });
             joinReq.AppEUI = new byte[8]
             {
                 1, 2, 3, 4, 5, 6, 7, 8,
@@ -315,7 +306,7 @@ namespace LoRaWan.Tests.Unit
             {
                 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
             };
-            var key = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netId, joinReq.DevNonce.ToArray(), appKey);
+            var key = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netId, joinReq.DevNonce, appKey);
             Assert.Equal(
                 key,
                 new byte[16] { 223, 83, 195, 95, 48, 52, 204, 206, 208, 255, 53, 76, 112, 222, 4, 223, });
@@ -327,7 +318,7 @@ namespace LoRaWan.Tests.Unit
             var result = Assert.Throws<InvalidOperationException>(() => LoRaPayload.CalculateKey(LoRaPayloadKeyType.None,
                                                                                                  Array.Empty<byte>(),
                                                                                                  Array.Empty<byte>(),
-                                                                                                 Array.Empty<byte>(),
+                                                                                                 new DevNonce(),
                                                                                                  Array.Empty<byte>()));
             Assert.Equal("No key type selected.", result.Message);
         }
@@ -337,11 +328,11 @@ namespace LoRaWan.Tests.Unit
         ///  LoRaPayloadData (UnconfirmedDataUp) -> SerializeUplink -> Uplink.Rxpk[0] -> LoRaPayloadData -> check properties.
         /// </summary>
         [Theory]
-        [InlineData(LoRaMessageType.UnconfirmedDataUp, "1234")]
-        [InlineData(LoRaMessageType.UnconfirmedDataUp, "hello world")]
-        [InlineData(LoRaMessageType.ConfirmedDataUp, "1234")]
-        [InlineData(LoRaMessageType.ConfirmedDataUp, "hello world")]
-        public void When_Creating_Rxpk_Recreating_Payload_Should_Match_Source_Values(LoRaMessageType loRaMessageType, string data)
+        [InlineData(MacMessageType.UnconfirmedDataUp, "1234")]
+        [InlineData(MacMessageType.UnconfirmedDataUp, "hello world")]
+        [InlineData(MacMessageType.ConfirmedDataUp, "1234")]
+        [InlineData(MacMessageType.ConfirmedDataUp, "hello world")]
+        public void When_Creating_Rxpk_Recreating_Payload_Should_Match_Source_Values(MacMessageType loRaMessageType, string data)
         {
             var devAddrText = "00000060";
             var appSKeyText = "00000060000000600000006000000060";
@@ -371,7 +362,7 @@ namespace LoRaWan.Tests.Unit
 
             // Now try to recreate LoRaPayloadData from rxpk
             Assert.True(LoRaPayload.TryCreateLoRaPayload(uplinkMsg.Rxpk[0], out var parsedLoRaPayload));
-            Assert.Equal(loRaMessageType, parsedLoRaPayload.LoRaMessageType);
+            Assert.Equal(loRaMessageType, parsedLoRaPayload.MessageType);
             _ = Assert.IsType<LoRaPayloadData>(parsedLoRaPayload);
             var parsedLoRaPayloadData = (LoRaPayloadData)parsedLoRaPayload;
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
@@ -411,7 +402,7 @@ namespace LoRaWan.Tests.Unit
         {
             var rawJoinRequestBytes = new byte[] { 0, 4, 0, 0, 0, 0, 16, 229, 251, 4, 0, 0, 0, 0, 16, 229, 251, 254, 228, 147, 93, 188, 238 };
             var messageType = rawJoinRequestBytes[0];
-            Assert.Equal((int)LoRaMessageType.JoinRequest, messageType);
+            Assert.Equal((int)MacMessageType.JoinRequest, messageType);
             var joinRequest = new LoRaPayloadJoinRequest(rawJoinRequestBytes);
             Assert.NotNull(joinRequest);
             Assert.Equal(appEUI, joinRequest.GetAppEUIAsString());
@@ -421,19 +412,18 @@ namespace LoRaWan.Tests.Unit
 
         // When creating a join request using simulated devices, rebuilding it should pass the mic check
         [Theory]
-        [InlineData("000000000000AABB", "0000000000001111", "00000000000000000000000000002222", "5060")]
-        [InlineData("0000000000000001", "0000000000000001", "00000000000000000000000000000001", "C39F")]
+        [InlineData("000000000000AABB", "0000000000001111", "00000000000000000000000000002222", 0x6050)]
+        [InlineData("0000000000000001", "0000000000000001", "00000000000000000000000000000001", 0x9FC3)]
         public void When_Creating_Join_Request_Recreating_Should_Pass_Mic_Check(
             string appEUIText,
             string devEUIText,
             string appKeyText,
-            string devNonceText)
+            ushort devNonceRawValue)
         {
             var wrongAppKeyText = "00000000000000000000000000003333";
 
             // create a join request
-            var devNonce = ConversionHelper.StringToByteArray(devNonceText);
-            Array.Reverse(devNonce);
+            var devNonce = new DevNonce(devNonceRawValue);
 
             var join = new LoRaPayloadJoinRequest(appEUIText, devEUIText, devNonce);
             Assert.Equal(appEUIText, join.GetAppEUIAsString());
@@ -512,7 +502,7 @@ namespace LoRaWan.Tests.Unit
             TestRxpk(rxpk[2]);
 
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk[1], out var jsonUplinkUnconfirmedMessage));
-            Assert.Equal(LoRaMessageType.UnconfirmedDataUp, jsonUplinkUnconfirmedMessage.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataUp, jsonUplinkUnconfirmedMessage.MessageType);
 
             var loRaPayloadUplinkObj = (LoRaPayloadData)jsonUplinkUnconfirmedMessage;
 

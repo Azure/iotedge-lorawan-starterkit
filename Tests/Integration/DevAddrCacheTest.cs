@@ -192,7 +192,7 @@ namespace LoRaWan.Tests.Integration
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
-            items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining);
+            items = await deviceGetter.GetDeviceList(null, gatewayId, new DevNonce(0xABCD), devAddrJoining);
 
             Assert.Single(items);
             // If a cache miss it should save it in the redisCache
@@ -237,13 +237,11 @@ namespace LoRaWan.Tests.Integration
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
             // Simulate three queries
-            var tasks = new Task[4]
-              {
-                deviceGetter.GetDeviceList(null, gateway1, "ABCD", devAddrJoining),
-                deviceGetter.GetDeviceList(null, gateway1, "ABCD", devAddrJoining),
-                deviceGetter.GetDeviceList(null, gateway2, "ABCD", devAddrJoining),
-                deviceGetter.GetDeviceList(null, gateway2, "ABCD", devAddrJoining)
-              };
+            var tasks =
+                from gw in new[] { gateway1, gateway2 }
+                select Enumerable.Repeat(gw, 2) into gws // repeat each gateway twice
+                from gw in gws
+                select deviceGetter.GetDeviceList(null, gw, new DevNonce(0xABCD), devAddrJoining);
 
             await Task.WhenAll(tasks);
 
@@ -290,7 +288,7 @@ namespace LoRaWan.Tests.Integration
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
-            items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining);
+            items = await deviceGetter.GetDeviceList(null, gatewayId, new DevNonce(0xABCD), devAddrJoining);
 
             Assert.Single(items);
             var queryResult = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
@@ -335,12 +333,9 @@ namespace LoRaWan.Tests.Integration
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
-            var tasks = new Task[3]
-            {
-                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
-                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
-                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
-            };
+            var tasks =
+                from gw in Enumerable.Repeat(gatewayId, 3)
+                select deviceGetter.GetDeviceList(null, gw, new DevNonce(0xABCD), devAddrJoining);
 
             await Task.WhenAll(tasks);
             // Iot hub should never have been called.
@@ -387,7 +382,7 @@ namespace LoRaWan.Tests.Integration
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
-            items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining);
+            items = await deviceGetter.GetDeviceList(null, gatewayId, new DevNonce(0xABCD), devAddrJoining);
 
             Assert.Single(items);
             // Iot hub should never have been called.
@@ -428,7 +423,7 @@ namespace LoRaWan.Tests.Integration
             var registryManagerMock = InitRegistryManager(managerInput);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
-            items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining);
+            items = await deviceGetter.GetDeviceList(null, gatewayId, new DevNonce(0xABCD), devAddrJoining);
 
             Assert.Empty(items);
             var queryResult = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
@@ -475,7 +470,7 @@ namespace LoRaWan.Tests.Integration
             var items = new List<IoTHubDeviceInfo>();
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
-            items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining);
+            items = await deviceGetter.GetDeviceList(null, gatewayId, new DevNonce(0xABCD), devAddrJoining);
 
             Assert.Single(items);
             // Iot hub should never have been called.
