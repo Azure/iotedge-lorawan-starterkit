@@ -207,12 +207,17 @@ namespace LoRaWan.Tests.Common
             Environment.SetEnvironmentVariable("BS_TEMP_LOG_FILE", logFilePath);
             // Following environment variable is needed if following bash commands are executed within WSL
             Environment.SetEnvironmentVariable("WSLENV", "BS_TEMP_LOG_FILE/up");
+
+            // following command is:
+            // - copying basic station logs to logFilePath
+            // - killing basic station
+            // - removing temporary folder
             using var killProcess = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "bash",
-                    Arguments = $"-c \"scp -i {sshPrivateKeyPath} -rp {connection}:/tmp/{temporaryDirectoryName}/logs.txt $BS_TEMP_LOG_FILE && ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std) {(string.IsNullOrEmpty(temporaryDirectoryName) ? string.Empty : $"&& rm -rf /tmp/{temporaryDirectoryName}")}' \"",
+                    Arguments = $"-c \"scp -i {sshPrivateKeyPath} -rp {connection}:/tmp/{temporaryDirectoryName}/logs.txt $BS_TEMP_LOG_FILE && ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)' && ssh -i {sshPrivateKeyPath} -f {connection} 'rm -rf /tmp/{temporaryDirectoryName}'\"",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
