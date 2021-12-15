@@ -245,7 +245,7 @@ namespace LoraKeysManagerFacade
 
                         devAddrCacheInfos.Add(new DevAddrCacheInfo()
                         {
-                            DevAddr = Hexadecimal.TryParse(rawDevAddr, out uint v) ? new DevAddr(v) : throw new LoRaProcessingException($"Dev addr '{rawDevAddr}' is invalid.", LoRaProcessingErrorCode.InvalidFormat),
+                            DevAddr = DevAddr.TryParse(rawDevAddr, out var someDevAddr) ? someDevAddr : throw new LoRaProcessingException($"Dev addr '{rawDevAddr}' is invalid.", LoRaProcessingErrorCode.InvalidFormat),
                             DevEUI = twin.DeviceId,
                             GatewayId = twin.GetGatewayID(),
                             NwkSKey = twin.GetNwkSKey(),

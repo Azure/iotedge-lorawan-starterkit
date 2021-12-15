@@ -62,7 +62,7 @@ namespace LoraKeysManagerFacade
             try
             {
                 DevNonce? devNonce = ushort.TryParse(rawDevNonce, NumberStyles.None, CultureInfo.InvariantCulture, out var d) ? new DevNonce(d) : null;
-                DevAddr? devAddr = Hexadecimal.TryParse(devAddrString, out uint rawDevAddr) ? new DevAddr(rawDevAddr) : null;
+                DevAddr? devAddr = DevAddr.TryParse(devAddrString, out var someDevAddr) ? someDevAddr : null;
                 var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
                 var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);

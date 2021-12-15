@@ -53,5 +53,22 @@ namespace LoRaWan
             BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
             return buffer[Size..];
         }
+
+        public static DevAddr Parse(ReadOnlySpan<char> input) =>
+            TryParse(input, out var result) ? result : throw new FormatException();
+
+        public static bool TryParse(ReadOnlySpan<char> input, out DevAddr result)
+        {
+            if (Hexadecimal.TryParse(input, out uint raw))
+            {
+                result = new DevAddr(raw);
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
     }
 }
