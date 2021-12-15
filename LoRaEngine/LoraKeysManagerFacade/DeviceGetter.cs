@@ -5,7 +5,9 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
@@ -49,7 +51,7 @@ namespace LoraKeysManagerFacade
             var devAddr = req.Query["DevAddr"];
             // OTAA parameters
             var devEUI = req.Query["DevEUI"];
-            var devNonce = req.Query["DevNonce"];
+            string rawDevNonce = req.Query["DevNonce"];
             var gatewayId = req.Query["GatewayId"];
 
             if (devEUI != StringValues.Empty)
@@ -59,6 +61,7 @@ namespace LoraKeysManagerFacade
 
             try
             {
+                DevNonce? devNonce = ushort.TryParse(rawDevNonce, NumberStyles.None, CultureInfo.InvariantCulture, out var d) ? new DevNonce(d) : null;
                 var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
                 var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);
@@ -78,7 +81,7 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public async Task<List<IoTHubDeviceInfo>> GetDeviceList(string devEUI, string gatewayId, string devNonce, string devAddr, ILogger log = null)
+        public async Task<List<IoTHubDeviceInfo>> GetDeviceList(string devEUI, string gatewayId, DevNonce? devNonce, string devAddr, ILogger log = null)
         {
             var results = new List<IoTHubDeviceInfo>();
 
@@ -89,9 +92,8 @@ namespace LoraKeysManagerFacade
                 // OTAA join
                 using var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId);
                 var cacheKeyDevNonce = string.Concat(devEUI, ":", devNonce);
-                var lockKeyDevNonce = string.Concat(cacheKeyDevNonce, ":joinlockdevnonce");
 
-                if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce, TimeSpan.FromMinutes(5), onlyIfNotExists: true))
+                if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce?.ToString(), TimeSpan.FromMinutes(5), onlyIfNotExists: true))
                 {
                     var iotHubDeviceInfo = new IoTHubDeviceInfo
                     {

@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using global::LoRaTools.LoRaMessage;
     using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
@@ -337,7 +338,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         private readonly LoRaDeviceCacheOptions noRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue };
 
-        private LoRaDeviceCache CreateNoRefreshCache() => new LoRaDeviceCache(this.noRefreshOptions, null, NullLogger<LoRaDeviceCache>.Instance);
+        private LoRaDeviceCache CreateNoRefreshCache() => new LoRaDeviceCache(this.noRefreshOptions, null, NullLogger<LoRaDeviceCache>.Instance, TestMeter.Instance);
 
         private class TestDeviceCache : LoRaDeviceCache
         {
@@ -351,7 +352,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             public int RefreshOperationsCount { get; private set; }
             public int DeviceRefreshCount { get; private set; }
 
-            private TestDeviceCache(Action<LoRaDevice> onRefreshDevice, LoRaDeviceCacheOptions options, NetworkServerConfiguration networkServerConfiguration, bool callDeviceRefresh = false, Func<LoRaDevice, LoRaPayload, bool> validateMic = null) : base(options, networkServerConfiguration, NullLogger<LoRaDeviceCache>.Instance)
+            private TestDeviceCache(Action<LoRaDevice> onRefreshDevice, LoRaDeviceCacheOptions options, NetworkServerConfiguration networkServerConfiguration, bool callDeviceRefresh = false, Func<LoRaDevice, LoRaPayload, bool> validateMic = null) : base(options, networkServerConfiguration, NullLogger<LoRaDeviceCache>.Instance, TestMeter.Instance)
             {
                 this.onRefreshDevice = onRefreshDevice;
                 this.callDeviceRefresh = callDeviceRefresh;

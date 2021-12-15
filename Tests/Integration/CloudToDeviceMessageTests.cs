@@ -211,7 +211,7 @@ namespace LoRaWan.Tests.Integration
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
@@ -291,7 +291,7 @@ namespace LoRaWan.Tests.Integration
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Frame counter up was updated
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
@@ -393,7 +393,7 @@ namespace LoRaWan.Tests.Integration
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Frame counter up was updated
             Assert.Equal(PayloadFcnt, loRaDevice.FCntUp);
@@ -488,7 +488,7 @@ namespace LoRaWan.Tests.Integration
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Frame counter up was updated
             Assert.Equal(PayloadFcnt, loRaDevice.FCntUp);
@@ -589,7 +589,7 @@ namespace LoRaWan.Tests.Integration
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Frame counter up was updated
             Assert.Equal(PayloadFcnt, loRaDevice.FCntUp);
@@ -770,7 +770,7 @@ namespace LoRaWan.Tests.Integration
 
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Frame counter up was updated
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
@@ -925,7 +925,7 @@ namespace LoRaWan.Tests.Integration
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Frame counter up was updated
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);

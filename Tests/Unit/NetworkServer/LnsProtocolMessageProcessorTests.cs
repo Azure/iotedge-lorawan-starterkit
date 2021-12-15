@@ -339,7 +339,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(loRaRequest);
             Assert.True(AreRxpkEqual(loRaRequest.Rxpk, expectedRxpk));
             Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr.Span.ToArray());
-            Assert.Equal(LoRaMessageType.ConfirmedDataUp, loRaRequest.Payload.LoRaMessageType);
+            Assert.Equal(MacMessageType.ConfirmedDataUp, loRaRequest.Payload.MessageType);
             Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
@@ -358,7 +358,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var expectedMic = new byte[] { 101, 116, 5, 193 };
             var expectedAppEui = new byte[] { 181, 196, 210, 229, 200, 120, 98, 71 };
             var expectedDevEui = new byte[] { 158, 22, 164, 238, 223, 193, 39, 133 };
-            var expectedDevNonce = new byte[] { 88, 212 };
+            var expectedDevNonce = DevNonce.Read(new byte[] { 88, 212 });
             SetDataPathParameter();
             SetupSocketReceiveAsync(message);
 
@@ -376,12 +376,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(loRaRequest);
             Assert.True(AreRxpkEqual(loRaRequest.Rxpk, expectedRxpk));
             Assert.IsType<LoRaPayloadJoinRequestLns>(loRaRequest.Payload);
-            Assert.Equal(LoRaMessageType.JoinRequest, loRaRequest.Payload.LoRaMessageType);
+            Assert.Equal(MacMessageType.JoinRequest, loRaRequest.Payload.MessageType);
             Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
             Assert.Equal(expectedAppEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEUI.Span.ToArray());
             Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI.Span.ToArray());
-            Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevNonce.Span.ToArray());
+            Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevNonce);
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
             Assert.Equal(RegionManager.EU868, loRaRequest.Region);
         }

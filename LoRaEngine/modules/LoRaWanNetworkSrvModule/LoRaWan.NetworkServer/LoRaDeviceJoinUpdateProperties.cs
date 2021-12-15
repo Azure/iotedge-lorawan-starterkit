@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
 
         public string NetID { get; set; }
 
-        public string DevNonce { get; set; }
+        public DevNonce DevNonce { get; set; }
 
         public LoRaRegionType Region { get; set; }
 
