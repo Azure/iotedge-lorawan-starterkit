@@ -316,7 +316,12 @@ namespace LoRaWan.Tests.Common
             var deviceTwin = await registryManager.GetTwinAsync(stationEui);
             var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
             var deserializedCupsTwinInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson);
-            var newCupsInfo = new CupsTwinInfo(deserializedCupsTwinInfo.CupsUri, deserializedCupsTwinInfo.TcUri, crc, crc);
+            var newCupsInfo = new CupsTwinInfo(deserializedCupsTwinInfo.CupsUri,
+                                               deserializedCupsTwinInfo.TcUri,
+                                               crc,
+                                               crc,
+                                               deserializedCupsTwinInfo.CupsCredentialUrl,
+                                               deserializedCupsTwinInfo.TcCredentialUrl);
             deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
             await registryManager.UpdateTwinAsync(stationEui, deviceTwin, deviceTwin.ETag);
         }
