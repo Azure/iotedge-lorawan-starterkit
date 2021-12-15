@@ -63,12 +63,13 @@ namespace LoRaWan.Tests.E2E
                     { "FIXED_STATION_EUI", stationEui },
                     { "RADIODEV", TestFixture.Configuration.RadioDev }
                 }, out temporaryDirectoryName);
-                var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf($"{stationEui}: Received 'version' message for station", StringComparison.Ordinal) != -1);
-                Assert.True(log.Found);
 
                 // Waiting 30s for being sure that BasicStation actually started up
                 await Task.Delay(30_000);
+
+                var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
+                    (log) => log.IndexOf($"{stationEui}: Received 'version' message for station", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 1 });
+                Assert.True(log.Found);
 
                 //the concentrator should be ready at this point to receive messages
                 //if receiving 'updf' is succeeding, cups worked successfully
@@ -96,13 +97,11 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions { MaxAttempts = 2 });
 
                 var updfLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf($"{stationEui}: Received 'updf' message", StringComparison.Ordinal) != -1);
+                    (log) => log.IndexOf($"{stationEui}: Received 'updf' message", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 2 });
                 Assert.True(updfLog.Found);
-
-                TestFixtureCi.ClearLogs();
             }
             finally
             {
@@ -114,6 +113,7 @@ namespace LoRaWan.Tests.E2E
                     Log("[INFO] ** Basic Station Logs End **");
                 }
             }
+            TestFixtureCi.ClearLogs();
         }
     }
 }
