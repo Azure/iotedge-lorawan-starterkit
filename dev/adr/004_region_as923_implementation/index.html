@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.0.5">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.2">
     
     
       
@@ -17,10 +17,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.a617204b.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.f7951f6f.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.9204c3b2.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
         
       
     
@@ -938,6 +938,73 @@
     Decision
   </a>
   
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#frequency-offsets" class="md-nav__link">
+    Frequency offsets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dwell-times" class="md-nav__link">
+    Dwell Times
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix" class="md-nav__link">
+    Appendix
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dwell-times_1" class="md-nav__link">
+    Dwell times
+  </a>
+  
+    <nav class="md-nav" aria-label="Dwell times">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-txparamsetupreq-support" class="md-nav__link">
+    No TxParamSetupReq support
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-dwell-time-management" class="md-nav__link">
+    Manual dwell time management
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-dwell-time-management" class="md-nav__link">
+    Automatic dwell time management
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1125,6 +1192,73 @@
     Decision
   </a>
   
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#frequency-offsets" class="md-nav__link">
+    Frequency offsets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dwell-times" class="md-nav__link">
+    Dwell Times
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix" class="md-nav__link">
+    Appendix
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dwell-times_1" class="md-nav__link">
+    Dwell times
+  </a>
+  
+    <nav class="md-nav" aria-label="Dwell times">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-txparamsetupreq-support" class="md-nav__link">
+    No TxParamSetupReq support
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-dwell-time-management" class="md-nav__link">
+    Manual dwell time management
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-dwell-time-management" class="md-nav__link">
+    Automatic dwell time management
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1146,29 +1280,97 @@
 
 <h1 id="004-region-as923-implementation">004. Region AS923 implementation</h1>
 <p>Milestone / Epic: <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/412">#412</a></p>
-<p>Authors: Maggie Salak</p>
+<p>Authors: Maggie Salak, Bastian Burger</p>
 <h2 id="overview-problem-statement">Overview / Problem Statement</h2>
 <p>The specification of region AS923 defines a <code>AS923_FREQ_OFFSET</code> parameter which is used to accommodate different country-specific sub-bands across the 915 - 928 MHz band. The parameter can have one of four different values depending on a country. The corresponding frequency offset in Hz is <code>AS923_FREQ_OFFSET_HZ = 100 x AS923_FREQ_OFFSET</code>. The value of the parameter is needed for the purpose of calculating RX2 window frequencies for AS923 region. The parameter is not required for calculating RX1 receive window as it simply uses the same channel as the preceding uplink.</p>
+<p>In addition to sub-bands and frequency offsets, the <a href="https://lora-alliance.org/wp-content/uploads/2021/05/RP002-1.0.3-FINAL-1.pdf">regional parameter specification</a> describes noteworthy behavior with respect to dwell times. The dwell time describes the time needed to transmit a LoRaWAN message, typically restrictions limit the dwell time to be not longer than 400ms. For the AS923 region, the specification says that dwell time limitations may apply to some locations in the AS923 region depending on local regulations. We are not able to get a comprehensive list of which locations use which regulations. To ensure conformity with these limitations, each gateway can configure an end device using <code>TxParamSetupReq/Ans</code> MAC commands. A typical flow may look like this:</p>
+<ul>
+<li>End device sends join request using DR2 - DR5 (which always complies with potential dwell time limitations of 400ms)</li>
+<li>The actual dwell time limitations are communicated by the gateway to the device using a downstream <code>TxParamSetupReq</code> MAC Command</li>
+<li>End device sends <code>TxParamSetupAns</code> MAC Command with empty payload as acknowledgement</li>
+<li>Both end device and gateway adhere to the limitations from there on</li>
+</ul>
+<p>With the LoRaWAN specification 1.0.3, the <code>TxParamSetupReq/Ans</code> MAC Command exchange <a href="https://github.com/Lora-net/LoRaMac-node/issues/614">is subject to a bug if the <code>TxParamSetupAns</code> is lost</a>, which leaves the end devices unable to receive downlink messages. The bug will only be fixed in LoRaWAN specification version 1.0.4.</p>
 <p>This document summarizes decisions taken for the purpose of implementing support for region AS923.</p>
 <h2 id="in-scope">In-Scope</h2>
 <ul>
 <li>Support for all countries using frequency plan AS923</li>
 <li>Calculation of RX1 downstream frequencies and data rates</li>
 <li>Calculation of RX2 receive window</li>
+<li>Dwell time support</li>
 </ul>
 <h2 id="out-of-scope">Out-of-scope</h2>
 <ul>
 <li>MAC commands - support will be added later on as part of <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/414">#414</a></li>
 <li>Adaptive Data Rate - support will be added later on as part of <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/415">#415</a></li>
-<li>DwellTime - it is not yet clear whether the parameter needs to be set or not, this is tracked in user story <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/732">#732</a></li>
 <li>FOpts - it is not yet clear whether this parameter needs to be used, this is tracked for all regions as part of user story <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/717">#717</a></li>
 </ul>
 <h2 id="decision">Decision</h2>
+<h3 id="frequency-offsets">Frequency offsets</h3>
 <p>The <code>AS923_FREQ_OFFSET</code> parameter can be calculated based on the channel 0 and channel 1 frequencies in the LoRa Basics Station configuration. The corresponding channels for region AS923 are defined as follows:</p>
 <p><code>Channel 0 frequency Hz = 923200000 + AS923_FREQ_OFFSET_HZ</code>
 <code>Channel 1 frequency Hz = 923400000 + AS923_FREQ_OFFSET_HZ</code></p>
 <p>Using this formula we will calculate the offset by subtracting 923200000 from the configured channel 0 frequency. We will use the formula for channel 1 frequency to validate the offset value and throw and exception if values are not the same.</p>
-<p>In the implementation of region AS923 the frequencies for channel 0 and 1 will be passed to the region-specific constructor where the offset value will be calculated.  </p>
+<p>In the implementation of region AS923 the frequencies for channel 0 and 1 will be passed to the region-specific constructor where the offset value will be calculated.</p>
+<h3 id="dwell-times">Dwell Times</h3>
+<p>We will support dwell times through the automatic dwell time management process described in the appendix. We will not support the automated cache refresh in a first version, but we will document the limitation that for multi-gateway support the device cache either needs to be manually invalidated or updated by waiting until it expires.</p>
+<h2 id="appendix">Appendix</h2>
+<h3 id="dwell-times_1">Dwell times</h3>
+<p>We discuss different approaches to handle dwell time limitations.</p>
+<h4 id="no-txparamsetupreq-support">No <code>TxParamSetupReq</code> support</h4>
+<p>One option is to not support the <code>TxParamSetupReq</code> MAC Command as part of the initial version of the AS923 region implementation. One implication is that the maximum Equivalent Isotropically Radiated Power (EIRP), which is normally configurable through <code>TxParamSetupReq</code>, will be static and non-configurable. We introduce a Boolean configuration value in the concentrator device twin that specifies whether a dwell time limitation applies to that concentrator. Based on this configuration value, the gateway will apply a different set of regional parameters, which take the dwell time limitations into account. It will be the responsibility of the starter kit user to ensure that end devices are configured with the same dwell time settings as the concentrator to which they are connected, as it will not be automatically propagated to the end device through <code>TxParamSetupReq</code>.</p>
+<p>Pros:</p>
+<ul>
+<li>Easy to implement</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>End devices (e.g. by Netvox) cannot be updated with different dwell time limitation defaults after shipping. If local regulations change, such devices cannot be used any longer with the starter kit</li>
+<li>Static EIRP</li>
+</ul>
+<h4 id="manual-dwell-time-management">Manual dwell time management</h4>
+<p>The user configures the dwell time settings on a device-per-device basis by issuing a C2D messages, which gets translated to a <code>TxParamSetupReq</code> MAC command. Updating which dwell time setting is used happens as a separate manual step after the device settings were successfully updated. The flow looks as follows:</p>
+<ul>
+<li>The user issues a <code>TxParamSetupReq</code> through a C2D message to change the dwell time limitations on the end device</li>
+<li>The user (manually) checks whether the device picked up the correct dwell time limitations</li>
+<li>The user (manually) updates the device twin desired properties with the actual dwell time limitation flag<ul>
+<li>Either the user (manually) needs to refresh all gateway caches and Redis or we only allow single gateway or OTAA joins</li>
+</ul>
+</li>
+<li>The LNS fetches the desired properties from the device and uses a set of regional parameters based on the dwell time settings</li>
+</ul>
+<p>Pros:</p>
+<ul>
+<li>Relatively simple to implement</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>A lot of manual steps involved/cumbersome for the user</li>
+<li>Does not resolve bug <a href="https://github.com/Lora-net/LoRaMac-node/issues/614">if the <code>TxParamSetupAns</code> is lost</a> and the user does not have access to the serial output of the device</li>
+<li>Messages between successful C2D <code>TxParamSetupReq</code> transmission and device cache refresh might have inconsistent dwell time settings</li>
+</ul>
+<h4 id="automatic-dwell-time-management">Automatic dwell time management</h4>
+<p>The user configures the dwell time settings for all devices connected to a concentrator as part of the concentrator configuration. The LNS sends automated <code>TxParamSetupReq</code> MAC commands as a response to uplink messages. After a MAC command was sent, the LNS waits for the <code>TxParamSetupAns</code>. If the MAC answer was received, the LNS updates the reported properties of the device twin and uses a different set of regional parameters based on the dwell time setting (e.g. for the receive window channels). Also, the LNS invalidates the cache entries for that specific device in all other gateways. A visualization for this flow looks as follows:</p>
+<div class="mermaid">sequenceDiagram
+
+Iot Hub -&gt;&gt; LNS: C2D `TxParamSetupReq` message
+LNS -&gt;&gt; endDevice: `TxParamSetupReq` MAC Command
+alt endDevice sends acknowledgement `TxParamSetupAns`
+    endDevice -&gt;&gt; LNS: `TxParamSetupAns`
+    LNS -&gt;&gt; LNS: Updates in-memory state of dwell time setting (force persist in device twin reported properties -&gt; error case needs to be handled)
+    LNS -&gt;&gt; Function: Evict all cache entries for specific device
+else
+    LNS -&gt;&gt; LNS: Continues to use default dwell time parameters (no modification of internal state), retries MAC Command on next uplink
+end</div>
+<p>Pros:</p>
+<ul>
+<li>Easiest solution of the three for the user</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>Complexity</li>
+<li>Does not resolve bug <a href="https://github.com/Lora-net/LoRaMac-node/issues/614">if the <code>TxParamSetupAns</code> is lost</a></li>
+</ul>
 
               
             </article>
@@ -1249,10 +1451,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.cefbb252.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.a5f8ea78.min.js"></script>
+      <script src="../../assets/javascripts/bundle.649a939e.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       
