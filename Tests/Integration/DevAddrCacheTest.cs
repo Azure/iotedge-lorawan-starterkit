@@ -680,7 +680,6 @@ namespace LoRaWan.Tests.Integration
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             var managerInput = new List<DevAddrCacheInfo>();
 
-            var adressForDuplicateDevAddr = NewUniqueEUI32();
             for (var i = 0; i < 5; i++)
             {
                 managerInput.Add(new DevAddrCacheInfo()
@@ -848,7 +847,6 @@ namespace LoRaWan.Tests.Integration
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             var newValues = new List<DevAddrCacheInfo>();
 
-            var adressForDuplicateDevAddr = CreateDevAddr();
             for (var i = 0; i < 5; i++)
             {
                 newValues.Add(new DevAddrCacheInfo()
