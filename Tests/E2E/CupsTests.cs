@@ -66,6 +66,9 @@ namespace LoRaWan.Tests.E2E
                     (log) => log.IndexOf(stationEui, StringComparison.Ordinal) != -1);
                 Assert.True(log.Found);
 
+                // Waiting one minute for being sure that BasicStation actually started up
+                await Task.Delay(60_000);
+
                 //the concentrator should be ready at this point to receive messages
                 //if receiving 'updf' is succeeding, cups worked successfully
                 await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
@@ -78,7 +81,7 @@ namespace LoRaWan.Tests.E2E
                 Assert.True(joinSucceeded, "Join failed");
 
                 var jreqLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf($"{stationEui}: Received 'jreq' message", StringComparison.Ordinal) != -1);
+                    (log) => log.IndexOf($"{stationEui}: Received 'jreq' message", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 2 });
                 Assert.NotNull(jreqLog.MatchedEvent);
 
                 // wait 1 second after joined
