@@ -98,7 +98,7 @@ The starter kit, and, therefore also this tool, are expecting the same certifica
 
 ### Generate a server certificate
 
-As an example, if you want to generate a server certificate for a LoRaWAN Network Server hosted at `mytest.endpoint.com` and secure the output .PFX with a passphrase, you will need to issue the following script in the ` Tools\BasicStation-Certificates-Generation` folder of the StarterKit:
+As an example, if you want to generate a server certificate for a LoRaWAN Network Server hosted at `mytest.endpoint.com` and secure the output .PFX with a passphrase, you will need to issue the following script in the `Tools\BasicStation-Certificates-Generation` folder of the StarterKit:
 
 ```bash
 ./certificate-generate.sh server mytest.endpoint.com chosenPfxPassword
