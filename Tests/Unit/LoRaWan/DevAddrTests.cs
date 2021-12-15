@@ -30,13 +30,13 @@ namespace LoRaWan.Tests.Unit
         public void Constructor_NetworkId_NetworkAddress_Is_Equivalent_To_Value_Constructor(uint value)
         {
             // arrange
-            var subject = new DevAddr(value);
+            var initial = new DevAddr(value);
 
             // act
-            var result = new DevAddr(subject.NetworkId, subject.NetworkAddress);
+            var result = new DevAddr(initial.NetworkId, initial.NetworkAddress);
 
             // assert
-            Assert.Equal(subject, result);
+            Assert.Equal(initial, result);
         }
 
         [Theory]
