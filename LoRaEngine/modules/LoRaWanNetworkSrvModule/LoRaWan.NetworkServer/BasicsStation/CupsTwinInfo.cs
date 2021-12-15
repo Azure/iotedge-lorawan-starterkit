@@ -16,12 +16,16 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public CupsTwinInfo(Uri cupsUri,
                             Uri tcUri,
                             uint cupsCredCrc,
-                            uint tcCredCrc)
+                            uint tcCredCrc,
+                            string cupsCredentialUrl,
+                            string tcCredentialUrl)
         {
             CupsUri = cupsUri ?? throw new ArgumentNullException(nameof(cupsUri));
             TcUri = tcUri ?? throw new ArgumentNullException(nameof(tcUri));
             CupsCredCrc = cupsCredCrc;
             TcCredCrc = tcCredCrc;
+            CupsCredentialUrl = cupsCredentialUrl;
+            TcCredentialUrl = tcCredentialUrl;
         }
 
         [JsonPropertyName("cupsUri")]
