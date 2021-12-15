@@ -20,10 +20,12 @@ The following table describes the supported authentication modes with the LoRaWa
 
 LoRaWan Network Server IoT Edge module allows to import a certificate in 'pkcs12' format (.pfx) to be used for server authentication for both LNS and CUPS endpoints.
 
-Two environment variables need to be set for making this happen:
+Two environment variables need to be set in the deployment manifest for making this happen:
 
 - **LNS_SERVER_PFX_PATH**: It's the absolute path to the .pfx certificate in the IoT Edge module filesystem (i.e.: '/var/lorastarterkit/certs/lns.pfx')
 - **LNS_SERVER_PFX_PASSWORD** *(optional)*: needs to be set if the .pfx was exported with password
+
+Instructions on how to modify deployment manifest can be found in documentation ([Learn how to deploy modules and establish routes in IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/module-composition))
 
 Assuming the .pfx file is located in a folder on the host OS at /mnt/lora/certs, you will need to 'bind' this path to one in the IoT Edge module itself. In order to do so:
 
