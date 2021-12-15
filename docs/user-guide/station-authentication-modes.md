@@ -18,7 +18,7 @@ The following table describes the supported authentication modes with the LoRaWa
 
 ### Importing certificate for server authentication in LoRaWan Network Server module
 
-LoRaWan Network Server IoT Edge module allows to import, a certificate in 'pkcs12' format (.pfx) from disk to be used for server authentication for both LNS and CUPS endpoints.
+LoRaWan Network Server IoT Edge module allows to import a certificate in 'pkcs12' format (.pfx) to be used for server authentication for both LNS and CUPS endpoints.
 
 Two environment variables need to be set for making this happen:
 
@@ -45,9 +45,9 @@ Additional information on this process can be found in the documentation - [Use 
 
 If you are making use of the bundled 'LoRaBasicsStationModule', it's possible to import a tc.trust/cups.trust certificate in the module itself.
 
-The default path where the trust file(s) will be searched is '/var/lorastarterkit/certs/'. As described in the previous section, it is possible to bind a folder on the host os to the one mentioned above.
+The default path where the trust file(s) will be searched is `/var/lorastarterkit/certs/`. As described in the previous section, it is possible to bind a folder on the host OS to the one mentioned above.
 
-The default path of the tc.trust file can be overridden by using the **'TC_TRUST_PATH'** environment variable (i.e.: setting it to '/var/otherfolder/my.ca' will make the module copy the my.ca file to a tc.trust in the LoRa Basics™ Station working directory).
+The default path of the tc.trust file can be overridden by using the **'TC_TRUST_PATH'** environment variable (i.e.: setting it to `/var/otherfolder/my.ca` will make the module copy the my.ca file to a tc.trust in the LoRa Basics™ Station working directory).
 
 Same can be done for a cups.trust file by overriding the **'CUPS_TRUST_PATH'** environment variable
 
@@ -61,25 +61,25 @@ By default, the 'LoRaWanNetworkSrvModule' is not accepting/requiring any client 
 
 It is possible to modify the behavior of the module to actually either allow or require a client certificate for accessing to its endpoints.
 
-In example, in order to always require a client certificate for reaching LNS/CUPS endpoints you should set the **'CLIENT_CERTIFICATE_MODE'** environment variable in 'LoRaWanNetworkSrvModule' to a value of '2' or 'RequireCertificate'.
+For example, to always require a client certificate for reaching LNS/CUPS endpoints, you should set the **'CLIENT_CERTIFICATE_MODE'** environment variable in 'LoRaWanNetworkSrvModule' to a value of '2' or 'RequireCertificate'.
 
 Supported values for 'CLIENT_CERTIFICATE_MODE' environment variables are:
 
-- '0' or 'NoCertificate' (client certificate is not required and will not be requested from clients)
-- '1' or 'AllowCertificate' (client certificate will be requested; however, authentication will not fail if a certificate is not provided by the client)
-- '2' or 'RequireCertificate' (client certificate will be requested, and the client must provide a valid certificate for authentication to succeed)
+- `0` or `NoCertificate`: client certificate is not required and will not be requested from clients
+- `1` or `AllowCertificate`: client certificate will be requested; however, authentication will not fail if a certificate is not provided by the client
+- `2` or `RequireCertificate`: client certificate will be requested, and the client must provide a valid certificate for authentication to succeed
 
 ### Importing 'tc.crt/tc.key/cups.crt/cups.key' in bundled 'LoRaBasicsStationModule'
 
 If you are making use of the bundled 'LoRaBasicsStationModule', it's possible to import a client certificate (.crt + .key files) in the module itself.
 
-The default path where the files will be searched is '/var/lorastarterkit/certs/'. As described in the previous section, it is possible to bind a folder on the host os to the one mentioned above.
+The default path where the files will be searched is '`var/lorastarterkit/certs/`. As described in the previous section, it is possible to bind a folder on the host OS to the one mentioned above.
 
-The default path of the tc.crt/tc.key/cups.crt/cups.key file can be overridden by using the related environment variable (i.e.: setting any of **'TC_CRT_PATH'**, **'TC_KEY_PATH'**, **'CUPS_CRT_PATH'**, **'CUPS_KEY_PATH'** to '/var/otherfolder/my.crt' will make the module copy the my.crt file to a *.crt in the LoRa Basics™ Station working directory).
+The default path of the tc.crt/tc.key/cups.crt/cups.key file can be overridden by using the related environment variable (i.e.: setting any of **'TC_CRT_PATH'**, **'TC_KEY_PATH'**, **'CUPS_CRT_PATH'**, **'CUPS_KEY_PATH'** to `/var/otherfolder/my.crt` will make the module copy the my.crt file to a *.crt in the LoRa Basics™ Station working directory).
 
 ### Providing a list of allowed client thumbprints for connection
 
-Server side, the validation of the certificate is happening by comparing the thumbprint of the certificate provided for authentication with a list of allowed thumbprints to be stored in the Concentrator Twin (more information on 'clientThumbprint' property of Twin in [related ADR](https://azure.github.io/iotedge-lorawan-starterkit/dev/adr/006_cups/))
+At the server side, the validation of the certificate is happening by comparing the thumbprint of the certificate provided for authentication with a list of allowed thumbprints stored in the Concentrator Twin (more information on 'clientThumbprint' property of Twin in [related ADR](https://azure.github.io/iotedge-lorawan-starterkit/dev/adr/006_cups/))
 
 When using the provided **Cli-LoRa-Device-Provisioning** tool to provision a concentrator device to IoT Hub, you can pass the **'--client-certificate-thumbprint'** option to specify the thumbprint of an allowed certificate.
 

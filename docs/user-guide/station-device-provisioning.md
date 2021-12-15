@@ -40,7 +40,7 @@ In the following we describe how to register an LBS in IoT Hub by using the LoRa
       .\loradeviceprovisioning.exe add --type concentrator --stationeui AABBCCFFFE001122 --region EU863 --client-certificate-thumbprint <AABBCCFFFE001122.crt Thumbprint Here> --certificate-bundle-location <path to AABBCCFFFE001122.bundle> --tc-uri wss://IP_OR_DNS:5001 --cups-uri https://IP_OR_DNS:5002
       ```
 
-Please note that currently supported regions for the LoRa Device Provisioning CLI are EU863, US902, CN470RP1 and CN470RP2. Nevertheless, tool is extensible and you can bring your own 'region.json' in the Cli-LoRa-Device-Provisioning\DefaultRouterConfig folder.
+Please note that currently supported regions for the LoRa Device Provisioning CLI are EU863, US902, CN470RP1 and CN470RP2. Nevertheless, the tool is extensible and you can bring your own 'region.json' in the Cli-LoRa-Device-Provisioning\DefaultRouterConfig folder.
 
 ### Manual configuration
 
