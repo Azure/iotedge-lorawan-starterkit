@@ -41,7 +41,10 @@ namespace LoRaWan.Tests.E2E
                     //update allowed client thumbprints in IoT Hub Twin to only have the one being added
                     await TestFixture.UpdateExistingConcentratorThumbprint(stationEui,
                                                                            condition: (originalArray) => !originalArray.Any(x => x.Equals(clientThumbprint, StringComparison.OrdinalIgnoreCase)),
-                                                                           action: (originalList) => originalList = new List<string> { clientThumbprint });
+                                                                           action: (originalList) => {
+                                                                               originalList.RemoveAll(x => true); // remove all keys
+                                                                               originalList.Add(clientThumbprint); // add only new thumbprint
+                                                                           });
                 }
 
                 if (crcParseResult)
