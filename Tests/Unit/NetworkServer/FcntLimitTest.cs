@@ -103,11 +103,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            var uplinkPktFwdMessage = confirmed
-                ? simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: payloadFcntUp)
-                                 .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey)
-                : simulatedDevice.CreateUnconfirmedMessageUplink("1234", fcnt: payloadFcntUp);
-            using var req = CreateWaitableRequest(uplinkPktFwdMessage.Rxpk[0]);
+            var loRaPayloadData = confirmed
+                ? simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: payloadFcntUp, appSKey: simulatedDevice.AppSKey, nwkSKey: simulatedDevice.NwkSKey)
+                : simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcntUp);
+
+            using var req = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), loRaPayloadData);
 
             messageDispatcher.DispatchRequest(req);
             Assert.True(await req.WaitCompleteAsync(-1));
@@ -208,8 +208,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            var rxpk = simulatedDevice.CreateUnconfirmedMessageUplink("1234", fcnt: (uint)fcntUp).Rxpk[0];
-            using var req = CreateWaitableRequest(rxpk);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: (uint)fcntUp);
+
+            using var req = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), payload);
 
             messageDispatcher.DispatchRequest(req);
             await req.WaitCompleteAsync();

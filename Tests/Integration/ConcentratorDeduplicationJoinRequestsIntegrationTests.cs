@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Integration
         public async Task When_Same_Join_Request_Received_Multiple_Times_Succeeds_Only_Once()
         {
             var joinRequest = this.simulatedDevice.CreateJoinRequest();
-            var loraRequest = CreateWaitableRequest(joinRequest.SerializeUplink(this.simulatedDevice.AppKey).Rxpk[0]);
+            var loraRequest = CreateWaitableRequest(joinRequest);
             loraRequest.SetPayload(joinRequest);
             loraRequest.SetRegion(new RegionEU868());
 
