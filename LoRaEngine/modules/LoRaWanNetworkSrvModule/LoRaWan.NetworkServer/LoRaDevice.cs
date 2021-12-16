@@ -884,7 +884,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates device on the server after a join succeeded.
         /// </summary>
-        internal async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties)
+        internal virtual async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties)
         {
             var reportedProperties = new TwinCollection();
             reportedProperties[TwinProperty.AppSKey] = updateProperties.AppSKey;

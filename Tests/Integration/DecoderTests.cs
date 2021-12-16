@@ -802,9 +802,8 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(request2.ResponseDownlink);
             Assert.NotNull(loRaDeviceTelemetry);
             var rawPayload2 = Convert.ToBase64String(Encoding.UTF8.GetBytes("1"));
-            Assert.Equal(rawPayload, loRaDeviceTelemetry.Rawdata);
-            // Only the first message should be sent
-            LoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Once());
+            Assert.Equal(rawPayload2, loRaDeviceTelemetry.Rawdata);
+            LoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Exactly(2));
             LoRaDeviceApi.VerifyAll();
             LoRaDeviceClient.VerifyAll();
         }
