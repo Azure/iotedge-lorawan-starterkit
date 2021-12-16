@@ -157,9 +157,9 @@ namespace LoRaWan.NetworkServer
                         loRaDevice.LastConfirmedC2DMessageID = cloudToDeviceMessage.MessageId ?? Constants.C2D_MSG_ID_PLACEHOLDER;
                     }
 
-                    if (cloudToDeviceMessage.Fport.IsPositiveFPort)
+                    if (cloudToDeviceMessage.Fport > 0)
                     {
-                        fport = cloudToDeviceMessage.Fport;
+                        fport = new FramePort(cloudToDeviceMessage.Fport);
                     }
 
                     logger.LogInformation($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? new FramePort(0)}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}");
@@ -215,7 +215,7 @@ namespace LoRaWan.NetworkServer
                 fctrl,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
-                fport.HasValue ? new FramePort[] { fport.Value } : null,
+                fport.HasValue ? new byte[] { (byte)fport.Value } : null,
                 frmPayload,
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
@@ -328,7 +328,7 @@ namespace LoRaWan.NetworkServer
                 FrameControlFlags.None,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
-                new FramePort[] { cloudToDeviceMessage.Fport },
+                new byte[] { cloudToDeviceMessage.Fport },
                 frmPayload,
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);

@@ -13,8 +13,11 @@ namespace LoRaWan
         public FramePort(byte value) => this.value = value;
 
         public bool IsMacCommandFPort => this.value == 0;
+        public bool IsApplicationSpecificFPort => this.value is > 0 and < 224;
         public bool IsMacLayerTestFPort => this.value == 224;
         public bool IsReservedForFutureAplicationsFPort => this.value >= 224;
+
+        public static explicit operator byte(FramePort fport) => fport.value;
 
         public Span<byte> Write(Span<byte> buffer)
         {
