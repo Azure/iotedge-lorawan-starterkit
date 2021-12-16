@@ -146,6 +146,6 @@ namespace LoRaWan
             return result is not null;
         }
 
-        public override string ToString() => XpkDatr.ToString()!;
+        public override string ToString() => XpkDatr;
     }
 }
