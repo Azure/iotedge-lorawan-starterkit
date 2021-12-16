@@ -11,7 +11,7 @@ namespace LoRaTools.CommonAPI
         /// <summary>
         /// Starting Fport value reserved for future applications.
         /// </summary>
-        public const byte ReservedForFutureAplications = 224;
+        public const byte ReservedForFutureAplications = 225;
 
         /// <summary>
         /// Fport value reserved for mac commands.

@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
-            Assert.Equal("invalid fport '224' in cloud to device message '01'", errorMessage);
+            Assert.Equal("invalid fport '225' in cloud to device message '01'", errorMessage);
 
             var rawPayloadC2d = new LoRaCloudToDeviceMessage()
             {
@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
-            Assert.Equal("invalid fport '225' in cloud to device message '02'", errorMessage);
+            Assert.Equal("invalid fport '226' in cloud to device message '02'", errorMessage);
         }
 
         [Fact]
