@@ -119,6 +119,9 @@
               "LNS_SERVER_PFX_PASSWORD": {
                 "value": "$SERVER_PFX_PASSWORD"
               },
+              "CLIENT_CERTIFICATE_MODE": {
+                "value": "AllowCertificate"
+              },
               "LNS_VERSION": {
                 "value": "$NET_SRV_VERSION"
               }

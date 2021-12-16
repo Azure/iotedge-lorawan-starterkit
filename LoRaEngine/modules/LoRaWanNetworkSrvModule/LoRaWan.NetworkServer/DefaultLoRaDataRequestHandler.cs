@@ -450,7 +450,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (OperationCanceledException saveChangesException)
                 {
-                    this.logger.LogError(loRaDevice.DevEUI, $"error updating reported properties. {saveChangesException.Message}");
+                    this.logger.LogError($"error updating reported properties. {saveChangesException.Message}");
                 }
                 catch (ArgumentOutOfRangeException ex)
                 {

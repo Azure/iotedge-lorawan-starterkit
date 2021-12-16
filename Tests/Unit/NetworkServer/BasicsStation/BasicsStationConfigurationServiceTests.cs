@@ -134,8 +134,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // assert
                 Assert.Equal(new Uri(TcUri), result.TcUri);
                 Assert.Equal(new Uri(CupsUri), result.CupsUri);
-                Assert.NotEqual(0U, result.TcCredentialsChecksum);
-                Assert.NotEqual(0U, result.CupsCredentialsChecksum);
+                Assert.NotEqual(0U, result.TcCredCrc);
+                Assert.NotEqual(0U, result.CupsCredCrc);
             }
 
             [Fact]
