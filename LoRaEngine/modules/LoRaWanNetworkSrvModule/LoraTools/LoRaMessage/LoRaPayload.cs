@@ -198,5 +198,8 @@ namespace LoRaTools.LoRaMessage
             var fcntServerUpper = fcnt & MaskHigher16;
             return fcntServerUpper | payloadFcnt;
         }
+
+        public virtual bool RequiresConfirmation
+            => false;
     }
 }
