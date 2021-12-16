@@ -196,7 +196,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            var radiometata = new RadioMetadata(TestUtils.TestRegion.GetDRFromFreqAndChan(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
+            var radiometata = new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
             using var request = CreateWaitableRequest(radiometata, payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
@@ -302,8 +302,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            var radiometata = new RadioMetadata(TestUtils.TestRegion.GetDRFromFreqAndChan(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
-            using var request = CreateWaitableRequest(radiometata, payload);
+            var radioMetadata = new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
+            using var request = CreateWaitableRequest(radioMetadata, payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -348,8 +348,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            var radiometatawithdr5 = new RadioMetadata(TestUtils.TestRegion.GetDRFromFreqAndChan(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
-            using var secondRequest = CreateWaitableRequest(radiometatawithdr5, payload);
+            var radioMetadataWithDatr5 = new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
+            using var secondRequest = CreateWaitableRequest(radioMetadataWithDatr5, payload);
             messageProcessor.DispatchRequest(secondRequest);
             Assert.True(await secondRequest.WaitCompleteAsync());
 
@@ -440,7 +440,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            var radiometata = new RadioMetadata(TestUtils.TestRegion.GetDRFromFreqAndChan(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
+            var radiometata = new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
 
             using var request = CreateWaitableRequest(radiometata, payload);
             messageProcessor.DispatchRequest(request);
@@ -549,7 +549,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private async Task<uint> SendMessage(float currentLsnr, LoRaDataRate currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, FrameControlFlags fctrl)
         {
             var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: fctrl);
-            using var requestInt = CreateWaitableRequest(new RadioMetadata(TestUtils.TestRegion.GetDRFromFreqAndChan(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0,0,0,0,currentLsnr)) ,payloadInt);
+            using var requestInt = CreateWaitableRequest(new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0,0,0,0,currentLsnr)) ,payloadInt);
             messageProcessor.DispatchRequest(requestInt);
             Assert.True(await requestInt.WaitCompleteAsync(-1));
             payloadFcnt++;

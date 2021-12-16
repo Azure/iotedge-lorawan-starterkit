@@ -153,9 +153,9 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message with a given starting frame counter
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: startingPayloadFcnt);
-            var radiometata = TestUtils.GenerateTestRadioMetadata();
+            var radioMetadata = TestUtils.GenerateTestRadioMetadata();
             using var unconfirmedRequest =
-                CreateWaitableRequest(radiometata, unconfirmedMessagePayload,
+                CreateWaitableRequest(radioMetadata, unconfirmedMessagePayload,
                                       constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(unconfirmedRequest);
             Assert.True(await unconfirmedRequest.WaitCompleteAsync());
@@ -190,7 +190,7 @@ namespace LoRaWan.Tests.Integration
             var downstreamMessage = PacketForwarder.DownlinkMessages[1];
 
             // validates txpk according to eu region
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radiometata.Frequency, out var frequency));
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radioMetadata.Frequency, out var frequency));
             Assert.Equal(frequency, downstreamMessage.Txpk.FreqHertz);
             Assert.Equal("4/5", downstreamMessage.Txpk.Codr);
             Assert.False(downstreamMessage.Txpk.Imme);

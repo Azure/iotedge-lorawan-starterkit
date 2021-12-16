@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Integration
             LoRaPayload loRaPayload;
             string msgPayload;
 
-            var datarateindex = TestUtils.TestRegion.GetDRFromFreqAndChan(datr);
+            var datarateindex = TestUtils.TestRegion.GetDataRateIndex(datr);
             var radioMetadata = TestUtils.GenerateTestRadioMetadata(dataRate: datarateindex);
 
             if (isConfirmed)

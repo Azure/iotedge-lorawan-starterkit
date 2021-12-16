@@ -354,7 +354,7 @@ namespace LoRaTools.Regions
             return DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate.XpkDatr == datr).Key;
         }
 
-        public DataRateIndex GetDRFromFreqAndChan(DataRate datr)
+        public DataRateIndex GetDataRateIndex(DataRate datr)
         {
             return DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate == datr).Key;
         }

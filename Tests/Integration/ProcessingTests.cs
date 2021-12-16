@@ -632,7 +632,7 @@ namespace LoRaWan.Tests.Integration
 
             // validates txpk according to eu region
             Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radio.Frequency, out var frequency));
-            Assert.Equal(frequency, Hertz.Mega(confirmedMessageResult.Txpk.Freq));
+            Assert.Equal(frequency, confirmedMessageResult.Txpk.FreqHertz);
             Assert.Equal("4/5", confirmedMessageResult.Txpk.Codr);
             Assert.False(confirmedMessageResult.Txpk.Imme);
             Assert.True(confirmedMessageResult.Txpk.Ipol);
