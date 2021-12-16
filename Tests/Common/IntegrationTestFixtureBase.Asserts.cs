@@ -65,14 +65,14 @@ namespace LoRaWan.Tests.Common
 
             if (assertionLevel == LogValidationAssertLevel.Error)
             {
-                var logs = string.Join("\n\t", searchResult.Logs.Select(x => x.ToString()).TakeLast(5));
+                var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
                 Assert.True(searchResult.Found, $"Searching for \"{targetJsonProperty}\": {expectedJsonValue} failed for device {deviceID}. Current log content: [{logs}]");
             }
             else if (assertionLevel == LogValidationAssertLevel.Warning)
             {
                 if (!searchResult.Found)
                 {
-                    var logs = string.Join("\n\t", searchResult.Logs.Select(x => x.ToString()).TakeLast(5));
+                    var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
                     TestLogger.Log($"[WARN] \"{targetJsonProperty}\": {expectedJsonValue} for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
                 }
             }
@@ -236,14 +236,14 @@ namespace LoRaWan.Tests.Common
             {
                 if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Error)
                 {
-                    var logs = string.Join("\n\t", searchResult.Logs.Select(x => x.ToString()).TakeLast(5));
+                    var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
                     Assert.True(searchResult.Found, $"Searching for {options?.Description ?? "??"} failed. Current log content: [{logs}]");
                 }
                 else if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Warning)
                 {
                     if (!searchResult.Found)
                     {
-                        var logs = string.Join("\n\t", searchResult.Logs.Select(x => x.ToString()).TakeLast(5));
+                        var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
                         TestLogger.Log($"[WARN] '{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
                     }
                 }
