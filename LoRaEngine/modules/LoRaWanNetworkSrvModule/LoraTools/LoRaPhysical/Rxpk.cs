@@ -42,8 +42,6 @@ namespace LoRaTools.LoRaPhysical
 
         [JsonProperty("datr")]
         public string Datr { get; set; }
-        [JsonIgnore]
-        public DataRate DataRate { get; set; }
 
         [JsonProperty("codr")]
         public string Codr { get; set; }
