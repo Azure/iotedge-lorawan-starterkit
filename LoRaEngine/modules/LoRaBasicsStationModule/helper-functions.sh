@@ -18,7 +18,7 @@ conditionalCopy() {
             cp -v $2 .
         fi
     else
-        cp -v $1 tc.trust
+        cp -v $1 .
     fi
 }
 

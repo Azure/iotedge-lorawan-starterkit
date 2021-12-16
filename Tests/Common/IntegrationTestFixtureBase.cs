@@ -9,9 +9,11 @@ namespace LoRaWan.Tests.Common
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
+    using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using Xunit;
 
     /// <summary>
@@ -284,6 +286,44 @@ namespace LoRaWan.Tests.Common
             {
                 this.tcpLogListener = TcpLogListener.Start(Configuration.TcpLogPort);
             }
+        }
+
+        public async Task UpdateExistingConcentratorThumbprint(string stationEui, Func<string[], bool> condition, Action<List<string>> action)
+        {
+            TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
+            var registryManager = GetRegistryManager();
+            var getDeviceResult = await registryManager.GetDeviceAsync(stationEui);
+            if (getDeviceResult == null)
+                throw new InvalidOperationException("Concentrator should exist in IoT Hub");
+            var deviceTwin = await registryManager.GetTwinAsync(stationEui);
+            var initialClientThumbprints = ((JArray)deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName]).ToObject<string[]>();
+            if (condition(initialClientThumbprints))
+            {
+                var arrayToList = new List<string>(initialClientThumbprints);
+                action(arrayToList);
+                deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName] = arrayToList.ToArray();
+                await registryManager.UpdateTwinAsync(stationEui, deviceTwin, deviceTwin.ETag);
+            }
+        }
+
+        public async Task UpdateExistingConcentratorCrcValues(string stationEui, uint crc)
+        {
+            TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
+            var registryManager = GetRegistryManager();
+            var getDeviceResult = await registryManager.GetDeviceAsync(stationEui);
+            if (getDeviceResult == null)
+                throw new InvalidOperationException("Concentrator should exist in IoT Hub");
+            var deviceTwin = await registryManager.GetTwinAsync(stationEui);
+            var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
+            var deserializedCupsTwinInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson);
+            var newCupsInfo = new CupsTwinInfo(deserializedCupsTwinInfo.CupsUri,
+                                               deserializedCupsTwinInfo.TcUri,
+                                               crc,
+                                               crc,
+                                               deserializedCupsTwinInfo.CupsCredentialUrl,
+                                               deserializedCupsTwinInfo.TcCredentialUrl);
+            deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
+            await registryManager.UpdateTwinAsync(stationEui, deviceTwin, deviceTwin.ETag);
         }
 
         private async Task CreateOrUpdateDevicesAsync()
