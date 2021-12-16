@@ -496,48 +496,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/station-configuration/" class="md-nav__link">
-        Basics Station configuration
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user-guide/station-credential-management/" class="md-nav__link">
-        Basics Station credentials management
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user-guide/station-module-configuration/" class="md-nav__link">
-        Basics Station IoT Edge Module configuration parameters
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../user-guide/upgrade/" class="md-nav__link">
         Upgrade LoRaWAN to a new version
       </a>
@@ -555,6 +513,83 @@
       <a href="../../user-guide/documentation/" class="md-nav__link">
         Working with the documentation
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_8" type="checkbox" id="__nav_3_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_8">
+          Basic Station configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_8">
+          <span class="md-nav__icon md-icon"></span>
+          Basic Station configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-device-provisioning/" class="md-nav__link">
+        Concentrator provisioning
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-authentication-modes/" class="md-nav__link">
+        Authentication modes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-module-configuration/" class="md-nav__link">
+        'LoRaBasicsStationModule' IoT Edge Module configuration parameters
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -1715,7 +1750,7 @@ Note right of LoRaWanNetworkSrvModule: Response should be a base64 encoded crede
 <p>For generating both server and client certificates there are two options.</p>
 <h4 id="a-with-an-external-pki">a) With an external PKI</h4>
 <p>In this starter kit, we are assuming that the same server certificate is used for both CUPS and LNS endpoints.</p>
-<p>Using instructions at <a href="../../user-guide/station-credential-management/">'Basics Station credentials management'</a> page, copy the certificate so that the LoRaWan Network Server can retrieve it at its startup and use it within Kestrel.</p>
+<p>Using instructions at <a href="../../user-guide/station-authentication-modes/">'Basics Station authentication modes'</a> page, copy the certificate so that the LoRaWan Network Server can retrieve it at its startup and use it within Kestrel.</p>
 <p>For concentrator configuration, it is important to retrieve the chain of trust which is used for signing the CUPS/LNS server certificate.</p>
 <p>This trust file needs to be:</p>
 <ul>

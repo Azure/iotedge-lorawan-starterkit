@@ -13,7 +13,7 @@
     
     
       
-        <title>Basics Station IoT Edge Module configuration parameters - IoTEdge LoRaWAN StarterKit - documentation</title>
+        <title>'LoRaBasicsStationModule' IoT Edge Module configuration parameters - IoTEdge LoRaWAN StarterKit - documentation</title>
       
     
     
@@ -64,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#basics-station-iot-edge-module-configuration-parameters" class="md-skip">
+        <a href="#lorabasicsstationmodule-iot-edge-module-configuration-parameters" class="md-skip">
           Skip to content
         </a>
       
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Basics Station IoT Edge Module configuration parameters
+              'LoRaBasicsStationModule' IoT Edge Module configuration parameters
             
           </span>
         </div>
@@ -498,8 +498,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../station-configuration/" class="md-nav__link">
-        Basics Station configuration
+      <a href="../upgrade/" class="md-nav__link">
+        Upgrade LoRaWAN to a new version
       </a>
     </li>
   
@@ -512,8 +512,66 @@
   
   
     <li class="md-nav__item">
-      <a href="../station-credential-management/" class="md-nav__link">
-        Basics Station credentials management
+      <a href="../documentation/" class="md-nav__link">
+        Working with the documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_8" type="checkbox" id="__nav_3_8" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_8">
+          Basic Station configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_8">
+          <span class="md-nav__icon md-icon"></span>
+          Basic Station configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../station-device-provisioning/" class="md-nav__link">
+        Concentrator provisioning
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../station-authentication-modes/" class="md-nav__link">
+        Authentication modes
       </a>
     </li>
   
@@ -536,7 +594,7 @@
       
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Basics Station IoT Edge Module configuration parameters
+        'LoRaBasicsStationModule' IoT Edge Module configuration parameters
       </a>
       
     </li>
@@ -544,29 +602,8 @@
 
             
           
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../upgrade/" class="md-nav__link">
-        Upgrade LoRaWAN to a new version
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../documentation/" class="md-nav__link">
-        Working with the documentation
-      </a>
+        </ul>
+      </nav>
     </li>
   
 
@@ -1056,7 +1093,7 @@
 </a>
 
 
-<h1 id="basics-station-iot-edge-module-configuration-parameters">Basics Station IoT Edge Module configuration parameters</h1>
+<h1 id="lorabasicsstationmodule-iot-edge-module-configuration-parameters">'LoRaBasicsStationModule' IoT Edge Module configuration parameters</h1>
 <p>The following table is providing a list of configuration options, to be provided as environment variables for manual configuration of the 'LoRaBasicsStationModule':</p>
 <table>
 <thead>
@@ -1070,7 +1107,42 @@
 <tr>
 <td>TC_URI</td>
 <td>The URI to the LNS Server implementation</td>
-<td><strong>Yes</strong> (i.e.: 'ws://IP_or_DNS:PORT')</td>
+<td><strong>Yes</strong> (i.e.: 'ws://IP_or_DNS:5000' or 'wss:// IP_OR_DNS :5001')</td>
+</tr>
+<tr>
+<td>CUPS_URI</td>
+<td>The URI to the CUPS Server implementation</td>
+<td>Yes, if CUPS endpoint is required (i.e.: 'https:// IP_or_DNS :5002')</td>
+</tr>
+<tr>
+<td>TC_TRUST_PATH</td>
+<td>The path to the tc.trust file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
+<td>No (if not set, defaulting to '/var/lorastarterkit/certs/tc.trust')</td>
+</tr>
+<tr>
+<td>TC_CRT_PATH</td>
+<td>The path to the tc.crt file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
+<td>No (if not set, defaulting to '/var/lorastarterkit/certs/tc.crt')</td>
+</tr>
+<tr>
+<td>TC_KEY_PATH</td>
+<td>The path to the tc.key file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
+<td>No (if not set, defaulting to '/var/lorastarterkit/certs/tc.key')</td>
+</tr>
+<tr>
+<td>CUPS_TRUST_PATH</td>
+<td>The path to the cups.trust file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
+<td>Only when CUPS is enabled (if not set, defaulting to '/var/lorastarterkit/certs/cups.trust')</td>
+</tr>
+<tr>
+<td>CUPS_CRT_PATH</td>
+<td>The path to the cups.crt file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
+<td>Only when CUPS is enabled (if not set, defaulting to '/var/lorastarterkit/certs/cups.crt')</td>
+</tr>
+<tr>
+<td>CUPS_KEY_PATH</td>
+<td>The path to the cups.key file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
+<td>Only when CUPS is enabled (if not set, defaulting to '/var/lorastarterkit/certs/cups.key')</td>
 </tr>
 <tr>
 <td>RESET_PIN</td>
@@ -1078,8 +1150,13 @@
 <td>No (if not set, module will skip the reset of the board)</td>
 </tr>
 <tr>
+<td>RADIODEV</td>
+<td>A string identifying the location where the board should be accessed (i.e.: '/dev/ttyACM0')</td>
+<td>No (if not set, board will be accessed at /dev/spidevX.0, see following item)</td>
+</tr>
+<tr>
 <td>SPI_DEV</td>
-<td>A number identifying the location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)</td>
+<td>A number identifying the SPI location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)</td>
 <td>No (defaults to 0)</td>
 </tr>
 <tr>
@@ -1088,9 +1165,14 @@
 <td>No (default to 8, unique alternative provided is 2)</td>
 </tr>
 <tr>
-<td>TC_TRUST_PATH</td>
-<td>The path to the tc.trust file. Refer to <a href=".\station-credential-management.md">this file</a> for more information</td>
-<td>No (if not set, defaulting to '/var/lorastarterkit/certs/tc.trust')</td>
+<td>FIXED_STATION_EUI</td>
+<td>Provides the ability to start the Basic Station with a fixed EUI</td>
+<td>No (if not set, the Basic Station built-in logic will be used for generating a EUI)</td>
+</tr>
+<tr>
+<td>STATION_PATH</td>
+<td>A string identifying the path of the folder where the compiled 'station.std' binary for Basic Station is located</td>
+<td>No (if not set, defaults to '/basicstation' folder)</td>
 </tr>
 </tbody>
 </table>
@@ -1112,7 +1194,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../station-credential-management/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Basics Station credentials management" rel="prev">
+        <a href="../station-authentication-modes/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Authentication modes" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1121,20 +1203,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Basics Station credentials management
+              Authentication modes
             </div>
           </div>
         </a>
       
       
         
-        <a href="../upgrade/" class="md-footer__link md-footer__link--next" aria-label="Next: Upgrade LoRaWAN to a new version" rel="next">
+        <a href="../../samples/arduino/" class="md-footer__link md-footer__link--next" aria-label="Next: Arduino Demo Code" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Upgrade LoRaWAN to a new version
+              Arduino Demo Code
             </div>
           </div>
           <div class="md-footer__button md-icon">

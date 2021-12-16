@@ -496,48 +496,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/station-configuration/" class="md-nav__link">
-        Basics Station configuration
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user-guide/station-credential-management/" class="md-nav__link">
-        Basics Station credentials management
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user-guide/station-module-configuration/" class="md-nav__link">
-        Basics Station IoT Edge Module configuration parameters
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../user-guide/upgrade/" class="md-nav__link">
         Upgrade LoRaWAN to a new version
       </a>
@@ -555,6 +513,83 @@
       <a href="../../user-guide/documentation/" class="md-nav__link">
         Working with the documentation
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_8" type="checkbox" id="__nav_3_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_8">
+          Basic Station configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_8">
+          <span class="md-nav__icon md-icon"></span>
+          Basic Station configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-device-provisioning/" class="md-nav__link">
+        Concentrator provisioning
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-authentication-modes/" class="md-nav__link">
+        Authentication modes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-module-configuration/" class="md-nav__link">
+        'LoRaBasicsStationModule' IoT Edge Module configuration parameters
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -1329,7 +1364,7 @@
   select Create Deployment for Single Device.</p>
 </li>
 <li>
-<p>Provision a device in your IoT Hub by following the <a href="../../user-guide/station-configuration/">Basics Station
+<p>Provision a device in your IoT Hub by following the <a href="../../user-guide/station-device-provisioning/">Basics Station
    configuration</a>
    docs.</p>
 </li>
@@ -1361,7 +1396,7 @@ Arduino board is connected to (Arduino IDE displays it). On macos you can
 discover through <code>ls /dev/tty*</code> and/or <code>ls /dev/cu*</code> bash commands. On Linux you
 can discover them with <code>ls /dev/ttyACM*</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-    <span class="nt">&quot;testConfiguration&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="nt">&quot;testConfiguration&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="nt">&quot;IoTHubEventHubConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;Endpoint=sb://xxxx.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx;EntityPath=xxxxx&quot;</span><span class="p">,</span>
     <span class="nt">&quot;IoTHubEventHubConsumerGroup&quot;</span><span class="p">:</span> <span class="s2">&quot;your-iothub-consumer-group&quot;</span><span class="p">,</span>
     <span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;HostName=xxxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx&quot;</span><span class="p">,</span>
@@ -1374,7 +1409,18 @@ can discover them with <code>ls /dev/ttyACM*</code>.</p>
     <span class="nt">&quot;DevicePrefix&quot;</span><span class="p">:</span> <span class="s2">&quot;your-two-letter-device-prefix&quot;</span><span class="p">,</span>
     <span class="nt">&quot;TcpLog&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
     <span class="nt">&quot;FunctionAppBaseUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-function-app.azurewebsites.net/api/&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;FunctionAppCode&quot;</span><span class="p">:</span> <span class="s2">&quot;your-function-code=&quot;</span>
+    <span class="nt">&quot;FunctionAppCode&quot;</span><span class="p">:</span> <span class="s2">&quot;your-function-code=&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;TxPower&quot;</span><span class="p">:</span> <span class="s2">&quot;a-value-for-setting-arduino-tx-power&quot;</span><span class="p">,</span>
+    <span class="err">//</span> <span class="kc">f</span><span class="err">ollowi</span><span class="kc">n</span><span class="err">g</span> <span class="err">op</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span> <span class="err">are</span> <span class="err">used</span> <span class="err">a</span><span class="kc">n</span><span class="err">d</span> <span class="kc">t</span><span class="err">o</span> <span class="err">be</span> <span class="err">co</span><span class="kc">nf</span><span class="err">igured</span> <span class="kc">f</span><span class="err">or</span> <span class="err">Mul</span><span class="kc">t</span><span class="err">iCo</span><span class="kc">n</span><span class="err">ce</span><span class="kc">ntrat</span><span class="err">or</span> <span class="err">a</span><span class="kc">n</span><span class="err">d</span> <span class="err">CUPS</span> <span class="err">Tes</span><span class="kc">t</span>
+    <span class="err">//</span> <span class="err">where</span> <span class="kc">t</span><span class="err">he</span> <span class="err">Co</span><span class="kc">n</span><span class="err">ce</span><span class="kc">ntrat</span><span class="err">or</span> <span class="err">s</span><span class="kc">tartu</span><span class="err">p/shu</span><span class="kc">t</span><span class="err">dow</span><span class="kc">n</span> <span class="err">is</span> <span class="err">programma</span><span class="kc">t</span><span class="err">ically</span> <span class="err">i</span><span class="kc">n</span><span class="err">voked</span> <span class="err">i</span><span class="kc">n</span> <span class="kc">t</span><span class="err">he</span> <span class="kc">test</span> <span class="err">i</span><span class="kc">tself</span>
+    <span class="nt">&quot;RunningInCI&quot;</span><span class="p">:</span> <span class="s2">&quot;should-be-false-if-not-running-with-e2e-ci&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;RemoteConcentratorConnection&quot;</span><span class="p">:</span> <span class="s2">&quot;username@remote-ssh-host&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;DefaultBasicStationEui&quot;</span><span class="p">:</span> <span class="s2">&quot;a-fixed-basic-station-eui-to-be-used&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;BasicStationExecutablePath&quot;</span><span class="p">:</span> <span class="s2">&quot;path-to-station-prebuilt-binary-on-remote-ssh-host&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;SshPrivateKeyPath&quot;</span><span class="p">:</span> <span class="s2">&quot;path-on-local-host-to-ssh-private-key-used-for-remote-ssh-connection&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;SharedLnsEndpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;wss://IP_or_DNS:5001&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;SharedCupsEndpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;https://IP_OR_DNS:5002&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;RadioDev&quot;</span><span class="p">:</span> <span class="s2">&quot;the-device-path-for-concentrator (i.e. /dev/ttyUSB0)&quot;</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>

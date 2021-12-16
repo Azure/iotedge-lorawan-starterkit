@@ -13,7 +13,7 @@
     
     
       
-        <title>Basics Station credentials management - IoTEdge LoRaWAN StarterKit - documentation</title>
+        <title>Authentication modes - IoTEdge LoRaWAN StarterKit - documentation</title>
       
     
     
@@ -64,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#basics-station-credentials-management" class="md-skip">
+        <a href="#authentication-modes" class="md-skip">
           Skip to content
         </a>
       
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Basics Station credentials management
+              Authentication modes
             
           </span>
         </div>
@@ -498,8 +498,66 @@
   
   
     <li class="md-nav__item">
-      <a href="../station-configuration/" class="md-nav__link">
-        Basics Station configuration
+      <a href="../upgrade/" class="md-nav__link">
+        Upgrade LoRaWAN to a new version
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+        Working with the documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_8" type="checkbox" id="__nav_3_8" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_8">
+          Basic Station configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_8">
+          <span class="md-nav__icon md-icon"></span>
+          Basic Station configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../station-device-provisioning/" class="md-nav__link">
+        Concentrator provisioning
       </a>
     </li>
   
@@ -522,12 +580,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Basics Station credentials management
+          Authentication modes
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Basics Station credentials management
+        Authentication modes
       </a>
       
         
@@ -546,6 +604,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#supported-authentication-modes" class="md-nav__link">
+    Supported authentication modes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#server-authentication" class="md-nav__link">
     Server Authentication
   </a>
@@ -561,8 +626,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#importing-tctrust-in-bundled-lorabasicsstationmodule" class="md-nav__link">
-    Importing 'tc.trust' in bundled 'LoRaBasicsStationModule'
+  <a href="#importing-tctrustcupstrust-in-bundled-lorabasicsstationmodule" class="md-nav__link">
+    Importing 'tc.trust/cups.trust' in bundled 'LoRaBasicsStationModule'
   </a>
   
 </li>
@@ -573,9 +638,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#client-certification" class="md-nav__link">
-    Client certification
+  <a href="#client-authentication" class="md-nav__link">
+    Client authentication
   </a>
+  
+    <nav class="md-nav" aria-label="Client authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changing-client-certificate-mode-in-lorawan-network-server-module" class="md-nav__link">
+    Changing 'Client Certificate Mode' in 'LoRaWan Network Server module'
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importing-tccrttckeycupscrtcupskey-in-bundled-lorabasicsstationmodule" class="md-nav__link">
+    Importing 'tc.crt/tc.key/cups.crt/cups.key' in bundled 'LoRaBasicsStationModule'
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#providing-a-list-of-allowed-client-thumbprints-for-connection" class="md-nav__link">
+    Providing a list of allowed client thumbprints for connection
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-signed-certificates-generator-for-tests-only" class="md-nav__link">
+    Self-signed certificates generator (for tests only)
+  </a>
+  
+    <nav class="md-nav" aria-label="Self-signed certificates generator (for tests only)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-a-server-certificate" class="md-nav__link">
+    Generate a server certificate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-a-client-certificate" class="md-nav__link">
+    Generate a client certificate
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -595,36 +714,15 @@
   
     <li class="md-nav__item">
       <a href="../station-module-configuration/" class="md-nav__link">
-        Basics Station IoT Edge Module configuration parameters
+        'LoRaBasicsStationModule' IoT Edge Module configuration parameters
       </a>
     </li>
   
 
             
           
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../upgrade/" class="md-nav__link">
-        Upgrade LoRaWAN to a new version
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../documentation/" class="md-nav__link">
-        Working with the documentation
-      </a>
+        </ul>
+      </nav>
     </li>
   
 
@@ -1106,6 +1204,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#supported-authentication-modes" class="md-nav__link">
+    Supported authentication modes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#server-authentication" class="md-nav__link">
     Server Authentication
   </a>
@@ -1121,8 +1226,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#importing-tctrust-in-bundled-lorabasicsstationmodule" class="md-nav__link">
-    Importing 'tc.trust' in bundled 'LoRaBasicsStationModule'
+  <a href="#importing-tctrustcupstrust-in-bundled-lorabasicsstationmodule" class="md-nav__link">
+    Importing 'tc.trust/cups.trust' in bundled 'LoRaBasicsStationModule'
   </a>
   
 </li>
@@ -1133,9 +1238,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#client-certification" class="md-nav__link">
-    Client certification
+  <a href="#client-authentication" class="md-nav__link">
+    Client authentication
   </a>
+  
+    <nav class="md-nav" aria-label="Client authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changing-client-certificate-mode-in-lorawan-network-server-module" class="md-nav__link">
+    Changing 'Client Certificate Mode' in 'LoRaWan Network Server module'
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importing-tccrttckeycupscrtcupskey-in-bundled-lorabasicsstationmodule" class="md-nav__link">
+    Importing 'tc.crt/tc.key/cups.crt/cups.key' in bundled 'LoRaBasicsStationModule'
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#providing-a-list-of-allowed-client-thumbprints-for-connection" class="md-nav__link">
+    Providing a list of allowed client thumbprints for connection
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-signed-certificates-generator-for-tests-only" class="md-nav__link">
+    Self-signed certificates generator (for tests only)
+  </a>
+  
+    <nav class="md-nav" aria-label="Self-signed certificates generator (for tests only)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-a-server-certificate" class="md-nav__link">
+    Generate a server certificate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-a-client-certificate" class="md-nav__link">
+    Generate a client certificate
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1151,23 +1310,52 @@
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/user-guide/station-credential-management.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/user-guide/station-authentication-modes.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
-<h1 id="basics-station-credentials-management">Basics Station credentials management</h1>
-<p>Starting with 'Azure IoT Edge LoRaWAN Starter Kit' v2.0.0, the LoRaWan Network Server runs a WebSocket endpoint compatible with <a href="https://doc.sm.tc/station/tcproto.html">The LNS Protocol</a> from LoRa Basics™ Station.</p>
-<p>As described in the official LoRa Basics™ Station documentation - <a href="https://doc.sm.tc/station/credentials.html">Credentials</a> a Basics™ Station client needs some credentials to establish a secure connection to LNS compatible endpoints.</p>
+<h1 id="authentication-modes">Authentication modes</h1>
+<p>Starting with 'Azure IoT Edge LoRaWAN Starter Kit' v2.0.0, the LoRaWan Network Server runs a WebSocket endpoint compatible with <a href="https://doc.sm.tc/station/tcproto.html">The LNS Protocol</a> and the <a href="https://doc.sm.tc/station/cupsproto.html">CUPS Protocol</a> from LoRa Basics™ Station.</p>
+<p>As described in the official LoRa Basics™ Station documentation - <a href="https://doc.sm.tc/station/credentials.html">Credentials</a>, a Basics™ Station client needs some credentials to establish a secure connection to LNS/CUPS compatible endpoints.</p>
+<h2 id="supported-authentication-modes">Supported authentication modes</h2>
+<p>The following table describes the supported authentication modes with the LoRaWan Network Server provided in Azure IoT Edge LoRaWAN Starter Kit</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th align="center">LNS Endpoint</th>
+<th align="center">CUPS Endpoint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No Authentication</td>
+<td align="center">✔️</td>
+<td align="center">❌</td>
+</tr>
+<tr>
+<td>Server Authentication only</td>
+<td align="center">✔️</td>
+<td align="center">❌</td>
+</tr>
+<tr>
+<td>Mutual (server + client) authentication</td>
+<td align="center">✔️</td>
+<td align="center">✔️</td>
+</tr>
+</tbody>
+</table>
 <h2 id="server-authentication">Server Authentication</h2>
 <h3 id="importing-certificate-for-server-authentication-in-lorawan-network-server-module">Importing certificate for server authentication in LoRaWan Network Server module</h3>
-<p>LoRaWan Network Server IoT Edge module allows to import, a certificate in 'pkcs12' format (.pfx) from disk to be used for server authentication.</p>
-<p>Two environment variables need to be set for making this happen:</p>
+<p>LoRaWan Network Server IoT Edge module allows to import a certificate in 'pkcs12' format (.pfx) to be used for server authentication for both LNS and CUPS endpoints.</p>
+<p>Two environment variables need to be set in the deployment manifest for making this happen:</p>
 <ul>
-<li><strong>LNS_SERVER_PFX_PATH</strong>: It's the absolute path to the .pfx certificate in the IoT Edge module filesystem (i.e.: '/var/lorastarterkit/certs/lns.pfx')</li>
+<li><strong>LNS_SERVER_PFX_PATH</strong>: It's the absolute path to the .pfx certificate in the IoT Edge module filesystem (i.e.: <code>/var/lorastarterkit/certs/lns.pfx</code>)</li>
 <li><strong>LNS_SERVER_PFX_PASSWORD</strong> <em>(optional)</em>: needs to be set if the .pfx was exported with password</li>
 </ul>
-<p>Assuming the .pfx file is located in a folder on the host OS at /mnt/lora/certs, you will need to 'bind' this path to one in the IoT Edge module itself. In order to do so:</p>
+<p>Instructions on how to modify deployment manifest can be found in documentation (<a href="https://docs.microsoft.com/en-us/azure/iot-edge/module-composition">Learn how to deploy modules and establish routes in IoT Edge</a>)</p>
+<p>Assuming the .pfx file is located in a folder on the host OS at <code>/mnt/lora/certs</code>, you will need to 'bind' this path to one in the IoT Edge module itself. In order to do so:</p>
 <ol>
 <li>
 <p>Log into your Azure Portal</p>
@@ -1176,7 +1364,7 @@
 <p>Identify the IoT Edge Device in IoT Hub</p>
 </li>
 <li>
-<p>Set the 'LoRaWanNetworkSrvModule' HostConfiguration to include a binding for the folder</p>
+<p>Set the 'LoRaWanNetworkSrvModule' HostConfiguration to include a binding for the folder under "Container Create Options"</p>
 <div class="highlight"><pre><span></span><code><span class="nt">&quot;Binds&quot;</span><span class="p">:</span>  <span class="p">[</span>
 <span class="s2">&quot;/mnt/lora/certs/:/var/lorastarterkit/certs/&quot;</span>
 <span class="p">]</span>
@@ -1184,12 +1372,64 @@
 </li>
 </ol>
 <p>Additional information on this process can be found in the documentation - <a href="https://docs.microsoft.com/azure/iot-edge/how-to-access-host-storage-from-module?view=iotedge-2020-11">Use IoT Edge device local storage from a module</a>.</p>
-<h3 id="importing-tctrust-in-bundled-lorabasicsstationmodule">Importing 'tc.trust' in bundled 'LoRaBasicsStationModule'</h3>
-<p>If you are making use of the bundled 'LoRaBasicsStationModule', it's possible to import a tc.trust certificate in the module itself.</p>
-<p>The default path where the tc.trust will be searched is '/var/lorastarterkit/certs/'. As described in the previous section, it is possible to bind a folder on the host os to the one mentioned above.</p>
-<p>The default path of the tc.trust file can be overridden by using the <strong>'TC_TRUST_PATH'</strong> environment variable (i.e.: setting it to '/var/otherfolder/my.ca' will make the module copy the my.ca file to a tc.trust in the LoRa Basics™ Station working directory).</p>
-<h2 id="client-certification">Client certification</h2>
-<p>Currently LoRaWan Network Server does not implement any client certificate validation.</p>
+<h3 id="importing-tctrustcupstrust-in-bundled-lorabasicsstationmodule">Importing 'tc.trust/cups.trust' in bundled 'LoRaBasicsStationModule'</h3>
+<p>If you are making use of the bundled 'LoRaBasicsStationModule', it's possible to import a tc.trust/cups.trust certificate in the module itself.</p>
+<p>The default path where the trust file(s) will be searched is <code>/var/lorastarterkit/certs/</code>. As described in the previous section, it is possible to bind a folder on the host OS to the one mentioned above.</p>
+<p>The default path of the tc.trust file can be overridden by using the <strong>'TC_TRUST_PATH'</strong> environment variable (i.e.: setting it to <code>/var/otherfolder/my.ca</code> will make the module copy the my.ca file to a tc.trust in the LoRa Basics™ Station working directory).</p>
+<p>Same can be done for a cups.trust file by overriding the <strong>'CUPS_TRUST_PATH'</strong> environment variable</p>
+<h2 id="client-authentication">Client authentication</h2>
+<p>The LoRaWan Network Server implementation provided by this starter kit is allowing client authentication from a Basics Station client.</p>
+<h3 id="changing-client-certificate-mode-in-lorawan-network-server-module">Changing 'Client Certificate Mode' in 'LoRaWan Network Server module'</h3>
+<p>By default, the 'LoRaWanNetworkSrvModule' is not accepting/requiring any client certificate for its exposed endpoints.</p>
+<p>It is possible to modify the behavior of the module to actually either allow or require a client certificate for accessing to its endpoints.</p>
+<p>For example, to always require a client certificate for reaching LNS/CUPS endpoints, you should set the <strong>'CLIENT_CERTIFICATE_MODE'</strong> environment variable in 'LoRaWanNetworkSrvModule' to a value of '2' or 'RequireCertificate'.</p>
+<p>Supported values for 'CLIENT_CERTIFICATE_MODE' environment variables are:</p>
+<ul>
+<li><code>0</code> or <code>NoCertificate</code>: client certificate is not required and will not be requested from clients</li>
+<li><code>1</code> or <code>AllowCertificate</code>: client certificate will be requested; however, authentication will not fail if a certificate is not provided by the client</li>
+<li><code>2</code> or <code>RequireCertificate</code>: client certificate will be requested, and the client must provide a valid certificate for authentication to succeed</li>
+</ul>
+<h3 id="importing-tccrttckeycupscrtcupskey-in-bundled-lorabasicsstationmodule">Importing 'tc.crt/tc.key/cups.crt/cups.key' in bundled 'LoRaBasicsStationModule'</h3>
+<p>If you are making use of the bundled 'LoRaBasicsStationModule', it's possible to import a client certificate (.crt + .key files) in the module itself.</p>
+<p>The default path where the files will be searched is <code>var/lorastarterkit/certs/</code>. As described in the previous section, it is possible to bind a folder on the host OS to the one mentioned above.</p>
+<p>The default path of the tc.crt/tc.key/cups.crt/cups.key file can be overridden by using the related environment variable (i.e.: setting any of <strong>'TC_CRT_PATH'</strong>, <strong>'TC_KEY_PATH'</strong>, <strong>'CUPS_CRT_PATH'</strong>, <strong>'CUPS_KEY_PATH'</strong> to <code>/var/otherfolder/my.crt</code> will make the module copy the my.crt file to a *.crt in the LoRa Basics™ Station working directory).</p>
+<h3 id="providing-a-list-of-allowed-client-thumbprints-for-connection">Providing a list of allowed client thumbprints for connection</h3>
+<p>At the server side, the validation of the certificate is happening by comparing the thumbprint of the certificate provided for authentication with a list of allowed thumbprints stored in the Concentrator Twin (more information on 'clientThumbprint' property of Twin in <a href="https://azure.github.io/iotedge-lorawan-starterkit/dev/adr/006_cups/">related ADR</a>)</p>
+<p>When using the provided <strong>Cli-LoRa-Device-Provisioning</strong> tool to provision a concentrator device to IoT Hub, you can pass the <strong>'--client-certificate-thumbprint'</strong> option to specify the thumbprint of an allowed certificate.</p>
+<p>If you can't use the tool, when creating the Concentrator device in IoT Hub, all you need to do is to add a desired property named '<strong>clientThumbprint</strong>' (being an array of allowed certificate thumbprints) and specify the thumbprint in this array.</p>
+<h2 id="self-signed-certificates-generator-for-tests-only">Self-signed certificates generator (for tests only)</h2>
+<p>This starter kit is providing a <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Tools/BasicStation-Certificates-Generation">BasicStation Certificates Generation</a> tool for helping its users to generate LoRaWAN Network Server certificates and Basics Station certificates for <strong>testing</strong> secure communication between a Basics Station client and the CUPS/LNS Protocol Endpoint in Network Server.</p>
+<p>The starter kit, and, therefore also this tool, are expecting the same certificate sets for both CUPS and LNS endpoints.</p>
+<div class="admonition danger">
+<p class="admonition-title">Only for testing</p>
+<p>In a production environment, you should not use certificates provided by this tool, but generate and sign certificates with a trusted root authority.</p>
+</div>
+<h3 id="generate-a-server-certificate">Generate a server certificate</h3>
+<p>As an example, if you want to generate a server certificate for a LoRaWAN Network Server hosted at <code>mytest.endpoint.com</code> and secure the output .PFX with a passphrase, you will need to issue the following script in the <code>Tools\BasicStation-Certificates-Generation</code> folder of the StarterKit:</p>
+<div class="highlight"><pre><span></span><code>./certificate-generate.sh server mytest.endpoint.com chosenPfxPassword
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">IMPORTANT</p>
+<p>when running the Basic Station client with Server Authentication enabled, the common name of the Server Certificate should exactly match the hostname specified in cups.uri/tc.uri. Even though this is decreasing security, it is possible to disable <a href="https://en.wikipedia.org/wiki/Server_Name_Indication">SNI</a> by setting the '<strong>TLS_SNI</strong>' environment variable to false when executing the Basic Station client (or provided LoRaBasicsStationModule)</p>
+</div>
+<p>The previous command will both generate a self-signed certificate authority (located in the 'ca' folder) and a mytest.endpoint.com.pfx (located in 'server' folder)</p>
+<p>You can now follow previous sections instructions on how to import this certificate in the provided LoRaWanNetworkSrvModule.</p>
+<h3 id="generate-a-client-certificate">Generate a client certificate</h3>
+<p>As an example, if you want to generate a client certificate for a Basic Station with DevEUI 'AABBCCFFFE001122', you will need to issue the following command</p>
+<div class="highlight"><pre><span></span><code>./certificate-generate.sh client AABBCCFFFE001122
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">IMPORTANT</p>
+<p>for client authentication to successfully work, the Common Name of the certificate should exactly match the DevEUI of the Basic Station.</p>
+</div>
+<p>The previous command will generate the following files in the 'client' subfolder:</p>
+<ul>
+<li>AABBCCFFFE001122.crt (the client certificate in DER format)</li>
+<li>AABBCCFFFE001122.key (the client certificate key in DER format)</li>
+<li>AABBCCFFFE001122.trust (the root certificate in DER format)</li>
+<li>AABBCCFFFE001122.bundle (the concatenation of the three above mentioned files, useful if you want to use CUPS)</li>
+</ul>
+<p>As soon as certificates are generated, you can now follow previous sections instructions on how to import this certificate in the provided LoRaBasicsStationModule or you can just copy the needed files to your Basic Station compatible concentrator.</p>
 
               
             </article>
@@ -1208,7 +1448,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../station-configuration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Basics Station configuration" rel="prev">
+        <a href="../station-device-provisioning/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Concentrator provisioning" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1217,20 +1457,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Basics Station configuration
+              Concentrator provisioning
             </div>
           </div>
         </a>
       
       
         
-        <a href="../station-module-configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: Basics Station IoT Edge Module configuration parameters" rel="next">
+        <a href="../station-module-configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: &#39;LoRaBasicsStationModule&#39; IoT Edge Module configuration parameters" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Basics Station IoT Edge Module configuration parameters
+              'LoRaBasicsStationModule' IoT Edge Module configuration parameters
             </div>
           </div>
           <div class="md-footer__button md-icon">
