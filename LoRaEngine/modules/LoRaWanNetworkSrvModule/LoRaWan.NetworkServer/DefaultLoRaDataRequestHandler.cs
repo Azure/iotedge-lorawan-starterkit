@@ -9,7 +9,6 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
-    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer.ADR;
@@ -79,7 +78,7 @@ namespace LoRaWan.NetworkServer
             var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
             this.logger.LogDebug($"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}");
 
-            var payloadPort = loraPayload.FPortValue;
+            var payloadPort = new FramePort(loraPayload.FPortValue);
             var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
 
             LoRaADRResult loRaADRResult = null;
@@ -201,7 +200,7 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    if (payloadPort == LoRaFPort.MacCommand)
+                    if (payloadPort.IsMacCommandFPort)
                     {
                         if (decryptedPayloadData?.Length > 0)
                         {
@@ -223,13 +222,13 @@ namespace LoRaWan.NetworkServer
                     {
                         if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
                         {
-                            this.logger.LogDebug($"no decoder set in device twin. port: {payloadPort}");
+                            this.logger.LogDebug($"no decoder set in device twin. port: {(byte)payloadPort}");
                             payloadData = new UndecodedPayload(decryptedPayloadData);
                         }
                         else
                         {
-                            this.logger.LogDebug($"decoding with: {loRaDevice.SensorDecoder} port: {payloadPort}");
-                            var decodePayloadResult = await this.payloadDecoder.DecodeMessageAsync(loRaDevice.DevEUI, decryptedPayloadData, payloadPort, loRaDevice.SensorDecoder);
+                            this.logger.LogDebug($"decoding with: {loRaDevice.SensorDecoder} port: {(byte)payloadPort}");
+                            var decodePayloadResult = await this.payloadDecoder.DecodeMessageAsync(loRaDevice.DevEUI, decryptedPayloadData, (byte)payloadPort, loRaDevice.SensorDecoder);
                             payloadData = decodePayloadResult.GetDecodedPayload();
 
                             if (decodePayloadResult.CloudToDeviceMessage != null)
@@ -263,7 +262,7 @@ namespace LoRaWan.NetworkServer
                     if (!isConfirmedResubmit)
                     {
                         // In case it is a Mac Command only we don't want to send it to the IoT Hub
-                        if (payloadPort != LoRaFPort.MacCommand)
+                        if (!payloadPort.IsMacCommandFPort)
                         {
                             if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, bundlerResult?.DeduplicationResult, decryptedPayloadData))
                             {
