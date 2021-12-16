@@ -884,8 +884,9 @@ namespace LoRaWan.NetworkServer
                         // We need to await this reset to avoid races on the server with deduplication and
                         // fcnt down calculations
                         if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate)
+                        {
                             _ = await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
-
+                        }
                         isFrameCounterFromNewlyStartedDevice = true;
                     }
                 }
