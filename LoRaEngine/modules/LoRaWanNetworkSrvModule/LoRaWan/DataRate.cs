@@ -41,7 +41,7 @@ namespace LoRaWan
 
     public sealed record FskDataRate : DataRate
     {
-        public static readonly FskDataRate Fsk50000 = new FskDataRate(50_000);
+        public static readonly FskDataRate Fsk50000 = new(50_000);
 
         private FskDataRate(int kbps) : base(ModulationKind.Fsk, kbps) =>
             BitRateInKiloBitsPerSecond = kbps;
@@ -51,29 +51,29 @@ namespace LoRaWan
 
     public sealed record LoRaDataRate : DataRate
     {
-        public static readonly LoRaDataRate SF7BW125 = new LoRaDataRate(SF7, BW125);
-        public static readonly LoRaDataRate SF7BW250 = new LoRaDataRate(SF7, BW250);
-        public static readonly LoRaDataRate SF7BW500 = new LoRaDataRate(SF7, BW500);
+        public static readonly LoRaDataRate SF7BW125 = new(SF7, BW125);
+        public static readonly LoRaDataRate SF7BW250 = new(SF7, BW250);
+        public static readonly LoRaDataRate SF7BW500 = new(SF7, BW500);
 
-        public static readonly LoRaDataRate SF8BW125 = new LoRaDataRate(SF8, BW125);
-        public static readonly LoRaDataRate SF8BW250 = new LoRaDataRate(SF8, BW250);
-        public static readonly LoRaDataRate SF8BW500 = new LoRaDataRate(SF8, BW500);
+        public static readonly LoRaDataRate SF8BW125 = new(SF8, BW125);
+        public static readonly LoRaDataRate SF8BW250 = new(SF8, BW250);
+        public static readonly LoRaDataRate SF8BW500 = new(SF8, BW500);
 
-        public static readonly LoRaDataRate SF9BW125 = new LoRaDataRate(SF9, BW125);
-        public static readonly LoRaDataRate SF9BW250 = new LoRaDataRate(SF9, BW250);
-        public static readonly LoRaDataRate SF9BW500 = new LoRaDataRate(SF9, BW500);
+        public static readonly LoRaDataRate SF9BW125 = new(SF9, BW125);
+        public static readonly LoRaDataRate SF9BW250 = new(SF9, BW250);
+        public static readonly LoRaDataRate SF9BW500 = new(SF9, BW500);
 
-        public static readonly LoRaDataRate SF10BW125 = new LoRaDataRate(SF10, BW125);
-        public static readonly LoRaDataRate SF10BW250 = new LoRaDataRate(SF10, BW250);
-        public static readonly LoRaDataRate SF10BW500 = new LoRaDataRate(SF10, BW500);
+        public static readonly LoRaDataRate SF10BW125 = new(SF10, BW125);
+        public static readonly LoRaDataRate SF10BW250 = new(SF10, BW250);
+        public static readonly LoRaDataRate SF10BW500 = new(SF10, BW500);
 
-        public static readonly LoRaDataRate SF11BW125 = new LoRaDataRate(SF11, BW125);
-        public static readonly LoRaDataRate SF11BW250 = new LoRaDataRate(SF11, BW250);
-        public static readonly LoRaDataRate SF11BW500 = new LoRaDataRate(SF11, BW500);
+        public static readonly LoRaDataRate SF11BW125 = new(SF11, BW125);
+        public static readonly LoRaDataRate SF11BW250 = new(SF11, BW250);
+        public static readonly LoRaDataRate SF11BW500 = new(SF11, BW500);
 
-        public static readonly LoRaDataRate SF12BW125 = new LoRaDataRate(SF12, BW125);
-        public static readonly LoRaDataRate SF12BW250 = new LoRaDataRate(SF12, BW250);
-        public static readonly LoRaDataRate SF12BW500 = new LoRaDataRate(SF12, BW500);
+        public static readonly LoRaDataRate SF12BW125 = new(SF12, BW125);
+        public static readonly LoRaDataRate SF12BW250 = new(SF12, BW250);
+        public static readonly LoRaDataRate SF12BW500 = new(SF12, BW500);
 
         public static LoRaDataRate From(SpreadingFactor sf, Bandwidth bw) => (sf, bw) switch
         {
