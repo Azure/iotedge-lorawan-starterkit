@@ -680,10 +680,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             var region2 = LnsStationConfiguration.GetRegion(config2);
 
             // asserting that reading region2 is not affecting region1
-            Assert.Equal(typeof(RegionAS923), region1.GetType());
-            Assert.Equal(0, ((RegionAS923)region1).FrequencyOffset);
-            Assert.Equal(typeof(RegionAS923), region2.GetType());
-            Assert.Equal(-1800000, ((RegionAS923)region2).FrequencyOffset);
+            var as923_1 = Assert.IsType<RegionAS923>(region1);
+            Assert.Equal(0, as923_1.FrequencyOffset);
+            var as923_2 = Assert.IsType<RegionAS923>(region2);
+            Assert.Equal(-1800000, as923_2.FrequencyOffset);
         }
     }
 }
