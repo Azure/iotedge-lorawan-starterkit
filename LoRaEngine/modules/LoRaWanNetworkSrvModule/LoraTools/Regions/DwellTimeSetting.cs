@@ -3,5 +3,13 @@
 
 namespace LoRaTools.Regions
 {
-    public record DwellTimeSetting(bool DownlinkDwellTime, bool UplinkDwellTime, uint MaxEirp);
+    using System;
+
+    public record DwellTimeSetting(bool DownlinkDwellTime, bool UplinkDwellTime, uint MaxEirp)
+    {
+        public static DwellTimeSetting GetEffectiveDwellTimeSetting(DwellTimeSetting @default, DwellTimeSetting desired, DwellTimeSetting reported)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

@@ -12,7 +12,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using System;
+    using System.Globalization;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit;
@@ -37,36 +39,64 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                              this.memoryCache);
         }
 
+        private void SetupDeviceKeyLookup() => SetupDeviceKeyLookup("foo");
 
-        private void SetupDeviceKeyLookup(StationEui stationEui, string primaryKey) =>
-            SetupDeviceKeyLookup(stationEui, new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
+        private void SetupDeviceKeyLookup(string primaryKey) =>
+            SetupDeviceKeyLookup(new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
 
-        private void SetupDeviceKeyLookup(StationEui stationEui, params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
-            loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByEuiAsync(stationEui))
+        private void SetupDeviceKeyLookup(params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
+            loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByEuiAsync(this.stationEui))
                                     .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
 
         private const string TcUri = "wss://tc.local:5001";
         private const string CupsUri = "https://cups.local:5002";
 
-        private void SetupTwinResponse(StationEui stationEui, string primaryKey) =>
-            SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)},
-                                                            ""clientThumbprint"": [ ""thumbprint"" ],
-                                                            ""cups"": {{
-                                                                        ""tcCredentialUrl"": ""https://storageurl.net/container/blob"",
-                                                                        ""tcCredCrc"":101938194,
-                                                                        ""cupsCredentialUrl"": ""https://storageurl.net/container/blob"",
-                                                                        ""cupsCredCrc"":101938194,
-                                                                        ""cupsUri"": ""{CupsUri}"",
-                                                                        ""tcUri"": ""{TcUri}""
-                                                                      }}
-                                                          }}");
+        private static string GetTxParamsJson(DwellTimeSetting @default, DwellTimeSetting desired) =>
+            @$"{{ ""default"": {JsonUtil.Minify(GetTxSettingJson(@default))}, ""desired"": {JsonUtil.Minify(GetTxSettingJson(desired))}}}";
 
-        private void SetupTwinResponse(StationEui stationEui, string primaryKey, string json)
+        private static string GetTxSettingJson(DwellTimeSetting setting)
+        {
+            if (setting is null)
+                return "null";
+
+            static string Serialize(object obj) => JsonSerializer.Serialize(obj);
+
+            const string template = @"{{
+                ""eirp"": {0},
+                ""uplinkDwellLimit"": {1},
+	            ""downlinkDwellLimit"": {2}
+            }}";
+
+            return string.Format(CultureInfo.InvariantCulture, template, Serialize(setting.MaxEirp), Serialize(setting.UplinkDwellTime), Serialize(setting.DownlinkDwellTime));
+        }
+
+        private void SetupTwinResponse(DwellTimeSetting defaultDwellTimeSetting, DwellTimeSetting desiredDwellTimeSetting) =>
+            SetupTwinResponse("foo", defaultDwellTimeSetting, desiredDwellTimeSetting);
+
+        private void SetupTwinResponse(string primaryKey) =>
+            SetupTwinResponse(primaryKey, new DwellTimeSetting(false, false, 0), new DwellTimeSetting(false, false, 0));
+
+
+        private void SetupTwinResponse(string primaryKey, DwellTimeSetting defaultDwellTimeSetting, DwellTimeSetting desiredDwellTimeSetting) =>
+            SetupTwinResponse(primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)},
+                                                ""clientThumbprint"": [ ""thumbprint"" ],
+                                                ""cups"": {{
+                                                            ""tcCredentialUrl"": ""https://storageurl.net/container/blob"",
+                                                            ""tcCredCrc"":101938194,
+                                                            ""cupsCredentialUrl"": ""https://storageurl.net/container/blob"",
+                                                            ""cupsCredCrc"":101938194,
+                                                            ""cupsUri"": ""{CupsUri}"",
+                                                            ""tcUri"": ""{TcUri}""
+                                                }},
+                                                ""txParams"": {GetTxParamsJson(defaultDwellTimeSetting, desiredDwellTimeSetting)}
+                                              }}");
+
+        private void SetupTwinResponse(string primaryKey, string json)
         {
             var deviceTwin = new Twin(new TwinProperties { Desired = new TwinCollection(json) });
             var deviceClientMock = new Mock<ILoRaDeviceClient>();
             deviceClientMock.Setup(dc => dc.GetTwinAsync(CancellationToken.None)).Returns(Task.FromResult(deviceTwin));
-            this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(stationEui.ToString(), primaryKey))
+            this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(this.stationEui.ToString(), primaryKey))
                                       .Returns(deviceClientMock.Object);
         }
 
@@ -77,8 +107,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, primaryKey);
-                SetupTwinResponse(this.stationEui, primaryKey);
+                SetupDeviceKeyLookup(primaryKey);
+                SetupTwinResponse(primaryKey);
 
                 // act
                 var result = await this.sut.GetRegionAsync(this.stationEui, CancellationToken.None);
@@ -94,8 +124,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, primaryKey);
-                SetupTwinResponse(this.stationEui, primaryKey);
+                SetupDeviceKeyLookup(primaryKey);
+                SetupTwinResponse(primaryKey);
 
                 // act
                 var result = await this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None);
@@ -109,8 +139,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, primaryKey);
-                SetupTwinResponse(this.stationEui, primaryKey, JsonUtil.Strictify("{ 'anotherProp': '1'}"));
+                SetupDeviceKeyLookup(primaryKey);
+                SetupTwinResponse(primaryKey, JsonUtil.Strictify("{ 'anotherProp': '1'}"));
 
                 // act and assert
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));
@@ -125,8 +155,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, primaryKey);
-                SetupTwinResponse(this.stationEui, primaryKey);
+                SetupDeviceKeyLookup(primaryKey);
+                SetupTwinResponse(primaryKey);
 
                 // act
                 var result = await this.sut.GetCupsConfigAsync(this.stationEui, CancellationToken.None);
@@ -143,8 +173,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, primaryKey);
-                SetupTwinResponse(this.stationEui, primaryKey, JsonUtil.Strictify("{ 'anotherProp': '1'}"));
+                SetupDeviceKeyLookup(primaryKey);
+                SetupTwinResponse(primaryKey, JsonUtil.Strictify("{ 'anotherProp': '1'}"));
 
                 // act and assert
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetCupsConfigAsync(this.stationEui, CancellationToken.None));
@@ -159,8 +189,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, primaryKey);
-                SetupTwinResponse(this.stationEui, primaryKey);
+                SetupDeviceKeyLookup(primaryKey);
+                SetupTwinResponse(primaryKey);
 
                 // act
                 var result = await this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None);
@@ -176,8 +206,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, Enumerable.Range(0, count).Select(_ => new IoTHubDeviceInfo()).ToArray());
-                SetupTwinResponse(this.stationEui, primaryKey);
+                SetupDeviceKeyLookup(Enumerable.Range(0, count).Select(_ => new IoTHubDeviceInfo()).ToArray());
+                SetupTwinResponse(primaryKey);
 
                 // act + assert
                 var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
@@ -190,8 +220,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // arrange
                 const int numberOfConcurrentAccess = 5;
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, primaryKey);
-                SetupTwinResponse(this.stationEui, primaryKey);
+                SetupDeviceKeyLookup(primaryKey);
+                SetupTwinResponse(primaryKey);
 
                 // act
                 var result = await Task.WhenAll(from i in Enumerable.Range(0, numberOfConcurrentAccess)
@@ -210,8 +240,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, "foo");
-                SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""foo"": ""bar"" }}");
+                SetupDeviceKeyLookup("foo");
+                SetupTwinResponse(primaryKey, @$"{{ ""foo"": ""bar"" }}");
 
                 // act + assert
                 var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
@@ -223,7 +253,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupTwinResponse(this.stationEui, primaryKey);
+                SetupTwinResponse(primaryKey);
                 this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.SearchByEuiAsync(It.IsAny<StationEui>()))
                                              .Throws(new InvalidOperationException())
                                              .Returns(Task.FromResult(new SearchDevicesResult(new[]
@@ -239,6 +269,48 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // assert
                 this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByEuiAsync(It.IsAny<StationEui>()), Times.Exactly(2));
                 Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
+            }
+        }
+
+        public class GetDwellTimeConfigurationAsync : BasicsStationConfigurationServiceTests
+        {
+            [Fact]
+            public async Task Success()
+            {
+                // arrange
+                var expectedDefault = new DwellTimeSetting(false, true, 3);
+                var expectedDesired = new DwellTimeSetting(true, false, 2);
+                SetupDeviceKeyLookup();
+                SetupTwinResponse(expectedDefault, expectedDesired);
+
+                // act
+                var (actualDefault, actualDesired) = await this.sut.GetDwellTimeConfigurationAsync(this.stationEui, CancellationToken.None);
+
+                // assert
+                Assert.Equal(expectedDefault, actualDefault);
+                Assert.Equal(expectedDesired, actualDesired);
+            }
+
+            [Fact]
+            public async Task Throws_If_Default_Is_Null()
+            {
+                // arrange
+                SetupDeviceKeyLookup();
+                SetupTwinResponse(null, new DwellTimeSetting(false, false, 0));
+
+                // act + assert
+                _ = await Assert.ThrowsAsync<JsonException>(() => this.sut.GetDwellTimeConfigurationAsync(this.stationEui, CancellationToken.None));
+            }
+
+            [Fact]
+            public async Task Throws_If_Desired_Is_Null()
+            {
+                // arrange
+                SetupDeviceKeyLookup();
+                SetupTwinResponse(new DwellTimeSetting(false, false, 0), null);
+
+                // act + assert
+                _ = await Assert.ThrowsAsync<JsonException>(() => this.sut.GetDwellTimeConfigurationAsync(this.stationEui, CancellationToken.None));
             }
         }
 
