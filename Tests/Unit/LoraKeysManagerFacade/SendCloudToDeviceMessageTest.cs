@@ -67,7 +67,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 DevEUI = "0123456789",
-                Fport = LoRaFPort.MacCommand,
+                Fport = new FramePort(LoRaFPort.MacCommand),
                 Payload = "hello",
             };
 
@@ -90,7 +90,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
-                Fport = 1,
+                Fport = new FramePort(1),
                 Payload = "hello",
             };
 
@@ -132,7 +132,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = new FramePort(1),
                 });
 
             Assert.IsType<ObjectResult>(actual);
@@ -156,7 +156,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = new FramePort(1),
                 });
 
             Assert.IsType<ObjectResult>(actual);
@@ -183,7 +183,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = new FramePort(1),
                 });
 
             Assert.IsType<BadRequestObjectResult>(actual);
@@ -210,7 +210,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = new FramePort(1),
                 });
 
             Assert.IsType<ObjectResult>(actual);
@@ -238,7 +238,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = new FramePort(1),
                 });
 
             Assert.IsType<NotFoundObjectResult>(actual);
@@ -273,7 +273,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
-                Fport = 1,
+                Fport = new FramePort(1),
                 Payload = "hello",
             };
 
@@ -330,7 +330,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
-                Fport = 1,
+                Fport = new FramePort(1),
                 Payload = "hello",
             };
 
@@ -387,7 +387,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
                 MessageId = "myMessageId-1234",
-                Fport = 1,
+                Fport = new FramePort(1),
                 Payload = "hello",
             };
 
@@ -442,7 +442,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
                 MessageId = "myMessageId-1234",
-                Fport = 1,
+                Fport = new FramePort(1),
                 Payload = "hello",
             };
 

@@ -4,6 +4,8 @@
 namespace LoRaTools.CommonAPI
 {
     using System.Collections.Generic;
+    using LoRaWan;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// Defines the contract for a LoRa cloud to device message.
@@ -12,7 +14,11 @@ namespace LoRaTools.CommonAPI
     {
         public string DevEUI { get; set; }
 
-        public byte Fport { get; set; }
+        [JsonProperty("fport")]
+        public byte FportValue { get; set; }
+
+        [JsonIgnore]
+        public FramePort Fport { get => new FramePort(FportValue); set => FportValue = (byte)value; }
 
         /// <summary>
         /// Gets or sets payload as base64 string
@@ -47,14 +53,14 @@ namespace LoRaTools.CommonAPI
             // ensure fport follows LoRa specification
             // 0    => reserved for mac commands
             // 224+ => reserved for future applications
-            if (Fport >= LoRaFPort.ReservedForFutureAplications)
+            if (Fport.IsReservedForFutureAplicationsFPort)
             {
-                errorMessage = $"invalid fport '{Fport}' in cloud to device message '{MessageId}'";
+                errorMessage = $"invalid fport '{(byte)Fport}' in cloud to device message '{MessageId}'";
                 return false;
             }
 
             // fport 0 is reserved for mac commands
-            if (Fport == LoRaFPort.MacCommand)
+            if (Fport.IsMacCommandFPort)
             {
                 // Not valid if there is no mac command or there is a payload
                 if ((MacCommands?.Count ?? 0) == 0 || HasPayload())

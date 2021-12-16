@@ -16,7 +16,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = LoRaFPort.MacCommand,
+                Fport = new FramePort(LoRaFPort.MacCommand),
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 RawPayload = "AAAA",
-                Fport = LoRaFPort.MacCommand,
+                Fport = new FramePort(LoRaFPort.MacCommand),
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
@@ -40,7 +40,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = LoRaFPort.ReservedForFutureAplications,
+                Fport = new FramePort(LoRaFPort.ReservedForFutureAplications),
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "02",
                 RawPayload = "AAAA",
-                Fport = LoRaFPort.ReservedForFutureAplications + 1,
+                Fport = new FramePort(LoRaFPort.ReservedForFutureAplications + 1),
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
@@ -64,7 +64,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 MacCommands = { new DevStatusRequest() },
-                Fport = LoRaFPort.MacCommand,
+                Fport = new FramePort(LoRaFPort.MacCommand),
             };
 
             Assert.True(c2d.IsValid(out var errorMessage));
@@ -79,7 +79,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
                 MessageId = "01",
                 Payload = "hello",
                 MacCommands = { new DevStatusRequest() },
-                Fport = 1,
+                Fport = new FramePort(1),
             };
 
             Assert.True(payloadC2d.IsValid(out var errorMessage));
@@ -90,7 +90,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
                 MessageId = "01",
                 RawPayload = "AAAA",
                 MacCommands = { new DevStatusRequest() },
-                Fport = 2,
+                Fport = new FramePort(2),
             };
 
             Assert.True(rawPayloadC2d.IsValid(out errorMessage));
@@ -104,7 +104,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = 1,
+                Fport = new FramePort(1),
             };
 
             Assert.True(payloadC2d.IsValid(out var errorMessage));
@@ -114,7 +114,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 RawPayload = "AAAA",
-                Fport = 2,
+                Fport = new FramePort(2),
             };
 
             Assert.True(rawPayloadC2d.IsValid(out errorMessage));
@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = LoRaFPort.MacCommand,
+                Fport = new FramePort(LoRaFPort.MacCommand),
                 MacCommands = { new DevStatusRequest() },
             };
 
@@ -139,7 +139,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "02",
                 RawPayload = "AAAA",
-                Fport = LoRaFPort.MacCommand,
+                Fport = new FramePort(LoRaFPort.MacCommand),
                 MacCommands = { new DevStatusRequest() },
             };
 

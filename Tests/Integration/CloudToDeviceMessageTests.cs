@@ -169,7 +169,7 @@ namespace LoRaWan.Tests.Integration
 
             var cloudToDeviceMessageBody = new ReceivedLoRaCloudToDeviceMessage()
             {
-                Fport = 1,
+                Fport = new FramePort(1),
                 Payload = "c2d"
             };
 
@@ -251,7 +251,7 @@ namespace LoRaWan.Tests.Integration
                    .ReturnsAsync(true);
             }
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = new FramePort(1) }
                 .CreateMessage();
 
             LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -332,7 +332,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = new FramePort(1) }
                 .CreateMessage();
 
             LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -429,7 +429,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = new FramePort(1) }
                 .CreateMessage();
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
@@ -533,7 +533,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = new FramePort(1) }
                 .CreateMessage();
 
             LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -640,7 +640,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = new FramePort(1) }
                 .CreateMessage();
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsInRange<TimeSpan>(TimeSpan.FromMilliseconds(checkMinDuration), TimeSpan.FromMilliseconds(checkMaxDuration), Moq.Range.Inclusive)))
@@ -723,7 +723,7 @@ namespace LoRaWan.Tests.Integration
 
             if (!string.IsNullOrEmpty(msg))
             {
-                c2d.Fport = 1;
+                c2d.Fport = new FramePort(1);
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -883,7 +883,7 @@ namespace LoRaWan.Tests.Integration
             {
                 CloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = new FramePort(1),
                     MessageId = "123",
                     Payload = "12",
                     DevEUI = c2dDevEUI
@@ -966,7 +966,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = new FramePort(1) }
                 .CreateMessage();
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))

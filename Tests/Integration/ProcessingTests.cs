@@ -270,7 +270,7 @@ namespace LoRaWan.Tests.Integration
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
-                Fport = 1,
+                Fport = new FramePort(1),
             };
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -346,7 +346,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
-                Fport = 1,
+                Fport = new FramePort(1),
             };
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();

@@ -4,6 +4,7 @@
 namespace LoRaTools.CommonAPI
 {
     using System.Collections.Generic;
+    using LoRaWan;
 
     /// <summary>
     /// Defines the data contract for cloud to device messages.
@@ -12,7 +13,7 @@ namespace LoRaTools.CommonAPI
     {
         string DevEUI { get; }
 
-        byte Fport { get; }
+        FramePort Fport { get; }
 
         bool Confirmed { get; }
 

@@ -129,7 +129,7 @@ namespace LoRaWan.Tests.E2E
 
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
-                Fport = 1,
+                Fport = new FramePort(1),
                 Payload = c2dMessageBody,
                 MacCommands = { new DevStatusRequest() }
             };
@@ -244,7 +244,7 @@ namespace LoRaWan.Tests.E2E
 
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
-                Fport = 0,
+                Fport = new FramePort(0),
                 Payload = string.Empty,
                 MacCommands = { new LinkADRRequest(datarate: 3, txPower: 4, chMask: 25, chMaskCntl: 0, nbTrans: 1) } // Update data rate to DR3
             };
