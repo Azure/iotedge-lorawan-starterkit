@@ -24,5 +24,31 @@ namespace LoRaWan.Tests.Unit
         {
             Assert.True(new FramePort(224).IsMacLayerTestFPort);
         }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(10)]
+        public void ApplicationLayerTestFPort_Should_Be_Flagged(byte fportValue)
+        {
+            Assert.True(new FramePort(fportValue).IsApplicationSpecificFPort);
+        }
+
+        [Theory]
+        [InlineData(225)]
+        [InlineData(255)]
+        public void ReservedForFutureApplicationsTestFPort_Should_Be_Flagged(byte fportValue)
+        {
+            Assert.True(new FramePort(fportValue).IsReservedForFutureAplicationsFPort);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(10)]
+        [InlineData(224)]
+        public void FPort_Can_Be_Cast_To_Byte(byte fportValue)
+        {
+            Assert.Equal(fportValue, (byte)new FramePort(fportValue));
+        }
     }
 }

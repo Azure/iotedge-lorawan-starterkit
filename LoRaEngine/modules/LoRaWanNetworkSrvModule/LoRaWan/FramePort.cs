@@ -15,7 +15,7 @@ namespace LoRaWan
         public bool IsMacCommandFPort => this.value == 0;
         public bool IsApplicationSpecificFPort => this.value is > 0 and < 224;
         public bool IsMacLayerTestFPort => this.value == 224;
-        public bool IsReservedForFutureAplicationsFPort => this.value >= 224;
+        public bool IsReservedForFutureAplicationsFPort => this.value is >= 225 and <= 255;
 
         public static explicit operator byte(FramePort fport) => fport.value;
 
