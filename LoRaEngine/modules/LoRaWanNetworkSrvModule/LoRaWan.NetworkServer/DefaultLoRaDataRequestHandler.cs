@@ -262,13 +262,11 @@ namespace LoRaWan.NetworkServer
                     if (!isConfirmedResubmit)
                     {
                         // In case it is a Mac Command only we don't want to send it to the IoT Hub
-                        if (!payloadPort.IsMacCommandFPort)
+                        if (!payloadPort.IsMacCommandFPort &&
+                            !await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, bundlerResult?.DeduplicationResult, decryptedPayloadData))
                         {
-                            if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, bundlerResult?.DeduplicationResult, decryptedPayloadData))
-                            {
-                                // failed to send event to IoT Hub, stop now
-                                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
-                            }
+                            // failed to send event to IoT Hub, stop now
+                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
                         }
 
                         loRaDevice.SetFcntUp(payloadFcntAdjusted);
