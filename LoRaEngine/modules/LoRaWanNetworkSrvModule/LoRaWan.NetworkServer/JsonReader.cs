@@ -83,9 +83,9 @@ namespace LoRaWan.NetworkServer
                  : throw new JsonException(@$"Invalid member for {typeof(TEnum)}: {value}");
 
         public static IJsonReader<T> Validate<T>(this IJsonReader<T> reader, Func<T, bool> predicate) =>
-            reader.When("Invalid value in JSON: {0}", predicate);
+            reader.Validate("Invalid value in JSON: {0}", predicate);
 
-        public static IJsonReader<T> When<T>(this IJsonReader<T> reader, string messageFormat, Func<T, bool> predicate) =>
+        public static IJsonReader<T> Validate<T>(this IJsonReader<T> reader, string messageFormat, Func<T, bool> predicate) =>
             from v in reader
             select predicate(v) ? v
 #pragma warning disable CA1305 // Specify IFormatProvider (not used for error messages)
