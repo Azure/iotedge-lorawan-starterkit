@@ -11,14 +11,14 @@ namespace LoRaTools.Regions
     using LoRaWan;
     using static LoRaWan.Metric;
 
-    public class RegionAS923 : Region
+    public record RegionAS923 : Region
     {
         private static readonly Hertz Channel0Frequency = Mega(923.2);
         private static readonly Hertz Channel1Frequency = Mega(923.4);
 
         private readonly bool useDwellTimeLimit;
 
-        public long FrequencyOffset { get; private set; }
+        public long FrequencyOffset { get; init; }
 
         public RegionAS923(int dwellTime = 0)
             : base(LoRaRegionType.AS923)
@@ -105,15 +105,15 @@ namespace LoRaTools.Regions
         /// <param name="frequencyChannel1">Configured frequency for radio 1.</param>
         public RegionAS923 WithFrequencyOffset(Hertz frequencyChannel0, Hertz frequencyChannel1)
         {
-            FrequencyOffset = frequencyChannel0 - Channel0Frequency;
+            var channel0Offset = frequencyChannel0 - Channel0Frequency;
 
             var channel1Offset = frequencyChannel1 - Channel1Frequency;
-            if (channel1Offset != FrequencyOffset)
+            if (channel1Offset != channel0Offset)
             {
                 throw new ConfigurationErrorsException($"Provided channel frequencies {frequencyChannel0}, {frequencyChannel1} for Region {LoRaRegion} are inconsistent.");
             }
 
-            return this;
+            return this with { FrequencyOffset = channel0Offset };
         }
 
         /// <summary>

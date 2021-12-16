@@ -12,7 +12,7 @@ namespace LoRaTools.Regions
     using static LoRaWan.Metric;
 
     // Frequency plan for region CN470-510 using version RP002-1.0.3 of LoRaWAN Regional Parameters specification
-    public class RegionCN470RP2 : Region
+    public record RegionCN470RP2 : Region
     {
         private static readonly Mega FrequencyIncrement = new(0.2);
 

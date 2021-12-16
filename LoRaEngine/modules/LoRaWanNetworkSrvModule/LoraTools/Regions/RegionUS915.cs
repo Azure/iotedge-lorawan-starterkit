@@ -10,7 +10,7 @@ namespace LoRaTools.Regions
     using LoRaWan;
     using static LoRaWan.Metric;
 
-    public class RegionUS915 : Region
+    public record RegionUS915 : Region
     {
         // Frequencies calculated according to formula:
         // 923.3 + upstreamChannelNumber % 8 * 0.6,

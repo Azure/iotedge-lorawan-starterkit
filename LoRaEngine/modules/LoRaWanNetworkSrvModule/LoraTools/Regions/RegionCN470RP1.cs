@@ -11,7 +11,7 @@ namespace LoRaTools.Regions
     using static LoRaWan.Metric;
 
     // Frequency plan for region CN470-510 using version 1 of LoRaWAN 1.0.3 Regional Parameters specification
-    public class RegionCN470RP1 : Region
+    public record RegionCN470RP1 : Region
     {
         private static readonly Hertz StartingUpstreamFrequency = Mega(470.3);
         private static readonly Hertz StartingDownstreamFrequency = Mega(500.3);

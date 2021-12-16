@@ -10,7 +10,7 @@ namespace LoRaTools.Regions
     using System.Collections.Generic;
     using static LoRaWan.Metric;
 
-    public class RegionEU868 : Region
+    public record RegionEU868 : Region
     {
         public RegionEU868()
             : base(LoRaRegionType.EU868)

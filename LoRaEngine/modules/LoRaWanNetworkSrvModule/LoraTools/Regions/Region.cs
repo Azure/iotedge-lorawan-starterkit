@@ -11,13 +11,13 @@ namespace LoRaTools.Regions
     using LoRaWan;
     using Microsoft.Extensions.Logging;
 
-    public abstract class Region
+    public abstract record Region
     {
         private const ushort MAX_RX_DELAY = 15;
 
         protected const double EPSILON = 0.00001;
 
-        public LoRaRegionType LoRaRegion { get; set; }
+        public LoRaRegionType LoRaRegion { get; init; }
 
         /// <summary>
         /// Gets or sets datarate to configuration and max payload size (M)
@@ -37,60 +37,60 @@ namespace LoRaTools.Regions
         /// X = RX1DROffset Upstream DR
         /// Y = Downstream DR in RX1 slot.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<int>> RX1DROffsetTable { get; set; }
+        public IReadOnlyList<IReadOnlyList<int>> RX1DROffsetTable { get; init; }
 
         /// <summary>
         /// Gets or sets default first receive windows. [sec].
         /// </summary>
-        public uint ReceiveDelay1 { get; set; }
+        public uint ReceiveDelay1 { get; init; }
 
         /// <summary>
         /// Gets or sets default second receive Windows. Should be receive_delay1+1 [sec].
         /// </summary>
-        public uint ReceiveDelay2 { get; set; }
+        public uint ReceiveDelay2 { get; init; }
 
         /// <summary>
         /// Gets or sets default Join Accept Delay for first Join Accept Windows.[sec].
         /// </summary>
-        public uint JoinAcceptDelay1 { get; set; }
+        public uint JoinAcceptDelay1 { get; init; }
 
         /// <summary>
         /// Gets or sets default Join Accept Delay for second Join Accept Windows. [sec].
         /// </summary>
-        public uint JoinAcceptDelay2 { get; set; }
+        public uint JoinAcceptDelay2 { get; init; }
 
         /// <summary>
         /// Gets or sets max fcnt gap between expected and received. [#frame]
         /// If this difference is greater than the value of MAX_FCNT_GAP then too many data frames have been lost then subsequent will be discarded.
         /// </summary>
-        public int MaxFcntGap { get; set; }
+        public int MaxFcntGap { get; init; }
 
         /// <summary>
         /// Gets or sets number of uplink an end device can send without asking for an ADR acknowledgement request (set ADRACKReq bit to 1). [#frame].
         /// </summary>
-        public uint AdrAckLimit { get; set; }
+        public uint AdrAckLimit { get; init; }
 
         /// <summary>
         /// Gets or sets number of frames in which the network is required to respond to a ADRACKReq request. [#frame]
         /// If no response, during time select a lower data rate.
         /// </summary>
-        public uint AdrAdrDelay { get; set; }
+        public uint AdrAdrDelay { get; init; }
 
         /// <summary>
         /// Gets or sets timeout for ack transmissiont, tuple with (min,max). Value should be a delay between min and max. [sec, sec].
         /// If  an  end-­device  does  not  receive  a  frame  with  the  ACK  bit  set  in  one  of  the  two  receive  19   windows  immediately  following  the  uplink  transmission  it  may  resend  the  same  frame  with  20   the  same  payload  and  frame  counter  again  at  least  ACK_TIMEOUT  seconds  after  the  21   second  reception  window.
         /// </summary>
-        public (uint min, uint max) RetransmitTimeout { get; set; }
+        public (uint min, uint max) RetransmitTimeout { get; init; }
 
         /// <summary>
         /// Gets or sets the limits on the region to ensure valid properties.
         /// </summary>
-        public RegionLimits RegionLimits { get; set; }
+        public RegionLimits RegionLimits { get; init; }
 
         /// <summary>
         /// Gets or sets set the Max ADR datarate acceptable, this is not necessarelly the highest in the region hence we need an additional param.
         /// </summary>
-        public int MaxADRDataRate { get; set; }
+        public int MaxADRDataRate { get; init; }
 
         protected Region(LoRaRegionType regionEnum)
         {
