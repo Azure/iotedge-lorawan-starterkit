@@ -6,7 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System;
     using global::LoRaTools.Regions;
     using Xunit;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
     public class RegionCN470RP1TestWithRxpk : RegionTestBaseRxpk
@@ -89,7 +89,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [InlineData("SF8BW125", null,"SF8BW125")]
         [InlineData("SF8BW125", DR5, "SF7BW125")]
         [InlineData("SF10BW125", DR1, "SF11BW125")]
-        public void TestRX2DataRate(string nwksrvrx2dr, DataRate? rx2drfromtwins, string expectedDr)
+        public void TestRX2DataRate(string nwksrvrx2dr, DataRateIndex? rx2drfromtwins, string expectedDr)
         {
             TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr);
         }

@@ -8,7 +8,7 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
     using static LoRaWan.Metric;
 
     // Frequency plan for region CN470-510 using version 1 of LoRaWAN 1.0.3 Regional Parameters specification
@@ -23,12 +23,12 @@ namespace LoRaTools.Regions
         public RegionCN470RP1()
             : base(LoRaRegionType.CN470RP1)
         {
-            DRtoConfiguration.Add(DR0, (configuration: "SF12BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(DR1, (configuration: "SF11BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(DR2, (configuration: "SF10BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(DR3, (configuration: "SF9BW125", maxPyldSize: 123));
-            DRtoConfiguration.Add(DR4, (configuration: "SF8BW125", maxPyldSize: 230));
-            DRtoConfiguration.Add(DR5, (configuration: "SF7BW125", maxPyldSize: 230));
+            DRtoConfiguration.Add(DR0, (LoRaDataRate.SF12BW125, MaxPayloadSize: 59));
+            DRtoConfiguration.Add(DR1, (LoRaDataRate.SF11BW125, MaxPayloadSize: 59));
+            DRtoConfiguration.Add(DR2, (LoRaDataRate.SF10BW125, MaxPayloadSize: 59));
+            DRtoConfiguration.Add(DR3, (LoRaDataRate.SF9BW125, MaxPayloadSize: 123));
+            DRtoConfiguration.Add(DR4, (LoRaDataRate.SF8BW125, MaxPayloadSize: 230));
+            DRtoConfiguration.Add(DR5, (LoRaDataRate.SF7BW125, MaxPayloadSize: 230));
 
             TXPowertoMaxEIRP.Add(0, 19.15);
             TXPowertoMaxEIRP.Add(1, 17.15);
@@ -69,7 +69,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         /// </summary>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRate? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);

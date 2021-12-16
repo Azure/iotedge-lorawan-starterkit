@@ -41,7 +41,7 @@ namespace LoRaTools.ADR
             _ = await this.store.AddTableEntry(newEntry);
         }
 
-        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, DataRate dataRate, int minTxPower, DataRate maxDr, LoRaADRTableEntry newEntry = null)
+        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, DataRateIndex dataRate, int minTxPower, DataRateIndex maxDr, LoRaADRTableEntry newEntry = null)
         {
             var table = newEntry != null
                         ? await this.store.AddTableEntry(newEntry)
@@ -123,7 +123,7 @@ namespace LoRaTools.ADR
             return await this.store.Reset(devEUI);
         }
 
-        private static LoRaADRResult ReturnDefaultValues(DataRate upstreamDataRate, int defaultNbRep, int maxTxPowerIndex)
+        private static LoRaADRResult ReturnDefaultValues(DataRateIndex upstreamDataRate, int defaultNbRep, int maxTxPowerIndex)
         {
             return new LoRaADRResult
             {

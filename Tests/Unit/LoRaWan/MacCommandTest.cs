@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             Assert.NotNull(macCommand);
             Assert.IsType<LinkADRRequest>(macCommand);
             var linkADRCmd = (LinkADRRequest)macCommand;
-            Assert.Equal(DataRate.DR2, linkADRCmd.DataRate);
+            Assert.Equal(DataRateIndex.DR2, linkADRCmd.DataRate);
             Assert.Equal(4, linkADRCmd.TxPower);
             Assert.Equal(25, linkADRCmd.ChMask);
             Assert.Equal(0, linkADRCmd.ChMaskCntl);

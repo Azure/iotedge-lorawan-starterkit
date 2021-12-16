@@ -9,7 +9,7 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
     using static LoRaWan.Metric;
 
     // Frequency plan for region CN470-510 using version RP002-1.0.3 of LoRaWAN Regional Parameters specification
@@ -29,14 +29,14 @@ namespace LoRaTools.Regions
             : base(LoRaRegionType.CN470RP2)
         {
             // Values assuming FOpts param is not used
-            DRtoConfiguration.Add(DR0, (configuration: "SF12BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(DR1, (configuration: "SF11BW125", maxPyldSize: 31));
-            DRtoConfiguration.Add(DR2, (configuration: "SF10BW125", maxPyldSize: 94));
-            DRtoConfiguration.Add(DR3, (configuration: "SF9BW125", maxPyldSize: 192));
-            DRtoConfiguration.Add(DR4, (configuration: "SF8BW125", maxPyldSize: 250));
-            DRtoConfiguration.Add(DR5, (configuration: "SF7BW125", maxPyldSize: 250));
-            DRtoConfiguration.Add(DR6, (configuration: "SF7BW500", maxPyldSize: 250));
-            DRtoConfiguration.Add(DR7, (configuration: "50", maxPyldSize: 250)); // FSK 50
+            DRtoConfiguration.Add(DR0, (LoRaDataRate.SF12BW125, MaxPayloadSize: 59));
+            DRtoConfiguration.Add(DR1, (LoRaDataRate.SF11BW125, MaxPayloadSize: 31));
+            DRtoConfiguration.Add(DR2, (LoRaDataRate.SF10BW125, MaxPayloadSize: 94));
+            DRtoConfiguration.Add(DR3, (LoRaDataRate.SF9BW125, MaxPayloadSize: 192));
+            DRtoConfiguration.Add(DR4, (LoRaDataRate.SF8BW125, MaxPayloadSize: 250));
+            DRtoConfiguration.Add(DR5, (LoRaDataRate.SF7BW125, MaxPayloadSize: 250));
+            DRtoConfiguration.Add(DR6, (LoRaDataRate.SF7BW500, MaxPayloadSize: 250));
+            DRtoConfiguration.Add(DR7, (FskDataRate.Fsk50000, MaxPayloadSize: 250));
 
             TXPowertoMaxEIRP.Add(0, 19);
             TXPowertoMaxEIRP.Add(1, 17);
@@ -223,7 +223,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         /// </summary>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRate? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = default)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = default)
         {
             if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
 

@@ -10,14 +10,14 @@ namespace LoRaWan.Tests.Unit
     using Xunit;
     using MoreEnumerable = MoreLinq.MoreEnumerable;
 
-    public class DataRateTests
+    public class DataRateIndexTests
     {
-        public static readonly TheoryData<int, DataRate> MemberValueData =
-            TheoryDataFactory.From(MoreEnumerable.Sequence(0, 15).Zip(Enum.GetValues<DataRate>()));
+        public static readonly TheoryData<int, DataRateIndex> MemberValueData =
+            TheoryDataFactory.From(MoreEnumerable.Sequence(0, 15).Zip(Enum.GetValues<DataRateIndex>()));
 
         [Theory]
         [MemberData(nameof(MemberValueData))]
-        public void MemberValue(int expected, DataRate input)
+        public void MemberValue(int expected, DataRateIndex input)
         {
             Assert.Equal(expected, (int)input);
         }

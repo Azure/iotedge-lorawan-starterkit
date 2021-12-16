@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (region is null) throw new ArgumentNullException(nameof(region));
 
             Freq = radioMetadata.Frequency.InMega;
-            Datr = region.DRtoConfiguration[radioMetadata.DataRate].configuration;
+            Datr = region.DRtoConfiguration[radioMetadata.DataRate].DataRate.XpkDatr;
             Rssi = Convert.ToInt32(radioMetadata.UpInfo.ReceivedSignalStrengthIndication);
             Lsnr = radioMetadata.UpInfo.SignalNoiseRatio;
             Rfch = radioMetadata.UpInfo.AntennaPreference;

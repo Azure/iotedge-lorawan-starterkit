@@ -5,11 +5,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     public class RadioMetadata
     {
-        public DataRate DataRate { get; }
+        public DataRateIndex DataRate { get; }
         public Hertz Frequency { get; }
         public RadioMetadataUpInfo UpInfo { get; }
 
-        public RadioMetadata(DataRate dataRate, Hertz frequency, RadioMetadataUpInfo upInfo)
+        public RadioMetadata(DataRateIndex dataRate, Hertz frequency, RadioMetadataUpInfo upInfo)
         {
             DataRate = dataRate;
             Frequency = frequency;

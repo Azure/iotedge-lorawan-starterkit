@@ -7,7 +7,7 @@ namespace LoraKeysManagerFacade
 
     public class LoRaADRRequest
     {
-        public DataRate DataRate { get; set; }
+        public DataRateIndex DataRate { get; set; }
 
         public float RequiredSnr { get; set; }
 
@@ -23,6 +23,6 @@ namespace LoraKeysManagerFacade
 
         public bool ClearCache { get; set; }
 
-        public DataRate MaxDataRate { get; internal set; }
+        public DataRateIndex MaxDataRate { get; internal set; }
     }
 }

@@ -6,12 +6,12 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using global::LoRaTools.Regions;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
     using static LoRaWan.Metric;
 
     public static class RegionAS923TestData
     {
-        private static readonly List<DataRate> dataRates = new() { DR0, DR1, DR2, DR3, DR4, DR5, DR6, DR7 };
+        private static readonly List<DataRateIndex> dataRates = new() { DR0, DR1, DR2, DR3, DR4, DR5, DR6, DR7 };
 
         private static readonly List<Hertz> frequencies =
             new List<ulong> { 923_200_000, 923_400_000, 921_400_000, 916_600_000, 917_500_000 }

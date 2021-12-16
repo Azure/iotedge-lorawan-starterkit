@@ -14,9 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Xunit;
-    using static Bandwidth;
-    using static DataRate;
-    using static SpreadingFactor;
+    using static DataRateIndex;
 
     public class ADRMessageProcessorTest : MessageProcessorTestBase
     {
@@ -28,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(11, 15, DR2, 0, 1, 9U)]
         // Not Enough Messages and fcnt high, receives default values, stay on DR 2, max tx pow
         [InlineData(12, 15, DR2, 0, 1, 21U)]
-        public async Task Perform_Rate_Adapatation_When_Possible(uint deviceId, int count, DataRate expectedDR, int expectedTXPower, int expectedNbRep, uint initialDeviceFcntUp)
+        public async Task Perform_Rate_Adapatation_When_Possible(uint deviceId, int count, DataRateIndex expectedDR, int expectedTXPower, int expectedNbRep, uint initialDeviceFcntUp)
         {
             uint payloadFcnt = 0;
             const uint InitialDeviceFcntDown = 0;
@@ -149,7 +147,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(6, -10, "SF7BW125", DR5, 0)]
         // Device 5 massive increase in txpower due to very bad lsnr
         [InlineData(5, -30, "SF9BW125", DR3, 0)]
-        public async Task Perform_DR_Adaptation_When_Needed(uint deviceId, float currentLsnr, string currentDRString, DataRate expectedDR, int expectedTxPower)
+        public async Task Perform_DR_Adaptation_When_Needed(uint deviceId, float currentLsnr, string currentDRString, DataRateIndex expectedDR, int expectedTxPower)
         {
             var currentDR = LoRaDataRate.Parse(currentDRString);
             var messageCount = 21;
@@ -276,7 +274,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             .Callback<TwinCollection>((t) =>
             {
                 if (t.Contains(TwinProperty.DataRate))
-                    reportedDR = (DataRate)(int)(object)t[TwinProperty.DataRate].Value;
+                    reportedDR = (DataRateIndex)(int)(object)t[TwinProperty.DataRate].Value;
                 if (t.Contains(TwinProperty.TxPower))
                     reportedTxPower = t[TwinProperty.TxPower].Value;
             })
@@ -297,7 +295,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // ****************************************************
             // set to very good lsnr and DR3
             float currentLsnr = 20;
-            var currentDR = new LoRaDataRate(SF9, BW125);
+            var currentDR = LoRaDataRate.SF9BW125;
 
             // todo add case without buffer
             for (var i = 0; i < messageCount; i++)
@@ -343,7 +341,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // ****************************************************
             currentLsnr = -50;
             // DR5
-            currentDR = new LoRaDataRate(SF7, BW125);
+            currentDR = LoRaDataRate.SF7BW125;
 
             // todo add case without buffer
             for (var i = 0; i < messageCount; i++)
@@ -395,7 +393,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task Perform_NbRep_Adaptation_When_Needed()
         {
             uint deviceId = 31;
-            var currentDR = new LoRaDataRate(SF8, BW125);
+            var currentDR = LoRaDataRate.SF8BW125;
             var currentLsnr = -20;
             var messageCount = 20;
             uint payloadFcnt = 0;
@@ -564,7 +562,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         private async Task<uint> InitializeCacheToDefaultValuesAsync(uint payloadfcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor)
         {
-            return await SendMessage(0, new LoRaDataRate(SF7, BW125), payloadfcnt, simulatedDevice, messageProcessor, FrameControlFlags.Adr | FrameControlFlags.AdrAckReq);
+            return await SendMessage(0, LoRaDataRate.SF7BW125, payloadfcnt, simulatedDevice, messageProcessor, FrameControlFlags.Adr | FrameControlFlags.AdrAckReq);
         }
     }
 }

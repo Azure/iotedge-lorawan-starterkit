@@ -36,7 +36,7 @@ namespace LoRaTools.LoRaPhysical
         /// </summary>
         /// <param name="LoraMessage">the serialized LoRa Message.</param>
         /// <returns>UplinkPktFwdMessage object ready to be sent.</returns>
-        public UplinkPktFwdMessage(byte[] loRaData, IDataRate datr, double freq, uint tmst = 0, float lsnr = 0)
+        public UplinkPktFwdMessage(byte[] loRaData, DataRate datr, double freq, uint tmst = 0, float lsnr = 0)
         {
             if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
             if (datr is null) throw new ArgumentNullException(nameof(datr));

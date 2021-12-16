@@ -20,7 +20,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestRegionFrequencyData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestRegionFrequencyData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionFrequencyData), MemberType = typeof(RegionAS923TestData))]
-        public void TestDownstreamFrequency(Region region, Hertz inputFrequency, DataRate inputDataRate, Hertz outputFreq, int? joinChannel = null)
+        public void TestDownstreamFrequency(Region region, Hertz inputFrequency, DataRateIndex inputDataRate, Hertz outputFreq, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
             Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, out var frequency, inputDataRate, deviceJoinInfo));
@@ -34,7 +34,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestRegionDataRateData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestRegionDataRateData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionDataRateData), MemberType = typeof(RegionAS923TestData))]
-        public void TestDownstreamDataRate(Region region, DataRate inputDataRate, DataRate outputDr, int rx1DrOffset = 0)
+        public void TestDownstreamDataRate(Region region, DataRateIndex inputDataRate, DataRateIndex outputDr, int rx1DrOffset = 0)
         {
             Assert.Equal(region.GetDownstreamDataRate(inputDataRate, rx1DrOffset), outputDr);
         }
@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionAS923TestData.TestRegionDataRateData_InvalidOffset), MemberType = typeof(RegionAS923TestData))]
         [MemberData(nameof(RegionCN470RP1TestData.TestRegionDataRateData_InvalidOffset), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestRegionDataRateData_InvalidOffset), MemberType = typeof(RegionCN470RP2TestData))]
-        public void GetDownstreamDataRate_ThrowsWhenOffsetInvalid(Region region, DataRate inputDataRate, int rx1DrOffset)
+        public void GetDownstreamDataRate_ThrowsWhenOffsetInvalid(Region region, DataRateIndex inputDataRate, int rx1DrOffset)
         {
             var ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(inputDataRate, rx1DrOffset));
             Assert.Equal(LoRaProcessingErrorCode.InvalidDataRateOffset, ex.ErrorCode);
@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestRegionLimitData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestRegionLimitData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionLimitData), MemberType = typeof(RegionAS923TestData))]
-        public void TestRegionLimit(Region region, Hertz inputFrequency, DataRate datarate, int? joinChannel = null)
+        public void TestRegionLimit(Region region, Hertz inputFrequency, DataRateIndex datarate, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
             var ex = Assert.Throws<LoRaProcessingException>(() => region.TryGetDownstreamChannelFrequency(inputFrequency, out _, datarate, deviceJoinInfo));
@@ -72,7 +72,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionAS923TestData))]
-        public void TestMaxPayloadLength(Region region, DataRate datarate, uint maxPyldSize)
+        public void TestMaxPayloadLength(Region region, DataRateIndex datarate, uint maxPyldSize)
         {
             Assert.Equal(region.GetMaxPayloadSize(datarate), maxPyldSize);
         }
@@ -96,7 +96,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestDownstreamRX2DataRateData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestDownstreamRX2DataRateData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestDownstreamRX2DataRateData), MemberType = typeof(RegionAS923TestData))]
-        public void TestDownstreamRX2DataRate(Region region, DataRate? nwksrvrx2dr, DataRate? rx2drfromtwins, DataRate expectedDr, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
+        public void TestDownstreamRX2DataRate(Region region, DataRateIndex? nwksrvrx2dr, DataRateIndex? rx2drfromtwins, DataRateIndex expectedDr, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var devEui = "testDevice";
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
@@ -155,7 +155,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionAS923TestData))]
-        public void TestIsDRIndexWithinAcceptableValues(Region region, DataRate? datarate, bool upstream, bool isValid)
+        public void TestIsDRIndexWithinAcceptableValues(Region region, DataRateIndex? datarate, bool upstream, bool isValid)
         {
             if (upstream)
             {

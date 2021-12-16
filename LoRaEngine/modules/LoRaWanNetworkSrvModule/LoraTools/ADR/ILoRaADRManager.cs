@@ -10,7 +10,7 @@ namespace LoRaTools.ADR
     {
         Task StoreADREntryAsync(LoRaADRTableEntry newEntry);
 
-        Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, DataRate dataRate, int minTxPower, DataRate maxDr, LoRaADRTableEntry newEntry = null);
+        Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, DataRateIndex dataRate, int minTxPower, DataRateIndex maxDr, LoRaADRTableEntry newEntry = null);
 
         Task<LoRaADRResult> GetLastResultAsync(string devEUI);
 

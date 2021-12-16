@@ -22,9 +22,9 @@ namespace LoRaWan.Tests.Unit
 
         [Theory]
         [MemberData(nameof(InitData))]
-        public void Init(SpreadingFactor sf, Bandwidth bw)
+        public void From(SpreadingFactor sf, Bandwidth bw)
         {
-            var subject = new LoRaDataRate(sf, bw);
+            var subject = LoRaDataRate.From(sf, bw);
 
             Assert.Equal(sf, subject.SpreadingFactor);
             Assert.Equal(bw, subject.Bandwidth);
@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Unit
         public void ToString(string expected, SpreadingFactor sf, Bandwidth bw)
 #pragma warning restore xUnit1024 // Test methods cannot have overloads
         {
-            var subject = new LoRaDataRate(sf, bw);
+            var subject = LoRaDataRate.From(sf, bw);
 
             Assert.Equal(expected, subject.ToString());
         }

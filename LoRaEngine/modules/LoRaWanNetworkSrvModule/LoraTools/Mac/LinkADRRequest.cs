@@ -24,7 +24,7 @@ namespace LoRaTools
 
         public override int Length => 5;
 
-        public DataRate DataRate => (DataRate)((DataRateTXPower >> 4) & 0b00001111);
+        public DataRateIndex DataRate => (DataRateIndex)((DataRateTXPower >> 4) & 0b00001111);
 
         public int TxPower => DataRateTXPower & 0b00001111;
 

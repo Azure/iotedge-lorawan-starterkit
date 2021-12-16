@@ -10,7 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using LoRaWan.Tests.Common;
     using Xunit;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
 
     public class LnsDataTests
     {
@@ -150,7 +150,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [InlineData(@"{'DR': 13}", DR13)]
         [InlineData(@"{'DR': 14}", DR14)]
         [InlineData(@"{'DR': 15}", DR15)]
-        internal void RadioMetadata_DataRateProperty_CanReturnProperDataRate(string json, DataRate expectedDataRate)
+        internal void RadioMetadata_DataRateProperty_CanReturnProperDataRate(string json, DataRateIndex expectedDataRate)
         {
             var actualDataRate = JsonReader.Object(LnsData.RadioMetadataProperties.DataRate).Read(JsonUtil.Strictify(json));
             Assert.Equal(expectedDataRate, actualDataRate);

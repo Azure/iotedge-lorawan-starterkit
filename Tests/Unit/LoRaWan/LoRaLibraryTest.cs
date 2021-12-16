@@ -356,7 +356,7 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(0, devicePayloadData.Direction);
             Assert.Equal(1, devicePayloadData.FPortValue);
 
-            var datr = new LoRaDataRate(SpreadingFactor.SF10, Bandwidth.BW125);
+            var datr = LoRaDataRate.SF10BW125;
             var freq = 868.3;
 
             var uplinkMsg = devicePayloadData.SerializeUplink(appSKeyText, nwkSKeyText, datr, freq, 0);

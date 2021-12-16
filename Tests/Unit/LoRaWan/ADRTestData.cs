@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.Unit
     using global::LoRaTools.ADR;
     using global::LoRaTools.LoRaPhysical;
     using Xunit;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
 
 #pragma warning disable CA1812 // Unused class
     // Used as Theory Data

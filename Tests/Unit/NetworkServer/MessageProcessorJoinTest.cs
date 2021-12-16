@@ -16,7 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
 
     public class MessageProcessorJoinTest : MessageProcessorTestBase
     {
@@ -416,7 +416,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(1, DR1)]
         [InlineData(3, DR4)]
         [InlineData(2, DR0)]
-        public async Task When_Getting_DLSettings_From_Twin_Returns_JoinAccept_With_Correct_Settings(int rx1DROffset, DataRate rx2datarate)
+        public async Task When_Getting_DLSettings_From_Twin_Returns_JoinAccept_With_Correct_Settings(int rx1DROffset, DataRateIndex rx2datarate)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
@@ -477,8 +477,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(DR5)]
         [InlineData(DR6)]
         [InlineData(DR12)]
-        [InlineData((DataRate)(-2))]
-        public async Task When_Getting_Custom_RX2_DR_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(DataRate rx2datarate)
+        [InlineData((DataRateIndex)(-2))]
+        public async Task When_Getting_Custom_RX2_DR_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(DataRateIndex rx2datarate)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
@@ -684,7 +684,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             joinAccept.DlSettings.Span.Reverse();
-            Assert.Equal((DataRate)afterJoinValues, joinAccept.Rx2Dr);
+            Assert.Equal((DataRateIndex)afterJoinValues, joinAccept.Rx2Dr);
             Assert.Equal(afterJoinValues, joinAccept.Rx1DrOffset);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx1DROffsetValue);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx2DRValue);
@@ -702,7 +702,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(6, DR0)]
         [InlineData(12, DR0)]
         [InlineData(-2, DR0)]
-        public async Task When_Getting_RX1_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx1offset, DataRate expectedDR)
+        public async Task When_Getting_RX1_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx1offset, DataRateIndex expectedDR)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));

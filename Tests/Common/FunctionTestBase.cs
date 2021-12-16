@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Common
 
         private static LoRaADRRequest StandardADRRequest => new LoRaADRRequest
         {
-            DataRate = DataRate.DR1,
+            DataRate = DataRateIndex.DR1,
             FCntUp = 1,
             RequiredSnr = -10,
             FCntDown = 1,

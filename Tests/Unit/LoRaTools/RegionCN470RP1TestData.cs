@@ -6,7 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using global::LoRaTools.Regions;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
     using static LoRaWan.Metric;
 
     public static class RegionCN470RP1TestData

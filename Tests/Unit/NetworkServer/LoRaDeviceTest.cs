@@ -16,7 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
 
     /// <summary>
     /// Tests the <see cref="LoRaDevice"/>.

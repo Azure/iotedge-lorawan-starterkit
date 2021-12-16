@@ -137,7 +137,7 @@ namespace LoRaTools.LoRaMessage
         public UplinkPktFwdMessage SerializeUplink(string appKey, LoRaDataRate datr = null, double freq = 868.3, uint tmst = 0)
         {
             SetMic(appKey);
-            return new UplinkPktFwdMessage(GetByteMessage(), datr ?? new LoRaDataRate(SpreadingFactor.SF10, Bandwidth.BW125), freq, tmst);
+            return new UplinkPktFwdMessage(GetByteMessage(), datr ?? LoRaDataRate.SF10BW125, freq, tmst);
         }
     }
 }

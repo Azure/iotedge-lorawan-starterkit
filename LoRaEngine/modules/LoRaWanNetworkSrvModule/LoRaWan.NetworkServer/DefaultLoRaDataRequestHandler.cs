@@ -529,12 +529,12 @@ namespace LoRaWan.NetworkServer
                     if (loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2)
                     {
                         var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel));
-                        maxPayload = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate].maxPyldSize;
+                        (_, maxPayload) = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate];
 
                     }
                     else
                     {
-                        maxPayload = loRaRegion.DRtoConfiguration[loRaRegion.GetDefaultRX2ReceiveWindow().DataRate].maxPyldSize;
+                        (_, maxPayload) = loRaRegion.DRtoConfiguration[loRaRegion.GetDefaultRX2ReceiveWindow().DataRate];
                     }
                 }
                 else

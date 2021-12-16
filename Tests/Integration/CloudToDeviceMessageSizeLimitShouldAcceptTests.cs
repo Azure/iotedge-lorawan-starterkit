@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
             var upstreamMessageMacCommandSize = 0;
-            string expectedDownlinkDatr;
+            DataRate expectedDownlinkDatr;
 
             if (hasMacInUpstream && !isTooLongForUpstreamMacCommandInAnswer)
             {
@@ -65,11 +65,11 @@ namespace LoRaWan.Tests.Integration
             }
 
             expectedDownlinkDatr = isSendingInRx2
-                ? euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration
-                : datr;
+                ? euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate
+                : LoRaDataRate.Parse(datr);
 
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
+            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr.XpkDatr)
                 - c2dMessageMacCommandSize
                 - upstreamMessageMacCommandSize
                 - Constants.LoraProtocolOverheadSize;
@@ -119,7 +119,7 @@ namespace LoRaWan.Tests.Integration
 
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
+            Assert.Equal(expectedDownlinkDatr.XpkDatr, request.ResponseDownlink.Txpk.Datr);
 
             // Get downlink message
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];

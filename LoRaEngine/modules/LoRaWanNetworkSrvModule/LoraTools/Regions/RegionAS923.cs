@@ -9,7 +9,7 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
     using static LoRaWan.Metric;
 
     public class RegionAS923 : Region
@@ -34,20 +34,20 @@ namespace LoRaTools.Regions
             FrequencyOffset = 0;
 
             // Values assuming FOpts param is used
-            DRtoConfiguration.Add(DR0, (configuration: "SF12BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(DR1, (configuration: "SF11BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(DR2, (configuration: "SF10BW125", maxPyldSize: 123));
-            DRtoConfiguration.Add(DR3, (configuration: "SF9BW125", maxPyldSize: 123));
-            DRtoConfiguration.Add(DR4, (configuration: "SF8BW125", maxPyldSize: 230));
-            DRtoConfiguration.Add(DR5, (configuration: "SF7BW125", maxPyldSize: 230));
-            DRtoConfiguration.Add(DR6, (configuration: "SF7BW250", maxPyldSize: 230));
-            DRtoConfiguration.Add(DR7, (configuration: "50", maxPyldSize: 230)); // FSK 50
+            DRtoConfiguration.Add(DR0, (LoRaDataRate.SF12BW125, MaxPayloadSize: 59));
+            DRtoConfiguration.Add(DR1, (LoRaDataRate.SF11BW125, MaxPayloadSize: 59));
+            DRtoConfiguration.Add(DR2, (LoRaDataRate.SF10BW125, MaxPayloadSize: 123));
+            DRtoConfiguration.Add(DR3, (LoRaDataRate.SF9BW125, MaxPayloadSize: 123));
+            DRtoConfiguration.Add(DR4, (LoRaDataRate.SF8BW125, MaxPayloadSize: 230));
+            DRtoConfiguration.Add(DR5, (LoRaDataRate.SF7BW125, MaxPayloadSize: 230));
+            DRtoConfiguration.Add(DR6, (LoRaDataRate.SF7BW250, MaxPayloadSize: 230));
+            DRtoConfiguration.Add(DR7, (FskDataRate.Fsk50000, MaxPayloadSize: 230));
 
             if (useDwellTimeLimit)
             {
-                DRtoConfiguration[DR2] = (configuration: "SF10BW125", maxPyldSize: 19);
-                DRtoConfiguration[DR3] = (configuration: "SF10BW125", maxPyldSize: 61);
-                DRtoConfiguration[DR4] = (configuration: "SF10BW125", maxPyldSize: 133);
+                DRtoConfiguration[DR2] = (LoRaDataRate.SF10BW125, MaxPayloadSize: 19);
+                DRtoConfiguration[DR3] = (LoRaDataRate.SF10BW125, MaxPayloadSize: 61);
+                DRtoConfiguration[DR4] = (LoRaDataRate.SF10BW125, MaxPayloadSize: 133);
             }
 
             TXPowertoMaxEIRP.Add(0, 16);
@@ -141,7 +141,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRate? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);

@@ -13,7 +13,7 @@ namespace LoRaWan.Tests.Unit
     using Moq;
     using Xunit;
     using Xunit.Abstractions;
-    using static LoRaWan.DataRate;
+    using static LoRaWan.DataRateIndex;
 
     public class ADRTest
     {

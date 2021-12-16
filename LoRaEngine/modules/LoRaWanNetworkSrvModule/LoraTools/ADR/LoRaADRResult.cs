@@ -11,7 +11,7 @@ namespace LoRaTools.ADR
 
         public int? TxPower { get; set; }
 
-        public DataRate DataRate { get; set; }
+        public DataRateIndex DataRate { get; set; }
 
         public bool CanConfirmToDevice { get; set; }
 
