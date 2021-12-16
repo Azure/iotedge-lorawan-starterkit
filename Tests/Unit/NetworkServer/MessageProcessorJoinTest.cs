@@ -16,6 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
+    using static LoRaWan.DataRateIndex;
 
     public class MessageProcessorJoinTest : MessageProcessorTestBase
     {
@@ -412,10 +413,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(1, 1)]
-        [InlineData(3, 4)]
-        [InlineData(2, 0)]
-        public async Task When_Getting_DLSettings_From_Twin_Returns_JoinAccept_With_Correct_Settings(int rx1DROffset, int rx2datarate)
+        [InlineData(1, DR1)]
+        [InlineData(3, DR4)]
+        [InlineData(2, DR0)]
+        public async Task When_Getting_DLSettings_From_Twin_Returns_JoinAccept_With_Correct_Settings(int rx1DROffset, DataRateIndex rx2datarate)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
@@ -468,16 +469,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        [InlineData(3)]
-        [InlineData(4)]
-        [InlineData(5)]
-        [InlineData(6)]
-        [InlineData(12)]
-        [InlineData(-2)]
-        public async Task When_Getting_Custom_RX2_DR_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx2datarate)
+        [InlineData(DR0)]
+        [InlineData(DR1)]
+        [InlineData(DR2)]
+        [InlineData(DR3)]
+        [InlineData(DR4)]
+        [InlineData(DR5)]
+        [InlineData(DR6)]
+        [InlineData(DR12)]
+        [InlineData((DataRateIndex)(-2))]
+        public async Task When_Getting_Custom_RX2_DR_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(DataRateIndex rx2datarate)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
@@ -549,13 +550,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             joinAccept.DlSettings.Span.Reverse();
-            if (rx2datarate is > 0 and < 8)
+            if (rx2datarate is > DR0 and < DR8)
             {
                 Assert.Equal(rx2datarate, joinAccept.Rx2Dr);
             }
             else
             {
-                Assert.Equal(0, joinAccept.Rx2Dr);
+                Assert.Equal(DR0, joinAccept.Rx2Dr);
             }
 
             // Send a message
@@ -577,7 +578,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Message was sent on RX2 and with a correct datarate
             Assert.Equal(2000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
-            if (rx2datarate is > 0 and < 8)
+            if (rx2datarate is > DR0 and < DR8)
             {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 Assert.Equal(rx2datarate, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
@@ -586,7 +587,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             else
             {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                Assert.Equal(0, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+                Assert.Equal(DR0, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
         }
@@ -683,7 +684,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             joinAccept.DlSettings.Span.Reverse();
-            Assert.Equal(afterJoinValues, joinAccept.Rx2Dr);
+            Assert.Equal((DataRateIndex)afterJoinValues, joinAccept.Rx2Dr);
             Assert.Equal(afterJoinValues, joinAccept.Rx1DrOffset);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx1DROffsetValue);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx2DRValue);
@@ -693,15 +694,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         // Base dr is 2
-        [InlineData(0, 2)]
-        [InlineData(1, 1)]
-        [InlineData(2, 0)]
-        [InlineData(3, 0)]
-        [InlineData(4, 0)]
-        [InlineData(6, 0)]
-        [InlineData(12, 0)]
-        [InlineData(-2, 0)]
-        public async Task When_Getting_RX1_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx1offset, int expectedDR)
+        [InlineData(0, DR2)]
+        [InlineData(1, DR1)]
+        [InlineData(2, DR0)]
+        [InlineData(3, DR0)]
+        [InlineData(4, DR0)]
+        [InlineData(6, DR0)]
+        [InlineData(12, DR0)]
+        [InlineData(-2, DR0)]
+        public async Task When_Getting_RX1_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx1offset, DataRateIndex expectedDR)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));

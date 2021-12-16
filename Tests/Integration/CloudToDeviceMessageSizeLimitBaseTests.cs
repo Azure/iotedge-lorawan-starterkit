@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Integration
 
     public class CloudToDeviceMessageSizeLimitBaseTests : MessageProcessorTestBase
     {
-        public static Rxpk CreateUpstreamRxpk(bool isConfirmed, bool hasMacInUpstream, string datr, SimulatedDevice simulatedDevice)
+        public static Rxpk CreateUpstreamRxpk(bool isConfirmed, bool hasMacInUpstream, LoRaDataRate datr, SimulatedDevice simulatedDevice)
         {
             Rxpk rxpk;
             string msgPayload;
