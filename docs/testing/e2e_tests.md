@@ -66,7 +66,7 @@ Configure LoRa Basics Station and Network Server to run on your concentrator:
     select Create Deployment for Single Device.
 
 4. Provision a device in your IoT Hub by following the [Basics Station
-   configuration](../user-guide/station-configuration.md)
+   configuration](../user-guide/station-device-provisioning.md)
    docs.
 
 ### End device setup
@@ -104,7 +104,7 @@ can discover them with `ls /dev/ttyACM*`.
 
 ```json
 {
-    "testConfiguration": {
+  "testConfiguration": {
     "IoTHubEventHubConnectionString": "Endpoint=sb://xxxx.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx;EntityPath=xxxxx",
     "IoTHubEventHubConsumerGroup": "your-iothub-consumer-group",
     "IoTHubConnectionString": "HostName=xxxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx",
@@ -117,7 +117,18 @@ can discover them with `ls /dev/ttyACM*`.
     "DevicePrefix": "your-two-letter-device-prefix",
     "TcpLog": "true",
     "FunctionAppBaseUrl": "https://your-function-app.azurewebsites.net/api/",
-    "FunctionAppCode": "your-function-code="
+    "FunctionAppCode": "your-function-code=",
+    "TxPower": "a-value-for-setting-arduino-tx-power",
+    // following options are used and to be configured for MultiConcentrator and CUPS Test
+    // where the Concentrator startup/shutdown is programmatically invoked in the test itself
+    "RunningInCI": "should-be-false-if-not-running-with-e2e-ci",
+    "RemoteConcentratorConnection": "username@remote-ssh-host",
+    "DefaultBasicStationEui": "a-fixed-basic-station-eui-to-be-used",
+    "BasicStationExecutablePath": "path-to-station-prebuilt-binary-on-remote-ssh-host",
+    "SshPrivateKeyPath": "path-on-local-host-to-ssh-private-key-used-for-remote-ssh-connection",
+    "SharedLnsEndpoint": "wss://IP_or_DNS:5001",
+    "SharedCupsEndpoint": "https://IP_OR_DNS:5002",
+    "RadioDev": "the-device-path-for-concentrator (i.e. /dev/ttyUSB0)"
   }
 }
 ```

@@ -32,8 +32,12 @@ repo_url: https://github.com/Azure/iotedge-lorawan-starterkit
 edit_uri: edit/docs/main/docs/
 
 markdown_extensions:
+  - admonition
+  - pymdownx.details
   - pymdownx.highlight
   - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -62,11 +66,12 @@ nav:
     - user-guide/message-flows.md
     - user-guide/partner.md
     - user-guide/caching.md
-    - user-guide/station-configuration.md
-    - user-guide/station-credential-management.md
-    - user-guide/station-module-configuration.md
     - user-guide/upgrade.md
     - user-guide/documentation.md
+    - 'Basic Station configuration':
+      - user-guide/station-device-provisioning.md
+      - user-guide/station-authentication-modes.md
+      - user-guide/station-module-configuration.md
   - 'Samples':
     - samples/arduino.md
     - 'Decoders':
