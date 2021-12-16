@@ -580,5 +580,110 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Equal(typeof(RegionAS923), region.GetType());
             Assert.Equal(exptectedOffset, ((RegionAS923)region).FrequencyOffset);
         }
+
+        [Fact]
+        public void RegionConfigurationConverter_CorrectlyReadsAS923Region_WithOffset_WithoutMutatingExistingOnes()
+        {
+            var input = @"{{
+            'msgtype': 'router_config',
+            'NetID': [1],
+            'JoinEui': [[0, 18446744073709551615]],
+	        'region': 'AS923',
+	        'hwspec': 'sx1301/1',
+	        'freq_range': [ 920000000, 925000000 ],
+            'DRs': [ [ 11, 125, 0 ],
+                     [ 10, 125, 0 ],
+                     [ 9, 125, 0 ],
+                     [ 8, 125, 0 ],
+                     [ 7, 125, 0 ],
+                     [ 7, 250, 0 ] ],
+            'sx1301_conf': [
+                {{
+                    'radio_0': {{
+                        'enable': true,
+                        'type': 'SX1257',
+                        'freq': {0},
+                        'rssi_offset': -166.0,
+                        'tx_enable': true,
+                        'tx_freq_min': 920000000,
+                        'th_freq_max': 923400000
+                    }},
+                    'radio_1': {{
+                        'enable': true,
+                        'type': 'SX1257',
+                        'freq': {1},
+                        'rssi_offset': -166.0,
+                        'tx_enable': false,
+                    }},
+                    'chan_FSK': {{
+                        'enable': true,
+                        'radio': 1,
+                        'if': -1800000
+                    }},
+                    'chan_Lora_std': {{
+                        'enable': true,
+                        'radio': 1,
+                        'if': -1800000,
+                        'bandwidth': 250000,
+                        'spread_factor': 7
+                    }},
+                    'chan_multiSF_0': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': {2}
+                    }},
+                    'chan_multiSF_1': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': {3}
+                    }},
+                    'chan_multiSF_2': {{
+                        'enable': true,
+                        'radio': 1,
+                        'if': 0
+                    }},
+                    'chan_multiSF_3': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': -1800000
+                    }},
+                    'chan_multiSF_4': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': -1800000
+                    }},
+                    'chan_multiSF_5': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': 0
+                    }},
+                    'chan_multiSF_6': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': -1800000
+                    }},
+                    'chan_multiSF_7': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': -1800000
+                    }}
+                }}
+            ],
+            'nocca': true,
+            'nodc': true,
+            'nodwell': true}}";
+
+            var config1 = JsonUtil.Strictify(string.Format(CultureInfo.InvariantCulture, input, 923000000, 922000000, 200000, 400000));
+            var region1 = LnsStationConfiguration.GetRegion(config1);
+
+            var config2 = JsonUtil.Strictify(string.Format(CultureInfo.InvariantCulture, input, 923000000, 922000000, -1600000, -1400000));
+            var region2 = LnsStationConfiguration.GetRegion(config2);
+
+            // asserting that reading region2 is not affecting region1
+            Assert.Equal(typeof(RegionAS923), region1.GetType());
+            Assert.Equal(0, ((RegionAS923)region1).FrequencyOffset);
+            Assert.Equal(typeof(RegionAS923), region2.GetType());
+            Assert.Equal(-1800000, ((RegionAS923)region2).FrequencyOffset);
+        }
     }
 }
