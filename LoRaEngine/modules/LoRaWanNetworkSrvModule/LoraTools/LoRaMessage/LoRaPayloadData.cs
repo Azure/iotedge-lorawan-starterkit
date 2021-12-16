@@ -479,6 +479,9 @@ namespace LoRaTools.LoRaMessage
             MacCommands.Add(mac);
         }
 
+        public override bool RequiresConfirmation
+            => IsConfirmed || IsMacAnswerRequired;
+
         private byte[] GetFcntBlockInfo()
         {
             return Server32BitFcnt ?? (new byte[] { Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00 });

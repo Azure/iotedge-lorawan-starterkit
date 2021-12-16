@@ -99,7 +99,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
                         .AddTransient<ICupsProtocolMessageProcessor, CupsProtocolMessageProcessor>()
-                        .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>))
+                        .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>()
                         .AddSingleton(new RegistryMetricTagBag(NetworkServerConfiguration))
                         .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
                         .AddHostedService(sp =>
