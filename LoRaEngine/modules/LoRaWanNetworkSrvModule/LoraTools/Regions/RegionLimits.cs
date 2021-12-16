@@ -5,7 +5,6 @@ namespace LoRaTools.Regions
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using LoRaWan;
 
     public class RegionLimits
