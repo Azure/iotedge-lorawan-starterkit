@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: fcnt, fport: fport);
             var decodedValue = new { value = 1 };
 
-            var rxpk = new BasicStationToRxpk(TestUtils.GenerateTestRadioMetadata(), RegionManager.EU868 );
+            var rxpk = new BasicStationToRxpk(TestUtils.GenerateTestRadioMetadata(), RegionManager.EU868);
 
             var target = new LoRaDeviceTelemetry(rxpk, payload, decodedValue, payload.GetDecryptedPayload(simulatedDevice.AppSKey));
             Assert.Equal(rxpk.Chan, target.Chan);

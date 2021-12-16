@@ -304,12 +304,13 @@ namespace LoRaWan.Tests.Common
 
         public static RadioMetadata GenerateTestRadioMetadata(
                 DataRateIndex dataRate = DataRateIndex.DR2,
-                double frequency = 868.3,
+                Hertz? frequency = null,
                 uint antennaPreference = 1,
                 ulong xtime = 100000,
                 uint gpstime = 0,
                 double rssi = 2.0,
-                float snr = 0.1f
-            ) => new RadioMetadata(dataRate, Hertz.Mega(frequency), new RadioMetadataUpInfo(antennaPreference, xtime, gpstime, rssi, snr));
+                float snr = 0.1f) =>
+            new RadioMetadata(dataRate, frequency ?? Hertz.Mega(868.3),
+                              new RadioMetadataUpInfo(antennaPreference, xtime, gpstime, rssi, snr));
     }
 }

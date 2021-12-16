@@ -9,7 +9,7 @@ namespace LoRaWan.Tests.Integration
 
     public class CloudToDeviceMessageSizeLimitBaseTests : MessageProcessorTestBase
     {
-        public static (RadioMetadata radioMetaData, LoRaPayload loraPayload) CreateUpstreamMessage(bool isConfirmed, bool hasMacInUpstream, LoRaDataRate datr, SimulatedDevice simulatedDevice)
+        public static (RadioMetadata RadioMetadata, LoRaPayload LoRaPayload) CreateUpstreamMessage(bool isConfirmed, bool hasMacInUpstream, DataRate datr, SimulatedDevice simulatedDevice)
         {
             LoRaPayload loRaPayload;
             string msgPayload;

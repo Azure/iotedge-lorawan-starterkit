@@ -116,12 +116,13 @@ namespace LoRaWan.Tests.Common
                                                             IPacketForwarder packetForwarder = null,
                                                             TimeSpan? startTimeOffset = null,
                                                             TimeSpan? constantElapsedTime = null,
-                                                            bool useRealTimer = false) => CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(),
-                                                            loRaPayload,
-                                                            packetForwarder,
-                                                            startTimeOffset,
-                                                            constantElapsedTime,
-                                                            useRealTimer);
+                                                            bool useRealTimer = false) =>
+            CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(),
+                                  loRaPayload,
+                                  packetForwarder,
+                                  startTimeOffset,
+                                  constantElapsedTime,
+                                  useRealTimer);
 
         protected WaitableLoRaRequest CreateWaitableRequest(RadioMetadata metadata,
                                                             LoRaPayload loRaPayload,

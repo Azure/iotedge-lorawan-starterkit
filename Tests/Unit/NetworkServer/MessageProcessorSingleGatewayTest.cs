@@ -140,7 +140,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(frequency: 0), payload, useRealTimer: true);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(frequency: new Hertz(0)), payload, useRealTimer: true);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -219,7 +219,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            // This will be moved in #1086
+            // TODO This will be moved in #1086
             var request = new LoRaRequest(
                 new Rxpk
                 {

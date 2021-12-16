@@ -155,7 +155,7 @@ namespace LoRaWan.Tests.Integration
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: startingPayloadFcnt);
             var radiometata = TestUtils.GenerateTestRadioMetadata();
             using var unconfirmedRequest =
-                CreateWaitableRequest(radiometata,unconfirmedMessagePayload,
+                CreateWaitableRequest(radiometata, unconfirmedMessagePayload,
                                       constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(unconfirmedRequest);
             Assert.True(await unconfirmedRequest.WaitCompleteAsync());
@@ -191,7 +191,7 @@ namespace LoRaWan.Tests.Integration
 
             // validates txpk according to eu region
             Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radiometata.Frequency, out var frequency));
-            Assert.Equal(frequency, Hertz.Mega(downstreamMessage.Txpk.Freq));
+            Assert.Equal(frequency, downstreamMessage.Txpk.FreqHertz);
             Assert.Equal("4/5", downstreamMessage.Txpk.Codr);
             Assert.False(downstreamMessage.Txpk.Imme);
             Assert.True(downstreamMessage.Txpk.Ipol);
@@ -459,7 +459,7 @@ namespace LoRaWan.Tests.Integration
             // validates txpk according to eu region
             Assert.Equal(0U, downlinkJoinAcceptMessage.Txpk.Rfch);
             Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radio.Frequency, out var receivedFrequency));
-            Assert.Equal(receivedFrequency, Hertz.Mega(downlinkJoinAcceptMessage.Txpk.Freq));
+            Assert.Equal(receivedFrequency, downlinkJoinAcceptMessage.Txpk.FreqHertz);
             Assert.Equal("4/5", downlinkJoinAcceptMessage.Txpk.Codr);
             Assert.False(downlinkJoinAcceptMessage.Txpk.Imme);
             Assert.True(downlinkJoinAcceptMessage.Txpk.Ipol);

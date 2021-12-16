@@ -85,7 +85,8 @@ namespace LoRaWan.Tests.Common
             var request = new WaitableLoRaRequest(radioMetadata,
                                                   packetForwarder ?? new TestPacketForwarder(),
                                                   DateTime.UtcNow.Subtract(startTimeOffset ?? TimeSpan.Zero));
-            if(loRaPayload is not null) request.SetPayload(loRaPayload);
+            if (loRaPayload is not null)
+                request.SetPayload(loRaPayload);
             if (!useRealTimer)
             {
                 var timeWatcher = new TestLoRaOperationTimeWatcher(RegionManager.EU868, elapsedTimes);
