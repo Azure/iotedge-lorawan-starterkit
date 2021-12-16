@@ -331,7 +331,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             VerifyFailedReason(loraRequestMock, reason);
         }
 
-        private static Mock<LoRaDeviceCache> CreateDeviceCacheMock() => new Mock<LoRaDeviceCache>(new LoRaDeviceCacheOptions { ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration(), NullLogger<LoRaDeviceCache>.Instance, TestMeter.Instance);
+        private static Mock<LoRaDeviceCache> CreateDeviceCacheMock() => new Mock<LoRaDeviceCache>(new LoRaDeviceCacheOptions { ValidationInterval = TimeSpan.FromMilliseconds(int.MaxValue) }, new NetworkServerConfiguration(), NullLogger<LoRaDeviceCache>.Instance, TestMeter.Instance);
 
         private static void VerifyFailedReason(Mock<LoRaRequest> request, LoRaDeviceRequestFailedReason reason) =>
             request.Verify(x => x.NotifyFailed(reason, It.IsAny<Exception>()), Times.Once);
