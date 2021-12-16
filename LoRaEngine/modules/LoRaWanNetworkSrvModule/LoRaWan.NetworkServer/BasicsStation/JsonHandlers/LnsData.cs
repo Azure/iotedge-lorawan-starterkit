@@ -53,7 +53,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         internal static class RadioMetadataProperties
         {
             public static readonly IJsonProperty<DataRateIndex> DataRate =
-                JsonReader.Property("DR", JsonReader.Byte().Enum(v => (DataRateIndex)v));
+                JsonReader.Property("DR", JsonReader.Byte().AsEnum(v => (DataRateIndex)v));
 
             public static readonly IJsonProperty<Hertz> Freq =
                 JsonReader.Property("Freq", from n in JsonReader.UInt32() select new Hertz(n));

@@ -129,8 +129,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               RadioProperty,
                               JsonReader.Property("if", JsonReader.Int32()),
-                              JsonReader.Property("bandwidth", JsonReader.UInt32().Enum(n => unchecked((Bandwidth)(n / 1000 /* kHz */)))),
-                              JsonReader.Property("spread_factor", JsonReader.UInt32().Enum(n => unchecked((SpreadingFactor)n))),
+                              JsonReader.Property("bandwidth", JsonReader.UInt32().AsEnum(n => unchecked((Bandwidth)(n / 1000 /* kHz */)))),
+                              JsonReader.Property("spread_factor", JsonReader.UInt32().AsEnum(n => unchecked((SpreadingFactor)n))),
                               (e, r, i, bw, sf) => new StandardConfig(e, r, i, bw, sf));
 
         private static readonly IJsonReader<RadioConfig> RadioConfigReader =
@@ -175,7 +175,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("DRs",
                                   JsonReader.Array(from e in JsonReader.Tuple(JsonReader.Either(from n in JsonReader.UInt32().Validate(n => n == 0)
                                                                                                 select FskSpreadingFactor,
-                                                                                                JsonReader.UInt32().Enum(n => unchecked((SpreadingFactor)n))),
+                                                                                                JsonReader.UInt32().AsEnum(n => unchecked((SpreadingFactor)n))),
                                                                               from n in JsonReader.UInt32()
                                                                               select unchecked((Bandwidth)n),
                                                                               from n in JsonReader.UInt32()

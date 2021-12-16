@@ -75,7 +75,7 @@ namespace LoRaWan.NetworkServer
                 return result;
             });
 
-        public static IJsonReader<TEnum> Enum<TSource, TEnum>(this IJsonReader<TSource> reader, Func<TSource, TEnum> selector) where TEnum : struct, Enum =>
+        public static IJsonReader<TEnum> AsEnum<TSource, TEnum>(this IJsonReader<TSource> reader, Func<TSource, TEnum> selector) where TEnum : struct, Enum =>
             from n in reader
             select selector(n) into value
             select System.Enum.IsDefined(value)
