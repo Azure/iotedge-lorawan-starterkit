@@ -32,14 +32,16 @@ namespace LoRaTools.Regions
             this.startUpstreamDRIndex = startUpstreamDRIndex;
         }
 
-        public bool IsCurrentUpstreamDRValueWithinAcceptableValue(string dr) => this.upstreamValidDR.Contains(ParseXpkDatr(dr));
+        public bool IsCurrentUpstreamDRValueWithinAcceptableValue(string datr) =>
+            TryParseXpkDatr(datr) is { } dataRate && this.upstreamValidDR.Contains(dataRate);
 
-        public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string dr) => this.downstreamValidDR.Contains(ParseXpkDatr(dr));
+        public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string datr) =>
+            TryParseXpkDatr(datr) is { } dataRate && this.downstreamValidDR.Contains(dataRate);
 
-        private static DataRate ParseXpkDatr(string datr)
+        private static DataRate TryParseXpkDatr(string datr)
             => LoRaDataRate.TryParse(datr, out var loRaDataRate) ? loRaDataRate
              : FskDataRate.Fsk50000.XpkDatr == datr ? FskDataRate.Fsk50000
-             : throw new FormatException(@"Invalid ""datr"": " + datr);
+             : null;
 
         public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(DataRateIndex dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
 
