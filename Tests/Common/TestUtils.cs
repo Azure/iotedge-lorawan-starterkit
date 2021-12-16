@@ -302,6 +302,11 @@ namespace LoRaWan.Tests.Common
             }
         }
 
+        public static DataRateIndex GetDataRateIndex(this Region region, DataRate datr)
+        {
+            return region.DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate == datr).Key;
+        }
+
         public static RadioMetadata GenerateTestRadioMetadata(
                 DataRateIndex dataRate = DataRateIndex.DR2,
                 Hertz? frequency = null,
