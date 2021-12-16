@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer
         public static IJsonReader<TEnum> AsEnum<TSource, TEnum>(this IJsonReader<TSource> reader, Func<TSource, TEnum> selector) where TEnum : struct, Enum =>
             from n in reader
             select selector(n) into value
-            select System.Enum.IsDefined(value)
+            select Enum.IsDefined(value)
                  ? value
                  : throw new JsonException($"Invalid member for {typeof(TEnum)}: {value}");
 
