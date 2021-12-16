@@ -17,11 +17,11 @@ namespace LoRaWan.Tests.Unit
             from bw in Enum.GetValues<Bandwidth>()
             select selector(sf, bw);
 
-        public static readonly TheoryData<SpreadingFactor, Bandwidth> InitData =
+        public static readonly TheoryData<SpreadingFactor, Bandwidth> FromData =
             TheoryDataFactory.From(LoRaDataRates(ValueTuple.Create));
 
         [Theory]
-        [MemberData(nameof(InitData))]
+        [MemberData(nameof(FromData))]
         public void From(SpreadingFactor sf, Bandwidth bw)
         {
             var subject = LoRaDataRate.From(sf, bw);
