@@ -7,9 +7,10 @@ namespace LoRaWan.Tests.Common
     using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
-    using LoRaTools.LoRaPhysical;
+    using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
+    using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
@@ -111,12 +112,25 @@ namespace LoRaWan.Tests.Common
             return device;
         }
 
-        protected WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk,
+        protected WaitableLoRaRequest CreateWaitableRequest(LoRaPayload loRaPayload,
+                                                            IPacketForwarder packetForwarder = null,
+                                                            TimeSpan? startTimeOffset = null,
+                                                            TimeSpan? constantElapsedTime = null,
+                                                            bool useRealTimer = false) => CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(),
+                                                            loRaPayload,
+                                                            packetForwarder,
+                                                            startTimeOffset,
+                                                            constantElapsedTime,
+                                                            useRealTimer);
+
+        protected WaitableLoRaRequest CreateWaitableRequest(RadioMetadata metadata,
+                                                            LoRaPayload loRaPayload,
                                                             IPacketForwarder packetForwarder = null,
                                                             TimeSpan? startTimeOffset = null,
                                                             TimeSpan? constantElapsedTime = null,
                                                             bool useRealTimer = false) =>
-            WaitableLoRaRequest.Create(rxpk,
+            WaitableLoRaRequest.Create(metadata,
+                                       loRaPayload,
                                        packetForwarder ?? PacketForwarder,
                                        startTimeOffset,
                                        constantElapsedTime,

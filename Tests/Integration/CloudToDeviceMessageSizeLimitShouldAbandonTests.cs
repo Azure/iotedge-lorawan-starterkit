@@ -36,8 +36,10 @@ namespace LoRaWan.Tests.Integration
             frmCntDown: InitialDeviceFcntDown);
 
             var loraDevice = CreateLoRaDevice(simulatedDevice);
+            var msgPayload = "1234567890";
+            var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage(msgPayload, isHexPayload: true, fport: 0);
 
-            var rxpk = CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, LoRaDataRate.Parse(datr), simulatedDevice);
+            var (radioMetaData, loraPayload) = CreateUpstreamMessage(isConfirmed, hasMacInUpstream, LoRaDataRate.Parse(datr), simulatedDevice);
 
             if (!hasMacInUpstream)
             {
@@ -99,7 +101,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk, startTimeOffset: TestUtils.GetStartTimeOffsetForSecondWindow(), constantElapsedTime: TimeSpan.FromMilliseconds(1002));
+            using var request = CreateWaitableRequest(radioMetaData, loraPayload, startTimeOffset: TestUtils.GetStartTimeOffsetForSecondWindow(), constantElapsedTime: TimeSpan.FromMilliseconds(1002));
             messageProcessor.DispatchRequest(request);
 
             // Expectations

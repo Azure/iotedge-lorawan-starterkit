@@ -4,7 +4,9 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
     using Xunit;
 
@@ -18,8 +20,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: fcnt, fport: fport);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var decodedValue = new { value = 1 };
+
+            var rxpk = new BasicStationToRxpk(TestUtils.GenerateTestRadioMetadata(), RegionManager.EU868 );
 
             var target = new LoRaDeviceTelemetry(rxpk, payload, decodedValue, payload.GetDecryptedPayload(simulatedDevice.AppSKey));
             Assert.Equal(rxpk.Chan, target.Chan);

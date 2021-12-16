@@ -354,6 +354,11 @@ namespace LoRaTools.Regions
             return DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate.XpkDatr == datr).Key;
         }
 
+        public DataRateIndex GetDRFromFreqAndChan(DataRate datr)
+        {
+            return DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate == datr).Key;
+        }
+
         public bool IsValidRX1DROffset(int rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= RX1DROffsetTable[0].Count - 1;
 
         public static bool IsValidRXDelay(ushort desiredRXDelay) => desiredRXDelay is >= 0 and <= MAX_RX_DELAY;

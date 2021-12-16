@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Integration
 
             var loraDevice = CreateLoRaDevice(simulatedDevice);
 
-            var rxpk = CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, LoRaDataRate.Parse(datr), simulatedDevice);
+            var (radioMetaData, loraPayload) = CreateUpstreamMessage(isConfirmed, hasMacInUpstream, LoRaDataRate.Parse(datr), simulatedDevice);
 
             if (!hasMacInUpstream)
             {
@@ -73,7 +73,6 @@ namespace LoRaWan.Tests.Integration
                 - c2dMessageMacCommandSize
                 - upstreamMessageMacCommandSize
                 - Constants.LoraProtocolOverheadSize;
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
 
@@ -109,7 +108,7 @@ namespace LoRaWan.Tests.Integration
 
             var startTimeOffset = isSendingInRx2 ? TestUtils.GetStartTimeOffsetForSecondWindow() : TimeSpan.Zero;
 
-            using var request = CreateWaitableRequest(rxpk, startTimeOffset: startTimeOffset);
+            using var request = CreateWaitableRequest(radioMetaData ,loraPayload, startTimeOffset: startTimeOffset);
             messageProcessor.DispatchRequest(request);
 
             // Expectations
