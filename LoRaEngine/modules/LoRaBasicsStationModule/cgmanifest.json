@@ -1,0 +1,13 @@
+{
+  "Registrations": [
+    {
+      "Component": {
+        "Type": "git",
+        "git": {
+          "RepositoryUrl": "https://github.com/lorabasics/basicstation",
+          "CommitHash": "42d4b9c7dd132ca4126b24726f57efb7c382e9a1"
+        }
+      }
+    }
+  ]
+}
