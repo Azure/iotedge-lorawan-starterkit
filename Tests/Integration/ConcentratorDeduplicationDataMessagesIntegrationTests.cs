@@ -402,13 +402,13 @@ namespace LoRaWan.Tests.Integration
             await ActAndAssert(request1, request2, this.loraABPDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
-        private (LoRaRequest request1, LoRaRequest request2) SetupRequests(LoRaPayloadData dataPayload, SimulatedDevice simulatedABPDevice, string station1, string station2)
+        private (LoRaRequest request1, LoRaRequest request2) SetupRequests(LoRaPayloadData dataPayload, SimulatedDevice simulatedDevice, string station1, string station2)
         {
             return (CreateRequest(station1), CreateRequest(station2));
 
             WaitableLoRaRequest CreateRequest(string stationEui)
             {
-                var loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedABPDevice.AppSKey, simulatedABPDevice.NwkSKey).Rxpk[0]);
+                var loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
                 loraRequest.SetStationEui(StationEui.Parse(stationEui));
                 loraRequest.SetPayload(dataPayload);
                 return loraRequest;
