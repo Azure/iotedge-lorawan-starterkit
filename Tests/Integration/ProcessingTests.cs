@@ -566,7 +566,7 @@ namespace LoRaWan.Tests.Integration
         [InlineData(ServerGatewayID, 21)]
         [InlineData(null, 21)]
         [InlineData(null, 30)]
-        public async Task When_ConfirmedUp_Message_With_Same_Fcnt_Should_Return_Ack_And_Not_Send_To_Hub(string deviceGatewayID, uint expectedFcntDown)
+        public async Task When_ConfirmedUp_Message_With_Same_Fcnt_Should_Send_To_Hub_And_Return_Ack(string deviceGatewayID, uint expectedFcntDown)
         {
             const uint initialFcntUp = 100;
             const uint initialFcntDown = 20;
@@ -585,10 +585,13 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
+            LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .ReturnsAsync(true);
+
             // In this case we expect a call to update the reported properties of the framecounter.
             if (expectedFcntDown % 10 == 0)
             {
-                this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
             }
             // Lora device api
 
@@ -659,8 +662,8 @@ namespace LoRaWan.Tests.Integration
                 Assert.False(loRaDevice.HasFrameCountChanges);
             }
 
-            // message should not be sent to iot hub
-            LoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()), Times.Never);
+            // message should be sent to iot hub
+            LoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()), Times.Once);
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
         }
