@@ -156,6 +156,29 @@ namespace LoRaWan.Tests.Unit
         });
 
         [Theory]
+        [InlineData("0123abcd", null, 0x0123abcd)]
+        [InlineData("0123aBcD", null, 0x0123abcd)]
+        [InlineData("0123ABCD", null, 0x0123abcd)]
+        [InlineData("01-23-ab-cd", '-', 0x0123abcd)]
+        [InlineData("01-23-ab-CD", '-', 0x0123abcd)]
+        [InlineData("01-23-AB-CD", '-', 0x0123abcd)]
+        [InlineData("01:23:AB:CD", ':', 0x0123abcd)]
+        [InlineData("01,23,AB,CD", ',', 0x0123abcd)]
+        public void TryParse_UInt32(string input, char? separator, uint expected)
+        {
+            var succeeded = Hexadecimal.TryParse(input, out uint result, separator);
+            Assert.True(succeeded);
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidInput))]
+        public void TryParse_UInt32_Invalid_Input(string input, char? separator)
+        {
+            Assert.False(Hexadecimal.TryParse(input, out uint _, separator));
+        }
+
+        [Theory]
         [MemberData(nameof(InvalidInput))]
         public void TryParse_With_Invalid_Input(string input, char? separator)
         {
