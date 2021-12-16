@@ -22,7 +22,8 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Serializes uplink message, used by simulator.
         /// </summary>
-        public static UplinkPktFwdMessage SerializeUplink(this LoRaPayloadJoinRequest request, string appKey, DataRate datr = null, double freq = 868.3, uint tmst = 0)
+        public static UplinkPktFwdMessage SerializeUplink(this LoRaPayloadJoinRequest request, string appKey,
+                                                          DataRate datr = null, double freq = 868.3, uint tmst = 0)
         {
             request.SetMic(appKey);
             return new UplinkPktFwdMessage(request.GetByteMessage(), datr ?? LoRaDataRate.SF10BW125, freq, tmst);
