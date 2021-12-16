@@ -110,6 +110,9 @@ namespace LoRaWan
         public SpreadingFactor SpreadingFactor { get; }
         public Bandwidth Bandwidth { get; }
 
+        public static LoRaDataRate Parse(string input) =>
+            input is { } some ? Parse(some.AsSpan()) : throw new ArgumentNullException(nameof(input));
+
         public static LoRaDataRate Parse(ReadOnlySpan<char> input) =>
             TryParse(input, out var result) ? result : throw new FormatException();
 

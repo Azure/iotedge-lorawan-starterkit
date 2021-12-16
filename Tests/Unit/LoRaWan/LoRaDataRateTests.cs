@@ -66,5 +66,43 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(bw, subject.Bandwidth);
             Assert.Same(LoRaDataRate.From(sf, bw), subject);
         }
+
+        public static readonly TheoryData<string> InvalidParseData =
+            TheoryDataFactory.From("",
+                                   "SF6BW125",
+                                   "SF7BW555",
+                                   "SS7BB125");
+
+        [Theory]
+        [MemberData(nameof(InvalidParseData))]
+        public void Parse_Failure(string input)
+        {
+            Assert.Throws<FormatException>(() => LoRaDataRate.Parse(input));
+        }
+
+        [Fact]
+        public void Parse_Throws_When_Input_Is_Null()
+        {
+            var ex = Assert.Throws<ArgumentNullException>(() => LoRaDataRate.Parse(null));
+
+            Assert.Equal("input", ex.ParamName);
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidParseData))]
+        public void TryParse_Failure(string input)
+        {
+            var succeeded = LoRaDataRate.TryParse(input, out _);
+
+            Assert.False(succeeded);
+        }
+
+        [Fact]
+        public void TryParse_Returns_False_When_Input_Is_Null()
+        {
+            var succeeded = LoRaDataRate.TryParse(null, out _);
+
+            Assert.False(succeeded);
+        }
     }
 }
