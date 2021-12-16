@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer
             select selector(n) into value
             select System.Enum.IsDefined(value)
                  ? value
-                 : throw new JsonException(@$"Invalid member for {typeof(TEnum)}: {value}");
+                 : throw new JsonException($"Invalid member for {typeof(TEnum)}: {value}");
 
         public static IJsonReader<T> Validate<T>(this IJsonReader<T> reader, Func<T, bool> predicate) =>
             reader.Validate("Invalid value in JSON: {0}", predicate);
