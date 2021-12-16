@@ -460,5 +460,29 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             Assert.Throws<JsonException>(() => _ = EitherReader.Read(JsonUtil.Strictify(json)));
         }
+
+        [Theory]
+        [InlineData(Bandwidth.BW125, "125")]
+        [InlineData(Bandwidth.BW250, "250")]
+        [InlineData(Bandwidth.BW500, "500")]
+        public void Enum_With_Valid_Input(Bandwidth expected, string json)
+        {
+            var reader = JsonReader.Int32().Enum(n => (Bandwidth)n);
+            var result = reader.Read(JsonUtil.Strictify(json));
+
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("225")]
+        [InlineData("350")]
+        [InlineData("600")]
+        public void Enum_With_Invalid_Input(string json)
+        {
+            var reader = JsonReader.Int32().Enum(n => (Bandwidth)n);
+
+            var ex = Assert.Throws<JsonException>(() => reader.Read(JsonUtil.Strictify(json)));
+            Assert.Equal($"Invalid member for {typeof(Bandwidth)}: {json}", ex.Message);
+        }
     }
 }
