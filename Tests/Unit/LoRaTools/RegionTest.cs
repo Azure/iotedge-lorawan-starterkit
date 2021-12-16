@@ -98,9 +98,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionAS923TestData.TestDownstreamRX2DataRateData), MemberType = typeof(RegionAS923TestData))]
         public void TestDownstreamRX2DataRate(Region region, ushort? nwksrvrx2dr, ushort? rx2drfromtwins, ushort expectedDr, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
-            var devEui = "testDevice";
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            var datr = region.GetDownstreamRX2DataRate(devEui, nwksrvrx2dr, rx2drfromtwins, NullLogger.Instance, deviceJoinInfo);
+            var datr = region.GetDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, NullLogger.Instance, deviceJoinInfo);
             Assert.Equal(expectedDr, datr);
         }
 

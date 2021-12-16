@@ -270,11 +270,10 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Get downstream RX2 data rate.
         /// </summary>
-        /// <param name="devEUI">The device id.</param>
         /// <param name="nwkSrvRx2Dr">The network server rx2 datarate.</param>
         /// <param name="rx2DrFromTwins">RX2 datarate value from twins.</param>
         /// <returns>The RX2 data rate.</returns>
-        public ushort GetDownstreamRX2DataRate(string devEUI, ushort? nwkSrvRx2Dr, ushort? rx2DrFromTwins, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
+        public ushort GetDownstreamRX2DataRate(ushort? nwkSrvRx2Dr, ushort? rx2DrFromTwins, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
         {
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
@@ -282,12 +281,12 @@ namespace LoRaTools.Regions
                 if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
                 {
                     var datr = rx2DrFromTwins.Value;
-                    logger.LogDebug(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
+                    logger.LogDebug($"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}");
                     return datr;
                 }
                 else
                 {
-                    logger.LogDebug(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
+                    logger.LogError($"device twins rx2 ({rx2DrFromTwins.Value}) is invalid");
                 }
             }
             else
@@ -296,7 +295,7 @@ namespace LoRaTools.Regions
                 if (nwkSrvRx2Dr.HasValue)
                 {
                     var datr = nwkSrvRx2Dr.Value;
-                    logger.LogDebug(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
+                    logger.LogDebug($"using custom gateway RX2 datarate {datr}");
                     return datr;
                 }
             }
