@@ -116,25 +116,36 @@ namespace LoRaWan
         public static bool TryParse(ReadOnlySpan<char> input, [NotNullWhen(true)] out LoRaDataRate? result)
         {
             result = null;
-            if (input.Length is not 8 and not 9)
+
+            if (input.Length is not 8 and not 9) // 8 ("SF#BW###") or 9 ("SF##BW###") characters long
                 return false;
-            if (input[0] is not 'S' && input[1] is not 'F')
+
+            if (!input.StartsWith("SF"))
                 return false;
-            (var sf, var i) = (input[2], input[3]) switch
+
+            // Determine the SF number and whether its 1 or 2 digits.
+
+            var sf = (input[2], input[3]) switch
             {
-                ('7', _) => (SF7, 3),
-                ('8', _) => (SF8, 3),
-                ('9', _) => (SF9, 3),
-                ('1', '0') => (SF10, 4),
-                ('1', '1') => (SF11, 4),
-                ('1', '2') => (SF12, 4),
-                _ => (default, 0),
+                ('7', _) => SF7,
+                ('8', _) => SF8,
+                ('9', _) => SF9,
+                ('1', '0') => SF10,
+                ('1', '1') => SF11,
+                ('1', '2') => SF12,
+                _ => (SpreadingFactor)0,
             };
-            if (i is 0)
+
+            if (sf is 0)
+                return false; // non-match
+
+            input = input[(sf >= SF10 ? 4 : 3)..]; // Clip input to second part.
+
+            if (input.Length is not 5 || !input.StartsWith("BW"))
                 return false;
-            input = input[i..];
-            if (input.Length is not 5 && input[0] is not 'B' && input[1] is not 'W')
-                return false;
+
+            // Determine BW number.
+
             var bw = (input[2], input[3], input[4]) switch
             {
                 ('1', '2', '5') => BW125,
@@ -142,7 +153,8 @@ namespace LoRaWan
                 ('5', '0', '0') => BW500,
                 _ => (Bandwidth)0
             };
-            result = (int)bw > 0 ? new LoRaDataRate(sf, bw) : null;
+
+            result = (int)bw > 0 ? From(sf, bw) : null;
             return result is not null;
         }
 
