@@ -62,6 +62,7 @@ namespace LoRaWan
         InvalidDataRate,
         InvalidDataRateOffset,
         TagNotSet,
-        InvalidFrequency
+        InvalidFrequency,
+        InvalidFormat
     }
 }

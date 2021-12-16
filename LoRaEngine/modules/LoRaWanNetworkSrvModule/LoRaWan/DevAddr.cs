@@ -27,6 +27,17 @@ namespace LoRaWan
 
         public DevAddr(uint value) => this.value = value;
 
+        public DevAddr(int networkId, int networkAddress)
+#pragma warning disable IDE0072 // Add missing cases (false positive)
+            : this((networkId, networkAddress) switch
+#pragma warning restore IDE0072 // Add missing cases
+            {
+                ( < 0 or >= 0x80, _) => throw new ArgumentException(null, nameof(networkId)),
+                (_, < 0 or > (int)NetworkAddressMask) => throw new ArgumentException(null, nameof(networkAddress)),
+                var (id, addr) => unchecked(((uint)id << 25) | (uint)addr)
+            })
+        { }
+
         /// <summary>
         /// The <c>NwkID</c> (bits 25..31).
         /// </summary>
@@ -43,6 +54,23 @@ namespace LoRaWan
         {
             BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
             return buffer[Size..];
+        }
+
+        public static DevAddr Parse(ReadOnlySpan<char> input) =>
+            TryParse(input, out var result) ? result : throw new FormatException();
+
+        public static bool TryParse(ReadOnlySpan<char> input, out DevAddr result)
+        {
+            if (Hexadecimal.TryParse(input, out uint raw))
+            {
+                result = new DevAddr(raw);
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
         }
     }
 }
