@@ -9,7 +9,6 @@ namespace LoRaWan
     /// Fixed-bandwidth channel of either 125 KHz or 500 KHz (for uplink channels), and 500 KHz (for
     /// downlink channels).
     /// </summary>
-
     public enum Bandwidth
     {
         BW125 = 125, // KHz
