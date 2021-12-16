@@ -17,15 +17,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
     internal sealed class ClientCertificateValidatorService : IClientCertificateValidatorService
     {
         private readonly IBasicsStationConfigurationService stationConfigurationService;
-        private readonly RegistryMetricTagBag registryMetricTagBag;
         private readonly ILogger<ClientCertificateValidatorService> logger;
 
         public ClientCertificateValidatorService(IBasicsStationConfigurationService stationConfigurationService,
-                                                 RegistryMetricTagBag registryMetricTagBag,
                                                  ILogger<ClientCertificateValidatorService> logger)
         {
             this.stationConfigurationService = stationConfigurationService;
-            this.registryMetricTagBag = registryMetricTagBag;
             this.logger = logger;
         }
 
@@ -44,7 +41,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 return false;
             }
 
-            this.registryMetricTagBag.StationEui.Value = stationEui;
             using var scope = this.logger.BeginEuiScope(stationEui);
 
             // Logging any chain related issue, but not failing on it.

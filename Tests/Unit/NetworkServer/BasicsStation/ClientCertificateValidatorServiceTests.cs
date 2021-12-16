@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using System.Security.Cryptography.X509Certificates;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Logging;
     using Moq;
@@ -29,7 +28,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         {
             this.stationConfigService = new Mock<IBasicsStationConfigurationService>();
             this.logger = new Mock<ILogger<ClientCertificateValidatorService>>();
-            this.clientCertValidatorSvc = new ClientCertificateValidatorService(this.stationConfigService.Object, new RegistryMetricTagBag(new NetworkServerConfiguration { GatewayID = "foogateway" }), this.logger.Object);
+            this.clientCertValidatorSvc = new ClientCertificateValidatorService(this.stationConfigService.Object, this.logger.Object);
         }
 
         [Fact]
