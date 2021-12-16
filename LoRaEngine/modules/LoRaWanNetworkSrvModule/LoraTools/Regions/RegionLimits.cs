@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaTools.Regions
 {
     using System.Collections.Generic;
@@ -37,7 +39,7 @@ namespace LoRaTools.Regions
         public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string datr) =>
             TryParseXpkDatr(datr) is { } dataRate && this.downstreamValidDR.Contains(dataRate);
 
-        private static DataRate TryParseXpkDatr(string datr)
+        private static DataRate? TryParseXpkDatr(string datr)
             => LoRaDataRate.TryParse(datr, out var loRaDataRate) ? loRaDataRate
              : FskDataRate.Fsk50000.XpkDatr == datr ? FskDataRate.Fsk50000
              : null;
