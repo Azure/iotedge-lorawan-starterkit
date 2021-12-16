@@ -76,10 +76,10 @@ namespace LoRaWan.Tests.Integration
                 .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            await SendTwoMessages(mode);
+            await SendTwoUnconfirmedFirstMessages(mode);
         }
 
-        private async Task SendTwoMessages(DeduplicationMode mode)
+        private async Task SendTwoUnconfirmedFirstMessages(DeduplicationMode mode)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
 
@@ -125,10 +125,12 @@ namespace LoRaWan.Tests.Integration
                     break;
                 case DeduplicationMode.Mark:
                     Assert.True(request1.ProcessingSucceeded);
-                    Assert.True(request2.ProcessingSucceeded);
+                    Assert.True(request2.ProcessingFailed);
                     break;
                 case DeduplicationMode.None:
                 default:
+                    Assert.True(request1.ProcessingSucceeded);
+                    Assert.True(request2.ProcessingFailed);
                     break;
             }
         }
