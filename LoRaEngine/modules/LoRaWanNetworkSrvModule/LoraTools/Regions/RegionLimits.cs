@@ -3,7 +3,9 @@
 
 namespace LoRaTools.Regions
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
     using LoRaWan;
 
     public class RegionLimits
@@ -13,15 +15,15 @@ namespace LoRaTools.Regions
         /// </summary>
         public (Hertz Min, Hertz Max) FrequencyRange { get; set; }
 
-        private readonly HashSet<string> downstreamValidDR;
+        private readonly HashSet<DataRate> downstreamValidDR;
 
-        private readonly HashSet<string> upstreamValidDR;
+        private readonly HashSet<DataRate> upstreamValidDR;
 
         private readonly DataRateIndex startUpstreamDRIndex;
 
         private readonly DataRateIndex startDownstreamDRIndex;
 
-        public RegionLimits((Hertz Min, Hertz Max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR,
+        public RegionLimits((Hertz Min, Hertz Max) frequencyRange, HashSet<DataRate> upstreamValidDR, HashSet<DataRate> downstreamValidDR,
                             DataRateIndex startUpstreamDRIndex, DataRateIndex startDownstreamDRIndex)
         {
             FrequencyRange = frequencyRange;
@@ -31,9 +33,14 @@ namespace LoRaTools.Regions
             this.startUpstreamDRIndex = startUpstreamDRIndex;
         }
 
-        public bool IsCurrentUpstreamDRValueWithinAcceptableValue(string dr) => this.upstreamValidDR.Contains(dr);
+        public bool IsCurrentUpstreamDRValueWithinAcceptableValue(string dr) => this.upstreamValidDR.Contains(ParseXpkDatr(dr));
 
-        public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string dr) => this.downstreamValidDR.Contains(dr);
+        public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string dr) => this.downstreamValidDR.Contains(ParseXpkDatr(dr));
+
+        private static DataRate ParseXpkDatr(string datr)
+            => LoRaDataRate.TryParse(datr, out var loRaDataRate) ? loRaDataRate
+             : FskDataRate.Fsk50000.XpkDatr == datr ? FskDataRate.Fsk50000
+             : throw new FormatException(@"Invalid ""datr"": " + datr);
 
         public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(DataRateIndex dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
 

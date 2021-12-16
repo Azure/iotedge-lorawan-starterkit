@@ -45,16 +45,16 @@ namespace LoRaTools.Regions
                 new[] { DR6, DR5, DR4, DR3, DR2, DR1 },
                 new[] { DR7, DR6, DR5, DR4, DR3, DR2 }
             };
-            var validDataRangeUpAndDownstream = new HashSet<string>()
+            var validDataRangeUpAndDownstream = new HashSet<DataRate>
             {
-                "SF12BW125", // 0
-                "SF11BW125", // 1
-                "SF10BW125", // 2
-                "SF9BW125", // 3
-                "SF8BW125", // 4
-                "SF7BW125", // 5
-                "SF7BW250", // 6
-                "50" // 7 FSK 50
+                LoRaDataRate.SF12BW125, // 0
+                LoRaDataRate.SF11BW125, // 1
+                LoRaDataRate.SF10BW125, // 2
+                LoRaDataRate.SF9BW125,  // 3
+                LoRaDataRate.SF8BW125,  // 4
+                LoRaDataRate.SF7BW125,  // 5
+                LoRaDataRate.SF7BW250,  // 6
+                FskDataRate.Fsk50000    // 7
             };
 
             MaxADRDataRate = DR5;

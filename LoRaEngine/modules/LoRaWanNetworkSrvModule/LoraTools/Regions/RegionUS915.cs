@@ -57,23 +57,23 @@ namespace LoRaTools.Regions
                 new[] { DR13, DR13, DR12, DR11 },
             };
 
-            var upstreamValidDataranges = new HashSet<string>()
+            var upstreamValidDataranges = new HashSet<DataRate>
             {
-                "SF10BW125", // 0
-                "SF9BW125", // 1
-                "SF8BW125", // 2
-                "SF7BW125", // 3
-                "SF8BW500", // 4
+                LoRaDataRate.SF10BW125, // 0
+                LoRaDataRate.SF9BW125,  // 1
+                LoRaDataRate.SF8BW125,  // 2
+                LoRaDataRate.SF7BW125,  // 3
+                LoRaDataRate.SF8BW500,  // 4
             };
 
-            var downstreamValidDataranges = new HashSet<string>()
+            var downstreamValidDataranges = new HashSet<DataRate>
             {
-                "SF12BW500", // 8
-                "SF11BW500", // 9
-                "SF10BW500", // 10
-                "SF9BW500", // 11
-                "SF8BW500", // 12
-                "SF7BW500" // 13
+                LoRaDataRate.SF12BW500, // 8
+                LoRaDataRate.SF11BW500, // 9
+                LoRaDataRate.SF10BW500, // 10
+                LoRaDataRate.SF9BW500,  // 11
+                LoRaDataRate.SF8BW500,  // 12
+                LoRaDataRate.SF7BW500   // 13
             };
 
             MaxADRDataRate = DR3;

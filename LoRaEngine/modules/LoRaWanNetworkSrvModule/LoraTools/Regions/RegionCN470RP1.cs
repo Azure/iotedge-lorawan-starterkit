@@ -49,14 +49,14 @@ namespace LoRaTools.Regions
                 new[] { DR5, DR4, DR3, DR2, DR1, DR0 },
             };
 
-            var validDatarates = new HashSet<string>()
+            var validDatarates = new HashSet<DataRate>
             {
-                "SF12BW125", // 0
-                "SF11BW125", // 1
-                "SF10BW125", // 2
-                "SF9BW125",  // 3
-                "SF8BW125",  // 4
-                "SF7BW125"  // 5
+                LoRaDataRate.SF12BW125, // 0
+                LoRaDataRate.SF11BW125, // 1
+                LoRaDataRate.SF10BW125, // 2
+                LoRaDataRate.SF9BW125,  // 3
+                LoRaDataRate.SF8BW125,  // 4
+                LoRaDataRate.SF7BW125   // 5
             };
 
             MaxADRDataRate = DR5;
