@@ -52,6 +52,7 @@ namespace LoRaWan.Tests.Unit
 
             Assert.Equal(sf, subject.SpreadingFactor);
             Assert.Equal(bw, subject.Bandwidth);
+            Assert.Same(LoRaDataRate.From(sf, bw), subject);
         }
 
         [Theory]
@@ -63,6 +64,7 @@ namespace LoRaWan.Tests.Unit
             Assert.True(succeeded);
             Assert.Equal(sf, subject.SpreadingFactor);
             Assert.Equal(bw, subject.Bandwidth);
+            Assert.Same(LoRaDataRate.From(sf, bw), subject);
         }
     }
 }
