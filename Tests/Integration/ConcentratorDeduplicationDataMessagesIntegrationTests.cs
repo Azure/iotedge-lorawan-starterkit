@@ -299,7 +299,7 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", 10);
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) = SetupRequests(dataPayload, this.simulatedABPDevice, station1, station2);
 
             var gwId = "foo";
             this.loraABPDevice.GatewayID = gwId;
@@ -322,7 +322,7 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
             dataPayload.FrameControlFlags = FrameControlFlags.Adr; // adr enabled
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) = SetupRequests(dataPayload, this.simulatedABPDevice, station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.Mark; // or None
             this.loraABPDevice.NwkSKey = station1;
@@ -343,7 +343,7 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
 
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) = SetupRequests(dataPayload, this.simulatedABPDevice, station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.Mark; // or Drop or None
             this.loraABPDevice.NwkSKey = station1;
@@ -373,7 +373,7 @@ namespace LoRaWan.Tests.Integration
             dataPayload.Fport = new byte[1] { 0 };
             dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
 
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) = SetupRequests(dataPayload, this.simulatedABPDevice, station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.None; // or Mark
             this.loraABPDevice.NwkSKey = station1;
@@ -394,7 +394,7 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown,
             int expectedTwinSaves)
         {
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) = SetupRequests(dataPayload, this.simulatedABPDevice, station1, station2);
 
             this.loraABPDevice.Deduplication = deduplicationMode;
             this.loraABPDevice.NwkSKey = station1;
@@ -402,13 +402,13 @@ namespace LoRaWan.Tests.Integration
             await ActAndAssert(request1, request2, this.loraABPDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
-        private (LoRaRequest request1, LoRaRequest request2) SetupRequests(LoRaPayloadData dataPayload, string station1, string station2)
+        private (LoRaRequest request1, LoRaRequest request2) SetupRequests(LoRaPayloadData dataPayload, SimulatedDevice simulatedABPDevice, string station1, string station2)
         {
             return (CreateRequest(station1), CreateRequest(station2));
 
             WaitableLoRaRequest CreateRequest(string stationEui)
             {
-                var loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(this.simulatedABPDevice.AppSKey, this.simulatedABPDevice.NwkSKey).Rxpk[0]);
+                var loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(simulatedABPDevice.AppSKey, simulatedABPDevice.NwkSKey).Rxpk[0]);
                 loraRequest.SetStationEui(StationEui.Parse(stationEui));
                 loraRequest.SetPayload(dataPayload);
                 return loraRequest;
