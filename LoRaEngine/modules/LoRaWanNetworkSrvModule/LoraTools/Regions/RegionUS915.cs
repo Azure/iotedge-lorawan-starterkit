@@ -95,7 +95,7 @@ namespace LoRaTools.Regions
 
             int upstreamChannelNumber;
             // if DR4 the coding are different.
-            if (upstreamChannel.Datr == "SF8BW500")
+            if (upstreamChannel.Datr == LoRaDataRate.SF8BW500.XpkDatr)
             {
                 // ==DR4
                 upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0, MidpointRounding.AwayFromZero);
