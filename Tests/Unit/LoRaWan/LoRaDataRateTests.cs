@@ -28,6 +28,7 @@ namespace LoRaWan.Tests.Unit
 
             Assert.Equal(sf, subject.SpreadingFactor);
             Assert.Equal(bw, subject.Bandwidth);
+            Assert.Equal(ModulationKind.LoRa, subject.ModulationKind);
         }
 
         public static readonly TheoryData<string, SpreadingFactor, Bandwidth> ParseFormatData =
