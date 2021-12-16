@@ -24,7 +24,7 @@
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
       <StackExchangeRedisVersion>2.2.88</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
-      <ApplicationInsightsVersion>2.19.0</ApplicationInsightsVersion>
+      <ApplicationInsightsVersion>2.20.0</ApplicationInsightsVersion>
       <PrometheusNetVersion>5.0.2</PrometheusNetVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
