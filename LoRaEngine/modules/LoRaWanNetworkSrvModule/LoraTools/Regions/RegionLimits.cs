@@ -3,7 +3,6 @@
 
 namespace LoRaTools.Regions
 {
-    using System;
     using System.Collections.Generic;
     using LoRaWan;
 
