@@ -57,7 +57,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var cupsTwinInfo = new CupsTwinInfo(new Uri(CupsUri),
                                                 new Uri(TcUri),
                                                 CredentialsChecksum,
-                                                CredentialsChecksum);
+                                                CredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty);
             _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
                                                       .Returns(Task.FromResult(cupsTwinInfo));
 

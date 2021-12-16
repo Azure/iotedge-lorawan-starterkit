@@ -37,7 +37,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var cupsTwinInfo = new CupsTwinInfo(this.cupsRequest.CupsUri,
                                                 this.cupsRequest.TcUri,
                                                 this.cupsRequest.CupsCredentialsChecksum,
-                                                this.cupsRequest.TcCredentialsChecksum);
+                                                this.cupsRequest.TcCredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty);
 
             // Act
             var responseBytes = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher).SerializeAsync(CancellationToken.None);
@@ -54,7 +56,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var cupsTwinInfo = new CupsTwinInfo(new Uri(anotherCupsUri),
                                                 this.cupsRequest.TcUri,
                                                 this.cupsRequest.CupsCredentialsChecksum,
-                                                this.cupsRequest.TcCredentialsChecksum);
+                                                this.cupsRequest.TcCredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty);
 
             // Act
             var responseBytes = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher).SerializeAsync(CancellationToken.None);
@@ -75,7 +79,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var cupsTwinInfo = new CupsTwinInfo(this.cupsRequest.CupsUri,
                                                 new Uri(anotherTcUri),
                                                 this.cupsRequest.CupsCredentialsChecksum,
-                                                this.cupsRequest.TcCredentialsChecksum);
+                                                this.cupsRequest.TcCredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty);
 
             // Act
             var responseBytes = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher).SerializeAsync(CancellationToken.None);
@@ -96,7 +102,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var cupsTwinInfo = new CupsTwinInfo(this.cupsRequest.CupsUri,
                                                 this.cupsRequest.TcUri,
                                                 anotherChecksum,
-                                                anotherChecksum);
+                                                anotherChecksum,
+                                                string.Empty,
+                                                string.Empty);
 
             // Act
             var responseBytes = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher).SerializeAsync(CancellationToken.None);
