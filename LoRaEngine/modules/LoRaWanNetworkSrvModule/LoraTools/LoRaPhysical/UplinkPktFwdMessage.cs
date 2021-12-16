@@ -53,7 +53,7 @@ namespace LoRaTools.LoRaPhysical
                     // TODO check this,
                     Rfch = 1,
                     Modu = "LORA",
-                    Datr = datr.ToString(),
+                    Datr = datr.XpkDatr,
                     Codr = "4/5",
                     Lsnr = lsnr
                 }
