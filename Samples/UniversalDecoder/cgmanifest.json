@@ -5,7 +5,7 @@
             "Type": "git",
             "git": {
             "RepositoryUrl": "https://github.com/TheThingsNetwork/lorawan-devices",
-            "CommitHash": "2426c47df1bf8dbc8e4ba2d6754e56ca9d98a9f5"
+            "CommitHash": "de9ebd35677bdd36887019e6c3d319bc4b35615e"
             }
         }
         }
