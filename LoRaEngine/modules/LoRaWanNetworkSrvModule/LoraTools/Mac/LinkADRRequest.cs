@@ -73,7 +73,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {Cid} Answer, datarate: {DataRate}, txpower: {TxPower}, nbTrans: {NbRep}, channel Mask Control: {ChMaskCntl}, Redundancy: {Redundancy}";
+            return $"Type: {Cid} Answer, datarate: {(int)DataRate}, txpower: {TxPower}, nbTrans: {NbRep}, channel Mask Control: {ChMaskCntl}, Redundancy: {Redundancy}";
         }
     }
 }
