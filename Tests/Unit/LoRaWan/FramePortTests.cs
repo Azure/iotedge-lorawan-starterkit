@@ -3,8 +3,10 @@
 
 namespace LoRaWan.Tests.Unit
 {
+    using System.Linq;
     using LoRaWan.Tests.Common;
     using Xunit;
+    using MoreEnumerable = MoreLinq.MoreEnumerable;
 
     public class FramePortTests
     {
@@ -26,6 +28,10 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(224, (byte)FramePort.MacLayerTest);
         }
 
+        public static readonly TheoryData<FramePort> AppFramePorts =
+            TheoryDataFactory.From(MoreEnumerable.Generate(FramePort.AppMin, fport => fport + 1)
+                                                 .TakeWhile(fport => fport <= FramePort.AppMax));
+
         [Theory]
         [InlineData(FramePorts.App1)]
         [InlineData(FramePorts.App10)]
@@ -34,9 +40,12 @@ namespace LoRaWan.Tests.Unit
             Assert.True(fportValue.IsApplicationSpecific());
         }
 
+        public static readonly TheoryData<FramePort> ReservedFramePorts =
+            TheoryDataFactory.From(MoreEnumerable.Generate(FramePort.ReservedMin, fport => fport + 1)
+                                                 .TakeWhile(fport => fport <= FramePort.ReservedMax));
+
         [Theory]
-        [InlineData(FramePorts.ReservedMin)]
-        [InlineData(FramePorts.ReservedMax)]
+        [MemberData(nameof(ReservedFramePorts))]
         public void ReservedForFutureApplicationsTestFPort_Should_Be_Flagged(FramePort fportValue)
         {
             Assert.True(fportValue.IsReservedForFuture());

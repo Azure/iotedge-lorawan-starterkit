@@ -8,12 +8,18 @@ namespace LoRaWan
     public enum FramePort : byte
     {
         MacCommand = 0,
-        MacLayerTest = 224
+        AppMin = 1,
+        AppMax = 223,
+        MacLayerTest = 224,
+#pragma warning disable CA1700 // Do not name enum values 'Reserved'
+        ReservedMin = 225,
+        ReservedMax = 255,
+#pragma warning restore CA1700 // Do not name enum values 'Reserved'
     }
 
     public static class FramePortExtensions
     {
-        public static bool IsApplicationSpecific(this FramePort port) => port is > FramePort.MacCommand and < FramePort.MacLayerTest;
-        public static bool IsReservedForFuture(this FramePort port) => (byte)port >= 225;
+        public static bool IsApplicationSpecific(this FramePort port) => port is > FramePort.AppMin and < FramePort.AppMax;
+        public static bool IsReservedForFuture(this FramePort port) => port >= FramePort.ReservedMin;
     }
 }
