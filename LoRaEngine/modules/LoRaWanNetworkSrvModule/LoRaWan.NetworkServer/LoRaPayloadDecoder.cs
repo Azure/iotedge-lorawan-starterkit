@@ -66,7 +66,12 @@ namespace LoRaWan.NetworkServer
                 query["fport"] = fport.ToString(CultureInfo.InvariantCulture);
                 query["payload"] = base64Payload;
 
-                return await CallSensorDecoderModule(new UriBuilder(url) { Query = query.ToString() }.Uri);
+                var urlBuilder = new UriBuilder(url) { Query = query.ToString() };
+
+                if (urlBuilder.Path.EndsWith('/'))
+                    urlBuilder.Path = urlBuilder.Path[..^1];
+
+                return await CallSensorDecoderModule(urlBuilder.Uri);
             }
             else
             {
