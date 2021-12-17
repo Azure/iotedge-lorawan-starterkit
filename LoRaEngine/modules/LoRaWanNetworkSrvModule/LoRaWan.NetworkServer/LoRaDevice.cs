@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Globalization;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -16,7 +17,6 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
-    using Newtonsoft.Json;
 
     public class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
     {
@@ -367,7 +367,7 @@ namespace LoRaWan.NetworkServer
             if (twin.Properties.Reported.Contains(TwinProperty.TxParam))
             {
                 string rawDwellTimeSetting = twin.Properties.Reported[TwinProperty.TxParam].ToString();
-                UpdateDwellTimeSetting(JsonConvert.DeserializeObject<DwellTimeSetting>(rawDwellTimeSetting), acceptChanges: true);
+                UpdateDwellTimeSetting(JsonSerializer.Deserialize<DwellTimeSetting>(rawDwellTimeSetting), acceptChanges: true);
             }
 
             if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
