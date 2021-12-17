@@ -73,6 +73,7 @@ nav:
       - user-guide/station-device-provisioning.md
       - user-guide/station-authentication-modes.md
       - user-guide/station-module-configuration.md
+  - 'Samples':
     - samples/arduino.md
     - 'Decoders':
       - samples/decoders/decoder.md
