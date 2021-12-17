@@ -14,6 +14,6 @@ namespace LoRaWan
     public static class FramePortExtensions
     {
         public static bool IsApplicationSpecific(this FramePort port) => port is > FramePort.MacCommand and < FramePort.MacLayerTest;
-        public static bool IsReservedForFutureApplications(this FramePort port) => (byte)port >= 225;
+        public static bool IsReservedForFuture(this FramePort port) => (byte)port >= 225;
     }
 }

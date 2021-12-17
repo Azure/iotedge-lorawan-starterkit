@@ -157,7 +157,7 @@ namespace LoRaWan.NetworkServer
                         loRaDevice.LastConfirmedC2DMessageID = cloudToDeviceMessage.MessageId ?? Constants.C2D_MSG_ID_PLACEHOLDER;
                     }
 
-                    if (cloudToDeviceMessage.Fport.IsApplicationSpecific() || cloudToDeviceMessage.Fport.IsReservedForFutureApplications())
+                    if (cloudToDeviceMessage.Fport.IsApplicationSpecific() || cloudToDeviceMessage.Fport.IsReservedForFuture())
                     {
                         fport = cloudToDeviceMessage.Fport;
                     }
