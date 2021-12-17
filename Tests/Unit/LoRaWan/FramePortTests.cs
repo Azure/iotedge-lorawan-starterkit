@@ -6,7 +6,6 @@ namespace LoRaWan.Tests.Unit
     using System.Linq;
     using LoRaWan.Tests.Common;
     using Xunit;
-    using MoreEnumerable = MoreLinq.MoreEnumerable;
 
     public class FramePortTests
     {
@@ -28,27 +27,26 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(224, (byte)FramePort.MacLayerTest);
         }
 
-        public static readonly TheoryData<FramePort> AppFramePorts =
-            TheoryDataFactory.From(MoreEnumerable.Generate(FramePort.AppMin, fport => fport + 1)
-                                                 .TakeWhile(fport => fport <= FramePort.AppMax));
+        public static readonly TheoryData<bool, FramePort> AppFramePorts =
+            TheoryDataFactory.From(from n in Enumerable.Range(0, 256)
+                                   select (n is >= 1 and <= 223, checked((FramePort)n)));
 
         [Theory]
-        [InlineData(FramePorts.App1)]
-        [InlineData(FramePorts.App10)]
-        public void ApplicationLayerTestFPort_Should_Be_Flagged(FramePort fportValue)
+        [MemberData(nameof(AppFramePorts))]
+        public void ApplicationLayerTestFPort_Should_Be_Flagged(bool expected, FramePort fport)
         {
-            Assert.True(fportValue.IsApplicationSpecific());
+            Assert.Equal(expected, fport.IsApplicationSpecific());
         }
 
-        public static readonly TheoryData<FramePort> ReservedFramePorts =
-            TheoryDataFactory.From(MoreEnumerable.Generate(FramePort.ReservedMin, fport => fport + 1)
-                                                 .TakeWhile(fport => fport <= FramePort.ReservedMax));
+        public static readonly TheoryData<bool, FramePort> ReservedFramePorts =
+            TheoryDataFactory.From(from n in Enumerable.Range(0, 256)
+                                   select (n is >= 225 and <= 255, checked((FramePort)n)));
 
         [Theory]
         [MemberData(nameof(ReservedFramePorts))]
-        public void ReservedForFutureApplicationsTestFPort_Should_Be_Flagged(FramePort fportValue)
+        public void ReservedForFutureApplicationsTestFPort_Should_Be_Flagged(bool expected, FramePort fport)
         {
-            Assert.True(fportValue.IsReservedForFuture());
+            Assert.Equal(expected, fport.IsReservedForFuture());
         }
     }
 }
