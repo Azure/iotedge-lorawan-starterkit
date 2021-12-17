@@ -68,12 +68,11 @@ nav:
     - user-guide/caching.md
     - user-guide/upgrade.md
     - user-guide/documentation.md
+    - user-guide/ci-setup.md
     - 'Basic Station configuration':
       - user-guide/station-device-provisioning.md
       - user-guide/station-authentication-modes.md
       - user-guide/station-module-configuration.md
-    - user-guide/ci-setup.md
-  - 'Samples':
     - samples/arduino.md
     - 'Decoders':
       - samples/decoders/decoder.md
