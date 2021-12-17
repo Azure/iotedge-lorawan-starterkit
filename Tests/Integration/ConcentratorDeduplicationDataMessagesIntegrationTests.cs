@@ -156,7 +156,7 @@ namespace LoRaWan.Tests.Integration
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // duplicate
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
-        public async Task When_Unconfirmed_First_Data_Message_Test_All_Different_DeduplicationModes(
+        public async Task When_First_Unconfirmed_Data_Message_Test_All_Different_DeduplicationModes(
             string station1,
             string station2,
             DeduplicationMode deduplicationMode,
@@ -179,7 +179,7 @@ namespace LoRaWan.Tests.Integration
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // duplicate
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
-        public async Task When_Unconfirmed_Subsequent_Data_Message_Test_All_Different_DeduplicationModes(
+        public async Task When_Subsequent_Unconfirmed_Data_Message_Test_All_Different_DeduplicationModes(
             string station1,
             string station2,
             DeduplicationMode deduplicationMode,
@@ -262,14 +262,17 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown,
             int expectedTwinSaves)
         {
-            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0)) { DevAddr = "00000000" };
+
+            var value8 = "00000000";
+            var value32 = "00000000000000000000000000000000";
+            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0)) { DevAddr = value8 };
 
             var dataPayload = simulatedOTAADevice.CreateUnconfirmedDataUpMessage("payload");
             var request1 = CreateOTAARequest(dataPayload, station1);
             var request2 = CreateOTAARequest(dataPayload, station2);
 
             using var loraOTAADevice = new LoRaDevice(simulatedOTAADevice.DevAddr, simulatedOTAADevice.DevEUI, ConnectionManager);
-            loraOTAADevice.AppKey = "00000000000000000000000000000000";
+            loraOTAADevice.AppKey = value32;
 
             loraOTAADevice.Deduplication = deduplicationMode;
             loraOTAADevice.NwkSKey = station1;
@@ -280,7 +283,7 @@ namespace LoRaWan.Tests.Integration
 
             LoRaRequest CreateOTAARequest(LoRaPayloadData payload, string station)
             {
-                var request = CreateWaitableRequest(payload.SerializeUplink("00000000000000000000000000000000", "00000000000000000000000000000000").Rxpk[0]);
+                var request = CreateWaitableRequest(payload.SerializeUplink(value32, value32).Rxpk[0]);
                 request.SetStationEui(StationEui.Parse(station));
                 request.SetPayload(payload);
                 return request;
