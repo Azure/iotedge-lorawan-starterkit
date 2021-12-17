@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
+    using Newtonsoft.Json;
 
     public class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
     {
@@ -172,6 +173,9 @@ namespace LoRaWan.NetworkServer
         public DataRateIndex? ReportedRX2DataRate { get; set; }
 
         public ushort ReportedRX1DROffset { get; set; }
+
+        private readonly ChangeTrackingProperty<DwellTimeSetting> reportedDwellTimeSetting = new ChangeTrackingProperty<DwellTimeSetting>(TwinProperty.TxParam, null);
+        public DwellTimeSetting ReportedDwellTimeSetting => this.reportedDwellTimeSetting.Get();
 
         private volatile bool hasFrameCountChanges;
 
@@ -358,6 +362,12 @@ namespace LoRaWan.NetworkServer
                 {
                     ReportedRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
                 }
+            }
+
+            if (twin.Properties.Reported.Contains(TwinProperty.TxParam))
+            {
+                string rawDwellTimeSetting = twin.Properties.Reported[TwinProperty.TxParam].ToString();
+                UpdateDwellTimeSetting(JsonConvert.DeserializeObject<DwellTimeSetting>(rawDwellTimeSetting), acceptChanges: true);
             }
 
             if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
@@ -1206,20 +1216,23 @@ namespace LoRaWan.NetworkServer
             yield return this.txPower;
             yield return this.nbRep;
             yield return this.lastProcessingStationEui;
+            yield return this.reportedDwellTimeSetting;
         }
 
-        internal void UpdatePreferredGatewayID(string value, bool acceptChanges)
-        {
-            this.preferredGatewayID.Set(value);
-            if (acceptChanges)
-                this.preferredGatewayID.AcceptChanges();
-        }
+        internal void UpdatePreferredGatewayID(string value, bool acceptChanges) =>
+            UpdateChangeTrackingProperty(value, acceptChanges, this.preferredGatewayID);
 
-        internal void UpdateRegion(LoRaRegionType value, bool acceptChanges)
+        internal void UpdateRegion(LoRaRegionType value, bool acceptChanges) =>
+            UpdateChangeTrackingProperty(value, acceptChanges, this.region);
+
+        internal void UpdateDwellTimeSetting(DwellTimeSetting dwellTimeSetting, bool acceptChanges) =>
+            UpdateChangeTrackingProperty(dwellTimeSetting, acceptChanges, this.reportedDwellTimeSetting);
+
+        private static void UpdateChangeTrackingProperty<T>(T value, bool acceptChanges, ChangeTrackingProperty<T> changeTrackingProperty)
         {
-            this.region.Set(value);
+            changeTrackingProperty.Set(value);
             if (acceptChanges)
-                this.region.AcceptChanges();
+                changeTrackingProperty.AcceptChanges();
         }
 
         /// <summary>

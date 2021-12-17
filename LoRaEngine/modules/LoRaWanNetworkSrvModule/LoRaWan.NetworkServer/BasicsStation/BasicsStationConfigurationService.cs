@@ -84,7 +84,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var config = await GetRouterConfigMessageAsync(stationEui, cancellationToken);
-            return LnsStationConfiguration.GetRegion(config);
+            var region = LnsStationConfiguration.GetRegion(config);
+            if (region is DwellTimeLimitedRegion someRegion)
+            {
+                (someRegion.DefaultDwellTimeSetting, someRegion.DesiredDwellTimeSetting) = await GetDwellTimeConfigurationAsync(stationEui, cancellationToken);
+            }
+            return region;
         }
 
         public async Task<string[]> GetAllowedClientThumbprintsAsync(StationEui stationEui, CancellationToken cancellationToken)
