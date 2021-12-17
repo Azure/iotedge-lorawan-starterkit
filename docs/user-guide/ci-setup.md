@@ -80,13 +80,16 @@ certain confitions, typically when a pull request is created:
 - [CodeQL][codeql] - runs CodeQL analysis on each PR created against `dev`
   branch and after merge
 - [Lint and Check Markdown][lint-markdown] - runs linter and checks links in
-  markdown files; runs on PR created agains `dev` branch if the PR contains
-  `.md` files
+  markdown files; runs on PR created agains `docs/main` branch and only checks
+  `.md` (or `.markdown`) files
 - [Test Report][test-report] - publishes test results after Build & Test CI or
   E2E CI have completed
-- [Publish docs][publish-docs] - publishes project documentation using MkDocs.
-  The workflow needs to be triggered manually agains `docs/main` branch after
-  documentation has been updated
+- [Publish docs (new version)][publish-docs-new-version] - publishes project
+  documentation using MkDocs. The workflow needs to be triggered manually
+  against `docs/main` branch after documentation has been updated and requires a
+  version to publish as input to run.
+  - [Publish docs dev][publish-docs-dev] - runs on changes to `docs/main` branch
+    and publishes `dev` version of the documentation
 
 [build-and-test-ci]:
 https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/.github/workflows/ci.yaml
@@ -100,5 +103,7 @@ https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/.github/workflows/c
 https://github.com/Azure/iotedge-lorawan-starterkit/blob/442391dbdfe110e09e8448db7e9098de28403f34/.github/workflows/md-linter.yaml
 [test-report]:
 https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/.github/workflows/test_report.yaml
-[publish-docs]:
-https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/.github/workflows/publish-docs-new-version.yml
+[publish-docs-new-version]:
+https://github.com/Azure/iotedge-lorawan-starterkit/blob/docs/main/.github/workflows/publish-docs-new-version.yml
+[publish-docs-dev]:
+https://github.com/Azure/iotedge-lorawan-starterkit/blob/docs/main/.github/workflows/publish-docs-dev.yml
