@@ -51,7 +51,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public FramePort Fport => this.parseCloudToDeviceMessage?.Fport ?? new FramePort(0);
+        public FramePort Fport => this.parseCloudToDeviceMessage?.Fport ?? 0;
 
         public bool Confirmed
         {

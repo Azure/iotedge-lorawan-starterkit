@@ -9,6 +9,11 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
 
     public class LoRaCloudToDeviceMessageTest
     {
+        private const FramePort TestPort1 = (FramePort)1;
+        private const FramePort TestPort2 = (FramePort)2;
+
+        private static FramePort ReservedFramePort(byte n) => (FramePort)checked((byte)(225 + n));
+
         [Fact]
         public void When_FPort_Is_For_Mac_Command_Should_Be_Invalid_For_Payload()
         {
@@ -16,7 +21,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = new FramePort(LoRaFPort.MacCommand),
+                Fport = FramePort.MacCommand,
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
@@ -26,7 +31,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 RawPayload = "AAAA",
-                Fport = new FramePort(LoRaFPort.MacCommand),
+                Fport = FramePort.MacCommand,
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
@@ -40,7 +45,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = new FramePort(LoRaFPort.ReservedForFutureAplications),
+                Fport = ReservedFramePort(0),
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
@@ -50,7 +55,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "02",
                 RawPayload = "AAAA",
-                Fport = new FramePort(LoRaFPort.ReservedForFutureAplications + 1),
+                Fport = ReservedFramePort(1),
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
@@ -64,7 +69,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 MacCommands = { new DevStatusRequest() },
-                Fport = new FramePort(LoRaFPort.MacCommand),
+                Fport = FramePort.MacCommand,
             };
 
             Assert.True(c2d.IsValid(out var errorMessage));
@@ -79,7 +84,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
                 MessageId = "01",
                 Payload = "hello",
                 MacCommands = { new DevStatusRequest() },
-                Fport = new FramePort(1),
+                Fport = TestPort1,
             };
 
             Assert.True(payloadC2d.IsValid(out var errorMessage));
@@ -90,7 +95,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
                 MessageId = "01",
                 RawPayload = "AAAA",
                 MacCommands = { new DevStatusRequest() },
-                Fport = new FramePort(2),
+                Fport = TestPort2,
             };
 
             Assert.True(rawPayloadC2d.IsValid(out errorMessage));
@@ -104,7 +109,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = new FramePort(1),
+                Fport = TestPort1,
             };
 
             Assert.True(payloadC2d.IsValid(out var errorMessage));
@@ -114,7 +119,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 RawPayload = "AAAA",
-                Fport = new FramePort(2),
+                Fport = TestPort2,
             };
 
             Assert.True(rawPayloadC2d.IsValid(out errorMessage));
@@ -128,7 +133,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = new FramePort(LoRaFPort.MacCommand),
+                Fport = FramePort.MacCommand,
                 MacCommands = { new DevStatusRequest() },
             };
 
@@ -139,7 +144,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "02",
                 RawPayload = "AAAA",
-                Fport = new FramePort(LoRaFPort.MacCommand),
+                Fport = FramePort.MacCommand,
                 MacCommands = { new DevStatusRequest() },
             };
 

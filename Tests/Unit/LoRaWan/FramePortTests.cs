@@ -8,47 +8,37 @@ namespace LoRaWan.Tests.Unit
     public class FramePortTests
     {
         [Fact]
-        public void Size()
+        public void UnderlyingType_Is_Byte()
         {
-            Assert.Equal(1, FramePort.Size);
+            Assert.Equal(typeof(byte), typeof(FramePort).GetEnumUnderlyingType());
         }
 
         [Fact]
         public void MacCommandFPort_Should_Be_Flagged()
         {
-            Assert.True(new FramePort(0).IsMacCommandFPort);
+            Assert.Equal(0, (byte)FramePort.MacCommand);
         }
 
         [Fact]
         public void MacLayerTestFPort_Should_Be_Flagged()
         {
-            Assert.True(new FramePort(224).IsMacLayerTestFPort);
+            Assert.Equal(224, (byte)FramePort.MacLayerTest);
         }
 
         [Theory]
-        [InlineData(1)]
-        [InlineData(10)]
-        public void ApplicationLayerTestFPort_Should_Be_Flagged(byte fportValue)
+        [InlineData((FramePort)1)]
+        [InlineData((FramePort)10)]
+        public void ApplicationLayerTestFPort_Should_Be_Flagged(FramePort fportValue)
         {
-            Assert.True(new FramePort(fportValue).IsApplicationSpecificFPort);
+            Assert.True(fportValue.IsApplicationSpecific());
         }
 
         [Theory]
-        [InlineData(225)]
-        [InlineData(255)]
-        public void ReservedForFutureApplicationsTestFPort_Should_Be_Flagged(byte fportValue)
+        [InlineData((FramePort)225)]
+        [InlineData((FramePort)255)]
+        public void ReservedForFutureApplicationsTestFPort_Should_Be_Flagged(FramePort fportValue)
         {
-            Assert.True(new FramePort(fportValue).IsReservedForFutureAplicationsFPort);
-        }
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(10)]
-        [InlineData(224)]
-        public void FPort_Can_Be_Cast_To_Byte(byte fportValue)
-        {
-            Assert.Equal(fportValue, (byte)new FramePort(fportValue));
+            Assert.True(fportValue.IsReservedForFutureAplications());
         }
     }
 }

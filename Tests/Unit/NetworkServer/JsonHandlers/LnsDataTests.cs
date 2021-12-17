@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             var updf = LnsData.UpstreamDataFrameReader.Read(JsonUtil.Strictify(json));
             Assert.Equal(new DevAddr(58772467), updf.DevAddr);
             Assert.Equal(string.Empty, updf.Options);
-            Assert.Equal(new FramePort(8), updf.Port);
+            Assert.Equal((FramePort)8, updf.Port);
             Assert.Equal(FrameControlFlags.None, updf.FrameControlFlags);
             Assert.Equal(164, updf.Counter);
             Assert.Equal("5ABBBA", updf.Payload);

@@ -8,7 +8,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using global::LoRaTools.CommonAPI;
     using global::LoRaTools.LoRaMessage;
     using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
@@ -23,6 +22,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     public sealed class DefaultClassCDevicesMessageSenderTest : IDisposable
     {
         private const string ServerGatewayID = "test-gateway";
+        private const FramePort TestPort = (FramePort)10;
 
         private readonly NetworkServerConfiguration serverConfiguration;
         private readonly Region loRaRegion;
@@ -47,7 +47,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.packetForwarder = new Mock<IPacketForwarder>(MockBehavior.Strict);
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
-            
+
             this.cache = new MemoryCache(new MemoryCacheOptions());
 #pragma warning disable CA2000 // Dispose objects before losing scope
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance));
@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
-            Assert.Equal((byte)sentMessage.Fport, downstreamPayload.FPortValue);
+            Assert.Equal(sentMessage.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Payload = "hello",
                 DevEUI = devEUI,
-                Fport = new FramePort(10),
+                Fport = TestPort,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -147,7 +147,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Payload = "hello",
                 DevEUI = devEUI,
-                Fport = new FramePort(10),
+                Fport = TestPort,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -172,7 +172,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "hello",
-                Fport = new FramePort(10),
+                Fport = TestPort,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -207,7 +207,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Payload = "hello",
                 DevEUI = devEUI,
-                Fport = new FramePort(10),
+                Fport = TestPort,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -248,7 +248,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Payload = "hello",
                 DevEUI = devEUI,
-                Fport = new FramePort(10),
+                Fport = TestPort,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -281,7 +281,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Payload = "hello",
                 DevEUI = devEUI,
-                Fport = new FramePort(LoRaFPort.MacCommand),
+                Fport = FramePort.MacCommand,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -310,7 +310,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Payload = "hello",
                 DevEUI = devEUI,
-                Fport = new FramePort(LoRaFPort.MacCommand),
+                Fport = FramePort.MacCommand,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -365,7 +365,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Payload = "hello",
                 DevEUI = devEUI,
-                Fport = new FramePort(10),
+                Fport = TestPort,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -432,7 +432,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Payload = "hello",
                 DevEUI = devEUI,
-                Fport = new FramePort(10),
+                Fport = TestPort,
                 MessageId = Guid.NewGuid().ToString(),
             };
 

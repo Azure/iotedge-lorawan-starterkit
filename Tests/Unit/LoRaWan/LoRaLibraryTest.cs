@@ -218,10 +218,7 @@ namespace LoRaWan.Tests.Unit
             {
                 0, 0
             };
-            var fport = new byte[1]
-            {
-                    10,
-            };
+            const FramePort fport = (FramePort)10;
             var frmPayload = new byte[4]
             {
                4, 3, 2, 1,

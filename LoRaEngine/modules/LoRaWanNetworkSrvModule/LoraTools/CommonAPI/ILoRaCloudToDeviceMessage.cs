@@ -13,7 +13,9 @@ namespace LoRaTools.CommonAPI
     {
         string DevEUI { get; }
 
-        FramePort Fport { get; }
+        public byte FportByte => (byte)Fport;
+
+        public FramePort Fport { get; }
 
         bool Confirmed { get; }
 

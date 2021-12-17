@@ -157,12 +157,12 @@ namespace LoRaWan.NetworkServer
                         loRaDevice.LastConfirmedC2DMessageID = cloudToDeviceMessage.MessageId ?? Constants.C2D_MSG_ID_PLACEHOLDER;
                     }
 
-                    if (cloudToDeviceMessage.Fport.IsApplicationSpecificFPort || cloudToDeviceMessage.Fport.IsReservedForFutureAplicationsFPort)
+                    if (cloudToDeviceMessage.Fport.IsApplicationSpecific() || cloudToDeviceMessage.Fport.IsReservedForFutureAplications())
                     {
                         fport = cloudToDeviceMessage.Fport;
                     }
 
-                    logger.LogInformation($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? new FramePort(0)}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}");
+                    logger.LogInformation(FormattableString.Invariant($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {(byte)(fport ?? FramePort.MacCommand)}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}"));
                     Array.Reverse(frmPayload);
                 }
                 else
@@ -215,7 +215,7 @@ namespace LoRaWan.NetworkServer
                 fctrl,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
-                fport.HasValue ? new byte[] { (byte)fport.Value } : null,
+                fport,
                 frmPayload,
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
@@ -328,7 +328,7 @@ namespace LoRaWan.NetworkServer
                 FrameControlFlags.None,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
-                new byte[] { (byte)cloudToDeviceMessage.Fport },
+                cloudToDeviceMessage.Fport,
                 frmPayload,
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);

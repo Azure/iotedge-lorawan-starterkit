@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, FrameControlFlags fctrlFlags = FrameControlFlags.None, bool isHexPayload = false, IList<MacCommand> macCommands = null, string appSKey = null, string nwkSKey = null)
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = (FramePort)1, FrameControlFlags fctrlFlags = FrameControlFlags.None, bool isHexPayload = false, IList<MacCommand> macCommands = null, string appSKey = null, string nwkSKey = null)
         {
             var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
@@ -94,7 +94,6 @@ namespace LoRaWan.Tests.Common
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
 
-            var fPort = new byte[] { fport };
             // TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
             byte[] payload = null;
             if (data != null)
@@ -120,7 +119,7 @@ namespace LoRaWan.Tests.Common
                 fctrlFlags,
                 fcntBytes,
                 macCommands,
-                fPort,
+                fport,
                 payload,
                 direction,
                 Supports32BitFCnt ? fcnt : null);
@@ -144,7 +143,7 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, bool isHexPayload = false, string appSKey = null, string nwkSKey = null)
+        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = (FramePort)1, bool isHexPayload = false, string appSKey = null, string nwkSKey = null)
         {
             var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
@@ -153,8 +152,6 @@ namespace LoRaWan.Tests.Common
             FrmCntUp = fcnt.GetValueOrDefault();
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
-
-            var fPort = new byte[] { fport };
 
             byte[] payload = null;
 
@@ -174,7 +171,7 @@ namespace LoRaWan.Tests.Common
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.Adr, fcntBytes, null, fPort, payload, direction, Supports32BitFCnt ? fcnt : null);
+            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.Adr, fcntBytes, null, fport, payload, direction, Supports32BitFCnt ? fcnt : null);
             payloadData.PerformEncryption(string.IsNullOrEmpty(appSKey) ? AppSKey : appSKey);
             payloadData.SetMic(string.IsNullOrEmpty(nwkSKey)? NwkSKey : nwkSKey);
             return payloadData;

@@ -327,7 +327,7 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var dataPayload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("payload");
             // MAC command
-            dataPayload.Fport = new byte[1] { 0 };
+            dataPayload.Fport = FramePort.MacCommand;
             dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
 
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);

@@ -81,8 +81,6 @@ namespace LoRaWan.NetworkServer
             var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
             this.logger.LogDebug($"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}");
 
-
-            var payloadPort = new FramePort(loraPayload.FPortValue);
             var requiresConfirmation = request.Payload.RequiresConfirmation;
 
             LoRaADRResult loRaADRResult = null;
@@ -223,7 +221,7 @@ namespace LoRaWan.NetworkServer
                     }
 
                     #region Handling MacCommands
-                    if (payloadPort.IsMacCommandFPort)
+                    if (loraPayload.Fport == FramePort.MacCommand)
                     {
                         if (!skipDownstreamToAvoidCollisions)
                         {
@@ -246,7 +244,7 @@ namespace LoRaWan.NetworkServer
                         }
                     }
                     #endregion
-                    else
+                    else if (loraPayload.Fport is { } payloadPort)
                     {
                         if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
                         {
@@ -256,7 +254,7 @@ namespace LoRaWan.NetworkServer
                         else
                         {
                             this.logger.LogDebug($"decoding with: {loRaDevice.SensorDecoder} port: {(byte)payloadPort}");
-                            var decodePayloadResult = await this.payloadDecoder.DecodeMessageAsync(loRaDevice.DevEUI, decryptedPayloadData, (byte)payloadPort, loRaDevice.SensorDecoder);
+                            var decodePayloadResult = await this.payloadDecoder.DecodeMessageAsync(loRaDevice.DevEUI, decryptedPayloadData, payloadPort, loRaDevice.SensorDecoder);
                             payloadData = decodePayloadResult.GetDecodedPayload();
 
                             if (decodePayloadResult.CloudToDeviceMessage != null)
@@ -292,7 +290,7 @@ namespace LoRaWan.NetworkServer
                     // We send it to the IoT Hub:
                     // - when it's a new message or it's a resubmission/duplicate but with a strategy that is not drop
                     // - and it's not a MAC command
-                    if (sendUpstream && !payloadPort.IsMacCommandFPort)
+                    if (sendUpstream && loraPayload.Fport != FramePort.MacCommand)
                     {
                         // combine the results of the 2 deduplications: on the concentrator level and on the network server layer
                         var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplicationResult.NotDuplicate || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);

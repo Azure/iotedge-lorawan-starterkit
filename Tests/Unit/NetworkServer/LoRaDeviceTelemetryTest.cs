@@ -13,10 +13,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     public class LoRaDeviceTelemetryTest
     {
         [Theory]
-        [InlineData(1, 1)]
-        [InlineData(2, 10)]
-        [InlineData(100, 2)]
-        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(uint fcnt, byte fport)
+        [InlineData(1, (FramePort)1)]
+        [InlineData(2, (FramePort)10)]
+        [InlineData(100, (FramePort)2)]
+        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(uint fcnt, FramePort fport)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: fcnt, fport: fport);
@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(rxpk.Tmms, target.Tmms);
             Assert.Equal(rxpk.Tmst, target.Tmst);
             Assert.Equal(payload.GetFcnt(), target.Fcnt);
-            Assert.Equal(payload.FPortValue, target.Port);
+            Assert.Equal(payload.Fport, target.Port);
         }
     }
 }

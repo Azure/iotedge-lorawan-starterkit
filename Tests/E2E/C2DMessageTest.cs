@@ -19,6 +19,9 @@ namespace LoRaWan.Tests.E2E
     /// </summary>
     public sealed class C2DMessageTest : IntegrationTestBaseCi
     {
+        private const FramePort TestPort1 = (FramePort)1;
+        private const FramePort TestPort2 = (FramePort)2;
+
         /// <summary>
         /// Identifies how many times a cloud to device message can be processor without failing a test.
         /// </summary>
@@ -98,7 +101,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = new FramePort(1),
+                Fport = TestPort1,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -231,7 +234,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = new FramePort(1),
+                Fport = TestPort1,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -370,7 +373,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = new FramePort(2),
+                Fport = TestPort2,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -508,7 +511,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = new FramePort(1),
+                Fport = TestPort1,
                 MessageId = msgId,
                 Confirmed = true,
             };
@@ -622,7 +625,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = new FramePort(1),
+                Fport = TestPort1,
                 MessageId = msgId,
                 Confirmed = true,
             };
