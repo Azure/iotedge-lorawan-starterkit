@@ -16,13 +16,13 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Fact]
-        public void MacCommandFPort_Should_Be_Flagged()
+        public void MacCommand_Is_Zero()
         {
             Assert.Equal(0, (byte)FramePort.MacCommand);
         }
 
         [Fact]
-        public void MacLayerTestFPort_Should_Be_Flagged()
+        public void MacLayerTest_Is_224()
         {
             Assert.Equal(224, (byte)FramePort.MacLayerTest);
         }
@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.Unit
 
         [Theory]
         [MemberData(nameof(AppFramePorts))]
-        public void ApplicationLayerTestFPort_Should_Be_Flagged(bool expected, FramePort fport)
+        public void IsApplicationSpecific(bool expected, FramePort fport)
         {
             Assert.Equal(expected, fport.IsApplicationSpecific());
         }
@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Unit
 
         [Theory]
         [MemberData(nameof(ReservedFramePorts))]
-        public void ReservedForFutureApplicationsTestFPort_Should_Be_Flagged(bool expected, FramePort fport)
+        public void IsReservedForFuture(bool expected, FramePort fport)
         {
             Assert.Equal(expected, fport.IsReservedForFuture());
         }
