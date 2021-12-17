@@ -204,9 +204,9 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
-            var unconfirmedMessage1 = simulatedDevice.CreateUnconfirmedMessageUplink("1", fcnt: 1).Rxpk[0];
-            var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedMessageUplink("2", fcnt: 2).Rxpk[0];
-            var unconfirmedMessage3 = simulatedDevice.CreateUnconfirmedMessageUplink("3", fcnt: 3).Rxpk[0];
+            var unconfirmedMessage1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
+            var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
+            var unconfirmedMessage3 = simulatedDevice.CreateUnconfirmedDataUpMessage("3", fcnt: 3);
 
             var req1 = CreateWaitableRequest(unconfirmedMessage1, this.packetForwarder);
             messageDispatcher.DispatchRequest(req1);
@@ -269,8 +269,8 @@ namespace LoRaWan.Tests.Integration
             var requests = new List<WaitableLoRaRequest>();
             for (uint i = 0; i < messagePerDeviceCount; ++i)
             {
-                var rxpk = device.CreateUnconfirmedMessageUplink((i + 1).ToString(CultureInfo.InvariantCulture), fcnt: payloadInitialFcnt + i).Rxpk[0];
-                var req = CreateWaitableRequest(rxpk);
+                var payload = device.CreateUnconfirmedDataUpMessage((i + 1).ToString(CultureInfo.InvariantCulture), fcnt: payloadInitialFcnt + i);
+                var req = CreateWaitableRequest(payload);
                 dispatcher.DispatchRequest(req);
                 requests.Add(req);
 

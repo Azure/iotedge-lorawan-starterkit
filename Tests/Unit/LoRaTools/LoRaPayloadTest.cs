@@ -26,8 +26,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.LoRaMessage
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
-            var joinRxpk = simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]; ;
-            using var loraRequest = WaitableLoRaRequest.Create(joinRxpk);
+            var payload = simulatedDevice.CreateJoinRequest();
+            using var loraRequest = WaitableLoRaRequest.Create(payload);
             loraRequest.SetPayload(new LoRaPayloadJoinRequest());
 
             // act/assert
