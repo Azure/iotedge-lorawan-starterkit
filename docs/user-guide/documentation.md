@@ -86,4 +86,4 @@ file, under the section `nav`.
 
 !!! warning "TOC is not auto-generated"
     Currently, new pages are not automatically added to the TOC. You will need to
-    manually add new pages to the `nav`section of the configuration file.
+    manually add new pages to the `nav` section of the configuration file.
