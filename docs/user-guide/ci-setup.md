@@ -1,4 +1,4 @@
-# CI for LoRaWAN StarterKit
+# CI setup
 
 ## CI pipelines
 
