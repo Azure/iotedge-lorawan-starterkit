@@ -100,7 +100,7 @@ namespace LoRaTools.Regions
         private DwellTimeSetting dwellTimeSetting;
 
         public override Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration =>
-            this.dwellTimeSetting.DownlinkDwellTime ? DrToWithDwell : DrToNoDwell;
+            (this.dwellTimeSetting ?? DefaultDwellTimeSetting).DownlinkDwellTime ? DrToWithDwell : DrToNoDwell;
 
         public long FrequencyOffset { get; private set; }
 
