@@ -56,7 +56,7 @@ namespace LoRaWan.NetworkServer
             var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
 
             // Call local decoder (no "http://" in SensorDecoder)
-            if (Uri.TryCreate(sensorDecoder, UriKind.Absolute, out var url) && (url.Scheme is "http" or "https"))
+            if (Uri.TryCreate(sensorDecoder, UriKind.Absolute, out var url) && url.Scheme is "http")
             {
                 // Support decoders that have a parameter in the URL
                 // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
