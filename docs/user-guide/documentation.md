@@ -38,15 +38,37 @@ docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
 Now you can see the site running locally on <http://localhost:8000>. You can change
 the port in the `docker run` command.
 
+<!-- markdownlint-disable MD046 -->
+!!! warning "Required extensions"
+    We are using extensions which are not supported by the mkdocs-material
+    container out-of-the-box. There are two ways to deal with this:  
+
+    1. use the [manual approach](#alternate-approach)
+    2. Create a custom docker image with the plugin installed:  
+
+    ```dockerfile title="Dockerfile"
+    FROM squidfunk/mkdocs-material
+    RUN pip install mdx_truly_sane_lists
+    ```
+
+    ```bash title="Build and run container"
+    # in the directory where your dockerfile is
+    docker build . -t mkdocs-material-with-extensions
+    docker run --rm -it -p 8000:8000 -v ${PWD}:/docs mkdocs-material-with-extensions
+    ```
+<!-- markdownlint-enable MD046 -->
+
 ### Alternate approach
 
 Install Python and pip, and then the required packages:
 
-```bash
-pip install mkdocs
+```python title="install prerequisites"
 pip install mkdocs-material
-pip install mike
 pip install mdx_truly_sane_lists #required plugin
+```
+
+```bash title="run mkdocs"
+mkdocs serve
 ```
 
 ## Deployment
@@ -60,5 +82,8 @@ to deploy a specific version.
 
 The file `mkdocs.yml` provides the main configuration for the website, such as
 color and themes, plugins and extension. The `TOC` is also defined in the config
-file, under the section `nav`. Currently, new pages are not automatically added
-to the TOC.
+file, under the section `nav`.
+
+!!! warning "TOC is not auto-generated"
+    Currently, new pages are not automatically added to the TOC. You will need to
+    manually add new pages to the `nav` section of the configuration file.
