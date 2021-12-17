@@ -10,7 +10,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
 
     public class LoRaCloudToDeviceMessageTest
     {
-        private static FramePort ReservedFramePort(byte n) => (FramePort)checked((byte)(225 + n));
+        private static FramePort ReservedFramePort(byte n) => (FramePort)checked((byte)(FramePort.ReservedMin + n));
 
         [Fact]
         public void When_FPort_Is_For_Mac_Command_Should_Be_Invalid_For_Payload()
