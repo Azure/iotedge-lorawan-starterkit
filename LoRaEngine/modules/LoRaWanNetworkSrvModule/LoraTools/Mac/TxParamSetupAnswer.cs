@@ -5,7 +5,7 @@ namespace LoRaTools.Mac
 {
     using System.Collections.Generic;
 
-    internal class TxParamSetupAnswer : MacCommand
+    public class TxParamSetupAnswer : MacCommand
     {
         public TxParamSetupAnswer()
         {
