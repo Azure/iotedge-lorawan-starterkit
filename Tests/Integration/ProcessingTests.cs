@@ -23,8 +23,6 @@ namespace LoRaWan.Tests.Integration
     // General message processor tests (Join tests are handled in other class)
     public class ProcessingTests : MessageProcessorTestBase
     {
-        private const FramePort TestPort = (FramePort)1;
-
         [Theory]
         [InlineData(ServerGatewayID, 0, 0, 0)]
         [InlineData(ServerGatewayID, 0, 1, 1)]
@@ -269,7 +267,7 @@ namespace LoRaWan.Tests.Integration
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
-                Fport = TestPort,
+                Fport = FramePorts.App1,
             };
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -343,7 +341,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
-                Fport = TestPort,
+                Fport = FramePorts.App1,
             };
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
@@ -1555,7 +1553,7 @@ namespace LoRaWan.Tests.Integration
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
                 {
                     Assert.NotNull(t.Data);
-                    Assert.Equal(TestPort, t.Port);
+                    Assert.Equal(FramePorts.App1, t.Port);
                     Assert.Equal("fport_1_decoded", t.Data.ToString());
                 });
 
@@ -1563,11 +1561,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
-            payloadDecoder.Setup(x => x.DecodeMessageAsync(devEUI, It.IsAny<byte[]>(), TestPort, It.IsAny<string>()))
+            payloadDecoder.Setup(x => x.DecodeMessageAsync(devEUI, It.IsAny<byte[]>(), FramePorts.App1, It.IsAny<string>()))
                 .ReturnsAsync(new DecodePayloadResult("fport_1_decoded"))
                 .Callback((string _, byte[] data, FramePort fport, string decoder) =>
                 {
-                    Assert.Equal(TestPort, fport);
+                    Assert.Equal(FramePorts.App1, fport);
 
                     // input data is empty
                     Assert.Null(data);

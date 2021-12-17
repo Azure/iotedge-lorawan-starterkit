@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.E2E
         // Uses Device23_OTAA
         private async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(TestDeviceInfo device)
         {
-           
+
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
@@ -129,7 +129,7 @@ namespace LoRaWan.Tests.E2E
 
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
-                Fport = (FramePort)1,
+                Fport = FramePorts.App1,
                 Payload = c2dMessageBody,
                 MacCommands = { new DevStatusRequest() }
             };

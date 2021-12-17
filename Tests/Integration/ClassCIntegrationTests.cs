@@ -24,10 +24,6 @@ namespace LoRaWan.Tests.Integration
     // Class C device tests
     public class ClassCIntegrationTests : MessageProcessorTestBase
     {
-        private const FramePort TestPort1 = (FramePort)1;
-        private const FramePort TestPort14 = (FramePort)14;
-        private const FramePort TestPort18 = (FramePort)18;
-
         [Theory]
         [InlineData(null, 0U, 0U)]
         [InlineData(null, 0U, 9U)]
@@ -103,7 +99,7 @@ namespace LoRaWan.Tests.Integration
                 DevEUI = simDevice.DevEUI,
                 MessageId = Guid.NewGuid().ToString(),
                 Payload = "aaaa",
-                Fport = TestPort18,
+                Fport = FramePorts.App18,
             };
 
             var expectedFcntDown = fcntDownFromTwin + Constants.MaxFcntUnsavedDelta + fcntDelta;
@@ -209,7 +205,7 @@ namespace LoRaWan.Tests.Integration
                 DevEUI = simDevice.DevEUI,
                 MessageId = Guid.NewGuid().ToString(),
                 Payload = "aaaa",
-                Fport = TestPort14,
+                Fport = FramePorts.App14,
             };
 
             if (string.IsNullOrEmpty(deviceGatewayID))
@@ -260,7 +256,7 @@ namespace LoRaWan.Tests.Integration
             {
                 CloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
                 {
-                    Fport = TestPort1,
+                    Fport = FramePorts.App1,
                     MessageId = "123",
                     Payload = "12",
                     DevEUI = "0000000000000002",
@@ -268,7 +264,7 @@ namespace LoRaWan.Tests.Integration
             };
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
-            payloadDecoder.Setup(x => x.DecodeMessageAsync(simulatedDevice.DevEUI, It.IsNotNull<byte[]>(), TestPort1, It.IsAny<string>()))
+            payloadDecoder.Setup(x => x.DecodeMessageAsync(simulatedDevice.DevEUI, It.IsNotNull<byte[]>(), FramePorts.App1, It.IsAny<string>()))
                 .ReturnsAsync(decoderResult);
             PayloadDecoder.SetDecoder(payloadDecoder.Object);
 

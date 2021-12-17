@@ -5,13 +5,11 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
 {
     using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class LoRaCloudToDeviceMessageTest
     {
-        private const FramePort TestPort1 = (FramePort)1;
-        private const FramePort TestPort2 = (FramePort)2;
-
         private static FramePort ReservedFramePort(byte n) => (FramePort)checked((byte)(225 + n));
 
         [Fact]
@@ -84,7 +82,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
                 MessageId = "01",
                 Payload = "hello",
                 MacCommands = { new DevStatusRequest() },
-                Fport = TestPort1,
+                Fport = FramePorts.App1,
             };
 
             Assert.True(payloadC2d.IsValid(out var errorMessage));
@@ -95,7 +93,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
                 MessageId = "01",
                 RawPayload = "AAAA",
                 MacCommands = { new DevStatusRequest() },
-                Fport = TestPort2,
+                Fport = FramePorts.App2,
             };
 
             Assert.True(rawPayloadC2d.IsValid(out errorMessage));
@@ -109,7 +107,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = TestPort1,
+                Fport = FramePorts.App1,
             };
 
             Assert.True(payloadC2d.IsValid(out var errorMessage));
@@ -119,7 +117,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 RawPayload = "AAAA",
-                Fport = TestPort2,
+                Fport = FramePorts.App2,
             };
 
             Assert.True(rawPayloadC2d.IsValid(out errorMessage));

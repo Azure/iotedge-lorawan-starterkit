@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     public sealed class DefaultClassCDevicesMessageSenderTest : IDisposable
     {
         private const string ServerGatewayID = "test-gateway";
-        private const FramePort TestPort = (FramePort)10;
+        private const FramePort TestPort = FramePorts.App10;
 
         private readonly NetworkServerConfiguration serverConfiguration;
         private readonly Region loRaRegion;

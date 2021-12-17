@@ -342,7 +342,7 @@ namespace LoRaWan.Tests.Integration
             {
                 Payload = "hello",
                 DevEUI = devEUI,
-                Fport = (FramePort)10,
+                Fport = FramePorts.App10,
                 MessageId = Guid.NewGuid().ToString(),
             };
 

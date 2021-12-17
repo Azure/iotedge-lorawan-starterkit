@@ -25,7 +25,7 @@ namespace LoRaWan.Tests.Integration
     // Cloud to device message processing tests (Join tests are handled in other class)
     public class CloudToDeviceMessageTests : MessageProcessorTestBase
     {
-        private const FramePort TestPort = (FramePort)1;
+        private const FramePort TestPort = FramePorts.App1;
 
         [Theory]
         [InlineData(ServerGatewayID)]

@@ -13,9 +13,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     public class LoRaDeviceTelemetryTest
     {
         [Theory]
-        [InlineData(1, (FramePort)1)]
-        [InlineData(2, (FramePort)10)]
-        [InlineData(100, (FramePort)2)]
+        [InlineData(1, FramePorts.App1)]
+        [InlineData(2, FramePorts.App10)]
+        [InlineData(100, FramePorts.App2)]
         public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(uint fcnt, FramePort fport)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));

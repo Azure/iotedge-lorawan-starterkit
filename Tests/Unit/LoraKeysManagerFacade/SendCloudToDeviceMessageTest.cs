@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools.CommonAPI;
+    using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Client.Exceptions;
@@ -20,7 +21,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
     public class SendCloudToDeviceMessageTest
     {
-        private const FramePort TestPort = (FramePort)1;
+        private const FramePort TestPort = FramePorts.App1;
 
         private readonly LoRaInMemoryDeviceStore cacheStore;
         private readonly Mock<IServiceClient> serviceClient;

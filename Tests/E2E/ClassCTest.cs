@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DevEUI = device.DeviceID,
                 MessageId = Guid.NewGuid().ToString(),
-                Fport = (FramePort)23,
+                Fport = FramePorts.App23,
                 RawPayload = Convert.ToBase64String(new byte[] { 0xFF, 0x00 }),
             };
 

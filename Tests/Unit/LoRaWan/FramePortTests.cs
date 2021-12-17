@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Unit
 {
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class FramePortTests
@@ -26,16 +27,16 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Theory]
-        [InlineData((FramePort)1)]
-        [InlineData((FramePort)10)]
+        [InlineData(FramePorts.App1)]
+        [InlineData(FramePorts.App10)]
         public void ApplicationLayerTestFPort_Should_Be_Flagged(FramePort fportValue)
         {
             Assert.True(fportValue.IsApplicationSpecific());
         }
 
         [Theory]
-        [InlineData((FramePort)225)]
-        [InlineData((FramePort)255)]
+        [InlineData(FramePorts.ReservedMin)]
+        [InlineData(FramePorts.ReservedMax)]
         public void ReservedForFutureApplicationsTestFPort_Should_Be_Flagged(FramePort fportValue)
         {
             Assert.True(fportValue.IsReservedForFuture());

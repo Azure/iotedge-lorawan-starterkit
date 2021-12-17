@@ -27,7 +27,6 @@ namespace LoRaWan.Tests.Integration
     public sealed class ClassCCloudToDeviceMessageSizeLimitTests : IDisposable
     {
         private const string ServerGatewayID = "test-gateway";
-        private const FramePort TestPort = (FramePort)1;
 
         private TestPacketForwarder PacketForwarder { get; }
 
@@ -113,7 +112,7 @@ namespace LoRaWan.Tests.Integration
             {
                 DevEUI = devEUI,
                 Payload = c2dMsgPayload,
-                Fport = TestPort,
+                Fport = FramePorts.App1,
             };
 
             if (hasMacInC2D)
@@ -199,7 +198,7 @@ namespace LoRaWan.Tests.Integration
             {
                 DevEUI = devEUI,
                 Payload = c2dMsgPayload,
-                Fport = TestPort,
+                Fport = FramePorts.App1,
             };
 
             if (hasMacInC2D)

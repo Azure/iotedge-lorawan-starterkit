@@ -16,10 +16,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public class LoRaPayloadDecoderTest
     {
-        private const FramePort TestPort1 = (FramePort)1;
-        private const FramePort TestPort2 = (FramePort)2;
-        private const FramePort TestPort8 = (FramePort)8;
-
         [Theory]
         [InlineData(10L, "{\"value\":10}")]
         [InlineData(10.01, "{\"value\":10.01}")]
@@ -64,7 +60,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var target = new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance);
 
-            var result = await target.DecodeMessageAsync("12", Encoding.UTF8.GetBytes(value), TestPort1, "DecoderValueSensor");
+            var result = await target.DecodeMessageAsync("12", Encoding.UTF8.GetBytes(value), FramePorts.App1, "DecoderValueSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal(expectedJson, json);
         }
@@ -74,7 +70,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var target = new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance);
 
-            var result = await target.DecodeMessageAsync("12", null, TestPort1, "DecoderValueSensor");
+            var result = await target.DecodeMessageAsync("12", null, FramePorts.App1, "DecoderValueSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal("{\"value\":\"\"}", json);
         }
@@ -84,7 +80,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var target = new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance);
 
-            var result = await target.DecodeMessageAsync("12", Array.Empty<byte>(), TestPort1, "DecoderValueSensor");
+            var result = await target.DecodeMessageAsync("12", Array.Empty<byte>(), FramePorts.App1, "DecoderValueSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal("{\"value\":\"\"}", json);
         }
@@ -94,7 +90,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var target = new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance);
 
-            var result = await target.DecodeMessageAsync("12", null, TestPort1, "DecoderHexSensor");
+            var result = await target.DecodeMessageAsync("12", null, FramePorts.App1, "DecoderHexSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal("{\"value\":\"\"}", json);
         }
@@ -104,7 +100,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var target = new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance);
 
-            var result = await target.DecodeMessageAsync("12", Array.Empty<byte>(), TestPort1, "DecoderHexSensor");
+            var result = await target.DecodeMessageAsync("12", Array.Empty<byte>(), FramePorts.App1, "DecoderHexSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal("{\"value\":\"\"}", json);
         }
@@ -113,7 +109,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Payload_Is_Null_ExternalDecoder_Should_Be_Called_With_Empty_Payload()
         {
             var devEUI = "12";
-            var fport = TestPort8;
+            var fport = FramePorts.App8;
             var decodedValue = "{\"from\":\"http\"}";
             using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
@@ -140,7 +136,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Payload_Is_Empty_ExternalDecoder_Should_Be_Called_With_Empty_Payload()
         {
             var devEUI = "12";
-            var fport = TestPort8;
+            var fport = FramePorts.App8;
             var decodedValue = "{\"from\":\"http\"}";
             using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
@@ -164,16 +160,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData("DecoderValueSensor", "1234", 1234L, TestPort1)]
-        [InlineData("DecoderValueSensor", "1234", 1234L, TestPort2)]
-        [InlineData("DECODERVALUESENSOR", "1234", 1234L, TestPort1)]
-        [InlineData("decodervaluesensor", "1234", 1234L, TestPort2)]
-        [InlineData("DECODERVALUESENSOR", "12.34", 12.34, TestPort1)]
-        [InlineData("decodervaluesensor", "-12.34", -12.34, TestPort2)]
-        [InlineData("decodervaluesensor", "hello world", "hello world", TestPort2)]
-        [InlineData("decodervaluesensor", " 1 ", 1L, TestPort2)]
-        [InlineData("decodervaluesensor", "$1", "$1", TestPort2)]
-        [InlineData("decodervaluesensor", "100'000", "100'000", TestPort2)]
+        [InlineData("DecoderValueSensor", "1234", 1234L, FramePorts.App1)]
+        [InlineData("DecoderValueSensor", "1234", 1234L, FramePorts.App2)]
+        [InlineData("DECODERVALUESENSOR", "1234", 1234L, FramePorts.App1)]
+        [InlineData("decodervaluesensor", "1234", 1234L, FramePorts.App2)]
+        [InlineData("DECODERVALUESENSOR", "12.34", 12.34, FramePorts.App1)]
+        [InlineData("decodervaluesensor", "-12.34", -12.34, FramePorts.App2)]
+        [InlineData("decodervaluesensor", "hello world", "hello world", FramePorts.App2)]
+        [InlineData("decodervaluesensor", " 1 ", 1L, FramePorts.App2)]
+        [InlineData("decodervaluesensor", "$1", "$1", FramePorts.App2)]
+        [InlineData("decodervaluesensor", "100'000", "100'000", FramePorts.App2)]
         public async Task When_Decoder_Is_DecoderValueSensor_Return_In_Value(string decoder, string payloadString, object expectedValue, FramePort fport)
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
@@ -186,16 +182,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData("DecoderHexSensor", "1234", "31323334", TestPort1)]
-        [InlineData("DecoderHexSensor", "1234", "31323334", TestPort2)]
-        [InlineData("DECODERHEXSENSOR", "1234", "31323334", TestPort1)]
-        [InlineData("decoderhexsensor", "1234", "31323334", TestPort2)]
-        [InlineData("DECODERHEXSENSOR", "12.34", "31322E3334", TestPort1)]
-        [InlineData("decoderhexsensor", "-12.34", "2D31322E3334", TestPort2)]
-        [InlineData("decoderhexsensor", "hello world", "68656C6C6F20776F726C64", TestPort2)]
-        [InlineData("decoderhexsensor", " 1 ", "203120", TestPort2)]
-        [InlineData("decoderhexsensor", "$1", "2431", TestPort2)]
-        [InlineData("decoderhexsensor", "100'000", "31303027303030", TestPort2)]
+        [InlineData("DecoderHexSensor", "1234", "31323334", FramePorts.App1)]
+        [InlineData("DecoderHexSensor", "1234", "31323334", FramePorts.App2)]
+        [InlineData("DECODERHEXSENSOR", "1234", "31323334", FramePorts.App1)]
+        [InlineData("decoderhexsensor", "1234", "31323334", FramePorts.App2)]
+        [InlineData("DECODERHEXSENSOR", "12.34", "31322E3334", FramePorts.App1)]
+        [InlineData("decoderhexsensor", "-12.34", "2D31322E3334", FramePorts.App2)]
+        [InlineData("decoderhexsensor", "hello world", "68656C6C6F20776F726C64", FramePorts.App2)]
+        [InlineData("decoderhexsensor", " 1 ", "203120", FramePorts.App2)]
+        [InlineData("decoderhexsensor", "$1", "2431", FramePorts.App2)]
+        [InlineData("decoderhexsensor", "100'000", "31303027303030", FramePorts.App2)]
         public async Task When_Decoder_Is_DecoderHexSensor_Return_In_Value(string decoder, string payloadString, object expectedValue, FramePort fport)
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
@@ -208,18 +204,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(null, "1234", TestPort1)]
-        [InlineData(null, "1234", TestPort2)]
-        [InlineData(null, "helloworld", TestPort1)]
-        [InlineData(null, "helloworld", TestPort2)]
-        [InlineData("", "1234", TestPort1)]
-        [InlineData("", "1234", TestPort2)]
-        [InlineData("", "helloworld", TestPort1)]
-        [InlineData("", "helloworld", TestPort2)]
-        [InlineData("Does not exist", "1234", TestPort1)]
-        [InlineData("Does not exist", "1234", TestPort2)]
-        [InlineData("Does not exist", "helloworld", TestPort1)]
-        [InlineData("Does not exist", "helloworld", TestPort2)]
+        [InlineData(null, "1234", FramePorts.App1)]
+        [InlineData(null, "1234", FramePorts.App2)]
+        [InlineData(null, "helloworld", FramePorts.App1)]
+        [InlineData(null, "helloworld", FramePorts.App2)]
+        [InlineData("", "1234", FramePorts.App1)]
+        [InlineData("", "1234", FramePorts.App2)]
+        [InlineData("", "helloworld", FramePorts.App1)]
+        [InlineData("", "helloworld", FramePorts.App2)]
+        [InlineData("Does not exist", "1234", FramePorts.App1)]
+        [InlineData("Does not exist", "1234", FramePorts.App2)]
+        [InlineData("Does not exist", "helloworld", FramePorts.App1)]
+        [InlineData("Does not exist", "helloworld", FramePorts.App2)]
         public async Task When_Decoder_Is_Undefined_Return_In_Value(string decoder, string payloadString, FramePort fport)
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
