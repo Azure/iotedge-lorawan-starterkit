@@ -14,6 +14,8 @@ namespace LoRaWan.Tests.Integration
 
     internal class TestDefaultLoRaRequestHandler : DefaultLoRaDataRequestHandler
     {
+        private readonly NetworkServerConfiguration configuration;
+
         public IReceivedLoRaCloudToDeviceMessage ActualCloudToDeviceMessage { get; private set; }
 
         public TestDefaultLoRaRequestHandler(
@@ -35,7 +37,9 @@ namespace LoRaWan.Tests.Integration
                 functionBundlerProvider,
                 NullLogger<DefaultLoRaDataRequestHandler>.Instance,
                 TestMeter.Instance)
-        { }
+        {
+            this.configuration = configuration;
+        }
 
         protected override Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
             => Task.FromResult(TryUseBundlerAssert());
@@ -55,14 +59,11 @@ namespace LoRaWan.Tests.Integration
                                                                                          LoRaADRResult loRaADRResult,
                                                                                          IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage,
                                                                                          uint? fcntDown,
-                                                                                         bool fpending)
-        {
-            ActualCloudToDeviceMessage = cloudToDeviceMessage;
-            return new DownlinkMessageBuilderResponse(new LoRaTools.LoRaPhysical.DownlinkPktFwdMessage(), false, 1);
-        }
+                                                                                         bool fpending) =>
+            DownlinkMessageBuilderResponseAssert(request, loRaDevice, timeWatcher, loRaADRResult, cloudToDeviceMessage, fcntDown, fpending);
 
         protected override Task SendMessageDownstreamAsync(LoRaRequest request, DownlinkMessageBuilderResponse confirmDownlinkMessageBuilderResp)
-            => Task.FromResult(SendMessageDownstreamAsyncAssert());
+            => Task.FromResult(SendMessageDownstreamAsyncAssert(confirmDownlinkMessageBuilderResp));
 
         protected override Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
             => Task.FromResult(SaveChangesToDeviceAsyncAssert());
@@ -73,8 +74,21 @@ namespace LoRaWan.Tests.Integration
 
         public virtual bool SendDeviceAsyncAssert() => true;
 
-        public virtual Task SendMessageDownstreamAsyncAssert() => null;
+        public virtual Task SendMessageDownstreamAsyncAssert(DownlinkMessageBuilderResponse confirmDownlinkMessageBuilderResp) => null;
 
         public virtual bool SaveChangesToDeviceAsyncAssert() => true;
+
+        public virtual DownlinkMessageBuilderResponse DownlinkMessageBuilderResponseAssert(LoRaRequest request,
+                                                                                           LoRaDevice loRaDevice,
+                                                                                           LoRaOperationTimeWatcher timeWatcher,
+                                                                                           LoRaADRResult loRaADRResult,
+                                                                                           IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage,
+                                                                                           uint? fcntDown,
+                                                                                           bool fpending)
+        {
+            ActualCloudToDeviceMessage = cloudToDeviceMessage;
+            return DownlinkMessageBuilder.CreateDownlinkMessage(this.configuration, loRaDevice, request, timeWatcher,
+                                                                cloudToDeviceMessage, fpending, fcntDown ?? 0, loRaADRResult, NullLogger.Instance);
+        }
     }
 }

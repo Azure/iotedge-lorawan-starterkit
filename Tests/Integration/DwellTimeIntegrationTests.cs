@@ -6,11 +6,12 @@
 namespace LoRaWan.Tests.Integration
 {
     using System;
+    using System.Globalization;
     using System.Text.Json;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
-    using LoRaTools.CommonAPI;
+    using LoRaTools.LoRaMessage;
     using LoRaTools.Mac;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
@@ -44,7 +45,7 @@ namespace LoRaWan.Tests.Integration
             { CallBase = true };
 
             this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            this.loRaDevice = new LoRaDevice(this.simulatedDevice.DevAddr, this.simulatedDevice.DevEUI, ConnectionManager);
+            this.loRaDevice = CreateLoRaDevice(this.simulatedDevice, registerConnection: false);
 
             LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                          .ReturnsAsync(true);
@@ -67,7 +68,7 @@ namespace LoRaWan.Tests.Integration
                 DefaultDwellTimeSetting = DefaultDwellTimeSetting,
                 DesiredDwellTimeSetting = desired
             };
-            using var request = CreateRequest(region, reported);
+            using var request = SetupRequest(region, reported);
             LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
 
@@ -77,7 +78,7 @@ namespace LoRaWan.Tests.Integration
             // assert
             var actualMacCommand = Assert.Single(this.dataRequestHandlerMock.Object.ActualCloudToDeviceMessage.MacCommands);
             Assert.Equal(new TxParamSetupRequest(desired).ToBytes(), actualMacCommand.ToBytes());
-            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Once);
+            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(It.IsAny<DownlinkMessageBuilderResponse>()), Times.Once);
         }
 
         public static TheoryData<Region, DwellTimeSetting?> Does_Not_Send_TxParamSetupReq_TheoryData() =>
@@ -94,7 +95,7 @@ namespace LoRaWan.Tests.Integration
         public async Task Does_Not_Send_TxParamSetupReq(Region region, DwellTimeSetting? reported)
         {
             // arrange
-            using var request = CreateRequest(region, reported);
+            using var request = SetupRequest(region, reported);
             LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
 
@@ -103,13 +104,14 @@ namespace LoRaWan.Tests.Integration
 
             // assert
             Assert.Null(this.dataRequestHandlerMock.Object.ActualCloudToDeviceMessage);
-            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Never);
+            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(It.IsAny<DownlinkMessageBuilderResponse>()), Times.Never);
         }
 
-        public static TheoryData<DwellTimeSetting?> Persists_Reported_Dwell_Time_On_TxParamSetupAns_TheoryData() => TheoryDataFactory.From(new DwellTimeSetting?[]
-        {
-            null, new DwellTimeSetting(true, false, 9)
-        });
+        public static TheoryData<DwellTimeSetting?> Persists_Reported_Dwell_Time_On_TxParamSetupAns_TheoryData() =>
+            TheoryDataFactory.From(new DwellTimeSetting?[]
+            {
+                null, new DwellTimeSetting(true, false, 9)
+            });
 
         [Theory]
         [MemberData(nameof(Persists_Reported_Dwell_Time_On_TxParamSetupAns_TheoryData))]
@@ -132,15 +134,15 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(actualTwinCollection);
             var actualDwellTimeSetting = JsonSerializer.Deserialize<DwellTimeSetting>((string)actualTwinCollection![TwinProperty.TxParam].ToString());
             Assert.Equal(As923.DesiredDwellTimeSetting, actualDwellTimeSetting);
-            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Never);
+            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(It.IsAny<DownlinkMessageBuilderResponse>()), Times.Never);
         }
 
         public static TheoryData<Region, DwellTimeSetting?> Does_Not_Persist_Reported_Dwell_Time_On_TxParamSetupAns_TheoryData() =>
             TheoryDataFactory.From(new (Region, DwellTimeSetting?)[]
-        {
-            (As923, DesiredDwellTimeSetting),
-            (new RegionEU868(), new DwellTimeSetting(true, false, 9))
-        });
+            {
+                (As923, DesiredDwellTimeSetting),
+                (new RegionEU868(), new DwellTimeSetting(true, false, 9))
+            });
 
         [Fact]
         public async Task When_Reported_Dwell_Time_Already_Persisted_Does_Not_Persist_On_TxParamSetupAns()
@@ -155,7 +157,7 @@ namespace LoRaWan.Tests.Integration
 
             // assert
             loRaDeviceClient.Verify(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
-            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Never);
+            this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(It.IsAny<DownlinkMessageBuilderResponse>()), Times.Never);
         }
 
         [Fact]
@@ -169,16 +171,58 @@ namespace LoRaWan.Tests.Integration
             Assert.Contains("Received 'TxParamSetupAns' in region", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
-        private WaitableLoRaRequest CreateRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting) =>
-            SetupRequest(region, reportedDwellTimeSetting, null);
+        public static TheoryData<Region, DwellTimeSetting?, LoRaDataRate, LoRaDataRate> Uses_Correct_Data_Rate_TheoryData() =>
+            TheoryDataFactory.From<Region, DwellTimeSetting?, LoRaDataRate, LoRaDataRate>(new (Region, DwellTimeSetting?, LoRaDataRate, LoRaDataRate)[]
+            {
+                (As923, null, LoRaDataRate.SF12BW125, LoRaDataRate.SF10BW125),
+                (new RegionEU868(), null, LoRaDataRate.SF12BW125, LoRaDataRate.SF12BW125),
+                (As923, new DwellTimeSetting(false, true, 10), LoRaDataRate.SF12BW125, LoRaDataRate.SF12BW125)
+            });
 
-        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, MacCommand? macCommand)
+        [Theory]
+        [MemberData(nameof(Uses_Correct_Data_Rate_TheoryData))]
+        public async Task Uses_Correct_Data_Rate(Region region, DwellTimeSetting? reportedDwellTimeSetting, LoRaDataRate upstreamDataRate, LoRaDataRate expectedDataRate)
         {
-            var payload =
-                this.simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1,
-                                                                    fport: macCommand is null ? (byte)1 : (byte)LoRaFPort.MacCommand,
-                                                                    macCommands: macCommand is MacCommand someMacCommand ? new[] { someMacCommand } : null);
+            // arrange
+            using var request = SetupRequest(region, reportedDwellTimeSetting, createConfirmed: true);
+            request.Rxpk.Datr = upstreamDataRate.ToString();
+            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+                         .Returns(Task.FromResult<uint>(1));
+
+            // act
+            _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request, this.loRaDevice);
+
+            // assert
+            this.dataRequestHandlerMock.Verify(x =>
+                x.SendMessageDownstreamAsyncAssert(
+                    It.Is<DownlinkMessageBuilderResponse>(res => res.DownlinkPktFwdMessage.Txpk.Datr == expectedDataRate.ToString())),
+                    Times.Once);
+        }
+
+        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, bool createConfirmed = false) =>
+            SetupRequest(region, reportedDwellTimeSetting, null, createConfirmed);
+
+        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, MacCommand? macCommand, bool createConfirmed = false)
+        {
+            LoRaPayloadData payload;
+            if (macCommand is { } someMacCommand)
+            {
+                payload = this.simulatedDevice.CreateUnconfirmedDataUpMessage(((int)someMacCommand.Cid).ToString("X2", CultureInfo.InvariantCulture), fcnt: 1,
+                                                                              fport: 0, isHexPayload: true);
+            }
+            else if (createConfirmed)
+            {
+                payload = this.simulatedDevice.CreateConfirmedDataUpMessage("foo");
+            }
+            else
+            {
+                payload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("foo");
+            }
+                
             var result = CreateWaitableRequest(payload);
+            // ensure that frequency is within allowed range.
+            var freq = new Hertz(region.RegionLimits.FrequencyRange.Min.AsUInt64 + 100);
+            result.Rxpk.FreqHertz = freq;
             result.SetRegion(region);
             this.loRaDevice.UpdateDwellTimeSetting(reportedDwellTimeSetting, acceptChanges: true);
             return result;

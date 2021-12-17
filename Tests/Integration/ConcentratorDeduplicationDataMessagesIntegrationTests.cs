@@ -70,6 +70,16 @@ namespace LoRaWan.Tests.Integration
                 CallBase = true
             };
 
+            this.dataRequestHandlerMock
+                .Setup(d => d.DownlinkMessageBuilderResponseAssert(It.IsAny<LoRaRequest>(),
+                                                                   It.IsAny<LoRaDevice>(),
+                                                                   It.IsAny<LoRaOperationTimeWatcher>(),
+                                                                   It.IsAny<LoRaADRResult>(),
+                                                                   It.IsAny<IReceivedLoRaCloudToDeviceMessage>(),
+                                                                   It.IsAny<uint?>(),
+                                                                   It.IsAny<bool>()))
+                .Returns(new DownlinkMessageBuilderResponse(new LoRaTools.LoRaPhysical.DownlinkPktFwdMessage(), false, 1));
+
             _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
             {
                 DeduplicationResult = new DeduplicationResult
@@ -335,7 +345,7 @@ namespace LoRaWan.Tests.Integration
             if (expectedMessagesUp is int messagesUp)
                 this.dataRequestHandlerMock.Verify(x => x.SendDeviceAsyncAssert(), Times.Exactly(messagesUp));
             if (expectedMessagesDown is int messagesDown)
-                this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(), Times.Exactly(messagesDown));
+                this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(It.IsAny<DownlinkMessageBuilderResponse>()), Times.Exactly(messagesDown));
             if (expectedTwinSaves is int twinSaves)
                 this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Exactly(twinSaves));
         }
