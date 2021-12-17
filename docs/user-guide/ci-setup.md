@@ -50,17 +50,20 @@ Actions:
 
 The E2E CI can be triggered manually via GitHub Actions and runs automatically
 on a daily schedule. The pipeline is also set up to run on pull requests under
-certain conditions. In order for this workflow to be run on an open pull
-request, the label `fullci` needs to be added to the PR. Upon successful
-execution of the tests, additional labels will be added to the PR automatically
-by GitHub Actions, e.g. if all multi-concentrator E2E tests pass, the
-`MultiConcentrator` label will automatically be added to the PR. The workflow
-will be re-executed on new changes being pushed, as long as the `fullci` label
-is present. By default all E2E tests will be run each time (including the ones
-which previously passed). In order to prevent this and only run previously
-failing tests, additional label must be added to the PR (e.g. label `1`). In
-this case the test labels already added to the PR will prevent those tests from
-being re-executed.
+certain conditions.
+
+In order for this workflow to be run on an open pull request, the label `fullci`
+needs to be added to the PR. Upon successful execution of the tests, additional
+labels will be added to the PR automatically by GitHub Actions, e.g. if all
+multi-concentrator E2E tests pass, the `MultiConcentrator` label will
+automatically be added to the PR.
+
+The workflow will be re-executed on new changes being pushed, as long as the
+`fullci` label is present. By default all E2E tests will be run each time
+(including the ones which previously passed). In order to prevent this and only
+run previously failing tests, additional label must be added to the PR (e.g.
+label `1`). In this case the test labels already added to the PR will prevent
+those tests from being re-executed.
 
 ## Universal Decoder CI
 
