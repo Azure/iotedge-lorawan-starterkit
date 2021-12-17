@@ -5,8 +5,6 @@
 
 namespace LoRaWan
 {
-    using System;
-
     public enum FramePort : byte
     {
         MacCommand = 0,
@@ -17,11 +15,5 @@ namespace LoRaWan
     {
         public static bool IsApplicationSpecific(this FramePort port) => port is > FramePort.MacCommand and < FramePort.MacLayerTest;
         public static bool IsReservedForFutureApplications(this FramePort port) => (byte)port >= 225;
-
-        public static Span<byte> Write(this FramePort port, Span<byte> buffer)
-        {
-            buffer[0] = (byte)port;
-            return buffer[1..];
-        }
     }
 }
