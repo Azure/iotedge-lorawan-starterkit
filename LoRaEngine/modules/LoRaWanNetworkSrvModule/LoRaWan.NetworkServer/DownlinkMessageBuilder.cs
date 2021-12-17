@@ -162,7 +162,7 @@ namespace LoRaWan.NetworkServer
                         fport = cloudToDeviceMessage.Fport;
                     }
 
-                    logger.LogInformation(FormattableString.Invariant($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {(byte)(fport ?? FramePort.MacCommand)}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}"));
+                    logger.LogInformation($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {(byte)(fport ?? FramePort.MacCommand)}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}");
                     Array.Reverse(frmPayload);
                 }
                 else
