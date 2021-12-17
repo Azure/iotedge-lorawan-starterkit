@@ -17,13 +17,15 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             new List<ulong> { 923_200_000, 923_400_000, 921_400_000, 916_600_000, 917_500_000 }
             .Select(fr => new Hertz(fr)).ToList();
 
-        private static readonly DwellTimeLimitedRegion region = new RegionAS923().WithFrequencyOffset(frequencies[0], frequencies[1]);
+        private static readonly DwellTimeLimitedRegion region;
         private static readonly DwellTimeLimitedRegion regionWithDwellTime;
 
 #pragma warning disable CA1810 // Initialize reference type static fields inline (test code is not performance-sensitive)
         static RegionAS923TestData()
 #pragma warning restore CA1810 // Initialize reference type static fields inline
         {
+            region = new RegionAS923().WithFrequencyOffset(frequencies[0], frequencies[1]);
+            region.UseDwellTimeSetting(new DwellTimeSetting(false, false, 0));
             regionWithDwellTime = new RegionAS923().WithFrequencyOffset(frequencies[0], frequencies[1]);
             regionWithDwellTime.UseDwellTimeSetting(new DwellTimeSetting(true, true, 0));
         }

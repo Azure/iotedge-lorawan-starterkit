@@ -13,7 +13,9 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     {
         public RegionAS923TestWithRxpk()
         {
-            Region = new RegionAS923().WithFrequencyOffset(new Hertz(923_200_000), new Hertz(923_400_000));
+            var region = new RegionAS923().WithFrequencyOffset(new Hertz(923_200_000), new Hertz(923_400_000));
+            region.UseDwellTimeSetting(new DwellTimeSetting(false, false, 0));
+            Region = region;
         }
 
         [Theory]

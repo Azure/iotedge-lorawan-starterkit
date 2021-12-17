@@ -46,11 +46,11 @@ namespace LoRaTools.Regions
         private static readonly Dictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)> DrToWithDwell =
             new Dictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)>
             {
-                [DR0] = (LoRaDataRate.SF12BW125, 59),
-                [DR1] = (LoRaDataRate.SF11BW125, 59),
+                [DR0] = (LoRaDataRate.SF12BW125, 0),
+                [DR1] = (LoRaDataRate.SF11BW125, 0),
                 [DR2] = (LoRaDataRate.SF10BW125, 19),
-                [DR3] = (LoRaDataRate.SF10BW125, 61),
-                [DR4] = (LoRaDataRate.SF10BW125, 133),
+                [DR3] = (LoRaDataRate.SF9BW125, 61),
+                [DR4] = (LoRaDataRate.SF8BW125, 133),
                 [DR5] = (LoRaDataRate.SF7BW125, 230),
                 [DR6] = (LoRaDataRate.SF7BW250, 230),
                 [DR7] = (FskDataRate.Fsk50000, 230)
@@ -69,6 +69,33 @@ namespace LoRaTools.Regions
                 new DataRateIndex[] { DR7, DR6, DR5, DR4, DR3, DR2, DR7, DR7 },
             };
 
+        private static readonly Dictionary<uint, double> MaxEirpByTxPower =
+            new Dictionary<uint, double>
+            {
+                [0] = 16,
+                [1] = 14,
+                [2] = 12,
+                [3] = 10,
+                [4] = 8,
+                [5] = 6,
+                [6] = 4,
+                [7] = 2
+            };
+
+        private static readonly HashSet<DataRate> ValidDataRates =
+            new HashSet<DataRate>()
+            {
+                LoRaDataRate.SF12BW125,
+                LoRaDataRate.SF11BW125,
+                LoRaDataRate.SF10BW125,
+                LoRaDataRate.SF9BW125,
+                LoRaDataRate.SF8BW125,
+                LoRaDataRate.SF7BW125,
+                LoRaDataRate.SF7BW250,
+                FskDataRate.Fsk50000,
+            };
+
+        public override Dictionary<uint, double> TXPowertoMaxEIRP => MaxEirpByTxPower;
 
         private DwellTimeSetting dwellTimeSetting;
 
@@ -82,29 +109,8 @@ namespace LoRaTools.Regions
         {
             FrequencyOffset = 0;
 
-            TXPowertoMaxEIRP.Add(0, 16);
-            TXPowertoMaxEIRP.Add(1, 14);
-            TXPowertoMaxEIRP.Add(2, 12);
-            TXPowertoMaxEIRP.Add(3, 10);
-            TXPowertoMaxEIRP.Add(4, 8);
-            TXPowertoMaxEIRP.Add(5, 6);
-            TXPowertoMaxEIRP.Add(6, 4);
-            TXPowertoMaxEIRP.Add(7, 2);
-
-            var validDatarates = new HashSet<DataRate>
-            {
-                LoRaDataRate.SF12BW125,
-                LoRaDataRate.SF11BW125,
-                LoRaDataRate.SF10BW125,
-                LoRaDataRate.SF9BW125,
-                LoRaDataRate.SF8BW125,
-                LoRaDataRate.SF7BW125,
-                LoRaDataRate.SF7BW250,
-                FskDataRate.Fsk50000,
-            };
-
             MaxADRDataRate = DR7;
-            RegionLimits = new RegionLimits((Min: Mega(915), Max: Mega(928)), validDatarates, validDatarates, 0, 0);
+            RegionLimits = new RegionLimits((Min: Mega(915), Max: Mega(928)), ValidDataRates, ValidDataRates, 0, 0);
         }
 
         /// <summary>
