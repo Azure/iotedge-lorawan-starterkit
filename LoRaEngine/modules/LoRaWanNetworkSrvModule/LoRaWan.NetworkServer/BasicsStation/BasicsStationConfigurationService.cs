@@ -26,6 +26,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
                               JsonReader.Property("eirp", JsonReader.UInt32()),
                               (downlinkDwellLimit, uplinkDwellLimit, eirp) => new DwellTimeSetting(downlinkDwellLimit, uplinkDwellLimit, eirp));
 
+        private static readonly IJsonReader<(DwellTimeSetting Default, DwellTimeSetting Desired)> DwellTimeSettingsReader =
+            JsonReader.Object(JsonReader.Property("default", DwellTimeConfigurationReader),
+                              JsonReader.Property("desired", DwellTimeConfigurationReader),
+                              (@default, desired) => (@default, desired));
+
         private static readonly TimeSpan CacheTimeout = TimeSpan.FromHours(2);
         private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiService;
@@ -87,7 +92,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
             var region = LnsStationConfiguration.GetRegion(config);
             if (region is DwellTimeLimitedRegion someRegion)
             {
-                (someRegion.DefaultDwellTimeSetting, someRegion.DesiredDwellTimeSetting) = await GetDwellTimeConfigurationAsync(stationEui, cancellationToken);
+                var dwellTimeSettings = await GetDesiredPropertyStringAsync(stationEui, DwellTimeConfigurationPropertyName, cancellationToken);
+                (someRegion.DefaultDwellTimeSetting, someRegion.DesiredDwellTimeSetting) = DwellTimeSettingsReader.Read(dwellTimeSettings);
             }
             return region;
         }
@@ -104,14 +110,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
             return JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson);
         }
 
-        public async Task<(DwellTimeSetting Default, DwellTimeSetting Desired)> GetDwellTimeConfigurationAsync(StationEui stationEui, CancellationToken cancellationToken)
-        {
-            var dwellTimeSettings = await GetDesiredPropertyStringAsync(stationEui, DwellTimeConfigurationPropertyName, cancellationToken);
-            return JsonReader.Object(JsonReader.Property("default", DwellTimeConfigurationReader),
-                                     JsonReader.Property("desired", DwellTimeConfigurationReader),
-                                     (@default, desired) => (@default, desired)).Read(dwellTimeSettings);
-        }
-
         private async Task<string> GetDesiredPropertyStringAsync(StationEui stationEui, string propertyName, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
@@ -121,4 +119,3 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
     }
 }
-

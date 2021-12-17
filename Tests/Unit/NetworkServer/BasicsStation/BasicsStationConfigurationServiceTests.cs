@@ -18,6 +18,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit;
+    using static Bandwidth;
+    using static SpreadingFactor;
 
     public class BasicsStationConfigurationServiceTests : IDisposable
     {
@@ -70,15 +72,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             return string.Format(CultureInfo.InvariantCulture, template, Serialize(setting.MaxEirp), Serialize(setting.UplinkDwellTime), Serialize(setting.DownlinkDwellTime));
         }
 
-        private void SetupTwinResponse(DwellTimeSetting defaultDwellTimeSetting, DwellTimeSetting desiredDwellTimeSetting) =>
-            SetupTwinResponse("foo", defaultDwellTimeSetting, desiredDwellTimeSetting);
+        private void SetupTwinResponse(LoRaRegionType region, DwellTimeSetting defaultDwellTimeSetting, DwellTimeSetting desiredDwellTimeSetting) =>
+            SetupTwinResponse("foo", region, defaultDwellTimeSetting, desiredDwellTimeSetting);
 
         private void SetupTwinResponse(string primaryKey) =>
-            SetupTwinResponse(primaryKey, new DwellTimeSetting(false, false, 0), new DwellTimeSetting(false, false, 0));
+            SetupTwinResponse(primaryKey, LoRaRegionType.EU863, new DwellTimeSetting(false, false, 0), new DwellTimeSetting(false, false, 0));
 
 
-        private void SetupTwinResponse(string primaryKey, DwellTimeSetting defaultDwellTimeSetting, DwellTimeSetting desiredDwellTimeSetting) =>
-            SetupTwinResponse(primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)},
+        private void SetupTwinResponse(string primaryKey, LoRaRegionType region, DwellTimeSetting defaultDwellTimeSetting, DwellTimeSetting desiredDwellTimeSetting) =>
+            SetupTwinResponse(primaryKey, @$"{{ ""routerConfig"": {GetRouterConfigurationJson(region)},
                                                 ""clientThumbprint"": [ ""thumbprint"" ],
                                                 ""cups"": {{
                                                             ""tcCredentialUrl"": ""https://storageurl.net/container/blob"",
@@ -90,6 +92,23 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                 }},
                                                 ""txParams"": {GetTxParamsJson(defaultDwellTimeSetting, desiredDwellTimeSetting)}
                                               }}");
+
+        private static string GetRouterConfigurationJson(LoRaRegionType region) =>
+            JsonUtil.Minify(LnsStationConfigurationTests.GetTwinConfigurationJson(new[] { new NetId(1) },
+                                                                                  new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
+                                                                                  region.ToString(),
+                                                                                  "sx1301/1",
+                                                                                  (new Hertz(863000000), new Hertz(870000000)),
+                                                                                  new[]
+                                                                                  {
+                                                                                      (SF11, BW125, false),
+                                                                                      (SF10, BW125, false),
+                                                                                      (SF9 , BW125, false),
+                                                                                      (SF8 , BW125, false),
+                                                                                      (SF7 , BW125, false),
+                                                                                      (SF7 , BW250, false),
+                                                                                  },
+                                                                                  flags: RouterConfigStationFlags.NoClearChannelAssessment | RouterConfigStationFlags.NoDutyCycle | RouterConfigStationFlags.NoDwellTimeLimitations));
 
         private void SetupTwinResponse(string primaryKey, string json)
         {
@@ -115,6 +134,46 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
                 // assert
                 Assert.Equal(RegionManager.EU868, result);
+            }
+
+            [Fact]
+            public async Task DwellTimeRegion_Success()
+            {
+                // arrange
+                var expectedDefault = new DwellTimeSetting(false, true, 3);
+                var expectedDesired = new DwellTimeSetting(true, false, 2);
+                SetupDeviceKeyLookup();
+                SetupTwinResponse(LoRaRegionType.AS923, expectedDefault, expectedDesired);
+
+                // act
+                var result = await this.sut.GetRegionAsync(this.stationEui, CancellationToken.None);
+
+                // assert
+                var region = Assert.IsType<RegionAS923>(result);
+                Assert.Equal(expectedDefault, region.DefaultDwellTimeSetting);
+                Assert.Equal(expectedDesired, region.DesiredDwellTimeSetting);
+            }
+
+            [Fact]
+            public async Task DwellTimeRegion_Throws_If_Default_Is_Null()
+            {
+                // arrange
+                SetupDeviceKeyLookup();
+                SetupTwinResponse(LoRaRegionType.AS923, null, new DwellTimeSetting(false, false, 0));
+
+                // act + assert
+                _ = await Assert.ThrowsAsync<JsonException>(() => this.sut.GetRegionAsync(this.stationEui, CancellationToken.None));
+            }
+
+            [Fact]
+            public async Task DwellTimeRegion_Throws_If_Desired_Is_Null()
+            {
+                // arrange
+                SetupDeviceKeyLookup();
+                SetupTwinResponse(LoRaRegionType.AS923, new DwellTimeSetting(false, false, 0), null);
+
+                // act + assert
+                _ = await Assert.ThrowsAsync<JsonException>(() => this.sut.GetRegionAsync(this.stationEui, CancellationToken.None));
             }
         }
         public class GetAllowedClientThumbprintsAsync : BasicsStationConfigurationServiceTests
@@ -269,48 +328,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // assert
                 this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByEuiAsync(It.IsAny<StationEui>()), Times.Exactly(2));
                 Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
-            }
-        }
-
-        public class GetDwellTimeConfigurationAsync : BasicsStationConfigurationServiceTests
-        {
-            [Fact]
-            public async Task Success()
-            {
-                // arrange
-                var expectedDefault = new DwellTimeSetting(false, true, 3);
-                var expectedDesired = new DwellTimeSetting(true, false, 2);
-                SetupDeviceKeyLookup();
-                SetupTwinResponse(expectedDefault, expectedDesired);
-
-                // act
-                var (actualDefault, actualDesired) = await this.sut.GetDwellTimeConfigurationAsync(this.stationEui, CancellationToken.None);
-
-                // assert
-                Assert.Equal(expectedDefault, actualDefault);
-                Assert.Equal(expectedDesired, actualDesired);
-            }
-
-            [Fact]
-            public async Task Throws_If_Default_Is_Null()
-            {
-                // arrange
-                SetupDeviceKeyLookup();
-                SetupTwinResponse(null, new DwellTimeSetting(false, false, 0));
-
-                // act + assert
-                _ = await Assert.ThrowsAsync<JsonException>(() => this.sut.GetDwellTimeConfigurationAsync(this.stationEui, CancellationToken.None));
-            }
-
-            [Fact]
-            public async Task Throws_If_Desired_Is_Null()
-            {
-                // arrange
-                SetupDeviceKeyLookup();
-                SetupTwinResponse(new DwellTimeSetting(false, false, 0), null);
-
-                // act + assert
-                _ = await Assert.ThrowsAsync<JsonException>(() => this.sut.GetDwellTimeConfigurationAsync(this.stationEui, CancellationToken.None));
             }
         }
 
