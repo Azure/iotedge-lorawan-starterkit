@@ -27,10 +27,6 @@ namespace LoRaWan.Tests.Integration
             var joinRequestPayload1 = simulatedDevice.CreateJoinRequest();
             var joinRequestPayload2 = simulatedDevice.CreateJoinRequest();
 
-            // Create Rxpk
-            var joinRequestRxpk1 = joinRequestPayload1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
-            var joinRequestRxpk2 = joinRequestPayload2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
-
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
@@ -86,11 +82,11 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var joinRequest1 = CreateWaitableRequest(joinRequestRxpk1, useRealTimer: true);
+            using var joinRequest1 = CreateWaitableRequest(joinRequestPayload1, useRealTimer: true);
             messageProcessor.DispatchRequest(joinRequest1);
             await Task.Delay(TimeSpan.FromSeconds(7));
 
-            using var joinRequest2 = CreateWaitableRequest(joinRequestRxpk2, useRealTimer: true);
+            using var joinRequest2 = CreateWaitableRequest(joinRequestPayload2, useRealTimer: true);
             messageProcessor.DispatchRequest(joinRequest2);
 
             await Task.WhenAll(joinRequest1.WaitCompleteAsync(), joinRequest2.WaitCompleteAsync());

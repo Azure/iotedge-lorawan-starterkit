@@ -16,6 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
+    using static LoRaWan.DataRateIndex;
 
     /// <summary>
     /// Tests the <see cref="LoRaDevice"/>.
@@ -864,8 +865,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal(9u, loRaDevice.FCntDown);
             Assert.Equal(100u, loRaDevice.FCntUp);
-            Assert.Equal(10, loRaDevice.ReportedRX2DataRate.Value);
-            Assert.Equal(10, loRaDevice.DesiredRX2DataRate.Value);
+            Assert.Equal(DR10, loRaDevice.ReportedRX2DataRate.Value);
+            Assert.Equal(DR10, loRaDevice.DesiredRX2DataRate.Value);
             Assert.Equal(appSKey, loRaDevice.AppSKey);
             Assert.Equal(nwkSKey, loRaDevice.NwkSKey);
             Assert.Equal(LoRaRegionType.US915, loRaDevice.LoRaRegion);

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#pragma warning disable CA1008 // Enums should have zero value (use nullables instead)
+
 namespace LoRaWan
 {
     /// <summary>
@@ -9,7 +11,6 @@ namespace LoRaWan
     /// </summary>
     public enum Bandwidth
     {
-        Undefined = 0,
         BW125 = 125, // KHz
         BW250 = 250, // KHz
         BW500 = 500, // KHz

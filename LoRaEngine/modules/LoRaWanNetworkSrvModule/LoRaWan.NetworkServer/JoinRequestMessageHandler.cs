@@ -250,8 +250,7 @@ namespace LoRaWan.NetworkServer
                 {
                     if (request.Region.DRtoConfiguration.ContainsKey(loRaDevice.DesiredRX2DataRate.Value))
                     {
-                        dlSettings[0] =
-                            (byte)(loRaDevice.DesiredRX2DataRate & 0b00001111);
+                        dlSettings[0] = (byte)((byte)loRaDevice.DesiredRX2DataRate & 0b00001111);
                     }
                     else
                     {
