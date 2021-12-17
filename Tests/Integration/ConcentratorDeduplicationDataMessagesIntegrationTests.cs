@@ -245,8 +245,8 @@ namespace LoRaWan.Tests.Integration
         #endregion
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2, 1, 2)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 1, 1)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2, 2, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 2, 1)]
         public async Task When_SingleGateway_Deduplication_Should_Work_The_Same_Way(
             string station1,
             string station2,
@@ -261,7 +261,7 @@ namespace LoRaWan.Tests.Integration
             var gwId = "foo";
             this.loraDevice.GatewayID = gwId;
             _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(gwId)).Returns(this.frameCounterStrategyMock.Object);
-            this.loraDevice.Deduplication = DeduplicationMode.Drop; // default
+            this.loraDevice.Deduplication = DeduplicationMode.None; // default
             this.loraDevice.NwkSKey = station1;
 
             // act/assert
