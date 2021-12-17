@@ -88,8 +88,8 @@ certain confitions, typically when a pull request is created:
   documentation using MkDocs. The workflow needs to be triggered manually
   against `docs/main` branch after documentation has been updated and requires a
   version to publish as input to run.
-  - [Publish docs dev][publish-docs-dev] - runs on changes to `docs/main` branch
-    and publishes `dev` version of the documentation
+- [Publish docs dev][publish-docs-dev] - runs on changes to `docs/main` branch
+  and publishes `dev` version of the documentation
 
 [build-and-test-ci]:
 https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/.github/workflows/ci.yaml
