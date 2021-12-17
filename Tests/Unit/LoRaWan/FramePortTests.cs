@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.Unit
         [InlineData((FramePort)255)]
         public void ReservedForFutureApplicationsTestFPort_Should_Be_Flagged(FramePort fportValue)
         {
-            Assert.True(fportValue.IsReservedForFutureAplications());
+            Assert.True(fportValue.IsReservedForFutureApplications());
         }
     }
 }

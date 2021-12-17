@@ -48,7 +48,7 @@ namespace LoRaTools.CommonAPI
             // ensure fport follows LoRa specification
             // 0    => reserved for mac commands
             // 224+ => reserved for future applications
-            if (Fport.IsReservedForFutureAplications())
+            if (Fport.IsReservedForFutureApplications())
             {
                 errorMessage = $"invalid fport '{(byte)Fport}' in cloud to device message '{MessageId}'";
                 return false;
