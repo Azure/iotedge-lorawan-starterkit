@@ -33,9 +33,9 @@ namespace LoRaWan.Tests.Unit
 
         [Theory]
         [MemberData(nameof(AppFramePorts))]
-        public void IsApplicationSpecific(bool expected, FramePort fport)
+        public void IsAppSpecific(bool expected, FramePort fport)
         {
-            Assert.Equal(expected, fport.IsApplicationSpecific());
+            Assert.Equal(expected, fport.IsAppSpecific());
         }
 
         public static readonly TheoryData<bool, FramePort> ReservedFramePorts =
@@ -44,9 +44,9 @@ namespace LoRaWan.Tests.Unit
 
         [Theory]
         [MemberData(nameof(ReservedFramePorts))]
-        public void IsReservedForFuture(bool expected, FramePort fport)
+        public void IsReserved(bool expected, FramePort fport)
         {
-            Assert.Equal(expected, fport.IsReservedForFuture());
+            Assert.Equal(expected, fport.IsReserved());
         }
     }
 }

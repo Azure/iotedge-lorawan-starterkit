@@ -19,7 +19,7 @@ namespace LoRaWan
 
     public static class FramePortExtensions
     {
-        public static bool IsApplicationSpecific(this FramePort port) => port is >= FramePort.AppMin and <= FramePort.AppMax;
-        public static bool IsReservedForFuture(this FramePort port) => port >= FramePort.ReservedMin;
+        public static bool IsAppSpecific(this FramePort port) => port is >= FramePort.AppMin and <= FramePort.AppMax;
+        public static bool IsReserved(this FramePort port) => port >= FramePort.ReservedMin;
     }
 }
