@@ -56,7 +56,19 @@ namespace LoRaWan.NetworkServer
             var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
 
             // Call local decoder (no "http://" in SensorDecoder)
-            if (!sensorDecoder.Contains("http://", StringComparison.Ordinal))
+            if (Uri.TryCreate(sensorDecoder, UriKind.Absolute, out var url) && (url.Scheme is "http" or "https"))
+            {
+                // Support decoders that have a parameter in the URL
+                // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
+
+                var query = HttpUtility.ParseQueryString(url.Query);
+                query["devEUI"] = devEUI;
+                query["fport"] = fport.ToString(CultureInfo.InvariantCulture);
+                query["payload"] = base64Payload;
+
+                return await CallSensorDecoderModule(new UriBuilder(url) { Query = query.ToString() }.Uri);
+            }
+            else
             {
                 var decoderType = typeof(LoRaPayloadDecoder);
                 var toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
@@ -72,31 +84,6 @@ namespace LoRaWan.NetworkServer
                         Error = $"'{sensorDecoder}' decoder not found",
                     };
                 }
-            }
-            else
-            {
-                // Call SensorDecoderModule hosted in seperate container ("http://" in SensorDecoder)
-                // Format: http://containername/api/decodername
-                var toCall = sensorDecoder;
-
-                if (sensorDecoder.EndsWith("/", StringComparison.Ordinal))
-                {
-                    toCall = sensorDecoder[..^1];
-                }
-
-                // Support decoders that have a parameter in the URL
-                // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
-                var queryStringParamSeparator = toCall.Contains('?', StringComparison.Ordinal) ? "&" : "?";
-
-                // use HttpUtility to UrlEncode Fport and payload
-                var payloadEncoded = HttpUtility.UrlEncode(base64Payload);
-                var devEUIEncoded = HttpUtility.UrlEncode(devEUI);
-
-                // Add Fport and Payload to URL
-                var url = new Uri($"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport}&payload={payloadEncoded}");
-
-                // Call SensorDecoderModule
-                return await CallSensorDecoderModule(url);
             }
         }
 
