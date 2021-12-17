@@ -651,7 +651,7 @@
   
     <li class="md-nav__item">
       <a href="../station-module-configuration/" class="md-nav__link">
-        'LoRaBasicsStationModule' IoT Edge Module configuration parameters
+        `LoRaBasicsStationModule` IoT Edge Module configuration parameters
       </a>
     </li>
   
@@ -1220,12 +1220,31 @@ docker run --rm -it -p <span class="m">8000</span>:8000 -v <span class="si">${</
 </code></pre></div>
 <p>Now you can see the site running locally on <a href="http://localhost:8000">http://localhost:8000</a>. You can change
 the port in the <code>docker run</code> command.</p>
+<!-- markdownlint-disable MD046 -->
+<div class="admonition warning">
+<p class="admonition-title">Required extensions</p>
+<p>We are using extensions which are not supported by the mkdocs-material
+container out-of-the-box. There are two ways to deal with this:  </p>
+<ol>
+<li>use the <a href="#alternate-approach">manual approach</a></li>
+<li>Create a custom docker image with the plugin installed:  </li>
+</ol>
+<div class="highlight"><span class="filename">Dockerfile</span><pre><span></span><code><span class="k">FROM</span> <span class="s">squidfunk/mkdocs-material</span>
+<span class="k">RUN</span> pip install mdx_truly_sane_lists
+</code></pre></div>
+<div class="highlight"><span class="filename">Build and run container</span><pre><span></span><code><span class="c1"># in the directory where your dockerfile is</span>
+docker build . -t mkdocs-material-with-extensions
+docker run --rm -it -p <span class="m">8000</span>:8000 -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>:/docs mkdocs-material-with-extensions
+</code></pre></div>
+</div>
+<!-- markdownlint-enable MD046 -->
+
 <h3 id="alternate-approach">Alternate approach</h3>
 <p>Install Python and pip, and then the required packages:</p>
-<div class="highlight"><pre><span></span><code>pip install mkdocs
-pip install mkdocs-material
-pip install mike
-pip install mdx_truly_sane_lists <span class="c1">#required plugin</span>
+<div class="highlight"><span class="filename">install prerequisites</span><pre><span></span><code><span class="n">pip</span> <span class="n">install</span> <span class="n">mkdocs</span><span class="o">-</span><span class="n">material</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">mdx_truly_sane_lists</span> <span class="c1">#required plugin</span>
+</code></pre></div>
+<div class="highlight"><span class="filename">run mkdocs</span><pre><span></span><code>mkdocs serve
 </code></pre></div>
 <h2 id="deployment">Deployment</h2>
 <p>For deployment, the additional toolset <a href="https://github.com/jimporter/mike"><code>mike</code></a>
@@ -1235,8 +1254,12 @@ to deploy a specific version.</p>
 <h2 id="configuration">Configuration</h2>
 <p>The file <code>mkdocs.yml</code> provides the main configuration for the website, such as
 color and themes, plugins and extension. The <code>TOC</code> is also defined in the config
-file, under the section <code>nav</code>. Currently, new pages are not automatically added
-to the TOC.</p>
+file, under the section <code>nav</code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">TOC is not auto-generated</p>
+<p>Currently, new pages are not automatically added to the TOC. You will need to
+manually add new pages to the <code>nav</code> section of the configuration file.</p>
+</div>
 
               
             </article>

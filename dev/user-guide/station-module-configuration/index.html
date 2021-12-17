@@ -13,7 +13,7 @@
     
     
       
-        <title>'LoRaBasicsStationModule' IoT Edge Module configuration parameters - IoTEdge LoRaWAN StarterKit - documentation</title>
+        <title>`LoRaBasicsStationModule` IoT Edge Module configuration parameters - IoTEdge LoRaWAN StarterKit - documentation</title>
       
     
     
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              'LoRaBasicsStationModule' IoT Edge Module configuration parameters
+              `LoRaBasicsStationModule` IoT Edge Module configuration parameters
             
           </span>
         </div>
@@ -594,7 +594,7 @@
       
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        'LoRaBasicsStationModule' IoT Edge Module configuration parameters
+        `LoRaBasicsStationModule` IoT Edge Module configuration parameters
       </a>
       
     </li>
@@ -1093,8 +1093,8 @@
 </a>
 
 
-<h1 id="lorabasicsstationmodule-iot-edge-module-configuration-parameters">'LoRaBasicsStationModule' IoT Edge Module configuration parameters</h1>
-<p>The following table is providing a list of configuration options, to be provided as environment variables for manual configuration of the 'LoRaBasicsStationModule':</p>
+<h1 id="lorabasicsstationmodule-iot-edge-module-configuration-parameters"><code>LoRaBasicsStationModule</code> IoT Edge Module configuration parameters</h1>
+<p>The following table is providing a list of configuration options, to be provided as environment variables for manual configuration of the <code>LoRaBasicsStationModule</code>:</p>
 <table>
 <thead>
 <tr>
@@ -1107,42 +1107,42 @@
 <tr>
 <td>TC_URI</td>
 <td>The URI to the LNS Server implementation</td>
-<td><strong>Yes</strong> (i.e.: 'ws://IP_or_DNS:5000' or 'wss:// IP_OR_DNS :5001')</td>
+<td><strong>Yes</strong> (i.e.: <code>ws://IP_or_DNS:5000</code> or <code>wss:// IP_OR_DNS :5001</code>)</td>
 </tr>
 <tr>
 <td>CUPS_URI</td>
 <td>The URI to the CUPS Server implementation</td>
-<td>Yes, if CUPS endpoint is required (i.e.: 'https:// IP_or_DNS :5002')</td>
+<td>Yes, if CUPS endpoint is required (i.e.: <code>https:// IP_or_DNS :5002</code>)</td>
 </tr>
 <tr>
 <td>TC_TRUST_PATH</td>
-<td>The path to the tc.trust file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
-<td>No (if not set, defaulting to '/var/lorastarterkit/certs/tc.trust')</td>
+<td>The path to the tc.trust file. Refer to <a href="../station-authentication-modes/">this file</a> for more information</td>
+<td>No (if not set, defaulting to <code>/var/lorastarterkit/certs/tc.trust</code>)</td>
 </tr>
 <tr>
 <td>TC_CRT_PATH</td>
-<td>The path to the tc.crt file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
-<td>No (if not set, defaulting to '/var/lorastarterkit/certs/tc.crt')</td>
+<td>The path to the tc.crt file. Refer to <a href="../station-authentication-modes/">this file</a> for more information</td>
+<td>No (if not set, defaulting to <code>/var/lorastarterkit/certs/tc.crt</code>)</td>
 </tr>
 <tr>
 <td>TC_KEY_PATH</td>
-<td>The path to the tc.key file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
-<td>No (if not set, defaulting to '/var/lorastarterkit/certs/tc.key')</td>
+<td>The path to the tc.key file. Refer to <a href="../station-authentication-modes/">this file</a> for more information</td>
+<td>No (if not set, defaulting to <code>/var/lorastarterkit/certs/tc.key</code>)</td>
 </tr>
 <tr>
 <td>CUPS_TRUST_PATH</td>
-<td>The path to the cups.trust file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
-<td>Only when CUPS is enabled (if not set, defaulting to '/var/lorastarterkit/certs/cups.trust')</td>
+<td>The path to the cups.trust file. Refer to <a href="../station-authentication-modes/">this file</a> for more information</td>
+<td>Only when CUPS is enabled (if not set, defaulting to <code>/var/lorastarterkit/certs/cups.trust</code>)</td>
 </tr>
 <tr>
 <td>CUPS_CRT_PATH</td>
-<td>The path to the cups.crt file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
-<td>Only when CUPS is enabled (if not set, defaulting to '/var/lorastarterkit/certs/cups.crt')</td>
+<td>The path to the cups.crt file. Refer to <a href="../station-authentication-modes/">this file</a> for more information</td>
+<td>Only when CUPS is enabled (if not set, defaulting to <code>/var/lorastarterkit/certs/cups.crt</code>)</td>
 </tr>
 <tr>
 <td>CUPS_KEY_PATH</td>
-<td>The path to the cups.key file. Refer to <a href=".\station-authentication-modes.md">this file</a> for more information</td>
-<td>Only when CUPS is enabled (if not set, defaulting to '/var/lorastarterkit/certs/cups.key')</td>
+<td>The path to the cups.key file. Refer to <a href="../station-authentication-modes/">this file</a> for more information</td>
+<td>Only when CUPS is enabled (if not set, defaulting to <code>/var/lorastarterkit/certs/cups.key</code>)</td>
 </tr>
 <tr>
 <td>RESET_PIN</td>
@@ -1151,7 +1151,7 @@
 </tr>
 <tr>
 <td>RADIODEV</td>
-<td>A string identifying the location where the board should be accessed (i.e.: '/dev/ttyACM0')</td>
+<td>A string identifying the location where the board should be accessed (i.e.: <code>/dev/ttyACM0</code>)</td>
 <td>No (if not set, board will be accessed at /dev/spidevX.0, see following item)</td>
 </tr>
 <tr>
@@ -1171,8 +1171,8 @@
 </tr>
 <tr>
 <td>STATION_PATH</td>
-<td>A string identifying the path of the folder where the compiled 'station.std' binary for Basic Station is located</td>
-<td>No (if not set, defaults to '/basicstation' folder)</td>
+<td>A string identifying the path of the folder where the compiled <code>station.std</code> binary for Basic Station is located</td>
+<td>No (if not set, defaults to <code>/basicstation</code> folder)</td>
 </tr>
 </tbody>
 </table>
