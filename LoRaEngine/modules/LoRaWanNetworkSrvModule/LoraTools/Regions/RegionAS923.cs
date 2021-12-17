@@ -70,7 +70,7 @@ namespace LoRaTools.Regions
             };
 
 
-        private DwellTimeSetting dwellTimeSetting = new DwellTimeSetting(false, false, 0);
+        private DwellTimeSetting dwellTimeSetting;
 
         public override Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration =>
             this.dwellTimeSetting.DownlinkDwellTime ? DrToWithDwell : DrToNoDwell;
@@ -105,7 +105,6 @@ namespace LoRaTools.Regions
 
             MaxADRDataRate = DR7;
             RegionLimits = new RegionLimits((Min: Mega(915), Max: Mega(928)), validDatarates, validDatarates, 0, 0);
-            UseDwellTimeSetting(this.dwellTimeSetting);
         }
 
         /// <summary>
