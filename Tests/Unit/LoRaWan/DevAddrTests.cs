@@ -83,12 +83,10 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal("EB6F7BDE", this.subject.ToString());
         }
 
-        public static TheoryData<string, uint> Parse_Data() => TheoryDataFactory.From(new[]
-        {
-            ("1234abcd", (uint)0x1234abcd),
-            ("1234aBcd", (uint)0x1234abcd),
-            ("1234ABCD", (uint)0x1234abcd)
-        });
+        public static TheoryData<string, uint> Parse_Data() =>
+            TheoryDataFactory.From(("1234abcd", (uint)0x1234abcd),
+                                   ("1234aBcd", (uint)0x1234abcd),
+                                   ("1234ABCD", (uint)0x1234abcd));
 
         [Theory]
         [MemberData(nameof(Parse_Data))]

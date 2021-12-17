@@ -57,8 +57,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -126,8 +125,8 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             // sends confirmed message
-            var rxpk = simulatedDevice.CreateConfirmedMessageUplink("1234", fcnt: payloadFcnt).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: payloadFcnt);
+            using var request = CreateWaitableRequest(payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -192,8 +191,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -272,8 +270,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: payloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -355,8 +352,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -373,18 +369,18 @@ namespace LoRaWan.Tests.Integration
             var txpk = downlinkMessage.Txpk;
             var euRegion = RegionManager.EU868;
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            Assert.True(euRegion.TryGetDownstreamChannelFrequency(rxpk, out var frequency));
+            Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out var frequency));
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             // Ensure we are using second window frequency
             Assert.Equal(frequency, txpk.Freq);
 
             // Ensure we are using second window datr
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            Assert.Equal(euRegion.GetDownstreamDataRate(rxpk), txpk.Datr);
+            Assert.Equal(euRegion.GetDownstreamDataRate(request.Rxpk), txpk.Datr);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             // Ensure tmst was computed to 1 second
-            Assert.Equal(1000000, txpk.Tmst);
+            Assert.Equal(1000000 + request.Rxpk.Tmst, txpk.Tmst);
 
             // Get the device from cache
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
@@ -455,8 +451,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TestUtils.GetStartTimeOffsetForSecondWindow());
+            using var request = CreateWaitableRequest(payload, constantElapsedTime: TestUtils.GetStartTimeOffsetForSecondWindow());
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -477,10 +472,10 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.FreqHertz);
 
             // Ensure we are using second window datr
-            Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration, txpk.Datr);
+            Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate.XpkDatr, txpk.Datr);
 
-            // Ensure tmst was computed to 2 seconds (2 windows in Europe)
-            Assert.Equal(2000000, txpk.Tmst);
+            // Ensure tmst was computed to 2 seconds + original receive time (2 windows in Europe)
+            Assert.Equal(2000000 + request.Rxpk.Tmst, txpk.Tmst);
 
             // Get the device from cache
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
@@ -556,8 +551,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -578,10 +572,10 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.FreqHertz);
 
             // Ensure we are using second window datr
-            Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration, txpk.Datr);
+            Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate.XpkDatr, txpk.Datr);
 
-            // Ensure tmst was computed to 2 seconds (2 windows in Europe)
-            Assert.Equal(2000000, txpk.Tmst);
+            // Ensure tmst was computed to 2 seconds + original receive time (2 windows in Europe)
+            Assert.Equal(2000000 + request.Rxpk.Tmst, txpk.Tmst);
 
             // Get the device from cache
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
@@ -666,9 +660,8 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var request = CreateWaitableRequest(
-                rxpk,
+                payload,
                 constantElapsedTime: sendEventDurationInMs > 0 ? TimeSpan.FromMilliseconds(sendEventDurationInMs) : TimeSpan.FromMilliseconds(100));
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
@@ -684,12 +677,12 @@ namespace LoRaWan.Tests.Integration
             if (expectedRX == Constants.ReceiveWindow1)
             {
                 // ensure response is for RX1
-                Assert.Equal(rxpk.Tmst + 1000000, actualDownlink.Txpk.Tmst);
+                Assert.Equal(request.Rxpk.Tmst + 1000000, actualDownlink.Txpk.Tmst);
             }
             else
             {
                 // ensure response is for RX2
-                Assert.Equal(rxpk.Tmst + 2000000, actualDownlink.Txpk.Tmst);
+                Assert.Equal(request.Rxpk.Tmst + 2000000, actualDownlink.Txpk.Tmst);
             }
         }
 
@@ -746,8 +739,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -846,8 +838,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.Zero);
+            using var request = CreateWaitableRequest(payload, constantElapsedTime: TimeSpan.Zero);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -906,8 +897,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -988,11 +978,11 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder,
+            using var request = WaitableLoRaRequest.Create(TestUtils.GenerateTestRadioMetadata(), PacketForwarder,
                                                            inTimeForC2DMessageCheck: true,
                                                            inTimeForAdditionalMessageCheck: false,
-                                                           inTimeForDownlinkDelivery: false);
+                                                           inTimeForDownlinkDelivery: false,
+                                                           payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 

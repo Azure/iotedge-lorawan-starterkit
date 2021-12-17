@@ -460,5 +460,93 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             Assert.Throws<JsonException>(() => _ = EitherReader.Read(JsonUtil.Strictify(json)));
         }
+
+        [Theory]
+        [InlineData(Bandwidth.BW125, "125")]
+        [InlineData(Bandwidth.BW250, "250")]
+        [InlineData(Bandwidth.BW500, "500")]
+        public void AsEnum_With_Valid_Input(Bandwidth expected, string json)
+        {
+            var reader = JsonReader.Int32().AsEnum(n => (Bandwidth)n);
+            var result = reader.Read(JsonUtil.Strictify(json));
+
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("225")]
+        [InlineData("350")]
+        [InlineData("600")]
+        public void AsEnum_With_Invalid_Input(string json)
+        {
+            var reader = JsonReader.Int32().AsEnum(n => (Bandwidth)n);
+
+            var ex = Assert.Throws<JsonException>(() => reader.Read(JsonUtil.Strictify(json)));
+            Assert.Equal($"Invalid member for {typeof(Bandwidth)}: {json}", ex.Message);
+        }
+
+        [Fact]
+        public void Tuple3_Moves_Reader()
+        {
+            var reader = JsonReader.Tuple(JsonReader.UInt64(), JsonReader.String(), JsonReader.UInt64());
+            TestMovesReaderPastReadValue(reader, "[123, 'foobar', 456]");
+        }
+
+        [Fact]
+        public void Tuple3_With_Valid_Input()
+        {
+            var reader = JsonReader.Tuple(JsonReader.UInt64(), JsonReader.String(), JsonReader.UInt64());
+            var result = reader.Read(JsonUtil.Strictify("[123, 'foobar', 456]"));
+            Assert.Equal((123UL, "foobar", 456UL), result);
+        }
+
+        [Theory]
+        [InlineData("null")]
+        [InlineData("false")]
+        [InlineData("true")]
+        [InlineData("'foobar'")]
+        [InlineData("[]")]
+        [InlineData("{}")]
+        [InlineData("[123]")]
+        [InlineData("[123, 456]")]
+        [InlineData("[123, 'foo', 'bar']")]
+        [InlineData("['foobar', 123, 456]")]
+        [InlineData("[123, 'foobar', 456, 789]")]
+        [InlineData("[123, null, 456]")]
+        [InlineData("[123, false, 456]")]
+        [InlineData("[123, true, 456]")]
+        [InlineData("[123, [], 456]")]
+        [InlineData("[123, {}, 456]")]
+        public void Tuple3_With_Invalid_Input(string json)
+        {
+            var reader = JsonReader.Tuple(JsonReader.UInt64(), JsonReader.String(), JsonReader.UInt64());
+            Assert.Throws<JsonException>(() => _ = reader.Read(JsonUtil.Strictify(json)));
+        }
+
+        [Theory]
+        [InlineData("'foobar'")]
+        [InlineData("'FOOBAR'")]
+        [InlineData("'FooBar'")]
+        public void Validate_With_Valid_Input(string json)
+        {
+            json = JsonUtil.Strictify(json);
+            var reader = JsonReader.String().Validate(s => "foobar".Equals(s, StringComparison.OrdinalIgnoreCase));
+            var expected = JsonSerializer.Deserialize<string>(json);
+            var result = reader.Read(json);
+
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("123")]
+        [InlineData("468")]
+        [InlineData("789")]
+        public void Validate_With_Invalid_Input(string input)
+        {
+            var reader = JsonReader.Int32().Validate(n => n >= 1_000);
+
+            var ex = Assert.Throws<JsonException>(() => reader.Read(JsonUtil.Strictify(input)));
+            Assert.Equal($"Invalid value in JSON: {input}", ex.Message);
+        }
     }
 }

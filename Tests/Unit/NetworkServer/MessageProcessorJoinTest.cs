@@ -16,6 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
+    using static LoRaWan.DataRateIndex;
 
     public class MessageProcessorJoinTest : MessageProcessorTestBase
     {
@@ -24,9 +25,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: ServerConfiguration.GatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
-
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
@@ -41,7 +39,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -58,13 +56,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: ServerConfiguration.GatewayID));
             simulatedDevice.LoRaDevice.NwkSKey = string.Empty;
             simulatedDevice.LoRaDevice.AppSKey = string.Empty;
-            var joinRequest = simulatedDevice.CreateJoinRequest();
-            joinRequest.DevNonce = new DevNonce(0x9786);
 
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
+            var joinRequest = simulatedDevice.CreateJoinRequest();
+
+            // this former join request is just to set the loradevice cache to another devnonce.
+            _ = simulatedDevice.CreateJoinRequest();
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+
 
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(It.IsNotNull<string>(), devEUI, joinRequest.DevNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123") { GatewayId = ServerConfiguration.GatewayID }.AsList()));
@@ -86,7 +85,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -137,9 +136,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loRaDevice.SetFcntDown(10);
             loRaDevice.SetFcntUp(20);
 
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
-
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>(MockBehavior.Loose);
@@ -153,7 +149,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.FromSeconds(7));
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest, constantElapsedTime: TimeSpan.FromSeconds(7));
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -176,15 +172,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Mic_Check_Fails_Join_Process_Should_Fail()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: ServerConfiguration.GatewayID));
-            var joinRequest = simulatedDevice.CreateJoinRequest();
+            var wrongAppKey = "00000000030000000000000000030000";
+
+            var joinRequest = simulatedDevice.CreateJoinRequest(wrongAppKey);
 
             using var loRaDevice = CreateLoRaDevice(simulatedDevice);
             loRaDevice.SetFcntDown(10);
             loRaDevice.SetFcntUp(20);
-
-            var wrongAppKey = "00000000030000000000000000030000";
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(wrongAppKey).Rxpk[0];
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
@@ -199,7 +193,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -223,9 +217,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: ServerConfiguration.GatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
-
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             simulatedDevice.LoRaDevice.AppEUI = "FFFFFFFFFFFFFFFF";
@@ -246,7 +237,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -269,9 +260,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: "another-gateway"));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
-
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             using var loRaDevice = CreateLoRaDevice(simulatedDevice);
@@ -290,7 +278,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -310,8 +298,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
@@ -351,7 +337,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -383,8 +369,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: null));
             var joinRequest = simulatedDevice.CreateJoinRequest();
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
@@ -402,7 +386,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -412,17 +396,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(1, 1)]
-        [InlineData(3, 4)]
-        [InlineData(2, 0)]
-        public async Task When_Getting_DLSettings_From_Twin_Returns_JoinAccept_With_Correct_Settings(int rx1DROffset, int rx2datarate)
+        [InlineData(1, DR1)]
+        [InlineData(3, DR4)]
+        [InlineData(2, DR0)]
+        public async Task When_Getting_DLSettings_From_Twin_Returns_JoinAccept_With_Correct_Settings(int rx1DROffset, DataRateIndex rx2datarate)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
-
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
@@ -455,7 +436,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -468,16 +449,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        [InlineData(3)]
-        [InlineData(4)]
-        [InlineData(5)]
-        [InlineData(6)]
-        [InlineData(12)]
-        [InlineData(-2)]
-        public async Task When_Getting_Custom_RX2_DR_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx2datarate)
+        [InlineData(DR0)]
+        [InlineData(DR1)]
+        [InlineData(DR2)]
+        [InlineData(DR3)]
+        [InlineData(DR4)]
+        [InlineData(DR5)]
+        [InlineData(DR6)]
+        [InlineData(DR12)]
+        [InlineData((DataRateIndex)(-2))]
+        public async Task When_Getting_Custom_RX2_DR_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(DataRateIndex rx2datarate)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
@@ -489,8 +470,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var afterJoinFcntUp = -1;
             uint startingPayloadFcnt = 0;
 
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
@@ -541,7 +520,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -549,13 +528,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             joinAccept.DlSettings.Span.Reverse();
-            if (rx2datarate is > 0 and < 8)
+            if (rx2datarate is > DR0 and < DR8)
             {
                 Assert.Equal(rx2datarate, joinAccept.Rx2Dr);
             }
             else
             {
-                Assert.Equal(0, joinAccept.Rx2Dr);
+                Assert.Equal(DR0, joinAccept.Rx2Dr);
             }
 
             // Send a message
@@ -565,8 +544,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
-            var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var confirmedRequest = CreateWaitableRequest(confirmedMessageRxpk);
+            using var confirmedRequest = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), confirmedMessagePayload);
             messageProcessor.DispatchRequest(confirmedRequest);
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
@@ -576,8 +554,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var downstreamMessage = PacketForwarder.DownlinkMessages[1];
 
             // Message was sent on RX2 and with a correct datarate
-            Assert.Equal(2000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
-            if (rx2datarate is > 0 and < 8)
+            Assert.Equal(2000000, downstreamMessage.Txpk.Tmst - confirmedRequest.Rxpk.Tmst);
+            if (rx2datarate is > DR0 and < DR8)
             {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 Assert.Equal(rx2datarate, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
@@ -586,7 +564,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             else
             {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                Assert.Equal(0, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+                Assert.Equal(DR0, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
         }
@@ -667,13 +645,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
             var joinRequest = simulatedDevice.CreateJoinRequest();
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequest.DevNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -683,7 +659,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             joinAccept.DlSettings.Span.Reverse();
-            Assert.Equal(afterJoinValues, joinAccept.Rx2Dr);
+            Assert.Equal((DataRateIndex)afterJoinValues, joinAccept.Rx2Dr);
             Assert.Equal(afterJoinValues, joinAccept.Rx1DrOffset);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx1DROffsetValue);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx2DRValue);
@@ -693,15 +669,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         // Base dr is 2
-        [InlineData(0, 2)]
-        [InlineData(1, 1)]
-        [InlineData(2, 0)]
-        [InlineData(3, 0)]
-        [InlineData(4, 0)]
-        [InlineData(6, 0)]
-        [InlineData(12, 0)]
-        [InlineData(-2, 0)]
-        public async Task When_Getting_RX1_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx1offset, int expectedDR)
+        [InlineData(0, DR2)]
+        [InlineData(1, DR1)]
+        [InlineData(2, DR0)]
+        [InlineData(3, DR0)]
+        [InlineData(4, DR0)]
+        [InlineData(6, DR0)]
+        [InlineData(12, DR0)]
+        [InlineData(-2, DR0)]
+        public async Task When_Getting_RX1_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx1offset, DataRateIndex expectedDR)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
@@ -713,8 +689,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var afterJoinFcntUp = -1;
             uint startingPayloadFcnt = 0;
 
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
@@ -765,7 +739,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -789,8 +763,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
-            var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var confirmedRequest = CreateWaitableRequest(confirmedMessageRxpk);
+            using var confirmedRequest = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), confirmedMessagePayload);
             messageProcessor.DispatchRequest(confirmedRequest);
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
@@ -800,7 +773,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var downstreamMessage = PacketForwarder.DownlinkMessages[1];
 
             // Message was sent on RX1 and with a correct datarate offset
-            Assert.Equal(1000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
+            Assert.Equal(1000000, downstreamMessage.Txpk.Tmst - confirmedRequest.Rxpk.Tmst);
             if (rx1offset is > 0 and < 5)
             {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
@@ -810,7 +783,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             else
             {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                Assert.Equal(confirmedRequest.Region.GetDRFromFreqAndChan(confirmedMessageRxpk.Datr), confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+                Assert.Equal(confirmedRequest.Region.GetDRFromFreqAndChan(confirmedRequest.Rxpk.Datr), confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
         }
@@ -836,9 +809,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var afterJoinFcntDown = -1;
             var afterJoinFcntUp = -1;
             uint startingPayloadFcnt = 0;
-
-            // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
@@ -889,7 +859,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -913,8 +883,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
-            var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var confirmedRequest = CreateWaitableRequest(confirmedMessageRxpk);
+            using var confirmedRequest = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), confirmedMessagePayload);
             messageProcessor.DispatchRequest(confirmedRequest);
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
@@ -926,11 +895,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Message was sent on RX1 with correct delay and with a correct datarate offset
             if (rxDelay is > 0 and < 16)
             {
-                Assert.Equal(expectedDelay * 1000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
+                Assert.Equal(expectedDelay * 1000000, downstreamMessage.Txpk.Tmst - confirmedRequest.Rxpk.Tmst);
             }
             else
             {
-                Assert.Equal(expectedDelay * 1000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
+                Assert.Equal(expectedDelay * 1000000, downstreamMessage.Txpk.Tmst - confirmedRequest.Rxpk.Tmst);
             }
         }
     }

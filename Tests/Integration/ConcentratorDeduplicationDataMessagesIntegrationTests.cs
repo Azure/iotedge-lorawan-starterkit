@@ -365,7 +365,7 @@ namespace LoRaWan.Tests.Integration
 
             WaitableLoRaRequest CreateRequest(string stationEui)
             {
-                var loraRequest = CreateWaitableRequest(dataPayload.SerializeUplink(this.simulatedDevice.AppSKey, this.simulatedDevice.NwkSKey).Rxpk[0]);
+                var loraRequest = CreateWaitableRequest(dataPayload);
                 loraRequest.SetStationEui(StationEui.Parse(stationEui));
                 loraRequest.SetPayload(dataPayload);
                 return loraRequest;

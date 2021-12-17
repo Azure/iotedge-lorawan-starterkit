@@ -57,10 +57,7 @@ namespace LoRaWan.Tests.Integration
 
             var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: 1);
 
-            // Create Rxpk
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
 
             messageProcessor1.DispatchRequest(request);
 

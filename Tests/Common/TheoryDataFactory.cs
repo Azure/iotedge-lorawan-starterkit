@@ -4,10 +4,14 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Xunit;
 
     public static class TheoryDataFactory
     {
+        public static TheoryData<T> From<T>(params T[] data) =>
+            From(data.AsEnumerable());
+
         public static TheoryData<T> From<T>(IEnumerable<T> data)
         {
             if (data is null) throw new ArgumentNullException(nameof(data));
@@ -17,6 +21,9 @@ namespace LoRaWan.Tests.Common
                 result.Add(datum);
             return result;
         }
+
+        public static TheoryData<T1, T2> From<T1, T2>(params (T1, T2)[] data) =>
+            From(data.AsEnumerable());
 
         public static TheoryData<T1, T2> From<T1, T2>(IEnumerable<(T1, T2)> data)
         {
