@@ -90,8 +90,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
         {
             var checksumMismatch = endpointType switch
             {
-                ConcentratorCredentialType.Cups => this.cupsUpdateInfoRequest.CupsCredentialsChecksum != this.cupsTwinInfo.CupsCredentialsChecksum,
-                ConcentratorCredentialType.Lns => this.cupsUpdateInfoRequest.TcCredentialsChecksum != this.cupsTwinInfo.TcCredentialsChecksum,
+                ConcentratorCredentialType.Cups => this.cupsUpdateInfoRequest.CupsCredentialsChecksum != this.cupsTwinInfo.CupsCredCrc,
+                ConcentratorCredentialType.Lns => this.cupsUpdateInfoRequest.TcCredentialsChecksum != this.cupsTwinInfo.TcCredCrc,
                 _ => throw new SwitchExpressionException(nameof(endpointType))
             };
 

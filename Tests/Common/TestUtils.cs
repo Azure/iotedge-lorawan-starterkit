@@ -5,15 +5,22 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
     using System.Text;
     using LoRaTools.CommonAPI;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
 
     public static class TestUtils
     {
+        public static readonly Region TestRegion = RegionManager.EU868;
+
         public static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
             ILoRaDeviceClientConnectionManager connectionManager,
@@ -130,7 +137,7 @@ namespace LoRaWan.Tests.Common
                 { TwinProperty.DevAddr, simulatedDevice.DevAddr },
                 { TwinProperty.AppSKey, simulatedDevice.AppSKey },
                 { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
-                { TwinProperty.DevNonce, simulatedDevice.DevNonce },
+                { TwinProperty.DevNonce, simulatedDevice.DevNonce.ToString() },
                 { TwinProperty.NetID, simulatedDevice.NetId },
                 { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
                 { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
@@ -182,5 +189,131 @@ namespace LoRaWan.Tests.Common
         {
             return TimeSpan.FromMilliseconds(1000 - LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage.TotalMilliseconds + 1);
         }
+
+        public static DirectoryInfo TryGetSolutionDirectoryInfo()
+        {
+            var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (directory != null && !directory.GetFiles("LoRaEngine.sln").Any())
+            {
+                directory = directory.Parent;
+            }
+            return directory;
+        }
+
+        public static void KillBasicsStation(TestConfiguration config, string temporaryDirectoryName, out string logFilePath)
+        {
+            if (config is null) throw new ArgumentNullException(nameof(config));
+
+            logFilePath = Path.GetTempFileName();
+            var connection = config.RemoteConcentratorConnection;
+            var sshPrivateKeyPath = config.SshPrivateKeyPath;
+
+            Environment.SetEnvironmentVariable("BS_TEMP_LOG_FILE", logFilePath);
+            // Following environment variable is needed if following bash commands are executed within WSL
+            Environment.SetEnvironmentVariable("WSLENV", "BS_TEMP_LOG_FILE/up");
+
+            // following command is:
+            // - copying basic station logs to logFilePath
+            // - killing basic station
+            // - removing temporary folder
+            using var killProcess = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "bash",
+                    Arguments = $"-c \"scp -i {sshPrivateKeyPath} -rp {connection}:/tmp/{temporaryDirectoryName}/logs.txt $BS_TEMP_LOG_FILE && ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)' && ssh -i {sshPrivateKeyPath} -f {connection} 'rm -rf /tmp/{temporaryDirectoryName}'\"",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            };
+            _ = killProcess.Start();
+            if (!killProcess.WaitForExit(10_000))
+            {
+                throw new TimeoutException("Killing the process via SSH took more than expected.");
+            }
+        }
+
+        public static void StartBasicsStation(TestConfiguration config, Dictionary<string, string> scriptParameters, out string randomDirectoryName)
+        {
+            if (config is null) throw new ArgumentNullException(nameof(config));
+
+            var connection = config.RemoteConcentratorConnection;
+            var sshPrivateKeyPath = config.SshPrivateKeyPath;
+            var rootPath = TryGetSolutionDirectoryInfo().FullName;
+            var loRaBasicsStationModulePath = Path.Combine(rootPath, "LoRaEngine", "modules", "LoRaBasicsStationModule");
+            var scriptName = "start_basicsstation.sh";
+            var startScript = new FileInfo(Path.Combine(loRaBasicsStationModulePath, scriptName));
+            var helperFunctions = new FileInfo(Path.Combine(loRaBasicsStationModulePath, "helper-functions.sh"));
+            var stationConf = new FileInfo(Path.Combine(loRaBasicsStationModulePath, "station.conf"));
+
+            // Copying needed files in a local temporary path
+            var localTempPath = Path.GetTempPath();
+            randomDirectoryName = Path.GetRandomFileName();
+            var tempDirectory = Path.Combine(localTempPath, randomDirectoryName);
+            _ = Directory.CreateDirectory(tempDirectory);
+            File.Copy(config.BasicStationExecutablePath, Path.Combine(tempDirectory, "station.std"));
+            File.Copy(startScript.FullName, Path.Combine(tempDirectory, scriptName));
+            File.Copy(helperFunctions.FullName, Path.Combine(tempDirectory, "helper-functions.sh"));
+            File.Copy(stationConf.FullName, Path.Combine(tempDirectory, "station.conf"));
+
+            Environment.SetEnvironmentVariable("BS_TEMP_DIRECTORY", tempDirectory);
+            // Following environment variable is needed if following bash commands are executed within WSL
+            Environment.SetEnvironmentVariable("WSLENV", "BS_TEMP_DIRECTORY/up");
+
+            if (!config.RunningInCI)
+            {
+                using var folderCreateProcess = new Process()
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "bash",
+                        Arguments = $"-c \"scp -i {sshPrivateKeyPath} -rp $BS_TEMP_DIRECTORY {connection}:/tmp\"",
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    }
+                };
+                _ = folderCreateProcess.Start();
+                if (!folderCreateProcess.WaitForExit(30_000))
+                {
+                    throw new TimeoutException("Creating and copying over SSH the needed files took more than expected.");
+                }
+                tempDirectory = $"/tmp/{randomDirectoryName}";
+            }
+
+            var expandedParams = string.Join(" ", scriptParameters.Select(p => $"{p.Key}={p.Value}"));
+            using var process = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "bash",
+                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'cd {tempDirectory} && chmod +x ./{scriptName} && STATION_PATH={tempDirectory} {expandedParams} ./{scriptName} &>{tempDirectory}/logs.txt &'\"",
+                    RedirectStandardOutput = false,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+            _ = process.Start();
+            // Waiting for ssh command to be executed, not for the basic station to be exiting
+            if (!process.WaitForExit(30_000))
+            {
+                throw new TimeoutException("Executing the SSH command took more than expected.");
+            }
+        }
+
+        public static DataRateIndex GetDataRateIndex(this Region region, DataRate datr) =>
+             region.DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate == datr) is (var index, (not null, _)) ? index : throw new KeyNotFoundException("");
+
+        public static RadioMetadata GenerateTestRadioMetadata(
+                DataRateIndex dataRate = DataRateIndex.DR2,
+                Hertz? frequency = null,
+                uint antennaPreference = 1,
+                ulong xtime = 100000,
+                uint gpstime = 0,
+                double rssi = 2.0,
+                float snr = 0.1f) =>
+            new RadioMetadata(dataRate, frequency ?? Hertz.Mega(868.3),
+                              new RadioMetadataUpInfo(antennaPreference, xtime, gpstime, rssi, snr));
     }
 }

@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Linq;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
@@ -53,6 +54,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static LoRaDeviceAPIService Setup(string basePath) =>
             new LoRaDeviceAPIService(new NetworkServerConfiguration { FacadeServerUrl = new Uri(basePath) },
                                      new Mock<IServiceFacadeHttpClientProvider>().Object,
-                                     NullLogger<LoRaDeviceAPIService>.Instance);
+                                     NullLogger<LoRaDeviceAPIService>.Instance,
+                                     TestMeter.Instance);
     }
 }

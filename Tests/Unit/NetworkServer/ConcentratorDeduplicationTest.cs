@@ -4,9 +4,9 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.Net.WebSockets;
+    using global::LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.BasicsStation;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
@@ -14,108 +14,177 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
     {
-        private readonly ConcentratorDeduplication<UpstreamDataFrame> concentratorDeduplication;
-        private static readonly UpstreamDataFrame defaultUpdf = new UpstreamDataFrame(default, new DevAddr(1), default, 2, default, default, "payload", new Mic(4), default);
+        private readonly MemoryCache cache; // ownership passed to ConcentratorDeduplication
+        private readonly LoRaDeviceClientConnectionManager connectionManager;
+        private readonly ConcentratorDeduplication concentratorDeduplication;
 
-#pragma warning disable CA2213 // Disposable fields should be disposed
-        // false positive, ownership passed to ConcentratorDeduplication
-        private readonly MemoryCache cache;
-#pragma warning restore CA2213 // Disposable fields should be disposed
-        private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
+        private readonly LoRaDevice loRaDevice;
+        private readonly SimulatedDevice simulatedABPDevice;
+        private readonly SimulatedDevice simulatedOTAADevice;
+        private readonly WaitableLoRaRequest dataRequest;
+        private readonly WaitableLoRaRequest joinRequest;
 
         public ConcentratorDeduplicationTest()
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            this.socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance, null);
+            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
 
-            this.concentratorDeduplication = new ConcentratorDeduplication<UpstreamDataFrame>(
+            this.simulatedABPDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
+            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
+            this.dataRequest = WaitableLoRaRequest.Create(dataPayload);
+            this.loRaDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, this.connectionManager);
+
+            this.simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
+            var joinPayload = this.simulatedOTAADevice.CreateJoinRequest(appkey: this.simulatedOTAADevice.AppKey);
+            this.joinRequest = WaitableLoRaRequest.Create(joinPayload);
+            this.joinRequest.SetPayload(joinPayload);
+
+            this.concentratorDeduplication = new ConcentratorDeduplication(
                 this.cache,
-                this.socketRegistry,
-                NullLogger<IConcentratorDeduplication<UpstreamDataFrame>>.Instance);
+                NullLogger<IConcentratorDeduplication>.Instance);
         }
 
+        #region DataMessages
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void When_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool isCacheEmpty)
+        public void When_Data_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Should_Add_To_Cache(bool isCacheEmpty)
         {
             // arrange
-            var stationEui = new StationEui();
             if (!isCacheEmpty)
             {
-                _ = this.concentratorDeduplication.ShouldDrop(new UpstreamDataFrame(default, new DevAddr(1), default, 2, default, default, "another_payload", new Mic(4), default), stationEui);
+                var anotherPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("another_payload");
+                using var anotherRequest = WaitableLoRaRequest.Create(anotherPayload);
+                _ = this.concentratorDeduplication.CheckDuplicateData(anotherRequest, this.loRaDevice);
             }
 
             // act
-            var result = this.concentratorDeduplication.ShouldDrop(defaultUpdf, stationEui);
+            var result = this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, this.loRaDevice);
 
             // assert
-            Assert.False(result);
-            var key = ConcentratorDeduplication<UpstreamDataFrame>.CreateCacheKey(defaultUpdf);
+            Assert.Equal(ConcentratorDeduplicationResult.NotDuplicate, result);
+            var key = ConcentratorDeduplication.CreateCacheKey(this.dataRequest);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
-            Assert.Equal(stationEui, addedStation);
+            Assert.Equal(this.dataRequest.StationEui, addedStation);
         }
 
         [Theory]
-        [InlineData(true, true, false)]
-        // we consider sameStationAsBefore: true, activeConnectionToPreviousStation: false
-        // an edge case that we don't need to cover since we just received a message from that same station
-        [InlineData(false, true, true)]
-        [InlineData(false, false, false)]
-        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool activeConnectionToPreviousStation, bool expectedResult)
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, ConcentratorDeduplicationResult.DuplicateDueToResubmission)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, ConcentratorDeduplicationResult.Duplicate)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)]
+        public void When_Data_Message_Encountered_Should_Find_Duplicates_For_Different_Deduplication(string station1, string station2, DeduplicationMode deduplicationMode, ConcentratorDeduplicationResult expectedResult)
         {
             // arrange
-            var stationEui = new StationEui();
-            _ = this.concentratorDeduplication.ShouldDrop(defaultUpdf, stationEui);
+            var station1Eui = StationEui.Parse(station1);
+            this.dataRequest.SetStationEui(station1Eui);
+            _ = this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, this.loRaDevice);
 
-            var socketMock = new Mock<WebSocket>();
-            IWebSocketWriter<string> channel = null;
-            if (!activeConnectionToPreviousStation)
-            {
-                _ = socketMock.Setup(x => x.State).Returns(WebSocketState.Closed);
-            }
-            channel = new WebSocketTextChannel(socketMock.Object, TimeSpan.FromMinutes(1)); // send timeout not relevant
-            _ = this.socketRegistry.Register(stationEui, channel);
-
-            var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
+            this.dataRequest.SetStationEui(StationEui.Parse(station2));
+            this.loRaDevice.Deduplication = deduplicationMode;
 
             // act/assert
-            Assert.Equal(expectedResult, this.concentratorDeduplication.ShouldDrop(defaultUpdf, anotherStation));
+            Assert.Equal(expectedResult, this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, this.loRaDevice));
             Assert.Equal(1, this.cache.Count);
-            var key = ConcentratorDeduplication<UpstreamDataFrame>.CreateCacheKey(defaultUpdf);
-            Assert.True(this.cache.TryGetValue(key, out var addedStation));
-            Assert.Equal(expectedResult ? stationEui : anotherStation, addedStation);
+            var key = ConcentratorDeduplication.CreateCacheKey(this.dataRequest);
+            Assert.True(this.cache.TryGetValue(key, out var foundStation));
+            Assert.Equal(station1Eui, foundStation);
         }
 
         [Fact]
         public void CreateKeyMethod_Should_Produce_Expected_Key_For_UpstreamDataFrames()
         {
             // arrange
-            var expectedKey = "43-E3-69-8D-70-E2-50-77-06-01-63-D1-DD-74-ED-E0-B5-BA-3B-54-09-FB-88-B3-B9-DB-6D-97-68-01-97-52";
+            var expectedKey = "EF-BC-21-12-E9-B8-AF-F4-1B-F5-7B-7D-3C-D3-69-5A-84-E3-D8-6C-FC-1A-8E-BC-80-39-10-64-0D-6B-B3-7C";
 
             // act/assert
-            Assert.Equal(expectedKey, ConcentratorDeduplication<UpstreamDataFrame>.CreateCacheKey(defaultUpdf));
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(this.dataRequest));
+        }
+        #endregion
+
+        #region JoinRequests
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void When_Join_Request_Not_Encountered_Should_Not_Find_Duplicates_And_Should_Add_To_Cache(bool isCacheEmpty)
+        {
+            // arrange
+            if (!isCacheEmpty)
+            {
+                var anotherJoinPayload = this.simulatedOTAADevice.CreateJoinRequest();
+                using var anotherJoinRequest = WaitableLoRaRequest.Create(anotherJoinPayload);
+                anotherJoinRequest.SetPayload(anotherJoinPayload);
+
+                _ = this.concentratorDeduplication.CheckDuplicateJoin(anotherJoinRequest);
+            }
+
+            // act
+            var result = this.concentratorDeduplication.CheckDuplicateJoin(this.joinRequest);
+
+            // assert
+            Assert.Equal(ConcentratorDeduplicationResult.NotDuplicate, result);
+            var key = ConcentratorDeduplication.CreateCacheKey(this.joinRequest);
+            Assert.True(this.cache.TryGetValue(key, out var addedStation));
+            Assert.Equal(this.joinRequest.StationEui, addedStation);
+        }
+
+        [Theory]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11")]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22")]
+        public void When_Join_Request_Encountered_Should_Find_Duplicate(string station1, string station2)
+        {
+            // arrange
+            var station1Eui = StationEui.Parse(station1);
+            this.joinRequest.SetStationEui(station1Eui);
+            _ = this.concentratorDeduplication.CheckDuplicateJoin(this.joinRequest);
+
+            this.joinRequest.SetStationEui(StationEui.Parse(station2));
+
+            // act
+            var result = this.concentratorDeduplication.CheckDuplicateJoin(this.joinRequest);
+
+            // assert
+            Assert.Equal(ConcentratorDeduplicationResult.Duplicate, result);
+            var key = ConcentratorDeduplication.CreateCacheKey(this.joinRequest);
+            Assert.True(this.cache.TryGetValue(key, out var addedStation));
+            Assert.Equal(station1Eui, addedStation);
         }
 
         [Fact]
         public void CreateKeyMethod_Should_Produce_Expected_Key_For_JoinRequests()
         {
             // arrange
-            var joinReq = new JoinRequestFrame(default, default, default, default, default, default);
+            var joinPayload = (LoRaPayloadJoinRequest)this.joinRequest.Payload;
+            joinPayload.DevNonce = new DevNonce(0);
+            this.joinRequest.SetPayload(joinPayload);
 
             var expectedKey = "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4";
 
             // act/assert
-            Assert.Equal(expectedKey, ConcentratorDeduplication<JoinRequestFrame>.CreateCacheKey(joinReq));
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(this.joinRequest));
         }
+        #endregion
 
         [Fact]
         public void CreateKeyMethod_Should_Throw_When_Used_With_Wrong_Type()
         {
+            // arrange
+            this.dataRequest.SetPayload(new Mock<LoRaPayloadJoinAccept>().Object);
+
             // act/assert
-            Assert.Throws<ArgumentException>(() => ConcentratorDeduplication<object>.CreateCacheKey(new object()));
+            Assert.Throws<ArgumentException>(() => ConcentratorDeduplication.CreateCacheKey(this.dataRequest));
         }
 
-        public void Dispose() => this.concentratorDeduplication.Dispose();
+        public void Dispose()
+        {
+            this.loRaDevice.Dispose();
+            this.dataRequest.Dispose();
+            this.joinRequest.Dispose();
+
+            this.connectionManager.Dispose();
+            this.cache?.Dispose();
+        }
     }
 }

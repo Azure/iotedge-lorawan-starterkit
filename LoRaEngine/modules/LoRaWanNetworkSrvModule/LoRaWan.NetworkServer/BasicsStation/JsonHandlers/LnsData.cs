@@ -52,8 +52,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
         internal static class RadioMetadataProperties
         {
-            public static readonly IJsonProperty<DataRate> DataRate =
-                JsonReader.Property("DR", from n in JsonReader.Byte() select new DataRate(n));
+            public static readonly IJsonProperty<DataRateIndex> DataRate =
+                JsonReader.Property("DR", JsonReader.Byte().AsEnum(v => (DataRateIndex)v));
 
             public static readonly IJsonProperty<Hertz> Freq =
                 JsonReader.Property("Freq", from n in JsonReader.UInt32() select new Hertz(n));
@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         private static IJsonProperty<T> EuiProperty<T>(string name, Func<ulong, T> factory, char separator = '-') =>
             JsonReader.Property(name,
                                 from s in JsonReader.String()
-                                select Hexadecimal.TryParse(s, out var eui, separator)
+                                select Hexadecimal.TryParse(s, out ulong eui, separator)
                                      ? factory(eui)
                                      : throw new JsonException($"Could not parse {name} as {typeof(T)}."));
 

@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task GetDeviceForJoinRequestAsync_When_Device_Api_Throws_Error_Should_Not_Catch()
         {
             const string devEUI = "0000000000000001";
-            const string devNonce = "0001";
+            var devNonce = new DevNonce(1);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             apiService.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
@@ -51,7 +51,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "pk") { GatewayId = deviceGatewayID };
@@ -93,7 +92,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(ldc => ldc.Dispose());
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, string.Empty);
@@ -140,7 +138,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             DeviceCache.Register(loraDevice1);
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice1.AppSKey, simulatedDevice1.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
 
@@ -179,7 +176,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             DeviceCache.Register(loraDevice2);
             
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice1.AppSKey, simulatedDevice1.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
 
@@ -211,7 +207,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice1.AppSKey, simulatedDevice1.NwkSKey);
 
             var loRaDeviceClient1 = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             loRaDeviceClient1.Setup(x => x.GetTwinAsync(CancellationToken.None))
@@ -304,7 +299,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // request #1
             var payload1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 11);
-            payload1.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
             using var request1 = WaitableLoRaRequest.Create(payload1);
             target.GetLoRaRequestQueue(request1).Queue(request1);
             Assert.True(await request1.WaitCompleteAsync());
@@ -313,7 +307,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // request #2
             var payload2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 12);
-            payload2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
             using var request2 = WaitableLoRaRequest.Create(payload2);
             target.GetLoRaRequestQueue(request2).Queue(request2);
             Assert.True(await request2.WaitCompleteAsync());
@@ -353,7 +346,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var requests = Enumerable.Range(1, 2).Select((n) =>
                 {
                     var payload = simulatedDevice.CreateUnconfirmedDataUpMessage(n.ToString(CultureInfo.InvariantCulture), fcnt: (uint)n + 10);
-                    payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
                     var request = WaitableLoRaRequest.Create(payload);
                     target.GetLoRaRequestQueue(request).Queue(request);
                     return request;
@@ -441,7 +433,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 DeviceCache);
 
             var payload = simDevice.CreateUnconfirmedDataUpMessage("1");
-            payload.SerializeUplink(simDevice.AppSKey, simDevice.NwkSKey);
             using var request = WaitableLoRaRequest.Create(payload);
 
             deviceRegistry.GetLoRaRequestQueue(request).Queue(request);
@@ -487,7 +478,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(await deviceRegistry.GetDeviceByDevEUIAsync(simDevice.DevEUI));
 
             var payload = simDevice.CreateUnconfirmedDataUpMessage("1");
-            payload.SerializeUplink(simDevice.AppSKey, simDevice.NwkSKey);
             using var request = WaitableLoRaRequest.Create(payload);
 
             deviceRegistry.GetLoRaRequestQueue(request).Queue(request);
