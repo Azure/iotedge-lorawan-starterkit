@@ -6,7 +6,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Diagnostics.Metrics;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
