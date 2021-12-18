@@ -7,33 +7,49 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
     using System.Text.Json.Serialization;
+    using Newtonsoft.Json;
 
     internal sealed record CupsTwinInfo
     {
-        // This class is on purpose left equal to CupsBase.
         // Credential management does not require anything more than the shared endpoint URIs and CRCs
         // Firmware management features could require to define fields in twin in a different way than the station/model/package ones
         public CupsTwinInfo(Uri cupsUri,
                             Uri tcUri,
-                            uint cupsCredentialsChecksum,
-                            uint tcCredentialsChecksum)
+                            uint cupsCredCrc,
+                            uint tcCredCrc,
+                            string cupsCredentialUrl,
+                            string tcCredentialUrl)
         {
             CupsUri = cupsUri ?? throw new ArgumentNullException(nameof(cupsUri));
             TcUri = tcUri ?? throw new ArgumentNullException(nameof(tcUri));
-            CupsCredentialsChecksum = cupsCredentialsChecksum;
-            TcCredentialsChecksum = tcCredentialsChecksum;
+            CupsCredCrc = cupsCredCrc;
+            TcCredCrc = tcCredCrc;
+            CupsCredentialUrl = cupsCredentialUrl;
+            TcCredentialUrl = tcCredentialUrl;
         }
 
         [JsonPropertyName("cupsUri")]
+        [JsonProperty("cupsUri")]
         public Uri CupsUri { get; }
 
         [JsonPropertyName("tcUri")]
+        [JsonProperty("tcUri")]
         public Uri TcUri { get; }
 
         [JsonPropertyName("cupsCredCrc")]
-        public uint CupsCredentialsChecksum { get; }
+        [JsonProperty("cupsCredCrc")]
+        public uint CupsCredCrc { get; }
 
         [JsonPropertyName("tcCredCrc")]
-        public uint TcCredentialsChecksum { get; }
+        [JsonProperty("tcCredCrc")]
+        public uint TcCredCrc { get; }
+
+        [JsonPropertyName("cupsCredentialUrl")]
+        [JsonProperty("cupsCredentialUrl")]
+        public string CupsCredentialUrl { get; }
+
+        [JsonPropertyName("tcCredentialUrl")]
+        [JsonProperty("tcCredentialUrl")]
+        public string TcCredentialUrl { get; }
     }
 }

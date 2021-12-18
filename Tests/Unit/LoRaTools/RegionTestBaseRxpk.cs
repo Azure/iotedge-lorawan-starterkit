@@ -89,7 +89,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        protected void TestDownstreamRX2FrequencyAndDataRate(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins,
+        protected void TestDownstreamRX2FrequencyAndDataRate(string nwksrvrx2dr, double? nwksrvrx2freq, DataRateIndex? rx2drfromtwins,
             double expectedFreq, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
         {
             TestDownstreamRX2Frequency(nwksrvrx2freq is { } someFreq ? Mega(someFreq) : null, Mega(expectedFreq), deviceJoinInfo);
@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        protected void TestDownstreamRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
+        protected void TestDownstreamRX2DataRate(string nwksrvrx2dr, DataRateIndex? rx2drfromtwins, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
         {
             var devEui = "testDevice";
             var datr = Region.GetDownstreamRX2DataRate(devEui, nwksrvrx2dr, rx2drfromtwins, NullLogger.Instance, deviceJoinInfo);

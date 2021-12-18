@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                       from s in JsonReader.String()
                                       select s.Contains(':', StringComparison.Ordinal)
                                            ? Id6.TryParse(s, out var id6) ? new StationEui(id6) : throw new JsonException()
-                                           : Hexadecimal.TryParse(s, out var hhd, '-') ? new StationEui(hhd) : throw new JsonException())));
+                                           : Hexadecimal.TryParse(s, out ulong hhd, '-') ? new StationEui(hhd) : throw new JsonException())));
 
         /// <summary>
         /// Writes the response for Discovery endpoint as a JSON string.

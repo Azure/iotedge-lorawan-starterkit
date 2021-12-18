@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Integration
 
             var loraDevice = CreateLoRaDevice(simulatedDevice);
 
-            var rxpk = CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
+            var (radioMetaData, loraPayload) = CreateUpstreamMessage(isConfirmed, hasMacInUpstream, LoRaDataRate.Parse(datr), simulatedDevice);
 
             if (!hasMacInUpstream)
             {
@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
             var upstreamMessageMacCommandSize = 0;
-            string expectedDownlinkDatr;
+            DataRate expectedDownlinkDatr;
 
             if (hasMacInUpstream && !isTooLongForUpstreamMacCommandInAnswer)
             {
@@ -65,15 +65,14 @@ namespace LoRaWan.Tests.Integration
             }
 
             expectedDownlinkDatr = isSendingInRx2
-                ? euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration
-                : datr;
+                ? euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate
+                : LoRaDataRate.Parse(datr);
 
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
+            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr.XpkDatr)
                 - c2dMessageMacCommandSize
                 - upstreamMessageMacCommandSize
                 - Constants.LoraProtocolOverheadSize;
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
 
@@ -109,7 +108,7 @@ namespace LoRaWan.Tests.Integration
 
             var startTimeOffset = isSendingInRx2 ? TestUtils.GetStartTimeOffsetForSecondWindow() : TimeSpan.Zero;
 
-            using var request = CreateWaitableRequest(rxpk, startTimeOffset: startTimeOffset);
+            using var request = CreateWaitableRequest(radioMetaData ,loraPayload, startTimeOffset: startTimeOffset);
             messageProcessor.DispatchRequest(request);
 
             // Expectations
@@ -119,7 +118,7 @@ namespace LoRaWan.Tests.Integration
 
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
+            Assert.Equal(expectedDownlinkDatr.XpkDatr, request.ResponseDownlink.Txpk.Datr);
 
             // Get downlink message
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
@@ -128,7 +127,7 @@ namespace LoRaWan.Tests.Integration
 
             // 3. downlink message payload contains expected message type and DevAddr
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+            Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Expected Mac commands are present
             var expectedMacCommandsCount = 0;

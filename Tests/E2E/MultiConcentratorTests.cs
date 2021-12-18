@@ -6,7 +6,9 @@ namespace LoRaWan.Tests.E2E
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Xunit;
     using XunitRetryHelper;
@@ -18,15 +20,23 @@ namespace LoRaWan.Tests.E2E
     {
         private string temporaryDirectoryName;
         private bool initializationSucceeded;
+        private readonly string expectedLog = $"{ConcentratorDeduplicationResult.Duplicate} {NetworkServer.Constants.MessageAlreadyEncountered}";
+
         public MultiConcentratorTests(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
         {
         }
 
-        public Task DisposeAsync()
+        public async Task DisposeAsync()
         {
-            TestUtils.KillBasicsStation(TestFixture.Configuration, this.temporaryDirectoryName);
-            return Task.CompletedTask;
+            TestUtils.KillBasicsStation(TestFixture.Configuration, this.temporaryDirectoryName, out var logFilePath);
+            if (!string.IsNullOrEmpty(logFilePath) && File.Exists(logFilePath))
+            {
+                Log("[INFO] ** Basic Station Logs Start **");
+                Log(await File.ReadAllTextAsync(logFilePath));
+                Log("[INFO] ** Basic Station Logs End **");
+                File.Delete(logFilePath);
+            }
         }
 
         public async Task InitializeAsync()
@@ -60,7 +70,7 @@ namespace LoRaWan.Tests.E2E
             Assert.True(joinSucceeded, "Join failed");
 
             var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                (log) => log.IndexOf(NetworkServer.Constants.DuplicateMessageFromAnotherStationMsg, StringComparison.Ordinal) != -1);
+                (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1);
             Assert.NotNull(droppedLog.MatchedEvent);
 
             // wait 1 second after joined
@@ -86,7 +96,7 @@ namespace LoRaWan.Tests.E2E
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
                 droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(NetworkServer.Constants.DuplicateMessageFromAnotherStationMsg, StringComparison.Ordinal) != -1);
+                    (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1);
                 Assert.NotNull(droppedLog.MatchedEvent);
 
                 TestFixtureCi.ClearLogs();

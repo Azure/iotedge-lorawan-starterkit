@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Text;
     using System.Threading;
@@ -20,14 +21,19 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
         private readonly ILogger<LoRaDeviceAPIService> logger;
+        private readonly Counter<int> deviceLoadRequests;
 
         public LoRaDeviceAPIService(NetworkServerConfiguration configuration,
                                     IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider,
-                                    ILogger<LoRaDeviceAPIService> logger)
+                                    ILogger<LoRaDeviceAPIService> logger,
+                                    Meter meter)
             : base(configuration)
         {
+            if (meter is null) throw new ArgumentNullException(nameof(meter));
+
             this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;
             this.logger = logger;
+            this.deviceLoadRequests = meter.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
         }
 
         public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
@@ -85,7 +91,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string devNonce)
+        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, DevNonce devNonce)
             => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, devNonce: devNonce);
 
         /// <inheritdoc />
@@ -95,8 +101,10 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Helper method that calls the API GetDevice method.
         /// </summary>
-        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
+        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, DevNonce? devNonce = null)
         {
+            this.deviceLoadRequests?.Add(1);
+
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
 
             var url = BuildUri("GetDevice", new Dictionary<string, string>
@@ -106,7 +114,7 @@ namespace LoRaWan.NetworkServer
                 ["DevAddr"] = devAddr,
                 ["DevEUI"] = devEUI,
                 ["AppEUI"] = appEUI,
-                ["DevNonce"] = devNonce
+                ["DevNonce"] = devNonce?.ToString()
             });
 
             var response = await client.GetAsync(url);
@@ -154,6 +162,8 @@ namespace LoRaWan.NetworkServer
 
         private async Task<SearchDevicesResult> SearchByEuiAsync(string eui)
         {
+            this.deviceLoadRequests?.Add(1);
+
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = BuildUri("GetDeviceByDevEUI", new Dictionary<string, string>
             {

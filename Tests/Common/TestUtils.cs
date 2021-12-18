@@ -10,13 +10,17 @@ namespace LoRaWan.Tests.Common
     using System.Linq;
     using System.Text;
     using LoRaTools.CommonAPI;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
 
     public static class TestUtils
     {
+        public static readonly Region TestRegion = RegionManager.EU868;
+
         public static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
             ILoRaDeviceClientConnectionManager connectionManager,
@@ -133,7 +137,7 @@ namespace LoRaWan.Tests.Common
                 { TwinProperty.DevAddr, simulatedDevice.DevAddr },
                 { TwinProperty.AppSKey, simulatedDevice.AppSKey },
                 { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
-                { TwinProperty.DevNonce, simulatedDevice.DevNonce },
+                { TwinProperty.DevNonce, simulatedDevice.DevNonce.ToString() },
                 { TwinProperty.NetID, simulatedDevice.NetId },
                 { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
                 { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
@@ -196,18 +200,28 @@ namespace LoRaWan.Tests.Common
             return directory;
         }
 
-        public static void KillBasicsStation(TestConfiguration config, string temporaryDirectoryName)
+        public static void KillBasicsStation(TestConfiguration config, string temporaryDirectoryName, out string logFilePath)
         {
             if (config is null) throw new ArgumentNullException(nameof(config));
 
+            logFilePath = Path.GetTempFileName();
             var connection = config.RemoteConcentratorConnection;
             var sshPrivateKeyPath = config.SshPrivateKeyPath;
+
+            Environment.SetEnvironmentVariable("BS_TEMP_LOG_FILE", logFilePath);
+            // Following environment variable is needed if following bash commands are executed within WSL
+            Environment.SetEnvironmentVariable("WSLENV", "BS_TEMP_LOG_FILE/up");
+
+            // following command is:
+            // - copying basic station logs to logFilePath
+            // - killing basic station
+            // - removing temporary folder
             using var killProcess = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "bash",
-                    Arguments = $"-c \"ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)' && rm -rf /tmp/{temporaryDirectoryName}\"",
+                    Arguments = $"-c \"scp -i {sshPrivateKeyPath} -rp {connection}:/tmp/{temporaryDirectoryName}/logs.txt $BS_TEMP_LOG_FILE && ssh -i {sshPrivateKeyPath} -f {connection} 'kill -9 \\$(pgrep -f station.std)' && ssh -i {sshPrivateKeyPath} -f {connection} 'rm -rf /tmp/{temporaryDirectoryName}'\"",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
@@ -287,5 +301,19 @@ namespace LoRaWan.Tests.Common
                 throw new TimeoutException("Executing the SSH command took more than expected.");
             }
         }
+
+        public static DataRateIndex GetDataRateIndex(this Region region, DataRate datr) =>
+             region.DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate == datr) is (var index, (not null, _)) ? index : throw new KeyNotFoundException("");
+
+        public static RadioMetadata GenerateTestRadioMetadata(
+                DataRateIndex dataRate = DataRateIndex.DR2,
+                Hertz? frequency = null,
+                uint antennaPreference = 1,
+                ulong xtime = 100000,
+                uint gpstime = 0,
+                double rssi = 2.0,
+                float snr = 0.1f) =>
+            new RadioMetadata(dataRate, frequency ?? Hertz.Mega(868.3),
+                              new RadioMetadataUpInfo(antennaPreference, xtime, gpstime, rssi, snr));
     }
 }

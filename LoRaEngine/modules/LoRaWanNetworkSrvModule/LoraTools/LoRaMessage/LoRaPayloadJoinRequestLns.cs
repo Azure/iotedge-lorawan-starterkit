@@ -22,8 +22,7 @@ namespace LoRaTools.LoRaMessage
             DevEUI = new byte[DevEui.Size];
             _ = devEui.Write(DevEUI.Span);
 
-            DevNonce = new byte[LoRaWan.DevNonce.Size];
-            _ = devNonce.Write(DevNonce.Span);
+            DevNonce = devNonce;
 
             Mic = new byte[LoRaWan.Mic.Size];
             _ = mic.Write(Mic.Span);
