@@ -82,8 +82,6 @@ namespace LoRaWan.NetworkServer
 
             if (request.Region is null)
             {
-                // log is generated in Region factory
-                // move here once V2 goes GA
                 request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRegion);
                 return;
             }
