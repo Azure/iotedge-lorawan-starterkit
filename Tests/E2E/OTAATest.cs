@@ -133,7 +133,7 @@ namespace LoRaWan.Tests.E2E
                 if (ArduinoDevice.SerialLogs.Any(x => x.StartsWith("+CMSG: RXWIN1", StringComparison.Ordinal)))
                 {
                     // Expect that the response is done on DR4 as the RX1 offset is 1 on this device.
-                    await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"datr\":\"SF8BW125\"", StringComparison.Ordinal), null);
+                    await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"DataRateRx1\":4", StringComparison.Ordinal), null);
                 }
 
                 // Ensure device payload is available

@@ -124,7 +124,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
                 if (!await frameCounterStrategy.SaveChangesAsync(loRaDevice))
                 {
                     this.logger.LogWarning("[class-c] failed to update framecounter.");

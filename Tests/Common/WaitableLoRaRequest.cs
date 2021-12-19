@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Common
 
         public LoRaDeviceRequestFailedReason ProcessingFailedReason { get; private set; }
 
-        public DownlinkPktFwdMessage ResponseDownlink { get; private set; }
+        public DownlinkBasicsStationMessage ResponseDownlink { get; private set; }
 
         public bool ProcessingSucceeded { get; private set; }
 
@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Common
         { }
 
         private WaitableLoRaRequest(RadioMetadata radioMetadata, IPacketForwarder packetForwarder, DateTime startTime)
-            : base(new BasicStationToRxpk(radioMetadata, RegionManager.EU868), packetForwarder, startTime)
+            : base(radioMetadata, packetForwarder, startTime)
         { }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace LoRaWan.Tests.Common
         /// <param name="constantElapsedTime">Controls how much time is elapsed when querying the time watcher. Default is TimeSpan.Zero.</param>
         /// <param name="useRealTimer">Allows you to opt-in to use a real, non-deterministic time watcher.</param>
         public static WaitableLoRaRequest Create(RadioMetadata radioMetadata,
-                                                 LoRaPayload loRaPayload ,
+                                                 LoRaPayload loRaPayload,
                                                  IPacketForwarder packetForwarder = null,
                                                  TimeSpan? startTimeOffset = null,
                                                  TimeSpan? constantElapsedTime = null,
@@ -74,6 +74,11 @@ namespace LoRaWan.Tests.Common
             var downlinkDeliveryTimeSpan = inTimeForDownlinkDelivery ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
             return Create(radioMetadata, new[] { c2dMessageCheckTimeSpan, c2dMessageCheckTimeSpan, additionalMessageCheckTimeSpan, downlinkDeliveryTimeSpan }, packetForwarder: packetForwarder, loRaPayload: loRaPayloadData);
         }
+        public static WaitableLoRaRequest CreateWaitableRequest(LoRaPayload loRaPayload,
+                                                           IPacketForwarder packetForwarder = null) =>
+           Create(TestUtils.GenerateTestRadioMetadata(),
+                                 loRaPayload,
+                                 packetForwarder);
 
         private static WaitableLoRaRequest Create(RadioMetadata radioMetadata,
                                                   IEnumerable<TimeSpan> elapsedTimes,
@@ -85,6 +90,8 @@ namespace LoRaWan.Tests.Common
             var request = new WaitableLoRaRequest(radioMetadata,
                                                   packetForwarder ?? new TestPacketForwarder(),
                                                   DateTime.UtcNow.Subtract(startTimeOffset ?? TimeSpan.Zero));
+
+            request.SetRegion(TestUtils.TestRegion);
             if (loRaPayload is not null)
                 request.SetPayload(loRaPayload);
             if (!useRealTimer)
@@ -105,7 +112,7 @@ namespace LoRaWan.Tests.Common
             this.complete.Release();
         }
 
-        public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkPktFwdMessage downlink)
+        public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkBasicsStationMessage downlink)
         {
             base.NotifySucceeded(loRaDevice, downlink);
 

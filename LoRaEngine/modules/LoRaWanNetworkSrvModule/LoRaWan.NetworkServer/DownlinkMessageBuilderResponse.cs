@@ -7,14 +7,15 @@ namespace LoRaWan.NetworkServer
 
     public class DownlinkMessageBuilderResponse
     {
-        internal DownlinkPktFwdMessage DownlinkPktFwdMessage { get; set; }
+        internal DownlinkBasicsStationMessage DownlinkMessage { get; set; }
 
         internal bool IsMessageTooLong { get; set; }
+
         public int ReceiveWindow { get; }
 
-        internal DownlinkMessageBuilderResponse(DownlinkPktFwdMessage downlinkPktFwdMessage, bool isMessageTooLong, int receiveWindow)
+        internal DownlinkMessageBuilderResponse(DownlinkBasicsStationMessage downlinkPktFwdMessage, bool isMessageTooLong, int receiveWindow)
         {
-            DownlinkPktFwdMessage = downlinkPktFwdMessage;
+            DownlinkMessage = downlinkPktFwdMessage;
             IsMessageTooLong = isMessageTooLong;
             ReceiveWindow = receiveWindow;
         }

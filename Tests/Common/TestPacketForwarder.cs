@@ -10,14 +10,14 @@ namespace LoRaWan.Tests.Common
 
     public class TestPacketForwarder : IPacketForwarder
     {
-        public IList<DownlinkPktFwdMessage> DownlinkMessages { get; }
+        public IList<DownlinkBasicsStationMessage> DownlinkMessages { get; }
 
         public TestPacketForwarder()
         {
-            DownlinkMessages = new List<DownlinkPktFwdMessage>();
+            DownlinkMessages = new List<DownlinkBasicsStationMessage>();
         }
 
-        public Task SendDownstreamAsync(DownlinkPktFwdMessage message)
+        public Task SendDownstreamAsync(DownlinkBasicsStationMessage message)
         {
             DownlinkMessages.Add(message);
             return Task.FromResult(0);

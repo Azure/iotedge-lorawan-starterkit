@@ -12,6 +12,6 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Send downstream message to LoRa device.
         /// </summary>
-        Task SendDownstreamAsync(DownlinkPktFwdMessage message);
+        Task SendDownstreamAsync(DownlinkBasicsStationMessage message);
     }
 }

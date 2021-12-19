@@ -4,7 +4,6 @@
 namespace LoRaTools
 {
     using System;
-    using System.Linq;
     using System.Security.Cryptography;
     using LoRaTools.Utils;
     using LoRaWan;

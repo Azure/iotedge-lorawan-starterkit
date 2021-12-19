@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -43,17 +42,15 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(true);
             }
 
-            var euRegion = RegionManager.EU868;
+            var region = TestUtils.TestRegion;
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
-            var expectedDownlinkDatr = datr;
+            var expectedDownlinkDatr = region.GetDataRateIndex(LoRaDataRate.Parse(datr));
 
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
+            var c2dPayloadSize = region.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
 
@@ -106,7 +103,7 @@ namespace LoRaWan.Tests.Integration
                 // Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
 
                 var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-                var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+                var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
                 payloadDataDown.PerformEncryption(loraDevice.AppSKey);
 
                 Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));

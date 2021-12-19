@@ -5,8 +5,8 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
     using Newtonsoft.Json;
 
     // Represents the device telemetry that will be sent to IoT Hub
@@ -30,26 +30,17 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("rfch")]
         public uint Rfch { get; set; }
 
-        [JsonProperty("stat")]
-        public int Stat { get; set; }
-
         [JsonProperty("modu")]
         public string Modu { get; set; }
 
         [JsonProperty("datr")]
         public string Datr { get; set; }
 
-        [JsonProperty("codr")]
-        public string Codr { get; set; }
-
         [JsonProperty("rssi")]
-        public int Rssi { get; set; }
+        public double Rssi { get; set; }
 
         [JsonProperty("lsnr")]
         public float Lsnr { get; set; }
-
-        [JsonProperty("size")]
-        public uint Size { get; set; }
 
         [JsonProperty("data")]
         public object Data { get; set; }
@@ -63,6 +54,9 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("fcnt")]
         public ushort Fcnt { get; set; }
 
+        [JsonProperty("edgets")]
+        public long Edgets { get; set; }
+
         [JsonProperty("rawdata")]
         public string Rawdata { get; set; }
 
@@ -72,8 +66,6 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("gatewayid")]
         public string GatewayID { get; set; }
 
-        [JsonProperty("edgets")]
-        public long Edgets { get; set; }
 
         [JsonProperty("dupmsg", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool? DupMsg { get; set; }
@@ -85,29 +77,27 @@ namespace LoRaWan.NetworkServer
         {
         }
 
-        public LoRaDeviceTelemetry(Rxpk rxpk, LoRaPayloadData upstreamPayload, object payloadData, byte[] decryptedPayloadData)
+        public LoRaDeviceTelemetry(LoRaRequest request, LoRaPayloadData upstreamPayload, object payloadData, byte[] decryptedPayloadData)
         {
-            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+            if (request is null) throw new ArgumentNullException(nameof(request));
+            var radioMetadata = request.RadioMetadata;
+            if (radioMetadata is null) throw new ArgumentException(nameof(radioMetadata));
             if (upstreamPayload is null) throw new ArgumentNullException(nameof(upstreamPayload));
-            if (rxpk.ExtraData != null)
-                ExtraData = new Dictionary<string, object>(rxpk.ExtraData);
-            Chan = rxpk.Chan;
-            Codr = rxpk.Codr;
+            var datr = request.Region.GetDatarateFromIndex(request.RadioMetadata.DataRate);
             Data = payloadData;
             Rawdata = decryptedPayloadData?.Length > 0 ? Convert.ToBase64String(decryptedPayloadData) : string.Empty;
-            Datr = rxpk.Datr;
-            Freq = rxpk.Freq;
-            Lsnr = rxpk.Lsnr;
-            Modu = rxpk.Modu;
-            Rfch = rxpk.Rfch;
-            Rssi = rxpk.Rssi;
-            Size = rxpk.Size;
-            Stat = rxpk.Stat;
-            Time = rxpk.Time;
-            Tmms = rxpk.Tmms;
-            Tmst = rxpk.Tmst;
             Fcnt = upstreamPayload.GetFcnt();
             Port = upstreamPayload.Fport.Value;
+            Freq = radioMetadata.Frequency.InMega;
+            Datr = datr.ToString();
+            Rssi = radioMetadata.UpInfo.ReceivedSignalStrengthIndication;
+            Rfch = radioMetadata.UpInfo.AntennaPreference;
+            Lsnr = radioMetadata.UpInfo.SignalNoiseRatio;
+            Time = radioMetadata.UpInfo.Xtime.ToString(CultureInfo.InvariantCulture); // This field was just used for telemetry in rxpk. Now it's being used for bringing unaltered the Xtime.
+            Tmst = unchecked((uint)radioMetadata.UpInfo.Xtime); // This is used by former computation only. Should go away when we drop PktFwd support.
+            Chan = checked((uint)radioMetadata.DataRate); // This is not used in any computation. It is only reported in the device telemetry.
+            Tmms = radioMetadata.UpInfo.GpsTime; // This is not used in any computation. It is only reported in the device telemetry.
+            Modu = datr.ModulationKind.ToString(); // This is only used in test path by legacy PacketForwarder code. Safe to eventually remove. Could be also "FSK"
         }
     }
 }

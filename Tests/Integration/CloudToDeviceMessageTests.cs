@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -207,7 +206,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(request.ProcessingSucceeded);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
@@ -286,7 +285,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(request.ProcessingSucceeded);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
@@ -368,26 +367,13 @@ namespace LoRaWan.Tests.Integration
             Assert.True(request.ProcessingSucceeded);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var txpk = downlinkMessage.Txpk;
-            var euRegion = RegionManager.EU868;
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out var frequency));
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            // Ensure we are using second window frequency
-            Assert.Equal(frequency, txpk.Freq);
+            TestUtils.CheckDRAndFrequencies(request, downlinkMessage);
 
-            // Ensure we are using second window datr
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            Assert.Equal(euRegion.GetDownstreamDataRate(request.Rxpk), txpk.Datr);
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-
-            // Ensure tmst was computed to 1 second
-            Assert.Equal(1000000 + request.Rxpk.Tmst, txpk.Tmst);
 
             // Get the device from cache
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
 
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
@@ -467,21 +453,12 @@ namespace LoRaWan.Tests.Integration
             Assert.True(request.ProcessingSucceeded);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages.First();
-            var euRegion = RegionManager.EU868;
-            var txpk = downlinkMessage.Txpk;
 
-            // Ensure we are using second window frequency
-            Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.FreqHertz);
-
-            // Ensure we are using second window datr
-            Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate.XpkDatr, txpk.Datr);
-
-            // Ensure tmst was computed to 2 seconds + original receive time (2 windows in Europe)
-            Assert.Equal(2000000 + request.Rxpk.Tmst, txpk.Tmst);
+            TestUtils.CheckDRAndFrequencies(request, downlinkMessage, true);
 
             // Get the device from cache
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
@@ -567,21 +544,12 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(request.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages.First();
-            var euRegion = RegionManager.EU868;
-            var txpk = downlinkMessage.Txpk;
 
-            // Ensure we are using second window frequency
-            Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.FreqHertz);
-
-            // Ensure we are using second window datr
-            Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate.XpkDatr, txpk.Datr);
-
-            // Ensure tmst was computed to 2 seconds + original receive time (2 windows in Europe)
-            Assert.Equal(2000000 + request.Rxpk.Tmst, txpk.Tmst);
+            TestUtils.CheckDRAndFrequencies(request, downlinkMessage, true);
 
             // Get the device from cache
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
@@ -603,23 +571,22 @@ namespace LoRaWan.Tests.Integration
         [Theory]
         // Preferred Window: 1
         // - Aiming for RX1
-        [InlineData(1, 0, 400, 610, 1)] // 1000 - (400 - noise)
-        [InlineData(1, 100, 300, 510, 1)]
-        [InlineData(1, 200, 200, 410, 1)]
+        [InlineData(1, 0, 400, 610)] // 1000 - (400 - noise)
+        [InlineData(1, 100, 300, 510)]
+        [InlineData(1, 200, 200, 410)]
         // - Aiming for RX2
-        [InlineData(1, 750, 690, 999, 2)]
-        [InlineData(1, 1000, 250, 610, 2)]
+        [InlineData(1, 750, 690, 999)]
+        [InlineData(1, 1000, 250, 610)]
 
         // Preferred Window: 2
         // - Aiming for RX2
-        [InlineData(2, 0, 1400, 1610, 2)]
-        [InlineData(2, 100, 1300, 1510, 2)]
+        [InlineData(2, 0, 1400, 1610)]
+        [InlineData(2, 100, 1300, 1510)]
         public async Task When_Device_Checks_For_C2D_Message_Uses_Available_Time(
             int preferredWindow,
             int sendEventDurationInMs,
             int checkMinDuration,
-            int checkMaxDuration,
-            int expectedRX)
+            int checkMaxDuration)
         {
             const int PayloadFcnt = 10;
             const int InitialDeviceFcntUp = 9;
@@ -673,19 +640,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
 
-            var actualDownlink = PacketForwarder.DownlinkMessages.First();
+            Assert.NotNull(PacketForwarder.DownlinkMessages);
+            Assert.Single(PacketForwarder.DownlinkMessages);
 
-            var euRegion = RegionManager.EU868;
-            if (expectedRX == Constants.ReceiveWindow1)
-            {
-                // ensure response is for RX1
-                Assert.Equal(request.Rxpk.Tmst + 1000000, actualDownlink.Txpk.Tmst);
-            }
-            else
-            {
-                // ensure response is for RX2
-                Assert.Equal(request.Rxpk.Tmst + 2000000, actualDownlink.Txpk.Tmst);
-            }
         }
 
         [Theory]
@@ -755,7 +712,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(request.ProcessingSucceeded);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
 
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
             payloadDataDown.PerformEncryption(string.IsNullOrEmpty(msg) ?
@@ -913,7 +870,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(request.ProcessingSucceeded);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);

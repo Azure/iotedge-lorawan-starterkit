@@ -10,11 +10,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.LoRaMessage;
-    using global::LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -125,7 +125,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public async Task Unknown_Region_Should_Return_Null()
+        public void Unknown_Region_Should_Return_Null()
         {
             // Setup
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
@@ -142,14 +142,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(frequency: new Hertz(0)), payload, useRealTimer: true);
             request.SetRegion(null);
-            messageProcessor.DispatchRequest(request);
-            Assert.True(await request.WaitCompleteAsync());
 
-            // Expectations
-            // 1. Returns null
-            Assert.Null(request.ResponseDownlink);
-            Assert.True(request.ProcessingFailed);
-            Assert.Equal(LoRaDeviceRequestFailedReason.InvalidRegion, request.ProcessingFailedReason);
+            Assert.Throws<LoRaProcessingException>(() => messageProcessor.DispatchRequest(request));
         }
 
         [Fact]
@@ -221,14 +215,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 FrameCounterUpdateStrategyProvider);
 
             // TODO This will be moved in #1086
-            var request = new LoRaRequest(
-                new Rxpk
-                {
-                    Data = "QDDaAAGxfh0FAI6wAENHbvgt1UK5Je1uPo/bLPB9HlnOXLGlLRUrTtA0KOHrZhusGl+L4g=="
-                },
-                null,
-                DateTime.Now);
+            //var request = new LoRaRequest(
+            //    new Rxpk
+            //    {
+            //        Data = "QDDaAAGxfh0FAI6wAENHbvgt1UK5Je1uPo/bLPB9HlnOXLGlLRUrTtA0KOHrZhusGl+L4g=="
+            //    },
+            //    null,
+            //    DateTime.Now);
 
+            var payload = new LoRaPayloadDataLns(DevAddr.Parse("0100DA30"), new MacHeader(40), FrameControl.Decode(177).Flags, 7550, "05", "8EB00043476EF82DD542B925ED6E3E8FDB2CF07D1E59CE5CB1A52D152B4ED03428E1EB661BAC", new FramePort(), new Mic(Convert.ToUInt32("1A5F8BE2", 16)), NullLogger.Instance);
+            using var request = WaitableLoRaRequest.Create(payload);
+            request.SetRegion(TestUtils.TestRegion);
             messageProcessor.DispatchRequest(request);
         }
 
@@ -273,7 +270,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(request.ProcessingSucceeded);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages.First();
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), global::LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);

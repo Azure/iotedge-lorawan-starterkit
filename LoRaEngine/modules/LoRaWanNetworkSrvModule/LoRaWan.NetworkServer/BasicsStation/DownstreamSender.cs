@@ -10,14 +10,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
+    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
 
     internal class DownstreamSender : IPacketForwarder
     {
-        private static readonly Action<ILogger, StationEui, string, Exception> LogSendingMessage =
-            LoggerMessage.Define<StationEui, string>(LogLevel.Debug, default,
-                                                     "Sending message to station with EUI '{StationEui}'. Payload '{Payload}'.");
+        private static readonly Action<ILogger, StationEui, int, string, Exception> LogSendingMessage =
+            LoggerMessage.Define<StationEui, int, string>(LogLevel.Debug, default,
+                                                     "Sending message to station with EUI '{StationEui}' with ID {Diid}. Payload '{Payload}'.");
 
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
@@ -33,25 +33,23 @@ namespace LoRaWan.NetworkServer.BasicsStation
             this.logger = logger;
         }
 
-        public async Task SendDownstreamAsync(DownlinkPktFwdMessage message)
+        public async Task SendDownstreamAsync(DownlinkBasicsStationMessage message)
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
             if (message.StationEui == default) throw new ArgumentException($"A proper StationEui needs to be set. Received '{message.StationEui}'.");
 
             if (this.socketWriterRegistry.TryGetHandle(message.StationEui, out var webSocketWriterHandle))
             {
-                var region = await this.basicsStationConfigurationService.GetRegionAsync(message.StationEui, CancellationToken.None);
-                var payload = Message(message, region);
-                LogSendingMessage(this.logger, message.StationEui, message.Txpk.Data, null);
+                var payload = Message(message);
                 await webSocketWriterHandle.SendAsync(payload, CancellationToken.None);
             }
             else
             {
-                this.logger.LogWarning("Could not retrieve an active connection for Station with EUI '{StationEui}'. The payload '{Payload}' will be dropped.", message.StationEui, message.Txpk.Data);
+                this.logger.LogWarning("Could not retrieve an active connection for Station with EUI '{StationEui}'. The payload '{Payload}' will be dropped.", message.StationEui, ConversionHelper.ByteArrayToString(message.Data));
             }
         }
 
-        private string Message(DownlinkPktFwdMessage message, Region region)
+        private string Message(DownlinkBasicsStationMessage message)
         {
             using var ms = new MemoryStream();
             using var writer = new Utf8JsonWriter(ms);
@@ -67,32 +65,30 @@ namespace LoRaWan.NetworkServer.BasicsStation
             writer.WriteNumber("dC", (int)deviceClassType);
 
             // Getting and writing payload bytes
-            var pduBytes = Convert.FromBase64String(message.Txpk.Data);
+            var pduBytes = message.Data;
             var pduChars = new char[pduBytes.Length * 2];
             Hexadecimal.Write(pduBytes, pduChars);
             writer.WriteString("pdu", pduChars);
 
 #pragma warning disable CA5394 // Do not use insecure randomness. This is fine as not used for any crypto operations.
-            writer.WriteNumber("diid", this.random.Next(int.MinValue, int.MaxValue));
+            var diid = this.random.Next(int.MinValue, int.MaxValue);
+            writer.WriteNumber("diid", diid);
 #pragma warning restore CA5394 // Do not use insecure randomness
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            var dataRate = region.GetDRFromFreqAndChan(message.Txpk.Datr);
-#pragma warning restore CS0618 // Type or member is obsolete
+            LogSendingMessage(this.logger, message.StationEui, diid, ConversionHelper.ByteArrayToString(message.Data), null);
 
             if (deviceClassType is LoRaDeviceClassType.A)
             {
                 writer.WriteNumber("RxDelay", message.LnsRxDelay);
-                writer.WriteNumber("RX1DR", (int)dataRate);
-                writer.WriteNumber("RX1Freq", (ulong)(message.Txpk.Freq * 1e6));
-                writer.WriteNumber("RX2DR", (int)region.GetDefaultRX2ReceiveWindow().DataRate);
-                writer.WriteNumber("RX2Freq", (ulong)region.GetDefaultRX2ReceiveWindow().Frequency);
+                writer.WriteNumber("RX1DR", (int)message.DataRateRx1);
+                writer.WriteNumber("RX1Freq", message.FrequencyRx1.AsUInt64);
+                writer.WriteNumber("RX2DR", (int)message.DataRateRx2);
+                writer.WriteNumber("RX2Freq", message.FrequencyRx2.AsUInt64);
                 writer.WriteNumber("xtime", message.Xtime);
             }
             else if (deviceClassType is LoRaDeviceClassType.C)
             {
-                writer.WriteNumber("RX2DR", (int)dataRate);
-                writer.WriteNumber("RX2Freq", (ulong)(message.Txpk.Freq * 1e6));
+                writer.WriteNumber("RX2DR", (int)message.DataRateRx2);
+                writer.WriteNumber("RX2Freq", message.FrequencyRx2.AsUInt64);
             }
 
             if (message.AntennaPreference.HasValue)
