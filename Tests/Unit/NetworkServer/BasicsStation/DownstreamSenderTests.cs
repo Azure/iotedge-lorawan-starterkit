@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // THIS TEST IS WRONG, rcfh
 
             // arrange
-            var downlinkPktFwdMessage = new DownlinkBasicsStationMessage(this.loraDataByteArray,
+            var downlinkPktFwdMessage = new DownlinkMessage(this.loraDataByteArray,
                                                                   123456,
                                                                   DataRateIndex.DR5,
                                                                   DataRateIndex.DR0,
@@ -110,7 +110,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 #pragma warning restore IDE0060 // Remove unused parameter
         {
             // arrange
-            var downlinkPktFwdMessage = new DownlinkBasicsStationMessage(this.loraDataByteArray,
+            var downlinkPktFwdMessage = new DownlinkMessage(this.loraDataByteArray,
                                                                   0,
                                                                   DataRateIndex.DR5,
                                                                   DataRateIndex.DR0,
@@ -168,7 +168,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         public async Task SendDownstreamAsync_Fails_WithNonNullMessage_ButDefaultStationEui()
         {
             // arrange
-            var downlinkPktFwdMessage = new DownlinkBasicsStationMessage(this.loraDataByteArray,
+            var downlinkPktFwdMessage = new DownlinkMessage(this.loraDataByteArray,
                                                                   0,
                                                                   DataRateIndex.DR5,
                                                                   DataRateIndex.DR0,

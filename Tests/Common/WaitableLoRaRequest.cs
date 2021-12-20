@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Common
 
         public LoRaDeviceRequestFailedReason ProcessingFailedReason { get; private set; }
 
-        public DownlinkBasicsStationMessage ResponseDownlink { get; private set; }
+        public DownlinkMessage ResponseDownlink { get; private set; }
 
         public bool ProcessingSucceeded { get; private set; }
 
@@ -112,7 +112,7 @@ namespace LoRaWan.Tests.Common
             this.complete.Release();
         }
 
-        public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkBasicsStationMessage downlink)
+        public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkMessage downlink)
         {
             base.NotifySucceeded(loRaDevice, downlink);
 

@@ -279,7 +279,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var joinAcceptBytes = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey);
-                var downlinkPktFwdMessage = new DownlinkBasicsStationMessage(
+                var downlinkPktFwdMessage = new DownlinkMessage(
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,
                   loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset),

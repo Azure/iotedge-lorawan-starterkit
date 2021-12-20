@@ -52,7 +52,7 @@ namespace LoRaWan.NetworkServer
         {
         }
 
-        public virtual void NotifySucceeded(LoRaDevice loRaDevice, DownlinkBasicsStationMessage downlink)
+        public virtual void NotifySucceeded(LoRaDevice loRaDevice, DownlinkMessage downlink)
         {
         }
 

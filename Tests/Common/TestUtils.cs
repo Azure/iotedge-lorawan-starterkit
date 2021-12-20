@@ -315,7 +315,7 @@ namespace LoRaWan.Tests.Common
             new RadioMetadata(dataRate, frequency ?? Hertz.Mega(868.3),
                               new RadioMetadataUpInfo(antennaPreference, xtime, gpstime, rssi, snr));
 
-        public static void CheckDRAndFrequencies(WaitableLoRaRequest request, LoRaTools.LoRaPhysical.DownlinkBasicsStationMessage downlinkMessage, bool sendToRx2 = false)
+        public static void CheckDRAndFrequencies(WaitableLoRaRequest request, LoRaTools.LoRaPhysical.DownlinkMessage downlinkMessage, bool sendToRx2 = false)
         {
             var euRegion = RegionManager.EU868;
 

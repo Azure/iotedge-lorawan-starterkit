@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer
             TrackProcessingTime();
         }
 
-        public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkBasicsStationMessage downlink)
+        public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkMessage downlink)
         {
             this.wrappedRequest.NotifySucceeded(loRaDevice, downlink);
             TrackProcessingTime();

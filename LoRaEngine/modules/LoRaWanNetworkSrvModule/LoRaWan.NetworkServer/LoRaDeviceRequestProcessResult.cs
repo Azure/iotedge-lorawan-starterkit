@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer
 
     public class LoRaDeviceRequestProcessResult
     {
-        public LoRaDeviceRequestProcessResult(LoRaDevice loRaDevice, LoRaRequest request, DownlinkBasicsStationMessage downlinkMessage = null)
+        public LoRaDeviceRequestProcessResult(LoRaDevice loRaDevice, LoRaRequest request, DownlinkMessage downlinkMessage = null)
         {
             LoRaDevice = loRaDevice;
             Request = request;
@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
             FailedReason = failedReason;
         }
 
-        public DownlinkBasicsStationMessage DownlinkMessage { get; }
+        public DownlinkMessage DownlinkMessage { get; }
 
         public LoRaRequest Request { get; }
 

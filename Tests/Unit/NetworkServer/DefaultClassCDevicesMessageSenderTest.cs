@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration, this.deviceApi.Object);
         }
 
-        private static void EnsureDownlinkIsCorrect(DownlinkBasicsStationMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotEmpty(downlink.Data);
@@ -104,9 +104,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 MessageId = Guid.NewGuid().ToString(),
             };
 
-            this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkBasicsStationMessage>()))
+            this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
                 .Returns(Task.CompletedTask)
-                .Callback<DownlinkBasicsStationMessage>(d =>
+                .Callback<DownlinkMessage>(d =>
                 {
                     EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
                 });
@@ -121,7 +121,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkBasicsStationMessage>()), Times.Once());
+            this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()), Times.Once());
 
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();
@@ -366,9 +366,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 MessageId = Guid.NewGuid().ToString(),
             };
 
-            this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkBasicsStationMessage>()))
+            this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
                 .Returns(Task.CompletedTask)
-                .Callback<DownlinkBasicsStationMessage>(d =>
+                .Callback<DownlinkMessage>(d =>
                 {
                     EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
                     Assert.Equal(DataRateIndex.DR10, d.DataRateRx2);
@@ -385,7 +385,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkBasicsStationMessage>()), Times.Once());
+            this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()), Times.Once());
 
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();

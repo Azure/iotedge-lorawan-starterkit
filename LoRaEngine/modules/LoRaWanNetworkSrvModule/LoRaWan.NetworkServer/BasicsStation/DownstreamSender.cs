@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             this.logger = logger;
         }
 
-        public async Task SendDownstreamAsync(DownlinkBasicsStationMessage message)
+        public async Task SendDownstreamAsync(DownlinkMessage message)
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
             if (message.StationEui == default) throw new ArgumentException($"A proper StationEui needs to be set. Received '{message.StationEui}'.");
@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             }
         }
 
-        private string Message(DownlinkBasicsStationMessage message)
+        private string Message(DownlinkMessage message)
         {
             using var ms = new MemoryStream();
             using var writer = new Utf8JsonWriter(ms);

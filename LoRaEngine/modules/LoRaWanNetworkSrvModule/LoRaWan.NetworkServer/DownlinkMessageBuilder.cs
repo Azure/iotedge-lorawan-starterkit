@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Helper class to create <see cref="DownlinkBasicsStationMessage"/>.
+    /// Helper class to create <see cref="DownlinkMessage"/>.
     /// </summary>
     internal static class DownlinkMessageBuilder
     {
@@ -215,10 +215,10 @@ namespace LoRaWan.NetworkServer
             return new DownlinkMessageBuilderResponse(downlinkMessage, isMessageTooLong, receiveWindow);
         }
 
-        private static DownlinkBasicsStationMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, ushort lnsRxDelay, LoRaPayloadData loRaMessage, uint antennaPreference = 0)
+        private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, ushort lnsRxDelay, LoRaPayloadData loRaMessage, uint antennaPreference = 0)
         {
             var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey);
-            var downlinkPktFwdMessage = new DownlinkBasicsStationMessage(
+            var downlinkPktFwdMessage = new DownlinkMessage(
                 messageBytes,
                 xTime,
                 rx1Datr,
