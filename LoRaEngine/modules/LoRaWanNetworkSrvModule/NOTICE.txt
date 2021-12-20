@@ -3337,7 +3337,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-Newtonsoft.Json 13.0.1 - MIT
+Newtonsoft.Json 12.0.3 - MIT
 
 
 (c) 2008 VeriSign, Inc.
@@ -3371,7 +3371,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-Newtonsoft.Json 12.0.3 - MIT
+Newtonsoft.Json 13.0.1 - MIT
 
 
 (c) 2008 VeriSign, Inc.
@@ -3857,20 +3857,29 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-System.Security.Cryptography.ProtectedData 4.4.0 - MIT
+System.Security.Cryptography.ProtectedData 4.7.0 - MIT
 
 
 (c) 2008 VeriSign, Inc.
 (c) Microsoft Corporation.
+Copyright (c) .NET Foundation.
+Copyright (c) 2011, Google Inc.
 (c) 1997-2005 Sean Eron Anderson.
+Copyright (c) 2007 James Newton-King
 Copyright (c) 1991-2017 Unicode, Inc.
+Copyright (c) 2013-2017, Alfred Klomp
+Copyright (c) 2015-2017, Wojciech Mula
+Copyright (c) 2005-2007, Nick Galbreath
 Portions (c) International Organization
+Copyright (c) 2015 The Chromium Authors.
 Copyright (c) 2004-2006 Intel Corporation
+Copyright (c) 2016-2017, Matthieu Darbois
 Copyright (c) .NET Foundation Contributors
 Copyright (c) .NET Foundation and Contributors
 Copyright (c) 2011 Novell, Inc (http://www.novell.com)
 Copyright (c) 1995-2017 Jean-loup Gailly and Mark Adler
 Copyright (c) 2015 Xamarin, Inc (http://www.xamarin.com)
+Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
 Copyright (c) YEAR W3C(r) (MIT, ERCIM, Keio, Beihang). Disclaimers THIS WORK IS PROVIDED AS
 
 The MIT License (MIT)
@@ -3902,29 +3911,20 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-System.Security.Cryptography.ProtectedData 4.7.0 - MIT
+System.Security.Cryptography.ProtectedData 4.4.0 - MIT
 
 
 (c) 2008 VeriSign, Inc.
 (c) Microsoft Corporation.
-Copyright (c) .NET Foundation.
-Copyright (c) 2011, Google Inc.
 (c) 1997-2005 Sean Eron Anderson.
-Copyright (c) 2007 James Newton-King
 Copyright (c) 1991-2017 Unicode, Inc.
-Copyright (c) 2013-2017, Alfred Klomp
-Copyright (c) 2015-2017, Wojciech Mula
-Copyright (c) 2005-2007, Nick Galbreath
 Portions (c) International Organization
-Copyright (c) 2015 The Chromium Authors.
 Copyright (c) 2004-2006 Intel Corporation
-Copyright (c) 2016-2017, Matthieu Darbois
 Copyright (c) .NET Foundation Contributors
 Copyright (c) .NET Foundation and Contributors
 Copyright (c) 2011 Novell, Inc (http://www.novell.com)
 Copyright (c) 1995-2017 Jean-loup Gailly and Mark Adler
 Copyright (c) 2015 Xamarin, Inc (http://www.xamarin.com)
-Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
 Copyright (c) YEAR W3C(r) (MIT, ERCIM, Keio, Beihang). Disclaimers THIS WORK IS PROVIDED AS
 
 The MIT License (MIT)
