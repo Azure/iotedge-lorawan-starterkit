@@ -5,5 +5,5 @@
 
 namespace LoRaTools.Regions
 {
-    public record DwellTimeSetting(bool DownlinkDwellTime, bool UplinkDwellTime, uint MaxEirp);
+    public sealed record DwellTimeSetting(bool DownlinkDwellTime, bool UplinkDwellTime, uint MaxEirp);
 }

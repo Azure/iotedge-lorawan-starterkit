@@ -12,12 +12,12 @@ namespace LoRaWan.Tests.Unit.LoRaTools
     using LoRaWan.Tests.Common;
     using Xunit;
 
-    public class TxParamSetupRequestTests
+    public sealed class TxParamSetupRequestTests
     {
         [Fact]
         public void Init_Throws_When_Dwell_Time_Settings_Are_Empty()
         {
-            Assert.Throws<ArgumentNullException>(() => new TxParamSetupRequest(null));
+            Assert.Throws<ArgumentNullException>(() => new TxParamSetupRequest(null!));
         }
 
         [Fact]

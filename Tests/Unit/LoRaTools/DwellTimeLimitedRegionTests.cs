@@ -10,7 +10,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
     using LoRaWan;
     using Xunit;
 
-    public class DwellTimeLimitedRegionTests
+    public sealed class DwellTimeLimitedRegionTests
     {
         [Fact]
         public void When_Accessing_Uninitialized_DefaultDwellTimeSetting_Throws()

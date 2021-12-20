@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Integration
     using Moq;
     using Xunit;
 
-    public class DwellTimeIntegrationTests : MessageProcessorTestBase
+    public sealed class DwellTimeIntegrationTests : MessageProcessorTestBase
     {
         private static readonly DwellTimeSetting DefaultDwellTimeSetting = new DwellTimeSetting(true, true, 5);
         private static readonly DwellTimeSetting DesiredDwellTimeSetting = new DwellTimeSetting(false, false, 3);

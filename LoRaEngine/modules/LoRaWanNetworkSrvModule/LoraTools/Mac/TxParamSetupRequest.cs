@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaTools.Mac
 {
     using System;
     using System.Collections.Generic;
     using LoRaTools.Regions;
 
-    public class TxParamSetupRequest : MacCommand
+    public sealed class TxParamSetupRequest : MacCommand
     {
         private readonly DwellTimeSetting dwellTimeSetting;
 

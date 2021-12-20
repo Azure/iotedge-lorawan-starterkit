@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaWan.Tests.Unit.LoRaTools
 {
     using global::LoRaTools;
     using global::LoRaTools.Mac;
     using Xunit;
 
-    public class TxParamSetupAnswerTests
+    public sealed class TxParamSetupAnswerTests
     {
         [Fact]
         public void Length()
