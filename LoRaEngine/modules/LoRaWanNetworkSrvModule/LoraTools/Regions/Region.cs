@@ -37,7 +37,7 @@ namespace LoRaTools.Regions
         /// X = RX1DROffset Upstream DR
         /// Y = Downstream DR in RX1 slot.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable { get; set; }
+        public virtual IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets default first receive windows. [sec].
