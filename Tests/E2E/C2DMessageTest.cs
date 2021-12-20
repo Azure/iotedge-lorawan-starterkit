@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 1,
+                Fport = FramePorts.App1,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -231,7 +231,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 1,
+                Fport = FramePorts.App1,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -370,7 +370,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 2,
+                Fport = FramePorts.App2,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -508,7 +508,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 1,
+                Fport = FramePorts.App1,
                 MessageId = msgId,
                 Confirmed = true,
             };
@@ -622,7 +622,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 1,
+                Fport = FramePorts.App1,
                 MessageId = msgId,
                 Confirmed = true,
             };

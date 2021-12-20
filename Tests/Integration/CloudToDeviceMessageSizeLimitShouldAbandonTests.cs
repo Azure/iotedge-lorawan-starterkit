@@ -70,7 +70,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessagePayload,
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             if (hasMacInC2D)
