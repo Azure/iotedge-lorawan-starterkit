@@ -106,7 +106,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 // We expect a mac command in the payload
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
                 var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-                Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+                Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
                 Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
                 Assert.Equal(expectedDR, linkAdr.DataRate);
@@ -221,7 +221,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
                 var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-                Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+                Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
                 Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
                 Assert.Equal(expectedDR, linkAdr.DataRate);
@@ -314,7 +314,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(DR5, linkAdr.DataRate);
@@ -360,7 +360,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(DR5, linkAdr.DataRate);
@@ -460,7 +460,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
             Array.Reverse(decryptedPayload);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(3, reportedNbRep);
@@ -493,7 +493,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(2, reportedNbRep);
@@ -534,7 +534,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(1, reportedNbRep);
