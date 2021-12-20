@@ -3,7 +3,36 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    public record RadioMetadata(DataRateIndex DataRate, Hertz Frequency, RadioMetadataUpInfo UpInfo);
+    public sealed record RadioMetadata
+    {
+        public RadioMetadata(DataRateIndex dataRate, Hertz frequency, RadioMetadataUpInfo upInfo)
+        {
+            DataRate = dataRate;
+            Frequency = frequency;
+            UpInfo = upInfo;
+        }
 
-    public record RadioMetadataUpInfo(uint AntennaPreference, ulong Xtime, uint GpsTime, double ReceivedSignalStrengthIndication, float SignalNoiseRatio);
+        public DataRateIndex DataRate { get; init; }
+        public Hertz Frequency { get; init; }
+        public RadioMetadataUpInfo UpInfo { get; init; }
+    }
+
+    public sealed record RadioMetadataUpInfo
+    {
+        public RadioMetadataUpInfo(uint antennaPreference, ulong xtime, uint gpsTime,
+                                   double receivedSignalStrengthIndication, float signalNoiseRatio)
+        {
+            AntennaPreference = antennaPreference;
+            Xtime = xtime;
+            GpsTime = gpsTime;
+            ReceivedSignalStrengthIndication = receivedSignalStrengthIndication;
+            SignalNoiseRatio = signalNoiseRatio;
+        }
+
+        public uint AntennaPreference { get; init; }
+        public ulong Xtime { get; init; }
+        public uint GpsTime { get; init; }
+        public double ReceivedSignalStrengthIndication { get; init; }
+        public float SignalNoiseRatio { get; init; }
+    }
 }

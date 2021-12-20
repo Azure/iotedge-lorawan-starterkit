@@ -289,14 +289,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             return new RadioMetadata(DataRateIndex.DR5, new Hertz(868300000), radioMetadataUpInfo);
         }
 
-        private static bool RadioMetadata(RadioMetadata subject, RadioMetadata other) =>
-            subject.DataRate == other.DataRate
-            && subject.Frequency == other.Frequency
-            && subject.UpInfo.Xtime == other.UpInfo.Xtime
-            && subject.UpInfo.SignalNoiseRatio == other.UpInfo.SignalNoiseRatio
-            && subject.UpInfo.GpsTime == other.UpInfo.GpsTime
-            && subject.UpInfo.ReceivedSignalStrengthIndication == other.UpInfo.ReceivedSignalStrengthIndication;
-
         [Fact]
         public async Task InternalHandleDataAsync_ShouldProperlyCreateLoraPayloadForUpdfRequest()
         {
@@ -323,7 +315,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.NotNull(loRaRequest);
-            Assert.True(RadioMetadata(loRaRequest.RadioMetadata, expectedRadioMetadata));
+            Assert.Equal(loRaRequest.RadioMetadata, expectedRadioMetadata);
             Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr.Span.ToArray());
             Assert.Equal(MacMessageType.ConfirmedDataUp, loRaRequest.Payload.MessageType);
             Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
