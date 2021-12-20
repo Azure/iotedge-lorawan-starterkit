@@ -285,7 +285,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         private static RadioMetadata GetExpectedRadioMetadata()
         {
-            var radioMetadataUpInfo = new RadioMetadataUpInfo(0, 68116944405337035, 0, -53, (float)8.25);
+            var radioMetadataUpInfo = new RadioMetadataUpInfo(0, 68116944405337035, 0, -53, 8.25f);
             return new RadioMetadata(DataRateIndex.DR5, new Hertz(868300000), radioMetadataUpInfo);
         }
 
