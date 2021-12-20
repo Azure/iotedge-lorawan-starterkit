@@ -33,7 +33,6 @@ namespace LoRaTools.LoRaPhysical
         public byte[] Data { get; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
-
         public StationEui StationEui { get; }
 
         public DownlinkMessage()
