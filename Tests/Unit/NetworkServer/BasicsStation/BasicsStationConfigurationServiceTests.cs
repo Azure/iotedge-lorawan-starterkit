@@ -149,7 +149,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
                 // assert
                 var region = Assert.IsType<RegionAS923>(result);
-                Assert.Equal(new DwellTimeSetting(true, true, 5), region.DefaultDwellTimeSetting);
                 Assert.Equal(expectedDesired, region.DesiredDwellTimeSetting);
             }
         }

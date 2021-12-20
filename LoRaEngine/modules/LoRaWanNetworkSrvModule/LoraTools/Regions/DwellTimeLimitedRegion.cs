@@ -24,7 +24,7 @@ namespace LoRaTools.Regions
             : base(loRaRegionType)
         { }
 
-        public abstract DwellTimeSetting DefaultDwellTimeSetting { get; }
+        protected abstract DwellTimeSetting DefaultDwellTimeSetting { get; }
 
         /// <summary>
         /// Mutates the Region to use the specific dwell time settings.

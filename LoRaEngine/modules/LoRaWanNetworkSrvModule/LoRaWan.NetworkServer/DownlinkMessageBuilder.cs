@@ -76,10 +76,7 @@ namespace LoRaWan.NetworkServer
                 : null;
 
             if (loRaRegion is DwellTimeLimitedRegion someRegion)
-            {
-                var effectiveDwellTimeSetting = loRaDevice.ReportedDwellTimeSetting ?? someRegion.DefaultDwellTimeSetting;
-                someRegion.UseDwellTimeSetting(effectiveDwellTimeSetting);
-            }
+                someRegion.UseDwellTimeSetting(loRaDevice.ReportedDwellTimeSetting);
 
             if (receiveWindow == Constants.ReceiveWindow2)
             {

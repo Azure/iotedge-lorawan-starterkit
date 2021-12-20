@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public DwellTimeLimitedTestRegion() : base(LoRaRegionType.AS923)
             { }
 
-            public override DwellTimeSetting DefaultDwellTimeSetting => new DwellTimeSetting(true, false, 4);
+            protected override DwellTimeSetting DefaultDwellTimeSetting => new DwellTimeSetting(true, false, 4);
 
             public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo? deviceJoinInfo = null) =>
                 throw new NotImplementedException();
