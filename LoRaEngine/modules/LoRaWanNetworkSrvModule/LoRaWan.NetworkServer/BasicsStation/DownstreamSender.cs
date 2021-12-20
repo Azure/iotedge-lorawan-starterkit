@@ -88,7 +88,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             else if (deviceClassType is LoRaDeviceClassType.C)
             {
                 writer.WriteNumber("RX2DR", (int)message.DataRateRx2);
-                writer.WriteNumber("RX2Freq", message.FrequencyRx2.AsUInt64);
+                writer.WriteNumber("RX2Freq", (ulong)message.FrequencyRx2);
             }
 
             if (message.AntennaPreference.HasValue)
