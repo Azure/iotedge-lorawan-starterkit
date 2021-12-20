@@ -25,6 +25,8 @@ namespace LoRaWan.Tests.Integration
     // Cloud to device message processing tests (Join tests are handled in other class)
     public class CloudToDeviceMessageTests : MessageProcessorTestBase
     {
+        private const FramePort TestPort = FramePorts.App1;
+
         [Theory]
         [InlineData(ServerGatewayID)]
         [InlineData(null)]
@@ -168,7 +170,7 @@ namespace LoRaWan.Tests.Integration
 
             var cloudToDeviceMessageBody = new ReceivedLoRaCloudToDeviceMessage()
             {
-                Fport = 1,
+                Fport = TestPort,
                 Payload = "c2d"
             };
 
@@ -249,7 +251,7 @@ namespace LoRaWan.Tests.Integration
                    .ReturnsAsync(true);
             }
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
                 .CreateMessage();
 
             LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -329,7 +331,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
                 .CreateMessage();
 
             LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -425,7 +427,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
                 .CreateMessage();
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
@@ -528,7 +530,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
                 .CreateMessage();
 
             LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -634,7 +636,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
                 .CreateMessage();
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsInRange<TimeSpan>(TimeSpan.FromMilliseconds(checkMinDuration), TimeSpan.FromMilliseconds(checkMaxDuration), Moq.Range.Inclusive)))
@@ -716,7 +718,7 @@ namespace LoRaWan.Tests.Integration
 
             if (!string.IsNullOrEmpty(msg))
             {
-                c2d.Fport = 1;
+                c2d.Fport = TestPort;
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -778,7 +780,7 @@ namespace LoRaWan.Tests.Integration
             // mac command is in fopts if there is a c2d message
             if (string.IsNullOrEmpty(msg))
             {
-                Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+                Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
                 Assert.NotNull(payloadDataDown.Frmpayload.Span.ToArray());
                 Assert.Single(payloadDataDown.Frmpayload.Span.ToArray());
                 Assert.Equal((byte)LoRaTools.Cid.DevStatusCmd, payloadDataDown.Frmpayload.Span[0]);
@@ -874,7 +876,7 @@ namespace LoRaWan.Tests.Integration
             {
                 CloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = TestPort,
                     MessageId = "123",
                     Payload = "12",
                     DevEUI = c2dDevEUI
@@ -882,7 +884,7 @@ namespace LoRaWan.Tests.Integration
             };
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
-            payloadDecoder.Setup(x => x.DecodeMessageAsync(simulatedDevice.DevEUI, It.IsNotNull<byte[]>(), 1, It.IsAny<string>()))
+            payloadDecoder.Setup(x => x.DecodeMessageAsync(simulatedDevice.DevEUI, It.IsNotNull<byte[]>(), TestPort, It.IsAny<string>()))
                 .ReturnsAsync(decoderResult);
             PayloadDecoder.SetDecoder(payloadDecoder.Object);
 
@@ -956,7 +958,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
                 .CreateMessage();
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))

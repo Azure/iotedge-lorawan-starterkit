@@ -267,7 +267,7 @@ namespace LoRaWan.Tests.Integration
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -341,7 +341,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
@@ -1553,7 +1553,7 @@ namespace LoRaWan.Tests.Integration
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
                 {
                     Assert.NotNull(t.Data);
-                    Assert.Equal(1, t.Port);
+                    Assert.Equal(FramePorts.App1, t.Port);
                     Assert.Equal("fport_1_decoded", t.Data.ToString());
                 });
 
@@ -1561,11 +1561,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
-            payloadDecoder.Setup(x => x.DecodeMessageAsync(devEUI, It.IsAny<byte[]>(), 1, It.IsAny<string>()))
+            payloadDecoder.Setup(x => x.DecodeMessageAsync(devEUI, It.IsAny<byte[]>(), FramePorts.App1, It.IsAny<string>()))
                 .ReturnsAsync(new DecodePayloadResult("fport_1_decoded"))
-                .Callback<string, byte[], byte, string>((_, data, fport, decoder) =>
+                .Callback((string _, byte[] data, FramePort fport, string decoder) =>
                 {
-                    Assert.Equal(1, fport);
+                    Assert.Equal(FramePorts.App1, fport);
 
                     // input data is empty
                     Assert.Null(data);
