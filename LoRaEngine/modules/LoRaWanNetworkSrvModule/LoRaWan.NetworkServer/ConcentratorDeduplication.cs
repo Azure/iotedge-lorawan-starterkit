@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
-    public sealed class ConcentratorDeduplication :
+    public class ConcentratorDeduplication :
         IConcentratorDeduplication
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
@@ -88,15 +88,7 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        internal static string CreateCacheKey(LoRaRequest loRaRequest)
-            => loRaRequest.Payload switch
-            {
-                LoRaPayloadData asDataPayload => CreateCacheKey(asDataPayload),
-                LoRaPayloadJoinRequest asJoinPayload => CreateCacheKey(asJoinPayload),
-                _ => throw new ArgumentException($"Provided request is of type {loRaRequest.GetType()} which is not valid for deduplication.")
-            };
-
-        private static string CreateCacheKey(LoRaPayloadData payload)
+        internal string CreateCacheKey(LoRaPayloadData payload)
         {
             var totalBufferLength = payload.DevAddr.Length + payload.Mic.Length + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
@@ -114,12 +106,14 @@ namespace LoRaWan.NetworkServer
 
             BinaryPrimitives.WriteUInt16LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
 
-            var key = Sha256.ComputeHash(buffer.ToArray());
+            var key = HashKey(buffer.ToArray());
 
             return BitConverter.ToString(key);
         }
 
-        private static string CreateCacheKey(LoRaPayloadJoinRequest payload)
+        internal virtual byte[] HashKey(byte[] input) => Sha256.ComputeHash(input);
+
+        internal string CreateCacheKey(LoRaPayloadJoinRequest payload)
         {
             var joinEui = JoinEui.Read(payload.AppEUI.Span);
             var devEui = DevEui.Read(payload.DevEUI.Span);
