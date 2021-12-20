@@ -8,7 +8,7 @@
       "FFFFFFFFFFFFFFFF"
     ]
   ],
-  "region": "CN470",
+  "region": "CN470RP2",
   "hwspec": "sx1301/1",
   "freq_range": [
     470000000,

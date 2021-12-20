@@ -227,6 +227,7 @@ namespace LoRaWan.NetworkServer
 
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+            downlinkPktFwdMessage.DeviceJoinInfo = deviceJoinInfo;
 
             return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong, receiveWindow);
         }
