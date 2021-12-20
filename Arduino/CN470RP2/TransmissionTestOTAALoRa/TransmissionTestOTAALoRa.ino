@@ -9,8 +9,8 @@
 bool confirmed=true;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId ="47AAC86800430028";
-char * appKey="0AFE71A145B253E49C3031AD068277A1";
-char * appEui ="0E7A0000000014E2";
+char * appKey="8AFE71A145B253E49C3031AD068277A1";
+char * appEui ="BE7A0000000014E2";
 
 /*
 iot hub OTAA tags for deviceid: 47AAC86800430028
@@ -41,8 +41,6 @@ void setup(void)
     lora.init();
     lora.setDeviceDefault();
     delay(1000);
-    lora.SetDebug();
-    delay(1000);
     lora.setPower(6);
     lora.setId(NULL,deviceId , appEui);
     lora.setKey(NULL, NULL, appKey);
@@ -50,18 +48,14 @@ void setup(void)
     lora.setDeciveMode(LWOTAA);
     lora.setDataRate(dr, physicalType);
     lora.setChannel(0, 499.9);
-    lora.setChannel(1, 499.7);
-    lora.setChannel(2, 499.5);
-    lora.setChannel(3, 499.3);
-    lora.setChannel(4, 499.1);
-    lora.setChannel(5, 498.9);
-    lora.setChannel(6, 498.7);
-    lora.setChannel(7, 498.3);
+    lora.setChannel(1, 499.9);
+    lora.setChannel(2, 499.9);
+    lora.setChannel(3, 499.9);
+    lora.setChannel(4, 499.9);
+    lora.setChannel(5, 499.9);
+    lora.setChannel(6, 499.9);
+    lora.setChannel(7, 499.9);
 
-    //disable channels for OTAA
-    for (int i = 1 ; i<8; i++){
-      lora.setChannelOFF(i);
-    }
 
     lora.setReceiceWindowSecond(498.3, drrx2);
 
@@ -75,9 +69,14 @@ void setup(void)
     while(!lora.setOTAAJoin(JOIN,20000));
 
     // reenable channels after OTAA
-    for (int i = 1 ; i<8; i++){
-      lora.setChannelON(i);
-    }
+    lora.setChannel(1, 498.3);
+    lora.setChannel(2, 499.7);
+    lora.setChannel(3, 499.5);
+    lora.setChannel(4, 499.3);
+    lora.setChannel(5, 499.1);
+    lora.setChannel(6, 498.9);
+    lora.setChannel(7, 498.7);
+
 }
 
 void loop(void)
