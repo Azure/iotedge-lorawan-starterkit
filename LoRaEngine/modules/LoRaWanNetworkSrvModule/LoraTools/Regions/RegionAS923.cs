@@ -30,6 +30,19 @@ namespace LoRaTools.Regions
                 [DR7] = (FskDataRate.Fsk50000, 230)
             };
 
+        private static readonly HashSet<DataRate> ValidDataRatesDr0Dr7 =
+            new HashSet<DataRate>()
+            {
+                LoRaDataRate.SF12BW125,
+                LoRaDataRate.SF11BW125,
+                LoRaDataRate.SF10BW125,
+                LoRaDataRate.SF9BW125,
+                LoRaDataRate.SF8BW125,
+                LoRaDataRate.SF7BW125,
+                LoRaDataRate.SF7BW250,
+                FskDataRate.Fsk50000,
+            };
+
         private static readonly IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTableNoDwell =
             new DataRateIndex[8][]
             {
@@ -42,6 +55,9 @@ namespace LoRaTools.Regions
                 new DataRateIndex[] { DR6, DR5, DR4, DR3, DR2, DR1, DR7, DR7 },
                 new DataRateIndex[] { DR7, DR6, DR5, DR4, DR3, DR2, DR7, DR7 },
             };
+
+        private static readonly RegionLimits RegionLimitsNoDwell =
+            new RegionLimits((Min: Mega(915), Max: Mega(928)), ValidDataRatesDr0Dr7, ValidDataRatesDr0Dr7, DR0, DR0);
 
         private static readonly Dictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)> DrToWithDwell =
             new Dictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)>
@@ -69,6 +85,20 @@ namespace LoRaTools.Regions
                 new DataRateIndex[] { DR7, DR6, DR5, DR4, DR3, DR2, DR7, DR7 },
             };
 
+        private static readonly HashSet<DataRate> ValidDataRatesDr2Dr7 =
+            new HashSet<DataRate>()
+            {
+                LoRaDataRate.SF10BW125,
+                LoRaDataRate.SF9BW125,
+                LoRaDataRate.SF8BW125,
+                LoRaDataRate.SF7BW125,
+                LoRaDataRate.SF7BW250,
+                FskDataRate.Fsk50000,
+            };
+
+        private static readonly RegionLimits RegionLimitsWithDwell =
+            new RegionLimits((Min: Mega(915), Max: Mega(928)), ValidDataRatesDr0Dr7, ValidDataRatesDr2Dr7, DR0, DR2);
+
         private static readonly Dictionary<uint, double> MaxEirpByTxPower =
             new Dictionary<uint, double>
             {
@@ -80,19 +110,6 @@ namespace LoRaTools.Regions
                 [5] = 6,
                 [6] = 4,
                 [7] = 2
-            };
-
-        private static readonly HashSet<DataRate> ValidDataRates =
-            new HashSet<DataRate>()
-            {
-                LoRaDataRate.SF12BW125,
-                LoRaDataRate.SF11BW125,
-                LoRaDataRate.SF10BW125,
-                LoRaDataRate.SF9BW125,
-                LoRaDataRate.SF8BW125,
-                LoRaDataRate.SF7BW125,
-                LoRaDataRate.SF7BW250,
-                FskDataRate.Fsk50000,
             };
 
         public override Dictionary<uint, double> TXPowertoMaxEIRP => MaxEirpByTxPower;
@@ -114,9 +131,9 @@ namespace LoRaTools.Regions
         {
             FrequencyOffset = 0;
             MaxADRDataRate = DR7;
-            RegionLimits = new RegionLimits((Min: Mega(915), Max: Mega(928)), ValidDataRates, ValidDataRates, 0, 0);
             // TODO: improve. Use fallback dwell time settings until we find a better model for concentrator-specific regions.
             DefaultDwellTimeSetting = new DwellTimeSetting(DownlinkDwellTime: true, UplinkDwellTime: true, 5);
+            RegionLimits = EffectiveDwellTimeSetting.DownlinkDwellTime ? RegionLimitsWithDwell : RegionLimitsNoDwell;
         }
 
         /// <summary>
@@ -182,6 +199,7 @@ namespace LoRaTools.Regions
         public override void UseDwellTimeSetting(DwellTimeSetting dwellTimeSetting)
         {
             this.dwellTimeSetting = dwellTimeSetting;
+            RegionLimits = EffectiveDwellTimeSetting.DownlinkDwellTime ? RegionLimitsWithDwell : RegionLimitsNoDwell;
         }
     }
 }
