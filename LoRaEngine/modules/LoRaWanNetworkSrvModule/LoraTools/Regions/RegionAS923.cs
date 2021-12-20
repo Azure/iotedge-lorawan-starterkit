@@ -117,14 +117,14 @@ namespace LoRaTools.Regions
         private DwellTimeSetting dwellTimeSetting;
 
         public override Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration =>
-            EffectiveDwellTimeSetting.DownlinkDwellTime ? DrToWithDwell : DrToNoDwell;
+            ApplyDwellTimeLimits ? DrToWithDwell : DrToNoDwell;
 
         public override IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable =>
-            EffectiveDwellTimeSetting.DownlinkDwellTime ? RX1DROffsetTableWithDwell : RX1DROffsetTableNoDwell;
+            ApplyDwellTimeLimits ? RX1DROffsetTableWithDwell : RX1DROffsetTableNoDwell;
 
         public override DwellTimeSetting DefaultDwellTimeSetting { get; } = new DwellTimeSetting(DownlinkDwellTime: true, UplinkDwellTime: true, 5);
 
-        private DwellTimeSetting EffectiveDwellTimeSetting => this.dwellTimeSetting ?? DefaultDwellTimeSetting;
+        private bool ApplyDwellTimeLimits => (this.dwellTimeSetting ?? DefaultDwellTimeSetting).DownlinkDwellTime;
 
         public long FrequencyOffset { get; private set; }
 
@@ -133,8 +133,7 @@ namespace LoRaTools.Regions
         {
             FrequencyOffset = 0;
             MaxADRDataRate = DR7;
-            // TODO: improve. Use fallback dwell time settings until we find a better model for concentrator-specific regions.
-            RegionLimits = EffectiveDwellTimeSetting.DownlinkDwellTime ? RegionLimitsWithDwell : RegionLimitsNoDwell;
+            RegionLimits = ApplyDwellTimeLimits ? RegionLimitsWithDwell : RegionLimitsNoDwell;
         }
 
         /// <summary>
@@ -200,7 +199,7 @@ namespace LoRaTools.Regions
         public override void UseDwellTimeSetting(DwellTimeSetting dwellTimeSetting)
         {
             this.dwellTimeSetting = dwellTimeSetting;
-            RegionLimits = EffectiveDwellTimeSetting.DownlinkDwellTime ? RegionLimitsWithDwell : RegionLimitsNoDwell;
+            RegionLimits = ApplyDwellTimeLimits ? RegionLimitsWithDwell : RegionLimitsNoDwell;
         }
     }
 }
