@@ -24,13 +24,13 @@ namespace LoRaTools.Regions
         /// max application payload size N should be N= M-8 bytes.
         /// This is in case of absence of Fopts field.
         /// </summary>
-        public virtual Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration { get; } = new Dictionary<DataRateIndex, (DataRate, uint)>();
+        public virtual IDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration { get; } = new Dictionary<DataRateIndex, (DataRate, uint)>();
 
         /// <summary>
         /// Gets or sets by default MaxEIRP is considered to be +16dBm.
         /// If the end-device cannot achieve 16dBm EIRP, the Max EIRP SHOULD be communicated to the network server using an out-of-band channel during the end-device commissioning process.
         /// </summary>
-        public virtual Dictionary<uint, double> TXPowertoMaxEIRP { get; } = new Dictionary<uint, double>();
+        public virtual IDictionary<uint, double> TXPowertoMaxEIRP { get; } = new Dictionary<uint, double>();
 
         /// <summary>
         /// Gets or sets table to the get receive windows Offsets.
