@@ -10,13 +10,17 @@ namespace LoRaWan.Tests.Common
     using System.Linq;
     using System.Text;
     using LoRaTools.CommonAPI;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
 
     public static class TestUtils
     {
+        public static readonly Region TestRegion = RegionManager.EU868;
+
         public static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
             ILoRaDeviceClientConnectionManager connectionManager,
@@ -297,5 +301,19 @@ namespace LoRaWan.Tests.Common
                 throw new TimeoutException("Executing the SSH command took more than expected.");
             }
         }
+
+        public static DataRateIndex GetDataRateIndex(this Region region, DataRate datr) =>
+             region.DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate == datr) is (var index, (not null, _)) ? index : throw new KeyNotFoundException("");
+
+        public static RadioMetadata GenerateTestRadioMetadata(
+                DataRateIndex dataRate = DataRateIndex.DR2,
+                Hertz? frequency = null,
+                uint antennaPreference = 1,
+                ulong xtime = 100000,
+                uint gpstime = 0,
+                double rssi = 2.0,
+                float snr = 0.1f) =>
+            new RadioMetadata(dataRate, frequency ?? Hertz.Mega(868.3),
+                              new RadioMetadataUpInfo(antennaPreference, xtime, gpstime, rssi, snr));
     }
 }

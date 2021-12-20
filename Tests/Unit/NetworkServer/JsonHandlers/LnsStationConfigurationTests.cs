@@ -288,25 +288,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Throws<JsonException>(() => LnsStationConfiguration.GetConfiguration(input));
         }
 
-        [Fact]
-        public void WriteRouterConfig_Throws_WhenInvalidBandwidth()
-        {
-            // arrange
-            var input = GetTwinConfigurationJson(Array.Empty<NetId>(),
-                                                 Array.Empty<(JoinEui, JoinEui)>(),
-                                                 "region",
-                                                 "hwspec",
-                                                 (new Hertz(863000000), new Hertz(870000000)),
-                                                 new[] { (SF11, (Bandwidth)16, false) });
-
-            // act + assert
-            Assert.Throws<JsonException>(() => LnsStationConfiguration.GetConfiguration(input));
-        }
-
         [Theory]
         [InlineData(125_000)]
-        [InlineData(125)]
-        public void WriteRouterConfig_Auto_Detects_Whether_Bandwidth_Is_KHz_Or_Hz(uint bandwidth)
+        public void WriteRouterConfig_Throws_WhenInvalidBandwidth(int bandwidth)
         {
             // arrange
             var input = GetTwinConfigurationJson(Array.Empty<NetId>(),
@@ -316,11 +300,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                                                  (new Hertz(863000000), new Hertz(870000000)),
                                                  new[] { (SF11, (Bandwidth)bandwidth, false) });
 
-            // act
-            var result = LnsStationConfiguration.GetConfiguration(input);
-
             // act + assert
-            Assert.True(result.Contains("\"DRs\":[[11,125,0]]", StringComparison.OrdinalIgnoreCase));
+            Assert.Throws<JsonException>(() => LnsStationConfiguration.GetConfiguration(input));
         }
 
         [Fact]

@@ -3,12 +3,14 @@
 
 namespace LoRaTools.ADR
 {
+    using LoRaWan;
+
     /// <summary>
     /// An interface implementing LoRa ADR strategies.
     /// </summary>
     public interface ILoRaADRStrategy
     {
-        LoRaADRResult ComputeResult(string devEUI, LoRaADRTable table, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr);
+        LoRaADRResult ComputeResult(string devEUI, LoRaADRTable table, float requiredSnr, DataRateIndex upstreamDataRate, int minTxPower, DataRateIndex maxDr);
 
         int MinimumNumberOfResult { get; }
 

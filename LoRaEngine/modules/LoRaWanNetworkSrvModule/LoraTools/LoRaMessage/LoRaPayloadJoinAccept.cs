@@ -52,7 +52,7 @@ namespace LoRaTools.LoRaMessage
 
         public int Rx1DrOffset => (DlSettings.Span[0] >> 4) & 0b00000111;
 
-        public int Rx2Dr => DlSettings.Span[0] & 0b00001111;
+        public DataRateIndex Rx2Dr => (DataRateIndex)(DlSettings.Span[0] & 0b00001111);
 
         /// Constructor needed for mocking
         public LoRaPayloadJoinAccept()

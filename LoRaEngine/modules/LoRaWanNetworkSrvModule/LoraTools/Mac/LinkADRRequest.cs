@@ -5,6 +5,7 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using LoRaWan;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -23,7 +24,7 @@ namespace LoRaTools
 
         public override int Length => 5;
 
-        public int DataRate => (DataRateTXPower >> 4) & 0b00001111;
+        public DataRateIndex DataRate => (DataRateIndex)((DataRateTXPower >> 4) & 0b00001111);
 
         public int TxPower => DataRateTXPower & 0b00001111;
 
@@ -72,7 +73,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {Cid} Answer, datarate: {DataRate}, txpower: {TxPower}, nbTrans: {NbRep}, channel Mask Control: {ChMaskCntl}, Redundancy: {Redundancy}";
+            return $"Type: {Cid} Answer, datarate: {(int)DataRate}, txpower: {TxPower}, nbTrans: {NbRep}, channel Mask Control: {ChMaskCntl}, Redundancy: {Redundancy}";
         }
     }
 }
