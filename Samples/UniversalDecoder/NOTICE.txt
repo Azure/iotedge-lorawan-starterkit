@@ -431,7 +431,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-inherits 2.0.4 - ISC
+inherits 2.0.3 - ISC
 https://github.com/isaacs/inherits#readme
 
 Copyright (c) Isaac Z. Schlueter
@@ -458,7 +458,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-inherits 2.0.3 - ISC
+inherits 2.0.4 - ISC
 https://github.com/isaacs/inherits#readme
 
 Copyright (c) Isaac Z. Schlueter
@@ -922,7 +922,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-camelcase 5.0.0 - MIT
+camelcase 5.3.1 - MIT
 https://github.com/sindresorhus/camelcase#readme
 
 (c) Sindre Sorhus (https://sindresorhus.com)
@@ -943,7 +943,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-camelcase 5.3.1 - MIT
+camelcase 5.0.0 - MIT
 https://github.com/sindresorhus/camelcase#readme
 
 (c) Sindre Sorhus (https://sindresorhus.com)
@@ -2584,7 +2584,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-ms 2.0.0 - MIT
+ms 2.1.1 - MIT
 https://github.com/zeit/ms#readme
 
 Copyright (c) 2016 Zeit, Inc.
@@ -2616,7 +2616,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-ms 2.1.1 - MIT
+ms 2.0.0 - MIT
 https://github.com/zeit/ms#readme
 
 Copyright (c) 2016 Zeit, Inc.
