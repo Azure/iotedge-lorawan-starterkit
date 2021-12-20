@@ -109,7 +109,7 @@ namespace LoRaWan.Tests.E2E
                 if (device.IsMultiGw)
                 {
                     // multi gw, make sure one ignored the message
-                    var searchTokenSending = $"{device.DeviceID}: sending a downstream message";
+                    var searchTokenSending = $"{device.DeviceID}: Sending message to station with EUI";
                     var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase));
                     Assert.NotNull(sending.MatchedEvent);
 
