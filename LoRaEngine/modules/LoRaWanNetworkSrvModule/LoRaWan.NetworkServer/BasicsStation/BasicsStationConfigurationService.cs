@@ -15,7 +15,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable
     {
         private const string RouterConfigPropertyName = "routerConfig";
-        private const string DwellTimeConfigurationPropertyName = "txParams";
+        private const string DwellTimeConfigurationPropertyName = "desiredTxParams";
         private const string ConcentratorTwinCachePrefixName = "concentratorTwin:";
         internal const string CupsPropertyName = "cups";
         internal const string ClientThumbprintPropertyName = "clientThumbprint";
@@ -25,11 +25,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
                               JsonReader.Property("uplinkDwellLimit", JsonReader.Boolean()),
                               JsonReader.Property("eirp", JsonReader.UInt32()),
                               (downlinkDwellLimit, uplinkDwellLimit, eirp) => new DwellTimeSetting(downlinkDwellLimit, uplinkDwellLimit, eirp));
-
-        private static readonly IJsonReader<(DwellTimeSetting Default, DwellTimeSetting Desired)> DwellTimeSettingsReader =
-            JsonReader.Object(JsonReader.Property("default", DwellTimeConfigurationReader),
-                              JsonReader.Property("desired", DwellTimeConfigurationReader),
-                              (@default, desired) => (@default, desired));
 
         private static readonly TimeSpan CacheTimeout = TimeSpan.FromHours(2);
         private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
@@ -93,7 +88,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (region is DwellTimeLimitedRegion someRegion)
             {
                 var dwellTimeSettings = await GetDesiredPropertyStringAsync(stationEui, DwellTimeConfigurationPropertyName, cancellationToken);
-                (someRegion.DefaultDwellTimeSetting, someRegion.DesiredDwellTimeSetting) = DwellTimeSettingsReader.Read(dwellTimeSettings);
+                someRegion.DesiredDwellTimeSetting = DwellTimeConfigurationReader.Read(dwellTimeSettings);
             }
             return region;
         }

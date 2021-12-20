@@ -24,9 +24,8 @@ namespace LoRaWan.Tests.Integration
 
     public sealed class DwellTimeIntegrationTests : MessageProcessorTestBase
     {
-        private static readonly DwellTimeSetting DefaultDwellTimeSetting = new DwellTimeSetting(true, true, 5);
         private static readonly DwellTimeSetting DesiredDwellTimeSetting = new DwellTimeSetting(false, false, 3);
-        private static readonly DwellTimeLimitedRegion As923 = new RegionAS923 { DefaultDwellTimeSetting = DefaultDwellTimeSetting, DesiredDwellTimeSetting = DesiredDwellTimeSetting };
+        private static readonly DwellTimeLimitedRegion As923 = new RegionAS923 { DesiredDwellTimeSetting = DesiredDwellTimeSetting };
         private readonly Mock<TestDefaultLoRaRequestHandler> dataRequestHandlerMock;
         private readonly SimulatedDevice simulatedDevice;
         private readonly LoRaDevice loRaDevice;
@@ -63,11 +62,7 @@ namespace LoRaWan.Tests.Integration
         public async Task Sends_TxParamSetupReq(DwellTimeSetting desired, DwellTimeSetting? reported)
         {
             // arrange
-            var region = new RegionAS923
-            {
-                DefaultDwellTimeSetting = DefaultDwellTimeSetting,
-                DesiredDwellTimeSetting = desired
-            };
+            var region = new RegionAS923 { DesiredDwellTimeSetting = desired };
             using var request = SetupRequest(region, reported);
             LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
@@ -84,8 +79,7 @@ namespace LoRaWan.Tests.Integration
         public static TheoryData<Region, DwellTimeSetting?> Does_Not_Send_TxParamSetupReq_TheoryData() =>
             TheoryDataFactory.From(new (Region, DwellTimeSetting?)[]
         {
-            (new RegionAS923 { DesiredDwellTimeSetting = DesiredDwellTimeSetting, DefaultDwellTimeSetting = DefaultDwellTimeSetting }, DesiredDwellTimeSetting),
-            (new RegionAS923 { DesiredDwellTimeSetting = DesiredDwellTimeSetting, DefaultDwellTimeSetting = DesiredDwellTimeSetting }, DesiredDwellTimeSetting),
+            (new RegionAS923 { DesiredDwellTimeSetting = DesiredDwellTimeSetting }, DesiredDwellTimeSetting),
             (new RegionEU868(), null),
             (new RegionEU868(), new DwellTimeSetting(false, true, 1))
         });

@@ -6,38 +6,25 @@
 namespace LoRaWan.Tests.Unit.LoRaTools
 {
     using System;
+    using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
+    using global::LoRaTools.Utils;
     using LoRaWan;
     using Xunit;
 
     public sealed class DwellTimeLimitedRegionTests
     {
         [Fact]
-        public void When_Accessing_Uninitialized_DefaultDwellTimeSetting_Throws()
+        public void When_Accessing_Uninitialized_DwellTimeSetting_Throws()
         {
-            Assert.Throws<InvalidOperationException>(() => new DwellTimeLimitedTestRegion().DefaultDwellTimeSetting);
             Assert.Throws<InvalidOperationException>(() => new DwellTimeLimitedTestRegion().DesiredDwellTimeSetting);
-        }
-
-        [Fact]
-        public void Setting_And_Getting_DefaultDwellTimeSetting_Success()
-        {
-            var dwellTimeSetting = new DwellTimeSetting(true, false, 4);
-            var subject = new DwellTimeLimitedTestRegion
-            {
-                DefaultDwellTimeSetting = dwellTimeSetting
-            };
-            Assert.Equal(dwellTimeSetting, subject.DefaultDwellTimeSetting);
         }
 
         [Fact]
         public void Setting_And_Getting_DesiredDwellTimeSetting_Success()
         {
             var dwellTimeSetting = new DwellTimeSetting(true, false, 4);
-            var subject = new DwellTimeLimitedTestRegion
-            {
-                DesiredDwellTimeSetting = dwellTimeSetting
-            };
+            var subject = new DwellTimeLimitedTestRegion { DesiredDwellTimeSetting = dwellTimeSetting };
             Assert.Equal(dwellTimeSetting, subject.DesiredDwellTimeSetting);
         }
 
@@ -46,11 +33,13 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public DwellTimeLimitedTestRegion() : base(LoRaRegionType.AS923)
             { }
 
-            public override global::LoRaTools.Utils.RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo? deviceJoinInfo = null) =>
+            public override DwellTimeSetting DefaultDwellTimeSetting => new DwellTimeSetting(true, false, 4);
+
+            public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo? deviceJoinInfo = null) =>
                 throw new NotImplementedException();
 
             [Obsolete]
-            public override bool TryGetDownstreamChannelFrequency(global::LoRaTools.LoRaPhysical.Rxpk upstreamChannel, out double frequency, DeviceJoinInfo? deviceJoinInfo = null) =>
+            public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo? deviceJoinInfo = null) =>
                 throw new NotImplementedException();
 
             public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo? deviceJoinInfo = null) =>

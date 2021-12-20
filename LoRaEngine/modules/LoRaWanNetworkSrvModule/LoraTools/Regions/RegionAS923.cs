@@ -122,6 +122,8 @@ namespace LoRaTools.Regions
         public override IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable =>
             EffectiveDwellTimeSetting.DownlinkDwellTime ? RX1DROffsetTableWithDwell : RX1DROffsetTableNoDwell;
 
+        public override DwellTimeSetting DefaultDwellTimeSetting { get; } = new DwellTimeSetting(DownlinkDwellTime: true, UplinkDwellTime: true, 5);
+
         private DwellTimeSetting EffectiveDwellTimeSetting => this.dwellTimeSetting ?? DefaultDwellTimeSetting;
 
         public long FrequencyOffset { get; private set; }
@@ -132,7 +134,6 @@ namespace LoRaTools.Regions
             FrequencyOffset = 0;
             MaxADRDataRate = DR7;
             // TODO: improve. Use fallback dwell time settings until we find a better model for concentrator-specific regions.
-            DefaultDwellTimeSetting = new DwellTimeSetting(DownlinkDwellTime: true, UplinkDwellTime: true, 5);
             RegionLimits = EffectiveDwellTimeSetting.DownlinkDwellTime ? RegionLimitsWithDwell : RegionLimitsNoDwell;
         }
 

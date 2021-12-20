@@ -13,13 +13,6 @@ namespace LoRaTools.Regions
     /// </summary>
     public abstract class DwellTimeLimitedRegion : Region
     {
-        private DwellTimeSetting? defaultDwellTimeSetting;
-        public DwellTimeSetting DefaultDwellTimeSetting
-        {
-            get => this.defaultDwellTimeSetting ?? throw new InvalidOperationException("DefaultDwellTimeSetting is null.");
-            set => this.defaultDwellTimeSetting = value;
-        }
-
         private DwellTimeSetting? desiredDwellTimeSetting;
         public DwellTimeSetting DesiredDwellTimeSetting
         {
@@ -30,6 +23,8 @@ namespace LoRaTools.Regions
         protected DwellTimeLimitedRegion(LoRaRegionType loRaRegionType)
             : base(loRaRegionType)
         { }
+
+        public abstract DwellTimeSetting DefaultDwellTimeSetting { get; }
 
         /// <summary>
         /// Mutates the Region to use the specific dwell time settings.
