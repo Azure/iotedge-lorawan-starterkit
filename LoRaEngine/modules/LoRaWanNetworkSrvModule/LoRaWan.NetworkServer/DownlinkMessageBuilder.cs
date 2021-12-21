@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
 
             // default fport
             var fctrl = FrameControlFlags.None;
-            if (upstreamPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+            if (upstreamPayload.MessageType == MacMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
                 fctrl = FrameControlFlags.Ack;
@@ -118,7 +118,7 @@ namespace LoRaWan.NetworkServer
 
             var macCommands = new List<MacCommand>();
 
-            byte? fport = null;
+            FramePort? fport = null;
             var requiresDeviceAcknowlegement = false;
             var macCommandType = Cid.Zero;
 
@@ -157,12 +157,12 @@ namespace LoRaWan.NetworkServer
                         loRaDevice.LastConfirmedC2DMessageID = cloudToDeviceMessage.MessageId ?? Constants.C2D_MSG_ID_PLACEHOLDER;
                     }
 
-                    if (cloudToDeviceMessage.Fport > 0)
+                    if (cloudToDeviceMessage.Fport.IsAppSpecific() || cloudToDeviceMessage.Fport.IsReserved())
                     {
                         fport = cloudToDeviceMessage.Fport;
                     }
 
-                    logger.LogInformation($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}");
+                    logger.LogInformation($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : ConversionHelper.ByteArrayToString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {(byte)(fport ?? FramePort.MacCommand)}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}");
                     Array.Reverse(frmPayload);
                 }
                 else
@@ -208,14 +208,14 @@ namespace LoRaWan.NetworkServer
                 reversedDevAddr[i] = srcDevAddr[^(1 + i)];
             }
 
-            var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
+            var msgType = requiresDeviceAcknowlegement ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
                 reversedDevAddr,
                 fctrl,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
-                fport.HasValue ? new byte[] { fport.Value } : null,
+                fport,
                 frmPayload,
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
@@ -226,7 +226,8 @@ namespace LoRaWan.NetworkServer
             var downlinkPktFwdMessage = ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, lnsRxDelay, rxpk.Rfch, rxpk.Time, request.StationEui);
 
             if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug($"{(LoRaMessageType)ackLoRaMessage.Mhdr.Span[0]} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+                logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+            downlinkPktFwdMessage.DeviceJoinInfo = deviceJoinInfo;
 
             return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong, receiveWindow);
         }
@@ -321,14 +322,14 @@ namespace LoRaWan.NetworkServer
                 reversedDevAddr[i] = payloadDevAddr[^(1 + i)];
             }
 
-            var msgType = cloudToDeviceMessage.Confirmed ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
+            var msgType = cloudToDeviceMessage.Confirmed ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
                 reversedDevAddr,
                 FrameControlFlags.None,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
-                new byte[] { cloudToDeviceMessage.Fport },
+                cloudToDeviceMessage.Fport,
                 frmPayload,
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
@@ -344,7 +345,7 @@ namespace LoRaWan.NetworkServer
                                          stationEui: loRaDevice.LastProcessingStationEui);
 
             if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug($"{(LoRaMessageType)ackLoRaMessage.Mhdr.Span[0]} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
+                logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
 
             // Class C always uses RX2.
             return new DownlinkMessageBuilderResponse(downlinkPktFwdMessage, isMessageTooLong, Constants.ReceiveWindow2);

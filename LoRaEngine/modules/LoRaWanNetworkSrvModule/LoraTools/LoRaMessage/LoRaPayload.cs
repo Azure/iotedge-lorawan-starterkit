@@ -10,6 +10,7 @@ namespace LoRaTools.LoRaMessage
     using System.Security.Cryptography;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using LoRaWan;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
@@ -18,7 +19,7 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public abstract class LoRaPayload
     {
-        public LoRaMessageType LoRaMessageType { get; set; }
+        public MacMessageType MessageType { get; set; }
 
         /// <summary>
         /// Gets or sets raw byte of the message.
@@ -109,9 +110,11 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC.
         /// </summary>
-        public static byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
+        public static byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, DevNonce devNonce, byte[] appKey)
         {
             if (keyType == LoRaPayloadKeyType.None) throw new InvalidOperationException("No key type selected.");
+            if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
+            if (netid is null) throw new ArgumentNullException(nameof(netid));
 
             var type = new byte[1];
             type[0] = (byte)keyType;
@@ -124,7 +127,11 @@ namespace LoRaTools.LoRaMessage
             aes.Padding = PaddingMode.None;
             aes.IV = new byte[16];
 
-            var pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
+            var pt = new byte[type.Length + appnonce.Length + netid.Length + DevNonce.Size + 7];
+            Array.Copy(type, pt, type.Length);
+            Array.Copy(appnonce, 0, pt, type.Length, appnonce.Length);
+            Array.Copy(netid, 0, pt, type.Length + appnonce.Length, netid.Length);
+            _ = devNonce.Write(pt.AsSpan(type.Length + appnonce.Length + netid.Length));
 
             ICryptoTransform cipher;
 #pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
@@ -140,25 +147,21 @@ namespace LoRaTools.LoRaMessage
             if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
 
             var convertedInputMessage = Convert.FromBase64String(rxpk.Data);
-            var messageType = convertedInputMessage[0];
+            var messageType = new MacHeader(convertedInputMessage[0]).MessageType;
 
-            switch (messageType)
+#pragma warning disable IDE0072 // Add missing cases (handled by default case)
+            loRaPayloadMessage = messageType switch
+#pragma warning restore IDE0072 // Add missing cases
             {
-                case (int)LoRaMessageType.UnconfirmedDataUp:
-                case (int)LoRaMessageType.ConfirmedDataUp:
-                    loRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
-                    break;
+                MacMessageType.UnconfirmedDataUp or MacMessageType.ConfirmedDataUp => new LoRaPayloadData(convertedInputMessage),
+                MacMessageType.JoinRequest => new LoRaPayloadJoinRequest(convertedInputMessage),
+                _ => (LoRaPayload)null,
+            };
 
-                case (int)LoRaMessageType.JoinRequest:
-                    loRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
-                    break;
+            if (loRaPayloadMessage is null)
+                return false;
 
-                default:
-                    loRaPayloadMessage = null;
-                    return false;
-            }
-
-            loRaPayloadMessage.LoRaMessageType = (LoRaMessageType)messageType;
+            loRaPayloadMessage.MessageType = messageType;
             return true;
         }
 
@@ -195,5 +198,8 @@ namespace LoRaTools.LoRaMessage
             var fcntServerUpper = fcnt & MaskHigher16;
             return fcntServerUpper | payloadFcnt;
         }
+
+        public virtual bool RequiresConfirmation
+            => false;
     }
 }

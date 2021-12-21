@@ -29,12 +29,6 @@ namespace LoRaTools.LoRaMessage
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
-        /// Gets the LoRa payload fport as value.
-        /// </summary>
-        [JsonIgnore]
-        public byte FPortValue => Fport.Span.Length > 0 ? Fport.Span[0] : (byte)0;
-
-        /// <summary>
         /// Gets the LoRa payload frame counter.
         /// </summary>
         public ushort GetFcnt() => MemoryMarshal.Read<ushort>(Fcnt.Span);
@@ -48,7 +42,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp).
         /// </summary>
-        public bool IsConfirmed => LoRaMessageType is LoRaMessageType.ConfirmedDataDown or LoRaMessageType.ConfirmedDataUp;
+        public bool IsConfirmed => MessageType is MacMessageType.ConfirmedDataDown or MacMessageType.ConfirmedDataUp;
 
         /// <summary>
         /// Gets a value indicating whether does a Mac command require an answer?.
@@ -90,7 +84,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets port field.
         /// </summary>
-        public Memory<byte> Fport { get; set; }
+        public FramePort? Fport { get; set; }
 
         /// <summary>
         /// Gets or sets mAC Frame Payload Encryption.
@@ -126,12 +120,12 @@ namespace LoRaTools.LoRaMessage
             // address correct but inversed
             Array.Reverse(addrbytes);
             DevAddr = addrbytes;
-            LoRaMessageType = (LoRaMessageType)RawMessage[0];
+            MessageType = new MacHeader(RawMessage[0]).MessageType;
 
             // in this case the payload is not downlink of our type
-            if (LoRaMessageType is LoRaMessageType.ConfirmedDataDown or
-                LoRaMessageType.JoinAccept or
-                LoRaMessageType.UnconfirmedDataDown)
+            if (MessageType is MacMessageType.ConfirmedDataDown or
+                MacMessageType.JoinAccept or
+                MacMessageType.UnconfirmedDataDown)
             {
                 Direction = 1;
             }
@@ -155,7 +149,7 @@ namespace LoRaTools.LoRaMessage
             }
 
             // Fport can be empty if no commands!
-            Fport = new Memory<byte>(inputMessage, 8 + foptsSize, fportLength);
+            Fport = fportLength > 0 ? (FramePort)inputMessage[8 + foptsSize] : null;
             // frmpayload
             Frmpayload = new Memory<byte>(inputMessage, 8 + fportLength + foptsSize, inputMessage.Length - 8 - fportLength - 4 - foptsSize);
 
@@ -172,7 +166,7 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Downstream Constructor (build a LoRa Message).
         /// </summary>
-        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, FrameControlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
+        public LoRaPayloadData(MacMessageType messageType, byte[] devAddr, FrameControlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, FramePort? fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
             if (devAddr is null) throw new ArgumentNullException(nameof(devAddr));
             if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
@@ -191,7 +185,7 @@ namespace LoRaTools.LoRaMessage
             var fOpts = macBytes.ToArray();
             var fOptsLen = fOpts == null ? 0 : fOpts.Length;
             var frmPayloadLen = frmPayload == null ? 0 : frmPayload.Length;
-            var fPortLen = fPort == null ? 0 : fPort.Length;
+            var fPortLen = fPort is null ? 0 : 1;
 
             // TODO If there are mac commands to send and no payload, we need to put the mac commands in the frmpayload.
             if (macBytes.Count > 0 && (frmPayload == null || frmPayload.Length == 0))
@@ -201,14 +195,14 @@ namespace LoRaTools.LoRaMessage
                 fOptsLen = 0;
                 frmPayloadLen = frmPayload.Length;
                 fPortLen = 1;
-                fPort = new byte[1] { 0 };
+                fPort = FramePort.MacCommand;
             }
 
             var macPyldSize = devAddr.Length + FrameControl.Size + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
             RawMessage = new byte[1 + macPyldSize + 4];
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
-            RawMessage[0] = (byte)mhdr;
-            LoRaMessageType = mhdr;
+            RawMessage[0] = (byte)(new MacHeader(messageType));
+            MessageType = messageType;
             // Array.Copy(mhdr, 0, RawMessage, 0, 1);
             Array.Reverse(devAddr);
             DevAddr = new Memory<byte>(RawMessage, 1, 4);
@@ -227,10 +221,10 @@ namespace LoRaTools.LoRaMessage
                 Fopts = null;
             }
 
-            if (fPort != null)
+            if (fPort is { } someFPort)
             {
-                Fport = new Memory<byte>(RawMessage, 8 + fOptsLen, fPortLen);
-                Array.Copy(fPort, 0, RawMessage, 8 + fOptsLen, fPortLen);
+                Fport = someFPort;
+                RawMessage[8 + fOptsLen] = (byte)someFPort;
             }
             else
             {
@@ -246,16 +240,6 @@ namespace LoRaTools.LoRaMessage
             if (!Frmpayload.Span.IsEmpty)
                 Frmpayload.Span.Reverse();
             Direction = direction;
-        }
-
-        /// <summary>
-        /// Serialize a message to be sent upstream.
-        /// </summary>
-        public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0, float lsnr = 0)
-        {
-            _ = PerformEncryption(appSKey);
-            SetMic(nwkSKey);
-            return new UplinkPktFwdMessage(GetByteMessage(), datr, freq, tmst, lsnr);
         }
 
         /// <summary>
@@ -277,7 +261,7 @@ namespace LoRaTools.LoRaMessage
             if (devEUI is null) throw new ArgumentNullException(nameof(devEUI));
 
             // It is a Mac Command payload, needs to encrypt with nwkskey
-            if (FPortValue == 0)
+            if (Fport == FramePort.MacCommand)
             {
                 _ = PerformEncryption(nwkSKey);
             }
@@ -447,9 +431,9 @@ namespace LoRaTools.LoRaMessage
                 messageArray.AddRange(Fopts.ToArray());
             }
 
-            if (!Fport.Span.IsEmpty)
+            if (Fport is { } someFport)
             {
-                messageArray.AddRange(Fport.ToArray());
+                messageArray.Add((byte)someFport);
             }
 
             if (!Frmpayload.Span.IsEmpty)
@@ -478,6 +462,9 @@ namespace LoRaTools.LoRaMessage
 
             MacCommands.Add(mac);
         }
+
+        public override bool RequiresConfirmation
+            => IsConfirmed || IsMacAnswerRequired;
 
         private byte[] GetFcntBlockInfo()
         {

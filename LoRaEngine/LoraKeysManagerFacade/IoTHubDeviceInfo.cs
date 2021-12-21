@@ -3,9 +3,25 @@
 
 namespace LoraKeysManagerFacade
 {
+    using LoRaWan;
+    using Newtonsoft.Json;
+
     public class IoTHubDeviceInfo
     {
-        public string DevAddr { get; set; }
+        public int NetworkId { get; set; }
+
+        public int NetworkAddress { get; set; }
+
+        [JsonIgnore]
+        public DevAddr DevAddr
+        {
+            get => new DevAddr(NetworkId, NetworkAddress);
+            set
+            {
+                NetworkId = value.NetworkId;
+                NetworkAddress = value.NetworkAddress;
+            }
+        }
 
         public string DevEUI { get; set; }
 

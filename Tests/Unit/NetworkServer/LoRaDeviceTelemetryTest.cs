@@ -4,22 +4,25 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
     using Xunit;
 
     public class LoRaDeviceTelemetryTest
     {
         [Theory]
-        [InlineData(1, 1)]
-        [InlineData(2, 10)]
-        [InlineData(100, 2)]
-        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(uint fcnt, byte fport)
+        [InlineData(1, FramePorts.App1)]
+        [InlineData(2, FramePorts.App10)]
+        [InlineData(100, FramePorts.App2)]
+        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(uint fcnt, FramePort fport)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: fcnt, fport: fport);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var decodedValue = new { value = 1 };
+
+            var rxpk = new BasicStationToRxpk(TestUtils.GenerateTestRadioMetadata(), RegionManager.EU868);
 
             var target = new LoRaDeviceTelemetry(rxpk, payload, decodedValue, payload.GetDecryptedPayload(simulatedDevice.AppSKey));
             Assert.Equal(rxpk.Chan, target.Chan);
@@ -38,7 +41,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(rxpk.Tmms, target.Tmms);
             Assert.Equal(rxpk.Tmst, target.Tmst);
             Assert.Equal(payload.GetFcnt(), target.Fcnt);
-            Assert.Equal(payload.FPortValue, target.Port);
+            Assert.Equal(payload.Fport, target.Port);
         }
     }
 }
