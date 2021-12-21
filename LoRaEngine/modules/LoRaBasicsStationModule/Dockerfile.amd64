@@ -16,5 +16,6 @@ COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basicsstation.sh .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
 COPY --from=build /basicstation/deps/lgw/platform-linux/reset_lgw.sh .
 COPY LICENSE .
+COPY ./LoRaEngine/modules/LoRaBasicsStationModule/NOTICE.txt .
 RUN chmod +x ./start_basicsstation.sh
 ENTRYPOINT ["./start_basicsstation.sh"]
