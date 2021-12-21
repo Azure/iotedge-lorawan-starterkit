@@ -6,7 +6,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Diagnostics.Metrics;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
@@ -20,7 +19,6 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
-        private volatile Region loraRegion;
         private readonly IJoinRequestMessageHandler joinRequestHandler;
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<MessageDispatcher> logger;
@@ -85,22 +83,12 @@ namespace LoRaWan.NetworkServer
                 request.SetPayload(loRaPayload);
             }
 
-            if (this.loraRegion == null)
+            if (request.Region is null)
             {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                if (!RegionManager.TryResolveRegion(request.Rxpk, out var currentRegion))
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                {
-                    // log is generated in Region factory
-                    // move here once V2 goes GA
-                    request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRegion);
-                    return;
-                }
-
-                this.loraRegion = currentRegion;
+                request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRegion);
+                return;
             }
 
-            request.SetRegion(this.loraRegion);
 
             var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>(), this.d2cMessageDeliveryLatencyHistogram);
 
