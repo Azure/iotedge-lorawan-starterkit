@@ -985,6 +985,8 @@ namespace LoRaWan.Tests.Integration
                                                            inTimeForAdditionalMessageCheck: false,
                                                            inTimeForDownlinkDelivery: false,
                                                            payload);
+            request.SetRegion(this.Region);
+
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
