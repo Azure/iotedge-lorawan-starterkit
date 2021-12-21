@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using static ReceiveWindowNumber;
 
     /// <summary>
     /// Helper class to create <see cref="DownlinkMessage"/>.
@@ -55,7 +56,7 @@ namespace LoRaWan.NetworkServer
 
             // Calculate receive window
             var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
-            if (receiveWindow == Constants.InvalidReceiveWindow)
+            if (receiveWindow is null)
             {
                 // No valid receive window. Abandon the message
                 isMessageTooLong = true;
@@ -77,7 +78,7 @@ namespace LoRaWan.NetworkServer
             if (loRaRegion is DwellTimeLimitedRegion someRegion)
                 someRegion.UseDwellTimeSetting(loRaDevice.ReportedDwellTimeSetting);
 
-            if (receiveWindow == Constants.ReceiveWindow2)
+            if (receiveWindow is ReceiveWindow2)
             {
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
                 freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo);
@@ -286,7 +287,7 @@ namespace LoRaWan.NetworkServer
             if (availablePayloadSize < totalC2dSize)
             {
                 isMessageTooLong = true;
-                return new DownlinkMessageBuilderResponse(null, isMessageTooLong, Constants.ReceiveWindow2);
+                return new DownlinkMessageBuilderResponse(null, isMessageTooLong, ReceiveWindow2);
             }
 
             if (macCommands?.Count > 0)
@@ -325,7 +326,7 @@ namespace LoRaWan.NetworkServer
                 logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(loraDownLinkMessage)}");
 
             // Class C always uses RX2.
-            return new DownlinkMessageBuilderResponse(loraDownLinkMessage, isMessageTooLong, Constants.ReceiveWindow2);
+            return new DownlinkMessageBuilderResponse(loraDownLinkMessage, isMessageTooLong, ReceiveWindow2);
         }
 
         /// <summary>

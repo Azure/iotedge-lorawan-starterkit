@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.NetworkServer;
     using Moq;
     using Xunit;
+    using static LoRaWan.ReceiveWindowNumber;
 
     // Tests of the LoRa Operation time watcher
     public class LoRaOperationTimeWatcherTest
@@ -60,10 +61,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager)
             {
-                PreferredWindow = Constants.ReceiveWindow2,
+                PreferredWindow = ReceiveWindow2,
             };
 
-            Assert.Equal(Constants.ReceiveWindow2, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(ReceiveWindow2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -74,7 +75,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
-            Assert.Equal(Constants.ReceiveWindow1, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(ReceiveWindow1, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -86,7 +87,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
-            Assert.Equal(Constants.ReceiveWindow2, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(ReceiveWindow2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -98,7 +99,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
-            Assert.Equal(Constants.InvalidReceiveWindow, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Null(target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -113,7 +114,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
-            Assert.Equal(1, target.ResolveJoinAcceptWindowToUse());
+            Assert.Equal(ReceiveWindow1, target.ResolveJoinAcceptWindowToUse());
         }
 
         [Theory]
@@ -125,7 +126,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
-            Assert.Equal(2, target.ResolveJoinAcceptWindowToUse());
+            Assert.Equal(ReceiveWindow2, target.ResolveJoinAcceptWindowToUse());
         }
 
         [Theory]
@@ -137,7 +138,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
-            Assert.Equal(0, target.ResolveJoinAcceptWindowToUse());
+            Assert.Null(target.ResolveJoinAcceptWindowToUse());
         }
 
         [Theory]
@@ -177,7 +178,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice(new DevAddr(0x1111), new DevEui(0x2222), ConnectionManager)
             {
-                PreferredWindow = 2,
+                PreferredWindow = ReceiveWindow2,
             };
 
             // Will be around 1000 - delay - 400
@@ -186,14 +187,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         // Preferred Window 1
-        [InlineData(1581, 1)]
-        [InlineData(1600, 1)]
-        [InlineData(2000, 1)]
+        [InlineData(1581, ReceiveWindow1)]
+        [InlineData(1600, ReceiveWindow1)]
+        [InlineData(2000, ReceiveWindow1)]
         // Preferred Window 2
-        [InlineData(1581, 2)]
-        [InlineData(1600, 2)]
-        [InlineData(2000, 2)]
-        public void When_Device_Out_Of_Time_For_C2D_Receive_Should_Return_TimeSpan_Zero(int delayInMs, int devicePreferredReceiveWindow)
+        [InlineData(1581, ReceiveWindow2)]
+        [InlineData(1600, ReceiveWindow2)]
+        [InlineData(2000, ReceiveWindow2)]
+        public void When_Device_Out_Of_Time_For_C2D_Receive_Should_Return_TimeSpan_Zero(int delayInMs, ReceiveWindowNumber devicePreferredReceiveWindow)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice(new DevAddr(0x1111), new DevEui(0x2222), ConnectionManager)

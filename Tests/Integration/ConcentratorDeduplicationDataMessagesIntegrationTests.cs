@@ -18,6 +18,7 @@ namespace LoRaWan.Tests.Integration
     using Moq;
     using Xunit;
     using Xunit.Abstractions;
+    using static ReceiveWindowNumber;
 
     public sealed class ConcentratorDeduplicationDataMessagesIntegrationTests : MessageProcessorTestBase
     {
@@ -84,7 +85,8 @@ namespace LoRaWan.Tests.Integration
                                                                    It.IsAny<uint?>(),
                                                                    It.IsAny<bool>()))
                 .Returns((LoRaRequest request, LoRaDevice _, LoRaOperationTimeWatcher _, LoRaADRResult _, IReceivedLoRaCloudToDeviceMessage _, uint? _, bool _) =>
-                    new DownlinkMessageBuilderResponse(new DownlinkMessage(request.Payload.RawMessage, default, default, default, default, default, default), false, 1));
+                    new DownlinkMessageBuilderResponse(new DownlinkMessage(request.Payload.RawMessage, default, default, default, default, default, default),
+                                                       isMessageTooLong: false, ReceiveWindow1));
 
             _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
             {
