@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     {
         private static readonly Action<ILogger, StationEui, int, string, Exception> LogSendingMessage =
             LoggerMessage.Define<StationEui, int, string>(LogLevel.Debug, default,
-                                                     "sending message to station with EUI '{StationEui}' with ID {Diid}. Payload '{Payload}'.");
+                                                     "sending message to station with EUI '{StationEui}' with diid {Diid}. Payload '{Payload}'.");
 
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
