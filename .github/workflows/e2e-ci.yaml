@@ -96,7 +96,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Power Azure VM
+      - name: Power OFF Azure VM
         uses: ./.github/workflows/composite/power-azure-vm
         with:
           AZURE_VM_NAME: eflow
@@ -528,7 +528,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Power Azure VM
+      - name: Power OFF Azure VM
         uses: ./.github/workflows/composite/power-azure-vm
         with:
           AZURE_VM_NAME: eflow
