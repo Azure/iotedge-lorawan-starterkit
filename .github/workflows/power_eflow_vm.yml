@@ -6,29 +6,30 @@ on:
       power:
         description: 'Turn the VM ON or OFF'
         required: true
-        type: choice
-        options:
-          - 'ON'
-          - 'OFF'
+        type: boolean
       vm_name:
-        description: 'the name of the vm to be turned on'
+        description: 'The name of the vm to be turned on'
         required: true 
         default: 'eflow'
         type: string
       rg_name:
+        description: 'The name of the resource-group the VM belongs to'
         required: false
-        description: 'the name of the resource-group the VM belongs to'
         type: string
         default: 'lorae2etests'
 
 jobs:
-  call-workflow:
-    uses: azure/iotedge-lorawan-starterkit/.github/workflows/template-azure-vm-power.yml@main
-    with:
-      AZURE_VM_NAME: ${{ github.event.inputs.vm_name }}
-      AZURE_RG_NAME: ${{ github.event.inputs.rg_name }}
-      POWER: ${{ github.event.inputs.power }}
-    secrets:
-      AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
-      AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
-      AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
+  power_azure_vm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Power Azure VM
+        uses: ./.github/workflows/composite/power-azure-vm
+        with:
+          AZURE_VM_NAME: ${{ github.event.inputs.vm_name }}
+          AZURE_RG_NAME: ${{ github.event.inputs.rg_name }}
+          POWER_SWITCH: ${{ github.event.inputs.power }}
+          AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
+          AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}

@@ -42,20 +42,9 @@ env:
   MAJOR_VERSION: 2
 
 jobs:
-  turn_on_eflow:
-    if: always()
-    uses: azure/iotedge-lorawan-starterkit/.github/workflows/template-azure-vm-power.yml@main
-    with:
-      AZURE_VM_NAME: 'eflow'
-      AZURE_RG_NAME: 'lorae2etests'
-      POWER: 'ON'
-    secrets:
-      AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
-      AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
-      AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
-
   env_var:
     name: Set environment variables
+    concurrency: setup
     runs-on: ubuntu-latest
     steps:
     - id: e2e_list_step
@@ -98,6 +87,24 @@ jobs:
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
       CertRemotePath: "/var/lorastarterkit/certs"
+  
+  power_on_azure_vm:
+    name: Power ON EFLOW
+    concurrency: setup
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Power Azure VM
+        uses: ./.github/workflows/composite/power-azure-vm
+        with:
+          AZURE_VM_NAME: eflow
+          AZURE_RG_NAME: lorae2etest
+          POWER_SWITCH: true
+          AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
+          AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
@@ -514,14 +521,19 @@ jobs:
         name: e2e-test-results
         path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
   
-  turn_off_eflow:
+  power_off_azure_vm:
+    name: Power OFF EFLOW
     if: always()
-    uses: azure/iotedge-lorawan-starterkit/.github/workflows/template-azure-vm-power.yml@main
-    with:
-      AZURE_VM_NAME: 'eflow'
-      AZURE_RG_NAME: 'lorae2etests'
-      POWER: 'OFF'
-    secrets:
-      AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
-      AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
-      AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Power Azure VM
+        uses: ./.github/workflows/composite/power-azure-vm
+        with:
+          AZURE_VM_NAME: eflow
+          AZURE_RG_NAME: lorae2etest
+          POWER_SWITCH: false
+          AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
+          AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
