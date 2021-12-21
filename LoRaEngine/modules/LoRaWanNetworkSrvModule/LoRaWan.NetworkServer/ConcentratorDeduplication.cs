@@ -58,10 +58,9 @@ namespace LoRaWan.NetworkServer
 
             if (previousStation == loRaRequest.StationEui)
             {
-                if (!loRaRequest.Payload.RequiresConfirmation)
-                    result = ConcentratorDeduplicationResult.Duplicate;
-                else
-                    result = ConcentratorDeduplicationResult.DuplicateDueToResubmission;
+                result = loRaRequest.Payload.RequiresConfirmation
+                    ? ConcentratorDeduplicationResult.DuplicateDueToResubmission
+                    : ConcentratorDeduplicationResult.Duplicate;
             }
             else if (loRaDevice.Deduplication == DeduplicationMode.Drop)
             {
