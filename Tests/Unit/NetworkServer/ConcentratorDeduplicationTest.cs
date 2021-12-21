@@ -31,6 +31,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 null,
                 Array.Empty<byte>(),
+                new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
             };
 
         public ConcentratorDeduplicationTest()
@@ -112,29 +113,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey((LoRaPayloadData)this.dataRequest.Payload));
         }
 
-        [Fact]
-        public void CreateKeyMethod_Should_Include_All_Properties()
-        {
-            // arrange
-            var mock = new Mock<ConcentratorDeduplication>(MockBehavior.Default, this.cache, NullLogger<ConcentratorDeduplication>.Instance);
-            Memory<byte> actualBuffer = null;
-            _ = mock.Setup(x => x.HashKey(It.IsAny<byte[]>())).Callback<byte[]>(b => actualBuffer = b);
-            var payload = (LoRaPayloadData)this.dataRequest.Payload;
-
-            // act
-            _ = mock.Object.CreateCacheKey(payload);
-
-            // assert
-            mock.Verify(x => x.HashKey(It.IsAny<byte[]>()), Times.Once);
-            Assert.True(MemoryExtensions.SequenceEqual(payload.DevAddr.Span, actualBuffer.Span[0..4]));
-            Assert.True(MemoryExtensions.SequenceEqual(payload.Mic.Span, actualBuffer.Span[4..8]));
-            var index = 8 + payload.RawMessage.Length;
-            Assert.True(MemoryExtensions.SequenceEqual(payload.RawMessage.AsSpan(), actualBuffer.Span[8..index]));
-            Assert.True(MemoryExtensions.SequenceEqual(payload.Fcnt.Span, actualBuffer.Span[index..])); // implicitly asserts that the length is correct as well
-        }
-
         [Theory, MemberData(nameof(TestRawMessages))]
-        public void CreateKeyMethod_Should_Not_Throw_For_Special_RawMessages(byte[]? rawMessage)
+        public void CreateKeyMethod_Should_Include_All_Properties_For_Different_RawMessages(byte[]? rawMessage)
         {
             // arrange
             var mock = new Mock<ConcentratorDeduplication>(MockBehavior.Default, this.cache, NullLogger<ConcentratorDeduplication>.Instance);
@@ -150,7 +130,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             mock.Verify(x => x.HashKey(It.IsAny<byte[]>()), Times.Once);
             Assert.True(MemoryExtensions.SequenceEqual(payload.DevAddr.Span, actualBuffer.Span[0..4]));
             Assert.True(MemoryExtensions.SequenceEqual(payload.Mic.Span, actualBuffer.Span[4..8]));
-            Assert.True(MemoryExtensions.SequenceEqual(payload.Fcnt.Span, actualBuffer.Span[8..])); // implicitly asserts that the length is correct as well
+            var index = 8;
+            if (payload.RawMessage?.Length > 0)
+            {
+                index += payload.RawMessage.Length;
+                Assert.True(MemoryExtensions.SequenceEqual(payload.RawMessage.AsSpan(), actualBuffer.Span[8..index]));
+            }
+            Assert.True(MemoryExtensions.SequenceEqual(payload.Fcnt.Span, actualBuffer.Span[index..])); // implicitly asserts that the length is correct as well
         }
         #endregion
 
