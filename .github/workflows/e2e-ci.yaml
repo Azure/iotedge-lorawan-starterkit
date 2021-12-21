@@ -98,7 +98,7 @@ jobs:
         uses: ./.github/actions/power-azure-vm
         with:
           AZURE_VM_NAME: eflow
-          AZURE_RG_NAME: lorae2etest
+          AZURE_RG_NAME: lorae2etests
           POWER_SWITCH: true
           AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
           AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
