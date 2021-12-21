@@ -9,7 +9,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
-    using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
 
@@ -73,8 +72,7 @@ namespace LoRaWan.Tests.Integration
                 });
 
             LoRaDeviceClient
-                .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                .ReturnsAsync((Message)null);
+                .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()));
 
             await SendTwoUnconfirmedFirstMessages(mode);
         }
