@@ -1,0 +1,34 @@
+name: Turn EFLOW vm ON or OFF
+
+on:
+  workflow_dispatch:
+    inputs:
+      power:
+        description: 'Turn the VM ON or OFF'
+        required: true
+        type: choice
+        options:
+          - 'ON'
+          - 'OFF'
+      vm_name:
+        description: 'the name of the vm to be turned on'
+        required: true 
+        default: 'eflow'
+        type: string
+      rg_name:
+        required: false
+        description: 'the name of the resource-group the VM belongs to'
+        type: string
+        default: 'lorae2etests'
+
+jobs:
+  call-workflow:
+    uses: azure/iotedge-lorawan-starterkit/.github/workflows/template-azure-vm-power.yml@main
+    with:
+      AZURE_VM_NAME: ${{ github.event.inputs.vm_name }}
+      AZURE_RG_NAME: ${{ github.event.inputs.rg_name }}
+      POWER: ${{ github.event.inputs.power }}
+    secrets:
+      AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
+      AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
+      AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
