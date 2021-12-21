@@ -50,6 +50,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+
             var key = CreateCacheKey((LoRaPayloadData)loRaRequest.Payload);
             if (EnsureFirstMessageInCache(key, loRaRequest, out var previousStation))
                 return ConcentratorDeduplicationResult.NotDuplicate;
@@ -97,8 +98,7 @@ namespace LoRaWan.NetworkServer
             BinaryPrimitives.WriteUInt32LittleEndian(buffer, BinaryPrimitives.ReadUInt32LittleEndian(payload.DevAddr.Span));
             index += payload.DevAddr.Length;
 
-            if (!payload.Mic.IsEmpty)
-                BinaryPrimitives.WriteUInt32LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt32LittleEndian(payload.Mic.Span));
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt32LittleEndian(payload.Mic.Span));
             index += payload.Mic.Length;
 
             payload.RawMessage?.CopyTo(buffer[index..]);
