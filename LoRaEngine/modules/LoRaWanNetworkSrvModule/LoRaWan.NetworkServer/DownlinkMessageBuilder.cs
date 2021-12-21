@@ -349,7 +349,8 @@ namespace LoRaWan.NetworkServer
             LoRaADRResult loRaADRResult,
             ILogger logger)
         {
-            var macCommands = new Dictionary<int, MacCommand>();
+            var cids = new HashSet<Cid>();
+            var macCommands = new List<MacCommand>();
 
             if (requestedMacCommands != null)
             {
@@ -358,26 +359,15 @@ namespace LoRaWan.NetworkServer
                     switch (requestedMacCommand.Cid)
                     {
                         case Cid.LinkCheckCmd:
-                        {
-                            if (loRaRequest != null)
-                            {
-                                var linkCheckAnswer = new LinkCheckAnswer(loRaRequest.Region.GetModulationMargin(loRaRequest.RadioMetadata.DataRate, loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio), 1);
-                                if (macCommands.TryAdd((int)Cid.LinkCheckCmd, linkCheckAnswer))
-                                {
-                                    logger.LogInformation($"answering to a MAC command request {linkCheckAnswer}");
-                                }
-                            }
-
-                            break;
-                        }
                         case Cid.Zero:
                         case Cid.One:
                         case Cid.LinkADRCmd:
                             if (loRaRequest != null)
                             {
                                 var linkCheckAnswer = new LinkCheckAnswer(loRaRequest.Region.GetModulationMargin(loRaRequest.RadioMetadata.DataRate, loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio), 1);
-                                if (macCommands.TryAdd((int)Cid.LinkCheckCmd, linkCheckAnswer))
+                                if (cids.Add(Cid.LinkCheckCmd))
                                 {
+                                    macCommands.Add(linkCheckAnswer);
                                     logger.LogInformation($"answering to a MAC command request {linkCheckAnswer}");
                                 }
                             }
@@ -401,7 +391,11 @@ namespace LoRaWan.NetworkServer
                     {
                         try
                         {
-                            if (!macCommands.TryAdd((int)macCmd.Cid, macCmd))
+                            if (cids.Add(macCmd.Cid))
+                            {
+                                macCommands.Add(macCmd);
+                            }
+                            else
                             {
                                 logger.LogError($"could not send the cloud to device MAC command {macCmd.Cid}, as such a property was already present in the message. Please resend the cloud to device message");
                             }
@@ -422,11 +416,11 @@ namespace LoRaWan.NetworkServer
             {
                 const int placeholderChannel = 25;
                 var linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
-                macCommands.Add((int)Cid.LinkADRCmd, linkADR);
+                macCommands.Add(linkADR);
                 logger.LogInformation($"performing a rate adaptation: DR {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetition {loRaADRResult.NbRepetition}");
             }
 
-            return macCommands.Values;
+            return macCommands;
         }
     }
 }
