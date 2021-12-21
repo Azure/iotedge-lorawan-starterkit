@@ -75,7 +75,6 @@ namespace LoRaWan.NetworkServer
                 throw new LoRaProcessingException(nameof(request.Payload), LoRaProcessingErrorCode.PayloadNotSet);
             }
 
-            // I changed the logic here to make the request immediately fails by throwing instead of returning null
             if (request.Region is null)
             {
                 throw new LoRaProcessingException(nameof(request.Region), LoRaProcessingErrorCode.RegionNotSet);
