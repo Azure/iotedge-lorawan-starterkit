@@ -94,7 +94,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Power OFF Azure VM
+      - name: Power ON Azure VM
         uses: ./.github/actions/power-azure-vm
         with:
           AZURE_VM_NAME: eflow
