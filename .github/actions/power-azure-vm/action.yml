@@ -1,10 +1,6 @@
 name: 'Power ON or DEALLOCATE a specific Azure VM'
 description: 'This action either powers on or powers off (deallocates) a specific Azure VM'
 
-branding:
-  icon: download
-  color: blue
-
 inputs:
   POWER_SWITCH:
     description: 'Turn ON or OFF the VM'

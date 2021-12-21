@@ -44,7 +44,6 @@ env:
 jobs:
   env_var:
     name: Set environment variables
-    concurrency: setup
     runs-on: ubuntu-latest
     steps:
     - id: e2e_list_step
@@ -79,7 +78,7 @@ jobs:
           txPower=14
         fi
         echo "Setting TxPower to $txPower"
-        echo "::set-output name=TxPower::$txPower"    
+        echo "::set-output name=TxPower::$txPower"
 
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
@@ -90,14 +89,13 @@ jobs:
   
   power_on_azure_vm:
     name: Power ON EFLOW
-    concurrency: setup
     if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
       - name: Power OFF Azure VM
-        uses: ./.github/workflows/composite/power-azure-vm
+        uses: ./.github/actions/power-azure-vm
         with:
           AZURE_VM_NAME: eflow
           AZURE_RG_NAME: lorae2etest
@@ -529,7 +527,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Power OFF Azure VM
-        uses: ./.github/workflows/composite/power-azure-vm
+        uses: ./.github/actions/power-azure-vm
         with:
           AZURE_VM_NAME: eflow
           AZURE_RG_NAME: lorae2etest
