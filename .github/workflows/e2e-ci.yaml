@@ -374,7 +374,7 @@ jobs:
           iot_edge_deployment_id: '${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}'
 
 # Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
-  e2e_tests_job :
+  e2e_tests_job:
     timeout-minutes: 150
     name: Run E2E Tests
     environment:
@@ -523,6 +523,8 @@ jobs:
     name: Power OFF EFLOW
     if: always()
     runs-on: ubuntu-latest
+    needs:
+      - e2e_tests_job
     steps:
       - uses: actions/checkout@v2
 
