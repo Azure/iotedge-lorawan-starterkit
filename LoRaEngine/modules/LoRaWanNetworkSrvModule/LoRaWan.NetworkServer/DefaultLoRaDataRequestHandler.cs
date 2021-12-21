@@ -424,11 +424,18 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                if (loRaDevice.ClassType is LoRaDeviceClassType.C
-                    && loRaDevice.LastProcessingStationEui != request.StationEui)
+                if (loRaDevice.ClassType is LoRaDeviceClassType.C)
                 {
-                    loRaDevice.SetLastProcessingStationEui(request.StationEui);
-                    stationEuiChanged = true;
+                    if (loRaDevice.LastProcessingStationEui != request.StationEui)
+                    {
+                        loRaDevice.SetLastProcessingStationEui(request.StationEui);
+                        stationEuiChanged = true;
+                    }
+
+                    if (string.IsNullOrEmpty(loRaDevice.GatewayID))
+                    {
+                        loRaDevice.UpdatePreferredGatewayID(this.configuration.GatewayID, acceptChanges: loRaDevice.GatewayID != this.configuration.GatewayID);
+                    }
                 }
 
                 // No C2D message and request was not confirmed, return nothing
