@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessagePayload,
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             if (hasMacInC2D)
@@ -115,7 +115,7 @@ namespace LoRaWan.Tests.Integration
                 if (hasMacInUpstream)
                 {
                     Assert.Equal(new LinkCheckAnswer(1, 1).Length, payloadDataDown.Frmpayload.Length);
-                    Assert.Equal(0, payloadDataDown.FPortValue);
+                    Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
                 }
             }
             else
