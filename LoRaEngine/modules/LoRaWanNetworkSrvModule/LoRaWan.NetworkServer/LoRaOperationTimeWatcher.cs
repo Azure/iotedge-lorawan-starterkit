@@ -104,7 +104,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public bool InTimeForJoinAccept()
         {
-            return GetElapsedTime().Add(ExpectedTimeToPackageAndSendMessage) < TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay2);
+            return GetElapsedTime().Add(ExpectedTimeToPackageAndSendMessage) < this.loraRegion.JoinAcceptDelay2.ToTimeSpan();
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public TimeSpan GetRemainingTimeToJoinAcceptFirstWindow()
         {
-            return TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay1) - GetElapsedTime();
+            return this.loraRegion.JoinAcceptDelay1.ToTimeSpan() - GetElapsedTime();
         }
 
         /// <summary>
@@ -160,12 +160,12 @@ namespace LoRaWan.NetworkServer
 
         private bool InTimeForJoinAcceptFirstWindow(TimeSpan elapsed)
         {
-            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay1;
+            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay1.ToSeconds();
         }
 
         private bool InTimeForJoinAcceptSecondWindow(TimeSpan elapsed)
         {
-            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay2;
+            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay2.ToSeconds();
         }
 
         /// <summary>
@@ -197,7 +197,7 @@ namespace LoRaWan.NetworkServer
             return TimeSpan.Zero;
         }
 
-        private static int CalculateRXWindowsTime(int windowTime, ushort rXDelay)
+        private static int CalculateRXWindowsTime(int windowTime, RxDelay rxDelay)
         {
             // RxDelay follows specification of RXTimingSetupReq and the delay
             // | rXDelay | Delay |
@@ -206,7 +206,7 @@ namespace LoRaWan.NetworkServer
             // |    1    |   1   |
             // |    2    |   2   |
             // |    3    |   3   |
-            return (rXDelay is > 1 and < 16) ? windowTime + rXDelay - 1 : windowTime;
+            return Enum.IsDefined(rxDelay) ? windowTime + rxDelay.ToSeconds() : windowTime;
         }
     }
 }

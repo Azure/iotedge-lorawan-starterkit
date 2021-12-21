@@ -19,8 +19,6 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadJoinAccept : LoRaPayload
     {
-        private const ushort MaxRxDelayValue = 16;
-
         /// <summary>
         /// Gets or sets server Nonce aka JoinNonce.
         /// </summary>
@@ -59,14 +57,8 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept()
         { }
 
-        public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
+        public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, RxDelay rxDelay, byte[] cfList)
         {
-            var rxDelay = new byte[1];
-            if (rxDelayValue is >= 0 and < MaxRxDelayValue)
-            {
-                rxDelay[0] = (byte)rxDelayValue;
-            }
-
             var cfListLength = cfList == null ? 0 : cfList.Length;
             RawMessage = new byte[1 + 12 + cfListLength];
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
@@ -80,7 +72,7 @@ namespace LoRaTools.LoRaMessage
             DlSettings = new Memory<byte>(RawMessage, 11, 1);
             Array.Copy(dlSettings, 0, RawMessage, 11, 1);
             RxDelay = new Memory<byte>(RawMessage, 12, 1);
-            Array.Copy(rxDelay, 0, RawMessage, 12, 1);
+            RawMessage[12] = (byte)(Enum.IsDefined(rxDelay) ? rxDelay : default);
             // set payload Wrapper fields
             if (cfListLength > 0)
             {

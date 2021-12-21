@@ -139,16 +139,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Theory]
-        [InlineData(0, true)]
-        [InlineData(15, true)]
-        [InlineData(16, false)]
-        [InlineData(50, false)]
-        public void TestIsValidRXDelay(ushort delay, bool isValid)
-        {
-            Assert.Equal(isValid, Region.IsValidRXDelay(delay));
-        }
-
-        [Theory]
         [MemberData(nameof(RegionEU868TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionEU868TestData))]
         [MemberData(nameof(RegionUS915TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470RP1TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionCN470RP1TestData))]

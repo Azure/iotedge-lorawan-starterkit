@@ -10,11 +10,10 @@ namespace LoRaTools.Regions
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
+    using static LoRaWan.RxDelay;
 
     public abstract class Region
     {
-        private const ushort MAX_RX_DELAY = 15;
-
         protected const double EPSILON = 0.00001;
 
         public LoRaRegionType LoRaRegion { get; set; }
@@ -42,22 +41,22 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Gets or sets default first receive windows. [sec].
         /// </summary>
-        public uint ReceiveDelay1 { get; set; }
+        public RxDelay ReceiveDelay1 { get; } = RxDelay1;
 
         /// <summary>
         /// Gets or sets default second receive Windows. Should be receive_delay1+1 [sec].
         /// </summary>
-        public uint ReceiveDelay2 { get; set; }
+        public RxDelay ReceiveDelay2 { get; }
 
         /// <summary>
         /// Gets or sets default Join Accept Delay for first Join Accept Windows.[sec].
         /// </summary>
-        public uint JoinAcceptDelay1 { get; set; }
+        public RxDelay JoinAcceptDelay1 { get; } = RxDelay5;
 
         /// <summary>
         /// Gets or sets default Join Accept Delay for second Join Accept Windows. [sec].
         /// </summary>
-        public uint JoinAcceptDelay2 { get; set; }
+        public RxDelay JoinAcceptDelay2 { get; }
 
         /// <summary>
         /// Gets or sets max fcnt gap between expected and received. [#frame]
@@ -97,10 +96,8 @@ namespace LoRaTools.Regions
             LoRaRegion = regionEnum;
             RetransmitTimeout = (min: 1, max: 3);
 
-            ReceiveDelay1 = 1;
-            ReceiveDelay2 = 2;
-            JoinAcceptDelay1 = 5;
-            JoinAcceptDelay2 = 6;
+            ReceiveDelay2 = ReceiveDelay1.Inc();
+            JoinAcceptDelay2 = JoinAcceptDelay1.Inc();
             MaxFcntGap = 16384;
             AdrAckLimit = 64;
             AdrAdrDelay = 32;
@@ -355,7 +352,5 @@ namespace LoRaTools.Regions
         }
 
         public bool IsValidRX1DROffset(int rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= RX1DROffsetTable[0].Count - 1;
-
-        public static bool IsValidRXDelay(ushort desiredRXDelay) => desiredRXDelay is >= 0 and <= MAX_RX_DELAY;
     }
 }

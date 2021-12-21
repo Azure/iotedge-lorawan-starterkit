@@ -224,13 +224,13 @@ namespace LoRaWan.NetworkServer
                     }
 
                     // set tmst for the normal case
-                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay1 * 1000000);
+                    tmst = request.Rxpk.Tmst + ((uint)loraRegion.JoinAcceptDelay1.ToSeconds() * 1000000);
                     lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1;
                 }
                 else
                 {
                     this.logger.LogDebug("processing of the join request took too long, using second join accept receive window");
-                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
+                    tmst = request.Rxpk.Tmst + ((uint)loraRegion.JoinAcceptDelay2.ToSeconds() * 1000000);
                     lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
 
                     freq = loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger, deviceJoinInfo);
@@ -274,8 +274,8 @@ namespace LoRaWan.NetworkServer
                 // This one is a delay between TX and RX for any message to be processed by joining device
                 // The field accepted by Serialize method is an indication of the delay (compared to receive time of join request)
                 // of when the message Join Accept message should be sent
-                ushort loraSpecDesiredRxDelay = 0;
-                if (Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                var loraSpecDesiredRxDelay = RxDelay.RxDelay0;
+                if (Enum.IsDefined(loRaDevice.DesiredRXDelay))
                 {
                     loraSpecDesiredRxDelay = loRaDevice.DesiredRXDelay;
                 }

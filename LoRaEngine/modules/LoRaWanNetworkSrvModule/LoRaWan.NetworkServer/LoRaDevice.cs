@@ -25,9 +25,11 @@ namespace LoRaWan.NetworkServer
         internal const int MaxConfirmationResubmitCount = 3;
 
         /// <summary>
-        /// The default values for RX1DROffset, RX2DR, RXDelay.
+        /// The default values for RX1DROffset, RX2DR.
         /// </summary>
         internal const ushort DefaultJoinValues = 0;
+
+        private const RxDelay DefaultJoinRxDelay = RxDelay.RxDelay0;
 
         /// <summary>
         /// Last time this device connected to the network server
@@ -182,9 +184,9 @@ namespace LoRaWan.NetworkServer
         private volatile uint lastSavedFcntDown;
         private volatile LoRaRequest runningRequest;
 
-        public ushort ReportedRXDelay { get; set; }
+        public RxDelay ReportedRXDelay { get; set; }
 
-        public ushort DesiredRXDelay { get; set; }
+        public RxDelay DesiredRXDelay { get; set; }
 
         private ILoRaDataRequestHandler dataRequestHandler;
 
@@ -341,7 +343,7 @@ namespace LoRaWan.NetworkServer
 
                 if (twin.Properties.Desired.Contains(TwinProperty.RXDelay))
                 {
-                    DesiredRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
+                    DesiredRXDelay = (RxDelay)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
                 }
 
                 if (twin.Properties.Reported.Contains(TwinProperty.RX2DataRate))
@@ -356,7 +358,7 @@ namespace LoRaWan.NetworkServer
 
                 if (twin.Properties.Reported.Contains(TwinProperty.RXDelay))
                 {
-                    ReportedRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
+                    ReportedRXDelay = (RxDelay)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
                 }
             }
 
@@ -943,14 +945,8 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.RX2DataRate] = null;
                 }
 
-                if (DesiredRXDelay != DefaultJoinValues && Region.IsValidRXDelay(DesiredRXDelay))
-                {
-                    reportedProperties[TwinProperty.RXDelay] = DesiredRXDelay;
-                }
-                else
-                {
-                    reportedProperties[TwinProperty.RXDelay] = null;
-                }
+                reportedProperties[TwinProperty.RXDelay] = DesiredRXDelay is var rxd and not DefaultJoinRxDelay
+                                                           && Enum.IsDefined(rxd) ? rxd : null;
             }
             else
             {
@@ -1014,7 +1010,7 @@ namespace LoRaWan.NetworkServer
                     this.logger.LogError("the provided RX2DataRate is not valid");
                 }
 
-                if (Region.IsValidRXDelay(DesiredRXDelay))
+                if (Enum.IsDefined(DesiredRXDelay))
                 {
                     ReportedRXDelay = DesiredRXDelay;
                 }
