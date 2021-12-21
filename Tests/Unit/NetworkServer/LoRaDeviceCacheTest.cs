@@ -94,7 +94,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var device = deviceMock.Object;
             cache.Register(device);
 
-            await Task.Delay(this.quickRefreshOptions.ValidationInterval * 4);
+            await cache.WaitForRefreshCallsAsync(3);
+
             deviceMock.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
         }
 
@@ -348,6 +349,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             private readonly Func<LoRaDevice, LoRaPayload, bool> validateMic;
             private readonly bool callDeviceRefresh;
             private readonly NetworkServerConfiguration configuration;
+            private readonly LoRaDeviceCacheOptions cacheOptions;
 
             public int RefreshOperationsCount { get; private set; }
             public int DeviceRefreshCount { get; private set; }
@@ -358,6 +360,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.callDeviceRefresh = callDeviceRefresh;
                 this.configuration = networkServerConfiguration;
                 this.validateMic = validateMic;
+                this.cacheOptions = options;
             }
             public TestDeviceCache(LoRaDeviceCacheOptions options, Func<LoRaDevice, LoRaPayload, bool> validateMic)
                 : this(null, options, new NetworkServerConfiguration(), validateMic: validateMic)
@@ -380,6 +383,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             internal async Task WaitForRefreshAsync(CancellationToken cancellationToken) =>
                 await this.refreshTick.WaitAsync(cancellationToken);
+
+            internal async Task WaitForRefreshCallsAsync(int numberOfCalls, TimeSpan timeout = default)
+            {
+                if (timeout == TimeSpan.Zero)
+                {
+                    timeout = (this.cacheOptions.RefreshInterval * numberOfCalls) + TimeSpan.FromSeconds(5);
+                }
+
+                using var cts = new CancellationTokenSource(timeout);
+                for (var i = 0; i < numberOfCalls; i++)
+                {
+                    await this.refreshTick.WaitAsync(cts.Token);
+                }
+            }
 
             internal async Task WaitForRemoveAsync(CancellationToken cancellationToken) =>
                 await this.removeTick.WaitAsync(cancellationToken);

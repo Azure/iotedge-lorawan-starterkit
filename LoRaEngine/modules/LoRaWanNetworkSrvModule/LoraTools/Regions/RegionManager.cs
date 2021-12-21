@@ -84,6 +84,7 @@ namespace LoRaTools.Regions
             return false;
         }
 
+
         private static Region eu868;
 
         public static Region EU868

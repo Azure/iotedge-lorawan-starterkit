@@ -55,7 +55,10 @@ namespace LoRaWan.NetworkServer
         public object Data { get; set; }
 
         [JsonProperty("port")]
-        public byte Port { get; set; }
+        public byte PortByte { get => (byte)Port; set => Port = (FramePort)value; }
+
+        [JsonIgnore]
+        public FramePort Port { get; set; }
 
         [JsonProperty("fcnt")]
         public ushort Fcnt { get; set; }
@@ -104,7 +107,7 @@ namespace LoRaWan.NetworkServer
             Tmms = rxpk.Tmms;
             Tmst = rxpk.Tmst;
             Fcnt = upstreamPayload.GetFcnt();
-            Port = upstreamPayload.FPortValue;
+            Port = upstreamPayload.Fport.Value;
         }
     }
 }
