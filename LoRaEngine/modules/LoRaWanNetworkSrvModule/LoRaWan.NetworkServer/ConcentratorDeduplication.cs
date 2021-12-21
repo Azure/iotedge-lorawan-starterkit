@@ -111,8 +111,6 @@ namespace LoRaWan.NetworkServer
             return BitConverter.ToString(key);
         }
 
-        internal virtual byte[] HashKey(byte[] input) => Sha256.ComputeHash(input);
-
         internal string CreateCacheKey(LoRaPayloadJoinRequest payload)
         {
             var joinEui = JoinEui.Read(payload.AppEUI.Span);
@@ -128,9 +126,11 @@ namespace LoRaWan.NetworkServer
             var devNonce = payload.DevNonce;
             _ = devNonce.Write(buffer);
 
-            var key = Sha256.ComputeHash(head.ToArray());
+            var key = HashKey(head.ToArray()); ;
 
             return BitConverter.ToString(key);
         }
+
+        internal virtual byte[] HashKey(byte[] input) => Sha256.ComputeHash(input);
     }
 }

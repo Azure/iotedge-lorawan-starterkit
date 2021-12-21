@@ -22,7 +22,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         private readonly LoRaDevice loRaDevice;
         private readonly SimulatedDevice simulatedABPDevice;
+        private readonly LoRaPayloadData dataPayload;
         private readonly SimulatedDevice simulatedOTAADevice;
+        private readonly LoRaPayloadJoinRequest joinPayload;
         private readonly WaitableLoRaRequest dataRequest;
         private readonly WaitableLoRaRequest joinRequest;
 
@@ -40,14 +42,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
 
             this.simulatedABPDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
-            this.dataRequest = WaitableLoRaRequest.Create(dataPayload);
+            this.dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
+            this.dataRequest = WaitableLoRaRequest.Create(this.dataPayload);
             this.loRaDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, this.connectionManager);
 
             this.simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
-            var joinPayload = this.simulatedOTAADevice.CreateJoinRequest(appkey: this.simulatedOTAADevice.AppKey);
-            this.joinRequest = WaitableLoRaRequest.Create(joinPayload);
-            this.joinRequest.SetPayload(joinPayload);
+            this.joinPayload = this.simulatedOTAADevice.CreateJoinRequest(appkey: this.simulatedOTAADevice.AppKey);
+            this.joinRequest = WaitableLoRaRequest.Create(this.joinPayload);
+            this.joinRequest.SetPayload(this.joinPayload);
 
             this.concentratorDeduplication = new ConcentratorDeduplication(
                 this.cache,
@@ -73,7 +75,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Equal(ConcentratorDeduplicationResult.NotDuplicate, result);
-            var key = this.concentratorDeduplication.CreateCacheKey((LoRaPayloadData)this.dataRequest.Payload);
+            var key = this.concentratorDeduplication.CreateCacheKey(this.dataPayload);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(this.dataRequest.StationEui, addedStation);
         }
@@ -98,7 +100,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // act/assert
             Assert.Equal(expectedResult, this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, this.loRaDevice));
             Assert.Equal(1, this.cache.Count);
-            var key = this.concentratorDeduplication.CreateCacheKey((LoRaPayloadData)this.dataRequest.Payload);
+            var key = this.concentratorDeduplication.CreateCacheKey(this.dataPayload);
             Assert.True(this.cache.TryGetValue(key, out var foundStation));
             Assert.Equal(station1Eui, foundStation);
         }
@@ -110,7 +112,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var expectedKey = "EF-BC-21-12-E9-B8-AF-F4-1B-F5-7B-7D-3C-D3-69-5A-84-E3-D8-6C-FC-1A-8E-BC-80-39-10-64-0D-6B-B3-7C";
 
             // act/assert
-            Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey((LoRaPayloadData)this.dataRequest.Payload));
+            Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey(this.dataPayload));
         }
 
         [Theory, MemberData(nameof(TestRawMessages))]
@@ -120,23 +122,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var mock = new Mock<ConcentratorDeduplication>(MockBehavior.Default, this.cache, NullLogger<ConcentratorDeduplication>.Instance);
             Memory<byte> actualBuffer = null;
             _ = mock.Setup(x => x.HashKey(It.IsAny<byte[]>())).Callback<byte[]>(b => actualBuffer = b);
-            var payload = (LoRaPayloadData)this.dataRequest.Payload;
-            payload.RawMessage = rawMessage;
+            this.dataPayload.RawMessage = rawMessage;
 
             // act
-            _ = mock.Object.CreateCacheKey(payload);
+            _ = mock.Object.CreateCacheKey(this.dataPayload);
 
             // assert
             mock.Verify(x => x.HashKey(It.IsAny<byte[]>()), Times.Once);
-            Assert.True(MemoryExtensions.SequenceEqual(payload.DevAddr.Span, actualBuffer.Span[0..4]));
-            Assert.True(MemoryExtensions.SequenceEqual(payload.Mic.Span, actualBuffer.Span[4..8]));
+            Assert.True(MemoryExtensions.SequenceEqual(this.dataPayload.DevAddr.Span, actualBuffer.Span[0..4]));
+            Assert.True(MemoryExtensions.SequenceEqual(this.dataPayload.Mic.Span, actualBuffer.Span[4..8]));
             var index = 8;
-            if (payload.RawMessage?.Length > 0)
+            if (this.dataPayload.RawMessage?.Length > 0)
             {
-                index += payload.RawMessage.Length;
-                Assert.True(MemoryExtensions.SequenceEqual(payload.RawMessage.AsSpan(), actualBuffer.Span[8..index]));
+                index += this.dataPayload.RawMessage.Length;
+                Assert.True(MemoryExtensions.SequenceEqual(this.dataPayload.RawMessage.AsSpan(), actualBuffer.Span[8..index]));
             }
-            Assert.True(MemoryExtensions.SequenceEqual(payload.Fcnt.Span, actualBuffer.Span[index..])); // implicitly asserts that the length is correct as well
+            Assert.True(MemoryExtensions.SequenceEqual(this.dataPayload.Fcnt.Span, actualBuffer.Span[index..])); // implicitly asserts that the length is correct as well
         }
         #endregion
 
@@ -161,7 +162,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Equal(ConcentratorDeduplicationResult.NotDuplicate, result);
-            var key = this.concentratorDeduplication.CreateCacheKey((LoRaPayloadJoinRequest)this.joinRequest.Payload);
+            var key = this.concentratorDeduplication.CreateCacheKey(this.joinPayload);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(this.joinRequest.StationEui, addedStation);
         }
@@ -183,7 +184,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Equal(ConcentratorDeduplicationResult.Duplicate, result);
-            var key = this.concentratorDeduplication.CreateCacheKey((LoRaPayloadJoinRequest)this.joinRequest.Payload);
+            var key = this.concentratorDeduplication.CreateCacheKey(this.joinPayload);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(station1Eui, addedStation);
         }
@@ -192,14 +193,33 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void CreateKeyMethod_Should_Produce_Expected_Key_For_JoinRequests()
         {
             // arrange
-            var joinPayload = (LoRaPayloadJoinRequest)this.joinRequest.Payload;
-            joinPayload.DevNonce = new DevNonce(0);
-            this.joinRequest.SetPayload(joinPayload);
+            this.joinPayload.DevNonce = new DevNonce(0);
+            this.joinRequest.SetPayload(this.joinPayload);
 
             var expectedKey = "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4";
 
             // act/assert
-            Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey((LoRaPayloadJoinRequest)this.joinRequest.Payload));
+            Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey(this.joinPayload));
+        }
+
+        [Fact]
+        public void CreateKeyMethod_Should_Include_All_Properties_For_JoinRequests()
+        {
+            // arrange
+            var mock = new Mock<ConcentratorDeduplication>(MockBehavior.Default, this.cache, NullLogger<ConcentratorDeduplication>.Instance);
+            Memory<byte> actualBuffer = null;
+            _ = mock.Setup(x => x.HashKey(It.IsAny<byte[]>())).Callback<byte[]>(b => actualBuffer = b);
+            this.joinPayload.AppEUI = new byte[8] { 0, 1, 0, 1, 0, 1, 0, 1 };
+            this.joinPayload.DevEUI = new byte[8] { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+            // act
+            _ = mock.Object.CreateCacheKey(this.joinPayload);
+
+            // assert
+            mock.Verify(x => x.HashKey(It.IsAny<byte[]>()), Times.Once);
+            Assert.True(MemoryExtensions.SequenceEqual(this.joinPayload.AppEUI.Span, actualBuffer.Span[0..8]));
+            Assert.True(MemoryExtensions.SequenceEqual(this.joinPayload.DevEUI.Span, actualBuffer.Span[8..16]));
+            Assert.Equal(0, this.joinPayload.DevNonce.CompareTo(DevNonce.Read(actualBuffer.Span[16..]))); // implicitly asserts that the length is correct as well
         }
         #endregion
 
