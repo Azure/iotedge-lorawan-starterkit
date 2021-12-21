@@ -13,7 +13,7 @@
         "codecs": "rm -fR node_modules/lorawan-devices codecs/* && git clone --depth 1 https://github.com/TheThingsNetwork/lorawan-devices.git node_modules/lorawan-devices && node tools/copy-codecs.js"
     },
     "dependencies": {
-        "express": "^4.17.1",
+        "express": "^4.17.2",
         "express-pino-logger": "^7.0.0",
         "express-validator": "^6.13.0",
         "fs-extra": "^10.0.0",
