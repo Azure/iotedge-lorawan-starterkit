@@ -206,7 +206,7 @@ namespace LoRaWan.NetworkServer
             // |    1    |   1   |
             // |    2    |   2   |
             // |    3    |   3   |
-            return Enum.IsDefined(rxDelay) ? windowTime + rxDelay.ToSeconds() : windowTime;
+            return Enum.IsDefined(rxDelay) ? windowTime + rxDelay.ToSeconds() - 1 : windowTime;
         }
     }
 }

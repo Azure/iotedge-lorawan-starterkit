@@ -69,7 +69,7 @@ namespace LoRaWan.NetworkServer
             string datr;
             Hertz freq;
             long tmst;
-            ushort lnsRxDelay = 0;
+            var lnsRxDelay = 0;
 
             var deviceJoinInfo = request.Region.LoRaRegion == LoRaRegionType.CN470RP2
                 ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
@@ -223,7 +223,7 @@ namespace LoRaWan.NetworkServer
             // todo: check the device twin preference if using confirmed or unconfirmed down
             logger.LogInformation($"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}");
 
-            var downlinkPktFwdMessage = ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, lnsRxDelay, rxpk.Rfch, rxpk.Time, request.StationEui);
+            var downlinkPktFwdMessage = ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, (ushort)lnsRxDelay, rxpk.Rfch, rxpk.Time, request.StationEui);
 
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");

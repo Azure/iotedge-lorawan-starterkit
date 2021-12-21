@@ -210,7 +210,7 @@ namespace LoRaWan.NetworkServer
                 Hertz freq;
                 string datr = null;
                 uint tmst = 0;
-                ushort lnsRxDelay = 0;
+                var lnsRxDelay = 0;
                 if (windowToUse == Constants.ReceiveWindow1)
                 {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
@@ -225,13 +225,13 @@ namespace LoRaWan.NetworkServer
 
                     // set tmst for the normal case
                     tmst = request.Rxpk.Tmst + ((uint)loraRegion.JoinAcceptDelay1.ToSeconds() * 1000000);
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1;
+                    lnsRxDelay = loraRegion.JoinAcceptDelay1.ToSeconds();
                 }
                 else
                 {
                     this.logger.LogDebug("processing of the join request took too long, using second join accept receive window");
                     tmst = request.Rxpk.Tmst + ((uint)loraRegion.JoinAcceptDelay2.ToSeconds() * 1000000);
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
+                    lnsRxDelay = loraRegion.JoinAcceptDelay2.ToSeconds();
 
                     freq = loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger, deviceJoinInfo);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
@@ -292,7 +292,7 @@ namespace LoRaWan.NetworkServer
                     loraSpecDesiredRxDelay,
                     null);
 
-                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.Rxpk.Rfch, request.Rxpk.Time, request.StationEui, deviceJoinInfo);
+                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, (ushort)lnsRxDelay, request.Rxpk.Rfch, request.Rxpk.Time, request.StationEui, deviceJoinInfo);
                 if (joinAccept != null)
                 {
                     this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
