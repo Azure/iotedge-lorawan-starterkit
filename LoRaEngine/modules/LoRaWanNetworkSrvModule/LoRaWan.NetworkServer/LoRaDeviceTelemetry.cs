@@ -5,7 +5,6 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using LoRaTools.LoRaMessage;
     using Newtonsoft.Json;
 
@@ -13,13 +12,10 @@ namespace LoRaWan.NetworkServer
     public class LoRaDeviceTelemetry
     {
         [JsonProperty("time")]
-        public string Time { get; set; }
+        public ulong Time { get; set; }
 
         [JsonProperty("tmms")]
-        public uint Tmms { get; set; }
-
-        [JsonProperty("tmst")]
-        public uint Tmst { get; set; }
+        public uint GpsTime { get; set; }
 
         [JsonProperty("freq")]
         public double Freq { get; set; }
@@ -93,10 +89,9 @@ namespace LoRaWan.NetworkServer
             Rssi = radioMetadata.UpInfo.ReceivedSignalStrengthIndication;
             Rfch = radioMetadata.UpInfo.AntennaPreference;
             Lsnr = radioMetadata.UpInfo.SignalNoiseRatio;
-            Time = radioMetadata.UpInfo.Xtime.ToString(CultureInfo.InvariantCulture); // This field was just used for telemetry in rxpk. Now it's being used for bringing unaltered the Xtime.
-            Tmst = unchecked((uint)radioMetadata.UpInfo.Xtime); // This is used by former computation only. Should go away when we drop PktFwd support.
-            Chan = checked((uint)radioMetadata.DataRate); // This is not used in any computation. It is only reported in the device telemetry.
-            Tmms = radioMetadata.UpInfo.GpsTime; // This is not used in any computation. It is only reported in the device telemetry.
+            Time = unchecked(radioMetadata.UpInfo.Xtime); // This is used by former computation only. 
+            Chan = (uint)radioMetadata.DataRate; // This is not used in any computation. It is only reported in the device telemetry.
+            GpsTime = radioMetadata.UpInfo.GpsTime; // This is not used in any computation. It is only reported in the device telemetry.
             Modu = datr.ModulationKind.ToString(); // This is only used in test path by legacy PacketForwarder code. Safe to eventually remove. Could be also "FSK"
         }
     }

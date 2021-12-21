@@ -11,11 +11,12 @@ namespace LoRaTools.LoRaPhysical
     /// </summary>
     public class DownlinkMessage
     {
-        public string DevEui { get; }
+        public DevEui DevEui { get; }
 
         /// This rx delay control the time we need to wait before sending.
         /// It is typically 0 for class C devices.
-        public ushort LnsRxDelay { get; }
+        /// It is a uint value 0 - 15 used by basic station to know when to first try to send a message.
+        public uint LnsRxDelay { get; }
 
         public ulong Xtime { get; }
 
@@ -35,16 +36,12 @@ namespace LoRaTools.LoRaPhysical
 
         public StationEui StationEui { get; }
 
-        public DownlinkMessage()
-        {
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DownlinkMessage"/> class.
         /// This method is used in case of a response to a upstream message.
         /// </summary>
         /// <returns><see cref="DownlinkMessage"/> object ready to be sent.</returns>
-        public DownlinkMessage(byte[] payload, ulong xtime, DataRateIndex datrRx1, DataRateIndex datrRx2, Hertz freqRx1, Hertz freqRx2, string devEui, ushort lnsRxDelay = 0, StationEui stationEui = default, uint antennaPreference = 0)
+        public DownlinkMessage(byte[] payload, ulong xtime, DataRateIndex datrRx1, DataRateIndex datrRx2, Hertz freqRx1, Hertz freqRx2, DevEui devEui, ushort lnsRxDelay = 0, StationEui stationEui = default, uint antennaPreference = 0)
         {
             if (payload is null) throw new ArgumentNullException(nameof(payload));
             Data = payload;

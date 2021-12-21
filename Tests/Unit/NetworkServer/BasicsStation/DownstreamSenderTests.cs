@@ -54,13 +54,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // THIS TEST IS WRONG, rcfh
 
             // arrange
-            var downlinkPktFwdMessage = new DownlinkMessage(this.loraDataByteArray,
+            var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
                                                                   123456,
                                                                   DataRateIndex.DR5,
                                                                   DataRateIndex.DR0,
                                                                   Hertz.Mega(868.5),
                                                                   Hertz.Mega(869.5),
-                                                                  this.devEui.ToString(),
+                                                                  this.devEui,
                                                                   lnsRxDelay: 1,
                                                                   this.stationEui);
 
@@ -71,7 +71,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                     actualMessage = message;
                                 });
             // act
-            await downlinkSender.SendDownstreamAsync(downlinkPktFwdMessage);
+            await downlinkSender.SendDownstreamAsync(downlinkMessage);
 
             // assert
             Assert.NotEmpty(actualMessage);
@@ -110,13 +110,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 #pragma warning restore IDE0060 // Remove unused parameter
         {
             // arrange
-            var downlinkPktFwdMessage = new DownlinkMessage(this.loraDataByteArray,
+            var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
                                                                   0,
                                                                   DataRateIndex.DR5,
                                                                   DataRateIndex.DR0,
                                                                   Hertz.Mega(868.5),
                                                                   Hertz.Mega(869.5),
-                                                                  this.devEui.ToString(),
+                                                                  this.devEui,
                                                                   lnsRxDelay: 0,
                                                                   this.stationEui);
 
@@ -127,7 +127,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                     actualMessage = message;
                                 });
             // act
-            await downlinkSender.SendDownstreamAsync(downlinkPktFwdMessage);
+            await downlinkSender.SendDownstreamAsync(downlinkMessage);
 
             // assert
             Assert.NotEmpty(actualMessage);
@@ -168,17 +168,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         public async Task SendDownstreamAsync_Fails_WithNonNullMessage_ButDefaultStationEui()
         {
             // arrange
-            var downlinkPktFwdMessage = new DownlinkMessage(this.loraDataByteArray,
+            var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
                                                                   0,
                                                                   DataRateIndex.DR5,
                                                                   DataRateIndex.DR0,
                                                                   Hertz.Mega(868.5),
                                                                   Hertz.Mega(868.5),
-                                                                  this.devEui.ToString(),
+                                                                  this.devEui,
                                                                   lnsRxDelay: 0);
 
             // act and assert
-            await Assert.ThrowsAsync<ArgumentException>(() => this.downlinkSender.SendDownstreamAsync(downlinkPktFwdMessage));
+            await Assert.ThrowsAsync<ArgumentException>(() => this.downlinkSender.SendDownstreamAsync(downlinkMessage));
         }
     }
 }

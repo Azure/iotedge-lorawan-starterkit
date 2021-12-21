@@ -218,22 +218,22 @@ namespace LoRaWan.NetworkServer
         private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, ushort lnsRxDelay, LoRaPayloadData loRaMessage, uint antennaPreference = 0)
         {
             var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey);
-            var downlinkPktFwdMessage = new DownlinkMessage(
+            var downlinkMessage = new DownlinkMessage(
                 messageBytes,
                 xTime,
                 rx1Datr,
                 rx2Datr,
                 freqRx1,
                 freqRx2,
-                loRaDevice.DevEUI,
+                DevEui.Parse(loRaDevice.DevEUI),
                 lnsRxDelay,
                 stationEUI,
                 antennaPreference
                 );
 
             if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug($"{loRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkPktFwdMessage)}");
-            return downlinkPktFwdMessage;
+                logger.LogDebug($"{loRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkMessage)}");
+            return downlinkMessage;
         }
 
         private static ushort ValidateAndConvert16bitFCnt(uint fcntDown)

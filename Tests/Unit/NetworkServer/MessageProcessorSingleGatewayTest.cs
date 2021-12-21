@@ -214,7 +214,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            // TODO This will be moved in #1086
+            // Keeping message as future reference, this was a poisonous message with faulty mac commands that caused our engine to crash.
             //var request = new LoRaRequest(
             //    new Rxpk
             //    {

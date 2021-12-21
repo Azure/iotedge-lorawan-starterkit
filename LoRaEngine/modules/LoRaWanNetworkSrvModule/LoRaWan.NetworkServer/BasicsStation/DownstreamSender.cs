@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     {
         private static readonly Action<ILogger, StationEui, int, string, Exception> LogSendingMessage =
             LoggerMessage.Define<StationEui, int, string>(LogLevel.Debug, default,
-                                                     "Sending message to station with EUI '{StationEui}' with ID {Diid}. Payload '{Payload}'.");
+                                                     "sending message to station with EUI '{StationEui}' with ID {Diid}. Payload '{Payload}'.");
 
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
@@ -57,7 +57,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             writer.WriteStartObject();
 
             writer.WriteString("msgtype", LnsMessageType.DownlinkMessage.ToBasicStationString());
-            writer.WriteString("DevEui", message.DevEui);
+            writer.WriteString("DevEui", message.DevEui.ToString());
 
             // 0 is for Class A devices, 2 is for Class C devices
             // Ideally there Class C downlink frame which answers an uplink which have RxDelay set

@@ -69,7 +69,7 @@ namespace LoRaWan.Tests.Integration
                 => Task.FromResult(SendDeviceAsyncAssert());
 
             protected override DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, LoRaADRResult loRaADRResult, IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, uint? fcntDown, bool fpending)
-                => new DownlinkMessageBuilderResponse(new LoRaTools.LoRaPhysical.DownlinkMessage(), false, 1);
+                => new DownlinkMessageBuilderResponse(new LoRaTools.LoRaPhysical.DownlinkMessage(request.Payload.RawMessage, default, default, default, default, default, default), false, 1);
 
             protected override Task SendMessageDownstreamAsync(LoRaRequest request, DownlinkMessageBuilderResponse confirmDownlinkMessageBuilderResp)
                 => Task.FromResult(SendMessageDownstreamAsyncAssert());

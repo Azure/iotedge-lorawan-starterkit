@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.Globalization;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Xunit;
@@ -32,9 +31,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(ModulationKind.LoRa.ToString(), target.Modu);
             Assert.Equal(loRaRequest.RadioMetadata.UpInfo.AntennaPreference, target.Rfch);
             Assert.Equal(loRaRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication, target.Rssi);
-            Assert.Equal(loRaRequest.RadioMetadata.UpInfo.Xtime.ToString(CultureInfo.InvariantCulture), target.Time);
-            Assert.Equal(unchecked((uint)loRaRequest.RadioMetadata.UpInfo.Xtime), target.Tmms);
-            Assert.Equal(loRaRequest.RadioMetadata.UpInfo.GpsTime, target.Tmst);
+            Assert.Equal(loRaRequest.RadioMetadata.UpInfo.Xtime, target.Time);
+            Assert.Equal(unchecked((uint)loRaRequest.RadioMetadata.UpInfo.Xtime), target.GpsTime);
             Assert.Equal(payload.GetFcnt(), target.Fcnt);
             Assert.Equal(payload.Fport, target.Port);
         }

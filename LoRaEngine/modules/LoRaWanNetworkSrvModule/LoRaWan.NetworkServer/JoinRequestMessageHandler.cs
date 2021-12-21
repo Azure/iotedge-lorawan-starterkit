@@ -279,14 +279,14 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var joinAcceptBytes = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey);
-                var downlinkPktFwdMessage = new DownlinkMessage(
+                var downlinkMessage = new DownlinkMessage(
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,
                   loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset),
                   loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, logger),
                   freq,
                   loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger),
-                  loRaDevice.DevEUI,
+                  DevEui.Parse(loRaDevice.DevEUI),
                   lnsRxDelay,
                   request.StationEui,
                   request.RadioMetadata.UpInfo.AntennaPreference
@@ -294,12 +294,12 @@ namespace LoRaWan.NetworkServer
 
 
                 this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
-                _ = request.PacketForwarder.SendDownstreamAsync(downlinkPktFwdMessage);
-                request.NotifySucceeded(loRaDevice, downlinkPktFwdMessage);
+                _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessage);
+                request.NotifySucceeded(loRaDevice, downlinkMessage);
 
                 if (this.logger.IsEnabled(LogLevel.Debug))
                 {
-                    var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
+                    var jsonMsg = JsonConvert.SerializeObject(downlinkMessage);
                     this.logger.LogDebug($"{MacMessageType.JoinAccept} {jsonMsg}");
                 }
                 else

@@ -93,8 +93,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(request.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
 
-            var pktFwdMessage = PacketForwarder.DownlinkMessages[0];
-            var joinAccept = new LoRaPayloadJoinAccept(pktFwdMessage.Data, simulatedDevice.AppKey);
+            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.AppKey);
 
             var joinedDeviceDevAddr = ConversionHelper.ByteArrayToString(joinAccept.DevAddr);
             Assert.Equal(1, DeviceCache.RegistrationCount(joinedDeviceDevAddr));

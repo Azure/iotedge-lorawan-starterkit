@@ -13,9 +13,9 @@ namespace LoRaWan.NetworkServer
 
         public int ReceiveWindow { get; }
 
-        internal DownlinkMessageBuilderResponse(DownlinkMessage downlinkPktFwdMessage, bool isMessageTooLong, int receiveWindow)
+        internal DownlinkMessageBuilderResponse(DownlinkMessage downlinkMessage, bool isMessageTooLong, int receiveWindow)
         {
-            DownlinkMessage = downlinkPktFwdMessage;
+            DownlinkMessage = downlinkMessage;
             IsMessageTooLong = isMessageTooLong;
             ReceiveWindow = receiveWindow;
         }
