@@ -63,7 +63,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             const string template = @"{{
                 ""eirp"": {0},
                 ""uplinkDwellLimit"": {1},
-	            ""downlinkDwellLimit"": {2}
+                ""downlinkDwellLimit"": {2}
             }}";
 
             return JsonUtil.Minify(string.Format(CultureInfo.InvariantCulture, template,
