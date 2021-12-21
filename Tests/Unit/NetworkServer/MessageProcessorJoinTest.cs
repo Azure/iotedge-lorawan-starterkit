@@ -759,7 +759,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var euRegion = RegionManager.EU868;
 
-
             Assert.Equal(expectedDR, downlinkMessage.DataRateRx1);
             Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, NullLogger.Instance), downlinkMessage.DataRateRx2);
 

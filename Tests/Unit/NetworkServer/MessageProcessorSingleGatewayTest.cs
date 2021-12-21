@@ -223,7 +223,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             //    null,
             //    DateTime.Now);
 
-            var payload = new LoRaPayloadDataLns(DevAddr.Parse("0100DA30"), new MacHeader(40), FrameControl.Decode(177).Flags, 7550, "05", "8EB00043476EF82DD542B925ED6E3E8FDB2CF07D1E59CE5CB1A52D152B4ED03428E1EB661BAC", new FramePort(), new Mic(Convert.ToUInt32("1A5F8BE2", 16)), NullLogger.Instance);
+            var payload = new LoRaPayloadDataLns(new DevAddr(0x0100DA30),
+                                                 new MacHeader(MacMessageType.JoinAccept),
+                                                 FrameControlFlags.ClassB | FrameControlFlags.Ack | FrameControlFlags.Adr,
+                                                 counter: 7550,
+                                                 options: "05",
+                                                 "8EB00043476EF82DD542B925ED6E3E8FDB2CF07D1E59CE5CB1A52D152B4ED03428E1EB661BAC",
+                                                 FramePort.MacCommand,
+                                                 new Mic(0x1A5F8BE2),
+                                                 NullLogger.Instance);
             using var request = WaitableLoRaRequest.Create(payload);
             request.SetRegion(TestUtils.TestRegion);
             messageProcessor.DispatchRequest(request);
