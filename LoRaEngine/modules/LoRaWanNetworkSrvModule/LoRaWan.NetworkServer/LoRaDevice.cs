@@ -86,9 +86,9 @@ namespace LoRaWan.NetworkServer
 
         public bool Supports32BitFCnt { get; set; }
 
-        private readonly ChangeTrackingProperty<int> dataRate = new ChangeTrackingProperty<int>(TwinProperty.DataRate);
+        private readonly ChangeTrackingProperty<DataRateIndex> dataRate = new(TwinProperty.DataRate);
 
-        public int DataRate => this.dataRate.Get();
+        public DataRateIndex DataRate => this.dataRate.Get();
 
         private readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
@@ -165,11 +165,11 @@ namespace LoRaWan.NetworkServer
         private readonly object processingSyncLock = new object();
         private readonly Queue<LoRaRequest> queuedRequests = new Queue<LoRaRequest>();
 
-        public ushort? DesiredRX2DataRate { get; set; }
+        public DataRateIndex? DesiredRX2DataRate { get; set; }
 
         public ushort DesiredRX1DROffset { get; set; }
 
-        public ushort? ReportedRX2DataRate { get; set; }
+        public DataRateIndex? ReportedRX2DataRate { get; set; }
 
         public ushort ReportedRX1DROffset { get; set; }
 
@@ -331,7 +331,7 @@ namespace LoRaWan.NetworkServer
                 // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
                 if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
                 {
-                    DesiredRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
+                    DesiredRX2DataRate = (DataRateIndex?)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
                 }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
@@ -346,7 +346,7 @@ namespace LoRaWan.NetworkServer
 
                 if (twin.Properties.Reported.Contains(TwinProperty.RX2DataRate))
                 {
-                    ReportedRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX2DataRate].Value);
+                    ReportedRX2DataRate = (DataRateIndex?)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX2DataRate].Value);
                 }
 
                 if (twin.Properties.Reported.Contains(TwinProperty.RX1DROffset))
@@ -649,7 +649,13 @@ namespace LoRaWan.NetworkServer
                 {
                     if (prop.IsDirty())
                     {
-                        reportedProperties[prop.PropertyName] = prop.Value;
+                        reportedProperties[prop.PropertyName] = prop.Value switch
+                        {
+                            StationEui v => v.ToString(),
+                            DataRateIndex v => (int)v,
+                            Enum v => v.ToString(),
+                            var v => v,
+                        };
                         savedProperties.Add(prop);
                     }
                 }
@@ -988,6 +994,7 @@ namespace LoRaWan.NetworkServer
                 AppNonce = updateProperties.AppNonce;
                 DevNonce = updateProperties.DevNonce;
                 NetID = updateProperties.NetID;
+                ReportedCN470JoinChannel = updateProperties.CN470JoinChannel;
 
                 if (currentRegion.IsValidRX1DROffset(DesiredRX1DROffset))
                 {
@@ -1182,7 +1189,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates the ADR properties of device.
         /// </summary>
-        public void UpdatedADRProperties(int dataRate, int txPower, int nbRep)
+        public void UpdatedADRProperties(DataRateIndex dataRate, int txPower, int nbRep)
         {
             this.dataRate.Set(dataRate);
             this.txPower.Set(txPower);

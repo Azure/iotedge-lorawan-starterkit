@@ -72,8 +72,8 @@ namespace LoRaWan.Tests.Integration
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
-
-            using var request = CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1", fcnt: payloadFcnt).Rxpk[0]);
+            var payloadData = simDevice.CreateUnconfirmedDataUpMessage("1", fcnt: payloadFcnt);
+            using var request = CreateWaitableRequest(payloadData);
             request.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Integration
                 DevEUI = simDevice.DevEUI,
                 MessageId = Guid.NewGuid().ToString(),
                 Payload = "aaaa",
-                Fport = 18,
+                Fport = FramePorts.App18,
             };
 
             var expectedFcntDown = fcntDownFromTwin + Constants.MaxFcntUnsavedDelta + fcntDelta;
@@ -117,7 +117,7 @@ namespace LoRaWan.Tests.Integration
             var downstreamPayloadBytes = Convert.FromBase64String(downstreamMsg.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(expectedFcntDown, downstreamPayload.GetFcnt());
-            Assert.Equal(c2d.Fport, downstreamPayload.FPortValue);
+            Assert.Equal(c2d.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -178,15 +178,15 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            var joinRxpk = simDevice.CreateJoinRequest().SerializeUplink(simDevice.AppKey).Rxpk[0];
-            using var joinRequest = CreateWaitableRequest(joinRxpk);
+            var payloadata = simDevice.CreateJoinRequest();
+            using var joinRequest = CreateWaitableRequest(payloadata);
             joinRequest.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
 
             simDevice.SetupJoin(savedAppSKey, savedNwkSKey, savedDevAddr);
-            using var request = CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1").Rxpk[0]);
+            using var request = CreateWaitableRequest(simDevice.CreateUnconfirmedDataUpMessage("1"));
             request.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
@@ -205,7 +205,7 @@ namespace LoRaWan.Tests.Integration
                 DevEUI = simDevice.DevEUI,
                 MessageId = Guid.NewGuid().ToString(),
                 Payload = "aaaa",
-                Fport = 14,
+                Fport = FramePorts.App14,
             };
 
             if (string.IsNullOrEmpty(deviceGatewayID))
@@ -223,7 +223,7 @@ namespace LoRaWan.Tests.Integration
             var downstreamPayloadBytes = Convert.FromBase64String(downstreamMsg.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(1, downstreamPayload.GetFcnt());
-            Assert.Equal(c2d.Fport, downstreamPayload.FPortValue);
+            Assert.Equal(c2d.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(savedDevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -256,7 +256,7 @@ namespace LoRaWan.Tests.Integration
             {
                 CloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = FramePorts.App1,
                     MessageId = "123",
                     Payload = "12",
                     DevEUI = "0000000000000002",
@@ -264,7 +264,7 @@ namespace LoRaWan.Tests.Integration
             };
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
-            payloadDecoder.Setup(x => x.DecodeMessageAsync(simulatedDevice.DevEUI, It.IsNotNull<byte[]>(), 1, It.IsAny<string>()))
+            payloadDecoder.Setup(x => x.DecodeMessageAsync(simulatedDevice.DevEUI, It.IsNotNull<byte[]>(), FramePorts.App1, It.IsAny<string>()))
                 .ReturnsAsync(decoderResult);
             PayloadDecoder.SetDecoder(payloadDecoder.Object);
 
@@ -291,8 +291,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -382,8 +381,8 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            var joinRxpk = simDevice.CreateJoinRequest().SerializeUplink(simDevice.AppKey).Rxpk[0];
-            using var joinRequest = CreateWaitableRequest(joinRxpk);
+            var joinPayload = simDevice.CreateJoinRequest();
+            using var joinRequest = CreateWaitableRequest(joinPayload);
             messageDispatcher.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
@@ -485,8 +484,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.Zero);
+            using var request = CreateWaitableRequest(payload, constantElapsedTime: TimeSpan.Zero);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -568,8 +566,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 

@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using System;
     using global::LoRaTools.Regions;
     using Xunit;
+    using static LoRaWan.DataRateIndex;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
     public class RegionEU868TestWithRxpk : RegionTestBaseRxpk
@@ -46,7 +47,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [InlineData("SF8BW125", 230)]
         [InlineData("SF7BW125", 230)]
         [InlineData("SF7BW250", 230)]
-        [InlineData("50", 230)]
+        [InlineData("50000", 230)]
         public void TestMaxPayloadLength(string datr, uint maxPyldSize)
         {
             TestRegionMaxPayloadLength(datr, maxPyldSize);
@@ -55,8 +56,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [Theory]
         [InlineData("", null, null, 869.525, "SF12BW125")] // Standard EU.
         [InlineData("SF9BW125", null, null, 869.525, "SF9BW125")] // nwksrvDR is correctly applied if no device twins.
-        [InlineData("SF9BW125", 868.250, (ushort)6, 868.250, "SF7BW250")] // device twins are applied in priority.
-        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        [InlineData("SF9BW125", 868.250, DR6, 868.250, "SF7BW250")] // device twins are applied in priority.
+        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, DataRateIndex? rx2drfromtwins, double expectedFreq, string expectedDr)
         {
             TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
         }

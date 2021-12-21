@@ -35,8 +35,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, this.connectionManager);
 
             this.simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
-            var joinPayload = this.simulatedOTAADevice.CreateJoinRequest();
-            this.joinRequest = WaitableLoRaRequest.Create(joinPayload.SerializeUplink(this.simulatedOTAADevice.AppKey).Rxpk[0]);
+            var joinPayload = this.simulatedOTAADevice.CreateJoinRequest(appkey: this.simulatedOTAADevice.AppKey);
+            this.joinRequest = WaitableLoRaRequest.Create(joinPayload);
             this.joinRequest.SetPayload(joinPayload);
 
             this.concentratorDeduplication = new ConcentratorDeduplication(
@@ -97,7 +97,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void CreateKeyMethod_Should_Produce_Expected_Key_For_UpstreamDataFrames()
         {
             // arrange
-            var expectedKey = "13-DD-E3-E3-41-1B-29-DF-1C-3F-A8-EF-6D-BB-51-99-84-BD-90-03-B4-FA-5E-3A-ED-C2-0F-3A-5B-6B-80-C5";
+            var expectedKey = "EF-BC-21-12-E9-B8-AF-F4-1B-F5-7B-7D-3C-D3-69-5A-84-E3-D8-6C-FC-1A-8E-BC-80-39-10-64-0D-6B-B3-7C";
 
             // act/assert
             Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(this.dataRequest));
@@ -114,7 +114,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             if (!isCacheEmpty)
             {
                 var anotherJoinPayload = this.simulatedOTAADevice.CreateJoinRequest();
-                using var anotherJoinRequest = WaitableLoRaRequest.Create(anotherJoinPayload.SerializeUplink(this.simulatedOTAADevice.AppKey).Rxpk[0]);
+                using var anotherJoinRequest = WaitableLoRaRequest.Create(anotherJoinPayload);
                 anotherJoinRequest.SetPayload(anotherJoinPayload);
 
                 _ = this.concentratorDeduplication.CheckDuplicateJoin(anotherJoinRequest);

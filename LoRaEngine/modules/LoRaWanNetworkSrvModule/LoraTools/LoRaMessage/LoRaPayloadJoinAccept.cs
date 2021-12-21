@@ -8,6 +8,7 @@ namespace LoRaTools.LoRaMessage
     using System.Linq;
     using System.Security.Cryptography;
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan;
     using Org.BouncyCastle.Crypto.Engines;
@@ -52,7 +53,7 @@ namespace LoRaTools.LoRaMessage
 
         public int Rx1DrOffset => (DlSettings.Span[0] >> 4) & 0b00000111;
 
-        public int Rx2Dr => DlSettings.Span[0] & 0b00001111;
+        public DataRateIndex Rx2Dr => (DataRateIndex)(DlSettings.Span[0] & 0b00001111);
 
         /// Constructor needed for mocking
         public LoRaPayloadJoinAccept()
@@ -210,7 +211,7 @@ namespace LoRaTools.LoRaMessage
             throw new NotImplementedException();
         }
 
-        public DownlinkPktFwdMessage Serialize(string appKey, string datr, Hertz freq, string devEui, long tmst, ushort lnsRxDelay = 0, uint? rfch = 0, string time = "", StationEui stationEui = default)
+        public DownlinkPktFwdMessage Serialize(string appKey, string datr, Hertz freq, string devEui, long tmst, ushort lnsRxDelay = 0, uint? rfch = 0, string time = "", StationEui stationEui = default, DeviceJoinInfo deviceJoinInfo = null)
         {
             var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)
@@ -219,7 +220,7 @@ namespace LoRaTools.LoRaMessage
             _ = CalculateMic(appKey, algoinput);
             _ = PerformEncryption(appKey);
 
-            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEui, tmst, lnsRxDelay, rfch, time, stationEui: stationEui);
+            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEui, tmst, lnsRxDelay, rfch, time, stationEui: stationEui, deviceJoinInfo);
         }
     }
 }

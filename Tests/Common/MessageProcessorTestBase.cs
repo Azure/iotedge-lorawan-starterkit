@@ -7,9 +7,11 @@ namespace LoRaWan.Tests.Common
     using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
-    using LoRaTools.LoRaPhysical;
+    using LoRaTools.LoRaMessage;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
+    using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
@@ -26,6 +28,8 @@ namespace LoRaWan.Tests.Common
         private bool disposedValue;
 
         public TestPacketForwarder PacketForwarder { get; }
+
+        protected Region Region { get; }
 
         protected Mock<LoRaDeviceAPIServiceBase> LoRaDeviceApi { get; }
 
@@ -81,6 +85,10 @@ namespace LoRaWan.Tests.Common
             var requestHandler = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, ConcentratorDeduplication, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance, meter: null);
 
             LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, LoRaDeviceClient.Object, ConnectionManager, DeviceCache, requestHandler);
+
+            // By default we pick EU868 region.
+            Region = Enum.TryParse<LoRaRegionType>(Environment.GetEnvironmentVariable("REGION"), out var loraRegionType) ?
+                        (RegionManager.TryTranslateToRegion(loraRegionType, out var resolvedRegion) ? resolvedRegion : RegionManager.EU868) : RegionManager.EU868;
         }
 
         public static MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
@@ -111,16 +119,35 @@ namespace LoRaWan.Tests.Common
             return device;
         }
 
-        protected WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk,
+        protected WaitableLoRaRequest CreateWaitableRequest(LoRaPayload loRaPayload,
                                                             IPacketForwarder packetForwarder = null,
                                                             TimeSpan? startTimeOffset = null,
                                                             TimeSpan? constantElapsedTime = null,
                                                             bool useRealTimer = false) =>
-            WaitableLoRaRequest.Create(rxpk,
+            CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(),
+                                  loRaPayload,
+                                  packetForwarder,
+                                  startTimeOffset,
+                                  constantElapsedTime,
+                                  useRealTimer);
+
+        protected WaitableLoRaRequest CreateWaitableRequest(RadioMetadata metadata,
+                                                            LoRaPayload loRaPayload,
+                                                            IPacketForwarder packetForwarder = null,
+                                                            TimeSpan? startTimeOffset = null,
+                                                            TimeSpan? constantElapsedTime = null,
+                                                            bool useRealTimer = false)
+        {
+            var request = WaitableLoRaRequest.Create(metadata,
+                                       loRaPayload,
                                        packetForwarder ?? PacketForwarder,
                                        startTimeOffset,
                                        constantElapsedTime,
                                        useRealTimer);
+
+            request.SetRegion(Region);
+            return request;
+        }
 
         protected virtual void Dispose(bool disposing)
         {
