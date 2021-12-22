@@ -96,10 +96,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, foundStation);
         }
 
-        [Theory, MemberData(nameof(TestPayloadData.DataGenerator), MemberType = typeof(TestPayloadData))]
-        public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Payloads(LoRaPayloadData payloadData, string expectedKey)
+        [Theory]
+        [InlineData("E7-EC-EB-BC-59-0B-C8-8B-37-61-FA-6C-D0-3D-74-9F-87-46-3D-AB-B6-70-21-A5-C6-76-8C-25-EC-68-B3-F2", 0, 0, "00000000", 0)]
+        [InlineData("E7-EC-EB-BC-59-0B-C8-8B-37-61-FA-6C-D0-3D-74-9F-87-46-3D-AB-B6-70-21-A5-C6-76-8C-25-EC-68-B3-F2", 0, 0, "00000000", 0, "1")]
+        [InlineData("93-96-BC-C2-EA-96-2D-48-0B-69-48-C0-8C-27-B5-99-69-65-94-EA-5A-EB-9C-DC-C5-83-87-32-DD-9A-08-CF", 1, 0, "00000000", 0)]
+        [InlineData("E8-F5-83-11-F7-68-CE-49-9B-33-19-A0-49-8E-07-C9-AA-78-69-54-54-21-A5-34-85-E9-64-A2-DF-5A-26-05", 0, 1, "00000000", 0)]
+        [InlineData("28-F0-52-23-07-4B-85-DF-A4-3F-20-67-AA-1F-E2-EB-CD-5E-5A-B2-A9-61-7B-A3-6F-88-62-2E-E8-84-26-AD", 0, 0, "11111111", 0)]
+        [InlineData("7A-57-DD-8A-C3-B8-01-94-19-AF-B6-21-A8-A7-7D-5D-8F-3B-18-FB-20-D2-89-FF-B5-4E-13-C8-A3-03-C8-1D", 0, 0, "00000000", 1)]
+        public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Payloads(string expectedKey, ushort devAddr, ushort frameCounter, string rawPayload, ushort mic, string? fieldNotUsedInKey = null)
         {
-            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(payloadData));
+            var options = fieldNotUsedInKey ?? string.Empty;
+            var payload = new LoRaPayloadDataLns(new DevAddr(devAddr), new MacHeader(MacMessageType.ConfirmedDataUp),
+                                                 frameCounter, options, rawPayload, new Mic(mic));
+            _ = Hexadecimal.TryParse(rawPayload, out uint raw);
+            payload.RawMessage = BitConverter.GetBytes(raw);
+
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(payload));
         }
         #endregion
 
@@ -151,61 +163,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, addedStation);
         }
 
-        [Fact]
-        public void CreateKeyMethod_Should_Produce_Expected_Key_For_JoinRequests()
+        [Theory]
+        [InlineData("60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4", 0, 0, 0)]
+        [InlineData("60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4", 0, 0, 0, (uint)1)] // a non-relevant field should not influence the key
+        [InlineData("BF-67-81-DB-77-1A-EF-1C-14-55-9E-2C-22-E7-D1-CF-4F-57-77-77-65-6E-2C-D6-E3-D4-1A-6E-A1-6A-17-86", 0x101010101010101UL, 0, 0)]
+        [InlineData("40-25-81-8B-EA-C7-AC-CD-32-4E-2A-02-CE-15-C8-9B-72-A4-81-32-9D-91-9F-FE-7A-62-D8-BA-3A-C4-E4-00", 0, 0x101010101010101UL, 0)]
+        [InlineData("B0-EF-53-E1-22-B3-C4-0B-57-93-55-21-96-95-43-03-29-F4-6C-3B-24-93-6C-BD-73-49-67-78-0A-60-9B-E2", 0, 0, 1)]
+        public void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(string expectedKey, ulong joinEui, ulong devEui, ushort devNonce, uint? fieldNotUsedInKey = null)
         {
-            // arrange
-            this.joinPayload.DevNonce = new DevNonce(0);
-            this.joinRequest.SetPayload(this.joinPayload);
+            var micValue = fieldNotUsedInKey ?? 0;
+            var payload = new LoRaPayloadJoinRequestLns(new MacHeader(MacMessageType.JoinRequest),
+                                                        new JoinEui(joinEui), new DevEui(devEui),
+                                                        new DevNonce(devNonce), new Mic(micValue));
 
-            var expectedKey = "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4";
-
-            // act/assert
-            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(this.joinPayload));
-        }
-
-        [Theory, MemberData(nameof(TestJoinRequestData.DataGenerator), MemberType = typeof(TestJoinRequestData))]
-        public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_JoinRequests(LoRaPayloadJoinRequest joinRequestPayload, string expectedKey)
-        {
-            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(joinRequestPayload));
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(payload));
         }
         #endregion
-
-        private static class TestPayloadData
-        {
-            private static readonly Memory<byte> BaseDevAddr = new byte[] { 0, 0, 0, 0 };
-            private static readonly Memory<byte> BaseMic = new byte[] { 0, 0, 0, 0 };
-            private static readonly byte[] BaseRawMessage = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            private static readonly Memory<byte> BaseFcnt = new byte[] { 0, 0 };
-
-            public static readonly TheoryData<LoRaPayloadData, string> DataGenerator = new()
-            {
-                { new LoRaPayloadData() { DevAddr = BaseDevAddr, Mic = BaseMic, RawMessage = BaseRawMessage, Fcnt = BaseFcnt }, "65-9D-36-CA-56-3B-A4-62-2D-AA-BB-36-A7-1D-AF-AF-60-60-CD-CB-F8-9B-B1-2E-75-42-61-98-49-6D-27-2C" },
-                { new LoRaPayloadData() { DevAddr = BaseDevAddr, Mic = BaseMic, RawMessage = BaseRawMessage, Fcnt = BaseFcnt, Fopts = new byte[] { 1, 1 } }, "65-9D-36-CA-56-3B-A4-62-2D-AA-BB-36-A7-1D-AF-AF-60-60-CD-CB-F8-9B-B1-2E-75-42-61-98-49-6D-27-2C" }, // changing a field not used should not influence the key
-                { new LoRaPayloadData() { DevAddr = new byte[] { 1, 1, 1, 1 }, Mic = BaseMic, RawMessage = BaseRawMessage, Fcnt = BaseFcnt }, "4A-18-25-54-88-2D-C7-33-AA-38-DA-7C-C5-EC-FE-10-BA-E2-C7-D7-78-E4-62-C0-5F-D8-23-DC-2F-30-1C-AE" }, // changing one field at the time
-                { new LoRaPayloadData() { DevAddr = BaseDevAddr, Mic = new byte[] { 1, 1, 1, 1 }, RawMessage = BaseRawMessage, Fcnt = BaseFcnt }, "93-2B-A3-89-79-73-41-D2-CE-C2-76-DB-E2-B1-1F-9E-BA-DB-93-55-DF-B6-75-66-74-D5-56-4B-C8-74-78-33" },
-                { new LoRaPayloadData() { DevAddr = BaseDevAddr, Mic = BaseMic, RawMessage = new byte[] { 1, 1, 1, 1 }, Fcnt = BaseFcnt }, "8D-96-DA-F6-2B-77-58-99-73-D4-06-F1-5A-27-64-D9-FF-56-2B-67-28-39-8A-66-C7-FC-49-93-21-5B-05-79" },
-                { new LoRaPayloadData() { DevAddr = BaseDevAddr, Mic = BaseMic, RawMessage = Array.Empty<byte>(), Fcnt = BaseFcnt }, "01-D4-48-AF-D9-28-06-54-58-CF-67-0B-60-F5-A5-94-D7-35-AF-01-72-C8-D6-7F-22-A8-16-80-13-26-81-CA" }, // RawMessage can be empty
-                { new LoRaPayloadData() { DevAddr = BaseDevAddr, Mic = BaseMic, RawMessage = null, Fcnt = BaseFcnt }, "01-D4-48-AF-D9-28-06-54-58-CF-67-0B-60-F5-A5-94-D7-35-AF-01-72-C8-D6-7F-22-A8-16-80-13-26-81-CA" },
-                { new LoRaPayloadData() { DevAddr = BaseDevAddr, Mic = BaseMic, RawMessage = null, Fcnt = new byte[] { 1, 1 } }, "76-1E-D0-3D-E0-62-52-7A-A7-A8-43-5D-D6-D9-54-6D-8C-5F-0C-DD-24-97-A7-7E-75-EE-23-49-85-94-7B-3E" }
-            };
-        }
-
-        private static class TestJoinRequestData
-        {
-            private static readonly Memory<byte> BaseAppEui = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-            private static readonly Memory<byte> BaseDevEui = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-            private static readonly DevNonce BaseDevNonce = new DevNonce(0);
-
-            public static readonly TheoryData<LoRaPayloadJoinRequest, string> DataGenerator = new()
-            {
-                { new LoRaPayloadJoinRequest() { AppEUI = BaseAppEui, DevEUI = BaseDevEui, DevNonce = BaseDevNonce }, "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4" },
-                { new LoRaPayloadJoinRequest() { AppEUI = BaseAppEui, DevEUI = BaseDevEui, DevNonce = BaseDevNonce, Mhdr = new byte[] { 1 } }, "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4" },
-                { new LoRaPayloadJoinRequest() { AppEUI = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1 }, DevEUI = BaseDevEui, DevNonce = BaseDevNonce }, "BF-67-81-DB-77-1A-EF-1C-14-55-9E-2C-22-E7-D1-CF-4F-57-77-77-65-6E-2C-D6-E3-D4-1A-6E-A1-6A-17-86" },
-                { new LoRaPayloadJoinRequest() { AppEUI = BaseAppEui, DevEUI = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1 }, DevNonce = BaseDevNonce }, "40-25-81-8B-EA-C7-AC-CD-32-4E-2A-02-CE-15-C8-9B-72-A4-81-32-9D-91-9F-FE-7A-62-D8-BA-3A-C4-E4-00" },
-                { new LoRaPayloadJoinRequest() { AppEUI = BaseAppEui, DevEUI = BaseDevEui, DevNonce = new DevNonce(1) }, "B0-EF-53-E1-22-B3-C4-0B-57-93-55-21-96-95-43-03-29-F4-6C-3B-24-93-6C-BD-73-49-67-78-0A-60-9B-E2" },
-            };
-        }
 
         public void Dispose()
         {
