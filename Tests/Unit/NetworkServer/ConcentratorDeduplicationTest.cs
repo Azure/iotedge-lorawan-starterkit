@@ -165,9 +165,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory, MemberData(nameof(TestJoinRequestData.DataGenerator), MemberType = typeof(TestJoinRequestData))]
-        public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_JoinRequests(LoRaPayloadJoinRequest joinRequest, string expectedKey)
+        public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_JoinRequests(LoRaPayloadJoinRequest joinRequestPayload, string expectedKey)
         {
-            Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey(joinRequest));
+            Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey(joinRequestPayload));
         }
         #endregion
 
