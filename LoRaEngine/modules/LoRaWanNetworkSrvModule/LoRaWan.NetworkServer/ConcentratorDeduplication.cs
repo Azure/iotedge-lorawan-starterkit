@@ -105,7 +105,7 @@ namespace LoRaWan.NetworkServer
 
             BinaryPrimitives.WriteUInt16LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
 
-            var key = HashKey(buffer.ToArray());
+            var key = Sha256.ComputeHash(buffer.ToArray());
 
             return BitConverter.ToString(key);
         }
@@ -125,11 +125,9 @@ namespace LoRaWan.NetworkServer
             var devNonce = payload.DevNonce;
             _ = devNonce.Write(buffer);
 
-            var key = HashKey(head.ToArray()); ;
+            var key = Sha256.ComputeHash(head.ToArray());
 
             return BitConverter.ToString(key);
         }
-
-        private static byte[] HashKey(byte[] input) => Sha256.ComputeHash(input);
     }
 }
