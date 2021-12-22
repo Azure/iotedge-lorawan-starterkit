@@ -12,8 +12,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
-    public class ConcentratorDeduplication :
-        IConcentratorDeduplication
+    public sealed class ConcentratorDeduplication : IConcentratorDeduplication
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
         private readonly IMemoryCache cache;
@@ -131,6 +130,6 @@ namespace LoRaWan.NetworkServer
             return BitConverter.ToString(key);
         }
 
-        internal virtual byte[] HashKey(byte[] input) => Sha256.ComputeHash(input);
+        private static byte[] HashKey(byte[] input) => Sha256.ComputeHash(input);
     }
 }
