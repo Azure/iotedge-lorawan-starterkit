@@ -63,7 +63,7 @@ namespace LoRaTools.LoRaMessage
             var devEUIBytes = ConversionHelper.StringToByteArray(devEUI);
 
             // Store as reversed value
-            // When coming from real device and pktfwd is is reversed
+            // When coming from real device is is reversed
             // message processor reverses both values before getting it
             Array.Reverse(appEUIBytes);
             Array.Reverse(devEUIBytes);

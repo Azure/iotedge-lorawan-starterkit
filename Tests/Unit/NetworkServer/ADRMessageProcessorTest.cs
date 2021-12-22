@@ -94,7 +94,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(request.ProcessingSucceeded);
             Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
             var downlinkMessage = PacketForwarder.DownlinkMessages[1];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
 
             // in this case we expect a null payload
             if (deviceId == 11)
@@ -209,7 +209,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.NotNull(request.ResponseDownlink);
             var downlinkMessage = PacketForwarder.DownlinkMessages[1];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             if (deviceId == 221)
             {
@@ -310,7 +310,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(request.ResponseDownlink);
             Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
             var downlinkMessage = PacketForwarder.DownlinkMessages[1];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
@@ -356,7 +356,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(secondRequest.ResponseDownlink);
             Assert.Equal(3, PacketForwarder.DownlinkMessages.Count);
             downlinkMessage = PacketForwarder.DownlinkMessages[2];
-            payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
@@ -455,7 +455,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(request.ResponseDownlink);
             Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
             var downlinkMessage = PacketForwarder.DownlinkMessages[1];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
@@ -489,7 +489,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(secondRequest.ResponseDownlink);
             Assert.Equal(3, PacketForwarder.DownlinkMessages.Count);
             downlinkMessage = PacketForwarder.DownlinkMessages[2];
-            payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
@@ -530,7 +530,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(thirdRequest.ResponseDownlink);
             Assert.Equal(4, PacketForwarder.DownlinkMessages.Count);
             downlinkMessage = PacketForwarder.DownlinkMessages[3];
-            payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);

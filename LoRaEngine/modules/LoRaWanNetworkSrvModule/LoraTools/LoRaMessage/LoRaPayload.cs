@@ -8,7 +8,6 @@ namespace LoRaTools.LoRaMessage
     using System;
     using System.Linq;
     using System.Security.Cryptography;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
     using Org.BouncyCastle.Crypto.Parameters;
@@ -140,29 +139,6 @@ namespace LoRaTools.LoRaMessage
 #pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
             var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
             return key;
-        }
-
-        public static bool TryCreateLoRaPayload(Rxpk rxpk, out LoRaPayload loRaPayloadMessage)
-        {
-            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
-
-            var convertedInputMessage = Convert.FromBase64String(rxpk.Data);
-            var messageType = new MacHeader(convertedInputMessage[0]).MessageType;
-
-#pragma warning disable IDE0072 // Add missing cases (handled by default case)
-            loRaPayloadMessage = messageType switch
-#pragma warning restore IDE0072 // Add missing cases
-            {
-                MacMessageType.UnconfirmedDataUp or MacMessageType.ConfirmedDataUp => new LoRaPayloadData(convertedInputMessage),
-                MacMessageType.JoinRequest => new LoRaPayloadJoinRequest(convertedInputMessage),
-                _ => (LoRaPayload)null,
-            };
-
-            if (loRaPayloadMessage is null)
-                return false;
-
-            loRaPayloadMessage.MessageType = messageType;
-            return true;
         }
 
         public void Reset32BitBlockInfo()

@@ -5,7 +5,6 @@ namespace LoRaTools.Regions
 {
     using System;
     using System.Collections.Generic;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
     using static LoRaWan.DataRateIndex;
@@ -78,36 +77,6 @@ namespace LoRaTools.Regions
 
             MaxADRDataRate = DR3;
             RegionLimits = new RegionLimits((Min: Mega(902.3), Max: Mega(927.5)), upstreamValidDataranges, downstreamValidDataranges, DR0, DR8);
-        }
-
-        /// <summary>
-        /// Logic to get the correct downstream transmission frequency for region US915.
-        /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo = null)
-        {
-            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
-
-            if (!IsValidUpstreamRxpk(upstreamChannel))
-                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
-
-            int upstreamChannelNumber;
-            // if DR4 the coding are different.
-            if (upstreamChannel.Datr == LoRaDataRate.SF8BW500.XpkDatr)
-            {
-                // ==DR4
-                upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0, MidpointRounding.AwayFromZero);
-            }
-            else
-            {
-                // if not DR4 other encoding
-                upstreamChannelNumber = (int)Math.Round((upstreamChannel.Freq - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
-            }
-
-            frequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8].InMega;
-            return true;
         }
 
         /// <summary>
