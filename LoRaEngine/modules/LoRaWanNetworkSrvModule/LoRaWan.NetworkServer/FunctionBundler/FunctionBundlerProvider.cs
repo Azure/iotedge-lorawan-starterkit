@@ -68,7 +68,7 @@ namespace LoRaWan.NetworkServer
                 ClientFCntDown = context.FCntDown,
                 ClientFCntUp = context.FCntUp,
                 GatewayId = gatewayId,
-                Rssi = context.Request.Rxpk.Rssi,
+                Rssi = (int)context.Request.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
             };
 
             for (var i = 0; i < qualifyingExecutionItems.Count; i++)
