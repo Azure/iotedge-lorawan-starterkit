@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Equal(ConcentratorDeduplicationResult.NotDuplicate, result);
-            var key = this.concentratorDeduplication.CreateCacheKey(this.dataPayload);
+            var key = ConcentratorDeduplication.CreateCacheKey(this.dataPayload);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(this.dataRequest.StationEui, addedStation);
         }
@@ -91,7 +91,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // act/assert
             Assert.Equal(expectedResult, this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, this.loRaDevice));
             Assert.Equal(1, this.cache.Count);
-            var key = this.concentratorDeduplication.CreateCacheKey(this.dataPayload);
+            var key = ConcentratorDeduplication.CreateCacheKey(this.dataPayload);
             Assert.True(this.cache.TryGetValue(key, out var foundStation));
             Assert.Equal(station1Eui, foundStation);
         }
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory, MemberData(nameof(TestPayloadData.DataGenerator), MemberType = typeof(TestPayloadData))]
         public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Payloads(LoRaPayloadData payloadData, string expectedKey)
         {
-            Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey(payloadData));
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(payloadData));
         }
         #endregion
 
@@ -124,7 +124,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Equal(ConcentratorDeduplicationResult.NotDuplicate, result);
-            var key = this.concentratorDeduplication.CreateCacheKey(this.joinPayload);
+            var key = ConcentratorDeduplication.CreateCacheKey(this.joinPayload);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(this.joinRequest.StationEui, addedStation);
         }
@@ -146,7 +146,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Equal(ConcentratorDeduplicationResult.Duplicate, result);
-            var key = this.concentratorDeduplication.CreateCacheKey(this.joinPayload);
+            var key = ConcentratorDeduplication.CreateCacheKey(this.joinPayload);
             Assert.True(this.cache.TryGetValue(key, out var addedStation));
             Assert.Equal(station1Eui, addedStation);
         }
@@ -161,13 +161,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var expectedKey = "60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4";
 
             // act/assert
-            Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey(this.joinPayload));
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(this.joinPayload));
         }
 
         [Theory, MemberData(nameof(TestJoinRequestData.DataGenerator), MemberType = typeof(TestJoinRequestData))]
         public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_JoinRequests(LoRaPayloadJoinRequest joinRequestPayload, string expectedKey)
         {
-            Assert.Equal(expectedKey, this.concentratorDeduplication.CreateCacheKey(joinRequestPayload));
+            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(joinRequestPayload));
         }
         #endregion
 

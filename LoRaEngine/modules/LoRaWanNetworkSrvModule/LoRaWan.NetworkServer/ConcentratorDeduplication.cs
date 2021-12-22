@@ -88,7 +88,7 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        internal string CreateCacheKey(LoRaPayloadData payload)
+        internal static string CreateCacheKey(LoRaPayloadData payload)
         {
             var totalBufferLength = payload.DevAddr.Length + payload.Mic.Length + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
@@ -110,7 +110,7 @@ namespace LoRaWan.NetworkServer
             return BitConverter.ToString(key);
         }
 
-        internal string CreateCacheKey(LoRaPayloadJoinRequest payload)
+        internal static string CreateCacheKey(LoRaPayloadJoinRequest payload)
         {
             var joinEui = JoinEui.Read(payload.AppEUI.Span);
             var devEui = DevEui.Read(payload.DevEUI.Span);
