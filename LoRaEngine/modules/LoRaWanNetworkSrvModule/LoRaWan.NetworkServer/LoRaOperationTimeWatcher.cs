@@ -78,10 +78,10 @@ namespace LoRaWan.NetworkServer
         /// It takes into consideration region and device settings.
         /// </summary>
         /// <returns>Integer containing the delay in seconds.</returns>
-        public int GetReceiveWindow1Delay(LoRaDevice loRaDevice)
+        public uint GetReceiveWindow1Delay(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return CalculateRXWindowsTime((int)this.loraRegion.ReceiveDelay1, loRaDevice.ReportedRXDelay);
+            return CalculateRXWindowsTime((ushort)this.loraRegion.ReceiveDelay1.ToSeconds(), loRaDevice.ReportedRXDelay);
         }
 
         private bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow1Delay(loRaDevice);
@@ -91,10 +91,10 @@ namespace LoRaWan.NetworkServer
         /// It takes into consideration region and device settings.
         /// </summary>
         /// <returns>Integer containing the delay in seconds.</returns>
-        public int GetReceiveWindow2Delay(LoRaDevice loRaDevice)
+        public uint GetReceiveWindow2Delay(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return CalculateRXWindowsTime((int)this.loraRegion.ReceiveDelay2, loRaDevice.ReportedRXDelay);
+            return CalculateRXWindowsTime((ushort)this.loraRegion.ReceiveDelay2.ToSeconds(), loRaDevice.ReportedRXDelay);
         }
 
         private bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow2Delay(loRaDevice);
@@ -197,7 +197,7 @@ namespace LoRaWan.NetworkServer
             return TimeSpan.Zero;
         }
 
-        private static int CalculateRXWindowsTime(int windowTime, RxDelay rxDelay)
+        private static uint CalculateRXWindowsTime(uint windowTime, RxDelay rxDelay)
         {
             // RxDelay follows specification of RXTimingSetupReq and the delay
             // | rXDelay | Delay |
@@ -206,7 +206,7 @@ namespace LoRaWan.NetworkServer
             // |    1    |   1   |
             // |    2    |   2   |
             // |    3    |   3   |
-            return Enum.IsDefined(rxDelay) ? windowTime + rxDelay.ToSeconds() - 1 : windowTime;
+            return (uint)(Enum.IsDefined(rxDelay) ? windowTime + rxDelay.ToSeconds() - 1 : windowTime);
         }
     }
 }

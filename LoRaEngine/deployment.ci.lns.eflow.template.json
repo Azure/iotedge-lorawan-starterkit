@@ -120,31 +120,6 @@
             "status": "running",
             "restartPolicy": "always",
             "version": "1.0"
-          },
-          "metricscollector": {
-            "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-metrics-collector:1.0"
-            },
-            "type": "docker",
-            "env": {
-              "ResourceId": {
-                "value": "$IOT_HUB_RESOURCE_ID"
-              },
-              "UploadTarget": {
-                "value": "AzureMonitor"
-              },
-              "LogAnalyticsWorkspaceId": {
-                "value": "$LOG_ANALYTICS_WORKSPACE_ID"
-              },
-              "LogAnalyticsSharedKey": {
-                "value": "$LOG_ANALYTICS_SHARED_KEY"
-              },
-              "MetricsEndpointsCSV": {
-                "value": "http://edgeHub:9600/metrics,http://edgeAgent:9600/metrics,http://LoRaWanNetworkSrvModule:5000/metrics"
-              }
-            },
-            "status": "running",
-            "restartPolicy": "always"
           }
         }
       }
