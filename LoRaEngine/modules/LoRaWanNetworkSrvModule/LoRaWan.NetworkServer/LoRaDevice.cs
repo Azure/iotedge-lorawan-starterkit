@@ -899,7 +899,7 @@ namespace LoRaWan.NetworkServer
             var reportedProperties = new TwinCollection();
             reportedProperties[TwinProperty.AppSKey] = updateProperties.AppSKey;
             reportedProperties[TwinProperty.NwkSKey] = updateProperties.NwkSKey;
-            reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr;
+            reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr.ToString();
             reportedProperties[TwinProperty.FCntDown] = 0;
             reportedProperties[TwinProperty.FCntUp] = 0;
             reportedProperties[TwinProperty.DevEUI] = DevEUI;
