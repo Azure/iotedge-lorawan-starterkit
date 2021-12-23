@@ -6,6 +6,7 @@ namespace LoRaWan
     using System;
     using System.Buffers.Binary;
     using System.Globalization;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// The 32-bit ephemeral device address assigned to a device when it joins a network. It is
@@ -23,19 +24,14 @@ namespace LoRaWan
         public const int Size = sizeof(uint);
 
         private const uint NetworkAddressMask = 0x01ff_ffff;
+        private const uint NetworkIdMask = ~NetworkAddressMask;
+
         private readonly uint value;
 
         public DevAddr(uint value) => this.value = value;
 
-        public DevAddr(int networkId, int networkAddress)
-#pragma warning disable IDE0072 // Add missing cases (false positive)
-            : this((networkId, networkAddress) switch
-#pragma warning restore IDE0072 // Add missing cases
-            {
-                ( < 0 or >= 0x80, _) => throw new ArgumentException(null, nameof(networkId)),
-                (_, < 0 or > (int)NetworkAddressMask) => throw new ArgumentException(null, nameof(networkAddress)),
-                var (id, addr) => unchecked(((uint)id << 25) | (uint)addr)
-            })
+        public DevAddr(int networkId, int networkAddress) :
+            this(SetNetworkId(0, networkId) + SetNetworkAddress(0, networkAddress))
         { }
 
         public bool IsZero => this.value == 0;
@@ -45,16 +41,28 @@ namespace LoRaWan
         /// </summary>
         public int NetworkId
         {
-            get => unchecked((int)((this.value & ~NetworkAddressMask) >> 25));
-            init => this.value = value is >= 0 and < 0x80
-                               ? unchecked(((uint)value << 25) | (uint)NetworkAddress)
-                               : throw new ArgumentException(null, nameof(value));
+            get => unchecked((int)((this.value & NetworkIdMask) >> 25));
+            init => this.value = SetNetworkId(this.value, value);
         }
 
         /// <summary>
         /// The <c>NwkAddr</c> (bits 0..24).
         /// </summary>
-        public int NetworkAddress => unchecked((int)(this.value & NetworkAddressMask));
+        public int NetworkAddress
+        {
+            get => unchecked((int)(this.value & NetworkAddressMask));
+            init => this.value = SetNetworkAddress(this.value, value);
+        }
+
+        private static uint SetNetworkId(uint devAddr, int value, [CallerArgumentExpression("value")] string? paramName = null) =>
+            value is >= 0 and < 0x80
+            ? (devAddr & NetworkAddressMask) | unchecked((uint)value << 25)
+            : throw new ArgumentException(null, paramName);
+
+        private static uint SetNetworkAddress(uint devAddr, int value, [CallerArgumentExpression("value")] string? paramName = null) =>
+            value is >= 0 and <= (int)NetworkAddressMask
+            ? (devAddr & NetworkIdMask) | unchecked((uint)value)
+            : throw new ArgumentException(null, paramName);
 
         public override string ToString() => this.value.ToString("X8", CultureInfo.InvariantCulture);
 

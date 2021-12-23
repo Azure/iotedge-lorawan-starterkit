@@ -43,7 +43,7 @@ namespace LoRaWan.Tests.Unit
         [InlineData("networkId", -1, 0)]
         [InlineData("networkId", 0x80, 0)]
         [InlineData("networkAddress", 0, -1)]
-        [InlineData("networkAddress", 0, 0x2000000)]
+        [InlineData("networkAddress", 0, 0x0200_0000)]
         public void Init_Throws_When_Arg_Is_Invalid(string expectedParamName, int networkId, int networkAddress)
         {
             var ex = Assert.Throws<ArgumentException>(() => new DevAddr(networkId, networkAddress));
@@ -57,15 +57,49 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Fact]
-        public void NetworkId()
+        public void NetworkId_Getter()
         {
             Assert.Equal(0x75, this.subject.NetworkId);
         }
 
         [Fact]
-        public void NetworkAddress()
+        public void NetworkId_Initter()
+        {
+            var newNetworkId = this.subject.NetworkId + 2;
+            var result = this.subject with { NetworkId = newNetworkId };
+
+            Assert.Equal(newNetworkId, result.NetworkId);
+            Assert.Equal(this.subject.NetworkAddress, result.NetworkAddress);
+        }
+
+        [Fact]
+        public void NetworkId_Initter_Throws_When_Input_Is_Invalid()
+        {
+            var ex = Assert.Throws<ArgumentException>(() => this.subject with { NetworkId = 0x80 });
+            Assert.Equal("value", ex.ParamName);
+        }
+
+        [Fact]
+        public void NetworkAddress_Getter()
         {
             Assert.Equal(0x16f7bde, this.subject.NetworkAddress);
+        }
+
+        [Fact]
+        public void NetworkAddress_Initter()
+        {
+            var netNetworkAddress = this.subject.NetworkAddress + 2;
+            var result = this.subject with { NetworkAddress = netNetworkAddress };
+
+            Assert.Equal(netNetworkAddress, result.NetworkAddress);
+            Assert.Equal(this.subject.NetworkId, result.NetworkId);
+        }
+
+        [Fact]
+        public void NetworkAddress_Initter_Throws_When_Input_Is_Invalid()
+        {
+            var ex = Assert.Throws<ArgumentException>(() => this.subject with { NetworkAddress = 0x0200_00000 });
+            Assert.Equal("value", ex.ParamName);
         }
 
         [Fact]
