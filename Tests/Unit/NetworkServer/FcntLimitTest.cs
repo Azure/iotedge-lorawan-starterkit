@@ -127,7 +127,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     Assert.True(req.ProcessingSucceeded);
                     Assert.Single(PacketForwarder.DownlinkMessages);
                     var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-                    var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+                    var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
                     payloadDataDown.PerformEncryption(simulatedDevice.AppSKey);
                     Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
                 }

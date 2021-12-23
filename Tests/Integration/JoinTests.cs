@@ -125,7 +125,7 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(joinRequest.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkJoinAcceptMessage = PacketForwarder.DownlinkMessages[0];
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkJoinAcceptMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(downlinkJoinAcceptMessage.Data, simulatedDevice.LoRaDevice.AppKey);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             // check that the device is in cache
@@ -184,18 +184,13 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
             Assert.NotNull(confirmedRequest.ResponseDownlink);
-            Assert.NotNull(confirmedRequest.ResponseDownlink.Txpk);
             Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
             Assert.Equal(2, sentTelemetry.Count);
             var downstreamMessage = PacketForwarder.DownlinkMessages[1];
 
             // validates txpk according to eu region
             Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radioMetadata.Frequency, out var frequency));
-            Assert.Equal(frequency, downstreamMessage.Txpk.FreqHertz);
-            Assert.Equal("4/5", downstreamMessage.Txpk.Codr);
-            Assert.False(downstreamMessage.Txpk.Imme);
-            Assert.True(downstreamMessage.Txpk.Ipol);
-            Assert.Equal("LORA", downstreamMessage.Txpk.Modu);
+            Assert.Equal(frequency, downstreamMessage.FrequencyRx1);
 
             // fcnt up was updated
             Assert.Equal(startingPayloadFcnt + 1, loRaDevice.FCntUp);
@@ -284,7 +279,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(joinRequest2.ProcessingSucceeded);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var joinRequestDownlinkMessage2 = PacketForwarder.DownlinkMessages[0];
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinRequestDownlinkMessage2.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage2.Data, simulatedDevice.LoRaDevice.AppKey);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
@@ -457,13 +452,8 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkJoinAcceptMessage = PacketForwarder.DownlinkMessages[0];
             // validates txpk according to eu region
-            Assert.Equal(0U, downlinkJoinAcceptMessage.Txpk.Rfch);
             Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radio.Frequency, out var receivedFrequency));
-            Assert.Equal(receivedFrequency, downlinkJoinAcceptMessage.Txpk.FreqHertz);
-            Assert.Equal("4/5", downlinkJoinAcceptMessage.Txpk.Codr);
-            Assert.False(downlinkJoinAcceptMessage.Txpk.Imme);
-            Assert.True(downlinkJoinAcceptMessage.Txpk.Ipol);
-            Assert.Equal("LORA", downlinkJoinAcceptMessage.Txpk.Modu);
+            Assert.Equal(receivedFrequency, downlinkJoinAcceptMessage.FrequencyRx1);
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();

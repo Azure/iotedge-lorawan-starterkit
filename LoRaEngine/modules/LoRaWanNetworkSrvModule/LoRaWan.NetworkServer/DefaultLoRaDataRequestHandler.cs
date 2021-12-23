@@ -341,10 +341,10 @@ namespace LoRaWan.NetworkServer
                         loRaADRResult,
                         this.logger);
 
-                    if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
+                    if (downlinkMessageBuilderResp.DownlinkMessage != null)
                     {
                         this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)downlinkMessageBuilderResp.ReceiveWindow));
-                        _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                        _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
 
                         if (cloudToDeviceMessage != null)
                         {
@@ -360,7 +360,7 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessageBuilderResp.DownlinkMessage);
                 }
 
                 // Flag indicating if there is another C2D message waiting
@@ -442,7 +442,7 @@ namespace LoRaWan.NetworkServer
 
                 if (cloudToDeviceMessage != null)
                 {
-                    if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage == null)
+                    if (confirmDownlinkMessageBuilderResp.DownlinkMessage == null)
                     {
                         this.receiveWindowMissed?.Add(1);
                         this.logger.LogInformation($"out of time for downstream message, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
@@ -460,13 +460,13 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
+                if (confirmDownlinkMessageBuilderResp.DownlinkMessage != null)
                 {
                     this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)confirmDownlinkMessageBuilderResp.ReceiveWindow));
                     _ = SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp);
                 }
 
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkMessage);
                 #endregion
             }
             finally
@@ -509,7 +509,7 @@ namespace LoRaWan.NetworkServer
             _ = request ?? throw new ArgumentNullException(nameof(request));
             _ = confirmDownlinkMessageBuilderResp ?? throw new ArgumentNullException(nameof(confirmDownlinkMessageBuilderResp));
 
-            return request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+            return request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkMessage);
         }
 
         protected virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
@@ -578,7 +578,7 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            var rxpk = request.Rxpk;
+            var radioMetadata = request.RadioMetadata;
             var loRaRegion = request.Region;
             uint maxPayload;
 
@@ -586,7 +586,7 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
             {
                 // Get max. payload size for RX2, considering possible user provided Rx2DataRate
-                if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
+                if (this.configuration.Rx2DataRate is null)
                 {
                     if (loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2)
                     {
@@ -601,24 +601,15 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                    maxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate);
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                    maxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate.Value);
                 }
             }
 
             // Otherwise, it is RX1.
             else
             {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                var downstreamDataRate = loRaRegion.GetDownstreamDataRate(rxpk);
-                if (downstreamDataRate == null)
-                {
-                    this.logger.LogError("Failed to get downstream data rate");
-                    return false;
-                }
+                var downstreamDataRate = loRaRegion.GetDownstreamDataRate(radioMetadata.DataRate);
                 maxPayload = loRaRegion.GetMaxPayloadSize(downstreamDataRate);
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
 
             // Deduct 8 bytes from max payload size.
@@ -653,7 +644,7 @@ namespace LoRaWan.NetworkServer
             _ = request ?? throw new ArgumentNullException(nameof(request));
 
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
-            var deviceTelemetry = new LoRaDeviceTelemetry(request.Rxpk, loRaPayloadData, decodedValue, decryptedPayloadData)
+            var deviceTelemetry = new LoRaDeviceTelemetry(request, loRaPayloadData, decodedValue, decryptedPayloadData)
             {
                 DeviceEUI = loRaDevice.DevEUI,
                 GatewayID = this.configuration.GatewayID,
@@ -777,7 +768,7 @@ namespace LoRaWan.NetworkServer
                 DevEUI = loRaDevice.DevEUI,
                 FCnt = payloadFcnt,
                 GatewayId = this.configuration.GatewayID,
-                Snr = request.Rxpk.Lsnr
+                Snr = request.RadioMetadata.UpInfo.SignalNoiseRatio
             };
 
             // If the ADR req bit is not set we don't perform rate adaptation.
@@ -792,10 +783,8 @@ namespace LoRaWan.NetworkServer
                     this.configuration.GatewayID,
                     payloadFcnt,
                     loRaDevice.FCntDown,
-                    (float)request.Rxpk.RequiredSnr,
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                    request.Region.GetDRFromFreqAndChan(request.Rxpk.Datr),
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                    (float)request.Region.RequiredSnr(request.RadioMetadata.DataRate),
+                    request.RadioMetadata.DataRate,
                     request.Region.TXPowertoMaxEIRP.Count - 1,
                     request.Region.MaxADRDataRate,
                     loRaADRTableEntry);
