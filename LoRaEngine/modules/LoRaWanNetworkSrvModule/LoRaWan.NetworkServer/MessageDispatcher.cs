@@ -72,23 +72,13 @@ namespace LoRaWan.NetworkServer
 
             if (request.Payload is null)
             {
-                // Following code is only needed for PktFwd compatibility.
-                // Any LoRaRequest generated from LNS protocol 'updf' or 'jreq' messages already has the payload set.
-                if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out var loRaPayload))
-                {
-                    this.logger.LogError("There was a problem in decoding the Rxpk");
-                    request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRxpk);
-                    return;
-                }
-                request.SetPayload(loRaPayload);
+                throw new LoRaProcessingException(nameof(request.Payload), LoRaProcessingErrorCode.PayloadNotSet);
             }
 
             if (request.Region is null)
             {
-                request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRegion);
-                return;
+                throw new LoRaProcessingException(nameof(request.Region), LoRaProcessingErrorCode.RegionNotSet);
             }
-
 
             var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>(), this.d2cMessageDeliveryLatencyHistogram);
 

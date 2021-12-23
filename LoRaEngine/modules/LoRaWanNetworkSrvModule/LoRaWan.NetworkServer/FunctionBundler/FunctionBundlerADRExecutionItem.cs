@@ -16,15 +16,13 @@ namespace LoRaWan.NetworkServer
 
             request.AdrRequest = new LoRaADRRequest
             {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                DataRate = context.Request.Region.GetDRFromFreqAndChan(context.Request.Rxpk.Datr),
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                DataRate = context.Request.RadioMetadata.DataRate,
                 FCntDown = context.FCntDown,
                 FCntUp = context.FCntUp,
                 GatewayId = context.GatewayId,
                 MinTxPowerIndex = context.Request.Region.TXPowertoMaxEIRP.Count - 1,
                 PerformADRCalculation = context.LoRaPayload.IsAdrAckRequested,
-                RequiredSnr = (float)context.Request.Rxpk.RequiredSnr
+                RequiredSnr = (float)context.Request.Region.RequiredSnr(context.Request.RadioMetadata.DataRate)
             };
 
             request.FunctionItems |= FunctionBundlerItemType.ADR;

@@ -10,7 +10,7 @@ namespace LoRaTools.ADR
     /// </summary>
     public interface ILoRaADRStrategy
     {
-        LoRaADRResult ComputeResult(string devEUI, LoRaADRTable table, float requiredSnr, DataRateIndex upstreamDataRate, int minTxPower, DataRateIndex maxDr);
+        LoRaADRResult ComputeResult(LoRaADRTable table, float requiredSnr, DataRateIndex upstreamDataRate, int minTxPower, DataRateIndex maxDr);
 
         int MinimumNumberOfResult { get; }
 

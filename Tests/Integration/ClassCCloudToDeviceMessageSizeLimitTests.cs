@@ -61,15 +61,12 @@ namespace LoRaWan.Tests.Integration
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration, this.deviceApi.Object);
         }
 
-        private static void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
-            Assert.NotNull(downlink.Txpk);
-            Assert.True(downlink.Txpk.Imme);
-            Assert.Equal(0, downlink.Txpk.Tmst);
-            Assert.NotEmpty(downlink.Txpk.Data);
+            Assert.NotEmpty(downlink.Data);
 
-            var downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
+            var downstreamPayloadBytes = downlink.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(sentMessage.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
@@ -143,8 +140,7 @@ namespace LoRaWan.Tests.Integration
 
             // Get C2D message payload
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(
-                Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(simulatedDevice.AppSKey);
 
             // Verify that expected Mac commands are present

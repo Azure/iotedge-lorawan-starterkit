@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(joinRequest2.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var joinRequestDownlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinRequestDownlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
