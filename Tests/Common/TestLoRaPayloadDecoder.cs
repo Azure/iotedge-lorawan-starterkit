@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Common
 {
     using System.Threading.Tasks;
+    using LoRaWan;
     using LoRaWan.NetworkServer;
 
     public class TestLoRaPayloadDecoder : ILoRaPayloadDecoder
@@ -17,6 +18,6 @@ namespace LoRaWan.Tests.Common
 
         public void SetDecoder(ILoRaPayloadDecoder decoder) => this.decoder = decoder;
 
-        public ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, byte fport, string sensorDecoder) => this.decoder.DecodeMessageAsync(devEUI, payload, fport, sensorDecoder);
+        public ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, FramePort fport, string sensorDecoder) => this.decoder.DecodeMessageAsync(devEUI, payload, fport, sensorDecoder);
     }
 }

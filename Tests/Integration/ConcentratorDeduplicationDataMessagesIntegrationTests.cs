@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools;
     using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Caching.Memory;
@@ -78,7 +79,8 @@ namespace LoRaWan.Tests.Integration
                                                                    It.IsAny<IReceivedLoRaCloudToDeviceMessage>(),
                                                                    It.IsAny<uint?>(),
                                                                    It.IsAny<bool>()))
-                .Returns(new DownlinkMessageBuilderResponse(new LoRaTools.LoRaPhysical.DownlinkPktFwdMessage(), false, 1));
+                .Returns((LoRaRequest request, LoRaDevice _, LoRaOperationTimeWatcher _, LoRaADRResult _, IReceivedLoRaCloudToDeviceMessage _, uint? _, bool _) =>
+                    new DownlinkMessageBuilderResponse(new DownlinkMessage(request.Payload.RawMessage, default, default, default, default, default, default), false, 1));
 
             _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
             {
@@ -319,7 +321,7 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var dataPayload = this.simulatedABPDevice.CreateUnconfirmedDataUpMessage("payload");
             // MAC command
-            dataPayload.Fport = new byte[1] { 0 };
+            dataPayload.Fport = FramePort.MacCommand;
             dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
 
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);

@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaWan;
+    using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Logging;
 
     /// <summary>
@@ -26,7 +27,7 @@ namespace LoRaWan.NetworkServer
 
         public override LoRaPayload Payload => this.wrappedRequest.Payload;
 
-        public override Rxpk Rxpk => this.wrappedRequest.Rxpk;
+        public override RadioMetadata RadioMetadata => this.wrappedRequest.RadioMetadata;
 
         public override DateTime StartTime => this.wrappedRequest.StartTime;
 
@@ -45,7 +46,7 @@ namespace LoRaWan.NetworkServer
             TrackProcessingTime();
         }
 
-        public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkPktFwdMessage downlink)
+        public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkMessage downlink)
         {
             this.wrappedRequest.NotifySucceeded(loRaDevice, downlink);
             TrackProcessingTime();

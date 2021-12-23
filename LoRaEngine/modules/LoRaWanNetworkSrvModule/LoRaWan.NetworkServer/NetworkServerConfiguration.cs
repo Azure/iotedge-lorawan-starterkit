@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets the 2nd receive windows datarate.
         /// </summary>
-        public string Rx2DataRate { get; set; }
+        public DataRateIndex? Rx2DataRate { get; set; }
 
         /// <summary>
         /// Gets or sets the 2nd receive windows data frequency.
@@ -138,7 +138,7 @@ namespace LoRaWan.NetworkServer
             config.EnableGateway = envVars.GetEnvVar("ENABLE_GATEWAY", config.EnableGateway);
             config.GatewayID = envVars.GetEnvVar("IOTEDGE_DEVICEID", string.Empty);
             config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);
-            config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);
+            config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", -1) is var datrNum && (DataRateIndex)datrNum is var datr && Enum.IsDefined(datr) ? datr : null;
             config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ") is { } someFreq ? Hertz.Mega(someFreq) : null;
             config.IoTEdgeTimeout = envVars.GetEnvVar("IOTEDGE_TIMEOUT", config.IoTEdgeTimeout);
 

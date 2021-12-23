@@ -1004,6 +1004,7 @@ namespace LoRaWan.NetworkServer
                 AppNonce = updateProperties.AppNonce;
                 DevNonce = updateProperties.DevNonce;
                 NetID = updateProperties.NetID;
+                ReportedCN470JoinChannel = updateProperties.CN470JoinChannel;
 
                 if (currentRegion.IsValidRX1DROffset(DesiredRX1DROffset))
                 {

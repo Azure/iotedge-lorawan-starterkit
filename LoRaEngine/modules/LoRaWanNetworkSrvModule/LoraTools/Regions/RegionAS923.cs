@@ -3,11 +3,9 @@
 
 namespace LoRaTools.Regions
 {
-    using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Configuration;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
     using static LoRaWan.DataRateIndex;
@@ -147,24 +145,6 @@ namespace LoRaTools.Regions
             }
 
             return this;
-        }
-
-        /// <summary>
-        /// Logic to get the correct downstream transmission frequency for region CN470.
-        /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo)
-        {
-            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
-
-            if (!IsValidUpstreamRxpk(upstreamChannel))
-                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
-
-            // Use the same frequency as the upstream.
-            frequency = upstreamChannel.Freq;
-            return true;
         }
 
         /// <summary>

@@ -8,7 +8,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -53,23 +52,23 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(true);
             }
 
-            var euRegion = RegionManager.EU868;
+            var euRegion = TestUtils.TestRegion;
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
             var upstreamMessageMacCommandSize = 0;
-            DataRate expectedDownlinkDatr;
+            DataRateIndex expectedDownlinkDatr;
 
             if (hasMacInUpstream && !isTooLongForUpstreamMacCommandInAnswer)
             {
                 upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
             }
+      
 
             expectedDownlinkDatr = isSendingInRx2
-                ? euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate
-                : LoRaDataRate.Parse(datr);
+                ? euRegion.GetDefaultRX2ReceiveWindow().DataRate
+                : euRegion.GetDataRateIndex(LoRaDataRate.Parse(datr));
 
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr.XpkDatr)
+            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
                 - upstreamMessageMacCommandSize
                 - Constants.LoraProtocolOverheadSize;
@@ -79,7 +78,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessagePayload,
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             if (hasMacInC2D)
@@ -118,11 +117,11 @@ namespace LoRaWan.Tests.Integration
 
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Equal(expectedDownlinkDatr.XpkDatr, request.ResponseDownlink.Txpk.Datr);
+            TestUtils.CheckDRAndFrequencies(request, request.ResponseDownlink);
 
             // Get downlink message
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
 
             // 3. downlink message payload contains expected message type and DevAddr

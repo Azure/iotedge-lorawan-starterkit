@@ -38,10 +38,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo? deviceJoinInfo = null) =>
                 throw new NotImplementedException();
 
-            [Obsolete]
-            public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo? deviceJoinInfo = null) =>
-                throw new NotImplementedException();
-
             public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo? deviceJoinInfo = null) =>
                 throw new NotImplementedException();
 

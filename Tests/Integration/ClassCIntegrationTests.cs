@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Integration
                 DevEUI = simDevice.DevEUI,
                 MessageId = Guid.NewGuid().ToString(),
                 Payload = "aaaa",
-                Fport = 18,
+                Fport = FramePorts.App18,
             };
 
             var expectedFcntDown = fcntDownFromTwin + Constants.MaxFcntUnsavedDelta + fcntDelta;
@@ -114,10 +114,10 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downstreamMsg = PacketForwarder.DownlinkMessages[0];
 
-            var downstreamPayloadBytes = Convert.FromBase64String(downstreamMsg.Txpk.Data);
+            var downstreamPayloadBytes = downstreamMsg.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(expectedFcntDown, downstreamPayload.GetFcnt());
-            Assert.Equal(c2d.Fport, downstreamPayload.FPortValue);
+            Assert.Equal(c2d.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -205,7 +205,7 @@ namespace LoRaWan.Tests.Integration
                 DevEUI = simDevice.DevEUI,
                 MessageId = Guid.NewGuid().ToString(),
                 Payload = "aaaa",
-                Fport = 14,
+                Fport = FramePorts.App14,
             };
 
             if (string.IsNullOrEmpty(deviceGatewayID))
@@ -220,10 +220,10 @@ namespace LoRaWan.Tests.Integration
 
             TestLogger.Log($"appSKey: {simDevice.AppSKey}, nwkSKey: {simDevice.NwkSKey}");
 
-            var downstreamPayloadBytes = Convert.FromBase64String(downstreamMsg.Txpk.Data);
+            var downstreamPayloadBytes = downstreamMsg.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(1, downstreamPayload.GetFcnt());
-            Assert.Equal(c2d.Fport, downstreamPayload.FPortValue);
+            Assert.Equal(c2d.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(savedDevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -256,7 +256,7 @@ namespace LoRaWan.Tests.Integration
             {
                 CloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = FramePorts.App1,
                     MessageId = "123",
                     Payload = "12",
                     DevEUI = "0000000000000002",
@@ -264,7 +264,7 @@ namespace LoRaWan.Tests.Integration
             };
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
-            payloadDecoder.Setup(x => x.DecodeMessageAsync(simulatedDevice.DevEUI, It.IsNotNull<byte[]>(), 1, It.IsAny<string>()))
+            payloadDecoder.Setup(x => x.DecodeMessageAsync(simulatedDevice.DevEUI, It.IsNotNull<byte[]>(), FramePorts.App1, It.IsAny<string>()))
                 .ReturnsAsync(decoderResult);
             PayloadDecoder.SetDecoder(payloadDecoder.Object);
 

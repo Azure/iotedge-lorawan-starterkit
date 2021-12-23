@@ -10,7 +10,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -230,7 +229,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request.WaitCompleteAsync());
             // Server should reply with MacCommand Answer
             Assert.NotNull(request.ResponseDownlink);
-            var data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
+            var data = new LoRaPayloadData(request.ResponseDownlink.Data);
             Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
             data.PerformEncryption(simulatedDevice.NwkSKey);
             data.Frmpayload.Span.Reverse();
@@ -267,7 +266,7 @@ namespace LoRaWan.Tests.Integration
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -303,7 +302,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request.WaitCompleteAsync());
             // Server should reply with MacCommand Answer
             Assert.NotNull(request.ResponseDownlink);
-            var data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
+            var data = new LoRaPayloadData(request.ResponseDownlink.Data);
             Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
             // FOpts are not encrypted
             var link = new LoRaTools.LinkCheckAnswer(data.Fopts.Span);
@@ -341,7 +340,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
@@ -373,7 +372,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request.WaitCompleteAsync());
             // Server should reply with MacCommand Answer
             Assert.NotNull(request.ResponseDownlink);
-            var data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
+            var data = new LoRaPayloadData(request.ResponseDownlink.Data);
             Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
             // FOpts are not encrypted
             var payload = data.GetDecryptedPayload(simulatedDevice.AppSKey);
@@ -625,18 +624,16 @@ namespace LoRaWan.Tests.Integration
             // ack should be received
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.NotNull(confirmedRequest.ResponseDownlink);
-            Assert.NotNull(confirmedRequest.ResponseDownlink.Txpk);
             Assert.Single(PacketForwarder.DownlinkMessages);
 
             var confirmedMessageResult = PacketForwarder.DownlinkMessages[0];
 
-            // validates txpk according to eu region
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radio.Frequency, out var frequency));
-            Assert.Equal(frequency, confirmedMessageResult.Txpk.FreqHertz);
-            Assert.Equal("4/5", confirmedMessageResult.Txpk.Codr);
-            Assert.False(confirmedMessageResult.Txpk.Imme);
-            Assert.True(confirmedMessageResult.Txpk.Ipol);
-            Assert.Equal("LORA", confirmedMessageResult.Txpk.Modu);
+            // validates transmission for EU868
+            Assert.Equal(radio.Frequency, confirmedMessageResult.FrequencyRx1);
+            Assert.Equal(radio.DataRate, confirmedMessageResult.DataRateRx1);
+            Assert.Equal(radio.UpInfo.Xtime, confirmedMessageResult.Xtime);
+            Assert.Equal(radio.UpInfo.AntennaPreference, confirmedMessageResult.AntennaPreference);
+
 
             // Expected changes to fcnt:
             // FcntDown => expectedFcntDown
@@ -804,14 +801,11 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
-            var txpk = PacketForwarder.DownlinkMessages[0].Txpk;
-            Assert.Equal(0U, txpk.Rfch);
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radio.Frequency, out var frequency));
-            Assert.Equal(frequency, Hertz.Mega(txpk.Freq));
-            Assert.Equal("4/5", txpk.Codr);
-            Assert.False(txpk.Imme);
-            Assert.True(txpk.Ipol);
-            Assert.Equal("LORA", txpk.Modu);
+            var confirmedMessageResult = PacketForwarder.DownlinkMessages[0];
+            Assert.Equal(radio.Frequency, confirmedMessageResult.FrequencyRx1);
+            Assert.Equal(radio.DataRate, confirmedMessageResult.DataRateRx1);
+            Assert.Equal(radio.UpInfo.Xtime, confirmedMessageResult.Xtime);
+            Assert.Equal(radio.UpInfo.AntennaPreference, confirmedMessageResult.AntennaPreference);
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
@@ -1159,7 +1153,6 @@ namespace LoRaWan.Tests.Integration
 
                 // ack should be received
                 Assert.NotNull(firstMessageRequest.ResponseDownlink);
-                Assert.NotNull(firstMessageRequest.ResponseDownlink.Txpk);
                 Assert.Equal(i + 1, PacketForwarder.DownlinkMessages.Count);
             }
 
@@ -1183,7 +1176,6 @@ namespace LoRaWan.Tests.Integration
 
                 // ack should be received
                 Assert.NotNull(request.ResponseDownlink);
-                Assert.NotNull(request.ResponseDownlink.Txpk);
                 Assert.Equal(i + 5, PacketForwarder.DownlinkMessages.Count);
             }
 
@@ -1553,7 +1545,7 @@ namespace LoRaWan.Tests.Integration
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
                 {
                     Assert.NotNull(t.Data);
-                    Assert.Equal(1, t.Port);
+                    Assert.Equal(FramePorts.App1, t.Port);
                     Assert.Equal("fport_1_decoded", t.Data.ToString());
                 });
 
@@ -1561,11 +1553,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
-            payloadDecoder.Setup(x => x.DecodeMessageAsync(devEUI, It.IsAny<byte[]>(), 1, It.IsAny<string>()))
+            payloadDecoder.Setup(x => x.DecodeMessageAsync(devEUI, It.IsAny<byte[]>(), FramePorts.App1, It.IsAny<string>()))
                 .ReturnsAsync(new DecodePayloadResult("fport_1_decoded"))
-                .Callback<string, byte[], byte, string>((_, data, fport, decoder) =>
+                .Callback((string _, byte[] data, FramePort fport, string decoder) =>
                 {
-                    Assert.Equal(1, fport);
+                    Assert.Equal(FramePorts.App1, fport);
 
                     // input data is empty
                     Assert.Null(data);

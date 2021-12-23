@@ -16,6 +16,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
+    using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -165,21 +166,21 @@ namespace LoRaWan.Tests.Integration
             Assert.Contains("Received 'TxParamSetupAns' in region", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static TheoryData<Region, DwellTimeSetting?, LoRaDataRate, LoRaDataRate> Uses_Correct_Data_Rate_TheoryData() =>
-            TheoryDataFactory.From<Region, DwellTimeSetting?, LoRaDataRate, LoRaDataRate>(new (Region, DwellTimeSetting?, LoRaDataRate, LoRaDataRate)[]
+        public static TheoryData<Region, DwellTimeSetting?, DataRateIndex, DataRateIndex> Uses_Correct_Data_Rate_TheoryData() =>
+            TheoryDataFactory.From<Region, DwellTimeSetting?, DataRateIndex, DataRateIndex>(new (Region, DwellTimeSetting?, DataRateIndex, DataRateIndex)[]
             {
-                (As923, null, LoRaDataRate.SF12BW125, LoRaDataRate.SF10BW125),
-                (new RegionEU868(), null, LoRaDataRate.SF12BW125, LoRaDataRate.SF12BW125),
-                (As923, new DwellTimeSetting(false, true, 10), LoRaDataRate.SF12BW125, LoRaDataRate.SF12BW125)
+                (As923, null, DataRateIndex.DR0, DataRateIndex.DR2),
+                (new RegionEU868(), null, DataRateIndex.DR0, DataRateIndex.DR0),
+                (As923, new DwellTimeSetting(false, true, 10), DataRateIndex.DR0, DataRateIndex.DR0),
+                (As923, new DwellTimeSetting(true, false, 10), DataRateIndex.DR0, DataRateIndex.DR2)
             });
 
         [Theory]
         [MemberData(nameof(Uses_Correct_Data_Rate_TheoryData))]
-        public async Task Uses_Correct_Data_Rate(Region region, DwellTimeSetting? reportedDwellTimeSetting, LoRaDataRate upstreamDataRate, LoRaDataRate expectedDataRate)
+        public async Task Uses_Correct_Data_Rate(Region region, DwellTimeSetting? reportedDwellTimeSetting, DataRateIndex upstreamDataRate, DataRateIndex expectedDataRate)
         {
             // arrange
-            using var request = SetupRequest(region, reportedDwellTimeSetting, createConfirmed: true);
-            request.Rxpk.Datr = upstreamDataRate.ToString();
+            using var request = SetupRequest(region, reportedDwellTimeSetting, createConfirmed: true, dataRateIndex: upstreamDataRate);
             LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
 
@@ -189,14 +190,14 @@ namespace LoRaWan.Tests.Integration
             // assert
             this.dataRequestHandlerMock.Verify(x =>
                 x.SendMessageDownstreamAsyncAssert(
-                    It.Is<DownlinkMessageBuilderResponse>(res => res.DownlinkPktFwdMessage.Txpk.Datr == expectedDataRate.ToString())),
+                    It.Is<DownlinkMessageBuilderResponse>(res => res.DownlinkMessage.DataRateRx1 == expectedDataRate)),
                     Times.Once);
         }
 
-        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, bool createConfirmed = false) =>
-            SetupRequest(region, reportedDwellTimeSetting, null, createConfirmed);
+        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, bool createConfirmed = false, DataRateIndex dataRateIndex = DataRateIndex.DR0) =>
+            SetupRequest(region, reportedDwellTimeSetting, null, createConfirmed, dataRateIndex: dataRateIndex);
 
-        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, MacCommand? macCommand, bool createConfirmed = false)
+        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, MacCommand? macCommand, bool createConfirmed = false, DataRateIndex dataRateIndex = DataRateIndex.DR0)
         {
             LoRaPayloadData payload;
             if (macCommand is { } someMacCommand)
@@ -212,11 +213,11 @@ namespace LoRaWan.Tests.Integration
             {
                 payload = this.simulatedDevice.CreateUnconfirmedDataUpMessage("foo");
             }
-                
-            var result = CreateWaitableRequest(payload);
+
             // ensure that frequency is within allowed range.
             var freq = new Hertz(region.RegionLimits.FrequencyRange.Min.AsUInt64 + 100);
-            result.Rxpk.FreqHertz = freq;
+            var radioMetadata = new RadioMetadata(dataRateIndex, freq, new RadioMetadataUpInfo(0, 0, 0, 0, 0));
+            var result = CreateWaitableRequest(radioMetadata, payload);
             result.SetRegion(region);
             this.loRaDevice.UpdateDwellTimeSetting(reportedDwellTimeSetting, acceptChanges: true);
             return result;
