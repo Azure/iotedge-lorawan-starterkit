@@ -16,7 +16,7 @@ namespace LoRaTools.Regions
         private static readonly Hertz Channel0Frequency = Mega(923.2);
         private static readonly Hertz Channel1Frequency = Mega(923.4);
 
-        private static readonly ImmutableDictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)> DrToNoDwell =
+        private static readonly ImmutableDictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)> DrToConfigurationByDrIndexNoDwell =
             new Dictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)>
             {
                 [DR0] = (LoRaDataRate.SF12BW125, 59),
@@ -55,7 +55,7 @@ namespace LoRaTools.Regions
         private static readonly RegionLimits RegionLimitsNoDwell =
             new RegionLimits((Min: Mega(915), Max: Mega(928)), ValidDataRatesDr0Dr7, ValidDataRatesDr0Dr7, DR0, DR0);
 
-        private static readonly ImmutableDictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)> DrToWithDwell =
+        private static readonly ImmutableDictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)> DrToConfigurationByDrIndexWithDwell =
             new Dictionary<DataRateIndex, (DataRate configuration, uint maxPyldSize)>
             {
                 [DR0] = (LoRaDataRate.SF12BW125, 0),
@@ -102,15 +102,15 @@ namespace LoRaTools.Regions
                 [4] = 8,
                 [5] = 6,
                 [6] = 4,
-                [7] = 2
+                [7] = 2,
             }.ToImmutableDictionary();
 
-        public override IDictionary<uint, double> TXPowertoMaxEIRP => MaxEirpByTxPower;
+        public override IReadOnlyDictionary<uint, double> TXPowertoMaxEIRP => MaxEirpByTxPower;
 
         private DwellTimeSetting dwellTimeSetting;
 
-        public override IDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration =>
-            ApplyDwellTimeLimits ? DrToWithDwell : DrToNoDwell;
+        public override IReadOnlyDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration =>
+            ApplyDwellTimeLimits ? DrToConfigurationByDrIndexWithDwell : DrToConfigurationByDrIndexNoDwell;
 
         public override IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable =>
             ApplyDwellTimeLimits ? RX1DROffsetTableWithDwell : RX1DROffsetTableNoDwell;

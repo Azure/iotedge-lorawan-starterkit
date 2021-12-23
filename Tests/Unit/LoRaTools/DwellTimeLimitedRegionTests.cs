@@ -6,6 +6,7 @@
 namespace LoRaWan.Tests.Unit.LoRaTools
 {
     using System;
+    using System.Collections.Generic;
     using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
     using global::LoRaTools.Utils;
@@ -32,6 +33,13 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public DwellTimeLimitedTestRegion() : base(LoRaRegionType.AS923)
             { }
+
+            public override IReadOnlyDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration =>
+                throw new NotImplementedException();
+
+            public override IReadOnlyDictionary<uint, double> TXPowertoMaxEIRP => throw new NotImplementedException();
+
+            public override IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable => throw new NotImplementedException();
 
             protected override DwellTimeSetting DefaultDwellTimeSetting => new DwellTimeSetting(true, false, 4);
 
