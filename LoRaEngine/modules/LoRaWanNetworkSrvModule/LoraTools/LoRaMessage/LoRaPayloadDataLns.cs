@@ -10,6 +10,14 @@ namespace LoRaTools.LoRaMessage
 
     public class LoRaPayloadDataLns : LoRaPayloadData
     {
+        public LoRaPayloadDataLns(DevAddr devAddr,
+                                  MacHeader macHeader,
+                                  ushort counter,
+                                  string options,
+                                  string payload,
+                                  Mic mic)
+            : this(devAddr, macHeader, default, counter, options, payload, default, mic, default) { }
+
         public LoRaPayloadDataLns(DevAddr devAddress,
                                   MacHeader macHeader,
                                   FrameControlFlags fctrlFlags,
