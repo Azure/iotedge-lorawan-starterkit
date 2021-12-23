@@ -127,18 +127,7 @@ namespace LoRaWan.Tests.E2E
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 // Check that RXDelay was correctly used
-                if (ArduinoDevice.SerialLogs.Any(x => x.StartsWith("+CMSG: RXWIN1", StringComparison.OrdinalIgnoreCase)))
-                {
-                    await TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, false, device.GatewayID);
-                }
-                else if (ArduinoDevice.SerialLogs.Any(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.OrdinalIgnoreCase)))
-                {
-                    await TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, true, device.GatewayID);
-                }
-                else
-                {
-                    Assert.True(false, "We were not able to determine in which windows the acknowledgement was submitted");
-                }
+                await TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay, device.GatewayID);
 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58

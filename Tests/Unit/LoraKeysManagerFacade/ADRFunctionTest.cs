@@ -23,8 +23,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         {
             var adrStrategy = new Mock<ILoRaADRStrategy>(MockBehavior.Strict);
             adrStrategy
-                .Setup(x => x.ComputeResult(It.IsNotNull<string>(), It.IsNotNull<LoRaADRTable>(), It.IsAny<float>(), It.IsAny<DataRateIndex>(), It.IsAny<int>(), It.IsAny<DataRateIndex>()))
-                .Returns((string devEUI, LoRaADRTable table, float snr, int dr, int power, int maxDr) =>
+                .Setup(x => x.ComputeResult(It.IsNotNull<LoRaADRTable>(), It.IsAny<float>(), It.IsAny<DataRateIndex>(), It.IsAny<int>(), It.IsAny<DataRateIndex>()))
+                .Returns((LoRaADRTable table, double snr, int dr, int power, int maxDr) =>
                 {
                     return table.Entries.Count >= LoRaADRTable.FrameCountCaptureCount
                     ? new LoRaADRResult()

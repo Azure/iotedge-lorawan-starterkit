@@ -6,7 +6,6 @@ namespace LoRaTools.Regions
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
     using static LoRaWan.DataRateIndex;
@@ -130,25 +129,6 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Returns join channel index for region CN470 matching the frequency of the join request.
         /// </summary>
-        /// <param name="joinChannel">Channel on which the join request was received.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public override bool TryGetJoinChannelIndex(Rxpk joinChannel, out int channelIndex)
-        {
-            if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
-
-            channelIndex = -1;
-
-            if (UpstreamJoinFrequenciesToDownstreamAndChannelIndex.TryGetValue(joinChannel.FreqHertz, out var elem))
-            {
-                channelIndex = elem.joinChannelIndex;
-            }
-
-            return channelIndex != -1;
-        }
-
-        /// <summary>
-        /// Returns join channel index for region CN470 matching the frequency of the join request.
-        /// </summary>
         public override bool TryGetJoinChannelIndex(Hertz frequency, out int channelIndex)
         {
             channelIndex = -1;
@@ -159,62 +139,6 @@ namespace LoRaTools.Regions
             }
 
             return channelIndex != -1;
-        }
-
-        /// <summary>
-        /// Logic to get the correct downstream transmission frequency for region CN470.
-        /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo)
-        {
-            if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
-
-            if (!IsValidUpstreamRxpk(upstreamChannel))
-                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
-
-            frequency = 0;
-
-            // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
-            // over desired twin properties (set for APB devices).
-            var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
-
-            if (joinChannelIndex == null)
-                return false;
-
-            int channelNumber;
-
-            // 20 MHz plan A
-            if (joinChannelIndex <= 7)
-            {
-                channelNumber = upstreamChannel.Freq < 500 ? GetChannelNumber(upstreamChannel, 470.3) : GetChannelNumber(upstreamChannel, 503.5, 32);
-                frequency = this.downstreamFrequenciesByPlanType[0][channelNumber].InMega;
-                return true;
-            }
-            // 20 MHz plan B
-            if (joinChannelIndex <= 9)
-            {
-                channelNumber = upstreamChannel.Freq < 490 ? GetChannelNumber(upstreamChannel, 476.9) : GetChannelNumber(upstreamChannel, 496.9, 32);
-                frequency = this.downstreamFrequenciesByPlanType[1][channelNumber].InMega;
-                return true;
-            }
-            // 26 MHz plan A
-            if (joinChannelIndex <= 14)
-            {
-                channelNumber = GetChannelNumber(upstreamChannel, 470.3);
-                frequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24].InMega;
-                return true;
-            }
-            // 26 MHz plan B
-            if (joinChannelIndex <= 19)
-            {
-                channelNumber = GetChannelNumber(upstreamChannel, 480.3);
-                frequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24].InMega;
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -327,9 +251,5 @@ namespace LoRaTools.Regions
 
             return rx2Window;
         }
-
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        private static int GetChannelNumber(Rxpk upstreamChannel, double startUpstreamFreq, int startChannelNumber = 0) =>
-            startChannelNumber + (int)Math.Round((upstreamChannel.Freq - startUpstreamFreq) / FrequencyIncrement.Value, 0, MidpointRounding.AwayFromZero);
     }
 }
