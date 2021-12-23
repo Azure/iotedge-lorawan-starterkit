@@ -6,7 +6,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Diagnostics.Metrics;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -116,9 +115,7 @@ namespace LoRaWan.NetworkServer
         {
             // Check if the current dev addr is in our network id
             var devAddrNwkid = loRaPayload.DevAddrNetID;
-            var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
-            devAddrNwkid = (byte)(devAddrNwkid >> 1);
-            if (devAddrNwkid == (netIdBytes[0] & 0b01111111))
+            if (devAddrNwkid == this.configuration.NetId)
             {
                 return true;
             }
