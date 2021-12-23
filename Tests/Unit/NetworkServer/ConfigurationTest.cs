@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Collections.Generic;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class ConfigurationTest
@@ -25,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 Assert.Equal(expectedAllowedDevAddrValues.Count, networkServerConfiguration.AllowedDevAddresses.Count);
                 foreach (var devAddr in expectedAllowedDevAddrValues)
                 {
-                    Assert.Contains(devAddr, networkServerConfiguration.AllowedDevAddresses);
+                    Assert.Contains(DevAddr.Parse(devAddr), networkServerConfiguration.AllowedDevAddresses);
                 }
             }
             finally
@@ -35,29 +36,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
         }
 
-        public static IEnumerable<object[]> AllowedDevAddressesInput => new[]
-                {
-                    new object[]
-                    {
-                        "0228B1B1;", new HashSet<string>()
-                        {
-                            "0228B1B1", string.Empty
-                        }
-                    },
-                    new object[]
-                    {
-                        "0228B1B1;0228B1B2", new HashSet<string>()
-                        {
-                            "0228B1B1", "0228B1B2"
-                        }
-                    },
-                    new object[]
-                    {
-                        "ads;0228B1B2;", new HashSet<string>()
-                        {
-                            "ads", string.Empty, "0228B1B2"
-                        }
-                    }
-                };
+        public static TheoryData<string, HashSet<string>> AllowedDevAddressesInput =>
+            TheoryDataFactory.From(("0228B1B1;", new HashSet<string> { "0228B1B1", string.Empty }),
+                                   ("0228B1B1;0228B1B2", new HashSet<string> { "0228B1B1", "0228B1B2" }),
+                                   ("ads;0228B1B2;", new HashSet<string> { "ads", string.Empty, "0228B1B2" }));
     }
 }

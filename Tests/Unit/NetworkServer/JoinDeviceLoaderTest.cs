@@ -78,6 +78,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             factory.Verify(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()), Times.Once);
         }
 
-        private readonly IoTHubDeviceInfo DefaultDeviceInfo = new IoTHubDeviceInfo() { DevEUI = "0000000000000000", PrimaryKey = "AAAA", DevAddr = "FFFFFFFF" };
+        private readonly IoTHubDeviceInfo DefaultDeviceInfo = new IoTHubDeviceInfo
+        {
+            DevEUI = "0000000000000000",
+            PrimaryKey = "AAAA",
+            DevAddr = new DevAddr(0xffffffff)
+        };
     }
 }

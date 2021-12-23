@@ -298,7 +298,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 'gpstime':0,'fts':-1,'rssi':-53,'snr':8.25,'rxtime':1636131701.731686}}");
             var expectedRadioMetadata = GetExpectedRadioMetadata();
             var expectedMhdr = new byte[] { 128 };
-            var expectedDevAddr = new byte[] { 2, 254, 171, 6 };
+            var expectedDevAddr = new DevAddr(50244358);
             var expectedMic = new byte[] { 100, 58, 178, 2 };
             SetDataPathParameter();
             SetupSocketReceiveAsync(message);
@@ -316,7 +316,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // assert
             Assert.NotNull(loRaRequest);
             Assert.Equal(loRaRequest.RadioMetadata, expectedRadioMetadata);
-            Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr.Span.ToArray());
+            Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr);
             Assert.Equal(MacMessageType.ConfirmedDataUp, loRaRequest.Payload.MessageType);
             Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());

@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates device after a succesfull join request.
         /// </summary>
-        void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, string oldDevAddr = null);
+        void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, DevAddr oldDevAddr = default);
 
         /// <summary>
         /// Registers a <see cref="ILoRaDeviceInitializer"/>.

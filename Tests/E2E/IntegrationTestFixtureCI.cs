@@ -259,7 +259,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(5),
                 AppSKey = GetKey32(5),
                 NwkSKey = GetKey32(5),
-                DevAddr = "0028B1B0",
+                DevAddr = new DevAddr(0x0028b1b0),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -269,7 +269,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(5, true),
                 AppSKey = GetKey32(5, true),
                 NwkSKey = GetKey32(5, true),
-                DevAddr = "0028B1B0",
+                DevAddr = new DevAddr(0x0028b1b0),
                 IsIoTHubDevice = true,
             };
 
@@ -279,7 +279,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(6),
                 AppSKey = GetKey32(6),
                 NwkSKey = GetKey32(6),
-                DevAddr = "00000006",
+                DevAddr = new DevAddr(0x00000006),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = false,
             };
@@ -290,7 +290,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(7),
                 AppSKey = GetKey32(7),
                 NwkSKey = GetKey32(7),
-                DevAddr = "00000007",
+                DevAddr = new DevAddr(0x00000007),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -301,7 +301,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(8),
                 AppSKey = GetKey32(8),
                 NwkSKey = GetKey32(8),
-                DevAddr = "00000008",
+                DevAddr = new DevAddr(0x00000008),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -399,7 +399,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(16),
                 AppSKey = GetKey32(16),
                 NwkSKey = GetKey32(16),
-                DevAddr = "00000016",
+                DevAddr = new DevAddr(0x00000016),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -421,7 +421,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(18),
                 AppSKey = GetKey32(18),
                 NwkSKey = GetKey32(18),
-                DevAddr = "00000018",
+                DevAddr = new DevAddr(0x00000018),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true
             };
@@ -432,7 +432,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(19),
                 AppSKey = GetKey32(19),
                 NwkSKey = GetKey32(19),
-                DevAddr = "00000019",
+                DevAddr = new DevAddr(0x00000019),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true
             };
@@ -465,7 +465,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(21),
                 AppSKey = GetKey32(21),
                 NwkSKey = GetKey32(21),
-                DevAddr = "00000021",
+                DevAddr = new DevAddr(0x00000021),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 PreferredWindow = 2
@@ -477,7 +477,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(22),
                 AppSKey = GetKey32(22),
                 NwkSKey = GetKey32(22),
-                DevAddr = "00000022",
+                DevAddr = new DevAddr(0x00000022),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -506,7 +506,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = GetKey16(24),
                 AppSKey = GetKey32(24),
                 NwkSKey = GetKey32(24),
-                DevAddr = "00000024",
+                DevAddr = new DevAddr(0x00000024),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 ClassType = 'C',
@@ -518,7 +518,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = "0000000000000025",
                 AppSKey = "00000000000000000000000000000025",
                 NwkSKey = "00000000000000000000000000000025",
-                DevAddr = "00000025",
+                DevAddr = new DevAddr(0x00000025),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 KeepAliveTimeout = 60
@@ -530,7 +530,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = "0000000000000026",
                 AppSKey = "00000000000000000000000000000026",
                 NwkSKey = "00000000000000000000000000000026",
-                DevAddr = "00000026",
+                DevAddr = new DevAddr(0x00000026),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true
             };
@@ -548,7 +548,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = "0000000000000028",
                 AppSKey = "00000000000000000000000000000028",
                 NwkSKey = "00000000000000000000000000000028",
-                DevAddr = "00000027",
+                DevAddr = new DevAddr(0x00000027),
                 IsIoTHubDevice = true,
                 Deduplication = "Drop"
             };
@@ -558,7 +558,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = "0000000000000029",
                 AppSKey = "00000000000000000000000000000029",
                 NwkSKey = "00000000000000000000000000000029",
-                DevAddr = "00000029",
+                DevAddr = new DevAddr(0x00000029),
                 IsIoTHubDevice = true,
                 Deduplication = "Mark"
             };
@@ -585,7 +585,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = "0000000000000032",
                 AppSKey = "00000000000000000000000000000032",
                 NwkSKey = "00000000000000000000000000000032",
-                DevAddr = "00000032",
+                DevAddr = new DevAddr(0x00000032),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true
             };

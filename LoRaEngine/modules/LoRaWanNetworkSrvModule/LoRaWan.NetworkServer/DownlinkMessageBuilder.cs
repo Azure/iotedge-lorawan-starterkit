@@ -187,17 +187,10 @@ namespace LoRaWan.NetworkServer
                 fctrl |= FrameControlFlags.Adr;
             }
 
-            var srcDevAddr = upstreamPayload.DevAddr.Span;
-            var reversedDevAddr = new byte[srcDevAddr.Length];
-            for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
-            {
-                reversedDevAddr[i] = srcDevAddr[^(1 + i)];
-            }
-
             var msgType = requiresDeviceAcknowlegement ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
-                reversedDevAddr,
+                upstreamPayload.DevAddr,
                 fctrl,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
@@ -312,17 +305,10 @@ namespace LoRaWan.NetworkServer
 
             Array.Reverse(frmPayload);
 
-            var payloadDevAddr = ConversionHelper.StringToByteArray(loRaDevice.DevAddr);
-            var reversedDevAddr = new byte[payloadDevAddr.Length];
-            for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
-            {
-                reversedDevAddr[i] = payloadDevAddr[^(1 + i)];
-            }
-
             var msgType = cloudToDeviceMessage.Confirmed ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
-                reversedDevAddr,
+                loRaDevice.DevAddr,
                 FrameControlFlags.None,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,

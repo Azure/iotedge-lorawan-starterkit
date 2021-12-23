@@ -6,7 +6,6 @@
 namespace LoRaWan.NetworkServer
 {
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using System;
     using System.Collections.Concurrent;
@@ -20,7 +19,7 @@ namespace LoRaWan.NetworkServer
     public class LoRaDeviceCache : IDisposable
     {
         private readonly LoRaDeviceCacheOptions options;
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, LoRaDevice>> devAddrCache = new();
+        private readonly ConcurrentDictionary<DevAddr, ConcurrentDictionary<string, LoRaDevice>> devAddrCache = new();
         private readonly ConcurrentDictionary<string, LoRaDevice> euiCache = new();
         private readonly object syncLock = new object();
         private readonly NetworkServerConfiguration configuration;
@@ -123,7 +122,7 @@ namespace LoRaWan.NetworkServer
             {
                 result &= this.euiCache.Remove(device.DevEUI, out _);
 
-                if (!string.IsNullOrEmpty(device.DevAddr) &&
+                if (!device.DevAddr.IsZero &&
                      this.devAddrCache.TryGetValue(device.DevAddr, out var devicesByDevAddr))
                 {
                     result &= devicesByDevAddr.Remove(device.DevEUI, out _);
@@ -136,10 +135,9 @@ namespace LoRaWan.NetworkServer
             return result;
         }
 
-        public void CleanupOldDevAddrForDevice(LoRaDevice device, string oldDevAddr)
+        public void CleanupOldDevAddrForDevice(LoRaDevice device, DevAddr oldDevAddr)
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
-            _ = oldDevAddr ?? throw new ArgumentNullException(nameof(oldDevAddr));
             if (device.DevAddr == oldDevAddr) throw new InvalidOperationException($"The old devAddr '{oldDevAddr}' to be removed, is still active.");
 
             lock (this.syncLock)
@@ -165,17 +163,17 @@ namespace LoRaWan.NetworkServer
             this.logger.LogDebug($"previous device devAddr ({oldDevAddr}) removed from cache.");
         }
 
-        public virtual bool HasRegistrations(string devAddr)
+        public virtual bool HasRegistrations(DevAddr devAddr)
         {
             return RegistrationCount(devAddr) > 0;
         }
 
-        public virtual bool HasRegistrationsForOtherGateways(string devAddr)
+        public virtual bool HasRegistrationsForOtherGateways(DevAddr devAddr)
         {
             return this.devAddrCache.TryGetValue(devAddr, out var items) && items.Any(x => !x.Value.IsOurDevice);
         }
 
-        public int RegistrationCount(string devAddr)
+        public int RegistrationCount(DevAddr devAddr)
         {
             return this.devAddrCache.TryGetValue(devAddr, out var items) ? items.Count : 0;
         }
@@ -200,7 +198,7 @@ namespace LoRaWan.NetworkServer
                     this.euiCache[device.DevEUI] = device;
                 }
 
-                if (!string.IsNullOrEmpty(device.DevAddr))
+                if (!device.DevAddr.IsZero)
                 {
                     var devAddrLookup = this.devAddrCache.GetOrAdd(device.DevAddr, (_) => new ConcurrentDictionary<string, LoRaDevice>());
                     devAddrLookup[device.DevEUI] = device;
@@ -221,10 +219,9 @@ namespace LoRaWan.NetworkServer
 
             device = null;
 
-            var devAddr = ConversionHelper.ByteArrayToString(payload.DevAddr);
             lock (this.syncLock)
             {
-                if (this.devAddrCache.TryGetValue(devAddr, out var devices))
+                if (this.devAddrCache.TryGetValue(payload.DevAddr, out var devices))
                 {
                     this.deviceCacheHits?.Add(1);
                     device = devices.Values.FirstOrDefault(x => !string.IsNullOrEmpty(x.NwkSKey) && ValidateMic(x, payload));

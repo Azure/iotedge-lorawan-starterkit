@@ -436,7 +436,7 @@ namespace LoRaWan.Tests.Integration
         [InlineData(16777215, 16777215)]
         [InlineData(127, 127)]
         [InlineData(255, 255)]
-        public async Task ABP_Device_NetId_Should_Match_Server(uint deviceNetId, uint serverNetId)
+        public async Task ABP_Device_NetId_Should_Match_Server(int deviceNetId, uint serverNetId)
         {
             var msgPayload = "1234";
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: deviceNetId));
@@ -662,7 +662,7 @@ namespace LoRaWan.Tests.Integration
         public async Task When_Second_Gateway_Does_Not_Find_Device_Should_Keep_Trying_On_Subsequent_Requests()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1));
-            const string devAddr = "02AABBCC";
+            var devAddr = new DevAddr(0x02aabbcc);
             const string nwkSKey = "00000000000000000000000000000002";
             const string appSKey = "00000000000000000000000000000001";
             var devEUI = simulatedDevice.DevEUI;
@@ -1242,7 +1242,7 @@ namespace LoRaWan.Tests.Integration
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
 
             // Add this device to the allowed dev address list
-            ServerConfiguration.AllowedDevAddresses = new HashSet<string>(1)
+            ServerConfiguration.AllowedDevAddresses = new HashSet<DevAddr>(1)
             {
                 simulatedDevice.DevAddr
             };
@@ -1417,7 +1417,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.VerifyAll();
 
             // devices were loaded only once
-            LoRaDeviceApi.Verify(x => x.SearchByDevAddrAsync(It.IsAny<string>()), Times.Once());
+            LoRaDeviceApi.Verify(x => x.SearchByDevAddrAsync(It.IsAny<DevAddr>()), Times.Once());
             deviceClient1.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Once());
             deviceClient2.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Once());
         }

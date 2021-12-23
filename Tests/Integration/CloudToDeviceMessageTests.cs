@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -208,7 +207,7 @@ namespace LoRaWan.Tests.Integration
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -287,7 +286,7 @@ namespace LoRaWan.Tests.Integration
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -375,7 +374,7 @@ namespace LoRaWan.Tests.Integration
 
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loRaDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -460,7 +459,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loRaDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -551,7 +550,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loRaDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -722,7 +721,7 @@ namespace LoRaWan.Tests.Integration
                     loraDevice.NwkSKey :
                     loraDevice.AppSKey);
 
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -875,7 +874,7 @@ namespace LoRaWan.Tests.Integration
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 

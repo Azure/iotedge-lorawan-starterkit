@@ -38,10 +38,18 @@ namespace LoRaWan
             })
         { }
 
+        public bool IsZero => this.value == 0;
+
         /// <summary>
         /// The <c>NwkID</c> (bits 25..31).
         /// </summary>
-        public int NetworkId => unchecked((int)((this.value & ~NetworkAddressMask) >> 25));
+        public int NetworkId
+        {
+            get => unchecked((int)((this.value & ~NetworkAddressMask) >> 25));
+            init => this.value = value is >= 0 and < 0x80
+                               ? unchecked(((uint)value << 25) | (uint)NetworkAddress)
+                               : throw new ArgumentException(null, nameof(value));
+        }
 
         /// <summary>
         /// The <c>NwkAddr</c> (bits 0..24).
@@ -55,6 +63,9 @@ namespace LoRaWan
             BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
             return buffer[Size..];
         }
+
+        public static DevAddr Read(Span<byte> buffer) =>
+            new DevAddr(BinaryPrimitives.ReadUInt32LittleEndian(buffer));
 
         public static DevAddr Parse(ReadOnlySpan<char> input) =>
             TryParse(input, out var result) ? result : throw new FormatException();

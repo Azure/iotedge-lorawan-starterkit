@@ -32,9 +32,7 @@ namespace LoRaTools.LoRaMessage
             if (string.IsNullOrEmpty(payload)) throw new ArgumentNullException(nameof(payload));
 
             // Writing the DevAddr
-            DevAddr = new byte[LoRaWan.DevAddr.Size];
-            _ = devAddress.Write(DevAddr.Span);
-            DevAddr.Span.Reverse();
+            DevAddr = devAddress;
 
             // Parsing LoRaMessageType in legacy format
             var messageType = macHeader.MessageType;

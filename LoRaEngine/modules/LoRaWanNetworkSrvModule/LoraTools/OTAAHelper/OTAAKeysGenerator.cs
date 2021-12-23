@@ -10,19 +10,15 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        private static readonly RandomNumberGenerator RndKeysGenerator = RandomNumberGenerator.Create();
-
-        public static string GetNwkId(byte[] netId)
+        public static DevAddr GetNwkId(byte[] netId)
         {
             if (netId is null) throw new ArgumentNullException(nameof(netId));
 
-            var nwkPart = netId[0] << 1;
-            var devAddr = new byte[4];
-
-            RndKeysGenerator.GetBytes(devAddr);
-
-            devAddr[0] = (byte)((nwkPart & 0b11111110) | (devAddr[0] & 0b00000001));
-            return ConversionHelper.ByteArrayToString(devAddr);
+            Span<byte> bytes = stackalloc byte[4];
+            RandomNumberGenerator.Fill(bytes);
+            var id = netId[0] & 0b0111_1111;
+            var address = BitConverter.ToInt32(bytes) & 0x01ff_ffff;
+            return new DevAddr(id, address);
         }
 
         // don't work with CFLIST atm
@@ -101,9 +97,11 @@ namespace LoRaTools
 
         public static string GetAppNonce()
         {
-            var appNonce = new byte[3];
-            RndKeysGenerator.GetBytes(appNonce);
-            return ConversionHelper.ByteArrayToString(appNonce);
+            Span<byte> bytes = stackalloc byte[3];
+            RandomNumberGenerator.Fill(bytes);
+            Span<char> chars = stackalloc char[bytes.Length * 2];
+            Hexadecimal.Write(bytes, chars);
+            return new string(chars);
         }
     }
 }

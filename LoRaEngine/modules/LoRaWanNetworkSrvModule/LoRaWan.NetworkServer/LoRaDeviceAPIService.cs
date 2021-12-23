@@ -95,13 +95,13 @@ namespace LoRaWan.NetworkServer
             => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, devNonce: devNonce);
 
         /// <inheritdoc />
-        public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr)
+        public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(DevAddr devAddr)
             => SearchDevicesAsync(devAddr: devAddr);
 
         /// <summary>
         /// Helper method that calls the API GetDevice method.
         /// </summary>
-        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, DevNonce? devNonce = null)
+        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, DevAddr? devAddr = null, string devEUI = null, string appEUI = null, DevNonce? devNonce = null)
         {
             this.deviceLoadRequests?.Add(1);
 
@@ -111,7 +111,7 @@ namespace LoRaWan.NetworkServer
             {
                 ["code"] = AuthCode,
                 ["GateWayId"] = gatewayID,
-                ["DevAddr"] = devAddr,
+                ["DevAddr"] = devAddr is { IsZero: false } someDevAddr ? someDevAddr.ToString() : null,
                 ["DevEUI"] = devEUI,
                 ["AppEUI"] = appEUI,
                 ["DevNonce"] = devNonce?.ToString()

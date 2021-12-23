@@ -196,7 +196,7 @@ namespace LoRaWan.Tests.Integration
         }
         #endregion
 
-        #region ConfirmedDataMessage                                                                                                       
+        #region ConfirmedDataMessage
         [Theory]
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 1, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission with drop
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 2, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission
@@ -263,9 +263,8 @@ namespace LoRaWan.Tests.Integration
             int expectedTwinSaves)
         {
 
-            var value8 = "00000000";
             var value32 = "00000000000000000000000000000000";
-            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0)) { DevAddr = value8 };
+            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0)) { DevAddr = new DevAddr(0) };
 
             var dataPayload = simulatedOTAADevice.CreateUnconfirmedDataUpMessage("payload", appSKey: value32, nwkSKey: value32);
             var request1 = CreateOTAARequest(dataPayload, station1);

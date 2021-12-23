@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Searchs devices based on devAddr.
         /// </summary>
-        public abstract Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr);
+        public abstract Task<SearchDevicesResult> SearchByDevAddrAsync(DevAddr devAddr);
 
         /// <summary>
         /// Search and locks device for join request.

@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public DateTimeOffset LastUpdate { get; set; }
 
-        public string DevAddr { get; set; }
+        public DevAddr DevAddr { get; set; }
 
         // Gets if a device is activated by personalization
         public bool IsABP => string.IsNullOrEmpty(AppKey);
@@ -208,7 +208,7 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
-        public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
+        public LoRaDevice(DevAddr devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
         {
             this.connectionManager = connectionManager;
             this.queuedRequests = new Queue<LoRaRequest>();
@@ -225,7 +225,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Use constructor for test code only.
         /// </summary>
-        internal LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
+        internal LoRaDevice(DevAddr devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
             : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance, null)
         { }
 
@@ -275,16 +275,16 @@ namespace LoRaWan.NetworkServer
                     throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
 
                 NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value as string;
-                DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value as string;
+
+                DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value is string s && DevAddr.TryParse(s, out var devAddr)
+                        ? devAddr
+                        : throw new InvalidLoRaDeviceException("DevAddr is invalid or empty");
 
                 if (string.IsNullOrEmpty(NwkSKey))
                     throw new InvalidLoRaDeviceException("NwkSKey is empty");
 
                 if (string.IsNullOrEmpty(AppSKey))
                     throw new InvalidLoRaDeviceException("AppSKey is empty");
-
-                if (string.IsNullOrEmpty(DevAddr))
-                    throw new InvalidLoRaDeviceException("DevAddr is empty");
 
                 if (twin.Properties.Desired.Contains(TwinProperty.ABPRelaxMode))
                 {
@@ -311,7 +311,11 @@ namespace LoRaWan.NetworkServer
 
                 // Check for already joined OTAA device properties
                 if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
-                    DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value as string;
+                {
+                    DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value is string s && DevAddr.TryParse(s, out var devAddr)
+                            ? devAddr
+                            : default;
+                }
 
                 if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
                     AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value as string;

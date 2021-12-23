@@ -250,16 +250,17 @@ namespace LoRaWan.Tests.Common
                         d.NwkSKey = string.Concat(Configuration.DevicePrefix, d.NwkSKey[Configuration.DevicePrefix.Length..]);
                     }
 
-                    if (!string.IsNullOrEmpty(d.DevAddr))
+                    if (!d.DevAddr.IsZero)
                     {
-                        d.DevAddr = NetIdHelper.SetNwkIdPart(string.Concat(Configuration.DevicePrefix, d.DevAddr[Configuration.DevicePrefix.Length..]), Configuration.NetId);
+                        d.DevAddr = DevAddr.Parse(Configuration.DevicePrefix + d.DevAddr.ToString()[Configuration.DevicePrefix.Length..])
+                                    with { NetworkId = checked((int)Configuration.NetId) };
                     }
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(d.DevAddr))
+                    if (!d.DevAddr.IsZero)
                     {
-                        d.DevAddr = NetIdHelper.SetNwkIdPart(d.DevAddr, Configuration.NetId);
+                        d.DevAddr = d.DevAddr with { NetworkId = checked((int)Configuration.NetId) };
                     }
                 }
             }

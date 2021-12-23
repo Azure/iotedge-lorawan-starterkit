@@ -230,7 +230,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
         }
 
-        private static Twin SetupTwins(uint? deviceFcntUp, uint? deviceFcntDown, uint? startFcntUp, uint? startFcntDown, bool abpRelaxed, bool supports32Bit, SimulatedDevice simulatedDevice, string devEUI, string devAddr)
+        private static Twin SetupTwins(uint? deviceFcntUp, uint? deviceFcntDown, uint? startFcntUp, uint? startFcntDown, bool abpRelaxed, bool supports32Bit, SimulatedDevice simulatedDevice, string devEUI, DevAddr devAddr)
         {
             var initialTwin = new Twin();
             initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
@@ -238,7 +238,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
             initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey;
             initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey;
-            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr;
+            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr.ToString();
             initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             initialTwin.Properties.Desired[TwinProperty.GatewayID] = simulatedDevice.LoRaDevice.GatewayID;
             initialTwin.Properties.Desired[TwinProperty.ABPRelaxMode] = abpRelaxed;

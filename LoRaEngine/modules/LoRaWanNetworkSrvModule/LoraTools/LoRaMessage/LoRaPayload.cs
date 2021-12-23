@@ -38,7 +38,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets assigned Dev Address, TODO change??.
         /// </summary>
-        public Memory<byte> DevAddr { get; set; }
+        public DevAddr DevAddr { get; set; }
 
         /// <summary>
         /// Gets the representation of the 32bit Frame counter to be used

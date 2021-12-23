@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -76,7 +75,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void RegisterDeviceInitializer(ILoRaDeviceInitializer initializer) => this.initializers.Add(initializer);
 
-        private DeviceLoaderSynchronizer GetOrCreateLoadingDevicesRequestQueue(string devAddr)
+        private DeviceLoaderSynchronizer GetOrCreateLoadingDevicesRequestQueue(DevAddr devAddr)
         {
             // Need to get and ensure it has started since the GetOrAdd can create multiple objects
             // https://github.com/aspnet/Extensions/issues/708
@@ -123,7 +122,7 @@ namespace LoRaWan.NetworkServer
         {
             if (request is null) throw new ArgumentNullException(nameof(request));
 
-            var devAddr = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
+            var devAddr = request.Payload.DevAddr;
 
             if (this.cache.TryGetValue<DeviceLoaderSynchronizer>(GetDevLoaderCacheKey(devAddr), out var deviceLoader))
             {
@@ -175,7 +174,7 @@ namespace LoRaWan.NetworkServer
 
         // Creates cache key for join device loader: "joinloader:{devEUI}"
         private static string GetJoinDeviceLoaderCacheKey(string devEUI) => string.Concat("joinloader:", devEUI);
-        private static string GetDevLoaderCacheKey(string devAddr) => string.Concat("devaddrloader:", devAddr);
+        private static string GetDevLoaderCacheKey(DevAddr devAddr) => string.Concat("devaddrloader:", devAddr);
 
         // Removes join device loader from cache
         private void RemoveJoinDeviceLoader(string devEUI) => this.cache.Remove(GetJoinDeviceLoaderCacheKey(devEUI));
@@ -246,7 +245,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates a device after a successful login.
         /// </summary>
-        public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, string oldDevAddr)
+        public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, DevAddr oldDevAddr)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
@@ -261,9 +260,9 @@ namespace LoRaWan.NetworkServer
             CleanupOldDevAddr(loRaDevice, oldDevAddr);
         }
 
-        private void CleanupOldDevAddr(LoRaDevice loRaDevice, string oldDevAddr)
+        private void CleanupOldDevAddr(LoRaDevice loRaDevice, DevAddr oldDevAddr)
         {
-            if (string.IsNullOrEmpty(oldDevAddr) || loRaDevice.DevAddr == oldDevAddr)
+            if (oldDevAddr.IsZero || loRaDevice.DevAddr == oldDevAddr)
             {
                 return;
             }

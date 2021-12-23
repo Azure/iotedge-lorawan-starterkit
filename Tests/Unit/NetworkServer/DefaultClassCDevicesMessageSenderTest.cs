@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using global::LoRaTools.LoRaMessage;
     using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
-    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
@@ -23,6 +22,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     {
         private const string ServerGatewayID = "test-gateway";
         private const FramePort TestPort = FramePorts.App10;
+
+        private static readonly DevAddr NoDevAddr = new DevAddr(0);
 
         private readonly NetworkServerConfiguration serverConfiguration;
         private readonly Region loRaRegion;
@@ -64,7 +65,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var downstreamPayloadBytes = downlink.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(sentMessage.Fport, downstreamPayload.Fport);
-            Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
+            Assert.Equal(downstreamPayload.DevAddr, simDevice.DevAddr);
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
         }
@@ -78,7 +79,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEUI = simDevice.DevEUI;
 
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(NoDevAddr, devEUI, "123").AsList()));
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
@@ -135,7 +136,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEUI = simDevice.DevEUI;
 
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(NoDevAddr, devEUI, "123").AsList()));
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simDevice.CreateABPTwin());
@@ -195,7 +196,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEUI = simDevice.DevEUI;
 
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(NoDevAddr, devEUI, "123").AsList()));
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simDevice.CreateOTAATwin());
@@ -230,7 +231,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEUI = simDevice.DevEUI;
 
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(NoDevAddr, devEUI, "123").AsList()));
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
@@ -329,7 +330,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Has_Custom_RX2DR_Should_Send_Correctly()
         {
-            const string devAddr = "023637F8";
+            var devAddr = new DevAddr(0x023637F8);
             const string appSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
             const string nwkSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
@@ -337,7 +338,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(NoDevAddr, devEUI, "123").AsList()));
 
             var twin = simDevice.CreateOTAATwin(
                 desiredProperties: new Dictionary<string, object>
@@ -349,7 +350,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { TwinProperty.RX2DataRate, 10 },
                     { TwinProperty.Region, LoRaRegionType.US915.ToString() },
                     // OTAA device, already joined
-                    { TwinProperty.DevAddr, devAddr },
+                    { TwinProperty.DevAddr, devAddr.ToString() },
                     { TwinProperty.AppSKey, appSKey },
                     { TwinProperty.NwkSKey, nwkSKey },
                     { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
@@ -395,7 +396,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_StationEui_Missing_Should_Fail()
         {
-            const string devAddr = "023637F8";
+            var devAddr = new DevAddr(0x023637F8);
             const string appSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
             const string nwkSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
@@ -403,7 +404,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(NoDevAddr, devEUI, "123").AsList()));
 
             var twin = simDevice.CreateOTAATwin(
                 desiredProperties: new Dictionary<string, object>
@@ -415,7 +416,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { TwinProperty.RX2DataRate, 10 },
                     { TwinProperty.Region, LoRaRegionType.US915.ToString() },
                     // OTAA device, already joined
-                    { TwinProperty.DevAddr, devAddr },
+                    { TwinProperty.DevAddr, devAddr.ToString() },
                     { TwinProperty.AppSKey, appSKey },
                     { TwinProperty.NwkSKey, nwkSKey },
                 });

@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
 
     /// <summary>
@@ -41,7 +40,7 @@ namespace LoRaWan.NetworkServer
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
         private readonly NetworkServerConfiguration configuration;
-        private readonly string devAddr;
+        private readonly DevAddr devAddr;
         private readonly LoRaDeviceCache loraDeviceCache;
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
         private readonly ILogger<DeviceLoaderSynchronizer> logger;
@@ -52,7 +51,7 @@ namespace LoRaWan.NetworkServer
         protected virtual bool LoadingDevicesFailed { get; set; }
 
         internal DeviceLoaderSynchronizer(
-            string devAddr,
+            DevAddr devAddr,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
             ILoRaDeviceFactory deviceFactory,
             NetworkServerConfiguration configuration,
@@ -137,7 +136,7 @@ namespace LoRaWan.NetworkServer
                     }
                     else
                     {
-                        if (string.IsNullOrEmpty(cachedDevice.DevAddr))
+                        if (cachedDevice.DevAddr.IsZero)
                         {
                             // device in cache from a previous join that we didn't complete
                             // (lost race with another gw) - refresh the twins now and keep it
@@ -281,7 +280,7 @@ namespace LoRaWan.NetworkServer
             switch (failedReason)
             {
                 case LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck:
-                    this.logger.LogDebug($"with devAddr {ConversionHelper.ByteArrayToString(request.Payload.DevAddr)} check MIC failed");
+                    this.logger.LogDebug($"with devAddr {request.Payload.DevAddr} check MIC failed");
                     break;
 
                 case LoRaDeviceRequestFailedReason.BelongsToAnotherGateway:

@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Integration
             var joinRequestPayload1 = simulatedDevice.CreateJoinRequest();
             var joinRequestPayload2 = simulatedDevice.CreateJoinRequest();
 
-            var devAddr = string.Empty;
+            var devAddr = new DevAddr(0);
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // Device twin will be queried
@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.Integration
 
             Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
             Assert.True(loRaDevice.IsOurDevice);
-            Assert.Equal(afterJoin2DevAddr, loRaDevice.DevAddr);
+            Assert.Equal(afterJoin2DevAddr, loRaDevice.DevAddr.ToString());
             Assert.Equal(afterJoin2NwkSKey, loRaDevice.NwkSKey);
             Assert.Equal(afterJoin2AppSKey, loRaDevice.AppSKey);
 

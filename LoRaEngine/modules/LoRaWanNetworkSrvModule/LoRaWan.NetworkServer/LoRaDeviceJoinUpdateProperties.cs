@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
 
         public string NwkSKey { get; set; }
 
-        public string DevAddr { get; set; }
+        public DevAddr DevAddr { get; set; }
 
         public string NetID { get; set; }
 

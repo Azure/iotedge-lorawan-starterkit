@@ -101,7 +101,7 @@ namespace LoRaWan.NetworkServer
         private void DispatchLoRaDataMessage(LoRaRequest request)
         {
             var loRaPayload = (LoRaPayloadData)request.Payload;
-            using var scope = this.logger.BeginDeviceAddressScope(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr));
+            using var scope = this.logger.BeginDeviceAddressScope(loRaPayload.DevAddr);
             if (!IsValidNetId(loRaPayload))
             {
                 this.logger.LogDebug($"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})");
@@ -124,8 +124,7 @@ namespace LoRaWan.NetworkServer
             }
 
             // If not, check if the devaddr is part of the allowed dev address list
-            var currentDevAddr = ConversionHelper.ByteArrayToString(loRaPayload.DevAddr);
-            if (this.configuration.AllowedDevAddresses != null && this.configuration.AllowedDevAddresses.Contains(currentDevAddr))
+            if (this.configuration.AllowedDevAddresses != null && this.configuration.AllowedDevAddresses.Contains(loRaPayload.DevAddr))
             {
                 return true;
             }

@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Common
         // LoRaWAN devices have a 64 bit unique identifier that is assigned to the device
         // by the chip manufacturer, but communication uses 32 bit device address
         // In Over-the-Air Activation (OTAA) devices performs network join, where a DevAddr and security key are negotiated with the device.
-        public string DevAddr { get; set; }
+        public DevAddr DevAddr { get; set; }
 
         // Application Session Key
         // Used for encryption and decryption of the payload
@@ -87,8 +87,8 @@ namespace LoRaWan.Tests.Common
             if (!string.IsNullOrEmpty(NwkSKey))
                 desiredProperties[nameof(NwkSKey)] = NwkSKey;
 
-            if (!string.IsNullOrEmpty(DevAddr))
-                desiredProperties[nameof(DevAddr)] = DevAddr;
+            if (!DevAddr.IsZero)
+                desiredProperties[nameof(DevAddr)] = DevAddr.ToString();
 
             desiredProperties[nameof(PreferredWindow)] = PreferredWindow;
 
@@ -113,7 +113,7 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Creates a <see cref="TestDeviceInfo"/> with ABP authentication.
         /// </summary>
-        public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", uint netId = 1, char deviceClassType = 'A', bool supports32BitFcnt = false)
+        public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", int netId = 1, char deviceClassType = 'A', bool supports32BitFcnt = false)
         {
             var value8 = deviceID.ToString("00000000", CultureInfo.InvariantCulture);
             var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
@@ -126,7 +126,6 @@ namespace LoRaWan.Tests.Common
                 value32 = string.Concat(prefix, value32[prefix.Length..]);
             }
 
-            var devAddrValue = NetIdHelper.SetNwkIdPart(value8, netId);
             var result = new TestDeviceInfo
             {
                 DeviceID = value16,
@@ -134,7 +133,7 @@ namespace LoRaWan.Tests.Common
                 SensorDecoder = sensorDecoder,
                 AppSKey = value32,
                 NwkSKey = value32,
-                DevAddr = devAddrValue,
+                DevAddr = DevAddr.Parse(value8) with { NetworkId = netId },
                 ClassType = deviceClassType,
                 Supports32BitFCnt = supports32BitFcnt
             };

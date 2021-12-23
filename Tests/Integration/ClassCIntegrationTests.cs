@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -118,7 +117,7 @@ namespace LoRaWan.Tests.Integration
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(expectedFcntDown, downstreamPayload.GetFcnt());
             Assert.Equal(c2d.Fport, downstreamPayload.Fport);
-            Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
+            Assert.Equal(downstreamPayload.DevAddr, simDevice.DevAddr);
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));
 
@@ -185,7 +184,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
 
-            simDevice.SetupJoin(savedAppSKey, savedNwkSKey, savedDevAddr);
+            simDevice.SetupJoin(savedAppSKey, savedNwkSKey, DevAddr.Parse(savedDevAddr));
             using var request = CreateWaitableRequest(simDevice.CreateUnconfirmedDataUpMessage("1"));
             request.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(request);
@@ -224,7 +223,7 @@ namespace LoRaWan.Tests.Integration
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(1, downstreamPayload.GetFcnt());
             Assert.Equal(c2d.Fport, downstreamPayload.Fport);
-            Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(savedDevAddr));
+            Assert.Equal(downstreamPayload.DevAddr, DevAddr.Parse(savedDevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));
 
