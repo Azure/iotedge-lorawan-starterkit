@@ -896,7 +896,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-camelcase 5.0.0 - MIT
+camelcase 5.3.1 - MIT
 https://github.com/sindresorhus/camelcase#readme
 
 (c) Sindre Sorhus (https://sindresorhus.com)
@@ -917,7 +917,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-camelcase 5.3.1 - MIT
+camelcase 5.0.0 - MIT
 https://github.com/sindresorhus/camelcase#readme
 
 (c) Sindre Sorhus (https://sindresorhus.com)
@@ -1707,7 +1707,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-express-validator 6.13.0 - MIT
+express-validator 6.14.0 - MIT
 https://express-validator.github.io/
 
 Copyright (c) 2010 Chris O'Hara <cohara87@gmail.com>
@@ -2141,7 +2141,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-joycon 3.0.1 - MIT
+joycon 3.1.1 - MIT
 https://github.com/egoist/joycon#readme
 
 (c) egoist (https://github.com/egoist)
@@ -2934,7 +2934,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-pino-pretty 7.2.0 - MIT
+pino-pretty 7.3.0 - MIT
 https://github.com/pinojs/pino-pretty#readme
 
 Copyright (c) 2019 the Pino team
@@ -3982,9 +3982,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-validator 13.6.0 - MIT
+validator 13.7.0 - MIT
 https://github.com/validatorjs/validator.js
 
+Copyright (c) 2018 Chris O'Hara <cohara87@gmail.com>
 
 Copyright (c) 2018 Chris O'Hara <cohara87@gmail.com>
 
