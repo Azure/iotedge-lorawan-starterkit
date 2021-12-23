@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
-            var key = CreateCacheKey((LoRaPayloadData)loRaRequest.Payload);
+            var key = CreateCacheKey((LoRaPayloadDataLns)loRaRequest.Payload);
             if (EnsureFirstMessageInCache(key, loRaRequest, out var previousStation))
                 return ConcentratorDeduplicationResult.NotDuplicate;
 
@@ -88,9 +88,9 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        internal static string CreateCacheKey(LoRaPayloadData payload)
+        internal static string CreateCacheKey(LoRaPayloadDataLns payload)
         {
-            var totalBufferLength = payload.DevAddr.Length + payload.Mic.Length + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
+            var totalBufferLength = payload.DevAddr.Length + payload.Mic.Length + payload.Frmpayload.Length + payload.Fcnt.Length;
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
 
             var index = 0;
@@ -100,7 +100,7 @@ namespace LoRaWan.NetworkServer
             BinaryPrimitives.WriteUInt32LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt32LittleEndian(payload.Mic.Span));
             index += payload.Mic.Length;
 
-            payload.RawMessage?.CopyTo(buffer[index..]);
+            payload.Frmpayload.Span.CopyTo(buffer[index..]);
             index += payload.RawMessage?.Length ?? 0;
 
             BinaryPrimitives.WriteUInt16LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));

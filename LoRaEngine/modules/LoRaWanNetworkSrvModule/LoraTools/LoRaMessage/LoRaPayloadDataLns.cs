@@ -16,7 +16,7 @@ namespace LoRaTools.LoRaMessage
                                   string options,
                                   string payload,
                                   Mic mic)
-            : this(devAddr, macHeader, default, counter, options, payload, default, mic, default) { }
+            : this(devAddr, macHeader, default, counter, options, payload, null, mic, default) { }
 
         public LoRaPayloadDataLns(DevAddr devAddress,
                                   MacHeader macHeader,
@@ -24,7 +24,7 @@ namespace LoRaTools.LoRaMessage
                                   ushort counter,
                                   string options,
                                   string payload,
-                                  FramePort port,
+                                  FramePort? port,
                                   Mic mic,
                                   ILogger logger)
         {

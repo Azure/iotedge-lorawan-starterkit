@@ -20,8 +20,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly ConcentratorDeduplication concentratorDeduplication;
 
         private readonly LoRaDevice loRaDevice;
-        private readonly SimulatedDevice simulatedABPDevice;
-        private readonly LoRaPayloadData dataPayload;
+        private readonly LoRaPayloadDataLns dataPayload;
         private readonly SimulatedDevice simulatedOTAADevice;
         private readonly LoRaPayloadJoinRequest joinPayload;
         private readonly WaitableLoRaRequest dataRequest;
@@ -32,10 +31,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.cache = new MemoryCache(new MemoryCacheOptions());
             this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
 
-            this.simulatedABPDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            this.dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
+            var devAddr = new DevAddr(0);
+            this.dataPayload = new LoRaPayloadDataLns(devAddr, new MacHeader(MacMessageType.ConfirmedDataUp),
+                                                      0, string.Empty, "00000000", new Mic(0));
+
             this.dataRequest = WaitableLoRaRequest.Create(this.dataPayload);
-            this.loRaDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, this.connectionManager);
+            this.loRaDevice = new LoRaDevice(devAddr.ToString(), new DevEui(0).ToString(), this.connectionManager);
 
             this.simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
             this.joinPayload = this.simulatedOTAADevice.CreateJoinRequest(appkey: this.simulatedOTAADevice.AppKey);
@@ -56,7 +57,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             if (!isCacheEmpty)
             {
-                var anotherPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("another_payload");
+                var anotherPayload = new LoRaPayloadDataLns(new DevAddr(0), new MacHeader(MacMessageType.ConfirmedDataUp),
+                                          0, string.Empty, "11111111", new Mic(0));
                 using var anotherRequest = WaitableLoRaRequest.Create(anotherPayload);
                 _ = this.concentratorDeduplication.CheckDuplicateData(anotherRequest, this.loRaDevice);
             }
