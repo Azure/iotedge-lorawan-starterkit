@@ -339,7 +339,7 @@ namespace LoRaWan.Tests.Common
             }
 #endif
 
-            return await Task.FromResult(true);
+            return await joinCompleted.WaitAsync(timeoutInMs);
         }
 
 
