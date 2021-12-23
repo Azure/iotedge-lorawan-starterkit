@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Disposed_While_Refreshing_We_Shutdown_Gracefully()
         {
             using var cache = new TestDeviceCache(this.quickRefreshOptions, true);
-            var deviceMock = new Mock<LoRaDevice>("abc", "123", null);
+            var deviceMock = new Mock<LoRaDevice>(new DevAddr(0xabc), "123", null);
             deviceMock.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((NetworkServerConfiguration config, CancellationToken token) =>
                 {
@@ -86,7 +86,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Refresh_Fails_It_Is_Retried()
         {
             using var cache = new TestDeviceCache(this.quickRefreshOptions, true);
-            var deviceMock = new Mock<LoRaDevice>("abc", "123", null);
+            var deviceMock = new Mock<LoRaDevice>(new DevAddr(0xabc), "123", null);
             deviceMock.SetupSequence(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new LoRaProcessingException("Refresh failed.", LoRaProcessingErrorCode.DeviceInitializationFailed))
                 .ReturnsAsync(true);

@@ -368,7 +368,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
 
             const string devEUI = "123";
-            var loRaDevice = new Mock<LoRaDevice>(null, devEUI, null);
+            var loRaDevice = new Mock<LoRaDevice>(new DevAddr(0), devEUI, null);
             loRaDevice.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None))
                 .ReturnsAsync(true);
             deviceCache.Register(loRaDevice.Object);
