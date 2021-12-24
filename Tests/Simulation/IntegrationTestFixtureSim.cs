@@ -4,6 +4,8 @@
 namespace LoRaWan.Tests.Simulation
 {
     using System;
+    using System.Collections.Generic;
+    using System.Globalization;
     using LoRaWan.Tests.Common;
 
     public class IntegrationTestFixtureSim : IntegrationTestFixtureBase
@@ -17,9 +19,9 @@ namespace LoRaWan.Tests.Simulation
         //// Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
         //public TestDeviceInfo Device1003_Simulated_HttpBasedDecoder { get; private set; }
 
-        //private readonly List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
+        private readonly List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
 
-        //public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP => this.deviceRange1000_ABP;
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP => this.deviceRange1000_ABP;
 
         //private readonly List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
 
@@ -69,22 +71,22 @@ namespace LoRaWan.Tests.Simulation
             //    SensorDecoder = "http://localhost:8888/api/DecoderValueSensor",
             //};
 
-            //for (var deviceID = 1100; deviceID <= 1110; deviceID++)
-            //{
-            //    this.deviceRange1000_ABP.Add(
-            //        new TestDeviceInfo
-            //        {
-            //            DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-            //            AppEUI = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-            //            AppKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
-            //            GatewayID = gatewayID,
-            //            IsIoTHubDevice = true,
-            //            SensorDecoder = "DecoderValueSensor",
-            //            AppSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
-            //            NwkSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
-            //            DevAddr = deviceID.ToString("00000000", CultureInfo.InvariantCulture),
-            //        });
-            //}
+            for (var deviceID = 1100; deviceID <= 1110; deviceID++)
+            {
+                this.deviceRange1000_ABP.Add(
+                    new TestDeviceInfo
+                    {
+                        DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppEUI = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        GatewayID = gatewayID,
+                        IsIoTHubDevice = true,
+                        SensorDecoder = "DecoderValueSensor",
+                        AppSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        NwkSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        DevAddr = deviceID.ToString("00000000", CultureInfo.InvariantCulture),
+                    });
+            }
 
             //// Range of 1000 ABP devices from 2000 to 2999: Used for load testing
             //for (var deviceID = 2000; deviceID <= 2999; deviceID++)

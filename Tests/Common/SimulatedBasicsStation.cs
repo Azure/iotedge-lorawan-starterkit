@@ -16,6 +16,8 @@ namespace LoRaWan.Tests.Common
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using System.Net.WebSockets;
+    using Xunit;
+    using System.Linq;
 
     public sealed class SimulatedBasicsStation : IDisposable
     {
@@ -41,7 +43,7 @@ namespace LoRaWan.Tests.Common
         {
             try
             {
-                var receivedMessage = new List<string>();
+                var routerReceivedMessage = new List<string>();
                 using var routerWebsocketClient = new WebsocketClient(new Uri(LnsUri, "router-info"))
                 {
                     ReconnectTimeout = TimeSpan.FromSeconds(5)
@@ -52,11 +54,10 @@ namespace LoRaWan.Tests.Common
                 });
                 routerWebsocketClient.MessageReceived.Subscribe(msg =>
                 {
-                    receivedMessage.Add(msg.Text);
+                    routerReceivedMessage.Add(msg.Text);
                     Console.WriteLine("Message received: " + msg);
                 });
                 await routerWebsocketClient.Start();
-                //Task.Run(() => client.Send("{ message }"));
                 using var ms = new MemoryStream();
                 using var writer = new Utf8JsonWriter(ms);
 
@@ -66,6 +67,9 @@ namespace LoRaWan.Tests.Common
                 }));
 
                 await Task.Delay(5000);
+
+                // We could take here additional information e.g. the basicsstation region.
+                Assert.Single(routerReceivedMessage);
                 await routerWebsocketClient.Stop(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "closing WS");
                 var factory = new Func<ClientWebSocket>(() => new ClientWebSocket
                 {
@@ -85,12 +89,12 @@ namespace LoRaWan.Tests.Common
                 });
                 DataWebsocketClient.MessageReceived.Subscribe(msg =>
                 {
-                    receivedMessage.Add(msg.Text);
+                    routerReceivedMessage.Add(msg.Text);
                     if (this.subscribers.Count > 0)
                     {
                         Func<string, bool> subscriberToRemove = null;
 
-                        foreach (var subscriber in this.subscribers)
+                        foreach (var subscriber in this.subscribers.Where(subscriber =>     subscriber(msg.Text)))
                         {
                             if (subscriber(msg.Text))
                             {
@@ -108,14 +112,13 @@ namespace LoRaWan.Tests.Common
                 });
                 await DataWebsocketClient.Start();
 
-                var versionMessage = new LnsVersionRequest(stationEUI , "2", "1", "test", 2, "");
+                var versionMessage = new LnsVersionRequest(stationEUI, "2", "1", "test", 2, "");
                 await DataWebsocketClient.SendInstant(JsonSerializer.Serialize(versionMessage));
                 await Task.Delay(5000);
-
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ERROR: " + ex.ToString());
+                Console.WriteLine("ERROR: " + ex);
             }
         }
 
@@ -123,8 +126,12 @@ namespace LoRaWan.Tests.Common
         public async Task SendDataMessageAsync(LoRaRequest LoRaRequest)
         {
             var payload = (LoRaPayloadData)LoRaRequest.Payload;
+
+            // catch me if you can.
             payload.DevAddr.Span.Reverse();
-            var msg = JsonSerializer.Serialize(new {
+
+            var msg = JsonSerializer.Serialize(new
+            {
                 MHdr = (uint)LoRaRequest.Payload.Mhdr.Span[0],
                 msgtype = "updf",
                 DevAddr = MemoryMarshal.Read<int>(payload.DevAddr.Span),
@@ -145,7 +152,7 @@ namespace LoRaWan.Tests.Common
                     snr = LoRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio
                 }
             });
-           
+        
             await SendMessageAsync(msg);
 
             // TestLogger.Log($"[{LoRaDevice.DevAddr}] Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.UTF8.GetString(gatewayInfo)}");

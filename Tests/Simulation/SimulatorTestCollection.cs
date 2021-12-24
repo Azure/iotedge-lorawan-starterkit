@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Simulation
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
@@ -32,37 +33,44 @@ namespace LoRaWan.Tests.Simulation
         // check if we need to parametrize address
         private Uri CreateNetworkServerEndpoint() => new Uri($"ws://{Configuration.NetworkServerIP}:5000");
 
-        // [Fact]
-        // public async Task Ten_Devices_Sending_Messages_Each_Second()
-        // {
-        //     var listSimulatedDevices = new List<SimulatedDevice>();
-        //     foreach (var device in TestFixture.DeviceRange1000_ABP)
-        //     {
-        //         var simulatedDevice = new SimulatedDevice(device);
-        //         listSimulatedDevices.Add(simulatedDevice);
-        //     }
+        /// <summary>
+        /// This test needs to be reworked. It was commented out in the previous code, I guess this was supposed to be a mini load test.
+        /// However all the method calls where non existing
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task Ten_Devices_Sending_Messages_At_Same_Time()
+        {
+            var listSimulatedDevices = new List<SimulatedDevice>();
+            foreach (var device in TestFixtureSim.DeviceRange1000_ABP)
+            {
+                var simulatedDevice = new SimulatedDevice(device);
+                listSimulatedDevices.Add(simulatedDevice);
+            }
 
-        // var networkServerIPEndpoint = CreateNetworkServerEndpoint();
+            var networkServerIPEndpoint = CreateNetworkServerEndpoint();
+            using (var simulatedBasicsStation = new SimulatedBasicsStation("B8-27-EB-FF-FE-A3-BE-42", networkServerIPEndpoint))
+            {
+                await simulatedBasicsStation.StartAsync();
 
-        // using (var simulatedPacketForwarder = new SimulatedPacketForwarder(networkServerIPEndpoint))
-        //     {
-        //         simulatedPacketForwarder.Start();
+                var deviceTasks = new List<Task>();
+                foreach (var device in TestFixtureSim.DeviceRange1000_ABP)
+                {
+                    var simulatedDevice = new SimulatedDevice(device);
+                    using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(device.DeviceID));
 
-        // var deviceTasks = new List<Task>();
-        //         foreach (var device in TestFixture.DeviceRange1000_ABP)
-        //         {
-        //             var simulatedDevice = new SimulatedDevice(device);
-        //             deviceTasks.Add(SendDeviceMessagesAsync(simulatedPacketForwarder, simulatedDevice, 60, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(1)));
-        //             await Task.Delay(2000);
-        //         }
+                    deviceTasks.Add(simulatedBasicsStation.SendDataMessageAsync(request));
+                    await Task.Delay(2000);
+                }
 
-        // await Task.WhenAll(deviceTasks);
-        //         await simulatedPacketForwarder.StopAsync();
-        //     }
+                await Task.WhenAll(deviceTasks);
+                await simulatedBasicsStation.StopAsync();
+            }
 
-        // var eventsByDevices = TestFixture.IoTHubMessages.GetEvents().GroupBy(x => x.SystemProperties["iothub-connection-device-id"]);
-        //     Assert.Equal(10, eventsByDevices.Count());
-        // }
+            var eventsByDevices = TestFixture.IoTHubMessages.Events.GroupBy(x => x.SystemProperties["iothub-connection-device-id"]);
+            // There are 11 devices in that group 0-10
+            Assert.Equal(11, eventsByDevices.Count());
+        }
         [Fact]
         public async Task Single_ABP_Simulated_Device()
         {
