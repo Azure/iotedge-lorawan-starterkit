@@ -13,6 +13,30 @@ namespace LoRaWan.Tests.Unit
         private readonly DevAddr subject = new(0xeb6f7bde);
 
         [Fact]
+        public void NetworkIdMask_Is_7_MSB()
+        {
+            Assert.Equal(0xfe000000, DevAddr.NetworkIdMask);
+        }
+
+        [Fact]
+        public void MaxNetworkId_Is_Largest_7_Bit_Integer()
+        {
+            Assert.Equal(0x7f, DevAddr.MaxNetworkId);
+        }
+
+        [Fact]
+        public void NetworkAddressMask_Is_25_LSB()
+        {
+            Assert.Equal(0x01ff_ffffU, DevAddr.NetworkAddressMask);
+        }
+
+        [Fact]
+        public void MaxNetworkAddress_Is_Largest_25_Bit_Integer()
+        {
+            Assert.Equal(0x1ff_ffff, DevAddr.MaxNetworkAddress);
+        }
+
+        [Fact]
         public void Init()
         {
             var networkId = 123;

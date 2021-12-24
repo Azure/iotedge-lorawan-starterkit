@@ -10,15 +10,11 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        public static DevAddr GetNwkId(byte[] netId)
+        public static DevAddr GetNwkId(uint netId)
         {
-            if (netId is null) throw new ArgumentNullException(nameof(netId));
-
-            Span<byte> bytes = stackalloc byte[4];
-            RandomNumberGenerator.Fill(bytes);
-            var id = netId[0] & 0b0111_1111;
-            var address = BitConverter.ToInt32(bytes) & 0x01ff_ffff;
-            return new DevAddr(id, address);
+            var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
+            // The 7 LBS of the NetID become the NwkID of a DevAddr:
+            return new DevAddr(unchecked((byte)netId) & 0b0111_1111, address);
         }
 
         // don't work with CFLIST atm

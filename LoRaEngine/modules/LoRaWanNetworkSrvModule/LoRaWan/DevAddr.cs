@@ -23,8 +23,11 @@ namespace LoRaWan
 
         public const int Size = sizeof(uint);
 
-        private const uint NetworkAddressMask = 0x01ff_ffff;
-        private const uint NetworkIdMask = ~NetworkAddressMask;
+        public const uint NetworkAddressMask = 0x01ff_ffff;
+        public const uint NetworkIdMask = ~NetworkAddressMask;
+
+        public const byte MaxNetworkId = 127; // 7 bits
+        public const int MaxNetworkAddress = 0x1ff_ffff; // 25 bits
 
         private readonly uint value;
 
@@ -58,12 +61,12 @@ namespace LoRaWan
         }
 
         private static uint SetNetworkId(uint devAddr, int value, [CallerArgumentExpression("value")] string? paramName = null) =>
-            value is >= 0 and < 0x80
+            value is >= 0 and <= MaxNetworkId
             ? (devAddr & NetworkAddressMask) | unchecked((uint)value << 25)
             : throw new ArgumentException(null, paramName);
 
         private static uint SetNetworkAddress(uint devAddr, int value, [CallerArgumentExpression("value")] string? paramName = null) =>
-            value is >= 0 and <= (int)NetworkAddressMask
+            value is >= 0 and <= MaxNetworkAddress
             ? (devAddr & NetworkIdMask) | unchecked((uint)value)
             : throw new ArgumentException(null, paramName);
 

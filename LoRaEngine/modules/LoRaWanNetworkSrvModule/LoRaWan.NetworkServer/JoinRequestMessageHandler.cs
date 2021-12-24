@@ -142,7 +142,7 @@ namespace LoRaWan.NetworkServer
                 var appKeyBytes = ConversionHelper.StringToByteArray(loRaDevice.AppKey);
                 var appSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
                 var nwkSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
-                var devAddr = OTAAKeysGenerator.GetNwkId(netId);
+                var devAddr = OTAAKeysGenerator.GetNwkId(this.configuration.NetId);
 
                 var oldDevAddr = loRaDevice.DevAddr;
 
