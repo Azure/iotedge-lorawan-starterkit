@@ -133,7 +133,7 @@ namespace LoRaWan.Tests.Common
                 SensorDecoder = sensorDecoder,
                 AppSKey = value32,
                 NwkSKey = value32,
-                DevAddr = LoRaWan.DevAddr.Parse(value8) with { NetworkId = netId },
+                DevAddr = LoRaWan.DevAddr.Parse(value8) with { NetworkId = unchecked((byte)netId & 0x7f) },
                 ClassType = deviceClassType,
                 Supports32BitFCnt = supports32BitFcnt
             };
