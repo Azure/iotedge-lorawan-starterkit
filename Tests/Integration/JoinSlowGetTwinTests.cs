@@ -45,9 +45,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((updatedTwin) =>
                 {
-                    afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
-                    afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
-                    afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
+                    afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey].Value;
+                    afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey].Value;
+                    afterJoinDevAddr = DevAddr.Parse((string)(object)updatedTwin[TwinProperty.DevAddr].Value);
                 })
                 .ReturnsAsync(true);
 

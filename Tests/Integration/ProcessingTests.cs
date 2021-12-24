@@ -680,7 +680,7 @@ namespace LoRaWan.Tests.Integration
                 {
                     { TwinProperty.AppSKey, appSKey },
                     { TwinProperty.NwkSKey, nwkSKey },
-                    { TwinProperty.DevAddr, devAddr },
+                    { TwinProperty.DevAddr, devAddr.ToString() },
                     { TwinProperty.DevNonce, "ABCD" },
                 });
 
