@@ -111,7 +111,7 @@ namespace LoRaWan.Tests.Integration
             initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
             initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey;
             initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey;
-            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr;
+            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr.ToString();
             if (twinGatewayID != null)
                 initialTwin.Properties.Desired[TwinProperty.GatewayID] = twinGatewayID;
             initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
