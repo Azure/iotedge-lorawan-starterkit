@@ -315,9 +315,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((updatedTwin) =>
                 {
-                    afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
-                    afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
-                    afterJoinDevAddr = DevAddr.Parse((string)(object)updatedTwin[TwinProperty.DevAddr]);
+                    afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey].Value;
+                    afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey].Value;
+                    afterJoinDevAddr = DevAddr.Parse((string)(object)updatedTwin[TwinProperty.DevAddr].Value);
                 })
                 .ReturnsAsync(true);
 
@@ -497,7 +497,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey].Value;
                 afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey].Value;
-                afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr].Value;
+                afterJoinDevAddr = DevAddr.Parse((string)(object)updatedTwin[TwinProperty.DevAddr].Value);
                 afterJoinFcntDown = updatedTwin[TwinProperty.FCntDown].Value;
                 afterJoinFcntUp = updatedTwin[TwinProperty.FCntUp].Value;
             })
@@ -702,7 +702,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
              {
                  afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey].Value;
                  afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey].Value;
-                 afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr].Value;
+                 afterJoinDevAddr = DevAddr.Parse((string)(object)updatedTwin[TwinProperty.DevAddr].Value);
                  afterJoinFcntDown = updatedTwin[TwinProperty.FCntDown].Value;
                  afterJoinFcntUp = updatedTwin[TwinProperty.FCntUp].Value;
              })
@@ -816,7 +816,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
              {
                  afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey].Value;
                  afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey].Value;
-                 afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr].Value;
+                 afterJoinDevAddr = DevAddr.Parse((string)(object)updatedTwin[TwinProperty.DevAddr].Value);
                  afterJoinFcntDown = updatedTwin[TwinProperty.FCntDown].Value;
                  afterJoinFcntUp = updatedTwin[TwinProperty.FCntUp].Value;
              })
