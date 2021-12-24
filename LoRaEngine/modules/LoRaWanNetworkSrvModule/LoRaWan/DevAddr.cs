@@ -46,6 +46,11 @@ namespace LoRaWan
         }
 
         /// <summary>
+        /// Determines if <see cref="NetworkId"/> represents a private network.
+        /// </summary>
+        public bool IsPrivate => NetworkId is 0 or 1;
+
+        /// <summary>
         /// The <c>NwkAddr</c> (bits 0..24).
         /// </summary>
         public int NetworkAddress
@@ -71,6 +76,18 @@ namespace LoRaWan
             BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
             return buffer[Size..];
         }
+
+        /// <summary>
+        /// Creates a <see cref="DevAddr"/> where its <see cref="NetworkId"/> is set to 0,
+        /// representing a private network address.
+        /// </summary>
+        public static DevAddr Private0(int address) => new DevAddr(0, address);
+
+        /// <summary>
+        /// Creates a <see cref="DevAddr"/> where its <see cref="NetworkId"/> is set to 1,
+        /// representing a private network address.
+        /// </summary>
+        public static DevAddr Private1(int address) => new DevAddr(1, address);
 
         public static DevAddr Read(Span<byte> buffer) =>
             new DevAddr(BinaryPrimitives.ReadUInt32LittleEndian(buffer));
