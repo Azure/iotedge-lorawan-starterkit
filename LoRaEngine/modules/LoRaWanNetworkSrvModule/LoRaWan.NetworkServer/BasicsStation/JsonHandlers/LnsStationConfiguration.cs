@@ -13,9 +13,18 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     internal static class LnsStationConfiguration
     {
+        private enum Radio { Zero, One }
+
+        private static T Map<T>(this Radio radio, T zero, T one) => radio switch
+        {
+            Radio.Zero => zero,
+            Radio.One => one,
+            _ => throw new ArgumentException(null, nameof(radio))
+        };
+
         private class ChannelConfig
         {
-            public ChannelConfig(bool enable, bool radio, int @if)
+            public ChannelConfig(bool enable, Radio radio, int @if)
             {
                 Enable = enable;
                 Radio = radio;
@@ -23,13 +32,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             }
 
             public bool Enable { get; }
-            public bool Radio { get; }
+            public Radio Radio { get; }
             public int If { get; }
         }
 
         private class StandardConfig
         {
-            public StandardConfig(bool enable, bool radio, int @if, Bandwidth bandwidth, SpreadingFactor spreadingFactor)
+            public StandardConfig(bool enable, Radio radio, int @if, Bandwidth bandwidth, SpreadingFactor spreadingFactor)
             {
                 Enable = enable;
                 Radio = radio;
@@ -39,7 +48,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             }
 
             public bool Enable { get; }
-            public bool Radio { get; }
+            public Radio Radio { get; }
             public int If { get; }
             public Bandwidth Bandwidth { get; }
             public SpreadingFactor SpreadingFactor { get; }
@@ -100,19 +109,29 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             public ChannelConfig ChannelMultiSf7 { get; }
         }
 
+        private static readonly IJsonProperty<Radio> RadioProperty =
+            JsonReader.Property("radio",
+                                from r in JsonReader.Int32()
+                                select r switch
+                                {
+                                    0 => Radio.Zero,
+                                    1 => Radio.One,
+                                    var n => throw new JsonException($"Invalid value for radio: {n}"),
+                                });
+
         private static readonly IJsonReader<ChannelConfig> ChannelConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
-                              JsonReader.Property("radio", JsonReader.Int32()),
+                              RadioProperty,
                               JsonReader.Property("if", JsonReader.Int32()),
-                              (e, r, i) => new ChannelConfig(e, r == 1, i));
+                              (e, r, i) => new ChannelConfig(e, r, i));
 
         private static readonly IJsonReader<StandardConfig> StandardConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
-                              JsonReader.Property("radio", JsonReader.Int32()),
+                              RadioProperty,
                               JsonReader.Property("if", JsonReader.Int32()),
-                              JsonReader.Property("bandwidth", JsonReader.UInt32()),
-                              JsonReader.Property("spread_factor", JsonReader.UInt32()),
-                              (e, r, i, b, sf) => new StandardConfig(e, r == 1, i, GetBandwidth(b), CastToEnumIfDefined<SpreadingFactor>((int)sf)));
+                              JsonReader.Property("bandwidth", JsonReader.UInt32().AsEnum(n => unchecked((Bandwidth)(n / 1000 /* kHz */)))),
+                              JsonReader.Property("spread_factor", JsonReader.UInt32().AsEnum(n => unchecked((SpreadingFactor)n))),
+                              (e, r, i, bw, sf) => new StandardConfig(e, r, i, bw, sf));
 
         private static readonly IJsonReader<RadioConfig> RadioConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
@@ -135,6 +154,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               (r0, r1, std, fsk, sf0, sf1, sf2, sf3, sf4, sf5, sf6, sf7) =>
                               new Sx1301Config(r0, r1, std, fsk, sf0, sf1, sf2, sf3, sf4, sf5, sf6, sf7));
 
+        /// <summary>
+        /// In the router configuration, a spreading factor of 0 is used for FSK.
+        /// </summary>
+        private const SpreadingFactor FskSpreadingFactor = 0;
+
         private static readonly IJsonReader<string> RouterConfigurationConverter =
             JsonReader.Object(JsonReader.Property("NetID", JsonReader.Array(from id in JsonReader.UInt32()
                                                                             select new NetId((int)id))),
@@ -148,8 +172,19 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("hwspec", JsonReader.String()),
                               JsonReader.Property("freq_range", from r in JsonReader.Array(JsonReader.UInt32())
                                                                 select (new Hertz(r[0]), new Hertz(r[1]))),
-                              JsonReader.Property("DRs", JsonReader.Array(from arr in JsonReader.Array(JsonReader.UInt32())
-                                                                          select (CastToEnumIfDefined<SpreadingFactor>((int)arr[0]), GetBandwidth(arr[1]), Convert.ToBoolean(arr[2])))),
+                              JsonReader.Property("DRs",
+                                  JsonReader.Array(from e in JsonReader.Tuple(JsonReader.Either(from n in JsonReader.UInt32().Validate(n => n == 0)
+                                                                                                select FskSpreadingFactor,
+                                                                                                JsonReader.UInt32().AsEnum(n => unchecked((SpreadingFactor)n))),
+                                                                              from n in JsonReader.UInt32()
+                                                                              select unchecked((Bandwidth)n),
+                                                                              from n in JsonReader.UInt32()
+                                                                              select n > 0)
+                                                   select (SpreadingFactor: e.Item1, Bandwidth: e.Item2, DownloadOnly: e.Item3)
+                                                   into e
+                                                   select e.SpreadingFactor is FskSpreadingFactor ? (FskSpreadingFactor, 0, e.DownloadOnly)
+                                                        : Enum.IsDefined(e.Bandwidth) ? (e.SpreadingFactor, e.Bandwidth, e.DownloadOnly)
+                                                        : throw new JsonException($"Invalid bandwidth: {e.Bandwidth}"))),
                               JsonReader.Property("sx1301_conf", JsonReader.Array(Sx1301ConfReader)),
                               JsonReader.Property("nocca", JsonReader.Boolean()),
                               JsonReader.Property("nodc", JsonReader.Boolean()),
@@ -170,15 +205,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                   {
                                       if (region is RegionAS923 as923 && radioConf.FirstOrDefault() is { } configuration)
                                       {
-                                          var chan0CentralFreq = configuration.ChannelMultiSf0.Radio ? configuration.Radio0.Freq.AsUInt64
-                                                                                                     : configuration.Radio1.Freq.AsUInt64;
-                                          var chan0Freq = configuration.ChannelMultiSf0.If < 0 ? chan0CentralFreq - (ulong)(-1 * configuration.ChannelMultiSf0.If)
-                                                                                               : chan0CentralFreq + (ulong)configuration.ChannelMultiSf0.If;
-                                          var chan1CentralFreq = configuration.ChannelMultiSf1.Radio ? configuration.Radio0.Freq.AsUInt64
-                                                                                                     : configuration.Radio1.Freq.AsUInt64;
-                                          var chan1Freq = configuration.ChannelMultiSf1.If < 0 ? chan1CentralFreq - (ulong)(-1 * configuration.ChannelMultiSf1.If)
-                                                                                               : chan1CentralFreq + (ulong)configuration.ChannelMultiSf1.If;
-                                          return as923.WithFrequencyOffset(new Hertz(chan0Freq), new Hertz(chan1Freq));
+                                          var chan0CentralFreq = configuration.ChannelMultiSf0.Radio.Map(configuration.Radio0.Freq,
+                                                                                                         configuration.Radio1.Freq);
+                                          var chan0Freq = chan0CentralFreq + configuration.ChannelMultiSf0.If;
+                                          var chan1CentralFreq = configuration.ChannelMultiSf1.Radio.Map(configuration.Radio0.Freq,
+                                                                                                         configuration.Radio1.Freq);
+                                          var chan1Freq = chan1CentralFreq + configuration.ChannelMultiSf1.If;
+                                          return as923.WithFrequencyOffset(chan0Freq, chan1Freq);
                                       }
                                       return region;
                                   });
@@ -201,20 +234,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
         public static string GetConfiguration(string jsonInput) => RouterConfigurationConverter.Read(jsonInput);
 
-        private static Bandwidth GetBandwidth(uint bandwidth)
-        {
-            // Bandwidths above 5MHz do not make sense, assume that the number is in kHz instead.
-            const int kHzLimit = 5000;
-            var bandwidthInKHz = bandwidth > kHzLimit ? (bandwidth / 1000) : bandwidth;
-            return CastToEnumIfDefined<Bandwidth>((int)bandwidthInKHz);
-        }
-
         public static Region GetRegion(string jsonInput) => RegionConfigurationConverter.Read(jsonInput);
-
-        private static T CastToEnumIfDefined<T>(int value) where T : Enum =>
-            Enum.IsDefined(typeof(T), value)
-                ? (T)(object)value
-                : throw new JsonException($"'{value}' is not defined in enum '{nameof(T)}'.");
 
         private static string WriteRouterConfig(IEnumerable<NetId> allowedNetIds,
                                                 IEnumerable<(JoinEui Min, JoinEui Max)> joinEuiRanges,
@@ -328,7 +348,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             {
                 writer.WriteStartObject(property);
                 writer.WriteBoolean("enable", sxConf.Enable);
-                writer.WriteNumber("radio", sxConf.Radio ? 1 : 0);
+                writer.WriteNumber("radio", (int)sxConf.Radio);
                 writer.WriteNumber("if", sxConf.If);
                 writer.WriteEndObject();
             }
@@ -337,11 +357,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             {
                 writer.WriteStartObject(property);
                 writer.WriteBoolean("enable", chanConf.Enable);
-                writer.WriteNumber("radio", chanConf.Radio ? 1 : 0);
+                writer.WriteNumber("radio", (int)chanConf.Radio);
                 writer.WriteNumber("if", chanConf.If);
-                if (chanConf.Bandwidth != Bandwidth.Undefined)
+                if (Enum.IsDefined(chanConf.Bandwidth))
                     writer.WriteNumber("bandwidth", chanConf.Bandwidth.ToHertz().AsUInt64);
-                if (chanConf.SpreadingFactor != SpreadingFactor.Undefined)
+                if (Enum.IsDefined(chanConf.SpreadingFactor))
                     writer.WriteNumber("spread_factor", (int)chanConf.SpreadingFactor);
                 writer.WriteEndObject();
             }

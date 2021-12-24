@@ -5,9 +5,9 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
@@ -36,7 +36,9 @@ namespace LoRaWan.Tests.Integration
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
         private readonly MemoryCache cache;
+        private readonly LoRaDeviceClientConnectionManager connectionManager;
         private readonly LoRaDeviceRegistry loRaDeviceRegistry;
+        private readonly LoRaDeviceCache deviceCache = LoRaDeviceCacheDefault.CreateDefault();
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
         public ClassCCloudToDeviceMessageSizeLimitTests()
@@ -49,24 +51,24 @@ namespace LoRaWan.Tests.Integration
             this.loRaRegion = RegionManager.EU868;
             PacketForwarder = new TestPacketForwarder();
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object);
+            this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
+
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory);
+            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
+            this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, this.connectionManager);
+
+            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory, this.deviceCache);
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration, this.deviceApi.Object);
         }
 
-        private static void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
-            Assert.NotNull(downlink.Txpk);
-            Assert.True(downlink.Txpk.Imme);
-            Assert.Equal(0, downlink.Txpk.Tmst);
-            Assert.NotEmpty(downlink.Txpk.Data);
+            Assert.NotEmpty(downlink.Data);
 
-            var downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
+            var downstreamPayloadBytes = downlink.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
-            Assert.Equal(sentMessage.Fport, downstreamPayload.FPortValue);
+            Assert.Equal(sentMessage.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -92,7 +94,7 @@ namespace LoRaWan.Tests.Integration
                 { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
                 { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
             });
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             var c2dMessageMacCommand = new DevStatusRequest();
@@ -107,7 +109,7 @@ namespace LoRaWan.Tests.Integration
             {
                 DevEUI = devEUI,
                 Payload = c2dMsgPayload,
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             if (hasMacInC2D)
@@ -138,8 +140,7 @@ namespace LoRaWan.Tests.Integration
 
             // Get C2D message payload
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(
-                Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.PerformEncryption(simulatedDevice.AppSKey);
 
             // Verify that expected Mac commands are present
@@ -177,7 +178,7 @@ namespace LoRaWan.Tests.Integration
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
-            this.deviceClient.Setup(x => x.GetTwinAsync())
+            this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simulatedDevice.CreateABPTwin());
 
             var c2dMessageMacCommand = new DevStatusRequest();
@@ -193,7 +194,7 @@ namespace LoRaWan.Tests.Integration
             {
                 DevEUI = devEUI,
                 Payload = c2dMsgPayload,
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             if (hasMacInC2D)
@@ -240,8 +241,9 @@ namespace LoRaWan.Tests.Integration
         public void Dispose()
         {
             this.loRaDeviceRegistry.Dispose();
+            this.connectionManager.Dispose();
             this.cache.Dispose();
-            this.loRaDeviceFactory.Dispose();
+            this.deviceCache.Dispose();
         }
     }
 }

@@ -1,156 +1,156 @@
 {
-    "NetID": [
-        1
+  "NetID": [
+    1
+  ],
+  "JoinEui": [
+    [
+      "0000000000000000",
+      "FFFFFFFFFFFFFFFF"
+    ]
+  ],
+  "region": "US902",
+  "hwspec": "sx1301/1",
+  "freq_range": [
+    902000000,
+    928000000
+  ],
+  "DRs": [
+    [
+      10,
+      125,
+      0
     ],
-    "JoinEui": [
-        [
-            "0000000000000000",
-            "FFFFFFFFFFFFFFFF"
-        ]
+    [
+      9,
+      125,
+      0
     ],
-    "region": "US902",
-    "hwspec": "sx1301/1",
-    "freq_range": [
-        902000000,
-        928000000
+    [
+      8,
+      125,
+      0
     ],
-    "DRs": [
-        [
-            10,
-            125,
-            0
-        ],
-        [
-            9,
-            125,
-            0
-        ],
-        [
-            8,
-            125,
-            0
-        ],
-        [
-            7,
-            125,
-            0
-        ],
-        [
-            8,
-            500,
-            0
-        ],
-        [
-            0,
-            0,
-            0
-        ],
-        [
-            0,
-            0,
-            0
-        ],
-        [
-            0,
-            0,
-            0
-        ],
-        [
-            12,
-            500,
-            1
-        ],
-        [
-            11,
-            500,
-            1
-        ],
-        [
-            10,
-            500,
-            1
-        ],
-        [
-            9,
-            500,
-            1
-        ],
-        [
-            8,
-            500,
-            1
-        ],
-        [
-            7,
-            500,
-            1
-        ]
+    [
+      7,
+      125,
+      0
     ],
-    "sx1301_conf": [
-        {
-            "radio_0": {
-                "enable": true,
-                "freq": 904300000
-            },
-            "radio_1": {
-                "enable": true,
-                "freq": 905000000
-            },
-            "chan_FSK": {
-                "enable": true,
-                "radio": 1,
-                "if": 300000
-            },
-            "chan_Lora_std": {
-                "enable": true,
-                "radio": 0,
-                "if": 300000,
-                "bandwidth": 500000,
-                "spread_factor": 8
-            },
-            "chan_multiSF_0": {
-                "enable": true,
-                "radio": 0,
-                "if": -400000
-            },
-            "chan_multiSF_1": {
-                "enable": true,
-                "radio": 0,
-                "if": -200000
-            },
-            "chan_multiSF_2": {
-                "enable": true,
-                "radio": 0,
-                "if": 0
-            },
-            "chan_multiSF_3": {
-                "enable": true,
-                "radio": 0,
-                "if": 200000
-            },
-            "chan_multiSF_4": {
-                "enable": true,
-                "radio": 1,
-                "if": -300000
-            },
-            "chan_multiSF_5": {
-                "enable": true,
-                "radio": 1,
-                "if": -100000
-            },
-            "chan_multiSF_6": {
-                "enable": true,
-                "radio": 1,
-                "if": 100000
-            },
-            "chan_multiSF_7": {
-                "enable": true,
-                "radio": 1,
-                "if": 300000
-            }
-        }
+    [
+      8,
+      500,
+      0
     ],
-    "nocca": true,
-    "nodc": true,
-    "nodwell": true
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      12,
+      500,
+      1
+    ],
+    [
+      11,
+      500,
+      1
+    ],
+    [
+      10,
+      500,
+      1
+    ],
+    [
+      9,
+      500,
+      1
+    ],
+    [
+      8,
+      500,
+      1
+    ],
+    [
+      7,
+      500,
+      1
+    ]
+  ],
+  "sx1301_conf": [
+    {
+      "radio_0": {
+        "enable": true,
+        "freq": 904300000
+      },
+      "radio_1": {
+        "enable": true,
+        "freq": 905000000
+      },
+      "chan_FSK": {
+        "enable": true,
+        "radio": 1,
+        "if": 300000
+      },
+      "chan_Lora_std": {
+        "enable": true,
+        "radio": 0,
+        "if": 300000,
+        "bandwidth": 500000,
+        "spread_factor": 8
+      },
+      "chan_multiSF_0": {
+        "enable": true,
+        "radio": 0,
+        "if": -400000
+      },
+      "chan_multiSF_1": {
+        "enable": true,
+        "radio": 0,
+        "if": -200000
+      },
+      "chan_multiSF_2": {
+        "enable": true,
+        "radio": 0,
+        "if": 0
+      },
+      "chan_multiSF_3": {
+        "enable": true,
+        "radio": 0,
+        "if": 200000
+      },
+      "chan_multiSF_4": {
+        "enable": true,
+        "radio": 1,
+        "if": -300000
+      },
+      "chan_multiSF_5": {
+        "enable": true,
+        "radio": 1,
+        "if": -100000
+      },
+      "chan_multiSF_6": {
+        "enable": true,
+        "radio": 1,
+        "if": 100000
+      },
+      "chan_multiSF_7": {
+        "enable": true,
+        "radio": 1,
+        "if": 300000
+      }
+    }
+  ],
+  "nocca": true,
+  "nodc": true,
+  "nodwell": true
 }

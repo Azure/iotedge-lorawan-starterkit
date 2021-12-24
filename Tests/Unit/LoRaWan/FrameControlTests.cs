@@ -6,91 +6,64 @@ namespace LoRaWan.Tests.Unit
     using System;
     using System.Linq;
     using LoRaWan;
+    using LoRaWan.Tests.Common;
     using Xunit;
+    using static MoreLinq.Extensions.SubsetsExtension;
+    using MoreEnumerable = MoreLinq.MoreEnumerable;
 
     public class FrameControlTests
     {
-        private readonly FrameControl subject = new(FCtrlFlags.FPending, 5);
-
         [Fact]
         public void Size()
         {
             Assert.Equal(1, FrameControl.Size);
         }
 
-        // The following two types are purely for the purpose of making the in-line theory data for
-        // the properties test more readable.
-
-        private static class True
-        {
-            public const bool Adr = true;
-            public const bool AdrAckRequested = true;
-            public const bool Ack = true;
-            public const bool DownlinkFramePending = true;
-        }
-
-        private static class False
-        {
-            public const bool Adr = false;
-            public const bool AdrAckRequested = false;
-            public const bool Ack = false;
-            public const bool DownlinkFramePending = false;
-        }
-
-        private const FCtrlFlags AllFCtrlFlags = FCtrlFlags.Adr | FCtrlFlags.AdrAckReq | FCtrlFlags.Ack | FCtrlFlags.FPending;
+        public static readonly TheoryData<byte, FrameControlFlags, int> Codec_Test_Data =
+            TheoryDataFactory.From(
+                from flags in
+                    from fs in Enum.GetValues<FrameControlFlags>()
+                                   .Where(f => f != FrameControlFlags.None)
+                                   .Subsets()
+                    select fs.Aggregate(FrameControlFlags.None, (fs, f) => fs | f)
+                from optionsLength in MoreEnumerable.Sequence(0, 15)
+                select (checked((byte)((byte)flags | optionsLength)), flags, optionsLength));
 
         [Theory]
-        [InlineData(FCtrlFlags.None         , 0, False.Adr, False.AdrAckRequested, False.Ack, False.DownlinkFramePending, 0)]
-        [InlineData(FCtrlFlags.None         , 3, False.Adr, False.AdrAckRequested, False.Ack, False.DownlinkFramePending, 3)]
-        [InlineData(FCtrlFlags.Adr          , 0, True.Adr , False.AdrAckRequested, False.Ack, False.DownlinkFramePending, 0)]
-        [InlineData(FCtrlFlags.AdrAckReq    , 0, False.Adr, True.AdrAckRequested , False.Ack, False.DownlinkFramePending, 0)]
-        [InlineData(FCtrlFlags.Ack          , 0, False.Adr, False.AdrAckRequested, True.Ack , False.DownlinkFramePending, 0)]
-        [InlineData(FCtrlFlags.FPending     , 0, False.Adr, False.AdrAckRequested, False.Ack, True.DownlinkFramePending , 0)]
-        [InlineData(AllFCtrlFlags           , 0, True.Adr , True.AdrAckRequested , True.Ack , True.DownlinkFramePending , 0)]
-        [InlineData(AllFCtrlFlags           , 5, True.Adr , True.AdrAckRequested , True.Ack , True.DownlinkFramePending , 5)]
-        public void Properties(FCtrlFlags flags, int initOptionsLength,
-                               bool adr, bool adrAckRequested, bool ack, bool downlinkFramePending, int optionsLength)
+        [MemberData(nameof(Codec_Test_Data))]
+        public void Encode(byte exptected, FrameControlFlags flags, int optionsLength)
         {
-            var subject = new FrameControl(flags, initOptionsLength);
-            Assert.Equal(adr, subject.Adr);
-            Assert.Equal(adrAckRequested, subject.AdrAckRequested);
-            Assert.Equal(ack, subject.Ack);
-            Assert.Equal(downlinkFramePending, subject.DownlinkFramePending);
-            Assert.Equal(optionsLength, subject.OptionsLength);
+            var result = FrameControl.Encode(flags, optionsLength);
+            Assert.Equal(exptected, result);
         }
 
-        [Fact]
-        public void Init_Returns_Initialized_When_Options_Length_Is_Valid()
+        [Theory]
+        [MemberData(nameof(Codec_Test_Data))]
+        public void Decode(byte input, FrameControlFlags expectedFlags, int expectedOptionsLength)
         {
-            foreach (var optionsLength in Enumerable.Range(0, 15))
-            {
-                var ex = Record.Exception(() => new FrameControl(FCtrlFlags.None, optionsLength));
-                Assert.Null(ex);
-            }
+            var (flags, optionsLength) = FrameControl.Decode(input);
+            Assert.Equal(expectedFlags, flags);
+            Assert.Equal(expectedOptionsLength, optionsLength);
         }
 
         [Theory]
         [InlineData(-1)]
         [InlineData(16)]
-        public void Init_Throws_When_Options_Length_Is_Not_In_Range(int length)
+        public void Encode_Throws_When_Options_Length_Is_Not_In_Range(int length)
         {
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new FrameControl(FCtrlFlags.None, length));
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => FrameControl.Encode(FrameControlFlags.None, length));
             Assert.Equal("optionsLength", ex.ParamName);
         }
 
-        [Fact]
-        public void ToString_Returns_Hexadecimal_String()
-        {
-            Assert.Equal("15", this.subject.ToString());
-        }
+        public static readonly TheoryData<int> Encode_Throws_When_Flags_Is_Invalid_Data =
+            TheoryDataFactory.From(MoreEnumerable.Sequence(1, 15));
 
-        [Fact]
-        public void Write_Writes_Byte_And_Returns_Updated_Span()
+        [Theory]
+        [MemberData(nameof(Encode_Throws_When_Flags_Is_Invalid_Data))]
+        public void Encode_Throws_When_Flags_Is_Invalid(byte flags)
         {
-            var bytes = new byte[1];
-            var remainingBytes = this.subject.Write(bytes);
-            Assert.Equal(0, remainingBytes.Length);
-            Assert.Equal(new byte[] { 21 }, bytes);
+            var ex = Assert.Throws<ArgumentException>(() => FrameControl.Encode((FrameControlFlags)flags, 0));
+            Assert.Equal("flags", ex.ParamName);
         }
     }
 }

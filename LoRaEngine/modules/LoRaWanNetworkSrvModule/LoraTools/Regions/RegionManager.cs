@@ -3,16 +3,8 @@
 
 namespace LoRaTools.Regions
 {
-    using System;
-    using LoRaTools.LoRaPhysical;
-
     public static class RegionManager
     {
-        public static Region CurrentRegion
-        {
-            get; set;
-        }
-
         /// <summary>
         /// Tries to get the <see cref="LoRaRegionType"/> based on <paramref name="value"/>.
         /// </summary>
@@ -31,8 +23,12 @@ namespace LoRaTools.Regions
                     region = US915;
                     return true;
 
-                case LoRaRegionType.CN470:
-                    region = CN470;
+                case LoRaRegionType.CN470RP1:
+                    region = CN470RP1;
+                    return true;
+
+                case LoRaRegionType.CN470RP2:
+                    region = CN470RP2;
                     return true;
 
                 case LoRaRegionType.AS923:
@@ -43,46 +39,6 @@ namespace LoRaTools.Regions
                 default:
                     return false;
             }
-        }
-
-        /// <summary>
-        /// Tries the resolve region.
-        /// </summary>
-        /// <returns><c>true</c>, if a region was resolved, <c>false</c> otherwise.</returns>
-        /// <param name="rxpk">Rxpk.</param>
-        /// <param name="region">Region.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        public static bool TryResolveRegion(Rxpk rxpk, out Region region)
-        {
-            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
-
-            region = null;
-
-            // EU863-870
-            if (rxpk.Freq is < 870 and > 863)
-            {
-                region = EU868;
-                return true;
-            }// US902-928 frequency band, upstream messages are between 902 and 915.
-            else if (rxpk.Freq is <= 915 and >= 902)
-            {
-                region = US915;
-                return true;
-            }
-            else if (rxpk.Freq is <= 510 and >= 470)
-            {
-                region = CN470;
-                return true;
-            }
-            // Note: Resolving region based on frequency should be avoided as AS923 frequency band overlaps with US915;
-            // should be removed once this obsolete method is no longer used.
-            else if (rxpk.Freq is <= 928 and >= 915)
-            {
-                region = AS923;
-                return true;
-            }
-
-            return false;
         }
 
         private static Region eu868;
@@ -115,18 +71,33 @@ namespace LoRaTools.Regions
             }
         }
 
-        private static Region cn470;
+        private static Region cn470RP1;
 
-        public static Region CN470
+        public static Region CN470RP1
         {
             get
             {
-                if (cn470 == null)
+                if (cn470RP1 == null)
                 {
-                    cn470 = new RegionCN470();
+                    cn470RP1 = new RegionCN470RP1();
                 }
 
-                return cn470;
+                return cn470RP1;
+            }
+        }
+
+        private static Region cn470RP2;
+
+        public static Region CN470RP2
+        {
+            get
+            {
+                if (cn470RP2 == null)
+                {
+                    cn470RP2 = new RegionCN470RP2();
+                }
+
+                return cn470RP2;
             }
         }
 

@@ -41,7 +41,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.logger = new Mock<ILogger<CupsProtocolMessageProcessor>>();
             this.processor = new CupsProtocolMessageProcessor(this.basicsStationConfigurationService.Object,
                                                               this.deviceAPIServiceBase.Object,
-                                                              this.logger.Object);
+                                                              this.logger.Object,
+                                                              // Do not pass meter since metric testing will be unreliable due to interference from test classes running in parallel.
+                                                              null);
         }
 
         [Fact]
@@ -55,7 +57,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var cupsTwinInfo = new CupsTwinInfo(new Uri(CupsUri),
                                                 new Uri(TcUri),
                                                 CredentialsChecksum,
-                                                CredentialsChecksum);
+                                                CredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty);
             _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
                                                       .Returns(Task.FromResult(cupsTwinInfo));
 

@@ -5,12 +5,14 @@ namespace LoRaWan.Tests.Unit
 {
     using System.Collections.Generic;
     using global::LoRaTools.ADR;
-    using global::LoRaTools.LoRaPhysical;
+    using LoRaWan.NetworkServer.BasicsStation;
+    using LoRaWan.Tests.Common;
     using Xunit;
+    using static LoRaWan.DataRateIndex;
 
 #pragma warning disable CA1812 // Unused class
     // Used as Theory Data
-    internal class ADRTestData : TheoryData<string, string, List<LoRaADRTableEntry>, Rxpk, LoRaADRResult>
+    internal class ADRTestData : TheoryData<string, string, List<LoRaADRTableEntry>, RadioMetadata, LoRaADRResult>
 #pragma warning restore CA1812 // Unused class
     {
         public ADRTestData()
@@ -32,13 +34,10 @@ namespace LoRaWan.Tests.Unit
                 });
             }
 
-            var rxpk = new Rxpk
+            var radioMetadata = new RadioMetadata(DataRateIndex.DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
+            AddRow("Not enough entries to calculate ADR", deviceNameNotEnoughEntries, tableentries, radioMetadata, true, new LoRaADRResult()
             {
-                Datr = "SF7BW125"
-            };
-            AddRow("Not enough entries to calculate ADR", deviceNameNotEnoughEntries, tableentries, rxpk, true, new LoRaADRResult()
-            {
-                DataRate = 5,
+                DataRate = DR5,
                 TxPower = 0,
                 NbRepetition = 1,
                 FCntDown = 1
@@ -62,18 +61,14 @@ namespace LoRaWan.Tests.Unit
                 });
             }
 
-            var notenoughentriesrxpk = new Rxpk
-            {
-                // Set Input DR to 5
-                Datr = "SF7BW125"
-            };
+            var notenoughentries = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
             var loRaADRResult = new LoRaADRResult()
             {
                 DataRate = 0,
                 NbRepetition = 1,
                 TxPower = 0
             };
-            AddRow("ADR setting DR to 0", lowerDRDeviceName, lowerDRTable, notenoughentriesrxpk, false, loRaADRResult);
+            AddRow("ADR setting DR to 0", lowerDRDeviceName, lowerDRTable, notenoughentries, false, loRaADRResult);
             // **************************************************************
             // Third test enough entries increase nbrep, as one message every three is received
             // **************************************************************
@@ -92,20 +87,16 @@ namespace LoRaWan.Tests.Unit
                 });
             }
 
-            var increaseNbReprxpk = new Rxpk
-            {
-                // DR5
-                Datr = "SF7BW125"
-            };
+            var increaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
             var increaseNbReploRaADRResult = new LoRaADRResult()
             {
-                DataRate = 5,
+                DataRate = DR5,
                 NbRepetition = 3,
                 TxPower = 0,
                 FCntDown = 1
             };
 
-            AddRow("ADR increase NbRep", increaseNbRepDeviceName, increaseNbReptableentries, increaseNbReprxpk, false, increaseNbReploRaADRResult);
+            AddRow("ADR increase NbRep", increaseNbRepDeviceName, increaseNbReptableentries, increaseNbRep, false, increaseNbReploRaADRResult);
 
             // **************************************************************
             // Fourth test enough entries decrease nbrep messages pass through
@@ -139,19 +130,15 @@ namespace LoRaWan.Tests.Unit
                     });
             }
 
-            var decreaseNbReprxpk = new Rxpk
-            {
-                // DR5
-                Datr = "SF7BW125"
-            };
+            var decreaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
             var decreaseNbReploRaADRResult = new LoRaADRResult()
             {
-                DataRate = 5,
+                DataRate = DR5,
                 NbRepetition = 1,
                 TxPower = 2,
                 FCntDown = 1
             };
-            AddRow("ADR decrease NbRep", decreaseNbRepDeviceName, decreaseNbReptableentries, decreaseNbReprxpk, false, decreaseNbReploRaADRResult);
+            AddRow("ADR decrease NbRep", decreaseNbRepDeviceName, decreaseNbReptableentries, decreaseNbRep, false, decreaseNbReploRaADRResult);
         }
     }
 }

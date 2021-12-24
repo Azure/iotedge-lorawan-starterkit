@@ -71,13 +71,22 @@
               "image": "${MODULES.LoRaWanNetworkSrvModule}",
               "createOptions": {
                 "ExposedPorts": {
-                  "5000/tcp": {}
+                  "5001/tcp": {},
+                  "5002/tcp": {}
                 },
                 "HostConfig": {
+                  "Binds":  [
+                    "$CERT_REMOTE_PATH:/var/lorastarterkit/certs/"
+                  ],
                   "PortBindings": {
-                    "5000/tcp": [
+                    "5001/tcp": [
                       {
-                        "HostPort": "5000"
+                        "HostPort": "5001"
+                      }
+                    ],
+                    "5002/tcp": [
+                      {
+                        "HostPort": "5002"
                       }
                     ]
                   }
@@ -95,6 +104,9 @@
               "LOG_TO_TCP": {
                 "value": "$NET_SRV_LOG_TO_TCP"
               },
+              "LOG_TO_HUB": {
+                "value": "$NET_SRV_LOG_TO_HUB"
+              },
               "IOTEDGE_TIMEOUT": {
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
               },
@@ -103,6 +115,18 @@
               },
               "APPINSIGHTS_INSTRUMENTATIONKEY": {
                 "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
+              },
+              "LNS_SERVER_PFX_PATH": {
+                "value": "/var/lorastarterkit/certs/server.pfx"
+              },
+              "LNS_SERVER_PFX_PASSWORD": {
+                "value": "$SERVER_PFX_PASSWORD"
+              },
+              "CLIENT_CERTIFICATE_MODE": {
+                "value": "AllowCertificate"
+              },
+              "LNS_VERSION": {
+                "value": "$NET_SRV_VERSION"
               }
             },
             "status": "running",
@@ -115,7 +139,10 @@
               "createOptions": {
                 "HostConfig": {
                   "NetworkMode": "host",
-                  "Privileged": true
+                  "Privileged": true,
+                  "Binds":  [
+                    "$CERT_REMOTE_PATH:/var/lorastarterkit/certs/"
+                  ]
                 },
                 "NetworkingConfig": {
                   "EndpointsConfig": {
@@ -132,13 +159,19 @@
                 "value": "$LBS_SPI_SPEED"
               },
               "TC_URI": {
-                "value": "ws://localhost:5000"
+                "value": "wss://localhost:5001"
               },
               "RESET_PIN": {
                 "value": "$RESET_PIN"
               },
               "FIXED_STATION_EUI": {
                 "value": "$LBS_FIXED_STATION_EUI"
+              },
+              "TLS_SNI": {
+                "value": "false"
+              },
+              "LNS_VERSION": {
+                "value": "$NET_SRV_VERSION"
               }
             },
             "version": "1.0",
@@ -154,31 +187,6 @@
             "status": "running",
             "restartPolicy": "always",
             "version": "1.0"
-          },
-          "metricscollector": {
-            "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-metrics-collector:1.0"
-            },
-            "type": "docker",
-            "env": {
-              "ResourceId": {
-                "value": "$IOT_HUB_RESOURCE_ID"
-              },
-              "UploadTarget": {
-                "value": "AzureMonitor"
-              },
-              "LogAnalyticsWorkspaceId": {
-                "value": "$LOG_ANALYTICS_WORKSPACE_ID"
-              },
-              "LogAnalyticsSharedKey": {
-                "value": "$LOG_ANALYTICS_SHARED_KEY"
-              },
-              "MetricsEndpointsCSV": {
-                "value": "http://edgeHub:9600/metrics,http://edgeAgent:9600/metrics,http://LoRaWanNetworkSrvModule:5000/metrics"
-              }
-            },
-            "status": "running",
-            "restartPolicy": "always"
           }
         }
       }

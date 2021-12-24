@@ -4,9 +4,9 @@
 namespace LoRaTools
 {
     using System;
-    using System.Linq;
     using System.Security.Cryptography;
     using LoRaTools.Utils;
+    using LoRaWan;
 
     public static class OTAAKeysGenerator
     {
@@ -26,8 +26,12 @@ namespace LoRaTools
         }
 
         // don't work with CFLIST atm
-        public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
+        public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, byte[] appKey)
         {
+            if (type is null) throw new ArgumentNullException(nameof(type));
+            if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
+            if (netid is null) throw new ArgumentNullException(nameof(netid));
+
             using var aes = Aes.Create("AesManaged");
             aes.Key = appKey;
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
@@ -36,7 +40,14 @@ namespace LoRaTools
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
             aes.Padding = PaddingMode.None;
 
-            var pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
+            var devNonceBytes = new byte[DevNonce.Size];
+            _ = devNonce.Write(devNonceBytes);
+
+            var pt = new byte[type.Length + appnonce.Length + netid.Length + DevNonce.Size + 7];
+            Array.Copy(type, pt, type.Length);
+            Array.Copy(appnonce, 0, pt, type.Length, appnonce.Length);
+            Array.Copy(netid, 0, pt, type.Length + appnonce.Length, netid.Length);
+            _ = devNonce.Write(pt.AsSpan(type.Length + appnonce.Length + netid.Length));
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;

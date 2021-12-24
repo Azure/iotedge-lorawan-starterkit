@@ -5,6 +5,8 @@ COPY Directory.Build.props ./
 COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
 COPY global.json ./
+COPY LICENSE ./
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/NOTICE.txt ./
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj", "LoRaWanNetworkSrvModule/"]

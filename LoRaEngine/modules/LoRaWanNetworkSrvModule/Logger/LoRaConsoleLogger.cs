@@ -6,7 +6,6 @@ namespace LoRaWan
 {
     using System;
     using System.Collections.Concurrent;
-    using System.Diagnostics.CodeAnalysis;
     using Logger;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -14,37 +13,21 @@ namespace LoRaWan
     using Microsoft.Extensions.Logging.Configuration;
     using Microsoft.Extensions.Options;
 
-    public class LoRaConsoleLoggerConfiguration
-    {
-        public LogLevel LogLevel { get; set; }
-        public EventId EventId { get; set; }
-        public bool UseScopes { get; set; } = true;
-    }
-
     public class LoRaConsoleLoggerProvider : ILoggerProvider
     {
         private readonly ConcurrentDictionary<string, LoRaConsoleLogger> loggers = new();
-        private readonly IDisposable onChangeToken;
 
-        public LoRaConsoleLoggerProvider(IOptionsMonitor<LoRaConsoleLoggerConfiguration> config)
+        internal LoggerConfigurationMonitor LoggerConfigurationMonitor { get; }
+
+        public LoRaConsoleLoggerProvider(IOptionsMonitor<LoRaLoggerConfiguration> config)
         {
-            _ = config ?? throw new ArgumentNullException(nameof(config));
+            if (config is null) throw new ArgumentNullException(nameof(config));
 
-            this.onChangeToken = config.OnChange(UpdateConfiguration);
-            UpdateConfiguration(config.CurrentValue);
+            LoggerConfigurationMonitor = new LoggerConfigurationMonitor(config);
         }
 
-        [MemberNotNull(nameof(Configuration))]
-        private void UpdateConfiguration(LoRaConsoleLoggerConfiguration configuration)
-        {
-            Configuration = configuration;
-            ScopeProvider = Configuration.UseScopes ? new LoggerExternalScopeProvider() : null;
-        }
-
-        public LogLevel LogLevel => Configuration.LogLevel;
-        public EventId EventId => Configuration.EventId;
-        internal LoRaConsoleLoggerConfiguration Configuration { get; private set; }
-        internal IExternalScopeProvider? ScopeProvider { get; private set; }
+        public LogLevel LogLevel => LoggerConfigurationMonitor.Configuration.LogLevel;
+        public EventId EventId => LoggerConfigurationMonitor.Configuration.EventId;
 
         public ILogger CreateLogger(string categoryName) =>
             this.loggers.GetOrAdd(categoryName, name => new LoRaConsoleLogger(this));
@@ -60,7 +43,7 @@ namespace LoRaWan
             if (disposing)
             {
                 this.loggers.Clear();
-                this.onChangeToken.Dispose();
+                LoggerConfigurationMonitor.Dispose();
             }
         }
     }
@@ -81,7 +64,7 @@ namespace LoRaWan
         }
 
         public IDisposable BeginScope<TState>(TState state) =>
-            this.provider.ScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : NoopDisposable.Instance;
+            this.provider.LoggerConfigurationMonitor.ScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : NoopDisposable.Instance;
 
         public bool IsEnabled(LogLevel logLevel) => logLevel >= this.provider.LogLevel;
 
@@ -99,7 +82,7 @@ namespace LoRaWan
             if (configuredEventId == 0 || configuredEventId == eventId)
             {
                 var formattedMessage = formatter(state, exception);
-                formattedMessage = LoggerHelper.AddScopeInformation(this.provider.ScopeProvider, formattedMessage);
+                formattedMessage = LoggerHelper.AddScopeInformation(this.provider.LoggerConfigurationMonitor.ScopeProvider, formattedMessage);
 
                 if (logLevel == LogLevel.Error)
                 {
@@ -129,13 +112,13 @@ namespace LoRaWan
 
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, LoRaConsoleLoggerProvider>());
 
-            LoggerProviderOptions.RegisterProviderOptions<LoRaConsoleLoggerConfiguration, LoRaConsoleLoggerProvider>(builder.Services);
+            LoggerProviderOptions.RegisterProviderOptions<LoRaLoggerConfiguration, LoRaConsoleLoggerProvider>(builder.Services);
 
             return builder;
         }
 
         public static ILoggingBuilder AddLoRaConsoleLogger(this ILoggingBuilder builder,
-                                                           Action<LoRaConsoleLoggerConfiguration> configure)
+                                                           Action<LoRaLoggerConfiguration> configure)
         {
             _ = builder.AddLoRaConsoleLogger();
             _ = builder.Services.Configure(configure);

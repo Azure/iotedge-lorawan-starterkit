@@ -94,34 +94,12 @@
               },
               "FIXED_STATION_EUI":{
                 "value": "$LBS_FIXED_STATION_EUI"
+              },
+              "LNS_VERSION": {
+                "value": "$NET_SRV_VERSION"
               }
             },
             "version": "1.0",
-            "status": "running",
-            "restartPolicy": "always"
-          },
-          "metricscollector": {
-            "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-metrics-collector:1.0"
-            },
-            "type": "docker",
-            "env": {
-              "ResourceId": {
-                "value": "$IOT_HUB_RESOURCE_ID"
-              },
-              "UploadTarget": {
-                "value": "AzureMonitor"
-              },
-              "LogAnalyticsWorkspaceId": {
-                "value": "$LOG_ANALYTICS_WORKSPACE_ID"
-              },
-              "LogAnalyticsSharedKey": {
-                "value": "$LOG_ANALYTICS_SHARED_KEY"
-              },
-              "MetricsEndpointsCSV": {
-                "value": "http://edgeHub:9600/metrics,http://edgeAgent:9600/metrics"
-              }
-            },
             "status": "running",
             "restartPolicy": "always"
           }

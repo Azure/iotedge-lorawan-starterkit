@@ -288,25 +288,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Throws<JsonException>(() => LnsStationConfiguration.GetConfiguration(input));
         }
 
-        [Fact]
-        public void WriteRouterConfig_Throws_WhenInvalidBandwidth()
-        {
-            // arrange
-            var input = GetTwinConfigurationJson(Array.Empty<NetId>(),
-                                                 Array.Empty<(JoinEui, JoinEui)>(),
-                                                 "region",
-                                                 "hwspec",
-                                                 (new Hertz(863000000), new Hertz(870000000)),
-                                                 new[] { (SF11, (Bandwidth)16, false) });
-
-            // act + assert
-            Assert.Throws<JsonException>(() => LnsStationConfiguration.GetConfiguration(input));
-        }
-
         [Theory]
         [InlineData(125_000)]
-        [InlineData(125)]
-        public void WriteRouterConfig_Auto_Detects_Whether_Bandwidth_Is_KHz_Or_Hz(uint bandwidth)
+        public void WriteRouterConfig_Throws_WhenInvalidBandwidth(int bandwidth)
         {
             // arrange
             var input = GetTwinConfigurationJson(Array.Empty<NetId>(),
@@ -316,11 +300,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                                                  (new Hertz(863000000), new Hertz(870000000)),
                                                  new[] { (SF11, (Bandwidth)bandwidth, false) });
 
-            // act
-            var result = LnsStationConfiguration.GetConfiguration(input);
-
             // act + assert
-            Assert.True(result.Contains("\"DRs\":[[11,125,0]]", StringComparison.OrdinalIgnoreCase));
+            Assert.Throws<JsonException>(() => LnsStationConfiguration.GetConfiguration(input));
         }
 
         [Fact]
@@ -478,10 +459,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Throws<NotSupportedException>(() => _ = LnsStationConfiguration.GetRegion(config));
         }
 
-        [Fact]
-        public void RegionConfigurationConverter_CorrectlyReadsAS923Region()
+        [Theory]
+        [InlineData(923000000, 922000000, 200000, 400000, 0)]
+        [InlineData(923000000, 922000000, -1600000, -1400000, -1800000)]
+        [InlineData(922000000, 920000000, -4700000, -4500000, -5900000)]
+        public void RegionConfigurationConverter_CorrectlyReadsAS923Region_WithOffset(
+            long radio0Freq, long radio1Freq, long multiSf0If, long multiSf1If, long exptectedOffset)
         {
-            var config = JsonUtil.Strictify(@"{
+            var input = @"{{
             'msgtype': 'router_config',
             'NetID': [1],
             'JoinEui': [[0, 18446744073709551615]],
@@ -489,82 +474,92 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 	        'hwspec': 'sx1301/1',
 	        'freq_range': [ 920000000, 925000000 ],
             'DRs': [ [ 11, 125, 0 ],
-                       [ 10, 125, 0 ],
-                       [ 9, 125, 0 ],
-                       [ 8, 125, 0 ],
-                       [ 7, 125, 0 ],
-                       [ 7, 250, 0 ] ],
+                     [ 10, 125, 0 ],
+                     [ 9, 125, 0 ],
+                     [ 8, 125, 0 ],
+                     [ 7, 125, 0 ],
+                     [ 7, 250, 0 ] ],
             'sx1301_conf': [
-                        {
-                            'radio_0': {
-                                'enable': true,
-                                'freq': 923200000
-                            },
-                            'radio_1': {
-                                'enable': true,
-                                'freq': 923400000
-                            },
-                            'chan_FSK': {
-                                'enable': true,
-                                'radio': 1,
-                                'if': -1800000
-                            },
-                            'chan_Lora_std': {
-                                'enable': true,
-                                'radio': 1,
-                                'if': -1800000,
-                                'bandwidth': 250000,
-                                'spread_factor': 7
-                            },
-                            'chan_multiSF_0': {
-                                'enable': true,
-                                'radio': 1,
-                                'if': -1800000
-                            },
-                            'chan_multiSF_1': {
-                                'enable': true,
-                                'radio': 0,
-                                'if': -1800000
-                            },
-                            'chan_multiSF_2': {
-                                'enable': true,
-                                'radio': 1,
-                                'if': 0
-                            },
-                            'chan_multiSF_3': {
-                                'enable': true,
-                                'radio': 0,
-                                'if': -1800000
-                            },
-                            'chan_multiSF_4': {
-                                'enable': true,
-                                'radio': 0,
-                                'if': -1800000
-                            },
-                            'chan_multiSF_5': {
-                                'enable': true,
-                                'radio': 0,
-                                'if': 0
-                            },
-                            'chan_multiSF_6': {
-                                'enable': true,
-                                'radio': 0,
-                                'if': -1800000
-                            },
-                            'chan_multiSF_7': {
-                                'enable': true,
-                                'radio': 0,
-                                'if': -1800000
-                            }
-                        }
-                    ],
+                {{
+                    'radio_0': {{
+                        'enable': true,
+                        'type': 'SX1257',
+                        'freq': {0},
+                        'rssi_offset': -166.0,
+                        'tx_enable': true,
+                        'tx_freq_min': 920000000,
+                        'th_freq_max': 923400000
+                    }},
+                    'radio_1': {{
+                        'enable': true,
+                        'type': 'SX1257',
+                        'freq': {1},
+                        'rssi_offset': -166.0,
+                        'tx_enable': false,
+                    }},
+                    'chan_FSK': {{
+                        'enable': true,
+                        'radio': 1,
+                        'if': -1800000
+                    }},
+                    'chan_Lora_std': {{
+                        'enable': true,
+                        'radio': 1,
+                        'if': -1800000,
+                        'bandwidth': 250000,
+                        'spread_factor': 7
+                    }},
+                    'chan_multiSF_0': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': {2}
+                    }},
+                    'chan_multiSF_1': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': {3}
+                    }},
+                    'chan_multiSF_2': {{
+                        'enable': true,
+                        'radio': 1,
+                        'if': 0
+                    }},
+                    'chan_multiSF_3': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': -1800000
+                    }},
+                    'chan_multiSF_4': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': -1800000
+                    }},
+                    'chan_multiSF_5': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': 0
+                    }},
+                    'chan_multiSF_6': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': -1800000
+                    }},
+                    'chan_multiSF_7': {{
+                        'enable': true,
+                        'radio': 0,
+                        'if': -1800000
+                    }}
+                }}
+            ],
             'nocca': true,
             'nodc': true,
-            'nodwell': true}");
+            'nodwell': true}}";
 
+            var config = JsonUtil.Strictify(string.Format(CultureInfo.InvariantCulture, input, radio0Freq, radio1Freq, multiSf0If, multiSf1If));
             var region = LnsStationConfiguration.GetRegion(config);
-            Assert.Equal(typeof(RegionAS923), region.GetType()); ;
-            Assert.Equal(-1.8, ((RegionAS923)region).FrequencyOffset);
+
+            Assert.Equal(typeof(RegionAS923), region.GetType());
+            Assert.Equal(exptectedOffset, ((RegionAS923)region).FrequencyOffset);
         }
     }
 }

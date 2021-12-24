@@ -6,8 +6,8 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Diagnostics.Metrics;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Regions;
     using LoRaTools.Utils;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
 
@@ -19,11 +19,13 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
-        private volatile Region loraRegion;
         private readonly IJoinRequestMessageHandler joinRequestHandler;
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<MessageDispatcher> logger;
         private readonly Histogram<double> d2cMessageDeliveryLatencyHistogram;
+
+        private static readonly IMemoryCache testMemoryCache = new MemoryCache(new MemoryCacheOptions());
+        private static readonly IConcentratorDeduplication concentratorDeduplication = new ConcentratorDeduplication(testMemoryCache, NullLogger<IConcentratorDeduplication>.Instance);
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
@@ -55,7 +57,7 @@ namespace LoRaWan.NetworkServer
                                    ILoRaDeviceRegistry deviceRegistry,
                                    ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
             : this(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
-                   new JoinRequestMessageHandler(configuration, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance, null),
+                   new JoinRequestMessageHandler(configuration, concentratorDeduplication, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance, null),
                    NullLoggerFactory.Instance,
                    NullLogger<MessageDispatcher>.Instance,
                    null)
@@ -70,41 +72,21 @@ namespace LoRaWan.NetworkServer
 
             if (request.Payload is null)
             {
-                // Following code is only needed for PktFwd compatibility.
-                // Any LoRaRequest generated from LNS protocol 'updf' or 'jreq' messages already has the payload set.
-                if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out var loRaPayload))
-                {
-                    this.logger.LogError("There was a problem in decoding the Rxpk");
-                    request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRxpk);
-                    return;
-                }
-                request.SetPayload(loRaPayload);
+                throw new LoRaProcessingException(nameof(request.Payload), LoRaProcessingErrorCode.PayloadNotSet);
             }
 
-            if (this.loraRegion == null)
+            if (request.Region is null)
             {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                if (!RegionManager.TryResolveRegion(request.Rxpk, out var currentRegion))
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                {
-                    // log is generated in Region factory
-                    // move here once V2 goes GA
-                    request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRegion);
-                    return;
-                }
-
-                this.loraRegion = currentRegion;
+                throw new LoRaProcessingException(nameof(request.Region), LoRaProcessingErrorCode.RegionNotSet);
             }
-
-            request.SetRegion(this.loraRegion);
 
             var loggingRequest = new LoggingLoRaRequest(request, this.loggerFactory.CreateLogger<LoggingLoRaRequest>(), this.d2cMessageDeliveryLatencyHistogram);
 
-            if (request.Payload.LoRaMessageType == LoRaMessageType.JoinRequest)
+            if (request.Payload.MessageType == MacMessageType.JoinRequest)
             {
                 DispatchLoRaJoinRequest(loggingRequest);
             }
-            else if (request.Payload.LoRaMessageType is LoRaMessageType.UnconfirmedDataUp or LoRaMessageType.ConfirmedDataUp)
+            else if (request.Payload.MessageType is MacMessageType.UnconfirmedDataUp or MacMessageType.ConfirmedDataUp)
             {
                 DispatchLoRaDataMessage(loggingRequest);
             }

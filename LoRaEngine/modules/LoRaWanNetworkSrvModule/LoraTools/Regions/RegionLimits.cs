@@ -1,26 +1,30 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaTools.Regions
 {
     using System.Collections.Generic;
+    using LoRaWan;
 
     public class RegionLimits
     {
         /// <summary>
         /// Gets or sets The maximum and minimum datarate of a given region.
         /// </summary>
-        public (double min, double max) FrequencyRange { get; set; }
+        public (Hertz Min, Hertz Max) FrequencyRange { get; set; }
 
-        private readonly HashSet<string> downstreamValidDR;
+        private readonly HashSet<DataRate> downstreamValidDR;
 
-        private readonly HashSet<string> upstreamValidDR;
+        private readonly HashSet<DataRate> upstreamValidDR;
 
-        private readonly uint startUpstreamDRIndex;
+        private readonly DataRateIndex startUpstreamDRIndex;
 
-        private readonly uint startDownstreamDRIndex;
+        private readonly DataRateIndex startDownstreamDRIndex;
 
-        public RegionLimits((double min, double max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR, uint startUpstreamDRIndex, uint startDownstreamDRIndex)
+        public RegionLimits((Hertz Min, Hertz Max) frequencyRange, HashSet<DataRate> upstreamValidDR, HashSet<DataRate> downstreamValidDR,
+                            DataRateIndex startUpstreamDRIndex, DataRateIndex startDownstreamDRIndex)
         {
             FrequencyRange = frequencyRange;
             this.downstreamValidDR = downstreamValidDR;
@@ -29,12 +33,19 @@ namespace LoRaTools.Regions
             this.startUpstreamDRIndex = startUpstreamDRIndex;
         }
 
-        public bool IsCurrentUpstreamDRValueWithinAcceptableValue(string dr) => this.upstreamValidDR.Contains(dr);
+        public bool IsCurrentUpstreamDRValueWithinAcceptableValue(string datr) =>
+            TryParseXpkDatr(datr) is { } dataRate && this.upstreamValidDR.Contains(dataRate);
 
-        public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string dr) => this.downstreamValidDR.Contains(dr);
+        public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string datr) =>
+            TryParseXpkDatr(datr) is { } dataRate && this.downstreamValidDR.Contains(dataRate);
 
-        public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(ushort dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
+        private static DataRate? TryParseXpkDatr(string datr)
+            => LoRaDataRate.TryParse(datr, out var loRaDataRate) ? loRaDataRate
+             : FskDataRate.Fsk50000.XpkDatr == datr ? FskDataRate.Fsk50000
+             : null;
 
-        public bool IsCurrentDownstreamDRIndexWithinAcceptableValue(ushort? dr) => (dr >= this.startDownstreamDRIndex) && dr < this.startDownstreamDRIndex + this.downstreamValidDR.Count;
+        public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(DataRateIndex dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
+
+        public bool IsCurrentDownstreamDRIndexWithinAcceptableValue(DataRateIndex? dr) => (dr >= this.startDownstreamDRIndex) && dr < this.startDownstreamDRIndex + this.downstreamValidDR.Count;
     }
 }

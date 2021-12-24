@@ -30,8 +30,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IPacketForwarder downstreamSender;
         private readonly IMessageDispatcher messageDispatcher;
-        private readonly IConcentratorDeduplication<UpstreamDataFrame> upstreamDeduplication;
-        private readonly IConcentratorDeduplication<JoinRequestFrame> joinRequestDeduplication;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
         private readonly Counter<int> joinRequestCounter;
@@ -42,8 +40,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                            IPacketForwarder packetForwarder,
                                            IMessageDispatcher messageDispatcher,
-                                           IConcentratorDeduplication<UpstreamDataFrame> upstreamDeduplication,
-                                           IConcentratorDeduplication<JoinRequestFrame> joinRequestDeduplication,
                                            ILogger<LnsProtocolMessageProcessor> logger,
                                            RegistryMetricTagBag registryMetricTagBag,
                                            Meter meter)
@@ -52,8 +48,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.socketWriterRegistry = socketWriterRegistry;
             this.downstreamSender = packetForwarder;
             this.messageDispatcher = messageDispatcher;
-            this.upstreamDeduplication = upstreamDeduplication;
-            this.joinRequestDeduplication = joinRequestDeduplication;
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
@@ -207,17 +201,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     {
                         var jreq = LnsData.JoinRequestFrameReader.Read(json);
 
-                        if (this.joinRequestDeduplication.ShouldDrop(jreq, stationEui))
-                        {
-                            break;
-                        }
-
-                        this.joinRequestCounter?.Add(1);
-
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
-                        var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
 
-                        var loraRequest = new LoRaRequest(rxpk, this.downstreamSender, DateTime.UtcNow);
+                        var loraRequest = new LoRaRequest(jreq.RadioMetadata, this.downstreamSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadJoinRequestLns(jreq.MacHeader,
                                                                              jreq.JoinEui,
                                                                              jreq.DevEui,
@@ -239,21 +225,15 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     {
                         var updf = LnsData.UpstreamDataFrameReader.Read(json);
 
-                        if (this.upstreamDeduplication.ShouldDrop(updf, stationEui))
-                        {
-                            break;
-                        }
-
                         using var scope = this.logger.BeginDeviceAddressScope(updf.DevAddr);
                         this.uplinkMessageCounter?.Add(1);
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
-                        var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
 
-                        var loraRequest = new LoRaRequest(rxpk, this.downstreamSender, DateTime.UtcNow);
+                        var loraRequest = new LoRaRequest(updf.RadioMetadata, this.downstreamSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadDataLns(updf.DevAddr,
                                                                       updf.MacHeader,
-                                                                      updf.Control,
+                                                                      updf.FrameControlFlags,
                                                                       updf.Counter,
                                                                       updf.Options,
                                                                       updf.Payload,

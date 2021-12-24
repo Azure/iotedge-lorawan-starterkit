@@ -86,10 +86,12 @@ namespace LoRaWan.Tests.Integration
             var loRaDevice = CreateLoRaDevice(simulatedDevice);
             loRaDevice.Deduplication = mode;
 
-            using var cache1 = NewNonEmptyCache(loRaDevice);
-            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory);
-            using var cache2 = NewNonEmptyCache(loRaDevice);
-            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(SecondServerConfiguration, cache2, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var cache1 = EmptyMemoryCache();
+            using var loraDeviceCache1 = CreateDeviceCache(loRaDevice);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache1);
+            using var cache2 = EmptyMemoryCache();
+            using var loraDeviceCache2 = CreateDeviceCache(loRaDevice);
+            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(SecondServerConfiguration, cache2, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache2);
 
             using var messageProcessor1 = new MessageDispatcher(
                 ServerConfiguration,
@@ -103,11 +105,8 @@ namespace LoRaWan.Tests.Integration
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
-            // Create Rxpk
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-
-            using var request1 = CreateWaitableRequest(rxpk);
-            using var request2 = CreateWaitableRequest(rxpk);
+            using var request1 = CreateWaitableRequest(payload);
+            using var request2 = CreateWaitableRequest(payload);
 
             messageProcessor1.DispatchRequest(request1);
             messageProcessor2.DispatchRequest(request2);

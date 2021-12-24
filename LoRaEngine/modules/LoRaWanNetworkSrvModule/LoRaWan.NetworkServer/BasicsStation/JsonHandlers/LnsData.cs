@@ -52,8 +52,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
         internal static class RadioMetadataProperties
         {
-            public static readonly IJsonProperty<DataRate> DataRate =
-                JsonReader.Property("DR", from n in JsonReader.Byte() select new DataRate(n));
+            public static readonly IJsonProperty<DataRateIndex> DataRate =
+                JsonReader.Property("DR", JsonReader.Byte().AsEnum(v => (DataRateIndex)v));
 
             public static readonly IJsonProperty<Hertz> Freq =
                 JsonReader.Property("Freq", from n in JsonReader.UInt32() select new Hertz(n));
@@ -92,7 +92,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             JsonReader.Object(MessageTypeProperty(LnsMessageType.UplinkDataFrame),
                               JsonReader.Property("MHdr", JsonReader.Byte()),
                               JsonReader.Property("DevAddr", JsonReader.UInt32()),
-                              JsonReader.Property("FCtrl", JsonReader.Byte()),
+                              JsonReader.Property("FCtrl", from b in JsonReader.Byte() select FrameControl.Decode(b).Flags),
                               JsonReader.Property("FCnt", JsonReader.UInt16()),
                               JsonReader.Property("FOpts", JsonReader.String()),
                               JsonReader.Property("FPort", JsonReader.Byte()),
@@ -101,8 +101,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               RadioMetadataProperties.DataRate,
                               RadioMetadataProperties.Freq,
                               RadioMetadataProperties.UpInfo,
-                              (_, mhdr, devAddr, ctrl, cnt, opts, port, payload, mic, dr, freq, upInfo) =>
-                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), new FrameControl(ctrl), cnt, opts, new FramePort(port), payload, mic,
+                              (_, mhdr, devAddr, fctrlFlags, cnt, opts, port, payload, mic, dr, freq, upInfo) =>
+                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), fctrlFlags, cnt, opts, (FramePort)port, payload, mic,
                                                       new RadioMetadata(dr, freq, upInfo)));
         /*
          * {
@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         private static IJsonProperty<T> EuiProperty<T>(string name, Func<ulong, T> factory, char separator = '-') =>
             JsonReader.Property(name,
                                 from s in JsonReader.String()
-                                select Hexadecimal.TryParse(s, out var eui, separator)
+                                select Hexadecimal.TryParse(s, out ulong eui, separator)
                                      ? factory(eui)
                                      : throw new JsonException($"Could not parse {name} as {typeof(T)}."));
 

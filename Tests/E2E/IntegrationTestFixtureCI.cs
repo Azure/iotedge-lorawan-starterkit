@@ -126,6 +126,16 @@ namespace LoRaWan.Tests.E2E
         /// </summary>
         public TestDeviceInfo Device31_OTAA { get; private set; }
 
+        /// <summary>
+        /// Gets Device32_ABP: used for testing C2D message with LinkADRRequest.
+        /// </summary>
+        public TestDeviceInfo Device32_ABP { get; private set; }
+
+        /// <summary>
+        /// Gets Device33_OTAA: used for testing successful message sent after CUPS.
+        /// </summary>
+        public TestDeviceInfo Device33_OTAA { get; private set; }
+
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice { get; private set; }
 
@@ -566,6 +576,25 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = "0000000000000031",
                 AppEUI = "0000000000000031",
                 AppKey = "00000000000000000000000000000031",
+                IsIoTHubDevice = true,
+                Deduplication = "Drop"
+            };
+
+            Device32_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000032",
+                AppSKey = "00000000000000000000000000000032",
+                NwkSKey = "00000000000000000000000000000032",
+                DevAddr = "00000032",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true
+            };
+
+            Device33_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000033",
+                AppEUI = "0000000000000033",
+                AppKey = "00000000000000000000000000000033",
                 IsIoTHubDevice = true
             };
         }

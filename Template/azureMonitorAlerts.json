@@ -1,0 +1,279 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appInsightName": {
+            "type": "String"
+        },
+        "iotHubName": {
+            "type": "String"
+        }
+    },
+    "variables": {
+        "ai_scope_resource_id": "[resourceId('microsoft.insights/components/', parameters('appInsightName'))]",
+        "iot_hub_scope_resource_id": "[resourceId('microsoft.devices/iothubs/', parameters('iotHubName'))]",
+        "alertSensitivity": "Medium", // Dynamic Threshold sensitivity (High, Medium, Low)
+        "evaluationPeriods": 4, // Dynamic Threshold Failing Periods configurations https://docs.microsoft.com/azure/azure-monitor/alerts/alerts-dynamic-thresholds#what-do-the-advanced-settings-in-dynamic-thresholds-mean
+        "failingPeriods": 4, // Dynamic Threshold Failing Periods configurations https://docs.microsoft.com/azure/azure-monitor/alerts/alerts-dynamic-thresholds#what-do-the-advanced-settings-in-dynamic-thresholds-mean
+        "metricNamespace": "LoRaWan",
+        "evaluationFrequency": "PT1H", // Every hour (5 mins, 15 mins, 30 mins, etc.)
+        "aggregationPeriod": "PT1H" // 1 hour (5 mins, 15 mins, 30 mins, etc.)
+    },
+    "resources": [
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "High Upstream Message Latency",
+            "location": "global",
+            "properties": {
+                "description": "High device message processing time (throughput)",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[variables('ai_scope_resource_id')]"
+                ],
+                "evaluationFrequency": "[variables('evaluationFrequency')]",
+                "windowSize": "[variables('aggregationPeriod')]",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "[variables('alertSensitivity')]",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "[variables('metricNamespace')]",
+                            "metricName": "D2CMessageDeliveryLatency",
+                            "dimensions": [
+                                {
+                                    "name": "GatewayId",
+                                    "operator": "Include",
+                                    "values": [
+                                        "*"
+                                    ]
+                                }
+                            ],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion",
+                            "skipMetricValidation": true
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "microsoft.insights/components",
+                "actions": []
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "High Receive Window Misses",
+            "location": "global",
+            "properties": {
+                "description": "High receive window misses (throughput)",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[variables('ai_scope_resource_id')]"
+                ],
+                "evaluationFrequency": "[variables('evaluationFrequency')]",
+                "windowSize": "[variables('aggregationPeriod')]",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "[variables('alertSensitivity')]",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "[variables('metricNamespace')]",
+                            "metricName": "ReceiveWindowMisses",
+                            "dimensions": [
+                                {
+                                    "name": "GatewayId",
+                                    "operator": "Include",
+                                    "values": [
+                                        "*"
+                                    ]
+                                }
+                            ],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion",
+                            "skipMetricValidation": true
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "microsoft.insights/components",
+                "actions": []
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "Unhandled Exceptions",
+            "location": "global",
+            "properties": {
+                "description": "High error count (correctness)",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[variables('ai_scope_resource_id')]"
+                ],
+                "evaluationFrequency": "[variables('evaluationFrequency')]",
+                "windowSize": "[variables('aggregationPeriod')]",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "[variables('alertSensitivity')]",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "[variables('metricNamespace')]",
+                            "metricName": "UnhandledExceptions",
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Count",
+                            "criterionType": "DynamicThresholdCriterion",
+                            "skipMetricValidation": true
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "microsoft.insights/components",
+                "actions": []
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "High Downstream Messages Abandoned Number",
+            "location": "global",
+            "properties": {
+                "description": "High device messages abandoned number (correctness, throughput)",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[variables('iot_hub_scope_resource_id')]"
+                ],
+                "evaluationFrequency": "[variables('evaluationFrequency')]",
+                "windowSize": "[variables('aggregationPeriod')]",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "[variables('alertSensitivity')]",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "Microsoft.Devices/IotHubs",
+                            "metricName": "c2d.commands.egress.abandon.success",
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion",
+                            "skipMetricValidation": true
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "microsoft.devices/iothubs",
+                "actions": []
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "High Downstream Messages Rejected Number",
+            "location": "global",
+            "properties": {
+                "description": "High device messages rejected number (correctness, throughput)",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[variables('iot_hub_scope_resource_id')]"
+                ],
+                "evaluationFrequency": "[variables('evaluationFrequency')]",
+                "windowSize": "[variables('aggregationPeriod')]",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "[variables('alertSensitivity')]",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "Microsoft.Devices/IotHubs",
+                            "metricName": "c2d.commands.egress.reject.success",
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion",
+                            "skipMetricValidation": true
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "microsoft.devices/iothubs",
+                "actions": []
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "High Upstream Messages Lost Ratio",
+            "location": "global",
+            "properties": {
+                "description": "High Upstream Messages Lost Ratio (Correctness) (D2CMessagesReceived/D2CMessagesDelivered)",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[variables('ai_scope_resource_id')]"
+                ],
+                "evaluationFrequency": "[variables('evaluationFrequency')]",
+                "windowSize": "[variables('aggregationPeriod')]",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "[variables('alertSensitivity')]",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[variables('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[variables('failingPeriods')]"
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "[variables('metricNamespace')]",
+                            "metricName": "D2CMessagesLostRatio",
+                            "dimensions": [
+                                {
+                                    "name": "GatewayId",
+                                    "operator": "Include",
+                                    "values": [
+                                        "*"
+                                    ]
+                                }
+                            ],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion",
+                            "skipMetricValidation": true
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "microsoft.insights/components",
+                "actions": []
+            }
+        }                
+    ]
+}

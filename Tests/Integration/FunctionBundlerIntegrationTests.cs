@@ -46,8 +46,9 @@ namespace LoRaWan.Tests.Integration
                 .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var cache = NewNonEmptyCache(loRaDevice);
-            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var cache = EmptyMemoryCache();
+            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             using var messageProcessor1 = new MessageDispatcher(
                 ServerConfiguration,
@@ -56,10 +57,7 @@ namespace LoRaWan.Tests.Integration
 
             var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: 1);
 
-            // Create Rxpk
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(payload);
 
             messageProcessor1.DispatchRequest(request);
 

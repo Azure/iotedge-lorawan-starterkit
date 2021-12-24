@@ -43,12 +43,12 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets the 2nd receive windows datarate.
         /// </summary>
-        public string Rx2DataRate { get; set; }
+        public DataRateIndex? Rx2DataRate { get; set; }
 
         /// <summary>
         /// Gets or sets the 2nd receive windows data frequency.
         /// </summary>
-        public double? Rx2Frequency { get; set; }
+        public Hertz? Rx2Frequency { get; set; }
 
         /// <summary>
         /// Gets or sets the IoT Edge timeout in milliseconds, 0 keeps default value,.
@@ -81,6 +81,12 @@ namespace LoRaWan.NetworkServer
         /// Default is false.
         /// </summary>
         public bool LogToTcp { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether logging to IoT Hub is enabled.
+        /// Default is false.
+        /// </summary>
+        public bool LogToHub { get; set; }
 
         /// <summary>
         /// Gets or sets TCP address to send log to.
@@ -132,8 +138,8 @@ namespace LoRaWan.NetworkServer
             config.EnableGateway = envVars.GetEnvVar("ENABLE_GATEWAY", config.EnableGateway);
             config.GatewayID = envVars.GetEnvVar("IOTEDGE_DEVICEID", string.Empty);
             config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);
-            config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);
-            config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ");
+            config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", -1) is var datrNum && (DataRateIndex)datrNum is var datr && Enum.IsDefined(datr) ? datr : null;
+            config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ") is { } someFreq ? Hertz.Mega(someFreq) : null;
             config.IoTEdgeTimeout = envVars.GetEnvVar("IOTEDGE_TIMEOUT", config.IoTEdgeTimeout);
 
             // facadeurl is allowed to be null as the value is coming from the twin in production.
@@ -143,6 +149,7 @@ namespace LoRaWan.NetworkServer
             config.LogLevel = envVars.GetEnvVar("LOG_LEVEL", config.LogLevel);
             config.LogToConsole = envVars.GetEnvVar("LOG_TO_CONSOLE", config.LogToConsole);
             config.LogToTcp = envVars.GetEnvVar("LOG_TO_TCP", config.LogToTcp);
+            config.LogToHub = envVars.GetEnvVar("LOG_TO_HUB", config.LogToHub);
             config.LogToTcpAddress = envVars.GetEnvVar("LOG_TO_TCP_ADDRESS", string.Empty);
             config.LogToTcpPort = envVars.GetEnvVar("LOG_TO_TCP_PORT", config.LogToTcpPort);
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);

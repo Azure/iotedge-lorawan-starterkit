@@ -6,7 +6,6 @@ namespace LoRaTools.Regions
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
@@ -24,20 +23,20 @@ namespace LoRaTools.Regions
         /// max application payload size N should be N= M-8 bytes.
         /// This is in case of absence of Fopts field.
         /// </summary>
-        public Dictionary<ushort, (string configuration, uint maxPyldSize)> DRtoConfiguration { get; } = new Dictionary<ushort, (string, uint)>();
+        public Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration { get; } = new();
 
         /// <summary>
         /// Gets or sets by default MaxEIRP is considered to be +16dBm.
         /// If the end-device cannot achieve 16dBm EIRP, the Max EIRP SHOULD be communicated to the network server using an out-of-band channel during the end-device commissioning process.
         /// </summary>
-        public Dictionary<uint, uint> TXPowertoMaxEIRP { get; } = new Dictionary<uint, uint>();
+        public Dictionary<uint, double> TXPowertoMaxEIRP { get; } = new Dictionary<uint, double>();
 
         /// <summary>
         /// Gets or sets table to the get receive windows Offsets.
         /// X = RX1DROffset Upstream DR
         /// Y = Downstream DR in RX1 slot.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<int>> RX1DROffsetTable { get; set; }
+        public IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets default first receive windows. [sec].
@@ -90,7 +89,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Gets or sets set the Max ADR datarate acceptable, this is not necessarelly the highest in the region hence we need an additional param.
         /// </summary>
-        public int MaxADRDataRate { get; set; }
+        public DataRateIndex MaxADRDataRate { get; set; }
 
         protected Region(LoRaRegionType regionEnum)
         {
@@ -108,33 +107,14 @@ namespace LoRaTools.Regions
 
         /// <summary>
         /// Returns join channel index matching the frequency of the join request.
-        /// </summary>
-        /// <param name="joinChannel">Channel on which the join request was received.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public virtual bool TryGetJoinChannelIndex(Rxpk joinChannel, out int channelIndex)
-        {
-            channelIndex = -1;
-            return false;
-        }
-
-        /// <summary>
-        /// Returns join channel index matching the frequency of the join request.
         /// This default implementation is used by all regions which do not have the concept of join channels.
         /// </summary>
         /// <param name="joinChannel">Channel on which the join request was received.</param>
-        public virtual bool TryGetJoinChannelIndex(double frequency, out int channelIndex)
+        public virtual bool TryGetJoinChannelIndex(Hertz frequency, out int channelIndex)
         {
             channelIndex = -1;
             return false;
         }
-
-        /// <summary>
-        /// Implements logic to get the correct downstream transmission frequency for the given region based on the upstream channel frequency.
-        /// </summary>
-        /// <param name="upstreamChannel">the channel at which the upstream message was transmitted.</param>
-        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public abstract bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>
         /// Implements logic to get the correct downstream transmission frequency for the given region based on the upstream channel frequency.
@@ -142,47 +122,21 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency of the upstream message.</param>
         /// <param name="upstreamDataRate">Ustream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract bool TryGetDownstreamChannelFrequency(double upstreamFrequency, out double downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null);
-
-        /// <summary>
-        /// Returns downstream data rate based on the upstream channel and RX1 DR offset.
-        /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public string GetDownstreamDataRate(Rxpk upstreamChannel, int rx1DrOffset = 0)
-        {
-            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
-
-            if (IsValidUpstreamRxpk(upstreamChannel))
-            {
-                // If the rx1 offset is a valid value we use it, otherwise we throw an exception
-                if (IsValidRX1DROffset(rx1DrOffset))
-                {
-                    return DRtoConfiguration[(ushort)RX1DROffsetTable[GetDRFromFreqAndChan(upstreamChannel.Datr)][rx1DrOffset]].configuration;
-                }
-                else
-                {
-                    throw new LoRaProcessingException($"RX1 data rate offset was set to an invalid value {rx1DrOffset}; " +
-                        $"maximum allowed offset is {RX1DROffsetTable[0].Count - 1}", LoRaProcessingErrorCode.InvalidDataRateOffset);
-                }
-            }
-
-            throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
-        }
+        public abstract bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>
         /// Returns downstream data rate based on the upstream data rate and RX1 DR offset.
         /// </summary>
         /// <param name="dataRate">Data rate at which the message was transmitted.</param>
         /// <param name="rx1DrOffset">RX1 offset to be used for calculating downstream data rate.</param>
-        public ushort GetDownstreamDataRate(ushort dataRate, int rx1DrOffset = 0)
+        public DataRateIndex GetDownstreamDataRate(DataRateIndex dataRate, int rx1DrOffset = 0)
         {
             if (IsValidUpstreamDataRate(dataRate))
             {
                 // If the rx1 offset is a valid value we use it, otherwise we throw an exception
                 if (IsValidRX1DROffset(rx1DrOffset))
                 {
-                    return (ushort)RX1DROffsetTable[dataRate][rx1DrOffset];
+                    return RX1DROffsetTable[(int)dataRate][rx1DrOffset];
                 }
                 else
                 {
@@ -207,40 +161,37 @@ namespace LoRaTools.Regions
         /// <param name="nwkSrvRx2Freq">the value of the rx2freq env var on the nwk srv.</param>
         /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
         /// <returns>rx2 freq.</returns>
-        public double GetDownstreamRX2Freq(double? nwkSrvRx2Freq, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
+        public Hertz GetDownstreamRX2Freq(Hertz? nwkSrvRx2Freq, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
         {
             // resolve frequency to gateway if set to region's default
-            if (nwkSrvRx2Freq.HasValue)
+            if (nwkSrvRx2Freq is { } someNwkSrvRx2Freq)
             {
-                logger.LogDebug($"using custom gateway RX2 frequency {nwkSrvRx2Freq}", LogLevel.Debug);
-                return nwkSrvRx2Freq.Value;
+                logger.LogDebug($"using custom gateway RX2 frequency {someNwkSrvRx2Freq}", LogLevel.Debug);
+                return someNwkSrvRx2Freq;
             }
             else
             {
                 // default frequency
-                var rx2ReceiveWindow = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
-                logger.LogDebug($"using standard region RX2 frequency {rx2ReceiveWindow.Frequency}");
-                return rx2ReceiveWindow.Frequency;
+                (var defaultFrequency, _) = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                logger.LogDebug($"using standard region RX2 frequency {defaultFrequency}");
+                return defaultFrequency;
             }
         }
 
         /// <summary>
-        /// Get downstream RX2 datarate.
+        /// Get downstream RX2 data rate.
         /// </summary>
-        /// <param name="devEUI">the device id.</param>
-        /// <param name="nwkSrvRx2Dr">the network server rx2 datarate.</param>
-        /// <param name="rx2DrFromTwins">rx2 datarate value from twins.</param>
-        /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
-        /// <returns>the rx2 datarate.</returns>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        public string GetDownstreamRX2DataRate(string devEUI, string nwkSrvRx2Dr, ushort? rx2DrFromTwins, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
+        /// <param name="nwkSrvRx2Dr">The network server rx2 datarate.</param>
+        /// <param name="rx2DrFromTwins">RX2 datarate value from twins.</param>
+        /// <returns>The RX2 data rate.</returns>
+        public DataRateIndex GetDownstreamRX2DataRate(DataRateIndex? nwkSrvRx2Dr, DataRateIndex? rx2DrFromTwins, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
         {
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
             {
                 if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
                 {
-                    var datr = DRtoConfiguration[rx2DrFromTwins.Value].configuration;
+                    var datr = rx2DrFromTwins.Value;
                     logger.LogDebug($"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}");
                     return datr;
                 }
@@ -251,18 +202,17 @@ namespace LoRaTools.Regions
             }
             else
             {
-                // Otherwise we check if we have some properties set on the server (server Specific)
-                if (!string.IsNullOrEmpty(nwkSrvRx2Dr))
+                // Otherwise we check if we have some properties set on the server (server-specific)
+                if (nwkSrvRx2Dr.HasValue)
                 {
-                    var datr = nwkSrvRx2Dr;
+                    var datr = nwkSrvRx2Dr.Value;
                     logger.LogDebug($"using custom gateway RX2 datarate {datr}");
                     return datr;
                 }
             }
 
-            // if no settings was set we use region default.
-            var rx2ReceiveWindow = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
-            var defaultDatr = DRtoConfiguration[rx2ReceiveWindow.DataRate].configuration;
+            // If no settings was set we use region default.
+            var defaultDatr = GetDefaultRX2ReceiveWindow(deviceJoinInfo).DataRate;
             logger.LogDebug($"using standard region RX2 datarate {defaultDatr}");
             return defaultDatr;
         }
@@ -271,52 +221,60 @@ namespace LoRaTools.Regions
         /// Implement correct logic to get the maximum payload size based on the datr/configuration.
         /// </summary>
         /// <param name="datr">the datr/configuration with which the message was transmitted.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public uint GetMaxPayloadSize(string datr)
-        {
-            var maxPayloadSize = DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Value.maxPyldSize;
-            return maxPayloadSize;
-        }
+        public uint GetMaxPayloadSize(DataRateIndex datr) => DRtoConfiguration[datr].MaxPayloadSize;
 
-        /// <summary>
-        /// Implement correct logic to get the maximum payload size based on the datr/configuration.
-        /// </summary>
-        /// <param name="datr">the datr/configuration with which the message was transmitted.</param>
-        public uint GetMaxPayloadSize(ushort datr) => DRtoConfiguration[datr].maxPyldSize;
 
-        /// <summary>
-        /// This method Check that a received packet is within the correct frenquency range and has a valid Datr.
-        /// </summary>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        protected bool IsValidUpstreamRxpk(Rxpk rxpk)
-        {
-            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+        protected bool IsValidUpstreamFrequency(Hertz frequency) => RegionLimits.FrequencyRange.Min <= frequency && frequency <= RegionLimits.FrequencyRange.Max;
 
-            if (rxpk.Freq < RegionLimits.FrequencyRange.min ||
-                rxpk.Freq > RegionLimits.FrequencyRange.max ||
-                !RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
-            {
-                return false;
-            }
+        protected bool IsValidUpstreamDataRate(DataRateIndex dataRate) => RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(dataRate);
 
-            return true;
-        }
-
-        protected bool IsValidUpstreamFrequency(double frequency) => RegionLimits.FrequencyRange.min <= frequency && frequency <= RegionLimits.FrequencyRange.max;
-
-        protected bool IsValidUpstreamDataRate(ushort dataRate) => RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(dataRate);
-
-        /// <summary>
-        /// Get Datarate number from SF#BW# string.
-        /// </summary>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public int GetDRFromFreqAndChan(string datr)
-        {
-            return DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
-        }
+        public DataRateIndex GetDataRateIndex(DataRate datr) =>
+            DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate == datr) is (var index, (not null, _)) ? index : throw new KeyNotFoundException("");
 
         public bool IsValidRX1DROffset(int rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= RX1DROffsetTable[0].Count - 1;
 
         public static bool IsValidRXDelay(ushort desiredRXDelay) => desiredRXDelay is >= 0 and <= MAX_RX_DELAY;
+
+        /// <summary>
+        /// Gets required Signal-to-noise ratio to demodulate a LoRa signal given a spread Factor
+        /// Spreading Factor -> Required SNR
+        /// taken from https://www.semtech.com/uploads/documents/DS_SX1276-7-8-9_W_APP_V5.pdf.
+        /// </summary>
+        private static Dictionary<int, double> SpreadFactorToSNR { get; } = new Dictionary<int, double>()
+        {
+            { 6,  -5 },
+            { 7, -7.5 },
+            { 8,  -10 },
+            { 9, -12.5 },
+            { 10, -15 },
+            { 11, -17.5 },
+            { 12, -20 }
+        };
+
+        // TODO refine
+        public double RequiredSnr(DataRateIndex datrIndex)
+        {
+            var datr = this.DRtoConfiguration[datrIndex].DataRate;
+            if (datr != null && datr.ModulationKind is ModulationKind.LoRa)
+            {
+                return SpreadFactorToSNR[(int)((LoRaDataRate)datr).SpreadingFactor];
+            }
+
+            throw new ArgumentException("Only LoRa Datarates are valid argument for snr table");
+        }
+
+
+        public uint GetModulationMargin(DataRateIndex datr, double lsnr)
+        {
+            // required SNR:
+            var requiredSNR = RequiredSnr(datr);
+
+            // get the link budget
+            var signedMargin = Math.Max(0, (int)(lsnr - requiredSNR));
+
+            return (uint)signedMargin;
+        }
+
+        public DataRate GetDatarateFromIndex(DataRateIndex dataRateIndex) => this.DRtoConfiguration[dataRateIndex].DataRate;
     }
 }

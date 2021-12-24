@@ -5,16 +5,17 @@ namespace LoRaWan.NetworkServer
 {
     using LoRaTools.LoRaPhysical;
 
-    internal class DownlinkMessageBuilderResponse
+    public class DownlinkMessageBuilderResponse
     {
-        internal DownlinkPktFwdMessage DownlinkPktFwdMessage { get; set; }
+        internal DownlinkMessage DownlinkMessage { get; set; }
 
         internal bool IsMessageTooLong { get; set; }
+
         public int ReceiveWindow { get; }
 
-        internal DownlinkMessageBuilderResponse(DownlinkPktFwdMessage downlinkPktFwdMessage, bool isMessageTooLong, int receiveWindow)
+        internal DownlinkMessageBuilderResponse(DownlinkMessage downlinkMessage, bool isMessageTooLong, int receiveWindow)
         {
-            DownlinkPktFwdMessage = downlinkPktFwdMessage;
+            DownlinkMessage = downlinkMessage;
             IsMessageTooLong = isMessageTooLong;
             ReceiveWindow = receiveWindow;
         }

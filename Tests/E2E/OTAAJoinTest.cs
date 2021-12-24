@@ -159,20 +159,22 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR_Single()
         {
-            return Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(TestFixtureCi.Device20_OTAA));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device20_OTAA));
+            LogTestStart(device);
+            return Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(device);
         }
 
         [RetryFact]
         public Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR_MultiGw()
         {
-            return Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(TestFixtureCi.Device20_OTAA_MultiGw));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device20_OTAA_MultiGw));
+            LogTestStart(device);
+            return Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(device);
         }
 
         // Performs a OTAA join and sends 1 unconfirmed, 1 confirmed and rejoins
-        private async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(string devicePropertyName)
+        private async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(TestDeviceInfo device)
         {
-            var device = TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
-            LogTestStart(device);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
@@ -231,7 +233,10 @@ namespace LoRaWan.Tests.E2E
 
             // Checking than the communication occurs on DR 4 and RX2 as part of preferred windows RX2 and custom RX2 DR
             await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), ArduinoDevice.SerialLogs);
-            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"datr\":\"SF9BW125\"", StringComparison.Ordinal), null);
+            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"DataRateRx1\":3", StringComparison.Ordinal), null);
+            // this test has a custom datarate for RX 2 of 3
+            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"DataRateRx2\":3", StringComparison.Ordinal), null);
+
 
             // 0000000000000004: decoding with: DecoderValueSensor port: 8
             await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
