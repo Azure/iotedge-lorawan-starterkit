@@ -14,6 +14,7 @@ namespace LoRaWan.NetworkServer
             set => DevAddr = value is { Length: 8 } some ? LoRaWan.DevAddr.Parse(some) : null;
         }
 
+        [JsonIgnore]
         public DevAddr? DevAddr { get; set; }
 
         public string DevEUI { get; set; }
