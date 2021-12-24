@@ -51,9 +51,16 @@ calls to external services need to be made for the detection. In scope for this 
 - join requests
 - Class A and C devices
 
-For the detection, a in-memory cache is utilised with a sliding expiration of entries after 1 minute. 
+For the detection, a in-memory cache is utilised with a sliding expiration of entries after 1
+minute. The value of the entires is always the concentrator from where we received the message. The
+key depends on the type of message.
 
-#### Duplicates from different concentrators
+#### a. Data messages
+
+The relevant fields for detection are DevAddr, Mic, payload and frame counter. Out of these a
+SHA256 hash is created and stored as the key to the in-memory cache.
+
+##### Duplicates from different concentrators
 
 This deduplication ensures that messages coming from different concentrators connected to the same
 network server are handled correctly.
@@ -69,10 +76,10 @@ flowchart LR;
 ```
 
 - LNS receives message A from LBS1 for the first time. Message is marked as `NonDuplicate` and a
-  cache entry is created where the key is a SHA256 of the message and the value is LBS1.
+  cache entry is created.
 - LNS receives again Message A this time from LBS2. LNS checks its local cache. If it's a cache
   miss, the message is marked as a `NonDuplicate` and considered as a new telemetry. This can happen
-  if the second message takes longer than the retention period to arrive. If it's a cache hit, the
+  for example if the second message takes longer than the retention period to arrive. If it's a cache hit, the
   following happens:
 
 ```mermaid
@@ -89,7 +96,7 @@ stateDiagram-v2
     False --> SoftDuplicate
 ```
 
-#### Duplicates from the same concentrator
+##### Duplicates from the same concentrator
 
 Under special circumstances, a network server might receive the same message multiple times from the
 same concentrator. These circumstances can be:
@@ -174,6 +181,12 @@ NB:
 Finally, if message is `Duplicate`: Upstream❌, Downstream❌  
 We do not want to process the message further, no calls to the Azure Function or IoTHub happen.
 
+#### b. Join requests
+
+Here we are detecting requests as duplicates solely based on their AppEui, DevEui and DevNonce.
+If there is a cache hit (a request with the same values for these fields within the retention period
+of the cache) the request is considered a duplicate and dropped immediately.
+
 
 #### General notes
 
@@ -186,10 +199,18 @@ We do not want to process the message further, no calls to the Azure Function or
   deduplcation across network servers. 
 - This logic is tested with a combination of unit, integration and E2E tests.
 
+
 ### 2. Deduplication between different network servers
 
 At this deduplication we ensure that duplicate messages coming from different network servers are
 handled correctly. The categorization happens from an Azure Function where we need to send some
 metadata of the messages.
+
+Simplest topology showcasing this scenario would be:
+```mermaid
+flowchart LR;
+    Device-->LBS1-->LNS1;
+    Device-->LBS2-->LNS2;
+```
 
 TODO
