@@ -34,8 +34,6 @@ namespace LoRaWan
             this(SetNetworkId(0, networkId) + SetNetworkAddress(0, networkAddress))
         { }
 
-        public bool IsZero => this.value == 0;
-
         /// <summary>
         /// The <c>NwkID</c> (bits 25..31).
         /// </summary>

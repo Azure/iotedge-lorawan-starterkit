@@ -70,7 +70,7 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            if (loRaDevice.DevAddr.IsZero)
+            if (loRaDevice.DevAddr is null)
             {
                 this.logger.LogError("[class-c] devAddr is empty, cannot send cloud to device message. Ensure the device has connected at least once with the network");
                 return false;

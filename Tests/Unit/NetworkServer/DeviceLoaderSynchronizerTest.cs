@@ -67,7 +67,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Device_Does_Not_Exist_Should_Complete_Requests_As_Failed(int loadDevicesDurationInMs)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var payload1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1");
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
@@ -130,7 +130,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
             var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object, deviceCache, this.connectionManager);
             var target = new DeviceLoaderSynchronizer(
-                simulatedDevice.DevAddr,
+                simulatedDevice.DevAddr.Value,
                 apiService.Object,
                 deviceFactory,
                 new NetworkServerConfiguration(),
@@ -150,7 +150,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             apiService.VerifyAll();
 
             // Device is cached but not initialized
-            Assert.True(deviceCache.HasRegistrations(simulatedDevice.DevAddr));
+            Assert.True(deviceCache.HasRegistrations(simulatedDevice.DevAddr.Value));
             loRaDeviceClient.Verify(x => x.GetTwinAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -175,7 +175,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
             var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object, deviceCache, this.connectionManager);
             var target = new DeviceLoaderSynchronizer(
-                simulatedDevice.DevAddr,
+                simulatedDevice.DevAddr.Value,
                 apiService.Object,
                 deviceFactory,
                 new NetworkServerConfiguration(),
@@ -224,7 +224,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
             var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object, deviceCache, this.connectionManager);
             var target = new DeviceLoaderSynchronizer(
-                simulatedDevice.DevAddr,
+                simulatedDevice.DevAddr.Value,
                 apiService.Object,
                 deviceFactory,
                 new NetworkServerConfiguration(),
@@ -368,7 +368,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
 
             const string devEUI = "123";
-            var loRaDevice = new Mock<LoRaDevice>(new DevAddr(0), devEUI, null);
+            var loRaDevice = new Mock<LoRaDevice>(null, devEUI, null);
             loRaDevice.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None))
                 .ReturnsAsync(true);
             deviceCache.Register(loRaDevice.Object);

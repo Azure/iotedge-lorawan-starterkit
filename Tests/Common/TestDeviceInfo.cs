@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Common
         // LoRaWAN devices have a 64 bit unique identifier that is assigned to the device
         // by the chip manufacturer, but communication uses 32 bit device address
         // In Over-the-Air Activation (OTAA) devices performs network join, where a DevAddr and security key are negotiated with the device.
-        public DevAddr DevAddr { get; set; }
+        public DevAddr? DevAddr { get; set; }
 
         // Application Session Key
         // Used for encryption and decryption of the payload
@@ -87,8 +87,8 @@ namespace LoRaWan.Tests.Common
             if (!string.IsNullOrEmpty(NwkSKey))
                 desiredProperties[nameof(NwkSKey)] = NwkSKey;
 
-            if (!DevAddr.IsZero)
-                desiredProperties[nameof(DevAddr)] = DevAddr.ToString();
+            if (DevAddr is { } someDevAddr)
+                desiredProperties[nameof(DevAddr)] = someDevAddr.ToString();
 
             desiredProperties[nameof(PreferredWindow)] = PreferredWindow;
 
@@ -133,7 +133,7 @@ namespace LoRaWan.Tests.Common
                 SensorDecoder = sensorDecoder,
                 AppSKey = value32,
                 NwkSKey = value32,
-                DevAddr = DevAddr.Parse(value8) with { NetworkId = netId },
+                DevAddr = LoRaWan.DevAddr.Parse(value8) with { NetworkId = netId },
                 ClassType = deviceClassType,
                 Supports32BitFCnt = supports32BitFcnt
             };

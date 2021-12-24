@@ -264,7 +264,7 @@ namespace LoRaWan.Tests.Integration
         {
 
             var value32 = "00000000000000000000000000000000";
-            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0)) { DevAddr = new DevAddr(0) };
+            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0)) { DevAddr = null };
 
             var dataPayload = simulatedOTAADevice.CreateUnconfirmedDataUpMessage("payload", appSKey: value32, nwkSKey: value32);
             var request1 = CreateOTAARequest(dataPayload, station1);

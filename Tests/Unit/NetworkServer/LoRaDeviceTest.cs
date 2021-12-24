@@ -120,7 +120,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var loRaDevice = new LoRaDevice(new DevAddr(0), "ABC0200000000009", connectionManager);
+            using var loRaDevice = new LoRaDevice(null, "ABC0200000000009", connectionManager);
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
             Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
@@ -133,7 +133,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.False(loRaDevice.HasFrameCountChanges);
             Assert.Empty(loRaDevice.AppSKey ?? string.Empty);
             Assert.Empty(loRaDevice.NwkSKey ?? string.Empty);
-            Assert.True(loRaDevice.DevAddr.IsZero);
+            Assert.Null(loRaDevice.DevAddr);
             Assert.Null(loRaDevice.DevNonce);
             Assert.Empty(loRaDevice.NetID ?? string.Empty);
             Assert.False(loRaDevice.IsABP);
@@ -742,7 +742,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(new DevAddr(0), "0123456789", manager);
+            using var device = new LoRaDevice(DevAddr.Private0(0), "0123456789", manager);
             manager.Register(device, deviceClient.Object);
 
             var activity = device.BeginDeviceClientConnectionActivity();
@@ -763,7 +763,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(new DevAddr(0), "0123456789", manager);
+            using var device = new LoRaDevice(DevAddr.Private0(0), "0123456789", manager);
             device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
 
@@ -798,7 +798,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(new DevAddr(0), "0123456789", manager);
+            using var device = new LoRaDevice(DevAddr.Private0(0), "0123456789", manager);
             device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
 

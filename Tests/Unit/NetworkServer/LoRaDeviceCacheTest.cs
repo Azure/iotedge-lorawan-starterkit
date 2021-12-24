@@ -8,7 +8,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.LoRaMessage;
-    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -145,7 +144,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var device = CreateTestDevice();
             cache.Register(device);
             Assert.True(cache.Remove(device));
-            Assert.False(cache.HasRegistrations(device.DevAddr));
+            Assert.False(cache.HasRegistrations(device.DevAddr.Value));
         }
 
         [Fact]
@@ -153,7 +152,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var cache = CreateNoRefreshCache();
             using var device = CreateTestDevice();
-            device.DevAddr = new DevAddr(0);
+            device.DevAddr = null;
             cache.Register(device);
 
             Assert.True(cache.TryGetByDevEui(device.DevEUI, out _));
@@ -180,7 +179,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.Equal(device1.DevAddr, device2.DevAddr);
 
-            var devAddr = device1.DevAddr;
+            var devAddr = device1.DevAddr.Value;
 
             cache.Register(device1);
             cache.Register(device2);
@@ -209,7 +208,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var payload = new LoRaPayloadData
             {
-                DevAddr = device.DevAddr
+                DevAddr = device.DevAddr.Value
             };
 
             Assert.Equal(isValid, cache.TryGetForPayload(payload, out _));
@@ -243,7 +242,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var payload = new LoRaPayloadData
             {
-                DevAddr = device.DevAddr
+                DevAddr = device.DevAddr.Value
             };
 
             var lastSeen = device.LastSeen;
@@ -261,7 +260,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = CreateNoRefreshCache();
             using var device = CreateTestDevice();
 
-            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device, device.DevAddr));
+            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device, device.DevAddr.Value));
         }
 
         [Fact]
@@ -294,7 +293,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             cache.Register(device);
 
-            var oldDevAddr = device.DevAddr;
+            var oldDevAddr = device.DevAddr.Value;
             device.DevAddr = new DevAddr(0x00ffffff);
 
             cache.CleanupOldDevAddrForDevice(device, oldDevAddr);
@@ -307,7 +306,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = CreateNoRefreshCache();
             using var device = CreateTestDevice();
 
-            device.DevAddr = new DevAddr(0);
+            device.DevAddr = null;
             cache.Register(device);
 
             using var device2 = CreateTestDevice();

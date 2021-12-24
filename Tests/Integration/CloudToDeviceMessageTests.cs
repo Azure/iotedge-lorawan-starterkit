@@ -316,7 +316,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
@@ -402,7 +402,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
@@ -487,7 +487,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
@@ -906,7 +906,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice

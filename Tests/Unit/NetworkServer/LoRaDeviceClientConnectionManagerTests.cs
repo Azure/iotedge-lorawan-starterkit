@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var connectionManager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
 
-            using var loraDevice = new LoRaDevice(new DevAddr(0), "0000000000000000", null);
+            using var loraDevice = new LoRaDevice(null, "0000000000000000", null);
             connectionManager.Register(loraDevice, new Mock<ILoRaDeviceClient>().Object);
             Assert.Throws<InvalidOperationException>(() => connectionManager.Register(loraDevice, new Mock<ILoRaDeviceClient>().Object));
         }

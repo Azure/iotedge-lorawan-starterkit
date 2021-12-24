@@ -10,11 +10,11 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("DevAddr")]
         public string DevAddrString
         {
-            get => DevAddr.ToString();
-            set => DevAddr = DevAddr.Parse(value);
+            get => DevAddr?.ToString();
+            set => DevAddr = value is { Length: 8 } some ? LoRaWan.DevAddr.Parse(some) : null;
         }
 
-        public DevAddr DevAddr { get; set; }
+        public DevAddr? DevAddr { get; set; }
 
         public string DevEUI { get; set; }
 
@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
         {
         }
 
-        public IoTHubDeviceInfo(DevAddr devAddr, string devEUI, string primaryKey)
+        public IoTHubDeviceInfo(DevAddr? devAddr, string devEUI, string primaryKey)
         {
             DevAddr = devAddr;
             DevEUI = devEUI;

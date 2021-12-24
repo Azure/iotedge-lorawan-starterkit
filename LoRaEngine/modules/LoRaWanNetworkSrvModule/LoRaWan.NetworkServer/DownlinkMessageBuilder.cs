@@ -308,7 +308,7 @@ namespace LoRaWan.NetworkServer
             var msgType = cloudToDeviceMessage.Confirmed ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
-                loRaDevice.DevAddr,
+                loRaDevice.DevAddr.Value,
                 FrameControlFlags.None,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,

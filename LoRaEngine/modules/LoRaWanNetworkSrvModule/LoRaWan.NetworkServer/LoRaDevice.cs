@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public DateTimeOffset LastUpdate { get; set; }
 
-        public DevAddr DevAddr { get; set; }
+        public DevAddr? DevAddr { get; set; }
 
         // Gets if a device is activated by personalization
         public bool IsABP => string.IsNullOrEmpty(AppKey);
@@ -208,7 +208,7 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
-        public LoRaDevice(DevAddr devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
+        public LoRaDevice(DevAddr? devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
         {
             this.connectionManager = connectionManager;
             this.queuedRequests = new Queue<LoRaRequest>();
@@ -225,7 +225,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Use constructor for test code only.
         /// </summary>
-        internal LoRaDevice(DevAddr devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
+        internal LoRaDevice(DevAddr? devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
             : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance, null)
         { }
 
@@ -276,7 +276,7 @@ namespace LoRaWan.NetworkServer
 
                 NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value as string;
 
-                DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value is string s && DevAddr.TryParse(s, out var devAddr)
+                DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value is string s && LoRaWan.DevAddr.TryParse(s, out var devAddr)
                         ? devAddr
                         : throw new InvalidLoRaDeviceException("DevAddr is invalid or empty");
 
@@ -312,7 +312,7 @@ namespace LoRaWan.NetworkServer
                 // Check for already joined OTAA device properties
                 if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
                 {
-                    DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value is string s && DevAddr.TryParse(s, out var devAddr)
+                    DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value is string s && LoRaWan.DevAddr.TryParse(s, out var devAddr)
                             ? devAddr
                             : default;
                 }

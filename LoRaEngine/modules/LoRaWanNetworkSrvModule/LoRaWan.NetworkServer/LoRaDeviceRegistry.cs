@@ -245,7 +245,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates a device after a successful login.
         /// </summary>
-        public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, DevAddr oldDevAddr)
+        public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, DevAddr? oldDevAddr)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
@@ -260,14 +260,12 @@ namespace LoRaWan.NetworkServer
             CleanupOldDevAddr(loRaDevice, oldDevAddr);
         }
 
-        private void CleanupOldDevAddr(LoRaDevice loRaDevice, DevAddr oldDevAddr)
+        private void CleanupOldDevAddr(LoRaDevice loRaDevice, DevAddr? oldDevAddr)
         {
-            if (oldDevAddr.IsZero || loRaDevice.DevAddr == oldDevAddr)
+            if (oldDevAddr is { } someOldDevAddr && loRaDevice.DevAddr != someOldDevAddr)
             {
-                return;
+                this.deviceCache.CleanupOldDevAddrForDevice(loRaDevice, someOldDevAddr);
             }
-
-            this.deviceCache.CleanupOldDevAddrForDevice(loRaDevice, oldDevAddr);
         }
 
         /// <summary>

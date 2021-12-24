@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Common
 
         public DevNonce DevNonce { get; private set; }
 
-        public bool IsJoined => !LoRaDevice.DevAddr.IsZero;
+        public bool IsJoined => LoRaDevice.DevAddr is not null;
 
         public string NetId { get; internal set; }
 
@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Common
 
         public char ClassType => LoRaDevice.ClassType;
 
-        public DevAddr DevAddr
+        public DevAddr? DevAddr
         {
             get => LoRaDevice.DevAddr;
             set => LoRaDevice.DevAddr = value;
@@ -120,7 +120,7 @@ namespace LoRaWan.Tests.Common
 
             var payloadData = new LoRaPayloadData(
                 MacMessageType.UnconfirmedDataUp,
-                LoRaDevice.DevAddr,
+                LoRaDevice.DevAddr.Value,
                 fctrlFlags,
                 fcntBytes,
                 macCommands,
@@ -173,7 +173,7 @@ namespace LoRaWan.Tests.Common
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, LoRaDevice.DevAddr, FrameControlFlags.Adr, fcntBytes, null, fport, payload, direction, Supports32BitFCnt ? fcnt : null);
+            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, LoRaDevice.DevAddr.Value, FrameControlFlags.Adr, fcntBytes, null, fport, payload, direction, Supports32BitFCnt ? fcnt : null);
             payloadData.PerformEncryption(string.IsNullOrEmpty(appSKey) ? AppSKey : appSKey);
             payloadData.SetMic(string.IsNullOrEmpty(nwkSKey)? NwkSKey : nwkSKey);
             return payloadData;

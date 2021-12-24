@@ -136,7 +136,7 @@ namespace LoRaWan.NetworkServer
                     }
                     else
                     {
-                        if (cachedDevice.DevAddr.IsZero)
+                        if (cachedDevice.DevAddr is null)
                         {
                             // device in cache from a previous join that we didn't complete
                             // (lost race with another gw) - refresh the twins now and keep it

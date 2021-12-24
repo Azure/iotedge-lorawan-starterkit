@@ -68,7 +68,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
 
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(It.IsNotNull<string>(), devEUI, joinRequest.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(new DevAddr(0), devEUI, "123") { GatewayId = ServerConfiguration.GatewayID }.AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123") { GatewayId = ServerConfiguration.GatewayID }.AsList()));
 
             // Ensure that the device twin was updated
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.Is<TwinCollection>((t) =>
@@ -296,8 +296,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
-
-            var devAddr = new DevAddr(0);
+            var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // Device twin will be queried
@@ -403,7 +402,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
-            var devAddr = new DevAddr(0);
+            var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // Device twin will be queried
@@ -468,7 +467,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var afterJoinFcntUp = -1;
             uint startingPayloadFcnt = 0;
 
-            var devAddr = new DevAddr(0);
+            var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // message will be sent
@@ -537,7 +536,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Send a message
             simulatedDevice.LoRaDevice.AppSKey = afterJoinAppSKey;
             simulatedDevice.LoRaDevice.NwkSKey = afterJoinNwkSKey;
-            simulatedDevice.LoRaDevice.DevAddr = afterJoinDevAddr.Value;
+            simulatedDevice.LoRaDevice.DevAddr = afterJoinDevAddr;
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
@@ -566,7 +565,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             string afterJoinDevAddr = null;
             var afterJoinFcntDown = -1;
             var afterJoinFcntUp = -1;
-            var devAddr = new DevAddr(0);
+            var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // message will be sent
@@ -673,7 +672,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint startingPayloadFcnt = 0;
 
 
-            var devAddr = new DevAddr(0);
+            var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // message will be sent
@@ -742,7 +741,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Send a message
             simulatedDevice.LoRaDevice.AppSKey = afterJoinAppSKey;
             simulatedDevice.LoRaDevice.NwkSKey = afterJoinNwkSKey;
-            simulatedDevice.LoRaDevice.DevAddr = afterJoinDevAddr.Value;
+            simulatedDevice.LoRaDevice.DevAddr = afterJoinDevAddr;
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
@@ -787,7 +786,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var afterJoinFcntUp = -1;
             uint startingPayloadFcnt = 0;
 
-            var devAddr = new DevAddr(0);
+            var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // message will be sent

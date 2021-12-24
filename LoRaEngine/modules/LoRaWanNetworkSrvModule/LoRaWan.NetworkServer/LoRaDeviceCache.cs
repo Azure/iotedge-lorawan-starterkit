@@ -122,13 +122,13 @@ namespace LoRaWan.NetworkServer
             {
                 result &= this.euiCache.Remove(device.DevEUI, out _);
 
-                if (!device.DevAddr.IsZero &&
-                     this.devAddrCache.TryGetValue(device.DevAddr, out var devicesByDevAddr))
+                if (device.DevAddr is { } someDevAddr &&
+                     this.devAddrCache.TryGetValue(someDevAddr, out var devicesByDevAddr))
                 {
                     result &= devicesByDevAddr.Remove(device.DevEUI, out _);
                     if (devicesByDevAddr.IsEmpty)
                     {
-                        result &= this.devAddrCache.Remove(device.DevAddr, out _);
+                        result &= this.devAddrCache.Remove(someDevAddr, out _);
                     }
                 }
             }
@@ -198,9 +198,9 @@ namespace LoRaWan.NetworkServer
                     this.euiCache[device.DevEUI] = device;
                 }
 
-                if (!device.DevAddr.IsZero)
+                if (device.DevAddr is { } someDevAddr)
                 {
-                    var devAddrLookup = this.devAddrCache.GetOrAdd(device.DevAddr, (_) => new ConcurrentDictionary<string, LoRaDevice>());
+                    var devAddrLookup = this.devAddrCache.GetOrAdd(someDevAddr, (_) => new ConcurrentDictionary<string, LoRaDevice>());
                     devAddrLookup[device.DevEUI] = device;
                 }
                 device.LastSeen = DateTimeOffset.UtcNow;

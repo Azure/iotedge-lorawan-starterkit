@@ -214,7 +214,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var connectionManager1 = new SingleDeviceConnectionManager(loRaDeviceClient1.Object);
             using var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice1, connectionManager1);
-            var devAddr = loraDevice1.DevAddr;
+            var devAddr = loraDevice1.DevAddr.Value;
 
             var reqHandler1 = new Mock<ILoRaDataRequestHandler>(MockBehavior.Strict);
             reqHandler1.Setup(x => x.ProcessRequestAsync(It.IsNotNull<LoRaRequest>(), loraDevice1))
@@ -415,7 +415,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
 
             var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            deviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr))
+            deviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);

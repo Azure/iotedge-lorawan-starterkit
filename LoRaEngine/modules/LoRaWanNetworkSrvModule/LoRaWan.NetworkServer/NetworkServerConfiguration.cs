@@ -156,8 +156,9 @@ namespace LoRaWan.NetworkServer
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);
             config.AllowedDevAddresses = envVars.GetEnvVar("AllowedDevAddresses", string.Empty)
                                                 .Split(";")
-                                                .Select(s => DevAddr.TryParse(s, out var devAddr) ? devAddr : new DevAddr(0))
-                                                .Where(a => !a.IsZero)
+                                                .Select(s => DevAddr.TryParse(s, out var devAddr) ? (true, Value: devAddr) : default)
+                                                .Where(a => a is (true, _))
+                                                .Select(a => a.Value)
                                                 .ToHashSet();
             config.LnsServerPfxPath = envVars.GetEnvVar("LNS_SERVER_PFX_PATH", string.Empty);
             config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
