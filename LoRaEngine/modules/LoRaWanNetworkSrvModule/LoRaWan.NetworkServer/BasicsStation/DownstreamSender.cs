@@ -65,7 +65,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             writer.WriteNumber("dC", (int)deviceClassType);
 
             // Getting and writing payload bytes
-            var pduBytes = message.Data;
+            var pduBytes = message.Data.ToArray();
             var pduChars = new char[pduBytes.Length * 2];
             Hexadecimal.Write(pduBytes, pduChars);
             writer.WriteString("pdu", pduChars);
