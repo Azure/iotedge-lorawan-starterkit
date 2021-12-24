@@ -41,13 +41,13 @@ namespace LoRaWan.Tests.Integration
             // Device twin will be updated
             string afterJoinAppSKey = null;
             string afterJoinNwkSKey = null;
-            DevAddr? afterJoinDevAddr = null;
+            string afterJoinDevAddr = null;
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((updatedTwin) =>
                 {
                     afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey].Value;
                     afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey].Value;
-                    afterJoinDevAddr = DevAddr.Parse((string)(object)updatedTwin[TwinProperty.DevAddr].Value);
+                    afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr].Value;
                 })
                 .ReturnsAsync(true);
 
@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             var joinRequestDownlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey);
-            Assert.Equal(joinAccept.DevAddr, afterJoinDevAddr.Value);
+            Assert.Equal(joinAccept.DevAddr.ToString(), afterJoinDevAddr);
 
             Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
 
@@ -95,7 +95,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(simulatedDevice.AppEUI, loRaDevice.AppEUI);
             Assert.Equal(afterJoinAppSKey, loRaDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, loRaDevice.NwkSKey);
-            Assert.Equal(afterJoinDevAddr, loRaDevice.DevAddr);
+            Assert.Equal(joinAccept.DevAddr, loRaDevice.DevAddr);
             if (deviceGatewayID == null)
                 Assert.Null(loRaDevice.GatewayID);
             else
