@@ -115,7 +115,7 @@ namespace LoRaWan.NetworkServer
         {
             // Check if the current dev addr is in our network id
             var devAddrNwkid = loRaPayload.DevAddrNetID;
-            if (devAddrNwkid == this.configuration.NetId)
+            if (devAddrNwkid == (unchecked((byte)this.configuration.NetId) & 0b01111111))
             {
                 return true;
             }
