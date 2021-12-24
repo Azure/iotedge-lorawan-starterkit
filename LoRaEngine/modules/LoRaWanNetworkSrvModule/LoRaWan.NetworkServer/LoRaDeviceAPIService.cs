@@ -111,7 +111,7 @@ namespace LoRaWan.NetworkServer
             {
                 ["code"] = AuthCode,
                 ["GateWayId"] = gatewayID,
-                ["DevAddr"] = devAddr is { } someDevAddr ? someDevAddr.ToString() : null,
+                ["DevAddr"] = devAddr?.ToString(),
                 ["DevEUI"] = devEUI,
                 ["AppEUI"] = appEUI,
                 ["DevNonce"] = devNonce?.ToString()
