@@ -33,12 +33,6 @@ namespace LoRaTools.LoRaMessage
         public ushort GetFcnt() => MemoryMarshal.Read<ushort>(Fcnt.Span);
 
         /// <summary>
-        /// Gets the DevAdd netID.
-        /// </summary>
-        [JsonIgnore]
-        public int DevAddrNetID => DevAddr.NetworkId;
-
-        /// <summary>
         /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp).
         /// </summary>
         public bool IsConfirmed => MessageType is MacMessageType.ConfirmedDataDown or MacMessageType.ConfirmedDataUp;
