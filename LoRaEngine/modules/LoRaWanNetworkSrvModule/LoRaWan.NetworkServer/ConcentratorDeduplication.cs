@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer
 
         internal static string CreateCacheKey(LoRaPayloadData payload)
         {
-            var totalBufferLength = DevAddr.Size + payload.Mic.Length + payload.Frmpayload.Length + payload.Fcnt.Length;
+            var totalBufferLength = DevAddr.Size + payload.Mic.Length + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
 
             var index = 0;
@@ -100,8 +100,8 @@ namespace LoRaWan.NetworkServer
             BinaryPrimitives.WriteUInt32LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt32LittleEndian(payload.Mic.Span));
             index += payload.Mic.Length;
 
-            payload.Frmpayload.Span.CopyTo(buffer[index..]);
-            index += payload.Frmpayload.Length;
+            payload.RawMessage?.CopyTo(buffer[index..]);
+            index += payload.RawMessage?.Length ?? 0;
 
             BinaryPrimitives.WriteUInt16LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
 
