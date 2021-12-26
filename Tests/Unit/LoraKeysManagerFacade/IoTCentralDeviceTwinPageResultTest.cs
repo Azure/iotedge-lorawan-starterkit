@@ -47,8 +47,6 @@ namespace LoRaWan.Tests.Unit.FacadeTests
                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
                {
-                   var requestBody = req.Content.ReadAsAsync<dynamic>().Result;
-
                    var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
                    {
                        Content = new StringContent(

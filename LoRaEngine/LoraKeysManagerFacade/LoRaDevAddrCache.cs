@@ -228,25 +228,16 @@ namespace LoraKeysManagerFacade
             {
                 var page = await query.GetNextPageAsync();
 
-                foreach (var twin in page)
+                foreach (var twin in page.Where(x => x.DeviceId != null))
                 {
-                    if (twin.DeviceId != null)
+                    devAddrCacheInfos.Add(new DevAddrCacheInfo()
                     {
-                        if (!twin.Properties.Desired.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, this.logger, out DevAddr devAddr) &&
-                            !twin.Properties.Reported.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, this.logger, out devAddr))
-                        {
-                            continue;
-                        }
-
-                        devAddrCacheInfos.Add(new DevAddrCacheInfo()
-                        {
-                            DevAddr = devAddr,
-                            DevEUI = twin.DeviceId,
-                            GatewayId = twin.GatewayID,
-                            NwkSKey = twin.NwkSKey,
-                            LastUpdatedTwins = twin.LastUpdated
-                        });
-                    }
+                        DevAddr = twin.DevAddr,
+                        DevEUI = twin.DeviceId,
+                        GatewayId = twin.GatewayID,
+                        NwkSKey = twin.NwkSKey,
+                        LastUpdatedTwins = twin.LastUpdated
+                    });
                 }
             }
 

@@ -119,10 +119,10 @@ namespace LoRaWan.Tests.Integration
 
             mockRegistryManager
                 .Setup(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()))
-                .ReturnsAsync((string devAddr) =>
+                .ReturnsAsync((DevAddr devAddr) =>
                 {
                     hasMoreShouldReturn = true;
-                    currentDevAddrContext = currentDevices.Where(v => v.DevAddr.ToString() == devAddr.Split('\'')[1]).ToList();
+                    currentDevAddrContext = currentDevices.Where(v => v.DevAddr.Equals(devAddr)).ToList();
                     return cacheMissQueryMock.Object;
                 });
 

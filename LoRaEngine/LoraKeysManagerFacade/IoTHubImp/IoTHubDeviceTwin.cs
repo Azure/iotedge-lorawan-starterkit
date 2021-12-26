@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade.IoTHubImp
 {
     using System;
+    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Azure.Devices.Shared;
 
@@ -16,20 +17,14 @@ namespace LoraKeysManagerFacade.IoTHubImp
         {
             this.twin = twin;
 
-            var rawDevAddr = string.Empty;
-
-            if (this.twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
+            if (twin == null)
             {
-                rawDevAddr = this.twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value;
-            }
-            else if (this.twin.Properties.Reported.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
-            {
-                rawDevAddr = this.twin.Properties.Reported[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value;
+                throw new ArgumentNullException(nameof(twin));
             }
 
-            if (!DevAddr.TryParse(rawDevAddr, out devAddr))
+            if (!twin.Properties.Desired.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, null, out this.devAddr))
             {
-                throw new LoRaProcessingException($"Dev addr '{rawDevAddr}' is invalid.", LoRaProcessingErrorCode.InvalidFormat);
+                _ = twin.Properties.Reported.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, null, out this.devAddr);
             }
         }
 
