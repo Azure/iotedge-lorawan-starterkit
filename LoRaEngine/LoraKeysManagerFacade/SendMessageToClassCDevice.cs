@@ -6,7 +6,7 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Net;
     using System.Threading.Tasks;
-    using LoRaTools.CommonAPI;
+    using LoRaWan.NetworkServer;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
@@ -19,12 +19,18 @@ namespace LoraKeysManagerFacade
     public class SendMessageToClassCDevice
     {
         private readonly RegistryManager registryManager;
+        private readonly IClassCDeviceMessageSender classCDeviceMessageSender;
         private readonly IServiceClient serviceClient;
         private readonly ILogger log;
 
-        public SendMessageToClassCDevice(RegistryManager registryManager, IServiceClient serviceClient, ILogger<SendMessageToClassCDevice> log)
+        public SendMessageToClassCDevice(
+            RegistryManager registryManager,
+            IClassCDeviceMessageSender classCDeviceMessageSender,
+            IServiceClient serviceClient,
+            ILogger<SendMessageToClassCDevice> log)
         {
             this.registryManager = registryManager;
+            this.classCDeviceMessageSender = classCDeviceMessageSender;
             this.serviceClient = serviceClient;
             this.log = log;
         }
@@ -60,7 +66,7 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult("Missing request body");
             }
 
-            var message = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(requestBody);
+            var message = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(requestBody);
 
             if (message == null)
             {
@@ -76,7 +82,7 @@ namespace LoraKeysManagerFacade
             return await SendMessageToClassCDeviceAsync(devEUI, message);
         }
 
-        private async Task<IActionResult> SendMessageToClassCDeviceAsync(string devEUI, LoRaCloudToDeviceMessage message)
+        private async Task<IActionResult> SendMessageToClassCDeviceAsync(string devEUI, ReceivedLoRaCloudToDeviceMessage message)
         {
             var twin = await this.registryManager.GetTwinAsync(devEUI);
             if (twin == null)
@@ -103,56 +109,23 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult($"Gateway ID for device {devEUI} is unknown; cannot send a downstream message.");
             }
 
-            return await SendMessageViaDirectMethodAsync(gatewayID, devEUI, message);
+            return await SendAsync(/*gatewayID,*/ devEUI, message);
         }
 
-        private async Task<IActionResult> SendMessageViaDirectMethodAsync(
-            string preferredGatewayID,
+        private async Task<IActionResult> SendAsync(
+            //string preferredGatewayID,
             string devEUI,
-            LoRaCloudToDeviceMessage message)
+            ReceivedLoRaCloudToDeviceMessage message)
         {
-            try
+            if (await this.classCDeviceMessageSender.SendAsync(message))
             {
-                var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-                _ = method.SetPayloadJson(JsonConvert.SerializeObject(message));
-
-                var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
-                if (IsSuccessStatusCode(res.Status))
-                {
-                    this.log.LogInformation("Direct method call to {gatewayID} and {devEUI} succeeded with {statusCode}", preferredGatewayID, devEUI, res.Status);
-                    return new OkObjectResult(new SendCloudToDeviceMessageResult()
-                    {
-                        DevEUI = devEUI,
-                        MessageID = message.MessageId,
-                        ClassType = "C"
-                    });
-                }
-
-                this.log.LogError("Direct method call to {gatewayID} failed with {statusCode}. Response: {response}", preferredGatewayID, res.Status, res.GetPayloadAsJson());
-
-                return new ObjectResult(res.GetPayloadAsJson())
-                {
-                    StatusCode = res.Status,
-                };
+                return new OkObjectResult((int)HttpStatusCode.OK);
             }
-            catch (JsonSerializationException ex)
+
+            return new ObjectResult($"Failed to send message to devEUI {devEUI}")
             {
-                this.log.LogError(ex, "Failed to serialize the message to devEUI {devEUI}", devEUI);
-                return new ObjectResult("Failed to serialize message")
-                {
-                    StatusCode = (int)HttpStatusCode.InternalServerError
-                };
-            }
-            catch (IotHubException ex)
-            {
-                this.log.LogError(ex, "Failed to get device twin for devEUI {devEUI} from the IoT Hub", devEUI);
-                return new ObjectResult("Failed to get device twin from the IoT Hub")
-                {
-                    StatusCode = (int)HttpStatusCode.InternalServerError
-                };
-            }
+                StatusCode = (int)HttpStatusCode.InternalServerError
+            };
         }
-
-        private static bool IsSuccessStatusCode(int statusCode) => statusCode is >= 200 and <= 299;
     }
 }
