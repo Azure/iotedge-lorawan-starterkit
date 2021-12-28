@@ -25,6 +25,11 @@ namespace LoraKeysManagerFacade
             this.log = log;
         }
 
+        /// <summary>
+        /// Sends a C2D message to a class A device using a CloudToDevice message.
+        /// <param name="devEUI">The devEUI of the target device.</param>
+        /// <param name="c2dMessage">The message to send.</param>
+        /// </summary>
         internal async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
             try
@@ -58,6 +63,12 @@ namespace LoraKeysManagerFacade
             }
         }
 
+        /// <summary>
+        /// Sends a C2D message to a class C device via direct method.
+        /// <param name="preferredGatewayID">The id of the gateway to send the message to.</param>
+        /// <param name="devEUI">The devEUI of the target device.</param>
+        /// <param name="c2dMessage">The message to send.</param>
+        /// </summary>
         internal async Task<IActionResult> SendMessageViaDirectMethodAsync(
             string preferredGatewayID,
             string devEUI,
@@ -91,7 +102,7 @@ namespace LoraKeysManagerFacade
             catch (JsonSerializationException ex)
             {
 
-                this.log.LogError(ex, "Failed to serialize C2D message {c2dmessage} to {devEUI}", devEUI);
+                this.log.LogError(ex, "Failed to serialize C2D message {c2dmessage} to {devEUI}", c2dMessage, devEUI);
                 return new ObjectResult("Failed serialize C2D Message")
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError

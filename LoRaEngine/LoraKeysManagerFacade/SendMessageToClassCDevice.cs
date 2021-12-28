@@ -71,22 +71,22 @@ namespace LoraKeysManagerFacade
             }
 
             message.DevEUI = devEUI;
-            return await SendMessageToClassCDeviceAsync(devEUI, message);
+            return await SendMessageToClassCDeviceAsync(message);
         }
 
-        private async Task<IActionResult> SendMessageToClassCDeviceAsync(string devEUI, LoRaCloudToDeviceMessage message)
+        private async Task<IActionResult> SendMessageToClassCDeviceAsync(LoRaCloudToDeviceMessage message)
         {
-            var twin = await this.registryManager.GetTwinAsync(devEUI);
+            var twin = await this.registryManager.GetTwinAsync(message.DevEUI);
             if (twin == null)
             {
-                this.log.LogInformation($"Searching for {devEUI} returned 0 devices");
+                this.log.LogInformation($"Searching for {message.DevEUI} returned 0 devices");
                 return new NotFoundResult();
             }
 
             if (!string.Equals("c", twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_ClassType), StringComparison.OrdinalIgnoreCase))
             {
                 // Not a class C device
-                return new BadRequestObjectResult($"Provided device {devEUI} is not a class C device");
+                return new BadRequestObjectResult($"Provided device {message.DevEUI} is not a class C device");
             }
 
             var gatewayID = twin.Properties?.Reported?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_PreferredGatewayID);
@@ -98,10 +98,10 @@ namespace LoraKeysManagerFacade
             if (string.IsNullOrEmpty(gatewayID))
             {
                 // Gateway ID for the device is unknown
-                return new BadRequestObjectResult($"Gateway ID for device {devEUI} is unknown; cannot send a downstream message.");
+                return new BadRequestObjectResult($"Gateway ID for device {message.DevEUI} is unknown; cannot send a downstream message.");
             }
 
-            return await this.cloudToDeviceMessageSender.SendMessageViaDirectMethodAsync(gatewayID, devEUI, message);
+            return await this.cloudToDeviceMessageSender.SendMessageViaDirectMethodAsync(gatewayID, message.DevEUI, message);
         }
     }
 }
