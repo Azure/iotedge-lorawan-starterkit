@@ -32,10 +32,13 @@ namespace LoraKeysManagerFacade
         /// </summary>
         [FunctionName(nameof(RunSendMessageToClassCDevice))]
         public async Task<IActionResult> RunSendMessageToClassCDevice(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "classcdevicemessage/{devEUI}")] HttpRequest req,
-            string devEUI)
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "classcdevicemessage/{devEUI}")] string devEUI,
+            HttpRequest req)
         {
-            if (req is null) throw new ArgumentNullException(nameof(req));
+            if (req is null)
+            {
+                return new BadRequestObjectResult("Request with message content is required");
+            }
 
             try
             {

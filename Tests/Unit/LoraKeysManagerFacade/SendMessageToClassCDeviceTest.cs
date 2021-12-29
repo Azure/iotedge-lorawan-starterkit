@@ -35,15 +35,22 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [InlineData("")]
         public async Task When_DevEUI_Is_Missing_Should_Return_BadRequest(string devEUI)
         {
-            var message = new LoRaCloudToDeviceMessage()
-            {
-                DevEUI = devEUI,
-            };
+            var message = new LoRaCloudToDeviceMessage();
             var request = HttpRequestHelper.CreateRequest(JsonConvert.SerializeObject(message));
 
-            var result = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice(request, devEUI);
+            var result = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice(devEUI, request);
 
             Assert.IsType<BadRequestObjectResult>(result);
+            this.serviceClient.VerifyAll();
+            this.registryManager.VerifyAll();
+        }
+
+        [Fact]
+        public async Task When_Message_Is_Missing_Should_Return_BadRequest()
+        {
+            var actual = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice("0123456789", null);
+
+            Assert.IsType<BadRequestObjectResult>(actual);
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
         }
