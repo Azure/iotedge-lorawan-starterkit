@@ -70,6 +70,11 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(errorMessage);
             }
 
+            if (message.RawPayload == null && message.Payload == null)
+            {
+                return new BadRequestObjectResult("Payload is required");
+            }
+
             message.DevEUI = devEUI;
             return await SendMessageToClassCDeviceAsync(message);
         }
