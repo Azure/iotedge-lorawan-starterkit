@@ -30,8 +30,8 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Entry point function for sending a message to a class C device.
         /// </summary>
-        [FunctionName("SendMessageToClassCDevice")]
-        public async Task<IActionResult> Run(
+        [FunctionName(nameof(RunSendMessageToClassCDevice))]
+        public async Task<IActionResult> RunSendMessageToClassCDevice(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "classcdevicemessage/{devEUI}")] HttpRequest req,
             string devEUI)
         {
@@ -79,8 +79,10 @@ namespace LoraKeysManagerFacade
             return await SendMessageToClassCDeviceAsync(message);
         }
 
-        private async Task<IActionResult> SendMessageToClassCDeviceAsync(LoRaCloudToDeviceMessage message)
+        public async Task<IActionResult> SendMessageToClassCDeviceAsync(LoRaCloudToDeviceMessage message)
         {
+            if (message is null) throw new ArgumentNullException(nameof(message));
+
             var twin = await this.registryManager.GetTwinAsync(message.DevEUI);
             if (twin == null)
             {
