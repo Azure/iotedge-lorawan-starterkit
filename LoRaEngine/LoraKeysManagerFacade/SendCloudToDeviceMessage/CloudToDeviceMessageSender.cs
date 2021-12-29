@@ -19,7 +19,7 @@ namespace LoraKeysManagerFacade
         private readonly IServiceClient serviceClient;
         private readonly ILogger log;
 
-        public CloudToDeviceMessageSender(IServiceClient serviceClient, ILogger log)
+        internal CloudToDeviceMessageSender(IServiceClient serviceClient, ILogger log)
         {
             this.serviceClient = serviceClient;
             this.log = log;
