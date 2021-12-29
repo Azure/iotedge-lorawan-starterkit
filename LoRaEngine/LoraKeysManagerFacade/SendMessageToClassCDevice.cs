@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using System.IO;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
@@ -78,7 +79,11 @@ namespace LoraKeysManagerFacade
 
             }
             */
-            var requestBody = await req.ReadAsStringAsync();
+
+            using var reader = new StreamReader(req.Body);
+            _ = reader.BaseStream.Seek(0, SeekOrigin.Begin);
+            var requestBody = await reader.ReadToEndAsync();
+
             if (string.IsNullOrEmpty(requestBody))
             {
                 return new BadRequestObjectResult("Missing request body");

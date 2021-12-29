@@ -3,13 +3,9 @@
 
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Text;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools.CommonAPI;
-    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -30,6 +26,18 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.sendMessageToClassCDevice = new SendMessageToClassCDevice(this.registryManager.Object, this.serviceClient.Object, new NullLogger<SendMessageToClassCDevice>());
         }
 
+        [Fact]
+        public async Task When_Request_Is_Missing_Should_Return_BadRequest()
+        {
+            var result = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice("0123456789", null);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Request with message content is required", ((BadRequestObjectResult)result).Value.ToString());
+
+            this.serviceClient.VerifyAll();
+            this.registryManager.VerifyAll();
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -41,16 +49,32 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var result = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice(devEUI, request);
 
             Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Contains("Invalid DevEUI", ((BadRequestObjectResult)result).Value.ToString(), System.StringComparison.Ordinal);
+
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
         }
 
         [Fact]
-        public async Task When_Message_Is_Missing_Should_Return_BadRequest()
+        public async Task When_Message_Is_Invalid_Should_Return_BadRequest()
         {
-            var actual = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice("0123456789", null);
+            var devEUI = "B827EBFFFFF30000";
 
-            Assert.IsType<BadRequestObjectResult>(actual);
+            // FPort indicates message contains MAC commands but it has payload instead
+            var message = new LoRaCloudToDeviceMessage()
+            {
+                DevEUI = devEUI,
+                Fport = FramePort.MacCommand,
+                Payload = "hello"
+            };
+            var request = HttpRequestHelper.CreateRequest(JsonConvert.SerializeObject(message));
+
+            var result = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice(devEUI, request);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Contains("Invalid MAC command fport usage in cloud to device message",
+                ((BadRequestObjectResult)result).Value.ToString(), System.StringComparison.OrdinalIgnoreCase);
+
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
         }
