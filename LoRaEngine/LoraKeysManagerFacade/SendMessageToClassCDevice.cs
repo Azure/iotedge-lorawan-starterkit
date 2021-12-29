@@ -44,14 +44,37 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
-                this.log.LogError(ex, "Invalid request version");
                 return new BadRequestObjectResult(ex.Message);
             }
             catch (ArgumentException ex)
             {
                 return new BadRequestObjectResult(ex.Message);
             }
+            /*
+            // parse query parameters
+            var queryStrings = req.GetQueryParameterDictionary();
 
+            // required arguments
+            if (!queryStrings.TryGetValue("fport", out var fport))
+            {
+                return new BadRequestObjectResult("Fport is required");
+            }
+
+            if (!queryStrings.TryGetValue("payload", out var payload))
+            {
+                if (!queryStrings.TryGetValue("rawPayload", out payload))
+                {
+                    return new BadRequestObjectResult("Payload is required");
+                }
+            }
+
+            var message = new LoRaCloudToDeviceMessage()
+            {
+                DevEUI = devEUI,
+                Fport = (FramePort)fport,
+
+            }
+            */
             var requestBody = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(requestBody))
             {
