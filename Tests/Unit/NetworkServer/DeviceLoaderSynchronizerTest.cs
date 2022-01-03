@@ -37,10 +37,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             const string devAddr = "039090";
 
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
-
             var apiService = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             apiService.Setup(x => x.SearchByDevAddrAsync(It.IsNotNull<string>()))
                 .Throws(new InvalidOperationException());
@@ -74,7 +70,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var devAddr = simulatedDevice.DevAddr;
             var payload1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1");
-            payload1.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var searchMock = apiService.Setup(x => x.SearchByDevAddrAsync(devAddr));
@@ -108,7 +103,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr, req1.ProcessingFailedReason);
 
             var payload2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2");
-            payload2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
             using var req2 = WaitableLoRaRequest.Create(payload2);
             target.Queue(req2);
 
@@ -125,7 +119,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             const string gatewayId = "a_different_one";
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: gatewayId));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "pk") {
@@ -167,7 +160,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: "a_different_one"));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "pk")
@@ -243,8 +235,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             _ = target.LoadAsync();
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice.AppSKey, "00000000000000000000000000EEAAFF");
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", appSKey: simulatedDevice.AppSKey, nwkSKey: "00000000000000000000000000EEAAFF");
 
             using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);
@@ -331,7 +322,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             VerifyFailedReason(loraRequestMock, reason);
         }
 
-        private static Mock<LoRaDeviceCache> CreateDeviceCacheMock() => new Mock<LoRaDeviceCache>(new LoRaDeviceCacheOptions { ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration(), NullLogger<LoRaDeviceCache>.Instance, TestMeter.Instance);
+        private static Mock<LoRaDeviceCache> CreateDeviceCacheMock() => new Mock<LoRaDeviceCache>(new LoRaDeviceCacheOptions { ValidationInterval = TimeSpan.FromMilliseconds(int.MaxValue) }, new NetworkServerConfiguration(), NullLogger<LoRaDeviceCache>.Instance, TestMeter.Instance);
 
         private static void VerifyFailedReason(Mock<LoRaRequest> request, LoRaDeviceRequestFailedReason reason) =>
             request.Verify(x => x.NotifyFailed(reason, It.IsAny<Exception>()), Times.Once);

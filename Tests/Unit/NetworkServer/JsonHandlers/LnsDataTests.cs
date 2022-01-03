@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using LoRaWan.Tests.Common;
     using Xunit;
+    using static LoRaWan.DataRateIndex;
 
     public class LnsDataTests
     {
@@ -58,13 +59,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             var updf = LnsData.UpstreamDataFrameReader.Read(JsonUtil.Strictify(json));
             Assert.Equal(new DevAddr(58772467), updf.DevAddr);
             Assert.Equal(string.Empty, updf.Options);
-            Assert.Equal(new FramePort(8), updf.Port);
+            Assert.Equal(FramePorts.App8, updf.Port);
             Assert.Equal(FrameControlFlags.None, updf.FrameControlFlags);
             Assert.Equal(164, updf.Counter);
             Assert.Equal("5ABBBA", updf.Payload);
             Assert.Equal(new MacHeader(128), updf.MacHeader);
             Assert.Equal(new Mic(unchecked((uint)-1943282916)), updf.Mic);
-            Assert.Equal(new DataRate(4), updf.RadioMetadata.DataRate);
+            Assert.Equal(DR4, updf.RadioMetadata.DataRate);
             Assert.Equal(new Hertz(868100000), updf.RadioMetadata.Frequency);
             Assert.Equal((ulong)40250921680313459, updf.RadioMetadata.UpInfo.Xtime);
             Assert.Equal((uint)0, updf.RadioMetadata.UpInfo.AntennaPreference);
@@ -107,7 +108,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Equal(new DevEui(9594850698661729950), jreq.DevEui);
             Assert.Equal(new DevNonce(41675), jreq.DevNonce);
             Assert.Equal(new Mic(1528855177), jreq.Mic);
-            Assert.Equal(new DataRate(4), jreq.RadioMetadata.DataRate);
+            Assert.Equal(DR4, jreq.RadioMetadata.DataRate);
             Assert.Equal(new Hertz(868100000), jreq.RadioMetadata.Frequency);
             Assert.Equal((ulong)40250921680313459, jreq.RadioMetadata.UpInfo.Xtime);
             Assert.Equal((uint)0, jreq.RadioMetadata.UpInfo.AntennaPreference);
@@ -133,26 +134,26 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         }
 
         [Theory]
-        [InlineData(@"{'DR': 0}", 0)]
-        [InlineData(@"{'DR': 1}", 1)]
-        [InlineData(@"{'DR': 2}", 2)]
-        [InlineData(@"{'DR': 3}", 3)]
-        [InlineData(@"{'DR': 4}", 4)]
-        [InlineData(@"{'DR': 5}", 5)]
-        [InlineData(@"{'DR': 6}", 6)]
-        [InlineData(@"{'DR': 7}", 7)]
-        [InlineData(@"{'DR': 8}", 8)]
-        [InlineData(@"{'DR': 9}", 9)]
-        [InlineData(@"{'DR': 10}", 10)]
-        [InlineData(@"{'DR': 11}", 11)]
-        [InlineData(@"{'DR': 12}", 12)]
-        [InlineData(@"{'DR': 13}", 13)]
-        [InlineData(@"{'DR': 14}", 14)]
-        [InlineData(@"{'DR': 15}", 15)]
-        internal void RadioMetadata_DataRateProperty_CanReturnProperDataRate(string json, byte expectedDataRate)
+        [InlineData(@"{'DR': 0}", DR0)]
+        [InlineData(@"{'DR': 1}", DR1)]
+        [InlineData(@"{'DR': 2}", DR2)]
+        [InlineData(@"{'DR': 3}", DR3)]
+        [InlineData(@"{'DR': 4}", DR4)]
+        [InlineData(@"{'DR': 5}", DR5)]
+        [InlineData(@"{'DR': 6}", DR6)]
+        [InlineData(@"{'DR': 7}", DR7)]
+        [InlineData(@"{'DR': 8}", DR8)]
+        [InlineData(@"{'DR': 9}", DR9)]
+        [InlineData(@"{'DR': 10}", DR10)]
+        [InlineData(@"{'DR': 11}", DR11)]
+        [InlineData(@"{'DR': 12}", DR12)]
+        [InlineData(@"{'DR': 13}", DR13)]
+        [InlineData(@"{'DR': 14}", DR14)]
+        [InlineData(@"{'DR': 15}", DR15)]
+        internal void RadioMetadata_DataRateProperty_CanReturnProperDataRate(string json, DataRateIndex expectedDataRate)
         {
             var actualDataRate = JsonReader.Object(LnsData.RadioMetadataProperties.DataRate).Read(JsonUtil.Strictify(json));
-            Assert.Equal(new DataRate(expectedDataRate), actualDataRate);
+            Assert.Equal(expectedDataRate, actualDataRate);
         }
 
 

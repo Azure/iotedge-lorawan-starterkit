@@ -10,6 +10,14 @@ namespace LoRaTools.LoRaMessage
 
     public class LoRaPayloadDataLns : LoRaPayloadData
     {
+        public LoRaPayloadDataLns(DevAddr devAddr,
+                                  MacHeader macHeader,
+                                  ushort counter,
+                                  string options,
+                                  string payload,
+                                  Mic mic)
+            : this(devAddr, macHeader, default, counter, options, payload, default, mic, default) { }
+
         public LoRaPayloadDataLns(DevAddr devAddress,
                                   MacHeader macHeader,
                                   FrameControlFlags fctrlFlags,
@@ -73,8 +81,7 @@ namespace LoRaTools.LoRaMessage
             _ = Hexadecimal.TryParse(payload, Frmpayload.Span);
 
             // Fport can be empty if no commands
-            Fport = new byte[FramePort.Size];
-            _ = port.Write(Fport.Span);
+            Fport = port;
 
             Mic = new byte[LoRaWan.Mic.Size];
             _ = mic.Write(Mic.Span);

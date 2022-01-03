@@ -3,12 +3,11 @@
 
 namespace LoRaTools.Regions
 {
-    using System;
     using System.Collections.Generic;
     using System.Configuration;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
+    using static LoRaWan.DataRateIndex;
     using static LoRaWan.Metric;
 
     public class RegionAS923 : Region
@@ -33,20 +32,20 @@ namespace LoRaTools.Regions
             FrequencyOffset = 0;
 
             // Values assuming FOpts param is used
-            DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
-            DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 123));
-            DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
-            DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 230));
-            DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 230));
-            DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
-            DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); // FSK 50
+            DRtoConfiguration.Add(DR0, (LoRaDataRate.SF12BW125, MaxPayloadSize: 59));
+            DRtoConfiguration.Add(DR1, (LoRaDataRate.SF11BW125, MaxPayloadSize: 59));
+            DRtoConfiguration.Add(DR2, (LoRaDataRate.SF10BW125, MaxPayloadSize: 123));
+            DRtoConfiguration.Add(DR3, (LoRaDataRate.SF9BW125, MaxPayloadSize: 123));
+            DRtoConfiguration.Add(DR4, (LoRaDataRate.SF8BW125, MaxPayloadSize: 230));
+            DRtoConfiguration.Add(DR5, (LoRaDataRate.SF7BW125, MaxPayloadSize: 230));
+            DRtoConfiguration.Add(DR6, (LoRaDataRate.SF7BW250, MaxPayloadSize: 230));
+            DRtoConfiguration.Add(DR7, (FskDataRate.Fsk50000, MaxPayloadSize: 230));
 
             if (useDwellTimeLimit)
             {
-                DRtoConfiguration[2] = (configuration: "SF10BW125", maxPyldSize: 19);
-                DRtoConfiguration[3] = (configuration: "SF10BW125", maxPyldSize: 61);
-                DRtoConfiguration[4] = (configuration: "SF10BW125", maxPyldSize: 133);
+                DRtoConfiguration[DR2] = (LoRaDataRate.SF10BW125, MaxPayloadSize: 19);
+                DRtoConfiguration[DR3] = (LoRaDataRate.SF10BW125, MaxPayloadSize: 61);
+                DRtoConfiguration[DR4] = (LoRaDataRate.SF10BW125, MaxPayloadSize: 133);
             }
 
             TXPowertoMaxEIRP.Add(0, 16);
@@ -59,42 +58,42 @@ namespace LoRaTools.Regions
             TXPowertoMaxEIRP.Add(7, 2);
 
             RX1DROffsetTable = useDwellTimeLimit
-                ? new int[8][]
+                ? new[]
                 {
-                    new int[] { 2, 2, 2, 2, 2, 2, 2, 2 },
-                    new int[] { 2, 2, 2, 2, 2, 2, 2, 3 },
-                    new int[] { 2, 2, 2, 2, 2, 2, 3, 4 },
-                    new int[] { 3, 2, 2, 2, 2, 2, 4, 5 },
-                    new int[] { 4, 3, 2, 2, 2, 2, 5, 6 },
-                    new int[] { 5, 4, 3, 2, 2, 2, 6, 7 },
-                    new int[] { 6, 5, 4, 3, 2, 2, 7, 7 },
-                    new int[] { 7, 6, 5, 4, 3, 2, 7, 7 },
+                    new[] { DR2, DR2, DR2, DR2, DR2, DR2, DR2, DR2 },
+                    new[] { DR2, DR2, DR2, DR2, DR2, DR2, DR2, DR3 },
+                    new[] { DR2, DR2, DR2, DR2, DR2, DR2, DR3, DR4 },
+                    new[] { DR3, DR2, DR2, DR2, DR2, DR2, DR4, DR5 },
+                    new[] { DR4, DR3, DR2, DR2, DR2, DR2, DR5, DR6 },
+                    new[] { DR5, DR4, DR3, DR2, DR2, DR2, DR6, DR7 },
+                    new[] { DR6, DR5, DR4, DR3, DR2, DR2, DR7, DR7 },
+                    new[] { DR7, DR6, DR5, DR4, DR3, DR2, DR7, DR7 },
                 }
-                : new int[8][]
+                : new[]
                 {
-                    new int[] { 0, 0, 0, 0, 0, 0, 1, 2 },
-                    new int[] { 1, 0, 0, 0, 0, 0, 2, 3 },
-                    new int[] { 2, 1, 0, 0, 0, 0, 3, 4 },
-                    new int[] { 3, 2, 1, 0, 0, 0, 4, 5 },
-                    new int[] { 4, 3, 2, 1, 0, 0, 5, 6 },
-                    new int[] { 5, 4, 3, 2, 1, 0, 6, 7 },
-                    new int[] { 6, 5, 4, 3, 2, 1, 7, 7 },
-                    new int[] { 7, 6, 5, 4, 3, 2, 7, 7 },
+                    new[] { DR0, DR0, DR0, DR0, DR0, DR0, DR1, DR2 },
+                    new[] { DR1, DR0, DR0, DR0, DR0, DR0, DR2, DR3 },
+                    new[] { DR2, DR1, DR0, DR0, DR0, DR0, DR3, DR4 },
+                    new[] { DR3, DR2, DR1, DR0, DR0, DR0, DR4, DR5 },
+                    new[] { DR4, DR3, DR2, DR1, DR0, DR0, DR5, DR6 },
+                    new[] { DR5, DR4, DR3, DR2, DR1, DR0, DR6, DR7 },
+                    new[] { DR6, DR5, DR4, DR3, DR2, DR1, DR7, DR7 },
+                    new[] { DR7, DR6, DR5, DR4, DR3, DR2, DR7, DR7 },
                 };
 
-            var validDatarates = new HashSet<string>()
+            var validDatarates = new HashSet<DataRate>
             {
-                "SF12BW125",
-                "SF11BW125",
-                "SF10BW125",
-                "SF9BW125",
-                "SF8BW125",
-                "SF7BW125",
-                "SF7BW250",
-                "50", // FSK 50
+                LoRaDataRate.SF12BW125,
+                LoRaDataRate.SF11BW125,
+                LoRaDataRate.SF10BW125,
+                LoRaDataRate.SF9BW125,
+                LoRaDataRate.SF8BW125,
+                LoRaDataRate.SF7BW125,
+                LoRaDataRate.SF7BW250,
+                FskDataRate.Fsk50000,
             };
 
-            MaxADRDataRate = 7;
+            MaxADRDataRate = DR7;
             RegionLimits = new RegionLimits((Min: Mega(915), Max: Mega(928)), validDatarates, validDatarates, 0, 0);
         }
 
@@ -119,28 +118,10 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region CN470.
         /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo)
-        {
-            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
-
-            if (!IsValidUpstreamRxpk(upstreamChannel))
-                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
-
-            // Use the same frequency as the upstream.
-            frequency = upstreamChannel.Freq;
-            return true;
-        }
-
-        /// <summary>
-        /// Logic to get the correct downstream transmission frequency for region CN470.
-        /// </summary>
         /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, ushort? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
@@ -155,6 +136,6 @@ namespace LoRaTools.Regions
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
         public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
-            new RX2ReceiveWindow(Hertz.Mega(923.2) + FrequencyOffset, 2);
+            new RX2ReceiveWindow(Hertz.Mega(923.2) + FrequencyOffset, DR2);
     }
 }

@@ -8,20 +8,16 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Buffers.Binary;
     using System.Security.Cryptography;
-    using System.Text;
-    using BasicsStation;
+    using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
-    internal sealed class ConcentratorDeduplication<T> :
-        IConcentratorDeduplication<T>, IDisposable
-        where T : class
+    public sealed class ConcentratorDeduplication : IConcentratorDeduplication
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
-
         private readonly IMemoryCache cache;
-        private readonly WebSocketWriterRegistry<StationEui, string> socketRegistry;
-        private readonly ILogger<IConcentratorDeduplication<T>> logger;
+        private readonly ILogger<IConcentratorDeduplication> logger;
+        private static readonly object cacheLock = new object();
 
         [ThreadStatic]
         private static SHA256? sha256;
@@ -30,96 +26,108 @@ namespace LoRaWan.NetworkServer
 
         public ConcentratorDeduplication(
             IMemoryCache cache,
-            WebSocketWriterRegistry<StationEui, string> socketRegistry,
-            ILogger<IConcentratorDeduplication<T>> logger)
+            ILogger<IConcentratorDeduplication> logger)
         {
             this.cache = cache;
-            this.socketRegistry = socketRegistry;
             this.logger = logger;
         }
 
-        public bool ShouldDrop(T frame, StationEui stationEui)
+        public ConcentratorDeduplicationResult CheckDuplicateJoin(LoRaRequest loRaRequest)
         {
-            if (frame == null) throw new ArgumentNullException(nameof(frame));
+            _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
+            var key = CreateCacheKey((LoRaPayloadJoinRequest)loRaRequest.Payload);
+            if (EnsureFirstMessageInCache(key, loRaRequest, out _))
+                return ConcentratorDeduplicationResult.NotDuplicate;
 
-            var key = CreateCacheKey(frame);
+            var result = ConcentratorDeduplicationResult.Duplicate;
 
-            StationEui previousStation;
-            lock (this.cache)
+            this.logger.LogDebug($"Join received from station {loRaRequest.StationEui}. Marked as {result} {Constants.MessageAlreadyEncountered}.");
+            return result;
+        }
+
+        public ConcentratorDeduplicationResult CheckDuplicateData(LoRaRequest loRaRequest, LoRaDevice loRaDevice)
+        {
+            _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+
+            var key = CreateCacheKey((LoRaPayloadData)loRaRequest.Payload);
+            if (EnsureFirstMessageInCache(key, loRaRequest, out var previousStation))
+                return ConcentratorDeduplicationResult.NotDuplicate;
+
+            var result = ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy;
+
+            if (previousStation == loRaRequest.StationEui)
+            {
+                result = ConcentratorDeduplicationResult.DuplicateDueToResubmission;
+            }
+            else if (loRaDevice.Deduplication == DeduplicationMode.Drop)
+            {
+                result = ConcentratorDeduplicationResult.Duplicate;
+            }
+
+            this.logger.LogDebug($"Data message received from station {loRaRequest.StationEui}. Marked as {result} {Constants.MessageAlreadyEncountered}.");
+            return result;
+        }
+
+        private bool EnsureFirstMessageInCache(string key, LoRaRequest loRaRequest, out StationEui previousStation)
+        {
+            var stationEui = loRaRequest.StationEui;
+
+            lock (cacheLock)
             {
                 if (!this.cache.TryGetValue(key, out previousStation))
                 {
-                    AddToCache(key, stationEui);
-                    return false;
+                    _ = this.cache.Set(key, stationEui, new MemoryCacheEntryOptions()
+                    {
+                        SlidingExpiration = DefaultExpiration
+                    });
+                    return true;
                 }
             }
 
-            if (previousStation == stationEui)
-            {
-                // considered as a resubmit
-                this.logger.LogDebug("Message received from the same EUI {StationEui} as before, will not drop.", stationEui);
-                return false;
-            }
-
-            // received from a different station
-            if (this.socketRegistry.IsSocketWriterOpen(previousStation))
-            {
-                this.logger.LogInformation($"{Constants.DuplicateMessageFromAnotherStationMsg} with EUI {stationEui}, will drop.");
-                return true;
-            }
-
-            this.logger.LogInformation("Connectivity to previous station with EUI {PreviousStation}, was lost, will not drop and will use station with EUI {StationEui} from now onwards.",
-                                       previousStation, stationEui);
-            AddToCache(key, stationEui);
             return false;
         }
 
-        internal static string CreateCacheKey(T frame)
-            => frame switch
-            {
-                UpstreamDataFrame asDataFrame => CreateCacheKeyCore(asDataFrame),
-                JoinRequestFrame asJoinRequestFrame => CreateCacheKeyCore(asJoinRequestFrame),
-                _ => throw new ArgumentException($"{frame} with invalid type.")
-            };
-
-        private static string CreateCacheKeyCore(UpstreamDataFrame updf)
+        internal static string CreateCacheKey(LoRaPayloadData payload)
         {
-            var totalBufferLength = DevAddr.Size + Mic.Size + updf.Payload.Length + sizeof(ushort);
+            var totalBufferLength = payload.DevAddr.Length + payload.Mic.Length + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
-            var head = buffer; // keeps a view pointing at the start of the buffer
-            buffer = updf.DevAddr.Write(buffer);
-            buffer = updf.Mic.Write(buffer);
-            _ = Encoding.UTF8.GetBytes(updf.Payload, buffer);
-            BinaryPrimitives.WriteUInt16LittleEndian(buffer[updf.Payload.Length..], updf.Counter);
 
-            var key = Sha256.ComputeHash(head.ToArray());
+            var index = 0;
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer, BinaryPrimitives.ReadUInt32LittleEndian(payload.DevAddr.Span));
+            index += payload.DevAddr.Length;
+
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt32LittleEndian(payload.Mic.Span));
+            index += payload.Mic.Length;
+
+            payload.RawMessage?.CopyTo(buffer[index..]);
+            index += payload.RawMessage?.Length ?? 0;
+
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
+
+            var key = Sha256.ComputeHash(buffer.ToArray());
 
             return BitConverter.ToString(key);
         }
 
-        private static string CreateCacheKeyCore(JoinRequestFrame joinReq)
+        internal static string CreateCacheKey(LoRaPayloadJoinRequest payload)
         {
+            var joinEui = JoinEui.Read(payload.AppEUI.Span);
+            var devEui = DevEui.Read(payload.DevEUI.Span);
+
             var totalBufferLength = JoinEui.Size + DevEui.Size + DevNonce.Size;
             Span<byte> buffer = stackalloc byte[totalBufferLength];
             var head = buffer; // keeps a view pointing at the start of the buffer
-            buffer = joinReq.JoinEui.Write(buffer);
-            buffer = joinReq.DevEui.Write(buffer);
-#pragma warning disable IDE0058
-            // assigning to a discard results in compilation error CS8347
-            joinReq.DevNonce.Write(buffer);
-#pragma warning restore
+
+            buffer = joinEui.Write(buffer);
+            buffer = devEui.Write(buffer);
+
+            var devNonce = payload.DevNonce;
+            _ = devNonce.Write(buffer);
 
             var key = Sha256.ComputeHash(head.ToArray());
 
             return BitConverter.ToString(key);
         }
-
-        private void AddToCache(string key, StationEui stationEui)
-            => this.cache.Set(key, stationEui, new MemoryCacheEntryOptions()
-            {
-                SlidingExpiration = DefaultExpiration
-            });
-
-        public void Dispose() => this.cache.Dispose();
     }
 }

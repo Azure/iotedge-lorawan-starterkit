@@ -256,14 +256,13 @@ namespace LoRaWan.Tests.Common
         /// Check for The timing between an upstream message and a downstream one.
         /// The method stop at first occurence found and is not expected to perform against multiple DS/US messages.
         /// </summary>
-        public async Task CheckAnswerTimingAsync(uint rxDelay, bool isSecondWindow, string gatewayId)
+        public async Task CheckAnswerTimingAsync(uint rxDelay, string gatewayId)
         {
-            var upstreamMessageTimingResult = await TryFindMessageTimeAsync("rawdata", gatewayId, true);
-            var downstreamMessageTimingResult = await TryFindMessageTimeAsync("txpk", gatewayId, false);
+            var downstreamMessageTimingResult = await TryFindMessageTimeAsync("LnsRxDelay", gatewayId, false);
 
-            if (upstreamMessageTimingResult.Success && upstreamMessageTimingResult.Success)
+            if (downstreamMessageTimingResult.Success)
             {
-                Assert.Equal(rxDelay + (isSecondWindow ? 1000000 : 0), downstreamMessageTimingResult.Result - upstreamMessageTimingResult.Result);
+                Assert.Equal(rxDelay, downstreamMessageTimingResult.Result);
             }
             else
             {
@@ -276,7 +275,7 @@ namespace LoRaWan.Tests.Common
         /// </summary>
         private async Task<FindTimeResult> TryFindMessageTimeAsync(string message, string sourceIdFilter, bool isUpstream = false)
         {
-            const string token = @"""tmst"":";
+            const string token = @"""LnsRxDelay"":";
             SearchLogResult log;
             if (isUpstream)
             {

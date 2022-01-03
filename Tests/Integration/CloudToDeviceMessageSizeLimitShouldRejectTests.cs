@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -35,7 +34,7 @@ namespace LoRaWan.Tests.Integration
 
             var loraDevice = CreateLoRaDevice(simulatedDevice);
 
-            var rxpk = CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
+            var (radioMetaData, loraPayload) = CreateUpstreamMessage(isConfirmed, hasMacInUpstream, LoRaDataRate.Parse(datr), simulatedDevice);
 
             if (!hasMacInUpstream)
             {
@@ -43,24 +42,22 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(true);
             }
 
-            var euRegion = RegionManager.EU868;
+            var region = TestUtils.TestRegion;
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
-            var expectedDownlinkDatr = datr;
+            var expectedDownlinkDatr = region.GetDataRateIndex(LoRaDataRate.Parse(datr));
 
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
+            var c2dPayloadSize = region.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
 
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessagePayload,
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             if (hasMacInC2D)
@@ -86,7 +83,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.Zero);
+            using var request = CreateWaitableRequest(radioMetaData, loraPayload, constantElapsedTime: TimeSpan.Zero);
             messageProcessor.DispatchRequest(request);
 
             // Expectations
@@ -101,10 +98,12 @@ namespace LoRaWan.Tests.Integration
             if (shouldHaveADownlink)
             {
                 Assert.NotNull(request.ResponseDownlink);
-                Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
+
+                // TODO CHANGE THIS WHEN MOVING RXPK in #1086
+                // Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
 
                 var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-                var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+                var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
                 payloadDataDown.PerformEncryption(loraDevice.AppSKey);
 
                 Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
@@ -113,7 +112,7 @@ namespace LoRaWan.Tests.Integration
                 if (hasMacInUpstream)
                 {
                     Assert.Equal(new LinkCheckAnswer(1, 1).Length, payloadDataDown.Frmpayload.Length);
-                    Assert.Equal(0, payloadDataDown.FPortValue);
+                    Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
                 }
             }
             else

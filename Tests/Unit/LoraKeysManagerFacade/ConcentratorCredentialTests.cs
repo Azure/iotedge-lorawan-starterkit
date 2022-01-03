@@ -13,7 +13,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using Azure.Storage.Blobs.Models;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools.CommonAPI;
-    using LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;

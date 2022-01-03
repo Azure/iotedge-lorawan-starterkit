@@ -11,7 +11,7 @@ on: # rebuild any PRs and main branch changes
         description: 'Run E2E tests only'
         default: false
       TestsToRun:
-        default: '[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest]'
+        default: '[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest]'
         description: 'tests to run'
       TxPower:
         description: 'TXPower value to use in E2E tests'
@@ -55,10 +55,10 @@ jobs:
           echo "::set-output name=E2ETestsToRun::${{ github.event.inputs.TestsToRun }}"
         elif [ ${{ github.event_name }} == 'pull_request' ]; then
           echo "Set up for pull request"
-          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest]"
+          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest]"
         else
           echo "Set up for cron trigger"
-          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest]"
+          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest]"
         fi
 
     - id: check-if-run
@@ -86,6 +86,23 @@ jobs:
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
       CertRemotePath: "/var/lorastarterkit/certs"
+  
+  power_on_azure_vm:
+    name: Power ON EFLOW
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Power ON Azure VM
+        uses: ./.github/actions/power-azure-vm
+        with:
+          AZURE_VM_NAME: eflow
+          AZURE_RG_NAME: lorae2etests
+          POWER_SWITCH: true
+          AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
+          AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
@@ -207,12 +224,20 @@ jobs:
         RPI_USERNAME: ${{ secrets.RPI_USERNAME }}
         RPI_HOST: ${{ secrets.RPI_HOST }}
         CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
+        CUPS_STATION_EUI: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
+        CUPS_CREDENTIALS_BLOB_URL: ${{ secrets.CUPSCREDENTIALSBLOBURL }}
       run: |
         chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
-        # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location
+        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh client $CUPS_STATION_EUI
+        # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location in local ci
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/tc.trust
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/cups.trust
+        cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.crt $CERT_REMOTE_PATH/cups.crt
+        cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.key $CERT_REMOTE_PATH/cups.key
+        curl -X PUT -T ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.bundle -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_CREDENTIALS_BLOB_URL"
+        echo "::set-output name=clientbundlecrc::$(cat ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.bundle | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo)"
+        echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
@@ -225,6 +250,8 @@ jobs:
         echo "::set-output name=itestupip::$(ip address list tun0 | grep -Po 'inet \K[\d.]+')"
     outputs:
       itestupip: ${{ steps.get_self_hosted_runner_ip_address.outputs.itestupip }}
+      clientthumbprint: ${{ steps.generate_step.outputs.clientthumbprint }}
+      clientbundlecrc: ${{ steps.generate_step.outputs.clientbundlecrc }}
 
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
@@ -347,7 +374,7 @@ jobs:
           iot_edge_deployment_id: '${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}'
 
 # Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
-  e2e_tests_job :
+  e2e_tests_job:
     timeout-minutes: 150
     name: Run E2E Tests
     environment:
@@ -360,6 +387,7 @@ jobs:
       - deploy_facade_function
       - deploy_eflow_concentrator_iot_edge
       - env_var
+      - certificates_job
     runs-on: [ self-hosted, x64 ]
     env:
       E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
@@ -380,6 +408,9 @@ jobs:
       E2ETESTS_SharedCupsEndpoint: ${{ secrets.SHAREDCUPSENDPOINT }}
       E2ETESTS_DefaultBasicStationEui: ${{ secrets.DEFAULTCISTATIONEUI }}
       E2ETESTS_RadioDev: ${{ secrets.CIBASICSTATIONRADIODEV }}
+      E2ETESTS_CupsBasicStationEui: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
+      E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
+      E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
       E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 
@@ -474,11 +505,35 @@ jobs:
       with:
         test_name: 'MultiConcentratorTest'
 
+    - name:  Runs CUPS E2E tests
+      if: always() && contains(env.TestsToRun, 'CupsTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'CupsTest'))
+      uses: ./.github/actions/rune2etest
+      id: e2e_tests_cupstest
+      with:
+        test_name: 'CupsTest'
+
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
       if: always()
       with:
         name: e2e-test-results
         path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
+  
+  power_off_azure_vm:
+    name: Power OFF EFLOW
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      - e2e_tests_job
+    steps:
+      - uses: actions/checkout@v2
 
-
+      - name: Power OFF Azure VM
+        uses: ./.github/actions/power-azure-vm
+        with:
+          AZURE_VM_NAME: eflow
+          AZURE_RG_NAME: lorae2etests
+          POWER_SWITCH: false
+          AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
+          AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}

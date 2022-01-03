@@ -94,7 +94,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var device = deviceMock.Object;
             cache.Register(device);
 
-            await Task.Delay(this.quickRefreshOptions.ValidationInterval * 4);
+            await cache.WaitForRefreshCallsAsync(3);
+
             deviceMock.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
         }
 
@@ -334,9 +335,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
         private static LoRaDevice CreateTestDevice() => new LoRaDevice("FFFFFFFF", "0000000000000000", null) { NwkSKey = "AAAAAAAA" };
 
-        private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
+        private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
 
-        private readonly LoRaDeviceCacheOptions noRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue };
+        private readonly LoRaDeviceCacheOptions noRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(int.MaxValue), ValidationInterval = TimeSpan.FromMilliseconds(int.MaxValue) };
 
         private LoRaDeviceCache CreateNoRefreshCache() => new LoRaDeviceCache(this.noRefreshOptions, null, NullLogger<LoRaDeviceCache>.Instance, TestMeter.Instance);
 
@@ -348,6 +349,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             private readonly Func<LoRaDevice, LoRaPayload, bool> validateMic;
             private readonly bool callDeviceRefresh;
             private readonly NetworkServerConfiguration configuration;
+            private readonly LoRaDeviceCacheOptions cacheOptions;
 
             public int RefreshOperationsCount { get; private set; }
             public int DeviceRefreshCount { get; private set; }
@@ -358,6 +360,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 this.callDeviceRefresh = callDeviceRefresh;
                 this.configuration = networkServerConfiguration;
                 this.validateMic = validateMic;
+                this.cacheOptions = options;
             }
             public TestDeviceCache(LoRaDeviceCacheOptions options, Func<LoRaDevice, LoRaPayload, bool> validateMic)
                 : this(null, options, new NetworkServerConfiguration(), validateMic: validateMic)
@@ -375,11 +378,25 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             { }
 
             public TestDeviceCache(Action<LoRaDevice> onRefreshDevice)
-                : this (onRefreshDevice, new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.MaxValue, RefreshInterval = TimeSpan.MaxValue, ValidationInterval = TimeSpan.MaxValue }, new NetworkServerConfiguration())
+                : this (onRefreshDevice, new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(int.MaxValue), ValidationInterval = TimeSpan.FromMilliseconds(int.MaxValue) }, new NetworkServerConfiguration())
             { }
 
             internal async Task WaitForRefreshAsync(CancellationToken cancellationToken) =>
                 await this.refreshTick.WaitAsync(cancellationToken);
+
+            internal async Task WaitForRefreshCallsAsync(int numberOfCalls, TimeSpan timeout = default)
+            {
+                if (timeout == TimeSpan.Zero)
+                {
+                    timeout = (this.cacheOptions.RefreshInterval * numberOfCalls) + TimeSpan.FromSeconds(5);
+                }
+
+                using var cts = new CancellationTokenSource(timeout);
+                for (var i = 0; i < numberOfCalls; i++)
+                {
+                    await this.refreshTick.WaitAsync(cts.Token);
+                }
+            }
 
             internal async Task WaitForRemoveAsync(CancellationToken cancellationToken) =>
                 await this.removeTick.WaitAsync(cancellationToken);

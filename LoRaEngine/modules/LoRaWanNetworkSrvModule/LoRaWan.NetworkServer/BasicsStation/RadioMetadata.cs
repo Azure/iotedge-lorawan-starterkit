@@ -3,23 +3,24 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    public class RadioMetadata
+    public sealed record RadioMetadata
     {
-        public DataRate DataRate { get; }
-        public Hertz Frequency { get; }
-        public RadioMetadataUpInfo UpInfo { get; }
-
-        public RadioMetadata(DataRate dataRate, Hertz frequency, RadioMetadataUpInfo upInfo)
+        public RadioMetadata(DataRateIndex dataRate, Hertz frequency, RadioMetadataUpInfo upInfo)
         {
             DataRate = dataRate;
             Frequency = frequency;
             UpInfo = upInfo;
         }
+
+        public DataRateIndex DataRate { get; init; }
+        public Hertz Frequency { get; init; }
+        public RadioMetadataUpInfo UpInfo { get; init; }
     }
 
-    public class RadioMetadataUpInfo
+    public sealed record RadioMetadataUpInfo
     {
-        public RadioMetadataUpInfo(uint antennaPreference, ulong xtime, uint gpsTime, double receivedSignalStrengthIndication, float signalNoiseRatio)
+        public RadioMetadataUpInfo(uint antennaPreference, ulong xtime, uint gpsTime,
+                                   double receivedSignalStrengthIndication, float signalNoiseRatio)
         {
             AntennaPreference = antennaPreference;
             Xtime = xtime;
@@ -28,10 +29,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
             SignalNoiseRatio = signalNoiseRatio;
         }
 
-        public uint AntennaPreference { get; }
-        public ulong Xtime { get; }
-        public uint GpsTime { get; }
-        public double ReceivedSignalStrengthIndication { get; }
-        public float SignalNoiseRatio { get; }
+        public uint AntennaPreference { get; init; }
+        public ulong Xtime { get; init; }
+        public uint GpsTime { get; init; }
+        public double ReceivedSignalStrengthIndication { get; init; }
+        public float SignalNoiseRatio { get; init; }
     }
 }

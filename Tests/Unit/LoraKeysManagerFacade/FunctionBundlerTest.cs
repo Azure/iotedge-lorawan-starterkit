@@ -31,8 +31,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             strategy.Setup(x => x.DefaultTxPower).Returns(0);
             strategy.Setup(x => x.MinimumNumberOfResult).Returns(20);
             strategy
-                .Setup(x => x.ComputeResult(It.IsNotNull<string>(), It.IsAny<LoRaADRTable>(), It.IsAny<float>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
-                .Returns((string devEUI, LoRaADRTable table, float snr, int upstreamDr, int minTxPower, int maxDr) =>
+                .Setup(x => x.ComputeResult(It.IsAny<LoRaADRTable>(), It.IsAny<float>(), It.IsAny<DataRateIndex>(), It.IsAny<int>(), It.IsAny<DataRateIndex>()))
+                .Returns((LoRaADRTable table, float snr, DataRateIndex upstreamDr, int minTxPower, DataRateIndex maxDr) =>
                 {
                     return new LoRaADRResult
                     {
@@ -322,7 +322,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
                         req.RequiredSnr = this.rnd.Next(-20, 20);
                     }
 
-                    req.DataRate = 2;
+                    req.DataRate = DataRateIndex.DR2;
                     ++req.FCntUp;
                     req.FCntDown = res.FCntDown.GetValueOrDefault() > 0 ? res.FCntDown.Value : req.FCntDown;
                 }
