@@ -53,6 +53,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                 new object[] { region, 6, 7, 6 },
                 new object[] { region, 3, 4, 6 },
                 // With DwellTime limit
+                new object[] { regionWithDwellTime, 0, 2, 0 },
+                new object[] { regionWithDwellTime, 1, 2, 0 },
                 new object[] { regionWithDwellTime, 6, 6, 0 },
                 new object[] { regionWithDwellTime, 2, 2, 1 },
                 new object[] { regionWithDwellTime, 3, 2, 2 },
@@ -67,7 +69,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
            {
                new object[] { region, 1, 8 },
                new object[] { region, 1, 9 },
-               new object[] { regionWithDwellTime, 2, 10 },
+               new object[] { regionWithDwellTime, 1, 10 },
            };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
