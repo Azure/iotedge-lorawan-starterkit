@@ -498,9 +498,16 @@ namespace LoRaWan.Tests.Integration
             Assert.True(request.ProcessingSucceeded);
 
             if (!string.IsNullOrEmpty(deviceGatewayID))
-                Assert.Equal(initialPreferredGatewayID, loraDevice.PreferredGatewayID);
+            {
+                if (!string.IsNullOrEmpty(initialPreferredGatewayID))
+                    Assert.Equal(initialPreferredGatewayID, loraDevice.PreferredGatewayID);
+                else
+                    Assert.Equal(ServerGatewayID, loraDevice.PreferredGatewayID);
+            }
             else
+            {
                 Assert.Equal(preferredGatewayID, loraDevice.PreferredGatewayID);
+            }
 
             Assert.Equal(LoRaRegionType.EU868, loraDevice.LoRaRegion);
         }
