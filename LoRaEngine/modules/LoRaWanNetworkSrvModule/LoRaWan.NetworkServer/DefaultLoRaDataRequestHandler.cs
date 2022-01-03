@@ -434,7 +434,7 @@ namespace LoRaWan.NetworkServer
 
                     if (string.IsNullOrEmpty(loRaDevice.GatewayID))
                     {
-                        loRaDevice.UpdatePreferredGatewayID(this.configuration.GatewayID, acceptChanges: loRaDevice.GatewayID != this.configuration.GatewayID);
+                        loRaDevice.UpdatePreferredGatewayID(this.configuration.GatewayID, acceptChanges: true);
                     }
                 }
 

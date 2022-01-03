@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         }
 
         [Fact]
-        public async Task When_Class_C_Device_Found_Should_Send_Direct_Method()
+        public async Task When_Class_C_Device_Found_Should_Send_Using_Direct_Method()
         {
             var deviceTwin = new Twin
             {
