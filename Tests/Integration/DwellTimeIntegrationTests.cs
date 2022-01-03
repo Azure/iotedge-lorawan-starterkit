@@ -156,14 +156,13 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Fact]
-        public async Task When_Receiving_TxParamSetupAns_In_Unsupported_Region_Throws()
+        public async Task When_Receiving_TxParamSetupAns_In_Unsupported_Region_Does_Not_Throw()
         {
             // arrange
             using var request = SetupRequest(new RegionEU868(), null, new TxParamSetupAnswer());
 
             // act + assert
-            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.dataRequestHandlerMock.Object.ProcessRequestAsync(request, this.loRaDevice));
-            Assert.Contains("Received 'TxParamSetupAns' in region", ex.Message, StringComparison.OrdinalIgnoreCase);
+            _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request, this.loRaDevice);
         }
 
         public static TheoryData<Region, DwellTimeSetting?, DataRateIndex, DataRateIndex> Uses_Correct_Data_Rate_TheoryData() =>

@@ -262,7 +262,7 @@ namespace LoRaWan.NetworkServer
                             }
                             else
                             {
-                                throw new LoRaProcessingException($"Received 'TxParamSetupAns' in region '{request.Region.LoRaRegion}' which does not support dwell limitations.");
+                                this.logger.LogWarning("Received 'TxParamSetupAns' in region '{Region}' which does not support dwell limitations.", request.Region.LoRaRegion);
                             }
                         }
                     }
