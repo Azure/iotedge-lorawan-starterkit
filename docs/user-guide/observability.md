@@ -1,6 +1,6 @@
 # Observability
 
-We recommend that you use Azure Monitor for observability when working with the starter kit. We emit metrics and logs, which you can then use to gain insights into the system. We do not support distributed tracing for the starter kit. However, you will get some limited tracing functionality between the Network Server and its dependencies, but only if you decide to use Azure Monitor.
+We recommend that you use Azure Monitor for observability when working with the starter kit. To observe the system, we make use of metrics and logs, but we do not support distributed tracing for the starter kit. However, you will get some limited tracing functionality between the Network Server and its dependencies, but only if you decide to use Azure Monitor.
 
 Even if you decide to not use Azure Monitor, you can always access metrics in Prometheus format on the Network Server at the path `/metrics`, similarly to how you can [access built-in metrics](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-access-built-in-metrics?view=iotedge-2020-11) on IoT Edge. The Network Server will always expose logs via the standard output and standard error.
 
@@ -19,7 +19,7 @@ Generate a deployment manifest from [`deployment_observability.layered.template.
 
 ## Integrating with the Elastic stack
 
-In this section we describe an example setup that may get you started if you decide to use the Elastic tool stack for observability. We will assume that you have set up the Elastic stack already, and that you now want to integrate the engine components with ELK. If you do not have the Elastic stack set up yet, refer to [Elastic's documentation](https://www.elastic.co/guide/index.html) and set it up before you continue with this example.
+In this section we describe an example setup that may help you to get started if you decide to use the Elastic tool stack for the engine observability. We will assume that you have set up the Elastic stack already, and that you now want to integrate the engine components with ELK. If you do not have the Elastic stack set up yet, refer to [Elastic's documentation](https://www.elastic.co/guide/index.html) and set it up before you continue with this example.
 
 To integrate the starter kit into your ELK stack, we rely on [Metricbeat](https://www.elastic.co/beats/metricbeat) to scrape metrics from the Prometheus endpoints of the  IoT Edge modules (Network Server, Edge Hub and Edge Agent). Since Metricbeat requires access to the metric endpoints on IoT Edge, we will deploy it as an IoT Edge module, too.
 
@@ -27,7 +27,7 @@ To integrate the starter kit into your ELK stack, we rely on [Metricbeat](https:
 
 To ensure that the Metricbeat is aware of all metrics endpoints that it needs to scrape and the ELK backend for the export, we need to first configure it correctly. Typically, to [configure Metricbeat on Docker](https://www.elastic.co/guide/en/beats/metricbeat/7.16/running-on-docker.html#_configure_metricbeat_on_docker), we rely on a configuration file, which we will call `metricbeat.yml` in the following. Before we discuss how to make this file available inside the Docker container, we discuss how we need to change `metricbeat.yml` to support IoT Edge metrics collection.
 
-We rely on the [Prometheus module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-prometheus.html) to ship metrics from the Prometheus endpoints on the IoT Edge to the ELK stack. Make sure that you add the module configuration to your `metricbeat.yml`. A basic configuration snippet might look like this:
+We rely on the [Prometheus module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-prometheus.html) to ship metrics from the Prometheus endpoints on the IoT Edge to the ELK stack. Make sure that you add the Prometheus module configuration to your `metricbeat.yml`. A basic configuration snippet might look like this:
 
 ```yaml
 ...
@@ -42,7 +42,7 @@ metricbeat.modules:
 
 > Note: If you configure the Network Server to use HTTPS, it will listen on port 5001 instead of 5000. If you use self-signed certificates for this, make sure that you configure the Prometheus module with your chain of trust.
 
-Then we need to make sure that the `metricbeat.yml` is available to the Metricbeat Docker container. You can either [link module storage to device storage](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-access-host-storage-from-module?view=iotedge-2020-11) in IoT Edge to achieve this, in which case you have to take care of making `metricbeat.yml` available on the IoT Edge host system. Alternatively, you can deploy a custom image, containing a `metricbeat.yml` *template*, and then [use environment variables in the configuration](https://www.elastic.co/guide/en/beats/metricbeat/current/using-environ-vars.html) to set values that need to be configurable between deployments. Independent of which approach you choose, you should amend your IoT Edge deployment template with something similar to:
+Next, we need to make sure that the `metricbeat.yml` is available to the Metricbeat Docker container. You can either [link module storage to device storage](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-access-host-storage-from-module?view=iotedge-2020-11) in IoT Edge to achieve this, in which case you have to take care of making `metricbeat.yml` available on the IoT Edge host system. Alternatively, you can deploy a custom image, containing a `metricbeat.yml` *template*, and then [use environment variables in the configuration](https://www.elastic.co/guide/en/beats/metricbeat/current/using-environ-vars.html) to set values that need to be configurable between deployments. Independent of which approach you choose, you should amend your IoT Edge deployment template with something similar to:
 
 ```yaml
 {
