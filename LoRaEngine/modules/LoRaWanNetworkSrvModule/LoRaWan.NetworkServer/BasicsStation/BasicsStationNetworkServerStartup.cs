@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.ApplicationInsights;
+    using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
@@ -69,7 +70,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                             {
                                 _ = loggingBuilder.AddApplicationInsights(appInsightsKey)
                                                   .AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, logLevel);
-
+                                _ = services.AddSingleton<ITelemetryInitializer>(_ => new TelemetryInitializer(NetworkServerConfiguration));
                             }
                         })
                         .AddMemoryCache()
