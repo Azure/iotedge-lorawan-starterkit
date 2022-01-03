@@ -114,7 +114,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downstreamMsg = PacketForwarder.DownlinkMessages[0];
 
-            var downstreamPayloadBytes = Convert.FromBase64String(downstreamMsg.Txpk.Data);
+            var downstreamPayloadBytes = downstreamMsg.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(expectedFcntDown, downstreamPayload.GetFcnt());
             Assert.Equal(c2d.Fport, downstreamPayload.Fport);
@@ -220,7 +220,7 @@ namespace LoRaWan.Tests.Integration
 
             TestLogger.Log($"appSKey: {simDevice.AppSKey}, nwkSKey: {simDevice.NwkSKey}");
 
-            var downstreamPayloadBytes = Convert.FromBase64String(downstreamMsg.Txpk.Data);
+            var downstreamPayloadBytes = downstreamMsg.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(1, downstreamPayload.GetFcnt());
             Assert.Equal(c2d.Fport, downstreamPayload.Fport);

@@ -294,7 +294,7 @@ namespace LoRaWan.NetworkServer
                     break;
 
                 case LoRaDeviceRequestFailedReason.InvalidNetId:
-                case LoRaDeviceRequestFailedReason.InvalidRxpk:
+                case LoRaDeviceRequestFailedReason.InvalidUpstreamMessage:
                 case LoRaDeviceRequestFailedReason.InvalidRegion:
                 case LoRaDeviceRequestFailedReason.UnknownDevice:
                 case LoRaDeviceRequestFailedReason.InvalidJoinRequest:

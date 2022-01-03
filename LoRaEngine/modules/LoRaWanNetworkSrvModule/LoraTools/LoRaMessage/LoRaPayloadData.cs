@@ -7,7 +7,6 @@ namespace LoRaTools.LoRaMessage
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.InteropServices;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
     using Newtonsoft.Json;
@@ -247,18 +246,9 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         /// <param name="appSKey">the app key used for encryption.</param>
         /// <param name="nwkSKey">the nwk key used for encryption.</param>
-        /// <param name="datr">the calculated datarate.</param>
-        /// <param name="freq">The frequency at which to be sent.</param>
-        /// <param name="tmst">time stamp.</param>
-        /// <param name="devEUI">the device EUI.</param>
-        /// <param name="lnsRxDelay">the rx delay as specified in LNS protocol.</param>
-        /// <param name="rfch">the index of the preferred antenna.</param>
-        /// <param name="time">the original receive time.</param>
-        /// <param name="stationEui">the station eui which will handle the downlink message.</param>
         /// <returns>the Downlink message.</returns>
-        public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, Hertz freq, long tmst, string devEUI, ushort lnsRxDelay, uint rfch = 0, string time = "", StationEui stationEui = default)
+        public byte[] Serialize(string appSKey, string nwkSKey)
         {
-            if (devEUI is null) throw new ArgumentNullException(nameof(devEUI));
 
             // It is a Mac Command payload, needs to encrypt with nwkskey
             if (Fport == FramePort.MacCommand)
@@ -271,7 +261,7 @@ namespace LoRaTools.LoRaMessage
             }
 
             SetMic(nwkSKey);
-            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEUI, tmst, lnsRxDelay, rfch, time, stationEui);
+            return GetByteMessage();
         }
 
         /// <summary>
