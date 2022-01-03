@@ -15,6 +15,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
     public class SendMessageToClassCDeviceTest
     {
+        private const string TestDevEUI = "B827EBFFFFF30000";
+
         private readonly Mock<IServiceClient> serviceClient;
         private readonly Mock<RegistryManager> registryManager;
         private readonly SendMessageToClassCDevice sendMessageToClassCDevice;
@@ -58,22 +60,39 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Message_Is_Invalid_Should_Return_BadRequest()
         {
-            var devEUI = "B827EBFFFFF30000";
-
             // FPort indicates message contains MAC commands but it has payload instead
             var message = new LoRaCloudToDeviceMessage()
             {
-                DevEUI = devEUI,
+                DevEUI = TestDevEUI,
                 Fport = FramePort.MacCommand,
-                Payload = "hello"
+                Payload = "payload"
             };
             var request = HttpRequestHelper.CreateRequest(JsonConvert.SerializeObject(message));
 
-            var result = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice(devEUI, request);
+            var result = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice(TestDevEUI, request);
 
             Assert.IsType<BadRequestObjectResult>(result);
             Assert.Contains("Invalid MAC command fport usage in cloud to device message",
                 ((BadRequestObjectResult)result).Value.ToString(), System.StringComparison.OrdinalIgnoreCase);
+
+            this.serviceClient.VerifyAll();
+            this.registryManager.VerifyAll();
+        }
+
+        [Fact]
+        public async Task When_Message_Has_No_Payload_Should_Return_BadRequest()
+        {
+            var message = new LoRaCloudToDeviceMessage()
+            {
+                DevEUI = TestDevEUI,
+                Fport = FramePort.AppMin,
+            };
+            var request = HttpRequestHelper.CreateRequest(JsonConvert.SerializeObject(message));
+
+            var result = await this.sendMessageToClassCDevice.RunSendMessageToClassCDevice(TestDevEUI, request);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Payload is required", ((BadRequestObjectResult)result).Value.ToString());
 
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
