@@ -10,13 +10,19 @@ namespace LoRaWan.Tests.Common
     using System.Linq;
     using System.Text;
     using LoRaTools.CommonAPI;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
+    using Xunit;
 
     public static class TestUtils
     {
+        public static readonly Region TestRegion = RegionManager.EU868;
+
         public static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
             ILoRaDeviceClientConnectionManager connectionManager,
@@ -296,6 +302,41 @@ namespace LoRaWan.Tests.Common
             {
                 throw new TimeoutException("Executing the SSH command took more than expected.");
             }
+        }
+
+        public static RadioMetadata GenerateTestRadioMetadata(
+                DataRateIndex dataRate = DataRateIndex.DR2,
+                Hertz? frequency = null,
+                uint antennaPreference = 1,
+                ulong xtime = 100000,
+                uint gpstime = 100000,
+                double rssi = 2.0,
+                float snr = 0.1f) =>
+            new RadioMetadata(dataRate, frequency ?? Hertz.Mega(868.3),
+                              new RadioMetadataUpInfo(antennaPreference, xtime, gpstime, rssi, snr));
+
+        public static void CheckDRAndFrequencies(WaitableLoRaRequest request, LoRaTools.LoRaPhysical.DownlinkMessage downlinkMessage, bool sendToRx2 = false)
+        {
+            var euRegion = RegionManager.EU868;
+
+            // If we want to send to force to rx 2, we will set both the rx1 and rx2 settings to the rx2 parameters.
+            // Ensure RX DR
+            if (sendToRx2)
+                Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, NullLogger.Instance), downlinkMessage.DataRateRx2);
+            else
+                Assert.Equal(euRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate), downlinkMessage.DataRateRx1);
+
+            Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, NullLogger.Instance), downlinkMessage.DataRateRx2);
+
+            // Ensure RX freq
+            Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, out var channelFrequency));
+
+            if (sendToRx2)
+                Assert.Equal(euRegion.GetDownstreamRX2Freq(null, NullLogger.Instance), downlinkMessage.FrequencyRx1);
+            else
+                Assert.Equal(channelFrequency, downlinkMessage.FrequencyRx1);
+
+            Assert.Equal(euRegion.GetDownstreamRX2Freq(null, NullLogger.Instance), downlinkMessage.FrequencyRx2);
         }
     }
 }

@@ -40,7 +40,7 @@ namespace LoRaTools.ADR
             this.logger = logger;
         }
 
-        public LoRaADRResult ComputeResult(string devEUI, LoRaADRTable table, float requiredSnr, DataRateIndex upstreamDataRate, int minTxPower, DataRateIndex maxDr)
+        public LoRaADRResult ComputeResult(LoRaADRTable table, float requiredSnr, DataRateIndex upstreamDataRate, int minTxPower, DataRateIndex maxDr)
         {
             // We do not have enough frame to calculate ADR. We can assume that a crash was the cause.
             if (table == null || table.Entries.Count < 20)

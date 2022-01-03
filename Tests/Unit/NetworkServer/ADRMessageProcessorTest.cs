@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using global::LoRaTools.LoRaMessage;
     using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
@@ -64,8 +65,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             else
             {
                 var payloadInt = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: payloadFcnt);
-                var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-                using var requestInt = CreateWaitableRequest(rxpkInt);
+                using var requestInt = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), payloadInt);
                 messageProcessor.DispatchRequest(requestInt);
                 Assert.True(await requestInt.WaitCompleteAsync(-1));
                 payloadFcnt++;
@@ -74,16 +74,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             for (var i = 0; i < count; i++)
             {
                 var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.Adr);
-                var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-                using var requestInt = CreateWaitableRequest(rxpkInt);
+                using var requestInt = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), payloadInt);
                 messageProcessor.DispatchRequest(requestInt);
                 Assert.True(await requestInt.WaitCompleteAsync(-1));
                 payloadFcnt++;
             }
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -96,7 +94,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(request.ProcessingSucceeded);
             Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
             var downlinkMessage = PacketForwarder.DownlinkMessages[1];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
 
             // in this case we expect a null payload
             if (deviceId == 11)
@@ -108,7 +106,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 // We expect a mac command in the payload
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
                 var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-                Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+                Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
                 Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
                 Assert.Equal(expectedDR, linkAdr.DataRate);
@@ -198,8 +196,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            var radioMetadata = new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
+            using var request = CreateWaitableRequest(radioMetadata, payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -211,7 +209,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.NotNull(request.ResponseDownlink);
             var downlinkMessage = PacketForwarder.DownlinkMessages[1];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             if (deviceId == 221)
             {
@@ -223,7 +221,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
                 var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-                Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+                Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
                 Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
                 Assert.Equal(expectedDR, linkAdr.DataRate);
@@ -304,19 +302,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            var radioMetadata = new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
+            using var request = CreateWaitableRequest(radioMetadata, payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
             Assert.NotNull(request.ResponseDownlink);
             Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
             var downlinkMessage = PacketForwarder.DownlinkMessages[1];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(DR5, linkAdr.DataRate);
@@ -350,19 +348,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
-            using var secondRequest = CreateWaitableRequest(rxpk);
+            var radioMetadataWithDatr5 = new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
+            using var secondRequest = CreateWaitableRequest(radioMetadataWithDatr5, payload);
             messageProcessor.DispatchRequest(secondRequest);
             Assert.True(await secondRequest.WaitCompleteAsync());
 
             Assert.NotNull(secondRequest.ResponseDownlink);
             Assert.Equal(3, PacketForwarder.DownlinkMessages.Count);
             downlinkMessage = PacketForwarder.DownlinkMessages[2];
-            payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(DR5, linkAdr.DataRate);
@@ -442,8 +440,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            var radioMetadata = new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0, 0, 0, 0, currentLsnr));
+
+            using var request = CreateWaitableRequest(radioMetadata, payload);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -456,12 +455,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(request.ResponseDownlink);
             Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
             var downlinkMessage = PacketForwarder.DownlinkMessages[1];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
             Array.Reverse(decryptedPayload);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(3, reportedNbRep);
@@ -477,8 +476,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
-            using var secondRequest = CreateWaitableRequest(rxpk);
+            using var secondRequest = CreateWaitableRequest(radioMetadata, payload);
             messageProcessor.DispatchRequest(secondRequest);
             Assert.True(await secondRequest.WaitCompleteAsync());
 
@@ -491,11 +489,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(secondRequest.ResponseDownlink);
             Assert.Equal(3, PacketForwarder.DownlinkMessages.Count);
             downlinkMessage = PacketForwarder.DownlinkMessages[2];
-            payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(2, reportedNbRep);
@@ -519,8 +517,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.AdrAckReq | FrameControlFlags.Adr);
-            rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
-            using var thirdRequest = CreateWaitableRequest(rxpk);
+            using var thirdRequest = CreateWaitableRequest(radioMetadata, payload);
             messageProcessor.DispatchRequest(thirdRequest);
             Assert.True(await thirdRequest.WaitCompleteAsync());
 
@@ -533,11 +530,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(thirdRequest.ResponseDownlink);
             Assert.Equal(4, PacketForwarder.DownlinkMessages.Count);
             downlinkMessage = PacketForwarder.DownlinkMessages[3];
-            payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(1, reportedNbRep);
@@ -552,8 +549,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private async Task<uint> SendMessage(float currentLsnr, LoRaDataRate currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, FrameControlFlags fctrl)
         {
             var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrlFlags: fctrl);
-            var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
-            using var requestInt = CreateWaitableRequest(rxpkInt);
+            using var requestInt = CreateWaitableRequest(new RadioMetadata(TestUtils.TestRegion.GetDataRateIndex(currentDR), Hertz.Mega(868.1), new RadioMetadataUpInfo(0,0,0,0,currentLsnr)) ,payloadInt);
             messageProcessor.DispatchRequest(requestInt);
             Assert.True(await requestInt.WaitCompleteAsync(-1));
             payloadFcnt++;

@@ -3,10 +3,8 @@
 
 namespace LoRaTools.Regions
 {
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
-    using System;
     using System.Collections.Generic;
     using static LoRaWan.DataRateIndex;
     using static LoRaWan.Metric;
@@ -59,24 +57,6 @@ namespace LoRaTools.Regions
 
             MaxADRDataRate = DR5;
             RegionLimits = new RegionLimits((Min: Mega(863), Max: Mega(870)), validDataRangeUpAndDownstream, validDataRangeUpAndDownstream, 0, 0);
-        }
-
-        /// <summary>
-        /// Logic to get the correct downstream transmission frequency for region EU868.
-        /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo = null)
-        {
-            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
-
-            if (!IsValidUpstreamRxpk(upstreamChannel))
-                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
-
-            // in case of EU, you respond on same frequency as you sent data.
-            frequency = upstreamChannel.Freq;
-            return true;
         }
 
         /// <summary>

@@ -26,9 +26,6 @@ namespace LoRaWan.Tests.Integration
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequestPayload1 = simulatedDevice.CreateJoinRequest();
 
-            // Create Rxpk
-            var joinRequestRxpk1 = joinRequestPayload1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
-
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
@@ -69,7 +66,7 @@ namespace LoRaWan.Tests.Integration
 
             // 1st join request
             // Should fail
-            using var joinRequest1 = CreateWaitableRequest(joinRequestRxpk1, constantElapsedTime: TimeSpan.FromSeconds(7));
+            using var joinRequest1 = CreateWaitableRequest(joinRequestPayload1, constantElapsedTime: TimeSpan.FromSeconds(7));
             messageProcessor.DispatchRequest(joinRequest1);
             Assert.True(await joinRequest1.WaitCompleteAsync());
             Assert.True(joinRequest1.ProcessingFailed);
@@ -78,20 +75,19 @@ namespace LoRaWan.Tests.Integration
 
             // 2nd attempt
             var joinRequestPayload2 = simulatedDevice.CreateJoinRequest();
-            var joinRequestRxpk2 = joinRequestPayload2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             // setup response to this device search
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestPayload2.DevNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            using var joinRequest2 = CreateWaitableRequest(joinRequestRxpk2);
+            using var joinRequest2 = CreateWaitableRequest(joinRequestPayload2);
             messageProcessor.DispatchRequest(joinRequest2);
             Assert.True(await joinRequest2.WaitCompleteAsync());
             Assert.True(joinRequest2.ProcessingSucceeded);
             Assert.NotNull(joinRequest2.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var joinRequestDownlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinRequestDownlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));

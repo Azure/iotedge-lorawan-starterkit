@@ -90,8 +90,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -105,7 +104,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":{{\"value\":\"{rawPayload}\"}},\"port\":1,\"fcnt\":1,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets}}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"value\":\"{rawPayload}\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceClient.VerifyAll();
@@ -179,8 +178,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -194,96 +192,7 @@ namespace LoRaWan.Tests.Integration
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
             var expectedValueQuotes = expectedValue.GetType() == typeof(string) ? "\"" : string.Empty;
-            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":{{\"value\":{expectedValueQuotes}{msgPayload}{expectedValueQuotes}}},\"port\":1,\"fcnt\":1,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets}}}";
-            Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
-
-            LoRaDeviceApi.VerifyAll();
-            LoRaDeviceClient.VerifyAll();
-        }
-
-        /// <summary>
-        /// SensorDecoder: DecoderValueSensor
-        /// Rxpk: additional properties "x_power":22.3, "x_wind":"NE"
-        /// Payload: "1"
-        /// Decoder result: { "value": 1 }
-        /// Expected data sent to IoT Hub:
-        /// {
-        ///     "time": null,
-        ///     "tmms": 0,
-        ///     "tmst": 0,
-        ///     "freq": 868.3,
-        ///     "chan": 0,
-        ///     "rfch": 1,
-        ///     "stat": 0,
-        ///     "modu": "LORA",
-        ///     "datr": "SF10BW125",
-        ///     "codr": "4/5",
-        ///     "rssi": 0,
-        ///     "lsnr": 0.0,
-        ///     "size": 15,
-        ///     "data": {
-        ///         "value":1
-        ///     },
-        ///     "port": 1,
-        ///     "fcnt": 1,
-        ///     "rawdata": "JDE=",
-        ///     "eui": "0000000000000001",
-        ///     "gatewayid": "test-gateway",
-        ///     "edgets": 1550223375041,
-        ///     "x_power":22.3,
-        ///     "x_wind":"NE"
-        /// }.
-        /// </summary>
-        [Fact]
-        public async Task When_Rxpk_Has_Additional_Information_Should_Include_In_Telemetry()
-        {
-            const string payload = "1";
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
-            var loRaDevice = CreateLoRaDevice(simulatedDevice);
-            loRaDevice.SensorDecoder = "DecoderValueSensor";
-
-            // message will be sent
-            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
-            LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
-                .ReturnsAsync(true);
-
-            // C2D message will be checked
-            LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                .ReturnsAsync((Message)null);
-
-            using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
-
-            // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
-
-            // sends unconfirmed message
-            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(payload, fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            rxpk.ExtraData["x_power"] = 22.3;
-            rxpk.ExtraData["x_wind"] = "NE";
-            using var request = CreateWaitableRequest(rxpk);
-            messageDispatcher.DispatchRequest(request);
-            Assert.True(await request.WaitCompleteAsync());
-
-            Assert.NotNull(loRaDeviceTelemetry);
-            Assert.Equal(2, loRaDeviceTelemetry.ExtraData.Count);
-            Assert.Equal(22.3, loRaDeviceTelemetry.ExtraData["x_power"]);
-            Assert.Equal("NE", loRaDeviceTelemetry.ExtraData["x_wind"]);
-            var rawPayload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-            Assert.Equal(rawPayload, loRaDeviceTelemetry.Rawdata);
-            Assert.IsType<DecodedPayloadValue>(loRaDeviceTelemetry.Data);
-            var decodedPayload = (DecodedPayloadValue)loRaDeviceTelemetry.Data;
-            Assert.Equal(1L, decodedPayload.Value);
-
-            // Validate json
-            var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":{{\"value\":1}},\"port\":1,\"fcnt\":1,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets},\"x_power\":22.3,\"x_wind\":\"NE\"}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"value\":{expectedValueQuotes}{msgPayload}{expectedValueQuotes}}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -358,8 +267,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -370,7 +278,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":\"decoded\",\"port\":1,\"fcnt\":1,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets}}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":\"decoded\",\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -445,8 +353,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -457,7 +364,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":\"\",\"port\":1,\"fcnt\":1,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets}}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":\"\",\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -534,8 +441,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -546,7 +452,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":{{\"value\":\"decoded\"}},\"port\":1,\"fcnt\":1,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets}}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"value\":\"decoded\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -625,8 +531,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -636,7 +541,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":1,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets}}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -712,8 +617,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -727,7 +631,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":{{\"error\":\"SensorDecoderModule 'http://customdecoder/test1?devEUI=0000000000000001&fport=1&payload=MQ%3d%3d' returned bad request.\",\"errorDetail\":\"my error\"}},\"port\":1,\"fcnt\":1,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets}}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"error\":\"SensorDecoderModule 'http://customdecoder/test1?devEUI=0000000000000001&fport=1&payload=MQ%3d%3d' returned bad request.\",\"errorDetail\":\"my error\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{ rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -777,8 +681,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 10);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -789,14 +692,14 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":10,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets}}}";
+
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":10,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             // send a second message with same fcnt to simulate
             // sends unconfirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1", fcnt: 10);
-            var rxpk2 = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request2 = CreateWaitableRequest(rxpk2);
+            using var request2 = CreateWaitableRequest(confirmedMessagePayload);
             messageDispatcher.DispatchRequest(request2);
             Assert.True(await request2.WaitCompleteAsync());
             Assert.NotNull(request2.ResponseDownlink);
