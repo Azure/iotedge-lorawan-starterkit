@@ -8,13 +8,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.Regions;
+    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
+    using MoreLinq;
     using Xunit;
     using static LoRaWan.DataRateIndex;
 
@@ -229,7 +232,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("0")]
         [InlineData(0)]
         [InlineData(false)]
-        [InlineData("ture")] // misspelled "true"
         public async Task When_Downlink_Is_Disabled_In_Twin_Should_Have_DownlinkEnabled_Equals_False(object downlinkEnabledTwinValue)
         {
             var twin = TestUtils.CreateTwin(
@@ -686,7 +688,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal("gateway1", loRaDevice.PreferredGatewayID);
 
             if (string.Equals(LoRaRegionType.EU868.ToString(), regionValue, StringComparison.OrdinalIgnoreCase))
                 Assert.Equal(LoRaRegionType.EU868, loRaDevice.LoRaRegion);
@@ -876,5 +877,144 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 #pragma warning disable CA2000 // Dispose objects before losing scope
         private LoRaDevice CreateDefaultDevice() => new LoRaDevice("FFFFFFFF", "0000000000000000", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 #pragma warning restore CA2000 // Dispose objects before losing scope
+
+        public class FrameCounterInitTests
+        {
+            private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
+
+            public FrameCounterInitTests()
+            {
+                this.loRaDeviceClient = new Mock<ILoRaDeviceClient>();
+            }
+
+            [Fact]
+            public void If_No_Reset_FcntUpDown_Initialized()
+            {
+                using var device = CreateDefault();
+
+                const uint fcntUp = 10;
+                const uint fcntDown = 2;
+                var twin = TestUtils.CreateTwin(reported: new Dictionary<string, object>
+                                                {
+                                                    [TwinProperty.FCntUp] = fcntUp,
+                                                    [TwinProperty.FCntDown] = fcntDown
+                                                });
+
+                device.ExecuteInitializeFrameCounters(twin);
+                AssertFcntUp(fcntUp, device);
+                AssertFcntDown(fcntDown, device);
+
+                this.loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
+            }
+
+            [Theory]
+            [InlineData(1, 1, 10, 10, 0,  0,  true)]   // fcnt start set, but wasn't reported - expect to be set to the start counter and saved
+            [InlineData(1, 1, 10, 10, 10, 10, false)]  // all up to date - no update - expect set to last reported
+            [InlineData(2, 1, 10, 10, 10, 10, true)]   // reset counter higher - expect to set to start counter and saved
+            [InlineData(2, 3, 10, 10, 10, 10, false)]  // reset counter smaller - expect set to last reported
+            public void When_Start_Specified_Initialized_Correctly(uint fcntResetDesired, uint fcntResetReported, uint startDesiredUp, uint startDesiredDown, uint startReportedUp, uint startReportedDown, bool expectStart)
+            {
+                using var device = CreateDefault();
+
+                const uint fcntUp = 10;
+                const uint fcntDown = 2;
+                var twin = TestUtils.CreateTwin(desired: new Dictionary<string, object>
+                                                {
+                                                    [TwinProperty.FCntUpStart] = startDesiredUp,
+                                                    [TwinProperty.FCntDownStart] = startDesiredDown,
+                                                    [TwinProperty.FCntResetCounter] = fcntResetDesired
+                                                },
+                                                reported: new Dictionary<string, object>
+                                                {
+                                                    [TwinProperty.FCntUpStart] = startReportedUp,
+                                                    [TwinProperty.FCntDownStart] = startReportedDown,
+                                                    [TwinProperty.FCntUp] = fcntUp,
+                                                    [TwinProperty.FCntDown] = fcntDown,
+                                                    [TwinProperty.FCntResetCounter] = fcntResetReported
+                                                });
+
+                device.ExecuteInitializeFrameCounters(twin);
+
+                this.loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), expectStart ? Times.Once : Times.Never);
+
+                if (expectStart)
+                {
+                    AssertFcntUp(startDesiredUp, device);
+                    AssertFcntDown(startDesiredDown, device);
+                }
+                else
+                {
+                    AssertFcntUp(fcntUp, device);
+                    AssertFcntDown(fcntDown, device);
+                }
+            }
+
+            [Theory]
+            [InlineData(10, 10, 0, 0, true)]
+            [InlineData(10, 10, 10, 10, false)]
+            public void When_Reset_Specified_Initialized_Correctly(uint startDesiredUp, uint startDesiredDown, uint startReportedUp, uint startReportedDown, bool expectStart)
+            {
+                using var device = CreateDefault();
+
+                const uint fcntUp = 10;
+                const uint fcntDown = 2;
+                var twin = TestUtils.CreateTwin(desired: new Dictionary<string, object>
+                                                {
+                                                    [TwinProperty.FCntUpStart] = startDesiredUp,
+                                                    [TwinProperty.FCntDownStart] = startDesiredDown
+                                                },
+                                                reported: new Dictionary<string, object>
+                                                {
+                                                    [TwinProperty.FCntUpStart] = startReportedUp,
+                                                    [TwinProperty.FCntDownStart] = startReportedDown,
+                                                    [TwinProperty.FCntUp] = fcntUp,
+                                                    [TwinProperty.FCntDown] = fcntDown
+                                                });
+
+                device.ExecuteInitializeFrameCounters(twin);
+
+                this.loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), expectStart ? Times.Once : Times.Never);
+
+                if (expectStart)
+                {
+                    AssertFcntUp(startDesiredUp, device);
+                    AssertFcntDown(startDesiredDown, device);
+                }
+                else
+                {
+                    AssertFcntUp(fcntUp, device);
+                    AssertFcntDown(fcntDown, device);
+                }
+            }
+
+            private static void AssertFcntUp(uint expected, LoRaDevice device)
+                => AssertEqual(expected, new[] { device.FCntUp, device.LastSavedFCntUp });
+            
+            private static void AssertFcntDown(uint expected, LoRaDevice device)
+                => AssertEqual(expected, new[] { device.FCntDown, device.LastSavedFCntDown });
+
+            private static void AssertEqual<T>(T expected, IEnumerable<T> it)
+                => it.ForEach(x => Assert.Equal(expected, x));
+
+            private LoRaDeviceTest CreateDefault()
+                => new LoRaDeviceTest(this.loRaDeviceClient.Object);
+
+            private class LoRaDeviceTest : LoRaDevice
+            {
+                private readonly ILogger<TwinCollectionReader> logger = NullLogger<TwinCollectionReader>.Instance;
+
+                public LoRaDeviceTest(ILoRaDeviceClient deviceClient)
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                    : base ("FFFFFFFF", "0000000000000000", new SingleDeviceConnectionManager(deviceClient))
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                {
+
+                }
+
+                public void ExecuteInitializeFrameCounters(Twin twin)
+                    => InitializeFrameCounters(new TwinCollectionReader(twin.Properties.Desired, this.logger),
+                                               new TwinCollectionReader(twin.Properties.Reported, this.logger));
+            }
+        }
     }
 }
