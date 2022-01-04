@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 {
+    using Castle.Core.Logging;
     using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
@@ -10,6 +11,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using System;
     using System.Linq;
@@ -34,7 +36,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
             this.sut = new BasicsStationConfigurationService(this.loRaDeviceApiServiceMock.Object,
                                                              this.loRaDeviceFactoryMock.Object,
-                                                             this.memoryCache);
+                                                             this.memoryCache,
+                                                             NullLogger<BasicsStationConfigurationService>.Instance);
         }
 
 
