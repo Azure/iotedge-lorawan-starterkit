@@ -43,7 +43,7 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used in case of a response to a upstream message.
         /// </summary>
         /// <returns><see cref="DownlinkMessage"/> object ready to be sent.</returns>
-        public DownlinkMessage(byte[] payload, ulong xtime, DataRateIndex datrRx1, DataRateIndex datrRx2, Hertz freqRx1, Hertz freqRx2, DevEui devEui, ushort lnsRxDelay = 0, StationEui stationEui = default, uint antennaPreference = 0)
+        public DownlinkMessage(byte[] payload, ulong xtime, DataRateIndex datrRx1, DataRateIndex datrRx2, Hertz freqRx1, Hertz freqRx2, DevEui devEui, ushort lnsRxDelay = 0, StationEui stationEui = default, uint? antennaPreference = null)
         {
             if (payload is null) throw new ArgumentNullException(nameof(payload));
             Data = payload;
