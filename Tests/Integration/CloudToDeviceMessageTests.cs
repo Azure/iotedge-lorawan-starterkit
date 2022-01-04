@@ -571,22 +571,23 @@ namespace LoRaWan.Tests.Integration
         [Theory]
         // Preferred Window: 1
         // - Aiming for RX1
-        [InlineData(1, 0, 400, 610)] // 1000 - (400 - noise)
-        [InlineData(1, 100, 300, 510)]
-        [InlineData(1, 200, 200, 410)]
+        [InlineData(1, 0, 400, 610, false)] // 1000 - (400 - noise)
+        [InlineData(1, 100, 300, 510, false)]
+        [InlineData(1, 200, 200, 410, false)]
         // - Aiming for RX2
-        [InlineData(1, 750, 690, 999)]
-        [InlineData(1, 1000, 250, 610)]
+        [InlineData(1, 750, 690, 999, true)]
+        [InlineData(1, 1000, 250, 610, true)]
 
         // Preferred Window: 2
         // - Aiming for RX2
-        [InlineData(2, 0, 1400, 1610)]
-        [InlineData(2, 100, 1300, 1510)]
+        [InlineData(2, 0, 1400, 1610, true)]
+        [InlineData(2, 100, 1300, 1510, true)]
         public async Task When_Device_Checks_For_C2D_Message_Uses_Available_Time(
             int preferredWindow,
             int sendEventDurationInMs,
             int checkMinDuration,
-            int checkMaxDuration)
+            int checkMaxDuration,
+            bool expectingSecondWindow)
         {
             const int PayloadFcnt = 10;
             const int InitialDeviceFcntUp = 9;
@@ -638,7 +639,18 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             // This is commented out as it breaks the current logic. Will be fixed in #1139
             // also add checks to verify that the RX1 options are missing when RX2 is preferred.
-            // Assert.Equal(1u, PacketForwarder.DownlinkMessages[0].LnsRxDelay);
+            var expectedLnsRxDelay = LoRaOperationTimeWatcher.CalculateRXWindowsTime(expectingSecondWindow ? Region.ReceiveDelay2 : Region.ReceiveDelay1,
+                                                                                     loRaDevice.ReportedRXDelay);
+            Assert.Equal(expectedLnsRxDelay, PacketForwarder.DownlinkMessages[0].LnsRxDelay);
+            if (expectingSecondWindow)
+            {
+                Assert.Equal(default, PacketForwarder.DownlinkMessages[0].DataRateRx1);
+                Assert.Equal(default, PacketForwarder.DownlinkMessages[0].FrequencyRx1);
+            } else
+            {
+                Assert.NotEqual(default, PacketForwarder.DownlinkMessages[0].DataRateRx1);
+                Assert.NotEqual(default, PacketForwarder.DownlinkMessages[0].FrequencyRx1);
+            }
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
