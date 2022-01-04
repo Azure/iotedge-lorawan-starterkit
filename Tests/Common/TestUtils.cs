@@ -137,8 +137,8 @@ namespace LoRaWan.Tests.Common
             var finalReportedProperties = new Dictionary<string, object>
             {
                 { TwinProperty.DevAddr, simulatedDevice.DevAddr },
-                { TwinProperty.AppSKey, simulatedDevice.AppSKey },
-                { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
+                { TwinProperty.AppSKey, simulatedDevice.AppSKey?.ToString() },
+                { TwinProperty.NwkSKey, simulatedDevice.NwkSKey?.ToString() },
                 { TwinProperty.DevNonce, simulatedDevice.DevNonce.ToString() },
                 { TwinProperty.NetID, simulatedDevice.NetId },
                 { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
