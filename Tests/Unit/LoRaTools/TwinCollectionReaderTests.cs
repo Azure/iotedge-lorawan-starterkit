@@ -122,6 +122,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             Assert.Equal(DataRateIndex.DR8, dr);
         }
 
+        [Fact]
+        public void Undefined_Enum_Values_Are_Not_Parsed()
+        {
+            const string key = "test";
+            var tc = CreateTwinCollectionReader(key, 100);
+            Assert.False(tc.TryRead<DataRateIndex>(key, out _));
+        }
+
         [Theory]
         [InlineData(nameof(DataRateIndex.DR8), DataRateIndex.DR8)]
         [InlineData("dr8", DataRateIndex.DR8)]

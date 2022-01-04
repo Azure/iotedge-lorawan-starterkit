@@ -57,7 +57,13 @@ namespace LoRaTools.Utils
 
             try
             {
-                value = (T)Convert.ChangeType(some, typeof(T), CultureInfo.InvariantCulture);
+                var t = typeof(T);
+                var someConvertedValue = (T)Convert.ChangeType(some, t, CultureInfo.InvariantCulture);
+                if (t.IsEnum && !t.IsEnumDefined(someConvertedValue))
+                {
+                    return false;
+                }
+                value = someConvertedValue;
             }
             catch (Exception ex) when (ex is ArgumentException
                                           or InvalidCastException
