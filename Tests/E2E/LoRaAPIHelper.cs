@@ -6,10 +6,12 @@ namespace LoRaWan.Tests.E2E
     using System;
     using System.Net.Http;
     using System.Net.Http.Headers;
+    using System.Net.WebSockets;
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan.Core;
+    using Newtonsoft.Json;
 
     public static class LoRaAPIHelper
     {
@@ -39,6 +41,15 @@ namespace LoRaWan.Tests.E2E
             var payload = "{\"AdrRequest\":{\"ClearCache\": true},\"GatewayId\":\"integrationTesting\", \"FunctionItems\": " + (int)FunctionBundlerItemType.ADR + "}";
 
             using var content = PreparePostContent(payload);
+            using var response = await httpClient.Value.PostAsync(url, content);
+            return response.IsSuccessStatusCode;
+        }
+
+        public static async Task<bool> SendCloudToDeviceMessage(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        {
+            var url = new Uri($"{baseUrl}cloudtodevicemessage/{devEUI}?code={authCode}");
+            var json = JsonConvert.SerializeObject(c2dMessage);
+            using var content = PreparePostContent(json);
             using var response = await httpClient.Value.PostAsync(url, content);
             return response.IsSuccessStatusCode;
         }

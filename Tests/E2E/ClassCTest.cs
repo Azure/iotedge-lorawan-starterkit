@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.E2E
             {
                 try
                 {
-                    await TestFixtureCi.InvokeModuleDirectMethodAsync(TestFixture.Configuration.LeafDeviceGatewayID, TestFixture.Configuration.NetworkServerModuleID, "cloudtodevicemessage", c2d);
+                    await LoRaAPIHelper.SendCloudToDeviceMessage(device.DeviceID, c2d);
                     break;
                 }
                 catch (Exception ex)
