@@ -17,6 +17,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public FunctionBundlerItemType FunctionItems { get; set; }
 
-        public double? Rssi { get; set; }
+        public int? Rssi { get; set; }
     }
 }
