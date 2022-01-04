@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.E2E
     using LoRaTools.CommonAPI;
     using LoRaWan.Core;
     using Newtonsoft.Json;
+    using Xunit;
 
     public static class LoRaAPIHelper
     {
@@ -45,12 +46,13 @@ namespace LoRaWan.Tests.E2E
             return response.IsSuccessStatusCode;
         }
 
-        public static async Task SendCloudToDeviceMessage(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        public static async Task<bool> SendCloudToDeviceMessage(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
             var url = new Uri($"{baseUrl}cloudtodevicemessage/{devEUI}?code={authCode}");
             var json = JsonConvert.SerializeObject(c2dMessage);
             using var content = PreparePostContent(json);
-            await httpClient.Value.PostAsync(url, content);
+            using var response = await httpClient.Value.PostAsync(url, content);
+            return response.IsSuccessStatusCode;
         }
 
         private static ByteArrayContent PreparePostContent(string requestBody)

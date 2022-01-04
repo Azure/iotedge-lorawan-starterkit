@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.E2E
             {
                 try
                 {
-                    await LoRaAPIHelper.SendCloudToDeviceMessage(device.DeviceID, c2d);
+                    Assert.True(await LoRaAPIHelper.SendCloudToDeviceMessage(device.DeviceID, c2d));
                     break;
                 }
                 catch (Exception ex)
