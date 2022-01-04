@@ -61,6 +61,7 @@ namespace LoRaTools.Utils
                 var someConvertedValue = (T)Convert.ChangeType(some, t, CultureInfo.InvariantCulture);
                 if (t.IsEnum && !t.IsEnumDefined(someConvertedValue))
                 {
+                    LogParsingError(property, some);
                     return false;
                 }
                 value = someConvertedValue;
