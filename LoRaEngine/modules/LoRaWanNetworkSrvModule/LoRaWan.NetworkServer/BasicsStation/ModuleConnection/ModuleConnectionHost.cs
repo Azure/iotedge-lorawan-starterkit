@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 {
+    using LoRaTools.Utils;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
@@ -177,10 +178,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 return false;
             }
 
-            if (desiredProperties.Contains(Constants.FacadeServerUrlKey)
-                && (string)desiredProperties[Constants.FacadeServerUrlKey] is { Length: > 0 } urlString)
+            var reader = new TwinCollectionReader(desiredProperties, this.logger);
+            if (reader.TryRead<string>(Constants.FacadeServerUrlKey, out var faceServerUrl))
             {
-                if (Uri.TryCreate(urlString, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))
+                if (Uri.TryCreate(faceServerUrl, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))
                 {
                     this.loRaDeviceAPIService.URL = url;
                     if (desiredProperties.Contains(Constants.FacadeServerAuthCodeKey))
