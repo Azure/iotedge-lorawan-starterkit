@@ -45,6 +45,15 @@ namespace LoraKeysManagerFacade
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "cloudtodevicemessage/{devEUI}")] HttpRequest req,
             string devEUI)
         {
+            try
+            {
+                VersionValidator.Validate(req);
+            }
+            catch (IncompatibleVersionException ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
+            }
+
             EUIValidator.ValidateDevEUI(devEUI);
 
             var requestBody = await req.ReadAsStringAsync();
