@@ -207,7 +207,17 @@ namespace LoRaWan.NetworkServer
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
-            var downlinkMessage = BuildDownstreamMessage(loRaDevice, request.StationEui, logger, radioMetadata.UpInfo.Xtime, datr, loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo), freq, loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo), lnsRxDelay, ackLoRaMessage, radioMetadata.UpInfo.AntennaPreference);
+            var downlinkMessage = BuildDownstreamMessage(loRaDevice,
+                                                         request.StationEui,
+                                                         logger,
+                                                         radioMetadata.UpInfo.Xtime,
+                                                         receiveWindow == Constants.ReceiveWindow2 ? default : datr,
+                                                         loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo),
+                                                         receiveWindow == Constants.ReceiveWindow2 ? default : freq,
+                                                         loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo),
+                                                         lnsRxDelay,
+                                                         ackLoRaMessage,
+                                                         radioMetadata.UpInfo.AntennaPreference);
 
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkMessage)}");
@@ -331,7 +341,16 @@ namespace LoRaWan.NetworkServer
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
-            var loraDownLinkMessage = BuildDownstreamMessage(loRaDevice, loRaDevice.LastProcessingStationEui, logger, 0, datr, datr, freq, freq, 0, ackLoRaMessage);
+            var loraDownLinkMessage = BuildDownstreamMessage(loRaDevice: loRaDevice,
+                                                             stationEUI: loRaDevice.LastProcessingStationEui,
+                                                             logger: logger,
+                                                             xTime: 0,
+                                                             rx1Datr: default,
+                                                             rx2Datr: datr,
+                                                             freqRx1: default,
+                                                             freqRx2: freq,
+                                                             lnsRxDelay: 0,
+                                                             loRaMessage: ackLoRaMessage);
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(loraDownLinkMessage)}");
 

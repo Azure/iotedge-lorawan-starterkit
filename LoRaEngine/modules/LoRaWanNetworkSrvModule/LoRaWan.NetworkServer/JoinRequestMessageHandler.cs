@@ -282,9 +282,9 @@ namespace LoRaWan.NetworkServer
                 var downlinkMessage = new DownlinkMessage(
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,
-                  loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset),
+                  windowToUse == Constants.ReceiveWindow2 ? default : loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset),
                   loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, logger),
-                  freq,
+                  windowToUse == Constants.ReceiveWindow2 ? default : freq,
                   loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger),
                   DevEui.Parse(loRaDevice.DevEUI),
                   lnsRxDelay,
