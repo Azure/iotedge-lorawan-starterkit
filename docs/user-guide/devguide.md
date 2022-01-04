@@ -298,18 +298,7 @@ The Arduino example provided above will print the message on the console. Keep i
 
 ### Observability
 
-We support Azure Monitor for observability of the LoRaWAN starter kit. If you decide to use Azure Monitor, you will need to create an Application Insights instance and a Log Analytics workspace in your subscription. To enable observability, modify the following settings in your `.env` file:
-
-```{bash}
-APPINSIGHTS_INSTRUMENTATIONKEY={appinsight_key}
-IOT_HUB_RESOURCE_ID=/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Devices/IotHubs/{iot_hub_name}
-LOG_ANALYTICS_WORKSPACE_ID={log_analytics_workspace_id}
-LOG_ANALYTICS_SHARED_KEY={log_analytics_shared_key}
-```
-
-Generate a deployment manifest from `deployment_observability.layered.template.json` and deploy it to the edge devices for which you want to apply the observability. The template will set up the [metrics collector module](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-collect-and-transport-metrics?view=iotedge-2020-11&tabs=iothub#metrics-collector-module) on the edge and connect it with your Log Analytics instance. The gateway will connect to your Application Insights instance. Make sure to set the `APPINSIGHTS_INSTRUMENTATIONKEY` before deploying the `deployment.template.lbs.json` solution, if you want to make sure that the gateway can connect to Application Insights. The Application Insights log level will always be the same as the console log level.
-
-The Network Server will always expose metrics in Prometheus format at the path `/metrics`. You can scrape these metrics using the tool of you choice.
+Refer to the [Observability](observability.md) guide if you want to learn about how to use the starter kit observability features.
 
 ## Debugging in Visual Studio, outside of IoT Edge and Docker
 
