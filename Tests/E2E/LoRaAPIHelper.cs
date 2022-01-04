@@ -45,13 +45,12 @@ namespace LoRaWan.Tests.E2E
             return response.IsSuccessStatusCode;
         }
 
-        public static async Task<bool> SendCloudToDeviceMessage(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        public static async Task SendCloudToDeviceMessage(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
             var url = new Uri($"{baseUrl}cloudtodevicemessage/{devEUI}?code={authCode}");
             var json = JsonConvert.SerializeObject(c2dMessage);
             using var content = PreparePostContent(json);
-            using var response = await httpClient.Value.PostAsync(url, content);
-            return response.IsSuccessStatusCode;
+            await httpClient.Value.PostAsync(url, content);
         }
 
         private static ByteArrayContent PreparePostContent(string requestBody)
