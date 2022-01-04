@@ -226,7 +226,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (this.devAddrCache.TryGetValue(devAddr, out var devices))
                 {
-                    device = devices.Values.FirstOrDefault(x => !string.IsNullOrEmpty(x.NwkSKey) && ValidateMic(x, payload));
+                    device = devices.Values.FirstOrDefault(x => x.NwkSKey is not null && ValidateMic(x, payload));
                 }
             }
 

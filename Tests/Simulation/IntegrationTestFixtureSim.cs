@@ -44,8 +44,8 @@ namespace LoRaWan.Tests.Simulation
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
-                AppSKey = "00000000000000000000000000001001",
-                NwkSKey = "00000000000000000000000000001001",
+                AppSKey = GetAppSessionKey(1001),
+                NwkSKey = GetNetworkSessionKey(1001),
                 DevAddr = "00001001",
             };
 
@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Simulation
             {
                 DeviceID = "0000000000001002",
                 AppEUI = "0000000000001002",
-                AppKey = "00000000000000000000000000001002",
+                AppKey = GetAppKey(1002),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
@@ -65,7 +65,7 @@ namespace LoRaWan.Tests.Simulation
             {
                 DeviceID = "0000000000001003",
                 AppEUI = "0000000000001003",
-                AppKey = "00000000000000000000000000001003",
+                AppKey = GetAppKey(1003),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "http://localhost:8888/api/DecoderValueSensor",
@@ -78,12 +78,12 @@ namespace LoRaWan.Tests.Simulation
                     {
                         DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
                         AppEUI = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-                        AppKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        AppKey = GetAppKey(deviceID),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
-                        AppSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
-                        NwkSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        AppSKey = GetAppSessionKey(deviceID),
+                        NwkSKey = GetNetworkSessionKey(deviceID),
                         DevAddr = deviceID.ToString("00000000", CultureInfo.InvariantCulture),
                     });
             }
@@ -99,8 +99,8 @@ namespace LoRaWan.Tests.Simulation
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
                         KeepAliveTimeout = 0,
-                        AppSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
-                        NwkSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        AppSKey = GetAppSessionKey(deviceID),
+                        NwkSKey = GetNetworkSessionKey(deviceID),
                         DevAddr = deviceID.ToString("00000000", CultureInfo.InvariantCulture),
                     });
             }
@@ -113,12 +113,18 @@ namespace LoRaWan.Tests.Simulation
                     {
                         DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
                         AppEUI = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-                        AppKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        AppKey = GetAppKey(deviceID),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
                     });
             }
         }
+
+        private static AppSessionKey GetAppSessionKey(int value) => AppSessionKey.Parse(GetKeyString(value));
+        private static NetworkSessionKey GetNetworkSessionKey(int value) => NetworkSessionKey.Parse(GetKeyString(value));
+        private static AppKey GetAppKey(int value) => AppKey.Parse(GetKeyString(value));
+
+        private static string GetKeyString(int value) => value.ToString("X8", CultureInfo.InvariantCulture);
     }
 }

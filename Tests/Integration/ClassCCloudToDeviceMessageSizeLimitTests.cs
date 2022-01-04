@@ -70,7 +70,7 @@ namespace LoRaWan.Tests.Integration
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(sentMessage.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
-            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
+            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey.Value);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
         }
 
@@ -141,7 +141,7 @@ namespace LoRaWan.Tests.Integration
             // Get C2D message payload
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(simulatedDevice.AppSKey);
+            payloadDataDown.PerformEncryption(simulatedDevice.AppSKey.Value);
 
             // Verify that expected Mac commands are present
             var expectedMacCommandsCount = 0;

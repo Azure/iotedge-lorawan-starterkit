@@ -235,19 +235,19 @@ namespace LoRaWan.Tests.Common
                         d.AppEUI = string.Concat(Configuration.DevicePrefix, d.AppEUI[Configuration.DevicePrefix.Length..]);
                     }
 
-                    if (!string.IsNullOrEmpty(d.AppKey))
+                    if (d.AppKey is { } someAppKey)
                     {
-                        d.AppKey = string.Concat(Configuration.DevicePrefix, d.AppKey[Configuration.DevicePrefix.Length..]);
+                        d.AppKey = AppKey.Parse(string.Concat(Configuration.DevicePrefix, someAppKey.ToString()[Configuration.DevicePrefix.Length..]));
                     }
 
-                    if (!string.IsNullOrEmpty(d.AppSKey))
+                    if (d.AppSKey is { } someAppSessionKey)
                     {
-                        d.AppSKey = string.Concat(Configuration.DevicePrefix, d.AppSKey[Configuration.DevicePrefix.Length..]);
+                        d.AppSKey = AppSessionKey.Parse(string.Concat(Configuration.DevicePrefix, someAppSessionKey.ToString()[Configuration.DevicePrefix.Length..]));
                     }
 
-                    if (!string.IsNullOrEmpty(d.NwkSKey))
+                    if (d.NwkSKey is { } someNetworkSessionKey)
                     {
-                        d.NwkSKey = string.Concat(Configuration.DevicePrefix, d.NwkSKey[Configuration.DevicePrefix.Length..]);
+                        d.NwkSKey = NetworkSessionKey.Parse(string.Concat(Configuration.DevicePrefix, someNetworkSessionKey.ToString()[Configuration.DevicePrefix.Length..]));
                     }
 
                     if (!string.IsNullOrEmpty(d.DevAddr))

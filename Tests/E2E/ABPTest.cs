@@ -191,8 +191,8 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device7_ABP;
             LogTestStart(device);
 
-            var appSKeyToUse = "000102030405060708090A0B0C0D0E0F";
-            var nwkSKeyToUse = "01020304050607080910111213141516";
+            var appSKeyToUse = AppSessionKey.Parse("000102030405060708090A0B0C0D0E0F");
+            var nwkSKeyToUse = NetworkSessionKey.Parse("01020304050607080910111213141516");
             Assert.NotEqual(appSKeyToUse, device.AppSKey);
             Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
@@ -237,7 +237,7 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device8_ABP;
             LogTestStart(device);
 
-            var nwkSKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+            var nwkSKeyToUse = NetworkSessionKey.Parse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
             Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);

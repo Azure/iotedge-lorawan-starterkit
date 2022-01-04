@@ -230,8 +230,8 @@ namespace LoRaWan.Tests.Integration
             // Server should reply with MacCommand Answer
             Assert.NotNull(request.ResponseDownlink);
             var data = new LoRaPayloadData(request.ResponseDownlink.Data);
-            Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
-            data.PerformEncryption(simulatedDevice.NwkSKey);
+            Assert.True(data.CheckMic(simulatedDevice.NwkSKey.Value));
+            data.PerformEncryption(simulatedDevice.NwkSKey.Value);
             data.Frmpayload.Span.Reverse();
             var link = new LoRaTools.LinkCheckAnswer(data.Frmpayload.Span);
             Assert.NotNull(link);
@@ -303,7 +303,7 @@ namespace LoRaWan.Tests.Integration
             // Server should reply with MacCommand Answer
             Assert.NotNull(request.ResponseDownlink);
             var data = new LoRaPayloadData(request.ResponseDownlink.Data);
-            Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
+            Assert.True(data.CheckMic(simulatedDevice.NwkSKey.Value));
             // FOpts are not encrypted
             var link = new LoRaTools.LinkCheckAnswer(data.Fopts.Span);
             Assert.NotNull(link);
@@ -373,9 +373,9 @@ namespace LoRaWan.Tests.Integration
             // Server should reply with MacCommand Answer
             Assert.NotNull(request.ResponseDownlink);
             var data = new LoRaPayloadData(request.ResponseDownlink.Data);
-            Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
+            Assert.True(data.CheckMic(simulatedDevice.NwkSKey.Value));
             // FOpts are not encrypted
-            var payload = data.GetDecryptedPayload(simulatedDevice.AppSKey);
+            var payload = data.GetDecryptedPayload(simulatedDevice.AppSKey.Value);
             var c2dreceivedPayload = Encoding.UTF8.GetString(payload);
             Assert.Equal(c2dMessage.Payload, c2dreceivedPayload);
             // Nothing should be sent to IoT Hub
@@ -663,8 +663,8 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1));
             const string devAddr = "02AABBCC";
-            const string nwkSKey = "00000000000000000000000000000002";
-            const string appSKey = "00000000000000000000000000000001";
+            var nwkSKey = TestKeys.CreateNetworkSessionKey(2);
+            var appSKey = TestKeys.CreateAppSessionKey(1);
             var devEUI = simulatedDevice.DevEUI;
 
             simulatedDevice.SetupJoin(appSKey, nwkSKey, devAddr);
@@ -673,13 +673,13 @@ namespace LoRaWan.Tests.Integration
                 desired: new Dictionary<string, object>
                 {
                     { TwinProperty.AppEUI, simulatedDevice.AppEUI },
-                    { TwinProperty.AppKey, simulatedDevice.AppKey },
+                    { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
                     { TwinProperty.SensorDecoder, nameof(LoRaPayloadDecoder.DecoderValueSensor) },
                 },
                 reported: new Dictionary<string, object>
                 {
-                    { TwinProperty.AppSKey, appSKey },
-                    { TwinProperty.NwkSKey, nwkSKey },
+                    { TwinProperty.AppSKey, appSKey.ToString() },
+                    { TwinProperty.NwkSKey, nwkSKey.ToString() },
                     { TwinProperty.DevAddr, devAddr },
                     { TwinProperty.DevNonce, "ABCD" },
                 });
@@ -995,7 +995,7 @@ namespace LoRaWan.Tests.Integration
 
             // first message should fail
             const int firstMessageFcnt = 3;
-            const string wrongNwkSKey = "00000000000000000000000000001234";
+            var wrongNwkSKey = NetworkSessionKey.Parse("00000000000000000000000000001234");
             var unconfirmedMessageWithWrongMic = simulatedDevice.CreateUnconfirmedDataUpMessage("123", fcnt: firstMessageFcnt, nwkSKey: wrongNwkSKey);
             using var requestWithWrongMic = CreateWaitableRequest(unconfirmedMessageWithWrongMic);
             messageDispatcher.DispatchRequest(requestWithWrongMic);

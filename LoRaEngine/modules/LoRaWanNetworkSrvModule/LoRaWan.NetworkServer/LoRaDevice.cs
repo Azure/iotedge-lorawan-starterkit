@@ -42,17 +42,17 @@ namespace LoRaWan.NetworkServer
         public string DevAddr { get; set; }
 
         // Gets if a device is activated by personalization
-        public bool IsABP => string.IsNullOrEmpty(AppKey);
+        public bool IsABP => AppKey == null;
 
         public string DevEUI { get; set; }
 
-        public string AppKey { get; set; }
+        public AppKey? AppKey { get; set; }
 
         public string AppEUI { get; set; }
 
-        public string NwkSKey { get; set; }
+        public NetworkSessionKey? NwkSKey { get; set; }
 
-        public string AppSKey { get; set; }
+        public AppSessionKey? AppSKey { get; set; }
 
         public string AppNonce { get; set; }
 
@@ -266,7 +266,7 @@ namespace LoRaWan.NetworkServer
             if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
             {
                 // ABP Case
-                AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value as string;
+                AppSKey = AppSessionKey.TryParse(twin.Properties.Desired[TwinProperty.AppSKey].Value as string, out var someAppSessionKey) ? someAppSessionKey : null;
 
                 if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
                     throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
@@ -274,13 +274,13 @@ namespace LoRaWan.NetworkServer
                 if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
                     throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
 
-                NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value as string;
+                NwkSKey = NetworkSessionKey.TryParse(twin.Properties.Desired[TwinProperty.NwkSKey].Value as string, out var someNetworkSessionKey) ? someNetworkSessionKey : null;
                 DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value as string;
 
-                if (string.IsNullOrEmpty(NwkSKey))
+                if (NwkSKey is null)
                     throw new InvalidLoRaDeviceException("NwkSKey is empty");
 
-                if (string.IsNullOrEmpty(AppSKey))
+                if (AppSKey is null)
                     throw new InvalidLoRaDeviceException("AppSKey is empty");
 
                 if (string.IsNullOrEmpty(DevAddr))
@@ -300,7 +300,7 @@ namespace LoRaWan.NetworkServer
                     throw new InvalidLoRaDeviceException("Missing AppKey for OTAA device");
                 }
 
-                AppKey = twin.Properties.Desired[TwinProperty.AppKey].Value as string;
+                AppKey = LoRaWan.AppKey.TryParse(twin.Properties.Desired[TwinProperty.AppKey].Value as string, out var someAppKey) ? someAppKey : null;
 
                 if (!twin.Properties.Desired.Contains(TwinProperty.AppEUI))
                 {
@@ -314,10 +314,10 @@ namespace LoRaWan.NetworkServer
                     DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value as string;
 
                 if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
-                    AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value as string;
+                    AppSKey = AppSessionKey.TryParse(twin.Properties.Reported[TwinProperty.AppSKey].Value as string, out var someAppSessionKey) ? someAppSessionKey : null;
 
                 if (twin.Properties.Reported.Contains(TwinProperty.NwkSKey))
-                    NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey].Value as string;
+                    NwkSKey = NetworkSessionKey.TryParse(twin.Properties.Reported[TwinProperty.NwkSKey].Value as string, out var someNetworkSessionKey) ? someNetworkSessionKey : null;
 
                 if (twin.Properties.Reported.Contains(TwinProperty.NetID))
                     NetID = twin.Properties.Reported[TwinProperty.NetID].Value as string;
@@ -893,8 +893,8 @@ namespace LoRaWan.NetworkServer
         internal virtual async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties)
         {
             var reportedProperties = new TwinCollection();
-            reportedProperties[TwinProperty.AppSKey] = updateProperties.AppSKey;
-            reportedProperties[TwinProperty.NwkSKey] = updateProperties.NwkSKey;
+            reportedProperties[TwinProperty.AppSKey] = updateProperties.AppSKey.ToString();
+            reportedProperties[TwinProperty.NwkSKey] = updateProperties.NwkSKey.ToString();
             reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr;
             reportedProperties[TwinProperty.FCntDown] = 0;
             reportedProperties[TwinProperty.FCntUp] = 0;
@@ -1079,12 +1079,12 @@ namespace LoRaWan.NetworkServer
             var payloadData = payload as LoRaPayloadData;
 
             var adjusted32bit = payloadData != null ? Get32BitAjustedFcntIfSupported(payloadData) : null;
-            var ret = payload.CheckMic(NwkSKey, adjusted32bit);
+            var ret = payload.CheckMic(NwkSKey.Value, adjusted32bit);
             if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.GetFcnt()))
             {
                 payloadData.Reset32BitBlockInfo();
                 // if the upper 16bits changed on the client, it can be that we can't decrypt
-                ret = payloadData.CheckMic(NwkSKey, Get32BitAjustedFcntIfSupported(payloadData, true));
+                ret = payloadData.CheckMic(NwkSKey.Value, Get32BitAjustedFcntIfSupported(payloadData, true));
                 if (ret)
                 {
                     // this is an indication that the lower 16 bits rolled over on the client

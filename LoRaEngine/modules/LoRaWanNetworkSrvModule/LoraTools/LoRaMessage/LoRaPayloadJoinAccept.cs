@@ -98,7 +98,7 @@ namespace LoRaTools.LoRaMessage
             }
         }
 
-        public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)
+        public LoRaPayloadJoinAccept(byte[] inputMessage, AppKey appKey)
         {
             if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
 
@@ -111,10 +111,11 @@ namespace LoRaTools.LoRaMessage
             // Array.Copy(decrypted, 0, inputMessage, 0, decrypted.Length);
             // DecryptPayload(inputMessage);
             var aesEngine = new AesEngine();
-            var key = ConversionHelper.StringToByteArray(appKey);
-            aesEngine.Init(true, new KeyParameter(key));
+            var rawKey = new byte[AppKey.Size];
+            _ = appKey.Write(rawKey);
+            aesEngine.Init(true, new KeyParameter(rawKey));
             using var aes = Aes.Create("AesManaged");
-            aes.Key = key;
+            aes.Key = rawKey;
             aes.IV = new byte[16];
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
             // Cipher is part of the LoRaWAN specification
@@ -165,7 +166,7 @@ namespace LoRaTools.LoRaMessage
             Mic = new Memory<byte>(mic);
         }
 
-        public override byte[] PerformEncryption(string appSkey)
+        public override byte[] PerformEncryption(AppKey key)
         {
             byte[] pt;
             if (!CfList.Span.IsEmpty)
@@ -178,7 +179,9 @@ namespace LoRaTools.LoRaMessage
             }
 
             using var aes = Aes.Create("AesManaged");
-            aes.Key = ConversionHelper.StringToByteArray(appSkey);
+            var rawKey = new byte[AppKey.Size];
+            _ = key.Write(rawKey);
+            aes.Key = rawKey;
             aes.IV = new byte[16];
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
             // Cipher is part of the LoRaWAN specification
@@ -204,12 +207,12 @@ namespace LoRaTools.LoRaMessage
             return messageArray.ToArray();
         }
 
-        public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
+        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             throw new NotImplementedException();
         }
 
-        public byte[] Serialize(string appKey)
+        public byte[] Serialize(AppKey appKey)
         {
             var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)
@@ -220,5 +223,11 @@ namespace LoRaTools.LoRaMessage
 
             return GetByteMessage();
         }
+
+        public override byte[] PerformEncryption(NetworkSessionKey key) => throw new NotImplementedException();
+
+        public override byte[] PerformEncryption(AppSessionKey key) => throw new NotImplementedException();
+
+        public override bool CheckMic(AppKey key) => throw new NotImplementedException();
     }
 }

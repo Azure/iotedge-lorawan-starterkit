@@ -34,26 +34,26 @@ namespace LoRaWan.Tests.Integration
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             // Device twin will be updated
-            string afterJoin1AppSKey = null;
-            string afterJoin1NwkSKey = null;
+            AppSessionKey? afterJoin1AppSKey = null;
+            NetworkSessionKey? afterJoin1NwkSKey = null;
             string afterJoin1DevAddr = null;
-            string afterJoin2AppSKey = null;
-            string afterJoin2NwkSKey = null;
+            AppSessionKey? afterJoin2AppSKey = null;
+            NetworkSessionKey? afterJoin2NwkSKey = null;
             string afterJoin2DevAddr = null;
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true, TimeSpan.FromSeconds(10))
                 .Callback<TwinCollection>((updatedTwin) =>
                 {
-                    afterJoin1AppSKey = updatedTwin[TwinProperty.AppSKey];
-                    afterJoin1NwkSKey = updatedTwin[TwinProperty.NwkSKey];
+                    afterJoin1AppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
+                    afterJoin1NwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
                     afterJoin1DevAddr = updatedTwin[TwinProperty.DevAddr];
 
                     // update setup for no delay
@@ -61,8 +61,8 @@ namespace LoRaWan.Tests.Integration
                         .ReturnsAsync(true)
                         .Callback<TwinCollection>((updatedTwin2) =>
                         {
-                            afterJoin2AppSKey = updatedTwin2[TwinProperty.AppSKey];
-                            afterJoin2NwkSKey = updatedTwin2[TwinProperty.NwkSKey];
+                            afterJoin2AppSKey = AppSessionKey.Parse(updatedTwin2[TwinProperty.AppSKey].Value);
+                            afterJoin2NwkSKey = NetworkSessionKey.Parse(updatedTwin2[TwinProperty.NwkSKey].Value);
                             afterJoin2DevAddr = updatedTwin2[TwinProperty.DevAddr];
                         });
                 });

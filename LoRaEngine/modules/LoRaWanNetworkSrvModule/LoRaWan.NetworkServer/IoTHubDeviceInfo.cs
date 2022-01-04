@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer
 
         public string GatewayId { get; set; }
 
-        public string NwkSKey { get; set; }
+        public NetworkSessionKey NwkSKey { get; set; }
 
         public IoTHubDeviceInfo()
         {

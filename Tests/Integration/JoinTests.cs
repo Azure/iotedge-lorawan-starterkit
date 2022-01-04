@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Integration
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             twin.Properties.Reported[TwinProperty.FCntUp] = initialFcntUp;
@@ -52,8 +52,8 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             // Device twin will be updated
-            string afterJoinAppSKey = null;
-            string afterJoinNwkSKey = null;
+            AppSessionKey? afterJoinAppSKey = null;
+            NetworkSessionKey? afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
             uint afterJoinFcntDown = 0;
             uint afterJoinFcntUp = 0;
@@ -61,9 +61,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((updatedTwin) =>
                 {
-                    if(updatedTwin.Contains(TwinProperty.AppSKey)) afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
-                    if (updatedTwin.Contains(TwinProperty.NwkSKey)) afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
-                    if (updatedTwin.Contains(TwinProperty.DevAddr))  afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
+                    if (updatedTwin.Contains(TwinProperty.AppSKey)) afterJoinAppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
+                    if (updatedTwin.Contains(TwinProperty.NwkSKey)) afterJoinNwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
+                    if (updatedTwin.Contains(TwinProperty.DevAddr)) afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
                     afterJoinFcntDown = updatedTwin[TwinProperty.FCntDown];
                     afterJoinFcntUp = updatedTwin[TwinProperty.FCntUp];
                     // should not save class C device properties
@@ -125,7 +125,7 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(joinRequest.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkJoinAcceptMessage = PacketForwarder.DownlinkMessages[0];
-            var joinAccept = new LoRaPayloadJoinAccept(downlinkJoinAcceptMessage.Data, simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(downlinkJoinAcceptMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             // check that the device is in cache
@@ -224,7 +224,7 @@ namespace LoRaWan.Tests.Integration
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             LoRaDeviceClient.SetupSequence(x => x.GetTwinAsync(CancellationToken.None))
@@ -232,14 +232,14 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(twin);
 
             // Device twin will be updated
-            string afterJoinAppSKey = null;
-            string afterJoinNwkSKey = null;
+            AppSessionKey? afterJoinAppSKey = null;
+            NetworkSessionKey? afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((updatedTwin) =>
                 {
-                    afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
-                    afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
+                    afterJoinAppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
+                    afterJoinNwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
                     afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
                 })
                 .ReturnsAsync(true);
@@ -279,7 +279,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(joinRequest2.ProcessingSucceeded);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var joinRequestDownlinkMessage2 = PacketForwarder.DownlinkMessages[0];
-            var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage2.Data, simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage2.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
@@ -420,7 +420,7 @@ namespace LoRaWan.Tests.Integration
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
@@ -473,7 +473,7 @@ namespace LoRaWan.Tests.Integration
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))

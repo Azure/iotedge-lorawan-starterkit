@@ -117,7 +117,7 @@ namespace LoRaWan.Tests.E2E
         {
             var device = TestFixtureCi.Device3_OTAA;
             LogTestStart(device);
-            var appKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+            var appKeyToUse = AppKey.Parse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
             Assert.NotEqual(appKeyToUse, device.AppKey);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);

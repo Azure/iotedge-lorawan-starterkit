@@ -25,15 +25,29 @@ namespace LoRaTools
             return ConversionHelper.ByteArrayToString(devAddr);
         }
 
+        public static NetworkSessionKey CalculateNetworkSessionKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        {
+            var keyString = CalculateKey(type, appnonce, netid, devNonce, appKey);
+            return NetworkSessionKey.Parse(keyString);
+        }
+
+        public static AppSessionKey CalculateAppSessionKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        {
+            var keyString = CalculateKey(type, appnonce, netid, devNonce, appKey);
+            return AppSessionKey.Parse(keyString);
+        }
+
         // don't work with CFLIST atm
-        public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, byte[] appKey)
+        private static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
         {
             if (type is null) throw new ArgumentNullException(nameof(type));
             if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
             if (netid is null) throw new ArgumentNullException(nameof(netid));
 
             using var aes = Aes.Create("AesManaged");
-            aes.Key = appKey;
+            var rawAppKey = new byte[AppKey.Size];
+            _ = appKey.Write(rawAppKey);
+            aes.Key = rawAppKey;
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
             // Cipher is part of the LoRaWAN specification
             aes.Mode = CipherMode.ECB;

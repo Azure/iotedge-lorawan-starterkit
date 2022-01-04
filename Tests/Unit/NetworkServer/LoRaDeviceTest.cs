@@ -123,7 +123,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDevice = new LoRaDevice(string.Empty, "ABC0200000000009", connectionManager);
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
-            Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
+            Assert.Equal(AppKey.Parse("ABC02000000000000000000000000009"), loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
             Assert.Equal(0U, loRaDevice.FCntDown);
@@ -131,8 +131,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(0U, loRaDevice.FCntUp);
             Assert.Equal(0U, loRaDevice.LastSavedFCntUp);
             Assert.False(loRaDevice.HasFrameCountChanges);
-            Assert.Empty(loRaDevice.AppSKey ?? string.Empty);
-            Assert.Empty(loRaDevice.NwkSKey ?? string.Empty);
+            Assert.Null(loRaDevice.AppSKey);
+            Assert.Null(loRaDevice.NwkSKey);
             Assert.Empty(loRaDevice.DevAddr ?? string.Empty);
             Assert.Null(loRaDevice.DevNonce);
             Assert.Empty(loRaDevice.NetID ?? string.Empty);
@@ -155,8 +155,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevNonce", "0123" },
                     { "DevAddr", "0000AABB" },
                 });
@@ -168,13 +168,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
-            Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
+            Assert.Equal(AppKey.Parse("ABC02000000000000000000000000009"), loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
             Assert.False(loRaDevice.IsABP);
             Assert.False(loRaDevice.IsOurDevice);
-            Assert.Equal("ABC02000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.NwkSKey);
-            Assert.Equal("ABCD2000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.AppSKey);
+            Assert.Equal(NetworkSessionKey.Parse("ABC02000000000000000000000000009"), loRaDevice.NwkSKey);
+            Assert.Equal(AppSessionKey.Parse("ABCD2000000000000000000000000009"), loRaDevice.AppSKey);
             Assert.Equal(new DevNonce(123), loRaDevice.DevNonce);
             Assert.Equal("0000AABB", loRaDevice.DevAddr);
         }
@@ -185,8 +185,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", this.configuration.GatewayID },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -195,8 +195,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                 });
 
@@ -207,7 +207,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Empty(loRaDevice.AppEUI ?? string.Empty);
-            Assert.Empty(loRaDevice.AppKey ?? string.Empty);
+            Assert.Null(loRaDevice.AppKey);
             Assert.Equal(this.configuration.GatewayID, loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
             Assert.True(loRaDevice.IsABP);
@@ -217,8 +217,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(0U, loRaDevice.FCntUp);
             Assert.Equal(0U, loRaDevice.LastSavedFCntUp);
             Assert.False(loRaDevice.HasFrameCountChanges);
-            Assert.Equal("ABC02000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.NwkSKey);
-            Assert.Equal("ABCD2000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.AppSKey);
+            Assert.Equal(NetworkSessionKey.Parse("ABC02000000000000000000000000009"), loRaDevice.NwkSKey);
+            Assert.Equal(AppSessionKey.Parse("ABCD2000000000000000000000000009"), loRaDevice.AppSKey);
             Assert.Null(loRaDevice.DevNonce);
             Assert.Equal("0000AABB", loRaDevice.DevAddr);
         }
@@ -235,8 +235,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -246,8 +246,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                 });
 
@@ -270,8 +270,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -281,8 +281,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                 });
 
@@ -300,8 +300,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -310,8 +310,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                 });
 
@@ -334,8 +334,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -345,8 +345,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                 });
 
@@ -367,8 +367,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -378,8 +378,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                 });
 
@@ -397,8 +397,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -407,8 +407,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                 });
 
@@ -426,15 +426,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                     { "CN470JoinChannel", 10 }
                 },
                 reported: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", "ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
                     { "CN470JoinChannel", 2 }
                 });
@@ -516,7 +516,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 desired: new Dictionary<string, object>
                 {
                     { "AppEUI", "ABC0200000000009" },
-                    { "AppKey", "ABC02000000000000000000000000009" },
+                    { "AppKey", TestKeys.CreateAppKey(1).ToString() },
                 });
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
@@ -618,11 +618,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Initialized_ABP_Device_Has_Fcnt_Should_Have_Non_Zero_Fcnt_Values()
         {
+            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
+            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
+
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", networkSessionKey.ToString() },
+                    { "AppSKey", appSessionKey.ToString() },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", this.configuration.GatewayID },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -631,8 +634,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", networkSessionKey.ToString() },
+                    { "AppSKey", appSessionKey.ToString() },
                     { "DevAddr", "0000AABB" },
                     { "FCntDown", 10 },
                     { "FCntUp", 20 },
@@ -659,11 +662,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Initialized_With_PreferredGateway_And_Region_Should_Get_Properties(
             [CombinatorialValues("EU868", "3132", "eu868", "US915", "us915", "eu")] string regionValue)
         {
+            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
+            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
+
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", networkSessionKey.ToString() },
+                    { "AppSKey", appSessionKey.ToString() },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -672,8 +678,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", networkSessionKey.ToString() },
+                    { "AppSKey", appSessionKey.ToString() },
                     { "DevAddr", "0000AABB" },
                     { "FCntDown", 10 },
                     { "FCntUp", 20 },
@@ -704,11 +710,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(120, 120)]
         public async Task When_Initialized_With_Keep_Alive_Should_Read_Value_From_Twin(object keepAliveTimeoutValue, int expectedKeepAliveTimeout)
         {
+            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
+            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
+
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", networkSessionKey.ToString() },
+                    { "AppSKey", appSessionKey.ToString() },
                     { "DevAddr", "0000AABB" },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -718,8 +727,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "NwkSKey", networkSessionKey.ToString() },
+                    { "AppSKey", appSessionKey.ToString() },
                     { "DevAddr", "0000AABB" }
                 });
 
@@ -827,14 +836,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Initialized_With_Class_C_And_Custom_RX2DR_Should_Have_Correct_Properties()
         {
-            const string appSKey = "ABCD2000000000000000000000000009ABC02000000000000000000000000009";
-            const string nwkSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
+            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
+            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
 
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
                     { "AppEUI", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    { "AppKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppKey", "ABCD2000000000000000000000000009" },
                     { "ClassType", "C" },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "http://mydecoder" },
@@ -844,8 +853,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 reported: new Dictionary<string, object>
                 {
                     { "$version", 1 },
-                    { "NwkSKey", nwkSKey },
-                    { "AppSKey", appSKey },
+                    { "NwkSKey", networkSessionKey.ToString() },
+                    { "AppSKey", appSessionKey.ToString() },
                     { "DevAddr", "0000AABB" },
                     { "FCntDown", 9 },
                     { "FCntUp", 100 },
@@ -867,8 +876,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(100u, loRaDevice.FCntUp);
             Assert.Equal(DR10, loRaDevice.ReportedRX2DataRate.Value);
             Assert.Equal(DR10, loRaDevice.DesiredRX2DataRate.Value);
-            Assert.Equal(appSKey, loRaDevice.AppSKey);
-            Assert.Equal(nwkSKey, loRaDevice.NwkSKey);
+            Assert.Equal(appSessionKey, loRaDevice.AppSKey);
+            Assert.Equal(networkSessionKey, loRaDevice.NwkSKey);
             Assert.Equal(LoRaRegionType.US915, loRaDevice.LoRaRegion);
             Assert.False(loRaDevice.IsABP);
         }
