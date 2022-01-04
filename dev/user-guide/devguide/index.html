@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.2">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.f7951f6f.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bb3983ee.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -698,6 +698,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../observability/" class="md-nav__link">
+        Observability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ci-setup/" class="md-nav__link">
         CI setup
       </a>
@@ -717,18 +731,18 @@
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_9" type="checkbox" id="__nav_3_9" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_10" type="checkbox" id="__nav_3_10" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3_9">
+        <label class="md-nav__link" for="__nav_3_10">
           Basic Station configuration
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_9">
+        <label class="md-nav__title" for="__nav_3_10">
           <span class="md-nav__icon md-icon"></span>
           Basic Station configuration
         </label>
@@ -1603,11 +1617,11 @@ FACADE_AUTH_CODE=yourfunctionpassword
 <!-- markdown-link-check-disable -->
 <p>To provisioning a device in Azure IoT Hub with these identifiers and capable to <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoRaPayloadDecoder.cs">decode</a> simple value payload into Json you have to create a device with:</p>
 <p>Device Id: <code>47AAC86800430010</code> and Device Twin's deired properties:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
-  <span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span> <span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;AppKey&quot;</span><span class="p">:</span> <span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span> <span class="s2">&quot;DecoderValueSensor&quot;</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;AppKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DecoderValueSensor&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>You can  provision the device manually in the Azure portal or use the provided <a href="../../tools/device-provisioning/">Command Line Interface Provisioning Tool to list, query, verify add, update, and remove  devices</a>.</p>
 <!-- markdown-link-check-enable -->
@@ -1623,15 +1637,15 @@ FACADE_AUTH_CODE=yourfunctionpassword
 <ul>
 <li><a href="https://www.thethingsnetwork.org/lorawan/security.html">DevAddr, AppSKey and NwkSKey</a> are generated and stored in the Device Twin, e.g.:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span> <span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;AppKey&quot;</span><span class="p">:</span> <span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span> <span class="s2">&quot;DecoderValueSensor&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;AppSKey&quot;</span><span class="p">:</span> <span class="s2">&quot;5E8513F64D99A63753A5F0DBB9FB9F91&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;NwkSKey&quot;</span><span class="p">:</span> <span class="s2">&quot;C0EF4B9495BD4A4C32B42438CD52D4B8&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;DevAddr&quot;</span><span class="p">:</span> <span class="s2">&quot;025DEAAE&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;DevNonce&quot;</span><span class="p">:</span> <span class="s2">&quot;D9B6&quot;</span>
-  <span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;AppKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DecoderValueSensor&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;AppSKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5E8513F64D99A63753A5F0DBB9FB9F91&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;NwkSKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C0EF4B9495BD4A4C32B42438CD52D4B8&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;DevAddr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;025DEAAE&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;DevNonce&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;D9B6&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <ul>
 <li>If you follow the logs of the network server module (e.g. <code>sudo iotedge logs LoRaWanNetworkSrvModule -f</code>) you can follow the LoRa device join:</li>
@@ -1647,27 +1661,27 @@ TX ACK RECEIVED
 <ul>
 <li>Every 30 seconds the temperature is transmitted by the device, e.g.:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;time&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-  <span class="nt">&quot;tmms&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-  <span class="nt">&quot;tmst&quot;</span><span class="p">:</span> <span class="mi">4226472308</span><span class="p">,</span>
-  <span class="nt">&quot;freq&quot;</span><span class="p">:</span> <span class="mf">868.5</span><span class="p">,</span>
-  <span class="nt">&quot;chan&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-  <span class="nt">&quot;rfch&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-  <span class="nt">&quot;stat&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-  <span class="nt">&quot;modu&quot;</span><span class="p">:</span> <span class="s2">&quot;LORA&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;datr&quot;</span><span class="p">:</span> <span class="s2">&quot;SF12BW125&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;codr&quot;</span><span class="p">:</span> <span class="s2">&quot;4/5&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;rssi&quot;</span><span class="p">:</span> <span class="mi">-33</span><span class="p">,</span>
-  <span class="nt">&quot;lsnr&quot;</span><span class="p">:</span> <span class="mf">7.5</span><span class="p">,</span>
-  <span class="nt">&quot;size&quot;</span><span class="p">:</span> <span class="mi">18</span><span class="p">,</span>
-  <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">18.78</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;EUI&quot;</span><span class="p">:</span> <span class="s2">&quot;47AAC86800430010&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;gatewayId&quot;</span><span class="p">:</span> <span class="s2">&quot;berry2&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;edgets&quot;</span><span class="p">:</span> <span class="mi">1534253192857</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;tmms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;tmst&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4226472308</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;freq&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">868.5</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;chan&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;rfch&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;stat&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;modu&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LORA&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;datr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SF12BW125&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;codr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4/5&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;rssi&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-33</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;lsnr&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">7.5</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;temperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">18.78</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;EUI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;47AAC86800430010&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;gatewayId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;berry2&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;edgets&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1534253192857</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>Note: an easy way to follow messages send from the device is again with VSCode: right click on the device in the explorer -&gt; <code>Start Monitoring D2C Message</code>.</p>
 <p>This is how a complete transmission looks like:</p>
@@ -1675,14 +1689,7 @@ TX ACK RECEIVED
 <p>You can even test sending Cloud-2-Device message (e.g. by VSCode right click on the device in the explorer -&gt; <code>Send C2D Message To Device</code>).</p>
 <p>The Arduino example provided above will print the message on the console. Keep in mind that a <a href="https://www.thethingsnetwork.org/lorawan/">LoRaWAN Class A</a> device will only receive after a transmit, in our case every 30 seconds.</p>
 <h3 id="observability">Observability</h3>
-<p>We support Azure Monitor for observability of the LoRaWAN starter kit. If you decide to use Azure Monitor, you will need to create an Application Insights instance and a Log Analytics workspace in your subscription. To enable observability, modify the following settings in your <code>.env</code> file:</p>
-<div class="highlight"><pre><span></span><code>APPINSIGHTS_INSTRUMENTATIONKEY={appinsight_key}
-IOT_HUB_RESOURCE_ID=/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Devices/IotHubs/{iot_hub_name}
-LOG_ANALYTICS_WORKSPACE_ID={log_analytics_workspace_id}
-LOG_ANALYTICS_SHARED_KEY={log_analytics_shared_key}
-</code></pre></div>
-<p>Generate a deployment manifest from <code>deployment_observability.layered.template.json</code> and deploy it to the edge devices for which you want to apply the observability. The template will set up the <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-collect-and-transport-metrics?view=iotedge-2020-11&amp;tabs=iothub#metrics-collector-module">metrics collector module</a> on the edge and connect it with your Log Analytics instance. The gateway will connect to your Application Insights instance. Make sure to set the <code>APPINSIGHTS_INSTRUMENTATIONKEY</code> before deploying the <code>deployment.template.lbs.json</code> solution, if you want to make sure that the gateway can connect to Application Insights. The Application Insights log level will always be the same as the console log level.</p>
-<p>The Network Server will always expose metrics in Prometheus format at the path <code>/metrics</code>. You can scrape these metrics using the tool of you choice.</p>
+<p>Refer to the <a href="../observability/">Observability</a> guide if you want to learn about how to use the starter kit observability features.</p>
 <h2 id="debugging-in-visual-studio-outside-of-iot-edge-and-docker">Debugging in Visual Studio, outside of IoT Edge and Docker</h2>
 <!-- markdown-link-check-disable -->
 
@@ -1707,18 +1714,18 @@ LOG_ANALYTICS_SHARED_KEY={log_analytics_shared_key}
 </li>
 <li>
 <p>Add a <code>local.settings.json</code> file to the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">LoRaKeysManagerFacade</a> containing:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;IsEncrypted&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;AzureWebJobsStorage&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Connection String of your deployed blob storage&gt;&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;WEBSITE_CONTENTSHARE&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Name of your Azure function&gt;&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;IsEncrypted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;AzureWebJobsStorage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Connection String of your deployed blob storage&gt;&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;WEBSITE_CONTENTSHARE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Name of your Azure function&gt;&quot;</span><span class="w"></span>
 
-  <span class="p">},</span>
-  <span class="nt">&quot;ConnectionStrings&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Connection string of your IoT Hub Owner (go to keys -&gt; IoT Hub owner and select the connection string)&gt;&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;RedisConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Connection string of your Redis Cache&gt;&quot;</span>
-  <span class="p">}</span>
-<span class="p">}</span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;ConnectionStrings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Connection string of your IoT Hub Owner (go to keys -&gt; IoT Hub owner and select the connection string)&gt;&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;RedisConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Connection string of your Redis Cache&gt;&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 </li>
 <li>
@@ -1810,10 +1817,10 @@ LOG_ANALYTICS_SHARED_KEY={log_analytics_shared_key}
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.649a939e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.289a2a4b.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       

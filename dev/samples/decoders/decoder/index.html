@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.2">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.f7951f6f.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.bb3983ee.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -524,6 +524,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../user-guide/observability/" class="md-nav__link">
+        Observability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../user-guide/ci-setup/" class="md-nav__link">
         CI setup
       </a>
@@ -543,18 +557,18 @@
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_9" type="checkbox" id="__nav_3_9" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_10" type="checkbox" id="__nav_3_10" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3_9">
+        <label class="md-nav__link" for="__nav_3_10">
           Basic Station configuration
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_9">
+        <label class="md-nav__title" for="__nav_3_10">
           <span class="md-nav__icon md-icon"></span>
           Basic Station configuration
         </label>
@@ -1174,23 +1188,23 @@
 <p>To add a new decoder, simply copy or reuse  the sample <code>DecoderValueSensor</code> method from the <code>LoraDecoders</code> class in <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/DecoderSample/Classes/LoraDecoders.cs">LoraDecoder.cs</a>. You can name the method whatever you like and can create as many decoders as you need by adding new, individual methods to the <code>LoraDecoders</code> class.</p>
 <p>The payload sent to the decoder is passed as string <code>devEui</code>, byte[] <code>payload</code> and uint <code>fport</code>.</p>
 <p>After writing the code that decodes your message, your method should return a <strong>string containing valid JSON</strong> containing the response to be sent upstream.</p>
-<div class="highlight"><pre><span></span><code>internal static class LoraDecoders
-{
-    private static string DecoderValueSensor(string devEUI, byte[] payload, byte fport)
-    {
-        // EITHER: Convert a payload containing a string back to string format for further processing
-        var result = Encoding.UTF8.GetString(payload);
+<div class="highlight"><pre><span></span><code><span class="k">internal</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">LoraDecoders</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">private</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">DecoderValueSensor</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">devEUI</span><span class="p">,</span><span class="w"> </span><span class="kt">byte</span><span class="p">[]</span><span class="w"> </span><span class="n">payload</span><span class="p">,</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="n">fport</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// EITHER: Convert a payload containing a string back to string format for further processing</span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="n">GetString</span><span class="p">(</span><span class="n">payload</span><span class="p">);</span><span class="w"></span>
 
-        // OR: Convert a payload containing binary data to HEX string for further processing
-        var result_binary = ConversionHelper.ByteArrayToString(payload);
+<span class="w">        </span><span class="c1">// OR: Convert a payload containing binary data to HEX string for further processing</span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">result_binary</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ConversionHelper</span><span class="p">.</span><span class="n">ByteArrayToString</span><span class="p">(</span><span class="n">payload</span><span class="p">);</span><span class="w"></span>
 
-        // Write code that decodes the payload here.
+<span class="w">        </span><span class="c1">// Write code that decodes the payload here.</span>
 
-        // Return a JSON string containing the decoded data
-        return JsonConvert.SerializeObject(new { value = result });
+<span class="w">        </span><span class="c1">// Return a JSON string containing the decoded data</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">JsonConvert</span><span class="p">.</span><span class="n">SerializeObject</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">value</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="p">});</span><span class="w"></span>
 
-    }
-}
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>You can test the decoder on your machine by debugging the SensorDecoderModule project in Visual Studio.</p>
 <p>When creating a debugging configuration in Visual Studio Code or a <code>launchSettings.json</code> file in Visual Studio, the default address that the webserver will try to use is <code>http://localhost:5000</code> or <code>https://localhost:5001</code>. You can override this with any port of your choice.</p>
@@ -1330,10 +1344,10 @@ http://<decoder module name>/api/<DecoderName>
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.649a939e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.289a2a4b.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       

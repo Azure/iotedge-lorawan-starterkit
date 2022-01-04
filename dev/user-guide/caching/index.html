@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.2">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.f7951f6f.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bb3983ee.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -641,6 +641,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../observability/" class="md-nav__link">
+        Observability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ci-setup/" class="md-nav__link">
         CI setup
       </a>
@@ -660,18 +674,18 @@
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_9" type="checkbox" id="__nav_3_9" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_10" type="checkbox" id="__nav_3_10" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3_9">
+        <label class="md-nav__link" for="__nav_3_10">
           Basic Station configuration
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_9">
+        <label class="md-nav__title" for="__nav_3_10">
           <span class="md-nav__icon md-icon"></span>
           Basic Station configuration
         </label>
@@ -1306,36 +1320,36 @@
 <p>Stores an instance of type <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/DeviceCacheInfo.cs"><code>DeviceCacheInfo</code></a> by DevEUI to keep track of FCntUp, FCntDown, GatewayId per LoRaWAN Network Server (LNS). The cache is used to have a distributed lock in a multi gateway scenario. The info per gateway is stored using the DevEUI to determine what GW is allowed to process a particular message and respond to the sending device.</p>
 <p>All the values in this cache are LoRaWAN related and don't require any other information than what we get from the device and the gateway handling a particular message.</p>
 <p>This cache needs to be reset, when a device re-joins.</p>
-<div class="highlight"><pre><span></span><code><span class="k">public</span> <span class="k">class</span> <span class="nc">DeviceCacheInfo</span>
-<span class="p">{</span>
-  <span class="k">public</span> <span class="kt">uint</span> <span class="n">FCntUp</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-  <span class="k">public</span> <span class="kt">uint</span> <span class="n">FCntDown</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-  <span class="k">public</span> <span class="kt">string</span> <span class="n">GatewayId</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">DeviceCacheInfo</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">uint</span><span class="w"> </span><span class="n">FCntUp</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">uint</span><span class="w"> </span><span class="n">FCntDown</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">GatewayId</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p><a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/DeviceCacheInfo.cs">iotedge-lorawan-starterkit/DeviceCacheInfo.cs at dev · Azure/iotedge-lorawan-starterkit (github.com)</a></p>
 <h3 id="loradevaddrcache">LoRaDevAddrCache</h3>
 <p>The <code>LoRaDevAddrCache</code> contains important information from the IoT Hub we require for different scenarios. Most of the information is stored in device twins that are loaded and synchronized on a predefined schedule. Twins queries have strict limits in terms of reads/device and module <a href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-quotas-throttling#operation-throttles">Understand Azure IoT Hub quotas and throttling | Microsoft Docs</a>. Therefore this cache was put in the middle to handle the higher load we would generate to read out the information stored in IoT Hub.</p>
 <p>The cache is organized as a HSET - <a href="https://redis.io/commands/hset">HSET – Redis</a> - The key being the DevAddr and individual DevEUI as the field as multiple devices can have the same DevAddr. The values are <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/DevAddrCacheInfo.cs"><code>DevAddrCacheInfo</code></a>.</p>
-<div class="highlight"><pre><span></span><code><span class="k">public</span> <span class="k">class</span> <span class="nc">DevAddrCacheInfo</span> <span class="p">:</span> <span class="n">IoTHubDeviceInfo</span>
-<span class="p">{</span>
-  <span class="k">public</span> <span class="kt">string</span> <span class="n">GatewayId</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-  <span class="k">public</span> <span class="n">DateTime</span> <span class="n">LastUpdatedTwins</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-  <span class="k">public</span> <span class="kt">string</span> <span class="n">NwkSKey</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">DevAddrCacheInfo</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IoTHubDeviceInfo</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">GatewayId</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="n">DateTime</span><span class="w"> </span><span class="n">LastUpdatedTwins</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">NwkSKey</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="k">public</span> <span class="k">class</span> <span class="nc">IoTHubDeviceInfo</span>
-<span class="p">{</span>
-  <span class="k">public</span> <span class="kt">string</span> <span class="n">DevAddr</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-  <span class="k">public</span> <span class="kt">string</span> <span class="n">DevEUI</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-  <span class="k">public</span> <span class="kt">string</span> <span class="n">PrimaryKey</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-<span class="p">}</span>
+<span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">IoTHubDeviceInfo</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">DevAddr</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">DevEUI</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">PrimaryKey</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p><a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/DevAddrCacheInfo.cs">iotedge-lorawan-starterkit/DevAddrCacheInfo.cs at dev · Azure/iotedge-lorawan-starterkit (github.com)</a></p>
 <p>This cache is automatically being populated on a schedule. We have a function trigger <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/SyncDevAddrCache.cs"><code>SyncDevAddrCache</code></a> that is triggered on a regular basis (currently every 5min) to validate what synchronization is required.</p>
 <p>If the system does warm up, it will trigger a full reload. The full reload fetches all devices from the registry and synchronizes the relevant values from the twins. The sync process, does not synchronize the private key of the device from IoT hub (they will be loaded on request).</p>
 <p>The full reload will be performed at most once every 24h (unless the redis cache is completely cleared). The incremental updates do make sure we only load the delta using the timestamps on the desired and reported property:</p>
-<div class="highlight"><pre><span></span><code><span class="kt">var</span> <span class="n">query</span> <span class="p">=</span> <span class="s">$&quot;SELECT * FROM devices where properties.desired.$metadata.$lastUpdated &gt;= &#39;{lastUpdate}&#39; OR properties.reported.$metadata.DevAddr.$lastUpdated &gt;= &#39;{lastUpdate}&#39;&quot;</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">$&quot;SELECT * FROM devices where properties.desired.$metadata.$lastUpdated &gt;= &#39;{lastUpdate}&#39; OR properties.reported.$metadata.DevAddr.$lastUpdated &gt;= &#39;{lastUpdate}&#39;&quot;</span><span class="p">;</span><span class="w"></span>
 </code></pre></div>
 <h3 id="join-related-caching">Join related caching</h3>
 <p>When we receive OTAA requests, we manage the potential of conflicting with multiple gateways as well with the redis cache. We maintain 2 caches:</p>
@@ -1349,11 +1363,11 @@
 </li>
 </ol>
 <p>The Join-info cache contains information required when a new device joins the network. The cache is keyed by [DevEUI]:joininfo and is valid for 60min after initial creation.</p>
-<div class="highlight"><pre><span></span><code><span class="k">public</span> <span class="k">class</span> <span class="nc">JoinInfo</span>
-<span class="p">{</span>
-  <span class="k">public</span> <span class="kt">string</span> <span class="n">PrimaryKey</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-  <span class="k">public</span> <span class="kt">string</span> <span class="n">DesiredGateway</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">JoinInfo</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">PrimaryKey</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">DesiredGateway</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <blockquote>
 <p><a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/JoinInfo.cs">iotedge-lorawan-starterkit/JoinInfo.cs at dev · Azure/iotedge-lorawan-starterkit (github.com)</a></p>
@@ -1454,10 +1468,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.649a939e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.289a2a4b.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       

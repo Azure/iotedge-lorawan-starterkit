@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.2">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.f7951f6f.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bb3983ee.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -524,6 +524,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/observability/" class="md-nav__link">
+        Observability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/ci-setup/" class="md-nav__link">
         CI setup
       </a>
@@ -543,18 +557,18 @@
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_9" type="checkbox" id="__nav_3_9" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_10" type="checkbox" id="__nav_3_10" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3_9">
+        <label class="md-nav__link" for="__nav_3_10">
           Basic Station configuration
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_9">
+        <label class="md-nav__title" for="__nav_3_10">
           <span class="md-nav__icon md-icon"></span>
           Basic Station configuration
         </label>
@@ -1409,34 +1423,34 @@
 Arduino board is connected to (Arduino IDE displays it). On macos you can
 discover through <code>ls /dev/tty*</code> and/or <code>ls /dev/cu*</code> bash commands. On Linux you
 can discover them with <code>ls /dev/ttyACM*</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;testConfiguration&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;IoTHubEventHubConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;Endpoint=sb://xxxx.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx;EntityPath=xxxxx&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;IoTHubEventHubConsumerGroup&quot;</span><span class="p">:</span> <span class="s2">&quot;your-iothub-consumer-group&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;HostName=xxxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;EnsureHasEventDelayBetweenReadsInSeconds&quot;</span><span class="p">:</span> <span class="s2">&quot;15&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;EnsureHasEventMaximumTries&quot;</span><span class="p">:</span> <span class="s2">&quot;5&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;LeafDeviceSerialPort&quot;</span><span class="p">:</span> <span class="s2">&quot;your-usb-port&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;LeafDeviceGatewayID&quot;</span><span class="p">:</span> <span class="s2">&quot;your-iot-edge-device-id&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;CreateDevices&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-    <span class="nt">&quot;NetworkServerModuleLogAssertLevel&quot;</span><span class="p">:</span> <span class="s2">&quot;Error&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;DevicePrefix&quot;</span><span class="p">:</span> <span class="s2">&quot;your-two-letter-device-prefix&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;TcpLog&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;FunctionAppBaseUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-function-app.azurewebsites.net/api/&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;FunctionAppCode&quot;</span><span class="p">:</span> <span class="s2">&quot;your-function-code=&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;TxPower&quot;</span><span class="p">:</span> <span class="s2">&quot;a-value-for-setting-arduino-tx-power&quot;</span><span class="p">,</span>
-    <span class="err">//</span> <span class="kc">f</span><span class="err">ollowi</span><span class="kc">n</span><span class="err">g</span> <span class="err">op</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span> <span class="err">are</span> <span class="err">used</span> <span class="err">a</span><span class="kc">n</span><span class="err">d</span> <span class="kc">t</span><span class="err">o</span> <span class="err">be</span> <span class="err">co</span><span class="kc">nf</span><span class="err">igured</span> <span class="kc">f</span><span class="err">or</span> <span class="err">Mul</span><span class="kc">t</span><span class="err">iCo</span><span class="kc">n</span><span class="err">ce</span><span class="kc">ntrat</span><span class="err">or</span> <span class="err">a</span><span class="kc">n</span><span class="err">d</span> <span class="err">CUPS</span> <span class="err">Tes</span><span class="kc">t</span>
-    <span class="err">//</span> <span class="err">where</span> <span class="kc">t</span><span class="err">he</span> <span class="err">Co</span><span class="kc">n</span><span class="err">ce</span><span class="kc">ntrat</span><span class="err">or</span> <span class="err">s</span><span class="kc">tartu</span><span class="err">p/shu</span><span class="kc">t</span><span class="err">dow</span><span class="kc">n</span> <span class="err">is</span> <span class="err">programma</span><span class="kc">t</span><span class="err">ically</span> <span class="err">i</span><span class="kc">n</span><span class="err">voked</span> <span class="err">i</span><span class="kc">n</span> <span class="kc">t</span><span class="err">he</span> <span class="kc">test</span> <span class="err">i</span><span class="kc">tself</span>
-    <span class="nt">&quot;RunningInCI&quot;</span><span class="p">:</span> <span class="s2">&quot;should-be-false-if-not-running-with-e2e-ci&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;RemoteConcentratorConnection&quot;</span><span class="p">:</span> <span class="s2">&quot;username@remote-ssh-host&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;DefaultBasicStationEui&quot;</span><span class="p">:</span> <span class="s2">&quot;a-fixed-basic-station-eui-to-be-used&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;BasicStationExecutablePath&quot;</span><span class="p">:</span> <span class="s2">&quot;path-to-station-prebuilt-binary-on-remote-ssh-host&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;SshPrivateKeyPath&quot;</span><span class="p">:</span> <span class="s2">&quot;path-on-local-host-to-ssh-private-key-used-for-remote-ssh-connection&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;SharedLnsEndpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;wss://IP_or_DNS:5001&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;SharedCupsEndpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;https://IP_OR_DNS:5002&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;RadioDev&quot;</span><span class="p">:</span> <span class="s2">&quot;the-device-path-for-concentrator (i.e. /dev/ttyUSB0)&quot;</span>
-  <span class="p">}</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;testConfiguration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;IoTHubEventHubConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Endpoint=sb://xxxx.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx;EntityPath=xxxxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;IoTHubEventHubConsumerGroup&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your-iothub-consumer-group&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HostName=xxxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;EnsureHasEventDelayBetweenReadsInSeconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;15&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;EnsureHasEventMaximumTries&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;LeafDeviceSerialPort&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your-usb-port&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;LeafDeviceGatewayID&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your-iot-edge-device-id&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;CreateDevices&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;NetworkServerModuleLogAssertLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Error&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;DevicePrefix&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your-two-letter-device-prefix&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;TcpLog&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;true&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;FunctionAppBaseUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://your-function-app.azurewebsites.net/api/&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;FunctionAppCode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your-function-code=&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;TxPower&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a-value-for-setting-arduino-tx-power&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="err">//</span><span class="w"> </span><span class="kc">f</span><span class="err">ollowi</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">op</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="w"> </span><span class="err">are</span><span class="w"> </span><span class="err">used</span><span class="w"> </span><span class="err">a</span><span class="kc">n</span><span class="err">d</span><span class="w"> </span><span class="kc">t</span><span class="err">o</span><span class="w"> </span><span class="err">be</span><span class="w"> </span><span class="err">co</span><span class="kc">nf</span><span class="err">igured</span><span class="w"> </span><span class="kc">f</span><span class="err">or</span><span class="w"> </span><span class="err">Mul</span><span class="kc">t</span><span class="err">iCo</span><span class="kc">n</span><span class="err">ce</span><span class="kc">ntrat</span><span class="err">or</span><span class="w"> </span><span class="err">a</span><span class="kc">n</span><span class="err">d</span><span class="w"> </span><span class="err">CUPS</span><span class="w"> </span><span class="err">Tes</span><span class="kc">t</span><span class="w"></span>
+<span class="w">    </span><span class="err">//</span><span class="w"> </span><span class="err">where</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">Co</span><span class="kc">n</span><span class="err">ce</span><span class="kc">ntrat</span><span class="err">or</span><span class="w"> </span><span class="err">s</span><span class="kc">tartu</span><span class="err">p/shu</span><span class="kc">t</span><span class="err">dow</span><span class="kc">n</span><span class="w"> </span><span class="err">is</span><span class="w"> </span><span class="err">programma</span><span class="kc">t</span><span class="err">ically</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="err">voked</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="kc">test</span><span class="w"> </span><span class="err">i</span><span class="kc">tself</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;RunningInCI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;should-be-false-if-not-running-with-e2e-ci&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;RemoteConcentratorConnection&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;username@remote-ssh-host&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;DefaultBasicStationEui&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a-fixed-basic-station-eui-to-be-used&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;BasicStationExecutablePath&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path-to-station-prebuilt-binary-on-remote-ssh-host&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;SshPrivateKeyPath&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path-on-local-host-to-ssh-private-key-used-for-remote-ssh-connection&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;SharedLnsEndpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wss://IP_or_DNS:5001&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;SharedCupsEndpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://IP_OR_DNS:5002&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;RadioDev&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the-device-path-for-concentrator (i.e. /dev/ttyUSB0)&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>If the value of <code>CreateDevices</code> setting is true, running the tests will
 create/update devices in IoT Hub prior to executing tests. Devices will be
@@ -1451,27 +1465,27 @@ regulations. Additionally, it makes it easier to track logs for each test.</p>
 <p>Creating a new property of type <code>TestDeviceInfo</code> as (increment the device ids
    by 1):</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Device13_OTAA: used for wrong AppEUI OTAA join</span>
-<span class="k">public</span> <span class="n">TestDeviceInfo</span> <span class="n">Device13_OTAA</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">private</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+<span class="k">public</span><span class="w"> </span><span class="n">TestDeviceInfo</span><span class="w"> </span><span class="n">Device13_OTAA</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 </li>
 <li>
 <p>Create the <code>TestDeviceInfo</code> instance in IntegrationTestFixture.SetupDevices()
    method</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Device13_OTAA: used for Join with wrong AppEUI</span>
-<span class="n">Device13_OTAA</span> <span class="p">=</span> <span class="k">new</span> <span class="n">TestDeviceInfo</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="n">DeviceID</span> <span class="p">=</span> <span class="s">&quot;0000000000000013&quot;</span><span class="p">,</span>
-    <span class="n">AppEUI</span> <span class="p">=</span> <span class="s">&quot;BE7A00000000FEE3&quot;</span><span class="p">,</span>
-    <span class="n">AppKey</span> <span class="p">=</span> <span class="s">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span>
-    <span class="n">SensorDecoder</span> <span class="p">=</span> <span class="s">&quot;DecoderValueSensor&quot;</span><span class="p">,</span>
+<span class="n">Device13_OTAA</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">TestDeviceInfo</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">DeviceID</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;0000000000000013&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">AppEUI</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;BE7A00000000FEE3&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">AppKey</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">SensorDecoder</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;DecoderValueSensor&quot;</span><span class="p">,</span><span class="w"></span>
 
-    <span class="c1">// GatewayID property of the device</span>
-    <span class="n">GatewayID</span> <span class="p">=</span> <span class="n">gatewayID</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// GatewayID property of the device</span>
+<span class="w">    </span><span class="n">GatewayID</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">gatewayID</span><span class="p">,</span><span class="w"></span>
 
-    <span class="c1">// Indicates if the device exists in IoT Hub</span>
-    <span class="c1">// Some tests don&#39;t require a device to actually exist</span>
-    <span class="n">IsIoTHubDevice</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
-<span class="p">};</span>
+<span class="w">    </span><span class="c1">// Indicates if the device exists in IoT Hub</span>
+<span class="w">    </span><span class="c1">// Some tests don&#39;t require a device to actually exist</span>
+<span class="w">    </span><span class="n">IsIoTHubDevice</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="k">true</span><span class="p">,</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 </code></pre></div>
 </li>
 <li>
@@ -1482,28 +1496,28 @@ regulations. Additionally, it makes it easier to track logs for each test.</p>
 </ol>
 <div class="highlight"><pre><span></span><code><span class="c1">// Tests using a invalid Network Session key, resulting in mic failed</span>
 <span class="c1">// Uses Device8_ABP</span>
-<span class="na">[Fact]</span>
-<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="kt">var</span> <span class="n">device</span> <span class="p">=</span> <span class="n">TestFixture</span><span class="p">.</span><span class="n">Device8_ABP</span><span class="p">;</span>
-    <span class="n">LogTestStart</span><span class="p">(</span><span class="n">device</span><span class="p">);</span>
+<span class="na">[Fact]</span><span class="w"></span>
+<span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">TestFixture</span><span class="p">.</span><span class="n">Device8_ABP</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">LogTestStart</span><span class="p">(</span><span class="n">device</span><span class="p">);</span><span class="w"></span>
 
-    <span class="kt">var</span> <span class="n">nwkSKeyToUse</span> <span class="p">=</span> <span class="s">&quot;FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF&quot;</span><span class="p">;</span>
-    <span class="n">Assert</span><span class="p">.</span><span class="n">NotEqual</span><span class="p">(</span><span class="n">nwkSKeyToUse</span><span class="p">,</span> <span class="n">device</span><span class="p">.</span><span class="n">NwkSKey</span><span class="p">);</span>
-    <span class="k">await</span> <span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">setDeviceModeAsync</span><span class="p">(</span><span class="n">LoRaArduinoSerial</span><span class="p">.</span><span class="n">_device_mode_t</span><span class="p">.</span><span class="n">LWABP</span><span class="p">);</span>
-    <span class="k">await</span> <span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">setIdAsync</span><span class="p">(</span><span class="n">device</span><span class="p">.</span><span class="n">DevAddr</span><span class="p">,</span> <span class="n">device</span><span class="p">.</span><span class="n">DeviceID</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
-    <span class="k">await</span> <span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">setKeyAsync</span><span class="p">(</span><span class="n">nwkSKeyToUse</span><span class="p">,</span> <span class="n">device</span><span class="p">.</span><span class="n">AppSKey</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">nwkSKeyToUse</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">Assert</span><span class="p">.</span><span class="n">NotEqual</span><span class="p">(</span><span class="n">nwkSKeyToUse</span><span class="p">,</span><span class="w"> </span><span class="n">device</span><span class="p">.</span><span class="n">NwkSKey</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">setDeviceModeAsync</span><span class="p">(</span><span class="n">LoRaArduinoSerial</span><span class="p">.</span><span class="n">_device_mode_t</span><span class="p">.</span><span class="n">LWABP</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">setIdAsync</span><span class="p">(</span><span class="n">device</span><span class="p">.</span><span class="n">DevAddr</span><span class="p">,</span><span class="w"> </span><span class="n">device</span><span class="p">.</span><span class="n">DeviceID</span><span class="p">,</span><span class="w"> </span><span class="k">null</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">setKeyAsync</span><span class="p">(</span><span class="n">nwkSKeyToUse</span><span class="p">,</span><span class="w"> </span><span class="n">device</span><span class="p">.</span><span class="n">AppSKey</span><span class="p">,</span><span class="w"> </span><span class="k">null</span><span class="p">);</span><span class="w"></span>
 
-    <span class="k">await</span> <span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">SetupLora</span><span class="p">(</span><span class="n">TestFixture</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="n">LoraRegion</span><span class="p">);</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">SetupLora</span><span class="p">(</span><span class="n">TestFixture</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="n">LoraRegion</span><span class="p">);</span><span class="w"></span>
 
-    <span class="k">await</span> <span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">transferPacketAsync</span><span class="p">(</span><span class="s">&quot;100&quot;</span><span class="p">,</span> <span class="m">10</span><span class="p">);</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">transferPacketAsync</span><span class="p">(</span><span class="s">&quot;100&quot;</span><span class="p">,</span><span class="w"> </span><span class="m">10</span><span class="p">);</span><span class="w"></span>
 
-    <span class="c1">// THIS DELAY IS IMPORTANT!</span>
-    <span class="c1">// Don&#39;t pollute radio transmission channel</span>
-    <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="n">Delay</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">DELAY_FOR_SERIAL_AFTER_SENDING_PACKET</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// THIS DELAY IS IMPORTANT!</span>
+<span class="w">    </span><span class="c1">// Don&#39;t pollute radio transmission channel</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">Task</span><span class="p">.</span><span class="n">Delay</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">DELAY_FOR_SERIAL_AFTER_SENDING_PACKET</span><span class="p">);</span><span class="w"></span>
 
-    <span class="c1">// Add here test logic</span>
-<span class="p">}</span>
+<span class="w">    </span><span class="c1">// Add here test logic</span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <h2 id="creating-test-class">Creating Test Class</h2>
 <p>E2E tests cannot be parallelized because they all share dependency to Arduino
@@ -1518,15 +1532,15 @@ be created once per test execution, not per test.</p>
   the parameter.</li>
 </ul>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code> <span class="c1">// Tests xxxx</span>
-<span class="na">[Collection(Constants.TestCollectionName)]</span> <span class="c1">// Set the same collection to ensure execution in serial</span>
-<span class="k">public</span> <span class="k">sealed</span> <span class="k">class</span> <span class="nc">MyTest</span> <span class="p">:</span> <span class="n">IntegrationTestBase</span>
-<span class="p">{</span>
-    <span class="c1">// Constructor receives the IntegrationTestFixture that is a singleton</span>
-    <span class="k">public</span> <span class="nf">MyTest</span><span class="p">(</span><span class="n">IntegrationTestFixture</span> <span class="n">testFixture</span><span class="p">)</span> <span class="p">:</span> <span class="k">base</span><span class="p">(</span><span class="n">testFixture</span><span class="p">)</span>
-    <span class="p">{</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="c1">// Tests xxxx</span>
+<span class="na">[Collection(Constants.TestCollectionName)]</span><span class="w"> </span><span class="c1">// Set the same collection to ensure execution in serial</span>
+<span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MyTest</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IntegrationTestBase</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// Constructor receives the IntegrationTestFixture that is a singleton</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="nf">MyTest</span><span class="p">(</span><span class="n">IntegrationTestFixture</span><span class="w"> </span><span class="n">testFixture</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="k">base</span><span class="p">(</span><span class="n">testFixture</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <h2 id="asserting">Asserting</h2>
 <p>Assertions and expectations are implemented in 3 levels.</p>
@@ -1536,7 +1550,7 @@ the correct response from the antena (LoRaPktFwd module).</p>
 <p>Checks can be done the following way:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// After transferPacketWithConfirmed: Expectation from serial &quot;+CMSG: ACK Received&quot;</span>
 <span class="c1">// It has retries to account for i/o delays</span>
-<span class="k">await</span> <span class="n">AssertUtils</span><span class="p">.</span><span class="n">ContainsWithRetriesAsync</span><span class="p">(</span><span class="s">&quot;+CMSG: ACK Received&quot;</span><span class="p">,</span> <span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">SerialLogs</span><span class="p">);</span>
+<span class="k">await</span><span class="w"> </span><span class="n">AssertUtils</span><span class="p">.</span><span class="n">ContainsWithRetriesAsync</span><span class="p">(</span><span class="s">&quot;+CMSG: ACK Received&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ArduinoDevice</span><span class="p">.</span><span class="n">SerialLogs</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
 <h3 id="lorawan-network-server-module-logs">LoRaWan Network Server Module logs</h3>
 <p>The network server module logs important execution steps. Those messages can be
@@ -1550,15 +1564,15 @@ an operation happens and have the test create assertion on them (i.e. <code>{ "t
 <p>Validating against the module logs.</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Ensures that the message 0000000000000004: message &#39;{&quot;value&quot;: 51}&#39; sent to hub is logged</span>
 <span class="c1">// It contains retries to account for i/o delays</span>
-<span class="k">await</span> <span class="n">TestFixture</span><span class="p">.</span><span class="n">AssertNetworkServerModuleLogStartsWithAsync</span><span class="p">(</span><span class="s">$&quot;{device.DeviceID}: message &#39;{{\&quot;value\&quot;:{msg}}}&#39; sent to hub&quot;</span><span class="p">);</span>
+<span class="k">await</span><span class="w"> </span><span class="n">TestFixture</span><span class="p">.</span><span class="n">AssertNetworkServerModuleLogStartsWithAsync</span><span class="p">(</span><span class="s">$&quot;{device.DeviceID}: message &#39;{{\&quot;value\&quot;:{msg}}}&#39; sent to hub&quot;</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
 <h3 id="iot-hub-device-message">IoT Hub Device Message</h3>
 <p>For end to end validation we listen for device messages arriving in IoT Hub.
 Examples:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Ensure device payload is available. It contains retries to account for i/o delays</span>
 <span class="c1">// Data: {&quot;value&quot;: 51}</span>
-<span class="kt">var</span> <span class="n">expectedPayload</span> <span class="p">=</span> <span class="s">$&quot;{{\&quot;value\&quot;:{msg}}}&quot;</span><span class="p">;</span>
-<span class="k">await</span> <span class="n">TestFixture</span><span class="p">.</span><span class="n">AssertIoTHubDeviceMessageExistsAsync</span><span class="p">(</span><span class="n">device</span><span class="p">.</span><span class="n">DeviceID</span><span class="p">,</span> <span class="n">expectedPayload</span><span class="p">);</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">expectedPayload</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">$&quot;{{\&quot;value\&quot;:{msg}}}&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="k">await</span><span class="w"> </span><span class="n">TestFixture</span><span class="p">.</span><span class="n">AssertIoTHubDeviceMessageExistsAsync</span><span class="p">(</span><span class="n">device</span><span class="p">.</span><span class="n">DeviceID</span><span class="p">,</span><span class="w"> </span><span class="n">expectedPayload</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
 
               
@@ -1640,10 +1654,10 @@ Examples:</p>
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.649a939e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.289a2a4b.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       

@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.2">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.f7951f6f.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bb3983ee.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -524,6 +524,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/observability/" class="md-nav__link">
+        Observability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/ci-setup/" class="md-nav__link">
         CI setup
       </a>
@@ -543,18 +557,18 @@
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_9" type="checkbox" id="__nav_3_9" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_10" type="checkbox" id="__nav_3_10" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3_9">
+        <label class="md-nav__link" for="__nav_3_10">
           Basic Station configuration
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_9">
+        <label class="md-nav__title" for="__nav_3_10">
           <span class="md-nav__icon md-icon"></span>
           Basic Station configuration
         </label>
@@ -1323,17 +1337,17 @@
 <h2 id="setting-up">Setting up</h2>
 <p><a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Tools/Cli-LoRa-Device-Provisioning/appsettings.json">appsettings.json</a> needs to be in the same directory as the cli-lora-device-provisioning binary (verifyloradevice.dll or verifyloradevice.exe).</p>
 <p><a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Tools/Cli-LoRa-Device-Provisioning/appsettings.json">appsettings.json</a> needs to contain a connection string from the Azure IoT Hub you want to work with. This connection string needs to belong to a shared access policy with <strong>registry read</strong>, <strong>registry write</strong> and <strong>service connect</strong> permissions enabled. You can use the default policy named <strong>iothubowner</strong>. It also needs to contain the connection string to the Azure Storage account you want to work with.</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;HostName=youriothub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=AeVMLayazGTS9QRMJtFGSSNwdhUdYR5VwCjaafc3DL0=&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;CredentialStorageConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;DefaultEndpointsProtocol=https;AccountName=yourstorageaccountname;AccountKey=thekey;EndpointSuffix=core.windows.net.&quot;</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HostName=youriothub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=AeVMLayazGTS9QRMJtFGSSNwdhUdYR5VwCjaafc3DL0=&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;CredentialStorageConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DefaultEndpointsProtocol=https;AccountName=yourstorageaccountname;AccountKey=thekey;EndpointSuffix=core.windows.net.&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p><a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Tools/Cli-LoRa-Device-Provisioning/appsettings.json">appsettings.json</a> may <strong>optionally</strong> contain a Network Id (NetId) in case your solution does not use the default Network Id 000001. Since just the last byte from this 3 hex string byte array (6 characters) are used to create a valid DevAddr for ABP LoRa devices, the setting can be either the full 3 bytes (000000 to FFFFFF) or just the shortened, last byte (0 to FF).</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;HostName=youriothub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=AeVMLayazGTS9QRMJtFGSSNwdhUdYR5VwCjaafc3DL0=&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;NetId&quot;</span><span class="p">:</span> <span class="s2">&quot;000001&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;CredentialStorageConnectionString&quot;</span><span class="p">:</span> <span class="s2">&quot;DefaultEndpointsProtocol=https;AccountName=yourstorageaccountname;AccountKey=thekey;EndpointSuffix=core.windows.net.&quot;</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HostName=youriothub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=AeVMLayazGTS9QRMJtFGSSNwdhUdYR5VwCjaafc3DL0=&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;NetId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;000001&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;CredentialStorageConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DefaultEndpointsProtocol=https;AccountName=yourstorageaccountname;AccountKey=thekey;EndpointSuffix=core.windows.net.&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>If NetId is not set, the default 000001 is used. If you have a NetId set in appsettings.json, you can always override it by calling a command of this utility with the --netid option.</p>
 <p>To learn more about what each of the settings in the LoRa device twin does, refer to the <a href="../../quickstart/#optional-device-properties">Quick Start Guide</a>.</p>
@@ -1952,10 +1966,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.649a939e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.289a2a4b.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       
