@@ -229,7 +229,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData("false")]
         [InlineData("FALSE")]
-        [InlineData("0")]
         [InlineData(0)]
         [InlineData(false)]
         public async Task When_Downlink_Is_Disabled_In_Twin_Should_Have_DownlinkEnabled_Equals_False(object downlinkEnabledTwinValue)
