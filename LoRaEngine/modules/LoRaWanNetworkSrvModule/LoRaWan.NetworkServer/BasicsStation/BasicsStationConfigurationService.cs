@@ -8,9 +8,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
+    using LoRaTools.Utils;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging;
 
     internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable
     {
@@ -24,14 +26,17 @@ namespace LoRaWan.NetworkServer.BasicsStation
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiService;
         private readonly ILoRaDeviceFactory loRaDeviceFactory;
         private readonly IMemoryCache cache;
+        private readonly ILogger<BasicsStationConfigurationService> logger;
 
         public BasicsStationConfigurationService(LoRaDeviceAPIServiceBase loRaDeviceApiService,
                                                  ILoRaDeviceFactory loRaDeviceFactory,
-                                                 IMemoryCache cache)
+                                                 IMemoryCache cache,
+                                                 ILogger<BasicsStationConfigurationService> logger)
         {
             this.loRaDeviceApiService = loRaDeviceApiService;
             this.loRaDeviceFactory = loRaDeviceFactory;
             this.cache = cache;
+            this.logger = logger;
         }
 
         public void Dispose() => this.cacheSemaphore.Dispose();
@@ -71,10 +76,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            if (desiredProperties.Contains(RouterConfigPropertyName))
+            var reader = new TwinCollectionReader(desiredProperties, this.logger);
+
+            if (reader.TryRead<string>(RouterConfigPropertyName, out var someRouterConfig))
             {
-                var configJson = desiredProperties[RouterConfigPropertyName].ToString();
-                return LnsStationConfiguration.GetConfiguration(configJson);
+                return LnsStationConfiguration.GetConfiguration(someRouterConfig);
             }
             throw new LoRaProcessingException($"Property '{RouterConfigPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
         }
@@ -88,10 +94,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<string[]> GetAllowedClientThumbprintsAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            if (desiredProperties.Contains(ClientThumbprintPropertyName))
+            var reader = new TwinCollectionReader(desiredProperties, this.logger);
+
+            if (reader.TryRead<string>(ClientThumbprintPropertyName, out var someClientThumbprint))
             {
-                string thumbprintsArrayJson = desiredProperties[ClientThumbprintPropertyName].ToString();
-                return JsonReader.Array(JsonReader.String()).Read(thumbprintsArrayJson);
+                return JsonReader.Array(JsonReader.String()).Read(someClientThumbprint);
             }
             throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
         }
@@ -99,10 +106,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<CupsTwinInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            if (desiredProperties.Contains(CupsPropertyName))
+            var reader = new TwinCollectionReader(desiredProperties, this.logger);
+
+            if (reader.TryRead<string>(CupsPropertyName, out var someCupsValue))
             {
-                var cupsJson = ((object)desiredProperties[CupsPropertyName]).ToString();
-                return JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson);
+                return JsonSerializer.Deserialize<CupsTwinInfo>(someCupsValue);
             }
 
             throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
