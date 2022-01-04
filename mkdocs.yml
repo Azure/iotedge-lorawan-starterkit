@@ -68,6 +68,7 @@ nav:
     - user-guide/caching.md
     - user-guide/upgrade.md
     - user-guide/documentation.md
+    - user-guide/observability.md
     - user-guide/ci-setup.md
     - 'Basic Station configuration':
       - user-guide/station-device-provisioning.md
