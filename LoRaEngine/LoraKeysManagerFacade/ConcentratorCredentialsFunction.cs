@@ -82,23 +82,30 @@ namespace LoraKeysManagerFacade
             }
 
             var twin = await this.registryManager.GetTwinAsync(stationEui, cancellationToken);
-            var twinReader = new TwinCollectionReader(twin.Properties.Desired, this.logger);
-            this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui.ToString());
-            try
+            if (twin != null)
             {
-                var cupsProperty = twinReader.ReadRequiredString(CupsPropertyName);
-                var parsedJson = JObject.Parse(cupsProperty);
-                var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()
-                                                                            : parsedJson[CupsCredentialsUrlPropertyName].ToString();
-                var result = await GetBase64EncodedBlobAsync(url, cancellationToken);
-                return new OkObjectResult(result);
+                this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui.ToString());
+                try
+                {
+                    var cupsProperty = ((JObject)(object)twin.Properties.Desired[CupsPropertyName]).ToString();
+                    var parsedJson = JObject.Parse(cupsProperty);
+                    var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()
+                                                                               : parsedJson[CupsCredentialsUrlPropertyName].ToString();
+                    var result = await GetBase64EncodedBlobAsync(url, cancellationToken);
+                    return new OkObjectResult(result);
+                }
+                catch (Exception ex) when (ex is ArgumentOutOfRangeException
+                                              or JsonReaderException
+                                              or InvalidOperationException)
+                {
+                    this.logger.LogError(ex, "'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
+                    return new UnprocessableEntityResult();
+                }
             }
-            catch (Exception ex) when (ex is ArgumentOutOfRangeException
-                                          or JsonReaderException
-                                          or InvalidOperationException)
+            else
             {
-                this.logger.LogError(ex, "'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
-                return new UnprocessableEntityResult();
+                this.logger.LogInformation($"Searching for {stationEui} returned 0 devices");
+                return new NotFoundResult();
             }
         }
 

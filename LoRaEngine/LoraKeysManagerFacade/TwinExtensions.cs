@@ -3,7 +3,9 @@
 
 namespace LoraKeysManagerFacade
 {
+    using System.Globalization;
     using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json.Linq;
 
     internal static class TwinExtensions
     {
@@ -32,7 +34,7 @@ namespace LoraKeysManagerFacade
             if (twin == null || !twin.Contains(propertyName))
                 return false;
 
-            someValue = (string)(object)twin[propertyName];
+            someValue = ((object)twin[propertyName]).ToString();
             return true;
         }
 
