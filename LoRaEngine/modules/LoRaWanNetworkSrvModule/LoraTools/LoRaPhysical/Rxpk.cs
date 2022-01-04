@@ -47,7 +47,7 @@ namespace LoRaTools.LoRaPhysical
         public string Codr { get; set; }
 
         [JsonProperty("rssi")]
-        public double Rssi { get; set; }
+        public int Rssi { get; set; }
 
         [JsonProperty("lsnr")]
         public float Lsnr { get; set; }
