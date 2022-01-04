@@ -184,12 +184,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 if (Uri.TryCreate(faceServerUrl, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))
                 {
                     this.loRaDeviceAPIService.URL = url;
-                    if (desiredProperties.Contains(Constants.FacadeServerAuthCodeKey))
+                    if (reader.TryRead<string>(Constants.FacadeServerAuthCodeKey, out var authCode))
                     {
-                        this.loRaDeviceAPIService.SetAuthCode((string)desiredProperties[Constants.FacadeServerAuthCodeKey]);
+                        this.loRaDeviceAPIService.SetAuthCode(authCode);
                     }
 
-                    this.logger.LogDebug("Desired property changed");
                     return true;
                 }
                 else
