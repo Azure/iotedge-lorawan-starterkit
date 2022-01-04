@@ -8,6 +8,7 @@ namespace LoraKeysManagerFacade
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
+    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Common.Exceptions;
@@ -230,15 +231,8 @@ namespace LoraKeysManagerFacade
                     if (twin.DeviceId != null)
                     {
                         var rawDevAddr = string.Empty;
-                        if (twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
-                        {
-                            rawDevAddr = twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
-                        }
-                        else if (twin.Properties.Reported.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
-                        {
-                            rawDevAddr = twin.Properties.Reported[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
-                        }
-                        else
+                        if (!twin.Properties.Desired.TryReadString(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out rawDevAddr) &&
+                            !twin.Properties.Reported.TryReadString(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out rawDevAddr))
                         {
                             continue;
                         }

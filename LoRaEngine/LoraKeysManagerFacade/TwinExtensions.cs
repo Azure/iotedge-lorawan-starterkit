@@ -25,7 +25,7 @@ namespace LoraKeysManagerFacade
         public static string GetTwinPropertyStringSafe(this TwinCollection twin, string propertyName)
             => TryReadString(twin, propertyName, out var someValue) ? someValue : string.Empty;
 
-        private static bool TryReadString(this TwinCollection twin, string propertyName, out string someValue)
+        public static bool TryReadString(this TwinCollection twin, string propertyName, out string someValue)
         {
             someValue = default;
 
