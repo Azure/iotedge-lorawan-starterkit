@@ -49,22 +49,38 @@ namespace LoRaTools.Utils
             var some = (object)twinCollection[property];
 
             // quick path for values that can be directly converted
-            if (some is JValue someJValue && someJValue.Value is T someT)
+            if (some is JValue someJValue)
             {
-                value = someT;
-                return true;
+                if (someJValue.Value is T someT)
+                {
+                    value = someT;
+                    return true;
+                }
+
+                if (someJValue.Type == JTokenType.Null)
+                {
+                    return false;
+                }
             }
 
             try
             {
                 var t = typeof(T);
-                var someConvertedValue = (T)Convert.ChangeType(some, t, CultureInfo.InvariantCulture);
-                if (t.IsEnum && !t.IsEnumDefined(someConvertedValue))
+
+                if (TryGetConverter(t, out var converter))
                 {
-                    LogParsingError(property, some);
-                    return false;
+                    value = (T)converter(some);
                 }
-                value = someConvertedValue;
+                else
+                {
+                    var someConvertedValue = (T)Convert.ChangeType(some, t, CultureInfo.InvariantCulture);
+                    if (t.IsEnum && !t.IsEnumDefined(someConvertedValue))
+                    {
+                        LogParsingError(property, some);
+                        return false;
+                    }
+                    value = someConvertedValue;
+                }
             }
             catch (Exception ex) when (ex is ArgumentException
                                           or InvalidCastException
@@ -77,6 +93,16 @@ namespace LoRaTools.Utils
             }
             return true;
         }
+
+        private static bool TryGetConverter(Type t, [NotNullWhen(true)] out Func<object, object>? converter)
+        {
+            return converters.TryGetValue(t, out converter);
+        }
+
+        private static readonly Dictionary<Type, Func<object, object>> converters = new Dictionary<Type, Func<object, object>>
+        {
+            [typeof(StationEui)] = (s) => StationEui.Parse(s.ToString())
+        };
 
         public bool TryReadDevNonce(string property, [NotNullWhen(true)] out DevNonce? result)
         {
