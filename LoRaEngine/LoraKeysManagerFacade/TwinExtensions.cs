@@ -8,24 +8,14 @@ namespace LoraKeysManagerFacade
     internal static class TwinExtensions
     {
         internal static string GetGatewayID(this Twin twin)
-        {
-            return twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID)
-                ? twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_GatewayID].Value as string
-                : string.Empty;
-        }
+            => GetTwinPropertyStringSafe(twin.Properties.Desired, LoraKeysManagerFacadeConstants.TwinProperty_GatewayID);
 
         internal static string GetNwkSKey(this Twin twin)
         {
-            string networkSessionKey = null;
-            if (twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey))
+            if (!twin.Properties.Desired.TryReadString(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey, out var networkSessionKey))
             {
-                networkSessionKey = twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey].Value as string;
+                _ = twin.Properties.Reported.TryReadString(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey, out networkSessionKey);
             }
-            else if (twin.Properties.Reported.Contains(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey))
-            {
-                networkSessionKey = twin.Properties.Reported[LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey].Value as string;
-            }
-
             return networkSessionKey;
         }
 
@@ -33,8 +23,18 @@ namespace LoraKeysManagerFacade
         /// Gets the twin property if exists, return string.Empty if not found.
         /// </summary>
         public static string GetTwinPropertyStringSafe(this TwinCollection twin, string propertyName)
+            => TryReadString(twin, propertyName, out var someValue) ? someValue : string.Empty;
+
+        private static bool TryReadString(this TwinCollection twin, string propertyName, out string someValue)
         {
-            return (twin != null && twin.Contains(propertyName)) ? twin[propertyName].Value as string ?? string.Empty : string.Empty;
+            someValue = default;
+
+            if (twin == null || !twin.Contains(propertyName))
+                return false;
+
+            someValue = (string)(object)twin[propertyName];
+            return true;
         }
+
     }
 }
