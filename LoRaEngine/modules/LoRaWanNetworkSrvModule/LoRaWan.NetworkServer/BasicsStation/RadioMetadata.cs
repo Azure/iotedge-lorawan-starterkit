@@ -29,6 +29,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             SignalNoiseRatio = signalNoiseRatio;
         }
 
+        // Following field is corresponding to the rctx field in LNS protocol
         public uint AntennaPreference { get; init; }
         public ulong Xtime { get; init; }
         public uint GpsTime { get; init; }
