@@ -17,10 +17,10 @@ namespace LoRaWan.Tests.Common
             DownlinkMessages = new List<DownlinkMessage>();
         }
 
-        public Task SendDownstreamAsync(DownlinkMessage message)
+        public Task<bool> SendDownstreamAsync(DownlinkMessage message)
         {
             DownlinkMessages.Add(message);
-            return Task.FromResult(0);
+            return Task.FromResult(true);
         }
     }
 }

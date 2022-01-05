@@ -112,19 +112,36 @@ namespace LoRaWan.NetworkServer
                 fcntDown,
                 this.logger);
 
+            var messageIdLog = message.MessageId ?? "undefined";
+
             if (downlinkMessageBuilderResp.IsMessageTooLong)
             {
                 this.c2dMessageTooLong?.Add(1);
-                this.logger.LogError($"[class-c] cloud to device message too large, rejecting. Id: {message.MessageId ?? "undefined"}");
+                this.logger.LogError($"[class-c] cloud to device message too large, rejecting. Id: {messageIdLog}");
                 if (!await message.RejectAsync())
                 {
-                    this.logger.LogError($"[class-c] failed to reject. Id: {message.MessageId ?? "undefined"}");
+                    this.logger.LogError($"[class-c] failed to reject. Id: {messageIdLog}");
                 }
                 return false;
             }
             else
             {
-                await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
+                if (await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage))
+                {
+                    if (!await message.CompleteAsync())
+                    {
+                        this.logger.LogError($"[class-c] failed to complete the message. Id: {messageIdLog}");
+                    }
+                }
+                else
+                {
+                    this.logger.LogError($"[class-c] failed to send the message, abandoning. Id: {messageIdLog}");
+                    if (!await message.AbandonAsync())
+                    {
+                        this.logger.LogError($"[class-c] failed to abandon the message. Id: {messageIdLog}");
+                    }
+                }
+
                 if (!await frameCounterStrategy.SaveChangesAsync(loRaDevice))
                 {
                     this.logger.LogWarning("[class-c] failed to update framecounter.");

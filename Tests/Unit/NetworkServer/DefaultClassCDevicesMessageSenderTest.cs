@@ -105,7 +105,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
             this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
-                .Returns(Task.CompletedTask)
+                .Returns(Task.FromResult(true))
                 .Callback<DownlinkMessage>(d =>
                 {
                     EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
@@ -367,7 +367,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
             this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
-                .Returns(Task.CompletedTask)
+                .Returns(Task.FromResult(true))
                 .Callback<DownlinkMessage>(d =>
                 {
                     EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);

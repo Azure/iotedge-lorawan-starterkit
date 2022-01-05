@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             this.logger = logger;
         }
 
-        public async Task SendDownstreamAsync(DownlinkMessage message)
+        public async Task<bool> SendDownstreamAsync(DownlinkMessage message)
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
             if (message.StationEui == default) throw new ArgumentException($"A proper StationEui needs to be set. Received '{message.StationEui}'.");
@@ -41,11 +41,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (this.socketWriterRegistry.TryGetHandle(message.StationEui, out var webSocketWriterHandle))
             {
                 var payload = Message(message);
-                await webSocketWriterHandle.SendAsync(payload, CancellationToken.None);
+                var task = webSocketWriterHandle.SendAsync(payload, CancellationToken.None);
+                await task;
+                return task.IsCompletedSuccessfully;
             }
             else
             {
                 this.logger.LogWarning("Could not retrieve an active connection for Station with EUI '{StationEui}'. The payload '{Payload}' will be dropped.", message.StationEui, ConversionHelper.ByteArrayToString(message.Data));
+                return false;
             }
         }
 
