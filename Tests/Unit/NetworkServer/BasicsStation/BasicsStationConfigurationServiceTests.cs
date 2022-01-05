@@ -118,6 +118,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));
                 Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, exception.ErrorCode);
             }
+
+            [Fact]
+            public async Task Fails_With_InvalidCast()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                SetupDeviceKeyLookup(this.stationEui, primaryKey);
+                SetupTwinResponse(this.stationEui, primaryKey, JsonUtil.Strictify("{ 'clientThumbprint': 'x'}"));
+
+                // act and assert
+                var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));
+                Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, exception.ErrorCode);
+                Assert.IsType<InvalidCastException>(exception.InnerException);
+            }
         }
 
         public class GetCupsConfigAsync : BasicsStationConfigurationServiceTests
