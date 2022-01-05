@@ -3,9 +3,7 @@
 
 namespace LoraKeysManagerFacade
 {
-    using System.Globalization;
     using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json.Linq;
 
     internal static class TwinExtensions
     {

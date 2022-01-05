@@ -11,13 +11,13 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using Microsoft.Extensions.Logging.Abstractions;
     using Microsoft.Extensions.Logging;
 
-    public class TwinCollectionReaderTests
+    public class TwinCollectionExtensionsTests
     {
-        private readonly ILogger<TwinCollectionReader> logger;
+        private readonly ILogger logger;
 
-        public TwinCollectionReaderTests()
+        public TwinCollectionExtensionsTests()
         {
-            this.logger = NullLogger<TwinCollectionReader>.Instance;
+            this.logger = NullLogger.Instance;
         }
 
         [Fact]
@@ -150,6 +150,26 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             var tc = CreateTwinCollectionReader(key, QuoteJsonString(jsonValue));
             Assert.True(tc.TryRead<DataRateIndex>(key, out var dr));
             Assert.Equal(expectedValue, dr);
+        }
+
+        [Fact]
+        public void Custom_Reader_DevNonce_Succeeds()
+        {
+            const string key = "DevNonce";
+            var devNonce = new DevNonce(5);
+            var tc = CreateTwinCollectionReader(key, devNonce.AsUInt16);
+            Assert.True(tc.TryRead<DevNonce>(key, out var devNonceRead));
+            Assert.Equal(devNonce, devNonceRead);
+        }
+
+        [Fact]
+        public void Custom_Reader_StationEui_Succeeds()
+        {
+            const string key = "StationEui";
+            var stationEui = new StationEui(ulong.MaxValue);
+            var tc = CreateTwinCollectionReader(key, QuoteJsonString(stationEui.ToString()));
+            Assert.True(tc.TryRead<StationEui>(key, out var stationEuiRead));
+            Assert.Equal(stationEui, stationEuiRead);
         }
 
         private static string QuoteJsonString(string someString)
