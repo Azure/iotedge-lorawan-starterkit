@@ -90,10 +90,30 @@ namespace LoRaTools.Utils
             return true;
         }
 
+        public static bool TryReadJsonBlock(this TwinCollection twinCollection, string property, ILogger? logger, [NotNullWhen(true)] out string? json)
+        {
+            _ = twinCollection ?? throw new ArgumentNullException(nameof(twinCollection));
+            json = null;
+
+            if (!twinCollection.Contains(property))
+                return false;
+
+            try
+            {
+                json = ((object)twinCollection[property]).ToString();
+                return json != null;
+            }
+            catch (InvalidCastException ex)
+            {
+                LogParsingError(logger, property, null, ex);
+                return false;
+            }
+        }
+
         private static bool TryGetCustomConverter(Type t, [NotNullWhen(true)] out Func<object, object>? converter)
             => customConverters.TryGetValue(t, out converter);
 
-        private static void LogParsingError(ILogger? logger, string property, object value, Exception? ex = default)
+        private static void LogParsingError(ILogger? logger, string property, object? value, Exception? ex = default)
             => logger?.LogError(ex, "Failed to parse twin '{TwinProperty}'. The value stored is '{TwinValue}'", property, value);
     }
 }

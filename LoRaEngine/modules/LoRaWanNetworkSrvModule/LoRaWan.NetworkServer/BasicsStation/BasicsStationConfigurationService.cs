@@ -77,9 +77,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            if (desiredProperties.Contains(RouterConfigPropertyName))
+            if (desiredProperties.TryReadJsonBlock(RouterConfigPropertyName, this.logger, out var configJson))
             {
-                var configJson = ((object)desiredProperties[RouterConfigPropertyName]).ToString();
                 return LnsStationConfiguration.GetConfiguration(configJson);
             }
             throw new LoRaProcessingException($"Property '{RouterConfigPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
@@ -113,9 +112,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<CupsTwinInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            if (desiredProperties.Contains(CupsPropertyName))
+            if (desiredProperties.TryReadJsonBlock(CupsPropertyName, this.logger, out var cupsJson))
             {
-                var cupsJson = ((object)desiredProperties[CupsPropertyName]).ToString();
                 return JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson);
             }
 

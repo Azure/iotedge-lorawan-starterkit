@@ -182,6 +182,19 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             Assert.Equal(devAddr, devAddrRead);
         }
 
+        [Fact]
+        public void Reading_Json_Configuration_Block_Suceeds()
+        {
+            const string key = "config";
+            const string rssiValue = "\"rssi\": 1";
+            const string jsonValue = $"{{{rssiValue}}}";
+
+            var tc = new TwinCollection($"{{'{key}':{jsonValue}}}");
+
+            Assert.True(tc.TryReadJsonBlock(key, this.logger, out var json));
+            Assert.Contains(rssiValue, json, StringComparison.Ordinal);
+        }
+
         private static string QuoteJsonString(string someString)
             => someString != null ? $"'{someString}'" : null;
 

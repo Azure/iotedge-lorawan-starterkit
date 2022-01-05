@@ -3,7 +3,6 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 {
-    using Castle.Core.Logging;
     using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
