@@ -137,15 +137,11 @@ namespace LoRaWan.NetworkServer
                     }
                     else
                     {
-                        if (string.IsNullOrEmpty(cachedDevice.DevAddr))
-                        {
-                            // device in cache from a previous join that we didn't complete
-                            // (lost race with another gw) - refresh the twins now and keep it
-                            // in the cache
-                            refreshTasks ??= new List<Task<bool>>();
-                            refreshTasks.Add(cachedDevice.InitializeAsync(this.configuration, CancellationToken.None));
-                            this.logger.LogDebug("refreshing device to fetch DevAddr");
-                        }
+                        // device in cache from a previous join that we didn't complete (lost race with another gw)
+                        // or it re-joined and has a new key - refresh the twins now and keep it in the cache
+                        refreshTasks ??= new List<Task<bool>>();
+                        refreshTasks.Add(cachedDevice.InitializeAsync(this.configuration, CancellationToken.None));
+                        this.logger.LogDebug("refreshing device");
                     }
                 }
 

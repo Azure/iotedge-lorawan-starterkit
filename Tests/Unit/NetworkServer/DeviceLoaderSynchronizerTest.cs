@@ -371,14 +371,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
 
             const string devEUI = "123";
-            var loRaDevice = new Mock<LoRaDevice>(null, devEUI, null);
+            var devAddr = new DevAddr(100);
+            var loRaDevice = new Mock<LoRaDevice>(devAddr.ToString(), devEUI, null);
             loRaDevice.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None))
                 .ReturnsAsync(true);
             deviceCache.Register(loRaDevice.Object);
 
             var deviceLoader = new TestDeviceLoaderSynchronizer(null, null, null, deviceCache);
 
-            await deviceLoader.ExecuteCreateDevicesAsync(new List<IoTHubDeviceInfo> { new IoTHubDeviceInfo { DevAddr = "456",  DevEUI = devEUI} });
+            await deviceLoader.ExecuteCreateDevicesAsync(new List<IoTHubDeviceInfo> { new IoTHubDeviceInfo { DevAddr = devAddr.ToString(),  DevEUI = devEUI} });
 
             loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
         }
