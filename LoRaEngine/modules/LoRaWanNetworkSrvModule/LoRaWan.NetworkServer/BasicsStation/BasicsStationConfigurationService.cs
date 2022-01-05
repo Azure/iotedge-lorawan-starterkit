@@ -77,7 +77,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            if (desiredProperties.TryReadJsonBlock(RouterConfigPropertyName, this.logger, out var configJson))
+            if (desiredProperties.TryReadJsonBlock(RouterConfigPropertyName, out var configJson))
             {
                 return LnsStationConfiguration.GetConfiguration(configJson);
             }
@@ -112,7 +112,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task<CupsTwinInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            if (desiredProperties.TryReadJsonBlock(CupsPropertyName, this.logger, out var cupsJson))
+            if (desiredProperties.TryReadJsonBlock(CupsPropertyName, out var cupsJson))
             {
                 return JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson);
             }

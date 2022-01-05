@@ -191,7 +191,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 
             var tc = new TwinCollection($"{{'{key}':{jsonValue}}}");
 
-            Assert.True(tc.TryReadJsonBlock(key, this.logger, out var json));
+            Assert.True(tc.TryReadJsonBlock(key, out var json));
             Assert.Contains(rssiValue, json, StringComparison.Ordinal);
         }
 
