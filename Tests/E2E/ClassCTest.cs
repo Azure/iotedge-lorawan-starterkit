@@ -21,12 +21,13 @@ namespace LoRaWan.Tests.E2E
         {
         }
 
-        // Ensures that class C devices can receive messages from a direct method call
+        // Ensures that class C devices can receive messages from a direct method call;
+        // the test uses the SendCloudToDeviceMessage endpoint in LoRaKeysManagerFacade
+        // instead of callling direct method from the test code.
         // Uses Device24_ABP
         [Fact]
-        public async Task Test_ClassC_Send_Message_From_Direct_Method_Should_Be_Received()
+        public async Task Test_ClassC_Send_Message_Using_Function_Endpoint_Should_Be_Received()
         {
-            const int MAX_MODULE_DIRECT_METHOD_CALL_TRIES = 3;
             var device = TestFixtureCi.Device24_ABP;
             LogTestStart(device);
 
@@ -54,25 +55,11 @@ namespace LoRaWan.Tests.E2E
                 RawPayload = Convert.ToBase64String(new byte[] { 0xFF, 0x00 }),
             };
 
-            TestLogger.Log($"[INFO] Using service client to call direct method to {TestFixture.Configuration.LeafDeviceGatewayID}/{TestFixture.Configuration.NetworkServerModuleID}");
+            TestLogger.Log($"[INFO] Using service API to send C2D message to device {device.DeviceID}");
             TestLogger.Log($"[INFO] {JsonConvert.SerializeObject(c2d, Formatting.None)}");
 
-            for (var i = 0; i < MAX_MODULE_DIRECT_METHOD_CALL_TRIES; ++i)
-            {
-                try
-                {
-                    Assert.True(await LoRaAPIHelper.SendCloudToDeviceMessage(device.DeviceID, c2d));
-                    break;
-                }
-                catch (Exception ex)
-                {
-#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
-                    if (i == MAX_MODULE_DIRECT_METHOD_CALL_TRIES - 1) throw;
-#pragma warning restore CA1508 // Avoid dead conditional code
-                    TestLogger.Log($"[ERR] Failed to call module direct method: {ex.Message}");
-                    await Task.Delay(TimeSpan.FromSeconds(5));
-                }
-            }
+            // send message using the SendCloudToDeviceMessage API endpoint
+            Assert.True(await LoRaAPIHelper.SendCloudToDeviceMessage(device.DeviceID, c2d));
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 

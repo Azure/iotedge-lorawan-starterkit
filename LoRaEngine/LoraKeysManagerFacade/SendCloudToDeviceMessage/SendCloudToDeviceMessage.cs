@@ -48,13 +48,16 @@ namespace LoraKeysManagerFacade
             try
             {
                 VersionValidator.Validate(req);
+                EUIValidator.ValidateDevEUI(devEUI);
             }
             catch (IncompatibleVersionException ex)
             {
                 return new BadRequestObjectResult(ex.Message);
             }
-
-            EUIValidator.ValidateDevEUI(devEUI);
+            catch (ArgumentException ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
+            }
 
             var requestBody = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(requestBody))
@@ -134,7 +137,7 @@ namespace LoraKeysManagerFacade
                         }
 
                         // class c device that did not send a single upstream message
-                        return new BadRequestObjectResult("Class C devices must sent at least one message upstream. None has been received");
+                        return new ObjectResult("Class C devices must sent at least one message upstream. None has been received") { StatusCode = (int)HttpStatusCode.InternalServerError };
                     }
 
                     // Not a class C device? Send message using sdk/queue
@@ -211,7 +214,7 @@ namespace LoraKeysManagerFacade
             catch (JsonSerializationException ex)
             {
 
-                this.log.LogError(ex, "Failed to serialize C2D message {c2dmessage} to {devEUI}", devEUI);
+                this.log.LogError(ex, "Failed to serialize C2D message {c2dmessage} to {devEUI}", JsonConvert.SerializeObject(c2dMessage), devEUI);
                 return new ObjectResult("Failed serialize C2D Message")
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError
