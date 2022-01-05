@@ -338,14 +338,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Throws<JsonException>(() => LnsStationConfiguration.GetConfiguration(input));
         }
 
-        private static string GetTwinConfigurationJson(IEnumerable<NetId> allowedNetIds,
-                                                       IEnumerable<(JoinEui Min, JoinEui Max)> joinEuiRanges,
-                                                       string region,
-                                                       string hwspec,
-                                                       (Hertz Min, Hertz Max) freqRange,
-                                                       IEnumerable<(SpreadingFactor SpreadingFactor, Bandwidth Bandwidth, bool DnOnly)> dataRates,
-                                                       string sx1301Conf = null,
-                                                       RouterConfigStationFlags flags = RouterConfigStationFlags.None)
+        internal static string GetTwinConfigurationJson(IEnumerable<NetId> allowedNetIds,
+                                                        IEnumerable<(JoinEui Min, JoinEui Max)> joinEuiRanges,
+                                                        string region,
+                                                        string hwspec,
+                                                        (Hertz Min, Hertz Max) freqRange,
+                                                        IEnumerable<(SpreadingFactor SpreadingFactor, Bandwidth Bandwidth, bool DnOnly)> dataRates,
+                                                        string sx1301Conf = null,
+                                                        RouterConfigStationFlags flags = RouterConfigStationFlags.None)
         {
             var defaultSx1301Conf = JsonUtil.Strictify(@"[{
                 'radio_0': {

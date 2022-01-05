@@ -74,6 +74,9 @@ namespace LoRaWan.NetworkServer
                 ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
                 : null;
 
+            if (loRaRegion is DwellTimeLimitedRegion someRegion)
+                someRegion.UseDwellTimeSetting(loRaDevice.ReportedDwellTimeSetting);
+
             if (receiveWindow == Constants.ReceiveWindow2)
             {
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
@@ -377,6 +380,7 @@ namespace LoRaWan.NetworkServer
                         case Cid.DevStatusCmd:
                         case Cid.NewChannelCmd:
                         case Cid.RXTimingCmd:
+                        case Cid.TxParamSetupCmd:
                         default:
                             break;
                     }

@@ -6,10 +6,12 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.Mac;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Logging;
@@ -242,6 +244,27 @@ namespace LoRaWan.NetworkServer
                                 requiresConfirmation = true;
                             }
                         }
+
+                        // Persist dwell time settings in device reported properties
+                        if (loraPayload.MacCommands is not null && loraPayload.MacCommands.Any(m => m.Cid == Cid.TxParamSetupCmd))
+                        {
+                            if (request.Region is DwellTimeLimitedRegion someRegion)
+                            {
+                                if (someRegion.DesiredDwellTimeSetting != loRaDevice.ReportedDwellTimeSetting)
+                                {
+                                    loRaDevice.UpdateDwellTimeSetting(someRegion.DesiredDwellTimeSetting, acceptChanges: false);
+                                    _ = await loRaDevice.SaveChangesAsync(force: true);
+                                }
+                                else
+                                {
+                                    this.logger.LogDebug("Received 'TxParamSetupAns' even though reported dwell time settings match desired dwell time settings.");
+                                }
+                            }
+                            else
+                            {
+                                this.logger.LogWarning("Received 'TxParamSetupAns' in region '{Region}' which does not support dwell limitations.", request.Region.LoRaRegion);
+                            }
+                        }
                     }
                     #endregion
                     else if (loraPayload.Fport is { } payloadPort)
@@ -283,6 +306,17 @@ namespace LoRaWan.NetworkServer
                                 }
                             }
                         }
+                    }
+
+                    if (request.Region is DwellTimeLimitedRegion someDwellTimeLimitedRegion
+                        && loRaDevice.ReportedDwellTimeSetting != someDwellTimeLimitedRegion.DesiredDwellTimeSetting
+                        && cloudToDeviceMessage == null)
+                    {
+                        this.logger.LogDebug("Preparing 'TxParamSetupReq' MAC command downstream.");
+                        // put the MAC command into a C2D message.
+                        cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { MacCommands = { new TxParamSetupRequest(someDwellTimeLimitedRegion.DesiredDwellTimeSetting) } };
+                        fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                        requiresConfirmation = true;
                     }
 
                     var sendUpstream = concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || loRaDevice.Deduplication is not DeduplicationMode.Drop;
