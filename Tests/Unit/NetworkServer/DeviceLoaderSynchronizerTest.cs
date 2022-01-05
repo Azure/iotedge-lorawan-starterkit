@@ -237,7 +237,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             _ = target.LoadAsync();
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", appSKey: simulatedDevice.AppSKey, nwkSKey: NetworkSessionKey.Parse("00000000000000000000000000EEAAFF"));
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", appSKey: simulatedDevice.AppSKey, nwkSKey: TestKeys.CreateNetworkSessionKey(0xEEAAFF));
 
             using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);
