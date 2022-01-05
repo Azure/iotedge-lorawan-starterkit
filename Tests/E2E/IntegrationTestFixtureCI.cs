@@ -192,6 +192,7 @@ namespace LoRaWan.Tests.E2E
 
         public AppKey GetAppKey(int deviceId, bool multiGw = false) =>
            AppKey.Parse(GetKey32(deviceId, multiGw));
+
         public NetworkSessionKey GetNetworkSessionKey(int deviceId, bool multiGw = false) =>
            NetworkSessionKey.Parse(GetKey32(deviceId, multiGw));
 
