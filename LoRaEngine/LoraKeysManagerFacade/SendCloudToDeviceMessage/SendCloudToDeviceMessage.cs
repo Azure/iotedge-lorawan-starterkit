@@ -137,7 +137,10 @@ namespace LoraKeysManagerFacade
                         }
 
                         // class c device that did not send a single upstream message
-                        return new ObjectResult("Class C devices must sent at least one message upstream. None has been received") { StatusCode = (int)HttpStatusCode.InternalServerError };
+                        return new ObjectResult("Class C devices must sent at least one message upstream. None has been received")
+                        {
+                            StatusCode = (int)HttpStatusCode.InternalServerError
+                        };
                     }
 
                     // Not a class C device? Send message using sdk/queue
