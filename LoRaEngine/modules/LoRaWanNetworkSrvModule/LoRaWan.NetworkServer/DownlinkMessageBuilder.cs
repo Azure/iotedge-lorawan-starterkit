@@ -218,7 +218,7 @@ namespace LoRaWan.NetworkServer
             return new DownlinkMessageBuilderResponse(downlinkMessage, isMessageTooLong, receiveWindow);
         }
 
-        private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, ushort lnsRxDelay, LoRaPayloadData loRaMessage, uint antennaPreference = 0)
+        private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, ushort lnsRxDelay, LoRaPayloadData loRaMessage, uint? antennaPreference = null)
         {
             var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey);
             var downlinkMessage = new DownlinkMessage(
