@@ -87,15 +87,15 @@ namespace LoraKeysManagerFacade
                 this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui.ToString());
                 try
                 {
-                    var cupsProperty = ((JObject)(object)twin.Properties.Desired[CupsPropertyName]).ToString();
-                    var parsedJson = JObject.Parse(cupsProperty);
-                    var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()
-                                                                               : parsedJson[CupsCredentialsUrlPropertyName].ToString();
+                    var someJObj = (JObject)(object)twin.Properties.Desired[CupsPropertyName];
+                    var url = credentialType is ConcentratorCredentialType.Lns ? someJObj[LnsCredentialsUrlPropertyName].ToString()
+                                                                               : someJObj[CupsCredentialsUrlPropertyName].ToString();
                     var result = await GetBase64EncodedBlobAsync(url, cancellationToken);
                     return new OkObjectResult(result);
                 }
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException
                                               or JsonReaderException
+                                              or InvalidCastException
                                               or InvalidOperationException)
                 {
                     this.logger.LogError(ex, "'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
