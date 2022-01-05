@@ -6,43 +6,60 @@ namespace LoRaTools.Regions
     using LoRaTools.Utils;
     using LoRaWan;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using static LoRaWan.DataRateIndex;
     using static LoRaWan.Metric;
 
     public class RegionEU868 : Region
     {
+        private static readonly ImmutableDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DrToConfigurationByDrIndex =
+            new Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)>
+            {
+                [DR0] = (LoRaDataRate.SF12BW125, MaxPayloadSize: 59),
+                [DR1] = (LoRaDataRate.SF11BW125, MaxPayloadSize: 59),
+                [DR2] = (LoRaDataRate.SF10BW125, MaxPayloadSize: 59),
+                [DR3] = (LoRaDataRate.SF9BW125, MaxPayloadSize: 123),
+                [DR4] = (LoRaDataRate.SF8BW125, MaxPayloadSize: 230),
+                [DR5] = (LoRaDataRate.SF7BW125, MaxPayloadSize: 230),
+                [DR6] = (LoRaDataRate.SF7BW250, MaxPayloadSize: 230),
+                [DR7] = (FskDataRate.Fsk50000, MaxPayloadSize: 230),
+            }.ToImmutableDictionary();
+
+        public override IReadOnlyDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration => DrToConfigurationByDrIndex;
+
+        private static readonly ImmutableDictionary<uint, double> MaxEirpByTxPower =
+            new Dictionary<uint, double>
+            {
+                [0] = 16,
+                [1] = 14,
+                [2] = 12,
+                [3] = 10,
+                [4] = 8,
+                [5] = 6,
+                [6] = 4,
+                [7] = 2,
+            }.ToImmutableDictionary();
+
+        public override IReadOnlyDictionary<uint, double> TXPowertoMaxEIRP => MaxEirpByTxPower;
+
+        private static readonly ImmutableArray<IReadOnlyList<DataRateIndex>> RX1DROffsetTableInternal =
+            new IReadOnlyList<DataRateIndex>[]
+            {
+                new[] { DR0, DR0, DR0, DR0, DR0, DR0 }.ToImmutableArray(),
+                new[] { DR1, DR0, DR0, DR0, DR0, DR0 }.ToImmutableArray(),
+                new[] { DR2, DR1, DR0, DR0, DR0, DR0 }.ToImmutableArray(),
+                new[] { DR3, DR2, DR1, DR0, DR0, DR0 }.ToImmutableArray(),
+                new[] { DR4, DR3, DR2, DR1, DR0, DR0 }.ToImmutableArray(),
+                new[] { DR5, DR4, DR3, DR2, DR1, DR0 }.ToImmutableArray(),
+                new[] { DR6, DR5, DR4, DR3, DR2, DR1 }.ToImmutableArray(),
+                new[] { DR7, DR6, DR5, DR4, DR3, DR2 }.ToImmutableArray(),
+            }.ToImmutableArray();
+
+        public override IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable => RX1DROffsetTableInternal;
+
         public RegionEU868()
             : base(LoRaRegionType.EU868)
         {
-            DRtoConfiguration.Add(DR0, (LoRaDataRate.SF12BW125, MaxPayloadSize: 59));
-            DRtoConfiguration.Add(DR1, (LoRaDataRate.SF11BW125, MaxPayloadSize: 59));
-            DRtoConfiguration.Add(DR2, (LoRaDataRate.SF10BW125, MaxPayloadSize: 59));
-            DRtoConfiguration.Add(DR3, (LoRaDataRate.SF9BW125, MaxPayloadSize: 123));
-            DRtoConfiguration.Add(DR4, (LoRaDataRate.SF8BW125, MaxPayloadSize: 230));
-            DRtoConfiguration.Add(DR5, (LoRaDataRate.SF7BW125, MaxPayloadSize: 230));
-            DRtoConfiguration.Add(DR6, (LoRaDataRate.SF7BW250, MaxPayloadSize: 230));
-            DRtoConfiguration.Add(DR7, (FskDataRate.Fsk50000, MaxPayloadSize: 230));
-
-            TXPowertoMaxEIRP.Add(0, 16);
-            TXPowertoMaxEIRP.Add(1, 14);
-            TXPowertoMaxEIRP.Add(2, 12);
-            TXPowertoMaxEIRP.Add(3, 10);
-            TXPowertoMaxEIRP.Add(4, 8);
-            TXPowertoMaxEIRP.Add(5, 6);
-            TXPowertoMaxEIRP.Add(6, 4);
-            TXPowertoMaxEIRP.Add(7, 2);
-
-            RX1DROffsetTable = new[]
-            {
-                new[] { DR0, DR0, DR0, DR0, DR0, DR0 },
-                new[] { DR1, DR0, DR0, DR0, DR0, DR0 },
-                new[] { DR2, DR1, DR0, DR0, DR0, DR0 },
-                new[] { DR3, DR2, DR1, DR0, DR0, DR0 },
-                new[] { DR4, DR3, DR2, DR1, DR0, DR0 },
-                new[] { DR5, DR4, DR3, DR2, DR1, DR0 },
-                new[] { DR6, DR5, DR4, DR3, DR2, DR1 },
-                new[] { DR7, DR6, DR5, DR4, DR3, DR2 }
-            };
             var validDataRangeUpAndDownstream = new HashSet<DataRate>
             {
                 LoRaDataRate.SF12BW125, // 0
