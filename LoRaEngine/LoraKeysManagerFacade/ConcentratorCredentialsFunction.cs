@@ -87,9 +87,13 @@ namespace LoraKeysManagerFacade
                 this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui.ToString());
                 try
                 {
-                    var someJObj = (JObject)(object)twin.Properties.Desired[CupsPropertyName];
-                    var url = credentialType is ConcentratorCredentialType.Lns ? someJObj[LnsCredentialsUrlPropertyName].ToString()
-                                                                               : someJObj[CupsCredentialsUrlPropertyName].ToString();
+                    const string cupsKey = "cups";
+                    if (!twin.Properties.Desired.TryReadJsonBlock(cupsKey, this.logger, out var cupsProperty))
+                        throw new ArgumentOutOfRangeException(cupsKey, "failed to parse cups config");
+
+                    var parsedJson = JObject.Parse(cupsProperty);
+                    var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()
+                                                                               : parsedJson[CupsCredentialsUrlPropertyName].ToString();
                     var result = await GetBase64EncodedBlobAsync(url, cancellationToken);
                     return new OkObjectResult(result);
                 }
