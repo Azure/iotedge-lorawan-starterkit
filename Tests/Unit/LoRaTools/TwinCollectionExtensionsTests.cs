@@ -187,7 +187,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         {
             const string key = "config";
             const string rssiValue = "\"rssi\": 1";
-            const string jsonValue = $"{{{rssiValue}}}";
+            const string jsonValue = "{" + rssiValue + "}";
 
             var tc = new TwinCollection($"{{'{key}':{jsonValue}}}");
 
