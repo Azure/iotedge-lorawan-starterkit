@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
@@ -127,7 +128,7 @@ namespace LoRaWan.NetworkServer
             {
                 initTasks = new List<Task<LoRaDevice>>(devices.Count);
 
-                foreach (var foundDevice in devices)
+                foreach (var foundDevice in devices.DistinctBy(x => x.DevEUI))
                 {
                     using var scope = this.logger.BeginDeviceScope(foundDevice.DevEUI);
                     // Only create devices that does not exist in the cache
