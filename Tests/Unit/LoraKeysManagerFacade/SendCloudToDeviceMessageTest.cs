@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Net;
     using System.Text;
@@ -24,7 +23,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
     public class SendCloudToDeviceMessageTest
     {
-        private const string TestDevEUI = "B827EBFFFFF30000";
         private const FramePort TestPort = FramePorts.App1;
 
         private readonly LoRaInMemoryDeviceStore cacheStore;
@@ -50,11 +48,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 DevEUI = devEUI,
             };
 
-            var request = CreateC2DMessageRequest(devEUI, c2dMessage);
+            var request = new DefaultHttpContext().Request;
+            request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
 
             var result = await this.sendCloudToDeviceMessage.Run(request, devEUI);
 
             Assert.IsType<BadRequestObjectResult>(result);
+
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
         }
@@ -62,7 +62,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Request_Is_Missing_Should_Return_BadRequest()
         {
-            var actual = await this.sendCloudToDeviceMessage.Run(null, TestDevEUI);
+            var actual = await this.sendCloudToDeviceMessage.Run(null, "0123456789");
 
             Assert.IsType<BadRequestObjectResult>(actual);
 
@@ -481,18 +481,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
             query.VerifyAll();
-        }
-
-        private static HttpRequest CreateC2DMessageRequest(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
-        {
-            var request = new DefaultHttpContext().Request;
-            request.Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
-                    {
-                        { ApiVersion.QueryStringParamName, ApiVersion.LatestVersion.Name },
-                        { "DevEUI", devEUI }
-                    });
-            request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
-            return request;
         }
     }
 }

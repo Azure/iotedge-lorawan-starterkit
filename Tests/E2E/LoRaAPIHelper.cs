@@ -6,13 +6,11 @@ namespace LoRaWan.Tests.E2E
     using System;
     using System.Net.Http;
     using System.Net.Http.Headers;
-    using System.Net.WebSockets;
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan.Core;
     using Newtonsoft.Json;
-    using Xunit;
 
     public static class LoRaAPIHelper
     {
