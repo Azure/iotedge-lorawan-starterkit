@@ -172,6 +172,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             Assert.Equal(stationEui, stationEuiRead);
         }
 
+        [Fact]
+        public void Custom_Reader_DevAddr_Succeeds()
+        {
+            const string key = "DevAddr";
+            var devAddr = new DevAddr(5, 100);
+            var tc = CreateTwinCollectionReader(key, QuoteJsonString(devAddr.ToString()));
+            Assert.True(tc.TryRead<DevAddr>(key, out var devAddrRead));
+            Assert.Equal(devAddr, devAddrRead);
+        }
+
         private static string QuoteJsonString(string someString)
             => someString != null ? $"'{someString}'" : null;
 

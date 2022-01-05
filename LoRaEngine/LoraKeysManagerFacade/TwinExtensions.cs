@@ -3,38 +3,21 @@
 
 namespace LoraKeysManagerFacade
 {
+    using LoRaTools.Utils;
     using Microsoft.Azure.Devices.Shared;
 
     internal static class TwinExtensions
     {
         internal static string GetGatewayID(this Twin twin)
-            => GetTwinPropertyStringSafe(twin.Properties.Desired, LoraKeysManagerFacadeConstants.TwinProperty_GatewayID);
+            => twin.Properties.Desired.TryRead<string>(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID, null, out var someGatewayId)
+             ? someGatewayId
+             : string.Empty;
 
         internal static string GetNwkSKey(this Twin twin)
-        {
-            if (!twin.Properties.Desired.TryReadString(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey, out var networkSessionKey))
-            {
-                _ = twin.Properties.Reported.TryReadString(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey, out networkSessionKey);
-            }
-            return networkSessionKey;
-        }
-
-        /// <summary>
-        /// Gets the twin property if exists, return string.Empty if not found.
-        /// </summary>
-        public static string GetTwinPropertyStringSafe(this TwinCollection twin, string propertyName)
-            => TryReadString(twin, propertyName, out var someValue) ? someValue : string.Empty;
-
-        public static bool TryReadString(this TwinCollection twin, string propertyName, out string someValue)
-        {
-            someValue = default;
-
-            if (twin == null || !twin.Contains(propertyName))
-                return false;
-
-            someValue = ((object)twin[propertyName]).ToString();
-            return true;
-        }
-
+            => twin.Properties.Desired.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey, null, out string nwkSKey)
+             ? nwkSKey
+             : twin.Properties.Reported.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey, null, out nwkSKey)
+                ? nwkSKey
+                : null;
     }
 }

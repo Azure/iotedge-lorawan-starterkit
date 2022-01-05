@@ -230,16 +230,15 @@ namespace LoraKeysManagerFacade
                 {
                     if (twin.DeviceId != null)
                     {
-                        var rawDevAddr = string.Empty;
-                        if (!twin.Properties.Desired.TryReadString(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out rawDevAddr) &&
-                            !twin.Properties.Reported.TryReadString(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out rawDevAddr))
+                        if (!twin.Properties.Desired.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, this.logger, out DevAddr devAddr) &&
+                            !twin.Properties.Reported.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, this.logger, out devAddr))
                         {
                             continue;
                         }
 
                         devAddrCacheInfos.Add(new DevAddrCacheInfo()
                         {
-                            DevAddr = DevAddr.TryParse(rawDevAddr, out var someDevAddr) ? someDevAddr : throw new LoRaProcessingException($"Dev addr '{rawDevAddr}' is invalid.", LoRaProcessingErrorCode.InvalidFormat),
+                            DevAddr = devAddr,
                             DevEUI = twin.DeviceId,
                             GatewayId = twin.GetGatewayID(),
                             NwkSKey = twin.GetNwkSKey(),

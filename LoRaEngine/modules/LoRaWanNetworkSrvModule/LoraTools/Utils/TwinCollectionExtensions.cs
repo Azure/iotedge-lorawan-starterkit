@@ -20,7 +20,8 @@ namespace LoRaTools.Utils
         private static readonly Dictionary<Type, Func<object, object>> customConverters = new Dictionary<Type, Func<object, object>>
         {
             [typeof(StationEui)] = (s) => StationEui.Parse(s.ToString()),
-            [typeof(DevNonce)] = (s) => new DevNonce(Convert.ToUInt16(s, CultureInfo.InvariantCulture))
+            [typeof(DevNonce)] = (s) => new DevNonce(Convert.ToUInt16(s, CultureInfo.InvariantCulture)),
+            [typeof(DevAddr)] = (s) => DevAddr.Parse(s.ToString()),
         };
 
         public static T? SafeRead<T>(this TwinCollection twinCollection, string property, T? defaultValue = default, ILogger? logger = null)
