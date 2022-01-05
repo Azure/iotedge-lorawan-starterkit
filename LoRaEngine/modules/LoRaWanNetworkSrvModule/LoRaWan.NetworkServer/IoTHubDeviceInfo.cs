@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer
         public string NwkSKeyString
         {
             get => NwkSKey?.ToString();
-            set => NwkSKey = value is { Length: 32 } some ? LoRaWan.NetworkSessionKey.Parse(some) : null;
+            set => NwkSKey = string.IsNullOrEmpty(value) ? null : NetworkSessionKey.Parse(value);
         }
 
         [JsonIgnore]
