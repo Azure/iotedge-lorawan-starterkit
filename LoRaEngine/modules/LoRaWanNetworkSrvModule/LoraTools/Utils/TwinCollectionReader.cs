@@ -20,7 +20,7 @@ namespace LoRaTools.Utils
             this.logger = logger;
         }
 
-        public T? SafeRead<T>(string property, T? defaultValue = default) where T : notnull
+        public T? SafeRead<T>(string property, T? defaultValue = default)
             => this.twinCollection.SafeRead(property, defaultValue, this.logger);
 
         public string ReadRequiredString(string property) =>
@@ -29,7 +29,7 @@ namespace LoRaTools.Utils
         public bool Contains(string propertyName) =>
             this.twinCollection.Contains(propertyName);
 
-        public bool TryRead<T>(string property, [NotNullWhen(true)] out T? value) where T : notnull
+        public bool TryRead<T>(string property, [NotNullWhen(true)] out T? value)
             => this.twinCollection.TryRead(property, this.logger, out value);
 
         public bool TryParseJson<T>(string property, [NotNullWhen(true)] out T? value)

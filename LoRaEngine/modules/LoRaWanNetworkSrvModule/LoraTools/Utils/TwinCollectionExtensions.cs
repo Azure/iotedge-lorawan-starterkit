@@ -22,7 +22,7 @@ namespace LoRaTools.Utils
         private static readonly Type AppKeyType = typeof(AppKey);
         private static readonly Type NetworkSessionKeyType = typeof(NetworkSessionKey);
 
-        public static T? SafeRead<T>(this TwinCollection twinCollection, string property, T? defaultValue = default, ILogger? logger = null) where T : notnull
+        public static T? SafeRead<T>(this TwinCollection twinCollection, string property, T? defaultValue = default, ILogger? logger = null)
             => twinCollection.TryRead<T>(property, logger, out var someT) ? someT : defaultValue;
 
         public static string ReadRequiredString(this TwinCollection twinCollection, string property, ILogger? logger = null) =>
@@ -30,7 +30,7 @@ namespace LoRaTools.Utils
                                 ? someString
                                 : throw new InvalidOperationException($"Property '{property}' does not exist or is empty.");
 
-        public static bool TryRead<T>(this TwinCollection twinCollection, string property, ILogger? logger, out T? value) where T : notnull
+        public static bool TryRead<T>(this TwinCollection twinCollection, string property, ILogger? logger, out T? value)
         {
             _ = twinCollection ?? throw new ArgumentNullException(nameof(twinCollection));
 
