@@ -44,11 +44,6 @@ namespace LoRaTools.Utils
                     value = someT;
                     return true;
                 }
-
-                if (someJValue.Type == JTokenType.Null)
-                {
-                    return true;
-                }
             }
 
             try

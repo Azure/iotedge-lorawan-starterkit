@@ -68,17 +68,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             Assert.False(tc.TryRead<string>("invalid", out _));
         }
 
-        [Fact]
-        public void Null_Values_Are_Returned_As_Null()
-        {
-            var tc = new TwinCollection();
-            const string key = "test";
-            tc[key] = null;
-            var reader = new TwinCollectionReader(tc, this.logger);
-            Assert.Null(reader.SafeRead<string>(key));
-            Assert.True(reader.TryRead<string>(key, out _));
-        }
-
         [Theory]
         [InlineData(typeof(string), "test", "'test'")]
         [InlineData(typeof(int),   int.MinValue)]
