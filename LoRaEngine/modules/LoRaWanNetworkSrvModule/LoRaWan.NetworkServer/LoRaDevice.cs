@@ -292,7 +292,7 @@ namespace LoRaWan.NetworkServer
                 // OTAA
                 try
                 {
-                    AppKey = desiredTwin.TryRead(TwinProperty.AppKey, out AppKey someAppKey) ? someAppKey : null;
+                    AppKey = desiredTwin.TryRead(TwinProperty.AppKey, out AppKey someAppKey) ? someAppKey : throw new InvalidLoRaDeviceException($"{TwinProperty.AppKey} is invalid");
                     AppEUI = desiredTwin.ReadRequiredString(TwinProperty.AppEUI);
                 }
                 catch (InvalidOperationException ex)
