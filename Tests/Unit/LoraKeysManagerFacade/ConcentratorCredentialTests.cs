@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Azure;
-    using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Microsoft.Extensions.Primitives;
     using Moq;
     using Xunit;
@@ -29,7 +29,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         private readonly Mock<RegistryManager> registryManager;
         private readonly Mock<IAzureClientFactory<BlobServiceClient>> azureClientFactory;
         private readonly ConcentratorCredentialsFunction concentratorCredential;
-        private readonly Mock<ILogger> loggerMock;
         private const string RawStringContent = "hello";
         private const string Base64EncodedString = "aGVsbG8=";
 
@@ -37,8 +36,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             this.registryManager = new Mock<RegistryManager>();
             this.azureClientFactory = new Mock<IAzureClientFactory<BlobServiceClient>>();
-            this.concentratorCredential = new ConcentratorCredentialsFunction(registryManager.Object, azureClientFactory.Object);
-            this.loggerMock = new Mock<ILogger>();
+            this.concentratorCredential = new ConcentratorCredentialsFunction(registryManager.Object, azureClientFactory.Object, NullLogger<ConcentratorCredentialsFunction>.Instance);
         }
 
         [Fact]
@@ -85,7 +83,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, this.loggerMock.Object, CancellationToken.None);
+            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, CancellationToken.None);
 
             Assert.NotNull(result);
             Assert.IsType<OkObjectResult>(result);
@@ -116,7 +114,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.Setup(m => m.GetTwinAsync("AnotherTwin", It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, this.loggerMock.Object, CancellationToken.None);
+            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, CancellationToken.None);
 
             Assert.NotNull(result);
             Assert.IsType<NotFoundResult>(result);
@@ -142,7 +140,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var queryCollection = new QueryCollection(queryDictionary);
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
-            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, this.loggerMock.Object, CancellationToken.None);
+            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, CancellationToken.None);
 
             Assert.NotNull(result);
             Assert.IsType<BadRequestObjectResult>(result);

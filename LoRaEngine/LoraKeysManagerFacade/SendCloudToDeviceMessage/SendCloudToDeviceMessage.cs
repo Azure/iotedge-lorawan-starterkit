@@ -10,6 +10,8 @@ namespace LoraKeysManagerFacade
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
+    using LoRaTools.Utils;
+    using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
@@ -101,21 +103,20 @@ namespace LoraKeysManagerFacade
 
                 if (twin != null)
                 {
+                    var desiredReader = new TwinCollectionReader(twin.Properties.Desired, this.log);
+                    var reportedReader = new TwinCollectionReader(twin.Properties.Reported, this.log);
+
                     // the device must have a DevAddr
-                    if (twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr).Length == 0 && twin.Properties?.Reported?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr).Length == 0)
+                    if (!desiredReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out DevAddr _) && !reportedReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out DevAddr _))
                     {
                         return new BadRequestObjectResult("Device DevAddr is unknown. Ensure the device has been correctly setup as a LoRa device and that it has connected to network at least once.");
                     }
 
-                    if (string.Equals("c", twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_ClassType), StringComparison.OrdinalIgnoreCase))
+                    if (desiredReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_ClassType, out string deviceClass) && string.Equals("c", deviceClass, StringComparison.OrdinalIgnoreCase))
                     {
-                        var gatewayID = twin.Properties?.Reported?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_PreferredGatewayID);
-                        if (string.IsNullOrEmpty(gatewayID))
-                        {
-                            gatewayID = twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID);
-                        }
-
-                        if (!string.IsNullOrEmpty(gatewayID))
+                        if ((reportedReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_PreferredGatewayID, out string gatewayID)
+                            || desiredReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID, out gatewayID))
+                            && !string.IsNullOrEmpty(gatewayID))
                         {
                             // add it to cache (if it does not exist)
                             var preferredGateway = new LoRaDevicePreferredGateway(gatewayID, 0);
