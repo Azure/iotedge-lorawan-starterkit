@@ -15,7 +15,14 @@ namespace LoRaTools.Utils
 
     public static class TwinCollectionExtensions
     {
-        public static T? SafeRead<T>(this TwinCollection twinCollection, string property, T? defaultValue = default, ILogger? logger = null)
+        private static readonly Type StationEuiType = typeof(StationEui);
+        private static readonly Type DevNonceType = typeof(DevNonce);
+        private static readonly Type DevAddrType = typeof(DevAddr);
+        private static readonly Type AppSessionKeyType = typeof(AppSessionKey);
+        private static readonly Type AppKeyType = typeof(AppKey);
+        private static readonly Type NetworkSessionKeyType = typeof(NetworkSessionKey);
+
+        public static T? SafeRead<T>(this TwinCollection twinCollection, string property, T? defaultValue = default, ILogger? logger = null) where T : notnull
             => twinCollection.TryRead<T>(property, logger, out var someT) ? someT : defaultValue;
 
         public static string ReadRequiredString(this TwinCollection twinCollection, string property, ILogger? logger = null) =>
@@ -23,7 +30,7 @@ namespace LoRaTools.Utils
                                 ? someString
                                 : throw new InvalidOperationException($"Property '{property}' does not exist or is empty.");
 
-        public static bool TryRead<T>(this TwinCollection twinCollection, string property, ILogger? logger, out T? value)
+        public static bool TryRead<T>(this TwinCollection twinCollection, string property, ILogger? logger, out T? value) where T : notnull
         {
             _ = twinCollection ?? throw new ArgumentNullException(nameof(twinCollection));
 
@@ -48,13 +55,22 @@ namespace LoRaTools.Utils
             try
             {
                 var t = typeof(T);
-                value = value switch
-                {
-                    StationEui => (T)(object)StationEui.Parse(some.ToString()),
-                    DevNonce => (T)(object)new DevNonce(Convert.ToUInt16(some, CultureInfo.InvariantCulture)),
-                    DevAddr => (T)(object)DevAddr.Parse(some.ToString()),
-                    _ => (T)Convert.ChangeType(some, t, CultureInfo.InvariantCulture)
-                };
+                var tPrime = Nullable.GetUnderlyingType(t) ?? t;
+
+                if (tPrime == StationEuiType)
+                    value = (T)(object)StationEui.Parse(some.ToString());
+                else if (tPrime == DevNonceType)
+                    value = (T)(object)new DevNonce(Convert.ToUInt16(some, CultureInfo.InvariantCulture));
+                else if (tPrime == DevAddrType)
+                    value = (T)(object)DevAddr.Parse(some.ToString());
+                else if (tPrime == AppSessionKeyType)
+                    value = (T)(object)AppSessionKey.Parse(some.ToString());
+                else if (tPrime == AppKeyType)
+                    value = (T)(object)AppKey.Parse(some.ToString());
+                else if (tPrime == NetworkSessionKeyType)
+                    value = (T)(object)NetworkSessionKey.Parse(some.ToString());
+                else
+                    value = (T)Convert.ChangeType(some, t, CultureInfo.InvariantCulture);
 
                 if (t.IsEnum && !t.IsEnumDefined(value))
                 {

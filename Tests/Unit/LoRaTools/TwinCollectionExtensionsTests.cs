@@ -10,8 +10,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using global::LoRaTools.Utils;
     using Microsoft.Extensions.Logging.Abstractions;
     using Microsoft.Extensions.Logging;
-    using LoRaTools.Regions;
     using global::LoRaTools.Regions;
+    using LoRaWan.Tests.Common;
 
     public class TwinCollectionExtensionsTests
     {
@@ -144,33 +144,47 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Fact]
-        public void Custom_Reader_DevNonce_Succeeds()
-        {
-            const string key = "DevNonce";
-            var devNonce = new DevNonce(5);
-            var tc = CreateTwinCollectionReader(key, devNonce.AsUInt16);
-            Assert.True(tc.TryRead<DevNonce>(key, out var devNonceRead));
-            Assert.Equal(devNonce, devNonceRead);
-        }
+        public void Custom_Reader_DevNonce_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type(new DevNonce(5));
 
         [Fact]
-        public void Custom_Reader_StationEui_Succeeds()
-        {
-            const string key = "StationEui";
-            var stationEui = new StationEui(ulong.MaxValue);
-            var tc = CreateTwinCollectionReader(key, stationEui.ToString());
-            Assert.True(tc.TryRead<StationEui>(key, out var stationEuiRead));
-            Assert.Equal(stationEui, stationEuiRead);
-        }
+        public void Custom_Reader_StationEui_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type(new StationEui(ulong.MaxValue));
 
         [Fact]
-        public void Custom_Reader_DevAddr_Succeeds()
+        public void Custom_Reader_DevAddr_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type(new DevAddr(5, 100));
+
+        [Fact]
+        public void Custom_Reader_AppKey_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type(TestKeys.CreateAppKey(5));
+
+        [Fact]
+        public void Custom_Reader_AppKey_Nullable_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type((AppKey?)TestKeys.CreateAppKey(5));
+
+        [Fact]
+        public void Custom_Reader_AppSessionKey_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type(TestKeys.CreateAppSessionKey(5));
+
+        [Fact]
+        public void Custom_Reader_AppSessionKey_Nullable_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type((AppSessionKey?)TestKeys.CreateAppSessionKey(5));
+
+        [Fact]
+        public void Custom_Reader_NetworkSessionKey_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type(TestKeys.CreateNetworkSessionKey(5));
+
+        [Fact]
+        public void Custom_Reader_NetworkSessionKey_Nullable_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type((NetworkSessionKey?)TestKeys.CreateNetworkSessionKey(5));
+
+        private void Custom_Reader_Succeeds_For_Type<T>(T expected) where T : notnull
         {
-            const string key = "DevAddr";
-            var devAddr = new DevAddr(5, 100);
-            var tc = CreateTwinCollectionReader(key, devAddr.ToString());
-            Assert.True(tc.TryRead<DevAddr>(key, out var devAddrRead));
-            Assert.Equal(devAddr, devAddrRead);
+            const string key = "foo";
+            var tc = CreateTwinCollectionReader(key, expected.ToString());
+            Assert.True(tc.TryRead(key, out T result));
+            Assert.Equal(expected, result);
         }
 
         [Fact]
