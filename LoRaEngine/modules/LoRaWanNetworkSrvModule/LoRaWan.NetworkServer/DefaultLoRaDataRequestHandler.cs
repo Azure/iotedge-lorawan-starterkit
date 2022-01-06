@@ -214,7 +214,9 @@ namespace LoRaWan.NetworkServer
                     {
                         try
                         {
-                            decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey.Value);
+                            decryptedPayloadData = loraPayload.Fport == FramePort.MacCommand
+                                ? loraPayload.GetDecryptedPayload(loRaDevice.NwkSKey.Value)
+                                : loraPayload.GetDecryptedPayload(loRaDevice.AppSKey.Value);
                         }
                         catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.PayloadDecryptionFailed)
                         {
@@ -223,51 +225,54 @@ namespace LoRaWan.NetworkServer
                     }
 
                     #region Handling MacCommands
+                    // if FPort is 0 (i.e. MacCommand) the commands are in the payload
+                    // otherwise the commands are in FOpts field and already parsed
                     if (loraPayload.Fport == FramePort.MacCommand)
                     {
-                        if (!skipDownstreamToAvoidCollisions)
+                        if (decryptedPayloadData?.Length > 0)
                         {
-                            if (decryptedPayloadData?.Length > 0)
-                            {
-                                loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
-                            }
-
-                            if (loraPayload.IsMacAnswerRequired)
-                            {
-                                fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
-
-                                if (!fcntDown.HasValue || fcntDown <= 0)
-                                {
-                                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
-                                }
-
-                                requiresConfirmation = true;
-                            }
+                            loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
                         }
+                    }
 
-                        // Persist dwell time settings in device reported properties
-                        if (loraPayload.MacCommands is not null && loraPayload.MacCommands.Any(m => m.Cid == Cid.TxParamSetupCmd))
+                    if (!skipDownstreamToAvoidCollisions)
+                    {
+                        if (loraPayload.IsMacAnswerRequired)
                         {
-                            if (request.Region is DwellTimeLimitedRegion someRegion)
+                            fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+
+                            if (!fcntDown.HasValue || fcntDown <= 0)
                             {
-                                if (someRegion.DesiredDwellTimeSetting != loRaDevice.ReportedDwellTimeSetting)
-                                {
-                                    loRaDevice.UpdateDwellTimeSetting(someRegion.DesiredDwellTimeSetting, acceptChanges: false);
-                                    _ = await loRaDevice.SaveChangesAsync(force: true);
-                                }
-                                else
-                                {
-                                    this.logger.LogDebug("Received 'TxParamSetupAns' even though reported dwell time settings match desired dwell time settings.");
-                                }
+                                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                            }
+
+                            requiresConfirmation = true;
+                        }
+                    }
+
+                    // Persist dwell time settings in device reported properties
+                    if (loraPayload.MacCommands is not null && loraPayload.MacCommands.Any(m => m.Cid == Cid.TxParamSetupCmd))
+                    {
+                        if (request.Region is DwellTimeLimitedRegion someRegion)
+                        {
+                            if (someRegion.DesiredDwellTimeSetting != loRaDevice.ReportedDwellTimeSetting)
+                            {
+                                loRaDevice.UpdateDwellTimeSetting(someRegion.DesiredDwellTimeSetting, acceptChanges: false);
+                                _ = await loRaDevice.SaveChangesAsync(force: true);
                             }
                             else
                             {
-                                this.logger.LogWarning("Received 'TxParamSetupAns' in region '{Region}' which does not support dwell limitations.", request.Region.LoRaRegion);
+                                this.logger.LogDebug("Received 'TxParamSetupAns' even though reported dwell time settings match desired dwell time settings.");
                             }
                         }
+                        else
+                        {
+                            this.logger.LogWarning("Received 'TxParamSetupAns' in region '{Region}' which does not support dwell limitations.", request.Region.LoRaRegion);
+                        }
                     }
+
                     #endregion
-                    else if (loraPayload.Fport is { } payloadPort)
+                    if (loraPayload.Fport is { } payloadPort and not FramePort.MacCommand)
                     {
                         if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
                         {
