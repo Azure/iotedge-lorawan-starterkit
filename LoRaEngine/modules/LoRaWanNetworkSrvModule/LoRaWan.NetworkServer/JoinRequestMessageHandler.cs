@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
@@ -57,6 +58,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 var timeWatcher = request.GetTimeWatcher();
+                using var joinAcceptCancellationToken = new CancellationTokenSource(timeWatcher.InTimeForJoinAccept() ? timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() : TimeSpan.Zero);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
@@ -188,7 +190,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);
+                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties, joinAcceptCancellationToken.Token);
 
                 if (!deviceUpdateSucceeded)
                 {
