@@ -117,13 +117,11 @@ namespace LoRaWan.Tests.Common
         {
             var value8 = deviceID.ToString("00000000", CultureInfo.InvariantCulture);
             var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
-            var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);
 
             if (!string.IsNullOrEmpty(prefix))
             {
                 value8 = string.Concat(prefix, value8[prefix.Length..]);
                 value16 = string.Concat(prefix, value16[prefix.Length..]);
-                value32 = string.Concat(prefix, value32[prefix.Length..]);
             }
 
             var devAddrValue = NetIdHelper.SetNwkIdPart(value8, netId);
@@ -132,8 +130,8 @@ namespace LoRaWan.Tests.Common
                 DeviceID = value16,
                 GatewayID = gatewayID,
                 SensorDecoder = sensorDecoder,
-                AppSKey = AppSessionKey.Parse(value32),
-                NwkSKey = NetworkSessionKey.Parse(value32),
+                AppSKey = TestKeys.CreateAppSessionKey(1),
+                NwkSKey = TestKeys.CreateNetworkSessionKey(2),
                 DevAddr = devAddrValue,
                 ClassType = deviceClassType,
                 Supports32BitFCnt = supports32BitFcnt
