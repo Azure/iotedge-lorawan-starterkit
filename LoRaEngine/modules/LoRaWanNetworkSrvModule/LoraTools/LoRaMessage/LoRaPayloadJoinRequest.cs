@@ -123,7 +123,7 @@ namespace LoRaTools.LoRaMessage
             return result.Take(4).ToArray();
         }
 
-        public override byte[] PerformEncryption(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
+        public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
 
         public override byte[] GetByteMessage()
         {
@@ -145,7 +145,7 @@ namespace LoRaTools.LoRaMessage
             return messageArray;
         }
 
-        public override byte[] PerformEncryption(NetworkSessionKey key) => throw new NotImplementedException();
+        public override byte[] Serialize(NetworkSessionKey key) => throw new NotImplementedException();
 
         public override byte[] PerformEncryption(AppKey key) => throw new NotImplementedException();
     }

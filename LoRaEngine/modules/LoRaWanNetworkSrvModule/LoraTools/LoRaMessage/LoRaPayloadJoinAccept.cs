@@ -224,9 +224,9 @@ namespace LoRaTools.LoRaMessage
             return GetByteMessage();
         }
 
-        public override byte[] PerformEncryption(NetworkSessionKey key) => throw new NotImplementedException();
+        public override byte[] Serialize(NetworkSessionKey key) => throw new NotImplementedException();
 
-        public override byte[] PerformEncryption(AppSessionKey key) => throw new NotImplementedException();
+        public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException();
 
         public override bool CheckMic(AppKey key) => throw new NotImplementedException();
     }

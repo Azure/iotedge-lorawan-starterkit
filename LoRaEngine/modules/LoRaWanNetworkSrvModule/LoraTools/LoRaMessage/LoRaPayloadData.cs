@@ -252,11 +252,11 @@ namespace LoRaTools.LoRaMessage
             // It is a Mac Command payload, needs to encrypt with nwkskey
             if (Fport == FramePort.MacCommand)
             {
-                _ = PerformEncryption(nwkSKey);
+                _ = Serialize(nwkSKey);
             }
             else
             {
-                _ = PerformEncryption(appSKey);
+                _ = Serialize(appSKey);
             }
 
             SetMic(nwkSKey);
@@ -413,16 +413,16 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         ///  Replaces the <see cref="Frmpayload"/>, encrypting the values.
         /// </summary>
-        public override byte[] PerformEncryption(NetworkSessionKey key) =>
-            PerformEncryption(GetDecryptedPayload(key));
+        public override byte[] Serialize(NetworkSessionKey key) =>
+            Serialize(GetDecryptedPayload(key));
 
         /// <summary>
         ///  Replaces the <see cref="Frmpayload"/>, encrypting the values.
         /// </summary>
-        public override byte[] PerformEncryption(AppSessionKey key) =>
-            PerformEncryption(GetDecryptedPayload(key));
+        public override byte[] Serialize(AppSessionKey key) =>
+            Serialize(GetDecryptedPayload(key));
 
-        private byte[] PerformEncryption(byte[] rawDecryptedPayload)
+        private byte[] Serialize(byte[] rawDecryptedPayload)
         {
             if (!Frmpayload.Span.IsEmpty)
             {

@@ -141,7 +141,7 @@ namespace LoRaWan.Tests.Integration
             // Get C2D message payload
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(simulatedDevice.AppSKey.Value);
+            payloadDataDown.Serialize(simulatedDevice.AppSKey.Value);
 
             // Verify that expected Mac commands are present
             var expectedMacCommandsCount = 0;

@@ -231,7 +231,7 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(request.ResponseDownlink);
             var data = new LoRaPayloadData(request.ResponseDownlink.Data);
             Assert.True(data.CheckMic(simulatedDevice.NwkSKey.Value));
-            data.PerformEncryption(simulatedDevice.NwkSKey.Value);
+            data.Serialize(simulatedDevice.NwkSKey.Value);
             data.Frmpayload.Span.Reverse();
             var link = new LoRaTools.LinkCheckAnswer(data.Frmpayload.Span);
             Assert.NotNull(link);
