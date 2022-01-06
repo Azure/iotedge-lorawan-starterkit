@@ -131,7 +131,14 @@ namespace LoRaWan.Tests.Common
                 direction,
                 Supports32BitFCnt ? fcnt : null);
 
-            payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            if (fport == FramePort.MacCommand)
+            {
+                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
+            else
+            {
+                payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
             payloadData.SetMic(nwkSKey is { } someNetworkSessionKey ? someNetworkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
 
             // We want to ensure we simulate a message coming from the device, therefore only the 16 bits of the framecounter should be available.
