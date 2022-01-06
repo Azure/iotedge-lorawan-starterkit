@@ -74,6 +74,8 @@ nav:
       - user-guide/station-device-provisioning.md
       - user-guide/station-authentication-modes.md
       - user-guide/station-module-configuration.md
+    - 'Region specifics':
+      - user-guide/as923.md
   - 'Samples':
     - samples/arduino.md
     - 'Decoders':
