@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             const string key = "test";
             const string expectedValue = "expected";
 
-            var tc = CreateTwinCollectionReader(key, QuoteJsonString(expectedValue));
+            var tc = CreateTwinCollectionReader(key, expectedValue);
             Assert.Equal(expectedValue, tc.ReadRequiredString(key));
         }
 
@@ -147,7 +147,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TryRead_Can_Convert_Strings_To_Enum(string jsonValue, DataRateIndex expectedValue)
         {
             const string key = "test";
-            var tc = CreateTwinCollectionReader(key, QuoteJsonString(jsonValue));
+            var tc = CreateTwinCollectionReader(key, jsonValue);
             Assert.True(tc.TryRead<DataRateIndex>(key, out var dr));
             Assert.Equal(expectedValue, dr);
         }
@@ -167,7 +167,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         {
             const string key = "StationEui";
             var stationEui = new StationEui(ulong.MaxValue);
-            var tc = CreateTwinCollectionReader(key, QuoteJsonString(stationEui.ToString()));
+            var tc = CreateTwinCollectionReader(key, stationEui.ToString());
             Assert.True(tc.TryRead<StationEui>(key, out var stationEuiRead));
             Assert.Equal(stationEui, stationEuiRead);
         }
@@ -177,7 +177,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         {
             const string key = "DevAddr";
             var devAddr = new DevAddr(5, 100);
-            var tc = CreateTwinCollectionReader(key, QuoteJsonString(devAddr.ToString()));
+            var tc = CreateTwinCollectionReader(key, devAddr.ToString());
             Assert.True(tc.TryRead<DevAddr>(key, out var devAddrRead));
             Assert.Equal(devAddr, devAddrRead);
         }
@@ -195,8 +195,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             Assert.Contains(rssiValue, json, StringComparison.Ordinal);
         }
 
-        private static string QuoteJsonString(string someString)
-            => someString != null ? $"'{someString}'" : null;
+        private TwinCollectionReader CreateTwinCollectionReader(string key, string jsonValue)
+            => CreateTwinCollectionReader<string>(key, $"'{jsonValue}'");
 
         private TwinCollectionReader CreateTwinCollectionReader<T>(string key, T jsonValue)
             => new TwinCollectionReader(new TwinCollection($"{{'{key}':{jsonValue}}}"), this.logger);
