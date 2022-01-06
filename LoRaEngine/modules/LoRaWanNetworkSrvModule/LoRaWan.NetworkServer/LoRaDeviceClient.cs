@@ -106,17 +106,15 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
+        public async Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 120000;
-
                 SetRetry(true);
 
                 this.logger.LogDebug("updating twin");
 
-                await this.deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+                await this.deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
                 this.logger.LogDebug("twin updated");
 
