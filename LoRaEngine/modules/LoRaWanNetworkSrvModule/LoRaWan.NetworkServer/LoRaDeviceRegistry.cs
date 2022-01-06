@@ -279,6 +279,13 @@ namespace LoRaWan.NetworkServer
             this.deviceCache.Reset();
         }
 
+        public void ExpireDeviceCache(LoRaDevice loRaDevice)
+        {
+            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            var removed = this.deviceCache.Remove(loRaDevice);
+            this.logger.LogDebug(removed ? "Device was removed from cache." : "Device was not removed, as it was not cached.");
+        }
+
         public void Dispose() => this.deviceCache.Dispose();
     }
 }
