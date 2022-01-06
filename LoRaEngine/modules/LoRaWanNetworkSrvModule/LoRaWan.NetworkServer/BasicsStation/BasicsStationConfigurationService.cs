@@ -8,9 +8,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
+    using LoRaTools.Utils;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json.Linq;
 
     internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable
     {
@@ -31,14 +34,17 @@ namespace LoRaWan.NetworkServer.BasicsStation
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiService;
         private readonly ILoRaDeviceFactory loRaDeviceFactory;
         private readonly IMemoryCache cache;
+        private readonly ILogger<BasicsStationConfigurationService> logger;
 
         public BasicsStationConfigurationService(LoRaDeviceAPIServiceBase loRaDeviceApiService,
                                                  ILoRaDeviceFactory loRaDeviceFactory,
-                                                 IMemoryCache cache)
+                                                 IMemoryCache cache,
+                                                 ILogger<BasicsStationConfigurationService> logger)
         {
             this.loRaDeviceApiService = loRaDeviceApiService;
             this.loRaDeviceFactory = loRaDeviceFactory;
             this.cache = cache;
+            this.logger = logger;
         }
 
         public void Dispose() => this.cacheSemaphore.Dispose();
@@ -76,10 +82,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
-        {
-            var configJson = await GetDesiredPropertyStringAsync(stationEui, RouterConfigPropertyName, cancellationToken);
-            return LnsStationConfiguration.GetConfiguration(configJson);
-        }
+            => LnsStationConfiguration.GetConfiguration(await GetDesiredPropertyStringAsync(stationEui, RouterConfigPropertyName, cancellationToken));
 
         public async Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
@@ -95,21 +98,31 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public async Task<string[]> GetAllowedClientThumbprintsAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
-            var thumbprintsArrayJson = await GetDesiredPropertyStringAsync(stationEui, ClientThumbprintPropertyName, cancellationToken);
-            return JsonReader.Array(JsonReader.String()).Read(thumbprintsArrayJson);
+            var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
+            if (desiredProperties.Contains(ClientThumbprintPropertyName))
+            {
+                try
+                {
+                    var thumbprints = (JArray)(object)desiredProperties[ClientThumbprintPropertyName];
+                    return thumbprints.ToObject<string[]>();
+                }
+                catch (Exception ex) when (ex is InvalidCastException)
+                {
+                    throw new LoRaProcessingException($"'{ClientThumbprintPropertyName}' format is invalid. An array is expected.", ex, LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+                }
+            }
+
+            throw new LoRaProcessingException($"Property '{ClientThumbprintPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
         }
 
         public async Task<CupsTwinInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken)
-        {
-            var cupsJson = await GetDesiredPropertyStringAsync(stationEui, CupsPropertyName, cancellationToken);
-            return JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson);
-        }
+            => JsonSerializer.Deserialize<CupsTwinInfo>(await GetDesiredPropertyStringAsync(stationEui, CupsPropertyName, cancellationToken));
 
         private async Task<string> GetDesiredPropertyStringAsync(StationEui stationEui, string propertyName, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            return desiredProperties.Contains(propertyName)
-                ? ((object)desiredProperties[propertyName]).ToString()
+            return desiredProperties.TryReadJsonBlock(propertyName, out var json)
+                ? json
                 : throw new LoRaProcessingException($"Property '{propertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
         }
     }

@@ -337,7 +337,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             {
                 Properties = new TwinProperties()
                 {
-                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
+                    Desired = new TwinCollection($"{{\"DevAddr\": \"{new DevAddr(100)}\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
                     Reported = new TwinCollection(),
                 }
             };
