@@ -41,9 +41,6 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(twin);
 
             // Device twin will be updated
-            AppSessionKey? afterJoin1AppSKey = null;
-            NetworkSessionKey? afterJoin1NwkSKey = null;
-            string afterJoin1DevAddr = null;
             AppSessionKey? afterJoin2AppSKey = null;
             NetworkSessionKey? afterJoin2NwkSKey = null;
             string afterJoin2DevAddr = null;
