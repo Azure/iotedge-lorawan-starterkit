@@ -214,7 +214,7 @@ namespace LoRaWan.NetworkServer
                     {
                         try
                         {
-                            decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey);
+                            decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey.Value);
                         }
                         catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.PayloadDecryptionFailed)
                         {
