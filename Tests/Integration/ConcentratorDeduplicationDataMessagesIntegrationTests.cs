@@ -90,7 +90,11 @@ namespace LoRaWan.Tests.Integration
             });
 
             this.simulatedABPDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            this.loraABPDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, ConnectionManager);
+            this.loraABPDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, ConnectionManager)
+            {
+                AppSKey = this.simulatedABPDevice.AppSKey,
+                NwkSKey = this.simulatedABPDevice.NwkSKey
+            };
 
             _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(this.loraABPDevice, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
             _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(this.loraABPDevice.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
@@ -315,8 +319,7 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        // Fix with https://github.com/Azure/iotedge-lorawan-starterkit/issues/1174.
-        // [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2)]
         [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1)]
         public async Task When_Mac_Command_Should_Not_Send_Upstream_Messages_And_Should_Skip_Calls_To_FrameCounterDown_When_SoftDuplicate(
             string station1,
@@ -324,16 +327,13 @@ namespace LoRaWan.Tests.Integration
             int expectedNumberOfFrameCounterDownCalls)
         {
             // arrange
-            var dataPayload = this.simulatedABPDevice.CreateUnconfirmedDataUpMessage("payload");
-            // MAC command
-            dataPayload.Fport = FramePort.MacCommand;
-            dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
+            var dataPayload = this.simulatedABPDevice.CreateUnconfirmedDataUpMessage(null,
+                                                                                     fport: FramePort.MacCommand,
+                                                                                     macCommands: new List<MacCommand> { new LinkCheckRequest() });
 
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.None; // or Mark
-            this.loraABPDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(1);
-            this.loraABPDevice.AppSKey = TestKeys.CreateAppSessionKey(2);
 
             // act/assert
             await ActAndAssert(request1, request2, this.loraABPDevice, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: 0);
@@ -354,8 +354,6 @@ namespace LoRaWan.Tests.Integration
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
             this.loraABPDevice.Deduplication = deduplicationMode;
-            this.loraABPDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(1);
-            this.loraABPDevice.AppSKey = TestKeys.CreateAppSessionKey(2);
 
             await ActAndAssert(request1, request2, this.loraABPDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
