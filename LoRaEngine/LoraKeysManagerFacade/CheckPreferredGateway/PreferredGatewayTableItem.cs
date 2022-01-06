@@ -7,9 +7,9 @@ namespace LoraKeysManagerFacade
     {
         public string GatewayID { get; private set; }
 
-        public int Rssi { get; private set; }
+        public double Rssi { get; private set; }
 
-        public PreferredGatewayTableItem(string gatewayID, int rssi)
+        public PreferredGatewayTableItem(string gatewayID, double rssi)
         {
             GatewayID = gatewayID;
             Rssi = rssi;
@@ -34,7 +34,7 @@ namespace LoraKeysManagerFacade
             if (values?.Length != 2)
                 return null;
 
-            if (!int.TryParse(values[1], out var rssi))
+            if (!double.TryParse(values[1], out var rssi))
                 return null;
 
             return new PreferredGatewayTableItem(values[0], rssi);
