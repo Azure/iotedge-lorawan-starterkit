@@ -388,13 +388,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Querying_Devices_And_Finds_No_Gateway_For_Class_C_Should_Return_InternalServerError()
         {
-            const string devEUI = "0123456789";
-
+            var devEUI = new DevEui(0123456789);
+            var devAddr = new DevAddr(03010101);
             var deviceTwin = new Twin
             {
                 Properties = new TwinProperties()
                 {
-                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\"}}"),
+                    Desired = new TwinCollection($"{{\"DevAddr\": \"{devAddr}\", \"ClassType\": \"C\"}}"),
                     Reported = new TwinCollection(),
                 }
             };
@@ -414,12 +414,12 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             };
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEUI.ToString(),
                 actualMessage);
 
-            Assert.IsType<ObjectResult>(actual);
-            Assert.Equal(500, ((ObjectResult)actual).StatusCode);
-            Assert.Equal("Class C devices must sent at least one message upstream. None has been received", ((ObjectResult)actual).Value.ToString());
+            var result = Assert.IsType<ObjectResult>(actual);
+            Assert.Equal(500, result.StatusCode);
+            Assert.Equal("Class C devices must sent at least one message upstream. None has been received", result.Value.ToString());
 
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
