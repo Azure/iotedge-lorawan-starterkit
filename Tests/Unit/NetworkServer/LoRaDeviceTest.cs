@@ -1013,7 +1013,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 AssertFcntUp(fcntUp, device);
                 AssertFcntDown(fcntDown, device);
 
-                this.loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
+                this.loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never);
             }
 
             [Theory]
@@ -1044,7 +1044,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 device.ExecuteInitializeFrameCounters(twin);
 
-                this.loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), expectStart ? Times.Once : Times.Never);
+                this.loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()), expectStart ? Times.Once : Times.Never);
 
                 if (expectStart)
                 {
@@ -1082,7 +1082,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 device.ExecuteInitializeFrameCounters(twin);
 
-                this.loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), expectStart ? Times.Once : Times.Never);
+                this.loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()), expectStart ? Times.Once : Times.Never);
 
                 if (expectStart)
                 {
