@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System;
+    using System.Globalization;
     using System.Net;
     using System.Text;
     using System.Threading.Tasks;
@@ -318,7 +319,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             {
                 Properties = new TwinProperties()
                 {
-                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
+                    Desired = new TwinCollection($"{{\"DevAddr\": \"{new DevAddr(100)}\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
                     Reported = new TwinCollection(),
                 }
             };
