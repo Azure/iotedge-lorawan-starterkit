@@ -17,13 +17,6 @@ namespace LoRaTools.Utils
 
     public static class TwinCollectionExtensions
     {
-        private static readonly Dictionary<Type, Func<object, object>> customConverters = new Dictionary<Type, Func<object, object>>
-        {
-            [typeof(StationEui)] = (s) => StationEui.Parse(s.ToString()),
-            [typeof(DevNonce)] = (s) => new DevNonce(Convert.ToUInt16(s, CultureInfo.InvariantCulture)),
-            [typeof(DevAddr)] = (s) => DevAddr.Parse(s.ToString()),
-        };
-
         public static T? SafeRead<T>(this TwinCollection twinCollection, string property, T? defaultValue = default, ILogger? logger = null)
             => twinCollection.TryRead<T>(property, logger, out var someT) ? someT : defaultValue;
 
@@ -62,20 +55,18 @@ namespace LoRaTools.Utils
             try
             {
                 var t = typeof(T);
+                value = value switch
+                {
+                    StationEui => (T)(object)StationEui.Parse(some.ToString()),
+                    DevNonce => (T)(object)new DevNonce(Convert.ToUInt16(some, CultureInfo.InvariantCulture)),
+                    DevAddr => (T)(object)DevAddr.Parse(some.ToString()),
+                    _ => (T)Convert.ChangeType(some, t, CultureInfo.InvariantCulture)
+                };
 
-                if (TryGetCustomConverter(t, out var converter))
+                if (t.IsEnum && !t.IsEnumDefined(value))
                 {
-                    value = (T)converter(some);
-                }
-                else
-                {
-                    var someConvertedValue = (T)Convert.ChangeType(some, t, CultureInfo.InvariantCulture);
-                    if (t.IsEnum && !t.IsEnumDefined(someConvertedValue))
-                    {
-                        LogParsingError(logger, property, some);
-                        return false;
-                    }
-                    value = someConvertedValue;
+                    LogParsingError(logger, property, some);
+                    return false;
                 }
             }
             catch (Exception ex) when (ex is ArgumentException
@@ -101,9 +92,6 @@ namespace LoRaTools.Utils
             json = ((object)twinCollection[property]).ToString();
             return json != null;
         }
-
-        private static bool TryGetCustomConverter(Type t, [NotNullWhen(true)] out Func<object, object>? converter)
-            => customConverters.TryGetValue(t, out converter);
 
         private static void LogParsingError(ILogger? logger, string property, object? value, Exception? ex = default)
             => logger?.LogError(ex, "Failed to parse twin '{TwinProperty}'. The value stored is '{TwinValue}'", property, value);
