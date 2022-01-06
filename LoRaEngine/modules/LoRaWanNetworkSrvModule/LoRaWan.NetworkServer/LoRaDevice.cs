@@ -276,8 +276,8 @@ namespace LoRaWan.NetworkServer
                 // ABP Case
                 try
                 {
-                    AppSKey = desiredTwin.TryRead(TwinProperty.AppSKey, out AppSessionKey someAppSessionKey) ? someAppSessionKey : throw new InvalidLoRaDeviceException($"'{TwinProperty.AppSKey}' is empty");
-                    NwkSKey = desiredTwin.TryRead(TwinProperty.NwkSKey, out NetworkSessionKey someNetworkSessionKey) ? someNetworkSessionKey : throw new InvalidLoRaDeviceException($"{TwinProperty.NwkSKey} is empty");
+                    AppSKey = desiredTwin.ReadRequired<AppSessionKey>(TwinProperty.AppSKey);
+                    NwkSKey = desiredTwin.ReadRequired<NetworkSessionKey>(TwinProperty.NwkSKey);
                     DevAddr = desiredTwin.ReadRequiredString(TwinProperty.DevAddr);
                 }
                 catch (InvalidOperationException ex)
@@ -292,7 +292,7 @@ namespace LoRaWan.NetworkServer
                 // OTAA
                 try
                 {
-                    AppKey = desiredTwin.TryRead(TwinProperty.AppKey, out AppKey someAppKey) ? someAppKey : throw new InvalidLoRaDeviceException($"{TwinProperty.AppKey} is invalid");
+                    AppKey = desiredTwin.ReadRequired<AppKey>(TwinProperty.AppKey);
                     AppEUI = desiredTwin.ReadRequiredString(TwinProperty.AppEUI);
                 }
                 catch (InvalidOperationException ex)

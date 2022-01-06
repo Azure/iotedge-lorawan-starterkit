@@ -64,6 +64,42 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Fact]
+        public void ReadRequired_Success()
+        {
+            const string key = "test";
+            var expectedValue = new StationEui(1);
+
+            var tc = CreateTwinCollectionReader(key, expectedValue.ToString());
+            Assert.Equal(expectedValue, tc.ReadRequired<StationEui>(key));
+        }
+
+        [Fact]
+        public void ReadRequired_Nullable_Success()
+        {
+            const string key = "test";
+            var expectedValue = new StationEui(1);
+
+            var tc = CreateTwinCollectionReader(key, expectedValue.ToString());
+            Assert.Equal(expectedValue, tc.ReadRequired<StationEui?>(key));
+        }
+
+        [Theory]
+        [InlineData(true, null)]
+        [InlineData(false, null)]
+        [InlineData(true, "")]
+        [InlineData(true, "1234")]
+        public void ReadRequired_Throws_If_TryParse_Fails(bool add, string val)
+        {
+            const string key = "test";
+            var tc = new TwinCollection();
+            var reader = new TwinCollectionReader(tc, this.logger);
+            if (add)
+                tc[key] = val;
+
+            Assert.Throws<InvalidOperationException>(() => reader.ReadRequired<StationEui>(key));
+        }
+
+        [Fact]
         public void TryRead_Returns_False_When_Key_Does_Not_Exist()
         {
             var tc = new TwinCollectionReader(new TwinCollection(), this.logger);

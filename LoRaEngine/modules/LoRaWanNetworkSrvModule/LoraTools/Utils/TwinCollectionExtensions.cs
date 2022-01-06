@@ -25,12 +25,12 @@ namespace LoRaTools.Utils
         public static T? SafeRead<T>(this TwinCollection twinCollection, string property, T? defaultValue = default, ILogger? logger = null)
             => twinCollection.TryRead<T>(property, logger, out var someT) ? someT : defaultValue;
 
-        public static string ReadRequiredString(this TwinCollection twinCollection, string property, ILogger? logger = null) =>
-                twinCollection.TryRead<string>(property, logger, out var someString) && !string.IsNullOrEmpty(someString)
-                                ? someString
-                                : throw new InvalidOperationException($"Property '{property}' does not exist or is empty.");
+        public static T ReadRequired<T>(this TwinCollection twinCollection, string property, ILogger? logger = null) =>
+            twinCollection.TryRead(property, logger, out T? result)
+                ? result
+                : throw new InvalidOperationException($"Property '{property}' does not exist or is invalid.");
 
-        public static bool TryRead<T>(this TwinCollection twinCollection, string property, ILogger? logger, out T? value)
+        public static bool TryRead<T>(this TwinCollection twinCollection, string property, ILogger? logger, [NotNullWhen(true)] out T? value)
         {
             _ = twinCollection ?? throw new ArgumentNullException(nameof(twinCollection));
 
@@ -56,6 +56,9 @@ namespace LoRaTools.Utils
             {
                 var t = typeof(T);
                 var tPrime = Nullable.GetUnderlyingType(t) ?? t;
+
+                // For 100% case coverage we should handle the case where type T is nullable and the token is null.
+                // Since this is not possible in IoT hub, we do not handle the null cases exhaustively.
 
                 if (tPrime == StationEuiType)
                     value = (T)(object)StationEui.Parse(some.ToString());
