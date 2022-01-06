@@ -31,6 +31,7 @@ namespace LoRaWan.NetworkServer
         // ADR stuff
         public const string DataRate = "DataRate";
         public const string TxPower = "TxPower"; // depend on region 0 - 7 EU or 0 - 14 US
+        public const string TxParam = "TxParam"; // Configuration for dwell time and EIRP
         public const string NbRep = "NbRep"; // 1 - 3
         public const string RX2DataRate = "RX2DataRate";
         public const string RX1DROffset = "RX1DROffset";

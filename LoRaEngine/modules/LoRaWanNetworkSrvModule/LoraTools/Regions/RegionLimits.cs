@@ -15,15 +15,15 @@ namespace LoRaTools.Regions
         /// </summary>
         public (Hertz Min, Hertz Max) FrequencyRange { get; set; }
 
-        private readonly HashSet<DataRate> downstreamValidDR;
+        private readonly ISet<DataRate> downstreamValidDR;
 
-        private readonly HashSet<DataRate> upstreamValidDR;
+        private readonly ISet<DataRate> upstreamValidDR;
 
         private readonly DataRateIndex startUpstreamDRIndex;
 
         private readonly DataRateIndex startDownstreamDRIndex;
 
-        public RegionLimits((Hertz Min, Hertz Max) frequencyRange, HashSet<DataRate> upstreamValidDR, HashSet<DataRate> downstreamValidDR,
+        public RegionLimits((Hertz Min, Hertz Max) frequencyRange, ISet<DataRate> upstreamValidDR, ISet<DataRate> downstreamValidDR,
                             DataRateIndex startUpstreamDRIndex, DataRateIndex startDownstreamDRIndex)
         {
             FrequencyRange = frequencyRange;
