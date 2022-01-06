@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var target = CreateDefaultDevice();
 
-            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
+            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             Assert.Equal(10U, target.IncrementFcntDown(10));
@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var target = CreateDefaultDevice();
 
-            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
+            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             target.SetFcntDown(12);
@@ -75,7 +75,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var target = CreateDefaultDevice();
 
-            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
+            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             target.SetFcntUp(12);
@@ -89,7 +89,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task After_Saving_Frame_Counter_Changes_Should_Not_Have_Pending_Changes()
         {
             using var target = CreateDefaultDevice();
-            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
+            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             target.SetFcntUp(12);
@@ -897,8 +897,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var dwellTimeSetting = new DwellTimeSetting(true, false, 3);
             using var loRaDevice = CreateDefaultDevice();
             TwinCollection actualReportedProperties = null;
-            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
-                                 .Callback((TwinCollection t) => actualReportedProperties = t)
+            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
+                                 .Callback((TwinCollection t, CancellationToken _) => actualReportedProperties = t)
                                  .ReturnsAsync(true);
 
             // act
@@ -910,7 +910,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             if (acceptChanges)
             {
                 Assert.Null(actualReportedProperties);
-                this.loRaDeviceClient.Verify(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
+                this.loRaDeviceClient.Verify(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never);
             }
             else
             {

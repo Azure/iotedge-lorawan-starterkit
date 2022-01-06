@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools;
     using global::LoRaTools.LoRaMessage;
@@ -44,7 +45,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             using var cache = EmptyMemoryCache();
@@ -168,8 +169,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twinDR = DR0;
             var twinTxPower = 0;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Callback<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Callback<TwinCollection, CancellationToken>((t, _) =>
                 {
                     if (t.Contains(TwinProperty.DataRate))
                         twinDR = t[TwinProperty.DataRate];
@@ -268,8 +269,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var reportedDR = DR0;
             var reportedTxPower = 0;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-            .Callback<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+            .Callback<TwinCollection, CancellationToken>((t, _) =>
             {
                 if (t.Contains(TwinProperty.DataRate))
                     reportedDR = (DataRateIndex)(int)(object)t[TwinProperty.DataRate].Value;
@@ -410,13 +411,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
             var reportedNbRep = 0;
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-            .Callback<TwinCollection>((t) =>
-            {
-                if (t.Contains(TwinProperty.NbRep))
-                    reportedNbRep = (int)t[TwinProperty.NbRep];
-            })
-        .ReturnsAsync(true);
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                            .Callback<TwinCollection, CancellationToken>((t, _) =>
+                                {
+                                    if (t.Contains(TwinProperty.NbRep))
+                                        reportedNbRep = (int)t[TwinProperty.NbRep];
+                                })
+                            .ReturnsAsync(true);
 
             using var cache = EmptyMemoryCache();
             using var loraDeviceCache = CreateDeviceCache(loraDevice);
