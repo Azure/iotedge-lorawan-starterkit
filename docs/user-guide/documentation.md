@@ -48,8 +48,11 @@ the port in the `docker run` command.
 
     ```dockerfile title="Dockerfile"
     FROM squidfunk/mkdocs-material
-    RUN pip install mdx_truly_sane_lists
+    COPY requirements.txt .
+    RUN pip install -r requirements.txt
     ```
+
+The `Dockerfile` is available in the repo as well.
 
     ```bash title="Build and run container"
     # in the directory where your dockerfile is
@@ -63,8 +66,7 @@ the port in the `docker run` command.
 Install Python and pip, and then the required packages:
 
 ```python title="install prerequisites"
-pip install mkdocs-material
-pip install mdx_truly_sane_lists #required plugin
+pip install -r requirements.txt
 ```
 
 ```bash title="run mkdocs"
