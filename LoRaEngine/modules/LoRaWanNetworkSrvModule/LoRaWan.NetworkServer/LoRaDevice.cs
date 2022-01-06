@@ -44,17 +44,17 @@ namespace LoRaWan.NetworkServer
         public string DevAddr { get; set; }
 
         // Gets if a device is activated by personalization
-        public bool IsABP => string.IsNullOrEmpty(AppKey);
+        public bool IsABP => AppKey == null;
 
         public string DevEUI { get; set; }
 
-        public string AppKey { get; set; }
+        public AppKey? AppKey { get; set; }
 
         public string AppEUI { get; set; }
 
-        public string NwkSKey { get; set; }
+        public NetworkSessionKey? NwkSKey { get; set; }
 
-        public string AppSKey { get; set; }
+        public AppSessionKey? AppSKey { get; set; }
 
         public string AppNonce { get; set; }
 
@@ -276,8 +276,8 @@ namespace LoRaWan.NetworkServer
                 // ABP Case
                 try
                 {
-                    AppSKey = desiredTwin.ReadRequiredString(TwinProperty.AppSKey);
-                    NwkSKey = desiredTwin.ReadRequiredString(TwinProperty.NwkSKey);
+                    AppSKey = desiredTwin.ReadRequired<AppSessionKey>(TwinProperty.AppSKey);
+                    NwkSKey = desiredTwin.ReadRequired<NetworkSessionKey>(TwinProperty.NwkSKey);
                     DevAddr = desiredTwin.ReadRequiredString(TwinProperty.DevAddr);
                 }
                 catch (InvalidOperationException ex)
@@ -292,7 +292,7 @@ namespace LoRaWan.NetworkServer
                 // OTAA
                 try
                 {
-                    AppKey = desiredTwin.ReadRequiredString(TwinProperty.AppKey);
+                    AppKey = desiredTwin.ReadRequired<AppKey>(TwinProperty.AppKey);
                     AppEUI = desiredTwin.ReadRequiredString(TwinProperty.AppEUI);
                 }
                 catch (InvalidOperationException ex)
@@ -696,8 +696,8 @@ namespace LoRaWan.NetworkServer
         internal virtual async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties)
         {
             var reportedProperties = new TwinCollection();
-            reportedProperties[TwinProperty.AppSKey] = updateProperties.AppSKey;
-            reportedProperties[TwinProperty.NwkSKey] = updateProperties.NwkSKey;
+            reportedProperties[TwinProperty.AppSKey] = updateProperties.AppSKey.ToString();
+            reportedProperties[TwinProperty.NwkSKey] = updateProperties.NwkSKey.ToString();
             reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr;
             reportedProperties[TwinProperty.FCntDown] = 0;
             reportedProperties[TwinProperty.FCntUp] = 0;
@@ -882,12 +882,12 @@ namespace LoRaWan.NetworkServer
             var payloadData = payload as LoRaPayloadData;
 
             var adjusted32bit = payloadData != null ? Get32BitAjustedFcntIfSupported(payloadData) : null;
-            var ret = payload.CheckMic(NwkSKey, adjusted32bit);
+            var ret = payload.CheckMic(NwkSKey.Value, adjusted32bit);
             if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.GetFcnt()))
             {
                 payloadData.Reset32BitBlockInfo();
                 // if the upper 16bits changed on the client, it can be that we can't decrypt
-                ret = payloadData.CheckMic(NwkSKey, Get32BitAjustedFcntIfSupported(payloadData, true));
+                ret = payloadData.CheckMic(NwkSKey.Value, Get32BitAjustedFcntIfSupported(payloadData, true));
                 if (ret)
                 {
                     // this is an indication that the lower 16 bits rolled over on the client
