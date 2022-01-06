@@ -8,11 +8,10 @@ namespace LoRaTools.Utils
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
+    using System.Text.Json;
     using LoRaWan;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
     public static class TwinCollectionExtensions
     {
@@ -37,7 +36,7 @@ namespace LoRaTools.Utils
             var some = (object)twinCollection[property];
 
             // quick path for values that can be directly converted
-            if (some is JValue someJValue)
+            if (some is Newtonsoft.Json.Linq.JValue someJValue)
             {
                 if (someJValue.Value is T someT)
                 {
@@ -67,7 +66,7 @@ namespace LoRaTools.Utils
                                           or InvalidCastException
                                           or FormatException
                                           or OverflowException
-                                          or JsonSerializationException)
+                                          or Newtonsoft.Json.JsonSerializationException)
             {
                 LogParsingError(logger, property, some, ex);
                 return false;
@@ -85,6 +84,23 @@ namespace LoRaTools.Utils
 
             json = ((object)twinCollection[property]).ToString();
             return json != null;
+        }
+
+        public static bool TryParseJson<T>(this TwinCollection twinCollection, string property, ILogger? logger, [NotNullWhen(true)] out T? value)
+        {
+            value = default;
+            if (twinCollection.TryReadJsonBlock(property, out var json))
+            {
+                try
+                {
+                    value = JsonSerializer.Deserialize<T>(json);
+                }
+                catch (JsonException ex)
+                {
+                    logger?.LogError(ex, $"Failed to parse '{property}'. We expect type '{typeof(T)}'");
+                }
+            }
+            return value != null;
         }
 
         private static void LogParsingError(ILogger? logger, string property, object? value, Exception? ex = default)

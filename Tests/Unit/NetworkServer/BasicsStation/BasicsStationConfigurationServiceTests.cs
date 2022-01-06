@@ -189,8 +189,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, primaryKey);
-                SetupTwinResponse(this.stationEui, primaryKey, JsonUtil.Strictify("{ 'clientThumbprint': 'x'}"));
+                SetupDeviceKeyLookup(primaryKey);
+                SetupTwinResponse(primaryKey, JsonUtil.Strictify("{ 'clientThumbprint': 'x'}"));
 
                 // act and assert
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));

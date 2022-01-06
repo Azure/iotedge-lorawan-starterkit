@@ -10,6 +10,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     using global::LoRaTools.Utils;
     using Microsoft.Extensions.Logging.Abstractions;
     using Microsoft.Extensions.Logging;
+    using LoRaTools.Regions;
+    using global::LoRaTools.Regions;
 
     public class TwinCollectionExtensionsTests
     {
@@ -182,6 +184,22 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 
             Assert.True(tc.TryReadJsonBlock(key, out var json));
             Assert.Contains(rssiValue, json, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Parsing_Json_Configuration_Block_Suceeds()
+        {
+            const string key = "tx";
+            var jsonValue = $"\"{nameof(DwellTimeSetting.DownlinkDwellTime)}\": true, " +
+                            $"\"{nameof(DwellTimeSetting.UplinkDwellTime)}\": false, " +
+                            $"\"{nameof(DwellTimeSetting.MaxEirp)}\": 5, ";
+
+            jsonValue = string.Concat("{", jsonValue, "}");
+
+            var tc = new TwinCollection($"{{'{key}':{jsonValue}}}");
+
+            Assert.True(tc.TryParseJson<DwellTimeSetting>(key, this.logger, out var parsedDt));
+            Assert.Equal(new DwellTimeSetting(true, false, 5), parsedDt);
         }
 
         private TwinCollectionReader CreateTwinCollectionReader(string key, string jsonValue)

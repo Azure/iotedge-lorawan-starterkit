@@ -318,6 +318,11 @@ namespace LoRaWan.NetworkServer
                 ReportedRXDelay = reportedTwin.SafeRead<ushort>(TwinProperty.RXDelay);
             }
 
+            if (reportedTwin.TryParseJson<DwellTimeSetting>(TwinProperty.TxParam, out var someSettings))
+            {
+                UpdateDwellTimeSetting(someSettings, acceptChanges: true);
+            }
+
             GatewayID = desiredTwin.SafeRead<string>(TwinProperty.GatewayID);
 
             _ = UpdateIsOurDevice(configuration.GatewayID);

@@ -31,5 +31,8 @@ namespace LoRaTools.Utils
 
         public bool TryRead<T>(string property, [NotNullWhen(true)] out T? value)
             => this.twinCollection.TryRead(property, this.logger, out value);
+
+        public bool TryParseJson<T>(string property, [NotNullWhen(true)] out T? value)
+            => this.twinCollection.TryParseJson(property, this.logger, out value);
     }
 }

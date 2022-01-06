@@ -82,14 +82,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
-        {
-            var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            if (desiredProperties.TryReadJsonBlock(RouterConfigPropertyName, out var configJson))
-            {
-                return LnsStationConfiguration.GetConfiguration(configJson);
-            }
-            throw new LoRaProcessingException($"Property '{RouterConfigPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
-        }
+            => LnsStationConfiguration.GetConfiguration(await GetDesiredPropertyStringAsync(stationEui, RouterConfigPropertyName, cancellationToken));
 
         public async Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
@@ -123,20 +116,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
         public async Task<CupsTwinInfo> GetCupsConfigAsync(StationEui stationEui, CancellationToken cancellationToken)
-        {
-            var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            if (desiredProperties.TryReadJsonBlock(CupsPropertyName, out var cupsJson))
-            {
-                return JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson);
-            }
+            => JsonSerializer.Deserialize<CupsTwinInfo>(await GetDesiredPropertyStringAsync(stationEui, CupsPropertyName, cancellationToken));
 
-            throw new LoRaProcessingException($"Property '{CupsPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
-    }
         private async Task<string> GetDesiredPropertyStringAsync(StationEui stationEui, string propertyName, CancellationToken cancellationToken)
         {
             var desiredProperties = await GetTwinDesiredPropertiesAsync(stationEui, cancellationToken);
-            return desiredProperties.Contains(propertyName)
-                ? ((object)desiredProperties[propertyName]).ToString()
+            return desiredProperties.TryReadJsonBlock(propertyName, out var json)
+                ? json
                 : throw new LoRaProcessingException($"Property '{propertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
         }
     }
+}
