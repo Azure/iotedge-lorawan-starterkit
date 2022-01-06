@@ -195,7 +195,7 @@ namespace LoRaWan.NetworkServer
                 if (!deviceUpdateSucceeded)
                 {
                     this.logger.LogError("join refused: join request could not save twin");
-                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ApplicationError);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.IoTHubProblem);
                     return;
                 }
 
