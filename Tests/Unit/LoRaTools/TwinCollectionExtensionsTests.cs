@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             tc[key] = null;
             var reader = new TwinCollectionReader(tc, this.logger);
             Assert.Null(reader.SafeRead<string>(key));
-            Assert.False(reader.TryRead<string>(key, out _));
+            Assert.True(reader.TryRead<string>(key, out _));
         }
 
         [Theory]

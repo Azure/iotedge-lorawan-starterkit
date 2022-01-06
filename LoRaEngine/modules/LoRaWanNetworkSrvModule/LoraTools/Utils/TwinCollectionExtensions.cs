@@ -6,7 +6,6 @@
 namespace LoRaTools.Utils
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using LoRaWan;
@@ -25,7 +24,7 @@ namespace LoRaTools.Utils
                                 ? someString
                                 : throw new InvalidOperationException($"Property '{property}' does not exist or is empty.");
 
-        public static bool TryRead<T>(this TwinCollection twinCollection, string property, ILogger? logger, [NotNullWhen(true)] out T? value)
+        public static bool TryRead<T>(this TwinCollection twinCollection, string property, ILogger? logger, out T? value)
         {
             _ = twinCollection ?? throw new ArgumentNullException(nameof(twinCollection));
 
@@ -48,7 +47,7 @@ namespace LoRaTools.Utils
 
                 if (someJValue.Type == JTokenType.Null)
                 {
-                    return false;
+                    return true;
                 }
             }
 
