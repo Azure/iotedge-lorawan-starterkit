@@ -19,24 +19,24 @@ namespace LoRaTools.Regions
         public LoRaRegionType LoRaRegion { get; set; }
 
         /// <summary>
-        /// Gets or sets datarate to configuration and max payload size (M)
+        /// Gets datarate to configuration and max payload size (M)
         /// max application payload size N should be N= M-8 bytes.
         /// This is in case of absence of Fopts field.
         /// </summary>
-        public Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration { get; } = new();
+        public abstract IReadOnlyDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration { get; }
 
         /// <summary>
-        /// Gets or sets by default MaxEIRP is considered to be +16dBm.
+        /// Gets by default MaxEIRP is considered to be +16dBm.
         /// If the end-device cannot achieve 16dBm EIRP, the Max EIRP SHOULD be communicated to the network server using an out-of-band channel during the end-device commissioning process.
         /// </summary>
-        public Dictionary<uint, double> TXPowertoMaxEIRP { get; } = new Dictionary<uint, double>();
+        public abstract IReadOnlyDictionary<uint, double> TXPowertoMaxEIRP { get; }
 
         /// <summary>
-        /// Gets or sets table to the get receive windows Offsets.
+        /// Gets table to the get receive windows Offsets.
         /// X = RX1DROffset Upstream DR
         /// Y = Downstream DR in RX1 slot.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable { get; set; }
+        public abstract IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable { get; }
 
         /// <summary>
         /// Gets or sets default first receive windows. [sec].

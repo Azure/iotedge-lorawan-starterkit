@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.Regions;
@@ -140,6 +141,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Empty(loRaDevice.NetID ?? string.Empty);
             Assert.False(loRaDevice.IsABP);
             Assert.False(loRaDevice.IsOurDevice);
+            Assert.Null(loRaDevice.ReportedDwellTimeSetting);
         }
 
         [Fact]
@@ -183,6 +185,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(appSessionKey, loRaDevice.AppSKey);
             Assert.Equal(new DevNonce(123), loRaDevice.DevNonce);
             Assert.Equal("0000AABB", loRaDevice.DevAddr);
+            Assert.Null(loRaDevice.ReportedDwellTimeSetting);
         }
 
         [Fact]
@@ -230,6 +233,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(appSessionKey, loRaDevice.AppSKey);
             Assert.Null(loRaDevice.DevNonce);
             Assert.Equal("0000AABB", loRaDevice.DevAddr);
+            Assert.Null(loRaDevice.ReportedDwellTimeSetting);
         }
 
         [Theory]
@@ -542,12 +546,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Updating_LastUpdate_Is_Updated()
         {
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "AppEUI", "ABC0200000000009" },
-                    { "AppKey", TestKeys.CreateAppKey(1).ToString() },
-                });
+            var twin = TestUtils.CreateTwin(desired: GetEssentialDesiredProperties());
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
@@ -911,6 +910,78 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(LoRaRegionType.US915, loRaDevice.LoRaRegion);
             Assert.False(loRaDevice.IsABP);
         }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void When_Updating_Dwell_Time_Settings_Should_Update(bool acceptChanges)
+        {
+            // arrange
+            var dwellTimeSetting = new DwellTimeSetting(true, false, 3);
+            using var loRaDevice = CreateDefaultDevice();
+
+            // act
+            loRaDevice.UpdateDwellTimeSetting(dwellTimeSetting, acceptChanges);
+
+            // assert
+            Assert.Equal(dwellTimeSetting, loRaDevice.ReportedDwellTimeSetting);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task When_Updating_Dwell_Time_Settings_Save_Success(bool acceptChanges)
+        {
+            // arrange
+            var dwellTimeSetting = new DwellTimeSetting(true, false, 3);
+            using var loRaDevice = CreateDefaultDevice();
+            TwinCollection actualReportedProperties = null;
+            this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
+                                 .Callback((TwinCollection t) => actualReportedProperties = t)
+                                 .ReturnsAsync(true);
+
+            // act
+            loRaDevice.UpdateDwellTimeSetting(dwellTimeSetting, acceptChanges);
+            await loRaDevice.SaveChangesAsync();
+
+            // assert
+            Assert.Equal(dwellTimeSetting, loRaDevice.ReportedDwellTimeSetting);
+            if (acceptChanges)
+            {
+                Assert.Null(actualReportedProperties);
+                this.loRaDeviceClient.Verify(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
+            }
+            else
+            {
+                Assert.NotNull(actualReportedProperties);
+                Assert.Equal(dwellTimeSetting, JsonSerializer.Deserialize<DwellTimeSetting>(actualReportedProperties[TwinProperty.TxParam].ToString()));
+            }
+        }
+
+        [Fact]
+        public async Task InitializeAsync_Should_Initialize_TxParams()
+        {
+            // arrange
+            using var loRaDevice = CreateDefaultDevice();
+            var dwellTimeSetting = new DwellTimeSetting(true, false, 4);
+            var twin = TestUtils.CreateTwin(GetEssentialDesiredProperties(),
+                                            new Dictionary<string, object> { [TwinProperty.TxParam] = JsonSerializer.Serialize(dwellTimeSetting) });
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
+                                 .ReturnsAsync(twin);
+
+            // act
+            _ = await loRaDevice.InitializeAsync(this.configuration);
+
+            // assert
+            Assert.Equal(dwellTimeSetting, loRaDevice.ReportedDwellTimeSetting);
+        }
+
+        private static Dictionary<string, object> GetEssentialDesiredProperties() =>
+            new Dictionary<string, object>
+            {
+                ["AppEUI"] = "ABC02000000000000000000000000009ABC02000000000000000000000000009",
+                ["AppKey"] = TestKeys.CreateAppKey(1).ToString()
+            };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         private LoRaDevice CreateDefaultDevice() => new LoRaDevice("FFFFFFFF", "0000000000000000", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
