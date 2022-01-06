@@ -517,7 +517,6 @@ namespace LoRaWan.Tests.E2E
                 AppSKey = GetAppSessionKey(24),
                 NwkSKey = GetNetworkSessionKey(24),
                 DevAddr = "00000024",
-                GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 ClassType = 'C',
             };

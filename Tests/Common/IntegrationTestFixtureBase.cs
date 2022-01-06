@@ -184,21 +184,6 @@ namespace LoRaWan.Tests.Common
             return this.moduleClient;
         }
 
-        public async Task InvokeModuleDirectMethodAsync(string edgeDeviceId, string moduleId, string methodName, object body)
-        {
-            try
-            {
-                var c2d = new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-                c2d.SetPayloadJson(JsonConvert.SerializeObject(body));
-                await GetServiceClient().InvokeDeviceMethodAsync(edgeDeviceId, moduleId, c2d);
-            }
-            catch (Exception ex)
-            {
-                TestLogger.Log($"[ERROR] Failed to call direct method, deviceId: {edgeDeviceId}, moduleId: {moduleId}, method: {methodName}: {ex.Message}");
-                throw;
-            }
-        }
-
         public async Task InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod method)
         {
             using var sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHubConnectionString);
