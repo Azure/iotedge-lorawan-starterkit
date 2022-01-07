@@ -4,6 +4,7 @@
 namespace LoRaTools.LoRaMessage
 {
     using System;
+    using System.Buffers.Binary;
     using System.Linq;
     using LoRaTools.Utils;
     using LoRaWan;
@@ -83,39 +84,25 @@ namespace LoRaTools.LoRaMessage
 
         private Mic PerformMic(NetworkSessionKey key)
         {
-            var rawKey = new byte[NetworkSessionKey.Size];
-            _ = key.Write(rawKey);
-            return PerformMic(rawKey);
+            var (mhdr, joinEui, devEui) = GetTypedMicInputs();
+            return LoRaWan.Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, DevNonce);
         }
 
         private Mic PerformMic(AppKey key)
         {
-            var rawKey = new byte[AppKey.Size];
-            _ = key.Write(rawKey);
-            return PerformMic(rawKey);
+            var (mhdr, joinEui, devEui) = GetTypedMicInputs();
+            return LoRaWan.Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, DevNonce);
         }
 
-        private Mic PerformMic(byte[] rawKey)
+        /// <summary>
+        /// This method will go away once we start using all the primitives everywhere.
+        /// </summary>
+        private (MacHeader, JoinEui, DevEui) GetTypedMicInputs()
         {
-            var mac = MacUtilities.GetMac("AESCMAC");
-
-            var key = new KeyParameter(rawKey);
-            mac.Init(key);
-            var algoInputBytes = new byte[19];
-            var algoInput = new Memory<byte>(algoInputBytes);
-
-            var offset = 0;
-            Mhdr.CopyTo(algoInput);
-            offset += Mhdr.Length;
-            AppEUI.CopyTo(algoInput[offset..]);
-            offset += AppEUI.Length;
-            DevEUI.CopyTo(algoInput[offset..]);
-            offset += DevEUI.Length;
-            _ = DevNonce.Write(algoInput[offset..].Span);
-
-            mac.BlockUpdate(algoInputBytes, 0, algoInputBytes.Length);
-
-            return LoRaWan.Mic.Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
+            var mhdr = new MacHeader(Mhdr.Span[0]);
+            var joinEui = JoinEui.Read(AppEUI.Span);
+            var devEui = DevEui.Read(DevEUI.Span);
+            return (mhdr, joinEui, devEui);
         }
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");

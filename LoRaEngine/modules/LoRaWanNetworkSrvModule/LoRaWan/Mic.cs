@@ -45,12 +45,22 @@ namespace LoRaWan
 
         public static Mic ComputeForJoinRequest(AppKey appKey, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
         {
+            var keyBytes = new byte[AppKey.Size];
+            _ = appKey.Write(keyBytes);
+            return ComputeForJoinRequest(keyBytes, mhdr, joinEui, devEui, devNonce);
+        }
+
+        public static Mic ComputeForJoinRequest(NetworkSessionKey networkSessionKey, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
+        {
+            var keyBytes = new byte[NetworkSessionKey.Size];
+            _ = networkSessionKey.Write(keyBytes);
+            return ComputeForJoinRequest(keyBytes, mhdr, joinEui, devEui, devNonce);
+        }
+
+        private static Mic ComputeForJoinRequest(byte[] keyBytes, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
+        {
             var mac = MacUtilities.GetMac("AESCMAC");
 
-            var keyBytes = new byte[AppKey.Size];
-#pragma warning disable IDE0058 // Expression value is never used
-            appKey.Write(keyBytes);
-#pragma warning restore IDE0058 // Expression value is never used
             var key = new KeyParameter(keyBytes);
             mac.Init(key);
 
@@ -59,9 +69,7 @@ namespace LoRaWan
             buffer = mhdr.Write(buffer);
             buffer = joinEui.Write(buffer);
             buffer = devEui.Write(buffer);
-#pragma warning disable IDE0058 // Expression value is never used
-            devNonce.Write(buffer);
-#pragma warning restore IDE0058 // Expression value is never used
+            _ = devNonce.Write(buffer);
 
             mac.BlockUpdate(input, 0, input.Length);
             var cmac = MacUtilities.DoFinal(mac);

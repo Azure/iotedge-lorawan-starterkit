@@ -47,12 +47,24 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Fact]
-        public void Compute()
+        public void ComputeForJoinRequest_AppKey()
         {
             var joinEui = JoinEui.Parse("00-05-10-00-00-00-00-04");
             var devEui = DevEui.Parse("00-05-10-00-00-00-00-04");
             var devNonce = DevNonce.Read(new byte[] { 0xab, 0xcd });
             var appKey = AppKey.Parse("00000000000000000005100000000004");
+            var mhdr = new MacHeader(0);
+            var mic = Mic.ComputeForJoinRequest(appKey, mhdr, joinEui, devEui, devNonce);
+            Assert.Equal(new Mic(0xb6dee36c), mic);
+        }
+
+        [Fact]
+        public void ComputeForJoinRequest_NetworkSessionKey()
+        {
+            var joinEui = JoinEui.Parse("00-05-10-00-00-00-00-04");
+            var devEui = DevEui.Parse("00-05-10-00-00-00-00-04");
+            var devNonce = DevNonce.Read(new byte[] { 0xab, 0xcd });
+            var appKey = NetworkSessionKey.Parse("00000000000000000005100000000004");
             var mhdr = new MacHeader(0);
             var mic = Mic.ComputeForJoinRequest(appKey, mhdr, joinEui, devEui, devNonce);
             Assert.Equal(new Mic(0xb6dee36c), mic);
