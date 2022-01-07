@@ -58,7 +58,8 @@ namespace LoRaWan.NetworkServer
             try
             {
                 var timeWatcher = request.GetTimeWatcher();
-                using var joinAcceptCancellationToken = new CancellationTokenSource(timeWatcher.InTimeForJoinAccept() ? timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() : TimeSpan.Zero);
+                var processingTimeout = timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() - TimeSpan.FromMilliseconds(100);
+                using var joinAcceptCancellationToken = new CancellationTokenSource(processingTimeout > TimeSpan.Zero ? processingTimeout : TimeSpan.Zero);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
