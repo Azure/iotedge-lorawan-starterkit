@@ -215,8 +215,8 @@ namespace LoRaWan.NetworkServer
                         try
                         {
                             decryptedPayloadData = loraPayload.Fport == FramePort.MacCommand
-                                ? loraPayload.GetDecryptedPayload(loRaDevice.NwkSKey.Value)
-                                : loraPayload.GetDecryptedPayload(loRaDevice.AppSKey.Value);
+                                ? loraPayload.GetDecryptedPayload(loRaDevice.NwkSKey ?? throw new LoRaProcessingException("No NwkSKey set for the LoRaDevice.", LoRaProcessingErrorCode.PayloadDecryptionFailed))
+                                : loraPayload.GetDecryptedPayload(loRaDevice.AppSKey ?? throw new LoRaProcessingException("No AppSKey set for the LoRaDevice.", LoRaProcessingErrorCode.PayloadDecryptionFailed));
                         }
                         catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.PayloadDecryptionFailed)
                         {
@@ -227,27 +227,21 @@ namespace LoRaWan.NetworkServer
                     #region Handling MacCommands
                     // if FPort is 0 (i.e. MacCommand) the commands are in the payload
                     // otherwise the commands are in FOpts field and already parsed
-                    if (loraPayload.Fport == FramePort.MacCommand)
+                    if (loraPayload.Fport == FramePort.MacCommand && decryptedPayloadData?.Length > 0)
                     {
-                        if (decryptedPayloadData?.Length > 0)
-                        {
-                            loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
-                        }
+                        loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
                     }
 
-                    if (!skipDownstreamToAvoidCollisions)
+                    if (!skipDownstreamToAvoidCollisions && loraPayload.IsMacAnswerRequired)
                     {
-                        if (loraPayload.IsMacAnswerRequired)
+                        fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+
+                        if (!fcntDown.HasValue || fcntDown <= 0)
                         {
-                            fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
-
-                            if (!fcntDown.HasValue || fcntDown <= 0)
-                            {
-                                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
-                            }
-
-                            requiresConfirmation = true;
+                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
                         }
+
+                        requiresConfirmation = true;
                     }
 
                     // Persist dwell time settings in device reported properties

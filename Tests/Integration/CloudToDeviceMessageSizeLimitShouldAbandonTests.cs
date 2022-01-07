@@ -112,10 +112,10 @@ namespace LoRaWan.Tests.Integration
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             if (hasMacInUpstream)
             {
-                payloadDataDown.Serialize(loraDevice.NwkSKey.Value);
+                payloadDataDown.Serialize(loraDevice.NwkSKey ?? throw new InvalidOperationException("NwkSKey can't be null"));
             } else
             {
-                payloadDataDown.Serialize(loraDevice.AppSKey.Value);
+                payloadDataDown.Serialize(loraDevice.AppSKey ?? throw new InvalidOperationException("AppSKey can't be null"));
             }
 
             // 3. Fpending flag is set
