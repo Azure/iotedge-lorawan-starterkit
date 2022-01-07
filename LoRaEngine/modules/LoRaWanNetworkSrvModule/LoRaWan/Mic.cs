@@ -76,5 +76,35 @@ namespace LoRaWan
 
             return new Mic(BinaryPrimitives.ReadUInt32LittleEndian(cmac));
         }
+
+        public static Mic ComputeForJoinAccept(AppKey appKey, MacHeader macHeader, Memory<byte> joinNonce, Memory<byte> netId, Memory<byte> devAddr, Memory<byte> dlSettings, Memory<byte> rxDelay, Memory<byte> cfList)
+        {
+            var algoInput = new byte[MacHeader.Size + joinNonce.Length + NetId.Size + DevAddr.Size + dlSettings.Length + rxDelay.Length + cfList.Length];
+            var index = 0;
+            _ = macHeader.Write(algoInput.AsSpan(index));
+            index += MacHeader.Size;
+            joinNonce.CopyTo(algoInput.AsMemory(index));
+            index += joinNonce.Length;
+            netId.CopyTo(algoInput.AsMemory(index));
+            index += netId.Length;
+            devAddr.CopyTo(algoInput.AsMemory(index));
+            index += DevAddr.Size;
+            dlSettings.CopyTo(algoInput.AsMemory(index));
+            index += dlSettings.Length;
+            rxDelay.CopyTo(algoInput.AsMemory(index));
+            index += rxDelay.Length;
+            if (!cfList.IsEmpty)
+                cfList.CopyTo(algoInput.AsMemory(index));
+
+            var mac = MacUtilities.GetMac("AESCMAC");
+            var rawKey = new byte[AppKey.Size];
+            _ = appKey.Write(rawKey);
+            var key = new KeyParameter(rawKey);
+            mac.Init(key);
+            var rfu = new byte[1];
+            rfu[0] = 0x0;
+            mac.BlockUpdate(algoInput, 0, algoInput.Length);
+            return Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
+        }
     }
 }

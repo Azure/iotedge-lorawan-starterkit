@@ -52,9 +52,9 @@ namespace LoRaWan.Tests.Unit
             var joinEui = JoinEui.Parse("00-05-10-00-00-00-00-04");
             var devEui = DevEui.Parse("00-05-10-00-00-00-00-04");
             var devNonce = DevNonce.Read(new byte[] { 0xab, 0xcd });
-            var appKey = AppKey.Parse("00000000000000000005100000000004");
+            var key = TestKeys.CreateAppKey(0x0005100000000004);
             var mhdr = new MacHeader(0);
-            var mic = Mic.ComputeForJoinRequest(appKey, mhdr, joinEui, devEui, devNonce);
+            var mic = Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, devNonce);
             Assert.Equal(new Mic(0xb6dee36c), mic);
         }
 
@@ -64,10 +64,25 @@ namespace LoRaWan.Tests.Unit
             var joinEui = JoinEui.Parse("00-05-10-00-00-00-00-04");
             var devEui = DevEui.Parse("00-05-10-00-00-00-00-04");
             var devNonce = DevNonce.Read(new byte[] { 0xab, 0xcd });
-            var appKey = NetworkSessionKey.Parse("00000000000000000005100000000004");
+            var key = TestKeys.CreateNetworkSessionKey(0x0005100000000004);
             var mhdr = new MacHeader(0);
-            var mic = Mic.ComputeForJoinRequest(appKey, mhdr, joinEui, devEui, devNonce);
+            var mic = Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, devNonce);
             Assert.Equal(new Mic(0xb6dee36c), mic);
+        }
+
+        [Fact]
+        public void ComputeForJoinAccept()
+        {
+            var key = TestKeys.CreateAppKey(0x0005100000000004);
+            var mhdr = new MacHeader(1);
+            var joinNonce = new byte[] { 0xab, 0xcd };
+            var netId = new byte[] { 0xba, 0xbb, 0xbc };
+            var devAddr = new byte[] { 0x11, 0x12, 0x13, 0x14 };
+            var dlSettings = new byte[] { 0xca };
+            var rxDelay = new byte[] { 0xda };
+            var cfList = new byte[16] { 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xea, 0xeb, 0xec, 0xed, 0xef, 0xf1, 0xf2, 0xf3 };
+            var mic = Mic.ComputeForJoinAccept(key, mhdr, joinNonce, netId, devAddr, dlSettings, rxDelay, cfList);
+            Assert.Equal(new Mic(0x48148BC8), mic);
         }
     }
 }

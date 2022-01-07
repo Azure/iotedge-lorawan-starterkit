@@ -7,8 +7,6 @@ namespace LoRaTools.LoRaMessage
 {
     using System;
     using LoRaWan;
-    using Org.BouncyCastle.Crypto.Parameters;
-    using Org.BouncyCastle.Security;
 
     /// <summary>
     /// The LoRaPayloadWrapper class wraps all the information any LoRa message share in common.
@@ -103,25 +101,6 @@ namespace LoRaTools.LoRaMessage
         /// <param name="key">The App Key.</param>
         /// <returns>the encrypted bytes.</returns>
         public abstract byte[] PerformEncryption(AppKey key);
-
-        /// <summary>
-        /// A Method to calculate the Mic of the message.
-        /// </summary>
-        /// <returns> the Mic bytes.</returns>
-        public void CalculateMic(AppKey appKey, byte[] algoinput)
-        {
-            if (algoinput is null) throw new ArgumentNullException(nameof(algoinput));
-
-            var mac = MacUtilities.GetMac("AESCMAC");
-            var rawKey = new byte[AppKey.Size];
-            _ = appKey.Write(rawKey);
-            var key = new KeyParameter(rawKey);
-            mac.Init(key);
-            var rfu = new byte[1];
-            rfu[0] = 0x0;
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            Mic = LoRaWan.Mic.Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
-        }
 
         public void Reset32BitBlockInfo()
         {

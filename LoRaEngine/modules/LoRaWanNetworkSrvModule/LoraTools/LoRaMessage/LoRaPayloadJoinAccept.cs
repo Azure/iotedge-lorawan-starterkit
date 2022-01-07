@@ -11,6 +11,7 @@ namespace LoRaTools.LoRaMessage
     using LoRaWan;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
+    using Org.BouncyCastle.Security;
 
     /// <summary>
     /// Implementation of a LoRa Join-Accept frame.
@@ -215,11 +216,7 @@ namespace LoRaTools.LoRaMessage
 
         public byte[] Serialize(AppKey appKey)
         {
-            var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
-            if (!CfList.Span.IsEmpty)
-                algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
-
-            CalculateMic(appKey, algoinput);
+            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, new MacHeader(Mhdr.Span[0]), AppNonce, NetID, DevAddr, DlSettings, RxDelay, CfList);
             _ = PerformEncryption(appKey);
 
             return GetByteMessage();
