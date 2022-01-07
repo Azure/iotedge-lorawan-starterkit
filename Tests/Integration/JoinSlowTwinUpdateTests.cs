@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Integration
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
@@ -43,7 +44,7 @@ namespace LoRaWan.Tests.Integration
             // Device twin will be updated
             AppSessionKey? afterJoin2AppSKey = null;
             NetworkSessionKey? afterJoin2NwkSKey = null;
-            string afterJoin2DevAddr = null;
+            DevAddr? afterJoin2DevAddr = null;
 
             var mockSequence = new MockSequence();
             LoRaDeviceClient.InSequence(mockSequence)
@@ -61,11 +62,11 @@ namespace LoRaWan.Tests.Integration
                             });
             LoRaDeviceClient.InSequence(mockSequence)
                             .Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
-                            .Returns<TwinCollection, CancellationToken>((updatedTwin, _) =>
+                            .Returns<TwinCollection, CancellationToken>((updatedTwin, token) =>
                             {
-                                afterJoin2AppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
-                                afterJoin2NwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
-                                afterJoin2DevAddr = updatedTwin[TwinProperty.DevAddr];
+                                _ = updatedTwin.TryRead(TwinProperty.AppSKey, null, out afterJoin2AppSKey);
+                                _ = updatedTwin.TryRead(TwinProperty.NwkSKey, null, out afterJoin2NwkSKey);
+                                _ = updatedTwin.TryRead(TwinProperty.DevAddr, null, out afterJoin2DevAddr);
                                 return Task.FromResult(true);
                             });
 
@@ -101,7 +102,7 @@ namespace LoRaWan.Tests.Integration
 
             Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
             Assert.True(loRaDevice.IsOurDevice);
-            Assert.Equal(afterJoin2DevAddr, loRaDevice.DevAddr);
+            Assert.Equal(afterJoin2DevAddr.GetValueOrDefault().ToString(), loRaDevice.DevAddr);
             Assert.Equal(afterJoin2NwkSKey, loRaDevice.NwkSKey);
             Assert.Equal(afterJoin2AppSKey, loRaDevice.AppSKey);
 
