@@ -82,12 +82,14 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                if (string.IsNullOrEmpty(loRaDevice.AppKey))
+                if (loRaDevice.AppKey is null)
                 {
                     this.logger.LogError("join refused: missing AppKey for OTAA device");
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
                     return;
                 }
+
+                var appKey = loRaDevice.AppKey.Value;
 
                 this.joinRequestCounter?.Add(1);
 
@@ -98,7 +100,7 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                if (!joinReq.CheckMic(loRaDevice.AppKey))
+                if (!joinReq.CheckMic(appKey))
                 {
                     this.logger.LogError("join refused: invalid MIC");
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.JoinMicCheckFailed);
@@ -139,9 +141,8 @@ namespace LoRaWan.NetworkServer
 
                 var appNonce = OTAAKeysGenerator.GetAppNonce();
                 var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
-                var appKeyBytes = ConversionHelper.StringToByteArray(loRaDevice.AppKey);
-                var appSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
-                var nwkSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
+                var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
+                var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
                 var devAddr = OTAAKeysGenerator.GetNwkId(netId);
 
                 var oldDevAddr = loRaDevice.DevAddr;
@@ -278,7 +279,7 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                var joinAcceptBytes = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey);
+                var joinAcceptBytes = loRaPayloadJoinAccept.Serialize(appKey);
                 var downlinkMessage = new DownlinkMessage(
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,
