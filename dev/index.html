@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.bb3983ee.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
@@ -33,6 +33,8 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="css/timeago.css">
     
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css">
     
@@ -247,8 +249,8 @@
   
   
     <li class="md-tabs__item">
-      <a href="samples/arduino/" class="md-tabs__link">
-        Samples
+      <a href="user-guide/architecture/" class="md-tabs__link">
+        Reference
       </a>
     </li>
   
@@ -263,8 +265,8 @@
   
   
     <li class="md-tabs__item">
-      <a href="testing/e2e_tests/" class="md-tabs__link">
-        Testing
+      <a href="samples/arduino/" class="md-tabs__link">
+        Samples
       </a>
     </li>
   
@@ -420,13 +422,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#getting-started" class="md-nav__link">
     Getting Started
   </a>
@@ -518,34 +513,6 @@
   
   
     <li class="md-nav__item">
-      <a href="user-guide/architecture/" class="md-nav__link">
-        Architecture and Concepts for the LoRaWAN starter kit
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="user-guide/message-flows/" class="md-nav__link">
-        Message Flows
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="user-guide/partner/" class="md-nav__link">
         Device Manufacturer Guidance
       </a>
@@ -560,22 +527,8 @@
   
   
     <li class="md-nav__item">
-      <a href="user-guide/caching/" class="md-nav__link">
-        Caching
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="user-guide/upgrade/" class="md-nav__link">
-        Upgrade LoRaWAN to a new version
+        Upgrade to a new version
       </a>
     </li>
   
@@ -615,38 +568,24 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="user-guide/ci-setup/" class="md-nav__link">
-        CI setup
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
     
       
     
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_10" type="checkbox" id="__nav_3_10" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_6" type="checkbox" id="__nav_3_6" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3_10">
+        <label class="md-nav__link" for="__nav_3_6">
           Basic Station configuration
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_10">
+        <label class="md-nav__title" for="__nav_3_6">
           <span class="md-nav__icon md-icon"></span>
           Basic Station configuration
         </label>
@@ -687,7 +626,7 @@
   
     <li class="md-nav__item">
       <a href="user-guide/station-module-configuration/" class="md-nav__link">
-        `LoRaBasicsStationModule` IoT Edge Module configuration parameters
+        LBS IoT Edge Module configuration
       </a>
     </li>
   
@@ -712,18 +651,18 @@
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_11" type="checkbox" id="__nav_3_11" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_7" type="checkbox" id="__nav_3_7" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3_11">
+        <label class="md-nav__link" for="__nav_3_7">
           Region specifics
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Region specifics" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_11">
+        <label class="md-nav__title" for="__nav_3_7">
           <span class="md-nav__icon md-icon"></span>
           Region specifics
         </label>
@@ -737,6 +676,69 @@
     <li class="md-nav__item">
       <a href="user-guide/as923/" class="md-nav__link">
         Region AS923
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_8" type="checkbox" id="__nav_3_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_8">
+          Testing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Testing" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_8">
+          <span class="md-nav__icon md-icon"></span>
+          Testing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="user-guide/testing/e2e_tests/" class="md-nav__link">
+        E2E Tests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="user-guide/testing/integration_tests/" class="md-nav__link">
+        Integration Tests
       </a>
     </li>
   
@@ -773,12 +775,102 @@
       
       
         <label class="md-nav__link" for="__nav_4">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="user-guide/architecture/" class="md-nav__link">
+        Architecture and Concepts
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="user-guide/message-flows/" class="md-nav__link">
+        Message Flows
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="user-guide/caching/" class="md-nav__link">
+        Caching
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="user-guide/ci-setup/" class="md-nav__link">
+        Continuous Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
           Samples
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Samples" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
+        <label class="md-nav__title" for="__nav_5">
           <span class="md-nav__icon md-icon"></span>
           Samples
         </label>
@@ -809,18 +901,18 @@
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_4_2">
+        <label class="md-nav__link" for="__nav_5_2">
           Decoders
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Decoders" data-md-level="2">
-        <label class="md-nav__title" for="__nav_4_2">
+        <label class="md-nav__title" for="__nav_5_2">
           <span class="md-nav__icon md-icon"></span>
           Decoders
         </label>
@@ -892,68 +984,6 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_5">
-          Testing
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Testing" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
-          <span class="md-nav__icon md-icon"></span>
-          Testing
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="testing/e2e_tests/" class="md-nav__link">
-        E2E Tests
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="testing/integration_tests/" class="md-nav__link">
-        Integration Tests
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
       
       
@@ -978,7 +1008,7 @@
   
     <li class="md-nav__item">
       <a href="tools/device-provisioning/" class="md-nav__link">
-        LoRa device provisioning CLI
+        LoRa Device Provisioning
       </a>
     </li>
   
@@ -1082,7 +1112,7 @@
   
     <li class="md-nav__item">
       <a href="adr/005_observability/" class="md-nav__link">
-        005 - Observability
+        005. Observability
       </a>
     </li>
   
@@ -1242,13 +1272,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#getting-started" class="md-nav__link">
     Getting Started
   </a>
@@ -1307,9 +1330,11 @@ Azure IoT Edge users to experiment with LoRaWAN technology.</p>
 <li>LoRaWAN 1.0.2 implementation
 (see <a href="#LoRaWAN-1.0.2-Specification-Support">LoRaWAN Specification Support</a>
 for more details)</li>
+<li>Multiple concentrator support</li>
 <li>Device and Gateway management done completely through Azure IoT Hub.</li>
 <li>Bi-directional communication between LoRa end devices and Azure cloud.</li>
 <li>Custom packet decoding framework.</li>
+<li>Device Agnostic.</li>
 <li>Identity Translation for LoRa devices with caching support.</li>
 <li>Partial Offline and Casually connected Gateways scenarios.*</li>
 <li>Easy deployment and setup using Azure <abbr title="Azure Resource Manager">ARM</abbr> templates.</li>
@@ -1323,31 +1348,16 @@ to our release notes for more details on what is available.</p>
 <ul>
 <li>Current supported Specification: <em>1.0.2</em>.</li>
 <li>Support of Class A and C devices.</li>
-<li>Support of <strong>EU868</strong> and <strong>US915</strong> channel frequencies.</li>
+<li>Support of <strong>EU868</strong>, <strong>US915</strong>, <strong>AS923</strong> and <strong>CN470</strong> channel frequencies.</li>
 <li>Activation through <abbr title="Activation By Personalization">ABP</abbr> and <abbr title="Over The Air Activation">OTAA</abbr>.</li>
 <li>Confirmed and unconfirmed upstream messages.</li>
 <li>Confirmed and unconfirmed downstream messages.</li>
 <li>Multi-gateways.</li>
+<li>Multi-concentrators.</li>
+<li><a href="https://github.com/lorabasics/basicstation">LoRa Basics™ Station</a> Support</li>
 <li>Message de-duplication.</li>
 <li>Support of MAC commands.</li>
 <li>ADR Support.</li>
-</ul>
-<h2 id="prerequisites">Prerequisites</h2>
-<p>The following should be completed before proceeding with the LoRaWAN starter kit
-development or deployment in your environment.</p>
-<ul>
-<li>You must have an Azure subscription. Get an
-<a href="https://azure.microsoft.com/en-us/offers/ms-azr-0044p/">Azure Free account</a>
-to get started.</li>
-<li>We are based on Azure IoT Edge so it is important that you understand the
-concepts and deployment model for Azure IoT Edge. Refer to Azure
-<a href="https://docs.microsoft.com/en-us/azure/iot-edge/">IoT Edge documentation</a>
-to see how it works.</li>
-<li>Understand how LoRa and LoRaWAN works. A great primer is available at the
-<a href="https://lora-alliance.org/resource_hub/what-is-lorawan/">LoRa Alliance website</a>.</li>
-<li>To test the solution on a device, you need to have a LoRaWAN Device Kit
-Gateway and a LoRa end node. We have some recommendations in the
-<a href="#tested-gateways">Tested Gateways</a> section below.</li>
 </ul>
 <h2 id="getting-started">Getting Started</h2>
 <p>We have a variety of ways you can  get started with the kit, chose the
@@ -1368,11 +1378,11 @@ and deploy the kit in your dev environment. We also support a</li>
 <ul>
 <li><strong>Enable a gateway or device to be compatible with the starter kit</strong>: We have
 developed the LoRaWAN starter kit agnostic of a device manufacturer
-implementation and focussed on the specifics on underlying architectures
+implementation and focused on the specifics on underlying architectures
 (arm, x86). However, we understand that device manufacturers can have specific
-requirements; these could be specific to a gateway and the basic station
-they use or to the LoRa nodes and the decoders the device may use. We have
-provided specific instructions on making these specialized hardware compatible
+requirements; these could be specific to the gateway and the concentrator
+they use, or to the LoRa nodes and the decoders the device may use. We have
+provided specific instructions on making such specialized hardware compatible
 with our kit. You can follow these <a href="user-guide/partner/">instructions</a> depending on
 your scenarios and also have your device gateway highlighted on our repo.</li>
 </ul>
@@ -1391,6 +1401,21 @@ with <a href="http://www.embeddedpi.com/iocards">RAK833-SPI mPCIe-LoRa-Concentra
 <li><a href="https://github.com/Ellerbach/lora_gateway/tree/a31d80bf93006f33c2614205a6845b379d032c57">RAK833-USB mPCIe-LoRa-Concentrator with Raspberry Pi 3</a></li>
 </ul>
 <!-- markdownlint-enable MD025 -->
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-07T12:37:15+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-07</span>
+      
+        <br>
+        Created:
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-07T12:37:15+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-07</span>
+      
+    
+  </small>
+</div>
 
               
             </article>
@@ -1456,10 +1481,14 @@ with <a href="http://www.embeddedpi.com/iocards">RAK833-SPI mPCIe-LoRa-Concentra
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.289a2a4b.min.js"></script>
+      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
+      
+        <script src="js/timeago.min.js"></script>
+      
+        <script src="js/timeago_mkdocs_material.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       
