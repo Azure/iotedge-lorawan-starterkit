@@ -29,13 +29,6 @@ namespace LoRaWan.NetworkServer
         void ResetDeviceCache();
 
         /// <summary>
-        /// Expires the specified <see cref="LoRaDevice"/>
-        /// if it is in the cache of the registry.
-        /// </summary>
-        /// <param name="loRaDevice"></param>
-        void ExpireDeviceCache(LoRaDevice loRaDevice);
-
-        /// <summary>
         /// Gets a <see cref="ILoRaDeviceRequestQueue"/> where requests can be queued.
         /// </summary>
         ILoRaDeviceRequestQueue GetLoRaRequestQueue(LoRaRequest request);

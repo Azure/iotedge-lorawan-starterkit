@@ -110,11 +110,6 @@ namespace LoRaWan.NetworkServer
                 {
                     if (string.IsNullOrEmpty(loRaDevice.GatewayID))
                     {
-                        // another gateway processed the join request. If we have it in the cache
-                        // with existing session keys, we need to invalidate that entry, to ensure
-                        // it gets re-fetched on the next message
-                        if (loRaDevice.AppSKey != null)
-                            this.deviceRegistry.ExpireDeviceCache(loRaDevice);
                         this.logger.LogInformation("join refused: join already processed by another gateway");
                     }
                     else
