@@ -45,6 +45,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetDeviceForJoinRequestAsync_When_Join_Handled_By_Other_Cache_Is_Updated(bool joinedDevice)
+        {
+            var devNonce = new DevNonce(1);
+            var apiService = new Mock<LoRaDeviceAPIServiceBase>();
+            var otaaDevice = TestDeviceInfo.CreateOTAADevice(1);
+            if (joinedDevice) otaaDevice.AppSKey = new AppSessionKey();
+
+            var simulatedDevice = new SimulatedDevice(otaaDevice);
+
+            apiService.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, simulatedDevice.DevEUI, devNonce))
+                .ReturnsAsync(new SearchDevicesResult() { IsDevNonceAlreadyUsed = true });
+
+            DeviceCache.Register(CreateLoRaDevice(simulatedDevice));
+            using var target = new LoRaDeviceRegistry(ServerConfiguration, this.cache, apiService.Object, this.loraDeviceFactoryMock.Object, DeviceCache);
+
+            Assert.Null(await target.GetDeviceForJoinRequestAsync(simulatedDevice.DevEUI, devNonce));
+            Assert.Equal(joinedDevice, !DeviceCache.TryGetByDevEui(simulatedDevice.DevEUI, out _));
+        }
+
+        [Theory]
         [InlineData(ServerGatewayID)]
         [InlineData(null)]
         public async Task When_Device_Is_Not_In_Cache_And_Found_In_Api_Should_Cache_And_Process_Request(string deviceGatewayID)
