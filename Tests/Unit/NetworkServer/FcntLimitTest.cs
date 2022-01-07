@@ -73,8 +73,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint? fcntUpSavedInTwin = null;
             uint? fcntDownSavedInTwin = null;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Returns<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Returns<TwinCollection, CancellationToken>((t, _) =>
                 {
                     fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
                     fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
@@ -185,8 +185,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint? fcntStartUpSavedInTwin = null;
             uint? fcntStartDownSavedInTwin = null;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Returns<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Returns<TwinCollection, CancellationToken>((t, _) =>
                 {
                     fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
                     fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
@@ -218,7 +218,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             if (saveExpected)
             {
                 Assert.True(req.ProcessingSucceeded);
-                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Exactly(1));
+                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
                 Assert.Equal(fcntUpSavedInTwin, fcntStartUpSavedInTwin);
                 Assert.Equal(fcntDownSavedInTwin, fcntStartDownSavedInTwin);
                 Assert.Equal(startUpExpected, fcntStartUpSavedInTwin.Value);
@@ -226,7 +226,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
             else
             {
-                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Never());
+                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never());
             }
         }
 

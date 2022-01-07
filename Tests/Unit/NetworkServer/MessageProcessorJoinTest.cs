@@ -72,7 +72,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Ensure that the device twin was updated
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.Is<TwinCollection>((t) =>
-                t.Contains(TwinProperty.DevAddr) && t.Contains(TwinProperty.FCntDown))))
+                t.Contains(TwinProperty.DevAddr) && t.Contains(TwinProperty.FCntDown)), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
@@ -316,8 +316,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             AppSessionKey? afterJoinAppSKey = null;
             NetworkSessionKey? afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Callback<TwinCollection>((updatedTwin) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Callback<TwinCollection, CancellationToken>((updatedTwin, _) =>
                 {
                     afterJoinAppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
                     afterJoinNwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
@@ -421,7 +421,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Lora device api will be search by devices with matching deveui,
@@ -497,8 +497,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-             .Callback<TwinCollection>((updatedTwin) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+             .Callback<TwinCollection, CancellationToken>((updatedTwin, _) =>
             {
                 afterJoinAppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
                 afterJoinNwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
@@ -593,8 +593,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             twin.Properties.Desired[TwinProperty.RXDelay] = afterJoinValues;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-             .Callback<TwinCollection>((updatedTwin) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+             .Callback<TwinCollection, CancellationToken>((updatedTwin, _) =>
              {
                  if (updatedTwin.Contains(TwinProperty.AppSKey))
                  {
@@ -616,7 +616,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             startingTwin[TwinProperty.RX2DataRate] = beforeJoinValues;
             startingTwin[TwinProperty.RX1DROffset] = beforeJoinValues;
             startingTwin[TwinProperty.RXDelay] = beforeJoinValues;
-            await LoRaDeviceClient.Object.UpdateReportedPropertiesAsync(startingTwin);
+            await LoRaDeviceClient.Object.UpdateReportedPropertiesAsync(startingTwin, default);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -698,8 +698,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-             .Callback<TwinCollection>((updatedTwin) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+             .Callback<TwinCollection, CancellationToken>((updatedTwin, _) =>
              {
                  afterJoinAppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
                  afterJoinNwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
@@ -812,8 +812,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-             .Callback<TwinCollection>((updatedTwin) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+             .Callback<TwinCollection, CancellationToken>((updatedTwin, _) =>
              {
                  afterJoinAppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
                  afterJoinNwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);

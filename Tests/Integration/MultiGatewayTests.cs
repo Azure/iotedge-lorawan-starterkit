@@ -129,8 +129,8 @@ namespace LoRaWan.Tests.Integration
             var shouldSaveTwin = (deviceTwinFcntDown ?? 0) != 0 || (deviceTwinFcntUp ?? 0) != 0;
             if (shouldSaveTwin)
             {
-                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                    .Callback<TwinCollection>((t) =>
+                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                    .Callback<TwinCollection, CancellationToken>((t, _) =>
                     {
                         fcntUpSavedInTwin = (int)t[TwinProperty.FCntUp];
                         fcntDownSavedInTwin = (int)t[TwinProperty.FCntDown];

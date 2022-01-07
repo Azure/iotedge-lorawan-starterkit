@@ -215,6 +215,15 @@ namespace LoRaWan.NetworkServer
 
             if (searchDeviceResult.IsDevNonceAlreadyUsed)
             {
+                // another gateway processed the join request. If we have it in the cache
+                // with existing session keys, we need to invalidate that entry, to ensure
+                // it gets re-fetched on the next message
+                if (this.deviceCache.TryGetByDevEui(devEUI, out var someDevice) && someDevice.AppSKey != null)
+                {
+                    _ = this.deviceCache.Remove(someDevice);
+                    this.logger.LogDebug("Device was removed from cache.");
+                }
+
                 this.logger.LogInformation("join refused: Join already processed by another gateway.");
                 return null;
             }

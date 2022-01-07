@@ -6,8 +6,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
-    using System.Globalization;
-    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -486,7 +484,7 @@ namespace LoRaWan.NetworkServer
                         return false;
                     }
 
-                    var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
+                    var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties, default);
                     if (result)
                     {
                         InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
@@ -693,7 +691,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates device on the server after a join succeeded.
         /// </summary>
-        internal virtual async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties)
+        internal virtual async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties, CancellationToken cancellationToken)
         {
             var reportedProperties = new TwinCollection();
             reportedProperties[TwinProperty.AppSKey] = updateProperties.AppSKey.ToString();
@@ -786,7 +784,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var devAddrBeforeSave = DevAddr;
-            var succeeded = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
+            var succeeded = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
             // Only save if the devAddr remains the same, otherwise ignore the save
             if (succeeded && devAddrBeforeSave == DevAddr)

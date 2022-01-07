@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Integration
 
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID, deviceClassType: 'c'), frmCntDown: fcntDownFromTwin);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
@@ -142,9 +142,9 @@ namespace LoRaWan.Tests.Integration
             AppSessionKey? savedAppSKey = null;
             NetworkSessionKey? savedNwkSKey = null;
             var savedDevAddr = string.Empty;
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true)
-                .Callback<TwinCollection>((t) =>
+                .Callback<TwinCollection, CancellationToken>((t, _) =>
                 {
                     savedAppSKey = AppSessionKey.Parse(t[TwinProperty.AppSKey].Value);
                     savedNwkSKey = NetworkSessionKey.Parse(t[TwinProperty.NwkSKey].Value);
@@ -346,9 +346,9 @@ namespace LoRaWan.Tests.Integration
             var savedAppSKey = string.Empty;
             var savedNwkSKey = string.Empty;
             var savedDevAddr = string.Empty;
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true)
-                .Callback<TwinCollection>((t) =>
+                .Callback<TwinCollection, CancellationToken>((t, _) =>
                 {
                     savedAppSKey = t[TwinProperty.AppSKey];
                     savedNwkSKey = t[TwinProperty.NwkSKey];
@@ -451,8 +451,8 @@ namespace LoRaWan.Tests.Integration
 
             if (shouldSavePreferredGateway || shouldSaveRegion)
             {
-                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                    .Callback<TwinCollection>((savedTwin) =>
+                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                    .Callback<TwinCollection, CancellationToken>((savedTwin, _) =>
                     {
                         if (shouldSavePreferredGateway)
                             Assert.Equal(ServerGatewayID, savedTwin[TwinProperty.PreferredGatewayID].Value as string);
@@ -540,8 +540,8 @@ namespace LoRaWan.Tests.Integration
                 })
                 .ReturnsAsync(bundlerResult);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Callback<TwinCollection>((savedTwin) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Callback<TwinCollection, CancellationToken>((savedTwin, _) =>
                 {
                     Assert.Equal(ServerGatewayID, savedTwin[TwinProperty.PreferredGatewayID].Value as string);
                     Assert.Equal(LoRaRegionType.EU868.ToString(), savedTwin[TwinProperty.Region].Value as string);
@@ -583,7 +583,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(LoRaRegionType.EU868, loraDevice.LoRaRegion);
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
 
-            LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Once());
+            LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Once());
         }
     }
 }

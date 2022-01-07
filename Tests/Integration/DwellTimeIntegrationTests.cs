@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Integration
     using System.Collections.Generic;
     using System.Globalization;
     using System.Text.Json;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
@@ -117,8 +118,8 @@ namespace LoRaWan.Tests.Integration
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>();
             ConnectionManager.Register(this.loRaDevice, loRaDeviceClient.Object);
             TwinCollection? actualTwinCollection = null;
-            loRaDeviceClient.Setup(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
-                            .Callback((TwinCollection t) => actualTwinCollection = t)
+            loRaDeviceClient.Setup(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
+                            .Callback((TwinCollection t, CancellationToken _) => actualTwinCollection = t)
                             .ReturnsAsync(true);
             using var request = SetupRequest(As923, reported, new TxParamSetupAnswer(), macCommandInPayload: macCommandInPayload);
 
@@ -126,7 +127,7 @@ namespace LoRaWan.Tests.Integration
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request, this.loRaDevice);
 
             // assert
-            loRaDeviceClient.Verify(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Once);
+            loRaDeviceClient.Verify(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Once);
             Assert.NotNull(actualTwinCollection);
             var actualDwellTimeSetting = JsonSerializer.Deserialize<DwellTimeSetting>((string)actualTwinCollection![TwinProperty.TxParam].ToString());
             Assert.Equal(As923.DesiredDwellTimeSetting, actualDwellTimeSetting);
@@ -152,7 +153,7 @@ namespace LoRaWan.Tests.Integration
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request, this.loRaDevice);
 
             // assert
-            loRaDeviceClient.Verify(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
+            loRaDeviceClient.Verify(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never);
             this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(It.IsAny<DownlinkMessageBuilderResponse>()), Times.Never);
         }
 
