@@ -185,9 +185,26 @@ namespace LoRaWan.Tests.Common
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.Adr, fcntBytes, null, fport, payload, direction, Supports32BitFCnt ? fcnt : null);
-            payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp,
+                                                  devAddr,
+                                                  FrameControlFlags.Adr,
+                                                  fcntBytes,
+                                                  null,
+                                                  fport,
+                                                  payload,
+                                                  direction,
+                                                  Supports32BitFCnt ? fcnt : null);
+
+            if (fport == FramePort.MacCommand)
+            {
+                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
+            else
+            {
+                payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
             payloadData.SetMic(nwkSKey is { } someNetworkSessionKey ? someNetworkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
+
             return payloadData;
         }
 
