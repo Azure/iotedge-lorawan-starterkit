@@ -51,8 +51,12 @@ namespace LoRaWan.Tests.Integration
                             .Returns<TwinCollection, CancellationToken>(async (_, token) =>
                             {
                                 // No cancellation token specified because we want to wait 7 seconds no matter what, to make the "token" being cancelled by logic
-                                await Task.Delay(7_000, CancellationToken.None);
-                                Assert.True(token.IsCancellationRequested, "First request should have been canceled after timeout.");
+                                try
+                                {
+                                    await Task.Delay(TimeSpan.FromSeconds(20), token);
+                                    Assert.True(false, "Token timeout expected");
+                                }
+                                catch (OperationCanceledException) { }
                                 return false;
                             });
             LoRaDeviceClient.InSequence(mockSequence)
