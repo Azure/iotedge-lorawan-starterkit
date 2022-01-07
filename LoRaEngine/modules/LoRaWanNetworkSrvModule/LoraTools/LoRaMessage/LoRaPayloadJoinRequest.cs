@@ -73,33 +73,31 @@ namespace LoRaTools.LoRaMessage
             Mic = default;
         }
 
-        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
-        {
-            return Mic.ToArray().SequenceEqual(PerformMic(key));
-        }
+        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null) =>
+            Mic == PerformMic(key);
 
-        public override bool CheckMic(AppKey key) => Mic.ToArray().SequenceEqual(PerformMic(key));
+        public override bool CheckMic(AppKey key) => Mic == PerformMic(key);
 
         public void SetMic(AppKey appKey)
         {
             Mic = PerformMic(appKey);
         }
 
-        private byte[] PerformMic(NetworkSessionKey key)
+        private Mic PerformMic(NetworkSessionKey key)
         {
             var rawKey = new byte[NetworkSessionKey.Size];
             _ = key.Write(rawKey);
             return PerformMic(rawKey);
         }
 
-        private byte[] PerformMic(AppKey key)
+        private Mic PerformMic(AppKey key)
         {
             var rawKey = new byte[AppKey.Size];
             _ = key.Write(rawKey);
             return PerformMic(rawKey);
         }
 
-        private byte[] PerformMic(byte[] rawKey)
+        private Mic PerformMic(byte[] rawKey)
         {
             var mac = MacUtilities.GetMac("AESCMAC");
 
@@ -119,15 +117,14 @@ namespace LoRaTools.LoRaMessage
 
             mac.BlockUpdate(algoInputBytes, 0, algoInputBytes.Length);
 
-            var result = MacUtilities.DoFinal(mac);
-            return result.Take(4).ToArray();
+            return LoRaWan.Mic.Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
         }
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
 
         public override byte[] GetByteMessage()
         {
-            var messageArray = new byte[Mhdr.Length + AppEUI.Length + DevEUI.Length + DevNonce.Size + Mic.Length];
+            var messageArray = new byte[Mhdr.Length + AppEUI.Length + DevEUI.Length + DevNonce.Size + LoRaWan.Mic.Size];
             var start = 0;
             Mhdr.Span.CopyTo(messageArray.AsSpan(start));
             start += Mhdr.Length;
@@ -137,9 +134,10 @@ namespace LoRaTools.LoRaMessage
             start += DevEUI.Length;
             _ = DevNonce.Write(messageArray.AsSpan(start));
             start += DevNonce.Size;
-            if (!Mic.Span.IsEmpty)
+
+            if (Mic is { } someMic)
             {
-                Mic.Span.CopyTo(messageArray.AsSpan(start));
+                _ = someMic.Write(messageArray.AsSpan(start));
             }
 
             return messageArray;

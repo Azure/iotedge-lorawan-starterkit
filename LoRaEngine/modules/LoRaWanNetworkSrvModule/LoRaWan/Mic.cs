@@ -28,6 +28,8 @@ namespace LoRaWan
             return buffer[Size..];
         }
 
+        public static Mic Read(ReadOnlySpan<byte> buffer) => new(BinaryPrimitives.ReadUInt32LittleEndian(buffer));
+
         //   The Message Integrity Code (MIC) ensures the integrity and authenticity of a message.
         //   The message integrity code is calculated over all the fields in the message and then added
         //   to the message. The following list shows what fields are used to calculate the MIC for each

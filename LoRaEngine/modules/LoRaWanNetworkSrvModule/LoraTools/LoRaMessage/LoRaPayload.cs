@@ -31,7 +31,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets message Integrity Code.
         /// </summary>
-        public Memory<byte> Mic { get; set; }
+        public Mic? Mic { get; set; }
 
         /// <summary>
         /// Gets or sets assigned Dev Address, TODO change??.
@@ -54,7 +54,7 @@ namespace LoRaTools.LoRaMessage
             RawMessage = inputMessage ?? throw new ArgumentNullException(nameof(inputMessage));
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // MIC 4 last bytes
-            Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
+            Mic = LoRaWan.Mic.Read(RawMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace LoRaTools.LoRaMessage
         /// A Method to calculate the Mic of the message.
         /// </summary>
         /// <returns> the Mic bytes.</returns>
-        public byte[] CalculateMic(AppKey appKey, byte[] algoinput)
+        public void CalculateMic(AppKey appKey, byte[] algoinput)
         {
             if (algoinput is null) throw new ArgumentNullException(nameof(algoinput));
 
@@ -121,9 +121,7 @@ namespace LoRaTools.LoRaMessage
             var rfu = new byte[1];
             rfu[0] = 0x0;
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            Mic = result.Take(4).ToArray();
-            return Mic.ToArray();
+            Mic = LoRaWan.Mic.Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
         }
 
         public void Reset32BitBlockInfo()

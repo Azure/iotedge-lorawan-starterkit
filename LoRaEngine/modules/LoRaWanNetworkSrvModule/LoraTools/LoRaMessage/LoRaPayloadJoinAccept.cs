@@ -161,22 +161,23 @@ namespace LoRaTools.LoRaMessage
             Array.Copy(inputMessage, 12, cfList, 0, inputMessage.Length - 17);
             Array.Reverse(cfList);
             CfList = new Memory<byte>(cfList);
-            var mic = new byte[4];
-            Array.Copy(inputMessage, inputMessage.Length - 4, mic, 0, 4);
-            Mic = new Memory<byte>(mic);
+            Mic = LoRaWan.Mic.Read(inputMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
         public override byte[] PerformEncryption(AppKey key)
         {
-            byte[] pt;
-            if (!CfList.Span.IsEmpty)
-            {
-                pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).Concat(CfList.ToArray()).Concat(Mic.ToArray()).ToArray();
-            }
-            else
-            {
-                pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).Concat(Mic.ToArray()).ToArray();
-            }
+            var micBytes = new byte[4];
+            _ = Mic is { } someMic ? someMic.Write(micBytes) : null;
+
+            var pt =
+                AppNonce.ToArray()
+                        .Concat(NetID.ToArray())
+                        .Concat(DevAddr.ToArray())
+                        .Concat(DlSettings.ToArray())
+                        .Concat(RxDelay.ToArray())
+                        .Concat(!CfList.Span.IsEmpty ? CfList.ToArray() : Array.Empty<byte>())
+                        .Concat(micBytes)
+                        .ToArray();
 
             using var aes = Aes.Create("AesManaged");
             var rawKey = new byte[AppKey.Size];
@@ -218,7 +219,7 @@ namespace LoRaTools.LoRaMessage
             if (!CfList.Span.IsEmpty)
                 algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
 
-            _ = CalculateMic(appKey, algoinput);
+            CalculateMic(appKey, algoinput);
             _ = PerformEncryption(appKey);
 
             return GetByteMessage();

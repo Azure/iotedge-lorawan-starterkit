@@ -157,7 +157,7 @@ namespace LoRaTools.LoRaMessage
                 MacCommands = MacCommand.CreateMacCommandFromBytes(Fopts);
             }
 
-            Mic = new Memory<byte>(inputMessage, inputMessage.Length - 4, 4);
+            Mic = LoRaWan.Mic.Read(inputMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
         /// <summary>
@@ -288,8 +288,8 @@ namespace LoRaTools.LoRaMessage
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
 
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
+            var result = LoRaWan.Mic.Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
+            return Mic == result;
         }
 
         public void SetMic(NetworkSessionKey nwskey)
@@ -315,7 +315,7 @@ namespace LoRaTools.LoRaMessage
             // var res = result.Take(4).ToArray();
             // Array.Copy(result.Take(4).ToArray(), 0, RawMessage, RawMessage.Length - 4, 4);
             Array.Copy(result, 0, RawMessage, RawMessage.Length - 4, 4);
-            Mic = new Memory<byte>(RawMessage, RawMessage.Length - 4, 4);
+            Mic = LoRaWan.Mic.Read(RawMessage.AsSpan(RawMessage.Length - 4, 4));
         }
 
         public void ChangeEndianess()
@@ -459,9 +459,11 @@ namespace LoRaTools.LoRaMessage
                 messageArray.AddRange(Frmpayload.ToArray());
             }
 
-            if (Mic.Span != null)
+            if (Mic is { } someMic)
             {
-                messageArray.AddRange(Mic.Span.ToArray());
+                var micBytes = new byte[4];
+                _ = someMic.Write(micBytes);
+                messageArray.AddRange(micBytes);
             }
 
             return messageArray.ToArray();

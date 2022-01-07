@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit
 {
     using LoRaWan;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class MicTests
@@ -29,6 +30,20 @@ namespace LoRaWan.Tests.Unit
             var remainingBytes = this.subject.Write(bytes);
             Assert.Equal(0, remainingBytes.Length);
             Assert.Equal(new byte[] { 120, 86, 52, 18 }, bytes);
+        }
+
+        public static TheoryData<Mic, byte[]> Read_Success_TheoryData() => TheoryDataFactory.From(new[]
+        {
+            (new Mic(1), new byte[] { 1, 0, 0, 0 }),
+            (new Mic(1), new byte[] { 1, 0, 0, 0, 0 }),
+            (new Mic(0x04030201), new byte[] { 1, 2, 3, 4 }),
+        });
+
+        [Theory]
+        [MemberData(nameof(Read_Success_TheoryData))]
+        public void Read_Success(Mic expected, byte[] buffer)
+        {
+            Assert.Equal(expected, Mic.Read(buffer));
         }
 
         [Fact]
