@@ -6,8 +6,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
-    using System.Globalization;
-    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -30,8 +28,6 @@ namespace LoRaWan.NetworkServer
         /// The default values for RX1DROffset, RX2DR, RXDelay.
         /// </summary>
         internal const ushort DefaultJoinValues = 0;
-
-        internal static readonly TimeSpan TwinUpdateTimeout = TimeSpan.FromSeconds(10);
 
         /// <summary>
         /// Last time this device connected to the network server
@@ -488,8 +484,7 @@ namespace LoRaWan.NetworkServer
                         return false;
                     }
 
-                    using var updateCancellationToken = new CancellationTokenSource(TwinUpdateTimeout);
-                    var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties, updateCancellationToken.Token);
+                    var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties, default);
                     if (result)
                     {
                         InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
