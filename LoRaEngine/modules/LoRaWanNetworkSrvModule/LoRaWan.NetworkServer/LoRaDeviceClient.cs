@@ -113,7 +113,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (cancellationToken == default)
                 {
-                    cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                    cts = new CancellationTokenSource(LoRaDevice.TwinUpdateTimeout);
                     cancellationToken = cts.Token;
                 }
 

@@ -31,6 +31,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal const ushort DefaultJoinValues = 0;
 
+        internal static readonly TimeSpan TwinUpdateTimeout = TimeSpan.FromSeconds(10);
+
         /// <summary>
         /// Last time this device connected to the network server
         /// </summary>
@@ -212,8 +214,6 @@ namespace LoRaWan.NetworkServer
         private ChangeTrackingProperty<StationEui> lastProcessingStationEui = new ChangeTrackingProperty<StationEui>(TwinProperty.LastProcessingStationEui, default);
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
-
-        private readonly TimeSpan twinUpdateTimeout = TimeSpan.FromSeconds(10);
 
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
         {
@@ -488,7 +488,7 @@ namespace LoRaWan.NetworkServer
                         return false;
                     }
 
-                    using var updateCancellationToken = new CancellationTokenSource(this.twinUpdateTimeout);
+                    using var updateCancellationToken = new CancellationTokenSource(TwinUpdateTimeout);
                     var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties, updateCancellationToken.Token);
                     if (result)
                     {
