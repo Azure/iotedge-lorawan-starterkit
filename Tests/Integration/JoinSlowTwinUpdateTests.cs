@@ -51,7 +51,6 @@ namespace LoRaWan.Tests.Integration
                             .Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                             .Returns<TwinCollection, CancellationToken>(async (_, token) =>
                             {
-                                // No cancellation token specified because we want to wait 7 seconds no matter what, to make the "token" being cancelled by logic
                                 try
                                 {
                                     await Task.Delay(TimeSpan.FromSeconds(20), token);
