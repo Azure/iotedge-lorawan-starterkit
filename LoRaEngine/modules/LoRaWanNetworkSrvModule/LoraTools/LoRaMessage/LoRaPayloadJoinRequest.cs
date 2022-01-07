@@ -54,7 +54,10 @@ namespace LoRaTools.LoRaMessage
             DevNonce = DevNonce.Read(inputMessage.AsSpan(17));
         }
 
-        public LoRaPayloadJoinRequest(string appEUI, string devEUI, DevNonce devNonce)
+        /// <summary>
+        /// Constructor used for test code only.
+        /// </summary>
+        internal LoRaPayloadJoinRequest(string appEUI, string devEUI, DevNonce devNonce, AppKey key)
         {
             // Mhdr is always 0 in case of a join request
             Mhdr = new byte[1] { 0x00 };
@@ -70,18 +73,13 @@ namespace LoRaTools.LoRaMessage
             AppEUI = new Memory<byte>(appEUIBytes);
             DevEUI = new Memory<byte>(devEUIBytes);
             DevNonce = devNonce;
-            Mic = default;
+            Mic = PerformMic(key);
         }
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null) =>
             Mic == PerformMic(key);
 
         public override bool CheckMic(AppKey key) => Mic == PerformMic(key);
-
-        public void SetMic(AppKey appKey)
-        {
-            Mic = PerformMic(appKey);
-        }
 
         private Mic PerformMic(NetworkSessionKey key)
         {
