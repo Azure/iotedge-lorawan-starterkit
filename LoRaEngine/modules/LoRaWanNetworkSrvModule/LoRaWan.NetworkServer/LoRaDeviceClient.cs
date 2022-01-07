@@ -108,8 +108,15 @@ namespace LoRaWan.NetworkServer
 
         public async Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
+            CancellationTokenSource cts = default;
             try
             {
+                if (cancellationToken == default)
+                {
+                    cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                    cancellationToken = cts.Token;
+                }
+
                 SetRetry(true);
 
                 this.logger.LogDebug("updating twin");
@@ -120,13 +127,15 @@ namespace LoRaWan.NetworkServer
 
                 return true;
             }
-            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not update twin with error: {ex.Message}")))
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException &&
+                                                          ExceptionFilterUtility.True(() => this.logger.LogError($"could not update twin with error: {ex.Message}")))
             {
                 return false;
             }
             finally
             {
                 SetRetry(false);
+                cts?.Dispose();
             }
         }
 
