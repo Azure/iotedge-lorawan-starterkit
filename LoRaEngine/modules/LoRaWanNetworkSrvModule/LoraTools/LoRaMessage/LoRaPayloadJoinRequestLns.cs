@@ -13,8 +13,7 @@ namespace LoRaTools.LoRaMessage
                                          DevNonce devNonce,
                                          Mic mic)
         {
-            Mhdr = new byte[MacHeader.Size];
-            _ = macHeader.Write(Mhdr.Span);
+            Mhdr = macHeader;
 
             AppEUI = new byte[JoinEui.Size];
             _ = joinEui.Write(AppEUI.Span);
