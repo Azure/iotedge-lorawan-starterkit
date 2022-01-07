@@ -64,9 +64,9 @@ namespace LoRaWan.Tests.Integration
                             .Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                             .Returns<TwinCollection, CancellationToken>((updatedTwin, token) =>
                             {
-                                _ = updatedTwin.TryRead(TwinProperty.AppSKey, null, out afterJoin2AppSKey);
-                                _ = updatedTwin.TryRead(TwinProperty.NwkSKey, null, out afterJoin2NwkSKey);
-                                _ = updatedTwin.TryRead(TwinProperty.DevAddr, null, out afterJoin2DevAddr);
+                                afterJoin2AppSKey = updatedTwin.SafeRead<AppSessionKey>(TwinProperty.AppSKey);
+                                afterJoin2NwkSKey = updatedTwin.SafeRead<NetworkSessionKey>(TwinProperty.NwkSKey);
+                                afterJoin2DevAddr = updatedTwin.SafeRead<DevAddr>(TwinProperty.DevAddr);
                                 return Task.FromResult(true);
                             });
 
