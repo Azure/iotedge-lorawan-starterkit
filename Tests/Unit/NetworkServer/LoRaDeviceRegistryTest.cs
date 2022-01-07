@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devNonce = new DevNonce(1);
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var otaaDevice = TestDeviceInfo.CreateOTAADevice(1);
-            if (joinedDevice) otaaDevice.AppSKey = "123";
+            if (joinedDevice) otaaDevice.AppSKey = new AppSessionKey();
 
             var simulatedDevice = new SimulatedDevice(otaaDevice);
 
