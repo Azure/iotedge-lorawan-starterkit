@@ -271,25 +271,11 @@ namespace LoRaTools.LoRaMessage
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             Ensure32BitFcntValue(server32BitFcnt);
-            var byteMsg = GetByteMessage();
-
-            var mac = MacUtilities.GetMac("AESCMAC");
-            var rawKey = new byte[NetworkSessionKey.Size];
-            _ = key.Write(rawKey);
-            mac.Init(new KeyParameter(rawKey));
-
+            // do not include MIC as it was already set
+            var byteMsg = GetByteMessage()[..^4].ToArray();
             var fcntBytes = GetFcntBlockInfo();
 
-            byte[] block =
-            {
-                0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
-                DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)(byteMsg.Length - 4)
-            };
-            var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
-
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = LoRaWan.Mic.Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
-            return Mic == result;
+            return Mic == LoRaWan.Mic.ComputeForData(key, (byte)Direction, DevAddr, fcntBytes, byteMsg);
         }
 
         public void SetMic(NetworkSessionKey nwskey)
@@ -297,25 +283,8 @@ namespace LoRaTools.LoRaMessage
             var byteMsg = GetByteMessage();
             var fcntBytes = GetFcntBlockInfo();
 
-            var mac = MacUtilities.GetMac("AESCMAC");
-            var rawKey = new byte[NetworkSessionKey.Size];
-            _ = nwskey.Write(rawKey);
-            var key = new KeyParameter(rawKey);
-            mac.Init(key);
-            byte[] block =
-            {
-                0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
-                DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)byteMsg.Length
-            };
-            var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
-
-            // byte[] result = new byte[16];
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            // var res = result.Take(4).ToArray();
-            // Array.Copy(result.Take(4).ToArray(), 0, RawMessage, RawMessage.Length - 4, 4);
-            Array.Copy(result, 0, RawMessage, RawMessage.Length - 4, 4);
-            Mic = LoRaWan.Mic.Read(RawMessage.AsSpan(RawMessage.Length - 4, 4));
+            Mic = LoRaWan.Mic.ComputeForData(nwskey, (byte)Direction, DevAddr, fcntBytes, byteMsg);
+            _ = Mic.Value.Write(RawMessage.AsSpan(RawMessage.Length - 4, 4));
         }
 
         public void ChangeEndianess()

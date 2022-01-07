@@ -6,6 +6,7 @@ namespace LoRaWan
     using System;
     using System.Buffers.Binary;
     using System.Globalization;
+    using System.Linq;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
@@ -104,6 +105,28 @@ namespace LoRaWan
             var rfu = new byte[1];
             rfu[0] = 0x0;
             mac.BlockUpdate(algoInput, 0, algoInput.Length);
+            return Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
+        }
+
+        public static Mic ComputeForData(NetworkSessionKey networkSessionKey, byte direction, Memory<byte> devAddr, byte[] fcnt, byte[] message)
+        {
+            if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
+            if (message is null) throw new ArgumentNullException(nameof(message));
+
+            var mac = MacUtilities.GetMac("AESCMAC");
+            var rawKey = new byte[NetworkSessionKey.Size];
+            _ = networkSessionKey.Write(rawKey);
+            mac.Init(new KeyParameter(rawKey));
+
+            byte[] block =
+            {
+                0x49, 0x00, 0x00, 0x00, 0x00, direction,
+                devAddr.Span[3], devAddr.Span[2], devAddr.Span[1], devAddr.Span[0],
+                fcnt[0], fcnt[1], fcnt[2], fcnt[3], 0x00, (byte)message.Length
+            };
+            var algoinput = block.Concat(message).ToArray();
+
+            mac.BlockUpdate(algoinput, 0, algoinput.Length);
             return Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
         }
     }
