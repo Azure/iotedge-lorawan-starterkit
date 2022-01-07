@@ -10,9 +10,8 @@ namespace LoRaWan.NetworkServer
     public interface IPacketForwarder
     {
         /// <summary>
-        /// Send downstream message to LoRa device;
-        /// returns true if the operation completed successfully and false otherwise.
+        /// Send downstream message to LoRa device.
         /// </summary>
-        Task<bool> SendDownstreamAsync(DownlinkMessage message);
+        Task SendDownstreamAsync(DownlinkMessage message);
     }
 }

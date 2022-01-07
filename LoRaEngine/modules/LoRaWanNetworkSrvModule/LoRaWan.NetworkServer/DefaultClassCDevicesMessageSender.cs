@@ -126,20 +126,23 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                if (await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage))
+                try
                 {
-                    if (!await message.CompleteAsync())
-                    {
-                        this.logger.LogError($"[class-c] failed to complete the message. Id: {messageIdLog}");
-                    }
+                    await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
                 }
-                else
+                catch (Exception ex)
                 {
-                    this.logger.LogError($"[class-c] failed to send the message, abandoning. Id: {messageIdLog}");
+                    this.logger.LogError($"[class-c] failed to send the message, abandoning. Id: {messageIdLog}, ex: {ex.Message}");
                     if (!await message.AbandonAsync())
                     {
                         this.logger.LogError($"[class-c] failed to abandon the message. Id: {messageIdLog}");
                     }
+                    throw;
+                }
+
+                if (!await message.CompleteAsync())
+                {
+                    this.logger.LogError($"[class-c] failed to complete the message. Id: {messageIdLog}");
                 }
 
                 if (!await frameCounterStrategy.SaveChangesAsync(loRaDevice))
