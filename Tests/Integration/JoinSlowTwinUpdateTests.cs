@@ -45,26 +45,25 @@ namespace LoRaWan.Tests.Integration
             NetworkSessionKey? afterJoin2NwkSKey = null;
             string afterJoin2DevAddr = null;
 
-            var invocations = 0;
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
-                .Returns<TwinCollection, CancellationToken>(async (updatedTwin, token) =>
-                {
-                    if (invocations == 0)
-                    {
-                        invocations++;
-                        await Task.Delay(7_000, CancellationToken.None);
-                        return token.IsCancellationRequested
-                            ? false
-                            : throw new InvalidOperationException("First request should have been canceled after timeout.");
-                    }
-                    else
-                    {
-                        afterJoin2AppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
-                        afterJoin2NwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
-                        afterJoin2DevAddr = updatedTwin[TwinProperty.DevAddr];
-                        return true;
-                    }
-                });
+            var mockSequence = new MockSequence();
+            LoRaDeviceClient.InSequence(mockSequence)
+                            .Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                            .Returns<TwinCollection, CancellationToken>(async (_, token) =>
+                            {
+                                // No cancellation token specified because we want to wait 7 seconds no matter what, to make the "token" being cancelled by logic
+                                await Task.Delay(7_000, CancellationToken.None);
+                                Assert.True(token.IsCancellationRequested, "First request should have been canceled after timeout.");
+                                return false;
+                            });
+            LoRaDeviceClient.InSequence(mockSequence)
+                            .Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                            .Returns<TwinCollection, CancellationToken>((updatedTwin, _) =>
+                            {
+                                afterJoin2AppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
+                                afterJoin2NwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
+                                afterJoin2DevAddr = updatedTwin[TwinProperty.DevAddr];
+                                return Task.FromResult(true);
+                            });
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestPayload1.DevNonce))
