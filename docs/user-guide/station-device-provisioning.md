@@ -1,6 +1,6 @@
 # Concentrator provisioning
 
-Following the LoRaWAN Network Server (LNS) specification, each Basics Station (LBS) will at some point invoke the discovery endpoint on a LNS. Subsequently, it will establish a data connection on the data endpoint to receive its setup information. To ensure that the LBS is able to receive the setup information, you will need to add the LBS configuration to IoT Hub. An LBS that does not have its configuration stored in IoT Hub will not be able to connect to the LNS.
+Following the LoRaWAN Network Server specification, each Basics Station will at some point invoke the discovery endpoint on a LNS. Subsequently, it will establish a data connection on the data endpoint to receive its setup information. To ensure that the LBS is able to receive the setup information, you will need to add the LBS configuration to IoT Hub. An LBS that does not have its configuration stored in IoT Hub will not be able to connect to the LNS.
 
 ## Use LoRa Device Provisioning CLI
 
@@ -191,3 +191,5 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
 <!-- markdownlint-disable MD029 -->
 
 By saving the configuration per LBS in its device twin, the LBS will be able to successfully connect to the LNS and it can start sending frames.
+
+--8<-- "includes/abbreviations.md"

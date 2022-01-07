@@ -130,3 +130,5 @@ The previous command will generate the following files in the 'client' subfolder
 - AABBCCFFFE001122.bundle (the concatenation of the three above mentioned files, useful if you want to use CUPS)
 
 As soon as certificates are generated, you can now follow previous sections instructions on how to import this certificate in the provided LoRaBasicsStationModule or you can just copy the needed files to your Basic Station compatible concentrator.
+
+--8<-- "includes/abbreviations.md"

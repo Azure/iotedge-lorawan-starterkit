@@ -1,8 +1,8 @@
 # 004. Region AS923 implementation
 
-Milestone / Epic: [#412](https://github.com/Azure/iotedge-lorawan-starterkit/issues/412)
-
-Authors: Maggie Salak, Bastian Burger
+**Epic**: [#412](https://github.com/Azure/iotedge-lorawan-starterkit/issues/412)  
+**Authors**: Maggie Salak, Bastian Burger  
+**Status**: Accepted
 
 ## Overview / Problem Statement
 

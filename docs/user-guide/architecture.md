@@ -1,4 +1,4 @@
-# Architecture and Concepts for the LoRaWAN starter kit
+# Architecture and Concepts
 
 ## Background
 

@@ -1,4 +1,4 @@
-# Upgrade LoRaWAN to a new version
+# Upgrade to a new version
 <!-- allow github to generate 'copy' buttons for coded URLs -->
 <!-- markdownlint-disable MD040 -->
 
