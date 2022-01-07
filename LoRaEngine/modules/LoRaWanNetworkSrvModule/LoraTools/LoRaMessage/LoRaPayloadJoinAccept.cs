@@ -67,8 +67,8 @@ namespace LoRaTools.LoRaMessage
 
             var cfListLength = cfList == null ? 0 : cfList.Length;
             RawMessage = new byte[1 + 12 + cfListLength];
-            Mhdr = new MacHeader(32);
-            RawMessage[0] = (byte)Mhdr;
+            MHdr = new MacHeader(32);
+            RawMessage[0] = (byte)MHdr;
             AppNonce = new Memory<byte>(RawMessage, 1, 3);
             Array.Copy(appNonce, 0, RawMessage, 1, 3);
             NetID = new Memory<byte>(RawMessage, 4, 3);
@@ -104,7 +104,7 @@ namespace LoRaTools.LoRaMessage
 
             // Only MHDR is not encrypted with the key
             // ( PHYPayload = MHDR[1] | MACPayload[..] | MIC[4] )
-            Mhdr = new MacHeader(inputMessage[0]);
+            MHdr = new MacHeader(inputMessage[0]);
             // Then we will take the rest and decrypt it
             // DecryptPayload(inputMessage);
             // var decrypted = PerformEncryption(appKey);
@@ -202,7 +202,7 @@ namespace LoRaTools.LoRaMessage
         {
             var messageArray = new List<byte>
             {
-                (byte)Mhdr
+                (byte)MHdr
             };
             messageArray.AddRange(RawMessage);
 
@@ -216,7 +216,7 @@ namespace LoRaTools.LoRaMessage
 
         public byte[] Serialize(AppKey appKey)
         {
-            var algoinput = new byte[] { (byte)Mhdr }.Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
+            var algoinput = new byte[] { (byte)MHdr }.Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)
                 algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
 

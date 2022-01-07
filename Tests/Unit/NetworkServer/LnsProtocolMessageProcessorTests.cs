@@ -318,7 +318,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(loRaRequest.RadioMetadata, expectedRadioMetadata);
             Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr.Span.ToArray());
             Assert.Equal(MacMessageType.ConfirmedDataUp, loRaRequest.Payload.MessageType);
-            Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr);
+            Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
             Assert.Equal(RegionManager.EU868, loRaRequest.Region);
@@ -355,7 +355,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(loRaRequest.RadioMetadata, expectedRadioMetadata);
             Assert.IsType<LoRaPayloadJoinRequestLns>(loRaRequest.Payload);
             Assert.Equal(MacMessageType.JoinRequest, loRaRequest.Payload.MessageType);
-            Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr);
+            Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
             Assert.Equal(expectedAppEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEUI.Span.ToArray());
             Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI.Span.ToArray());

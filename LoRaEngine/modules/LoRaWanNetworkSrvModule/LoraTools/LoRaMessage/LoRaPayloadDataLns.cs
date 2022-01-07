@@ -54,7 +54,7 @@ namespace LoRaTools.LoRaMessage
                                        MacMessageType.UnconfirmedDataDown ? 1 : 0;
 
             // Setting MHdr value
-            Mhdr = macHeader;
+            MHdr = macHeader;
 
             // Setting Fctrl
             FrameControlFlags = fctrlFlags;

@@ -118,7 +118,7 @@ namespace LoRaTools.LoRaMessage
             // address correct but inversed
             Array.Reverse(addrbytes);
             DevAddr = addrbytes;
-            Mhdr = new MacHeader(RawMessage[0]);
+            MHdr = new MacHeader(RawMessage[0]);
 
             // in this case the payload is not downlink of our type
             if (MessageType is MacMessageType.ConfirmedDataDown or
@@ -197,8 +197,8 @@ namespace LoRaTools.LoRaMessage
 
             var macPyldSize = devAddr.Length + FrameControl.Size + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
             RawMessage = new byte[1 + macPyldSize + 4];
-            Mhdr = new MacHeader(messageType);
-            RawMessage[0] = (byte)Mhdr;
+            MHdr = new MacHeader(messageType);
+            RawMessage[0] = (byte)MHdr;
             Array.Reverse(devAddr);
             DevAddr = new Memory<byte>(RawMessage, 1, 4);
             Array.Copy(devAddr, 0, RawMessage, 1, 4);
@@ -436,7 +436,7 @@ namespace LoRaTools.LoRaMessage
         {
             var messageArray = new List<byte>
             {
-                (byte)Mhdr
+                (byte)MHdr
             };
             DevAddr.Span.Reverse();
             messageArray.AddRange(DevAddr.ToArray());

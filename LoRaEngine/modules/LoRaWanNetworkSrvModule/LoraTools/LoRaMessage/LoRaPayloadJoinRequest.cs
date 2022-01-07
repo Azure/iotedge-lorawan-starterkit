@@ -45,7 +45,7 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinRequest(string appEUI, string devEUI, DevNonce devNonce)
         {
             // Mhdr is always 0 in case of a join request
-            Mhdr = new MacHeader(0x00);
+            MHdr = new MacHeader(0x00);
 
             var appEUIBytes = ConversionHelper.StringToByteArray(appEUI);
             var devEUIBytes = ConversionHelper.StringToByteArray(devEUI);
@@ -97,7 +97,7 @@ namespace LoRaTools.LoRaMessage
             var algoInput = new Memory<byte>(algoInputBytes);
 
             var offset = 0;
-            _ = Mhdr.Write(algoInput.Span);
+            _ = MHdr.Write(algoInput.Span);
             offset += MacHeader.Size;
             AppEUI.CopyTo(algoInput[offset..]);
             offset += AppEUI.Length;
@@ -117,7 +117,7 @@ namespace LoRaTools.LoRaMessage
         {
             var messageArray = new byte[MacHeader.Size + AppEUI.Length + DevEUI.Length + DevNonce.Size + Mic.Length];
             var start = 0;
-            _ = Mhdr.Write(messageArray.AsSpan(start));
+            _ = MHdr.Write(messageArray.AsSpan(start));
             start += MacHeader.Size;
             AppEUI.Span.CopyTo(messageArray.AsSpan(start));
             start += AppEUI.Length;

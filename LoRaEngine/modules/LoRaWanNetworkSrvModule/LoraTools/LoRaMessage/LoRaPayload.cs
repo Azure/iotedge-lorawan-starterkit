@@ -16,7 +16,7 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public abstract class LoRaPayload
     {
-        public MacMessageType MessageType => Mhdr.MessageType;
+        public MacMessageType MessageType => MHdr.MessageType;
 
         /// <summary>
         /// Gets or sets raw byte of the message.
@@ -26,7 +26,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets MAC header of the message.
         /// </summary>
-        public MacHeader Mhdr { get; set; }
+        public MacHeader MHdr { get; set; }
 
         /// <summary>
         /// Gets or sets message Integrity Code.
@@ -52,7 +52,7 @@ namespace LoRaTools.LoRaMessage
         protected LoRaPayload(byte[] inputMessage)
         {
             RawMessage = inputMessage ?? throw new ArgumentNullException(nameof(inputMessage));
-            Mhdr = new MacHeader(RawMessage[0]);
+            MHdr = new MacHeader(RawMessage[0]);
             // MIC 4 last bytes
             Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
         }
