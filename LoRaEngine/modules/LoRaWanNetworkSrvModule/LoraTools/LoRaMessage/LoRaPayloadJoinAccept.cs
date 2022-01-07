@@ -168,7 +168,7 @@ namespace LoRaTools.LoRaMessage
         public override byte[] PerformEncryption(AppKey key)
         {
             var micBytes = new byte[4];
-            _ = Mic is { } someMic ? someMic.Write(micBytes) : null;
+            _ = Mic is { } someMic ? someMic.Write(micBytes) : throw new InvalidOperationException("MIC must not be null.");
 
             var pt =
                 AppNonce.ToArray()
