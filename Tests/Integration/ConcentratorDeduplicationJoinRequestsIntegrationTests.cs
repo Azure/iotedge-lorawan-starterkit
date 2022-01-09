@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Integration
 {
+    using System.Threading;
     using System.Threading.Tasks;
     using Common;
     using LoRaTools.Regions;
@@ -41,7 +42,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(this.deviceMock.Object);
 
             var clientMock = new Mock<ILoRaDeviceClient>();
-            _ = clientMock.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+            _ = clientMock.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
             ConnectionManager.Register(this.deviceMock.Object, clientMock.Object);
 
             this.joinRequestHandler = new JoinRequestMessageHandler(
@@ -67,13 +68,13 @@ namespace LoRaWan.Tests.Integration
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
 
             // assert
-            this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>()), Times.Once());
+            this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Once());
 
             // do another request
             joinRequest = this.simulatedDevice.CreateJoinRequest();
             loraRequest.SetPayload(joinRequest);
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
-            this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>()), Times.Exactly(2));
+            this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
     }
 }

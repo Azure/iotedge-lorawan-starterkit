@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Integration
 
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID, deviceClassType: 'c'), frmCntDown: fcntDownFromTwin);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
@@ -119,7 +119,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(expectedFcntDown, downstreamPayload.GetFcnt());
             Assert.Equal(c2d.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
-            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
+            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey.Value);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));
 
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
@@ -139,19 +139,19 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simDevice.CreateOTAATwin());
 
-            var savedAppSKey = string.Empty;
-            var savedNwkSKey = string.Empty;
+            AppSessionKey? savedAppSKey = null;
+            NetworkSessionKey? savedNwkSKey = null;
             var savedDevAddr = string.Empty;
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true)
-                .Callback<TwinCollection>((t) =>
+                .Callback<TwinCollection, CancellationToken>((t, _) =>
                 {
-                    savedAppSKey = t[TwinProperty.AppSKey];
-                    savedNwkSKey = t[TwinProperty.NwkSKey];
+                    savedAppSKey = AppSessionKey.Parse(t[TwinProperty.AppSKey].Value);
+                    savedNwkSKey = NetworkSessionKey.Parse(t[TwinProperty.NwkSKey].Value);
                     savedDevAddr = t[TwinProperty.DevAddr];
 
-                    Assert.NotEmpty(savedAppSKey);
-                    Assert.NotEmpty(savedNwkSKey);
+                    Assert.NotNull(savedAppSKey);
+                    Assert.NotNull(savedNwkSKey);
                     Assert.NotEmpty(savedDevAddr);
                 });
 
@@ -185,7 +185,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
 
-            simDevice.SetupJoin(savedAppSKey, savedNwkSKey, savedDevAddr);
+            simDevice.SetupJoin(savedAppSKey.Value, savedNwkSKey.Value, savedDevAddr);
             using var request = CreateWaitableRequest(simDevice.CreateUnconfirmedDataUpMessage("1"));
             request.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(request);
@@ -225,7 +225,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(1, downstreamPayload.GetFcnt());
             Assert.Equal(c2d.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(savedDevAddr));
-            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
+            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey.Value);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));
 
             LoRaDeviceApi.VerifyAll();
@@ -346,9 +346,9 @@ namespace LoRaWan.Tests.Integration
             var savedAppSKey = string.Empty;
             var savedNwkSKey = string.Empty;
             var savedDevAddr = string.Empty;
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true)
-                .Callback<TwinCollection>((t) =>
+                .Callback<TwinCollection, CancellationToken>((t, _) =>
                 {
                     savedAppSKey = t[TwinProperty.AppSKey];
                     savedNwkSKey = t[TwinProperty.NwkSKey];
@@ -451,8 +451,8 @@ namespace LoRaWan.Tests.Integration
 
             if (shouldSavePreferredGateway || shouldSaveRegion)
             {
-                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                    .Callback<TwinCollection>((savedTwin) =>
+                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                    .Callback<TwinCollection, CancellationToken>((savedTwin, _) =>
                     {
                         if (shouldSavePreferredGateway)
                             Assert.Equal(ServerGatewayID, savedTwin[TwinProperty.PreferredGatewayID].Value as string);
@@ -540,8 +540,8 @@ namespace LoRaWan.Tests.Integration
                 })
                 .ReturnsAsync(bundlerResult);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Callback<TwinCollection>((savedTwin) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Callback<TwinCollection, CancellationToken>((savedTwin, _) =>
                 {
                     Assert.Equal(ServerGatewayID, savedTwin[TwinProperty.PreferredGatewayID].Value as string);
                     Assert.Equal(LoRaRegionType.EU868.ToString(), savedTwin[TwinProperty.Region].Value as string);
@@ -583,7 +583,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(LoRaRegionType.EU868, loraDevice.LoRaRegion);
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
 
-            LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Once());
+            LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Once());
         }
     }
 }

@@ -314,28 +314,28 @@ namespace LoRaWan.Tests.E2E
             return this;
         }
 
-        public async Task setKeyAsync(string NwkSKey, string AppSKey, string AppKey)
+        public async Task setKeyAsync(NetworkSessionKey? NwkSKey, AppSessionKey? AppSKey, AppKey? AppKey)
         {
             try
             {
-                if (!string.IsNullOrEmpty(NwkSKey))
+                if (NwkSKey is { } someNetworkSessionKey)
                 {
-                    var cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
+                    var cmd = $"AT+KEY=NWKSKEY,{someNetworkSessionKey}\r\n";
                     this.sendCommand(cmd);
                     await EnsureSerialAnswerAsync("+KEY: NWKSKEY", 30);
                 }
 
-                if (!string.IsNullOrEmpty(AppSKey))
+                if (AppSKey is { } someAppSessionKey)
                 {
-                    var cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
+                    var cmd = $"AT+KEY=APPSKEY,{someAppSessionKey}\r\n";
                     this.sendCommand(cmd);
 
                     await EnsureSerialAnswerAsync("+KEY: APPSKEY", 30);
                 }
 
-                if (!string.IsNullOrEmpty(AppKey))
+                if (AppKey is { } someAppKey)
                 {
-                    var cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
+                    var cmd = $"AT+KEY= APPKEY,{someAppKey}\r\n";
                     this.sendCommand(cmd);
 
                     await EnsureSerialAnswerAsync("+KEY: APPKEY", 30);
