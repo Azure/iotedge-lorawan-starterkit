@@ -11,6 +11,7 @@ namespace LoraKeysManagerFacade
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
     using LoRaTools.CommonAPI;
+    using LoRaTools.Utils;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
@@ -29,17 +30,19 @@ namespace LoraKeysManagerFacade
         internal const string LnsCredentialsUrlPropertyName = "tcCredentialUrl";
         private readonly RegistryManager registryManager;
         private readonly IAzureClientFactory<BlobServiceClient> azureClientFactory;
+        private readonly ILogger<ConcentratorCredentialsFunction> logger;
 
         public ConcentratorCredentialsFunction(RegistryManager registryManager,
-                                               IAzureClientFactory<BlobServiceClient> azureClientFactory)
+                                               IAzureClientFactory<BlobServiceClient> azureClientFactory,
+                                               ILogger<ConcentratorCredentialsFunction> logger)
         {
             this.registryManager = registryManager;
             this.azureClientFactory = azureClientFactory;
+            this.logger = logger;
         }
 
         [FunctionName(nameof(FetchConcentratorCredentials))]
         public async Task<IActionResult> FetchConcentratorCredentials([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
-                                                                      ILogger log,
                                                                       CancellationToken cancellationToken)
         {
             if (req is null) throw new ArgumentNullException(nameof(req));
@@ -50,56 +53,62 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
-                log.LogError(ex, "Invalid version");
+                this.logger.LogError(ex, "Invalid version");
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            return await RunFetchConcentratorCredentials(req, log, cancellationToken);
+            return await RunFetchConcentratorCredentials(req, cancellationToken);
         }
 
-        internal async Task<IActionResult> RunFetchConcentratorCredentials(HttpRequest req, ILogger log, CancellationToken cancellationToken)
+        internal async Task<IActionResult> RunFetchConcentratorCredentials(HttpRequest req, CancellationToken cancellationToken)
         {
             var stationEui = req.Query["StationEui"];
             if (StringValues.IsNullOrEmpty(stationEui))
             {
-                log.LogError("StationEui missing in request");
+                this.logger.LogError("StationEui missing in request");
                 return new BadRequestObjectResult("StationEui missing in request");
             }
 
             var credentialTypeQueryString = req.Query["CredentialType"];
             if (StringValues.IsNullOrEmpty(credentialTypeQueryString))
             {
-                log.LogError("CredentialType missing in request");
+                this.logger.LogError("CredentialType missing in request");
                 return new BadRequestObjectResult("CredentialType missing in request");
             }
             if (!Enum.TryParse<ConcentratorCredentialType>(credentialTypeQueryString.ToString(), out var credentialType))
             {
-                log.LogError("Could not parse '{QueryString}' to a ConcentratorCredentialType.", credentialTypeQueryString.ToString());
+                this.logger.LogError("Could not parse '{QueryString}' to a ConcentratorCredentialType.", credentialTypeQueryString.ToString());
                 return new BadRequestObjectResult($"Could not parse desired concentrator credential type '{credentialTypeQueryString}'.");
             }
 
             var twin = await this.registryManager.GetTwinAsync(stationEui, cancellationToken);
             if (twin != null)
             {
-                log.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui.ToString());
+                this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui.ToString());
                 try
                 {
-                    var cupsProperty = (string)twin.Properties.Desired[CupsPropertyName].ToString();
+                    const string cupsKey = "cups";
+                    if (!twin.Properties.Desired.TryReadJsonBlock(cupsKey, out var cupsProperty))
+                        throw new ArgumentOutOfRangeException(cupsKey, "failed to read cups config");
+
                     var parsedJson = JObject.Parse(cupsProperty);
                     var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()
                                                                                : parsedJson[CupsCredentialsUrlPropertyName].ToString();
                     var result = await GetBase64EncodedBlobAsync(url, cancellationToken);
                     return new OkObjectResult(result);
                 }
-                catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException)
+                catch (Exception ex) when (ex is ArgumentOutOfRangeException
+                                              or JsonReaderException
+                                              or InvalidCastException
+                                              or InvalidOperationException)
                 {
-                    log.LogError("'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
+                    this.logger.LogError(ex, "'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
                     return new UnprocessableEntityResult();
                 }
             }
             else
             {
-                log.LogInformation($"Searching for {stationEui} returned 0 devices");
+                this.logger.LogInformation($"Searching for {stationEui} returned 0 devices");
                 return new NotFoundResult();
             }
         }

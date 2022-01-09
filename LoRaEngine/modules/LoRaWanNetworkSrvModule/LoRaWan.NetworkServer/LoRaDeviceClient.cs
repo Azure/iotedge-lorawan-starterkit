@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
+        private static readonly TimeSpan twinUpdateTimeout = TimeSpan.FromSeconds(10);
         private readonly string devEUI;
         private readonly string connectionString;
         private readonly ITransportSettings[] transportSettings;
@@ -106,29 +107,36 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
+        public async Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
+            CancellationTokenSource cts = default;
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 120000;
+                if (cancellationToken == default)
+                {
+                    cts = new CancellationTokenSource(twinUpdateTimeout);
+                    cancellationToken = cts.Token;
+                }
 
                 SetRetry(true);
 
                 this.logger.LogDebug("updating twin");
 
-                await this.deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+                await this.deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
                 this.logger.LogDebug("twin updated");
 
                 return true;
             }
-            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not update twin with error: {ex.Message}")))
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException &&
+                                                          ExceptionFilterUtility.True(() => this.logger.LogError($"could not update twin with error: {ex.Message}")))
             {
                 return false;
             }
             finally
             {
                 SetRetry(false);
+                cts?.Dispose();
             }
         }
 

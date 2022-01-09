@@ -102,6 +102,11 @@ namespace LoRaTools
                             pointer += rxTimingSetup.Length;
                             macCommands.Add(rxTimingSetup);
                             break;
+                        case Cid.TxParamSetupCmd:
+                            var txParamSetupAnswer = new TxParamSetupAnswer();
+                            pointer += txParamSetupAnswer.Length;
+                            macCommands.Add(txParamSetupAnswer);
+                            break;
                         case Cid.Zero:
                         case Cid.One:
                         default:
@@ -155,6 +160,7 @@ namespace LoRaTools
                         case Cid.RXParamCmd:
                         case Cid.NewChannelCmd:
                         case Cid.RXTimingCmd:
+                        case Cid.TxParamSetupCmd:
                         default:
                             logger?.LogError($"a Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing");
                             return null;
