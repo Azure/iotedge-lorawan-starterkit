@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -45,6 +46,18 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"[INFO] {nameof(Configuration.NetworkServerModuleLogAssertLevel)}: {Configuration.NetworkServerModuleLogAssertLevel}");
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        }
+
+        public string GetKey32(int deviceId, bool multiGw = false)
+        {
+            var target = multiGw ? Configuration.DeviceKeyFormatMultiGW : Configuration.DeviceKeyFormat;
+            var format = string.IsNullOrEmpty(target) ? "00000000000000000000000000000000" : target;
+            if (format.Length < 32)
+            {
+                format = format.PadLeft(32, '0');
+            }
+
+            return deviceId.ToString(format, CultureInfo.InvariantCulture);
         }
 
         public abstract void SetupTestDevices();
