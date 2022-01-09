@@ -19,6 +19,8 @@ namespace LoRaWan
                 throw new ArgumentException(InsufficientBufferSizeErrorMessage, paramName);
         }
 
+        public static void Write(ReadOnlyMemory<byte> buffer, Span<char> output) => Write(buffer.Span, output, null);
+
         public static Span<char> Write(byte value, Span<char> output, LetterCase letterCase = LetterCase.Upper)
         {
             ValidateSufficientlySizedBuffer(output.Length, sizeof(byte), nameof(output));
