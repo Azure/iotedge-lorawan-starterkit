@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
@@ -57,6 +58,8 @@ namespace LoRaWan.NetworkServer
             try
             {
                 var timeWatcher = request.GetTimeWatcher();
+                var processingTimeout = timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() - TimeSpan.FromMilliseconds(100);
+                using var joinAcceptCancellationToken = new CancellationTokenSource(processingTimeout > TimeSpan.Zero ? processingTimeout : TimeSpan.Zero);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
@@ -82,12 +85,14 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                if (string.IsNullOrEmpty(loRaDevice.AppKey))
+                if (loRaDevice.AppKey is null)
                 {
                     this.logger.LogError("join refused: missing AppKey for OTAA device");
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
                     return;
                 }
+
+                var appKey = loRaDevice.AppKey.Value;
 
                 this.joinRequestCounter?.Add(1);
 
@@ -98,7 +103,7 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                if (!joinReq.CheckMic(loRaDevice.AppKey))
+                if (!joinReq.CheckMic(appKey))
                 {
                     this.logger.LogError("join refused: invalid MIC");
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.JoinMicCheckFailed);
@@ -132,17 +137,16 @@ namespace LoRaWan.NetworkServer
                 var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
                 var netId = new byte[3]
                 {
-                netIdBytes[0],
-                netIdBytes[1],
-                netIdBytes[2]
+                    netIdBytes[0],
+                    netIdBytes[1],
+                    netIdBytes[2]
                 };
 
                 var appNonce = OTAAKeysGenerator.GetAppNonce();
                 var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
-                var appKeyBytes = ConversionHelper.StringToByteArray(loRaDevice.AppKey);
-                var appSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
-                var nwkSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
-                var devAddr = OTAAKeysGenerator.GetNwkId(netId);
+                var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
+                var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
+                var devAddr = OTAAKeysGenerator.GetNwkId(this.configuration.NetId);
 
                 var oldDevAddr = loRaDevice.DevAddr;
 
@@ -188,12 +192,12 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);
+                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties, joinAcceptCancellationToken.Token);
 
                 if (!deviceUpdateSucceeded)
                 {
                     this.logger.LogError("join refused: join request could not save twin");
-                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ApplicationError);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.IoTHubProblem);
                     return;
                 }
 
@@ -265,7 +269,7 @@ namespace LoRaWan.NetworkServer
 
                 var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
                     ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
-                    ConversionHelper.StringToByteArray(devAddr), // todo add device address management
+                    devAddr, // todo add device address management
                     appNonceBytes,
                     dlSettings,
                     loraSpecDesiredRxDelay,
@@ -278,7 +282,7 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                var joinAcceptBytes = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey);
+                var joinAcceptBytes = loRaPayloadJoinAccept.Serialize(appKey);
                 var downlinkMessage = new DownlinkMessage(
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,

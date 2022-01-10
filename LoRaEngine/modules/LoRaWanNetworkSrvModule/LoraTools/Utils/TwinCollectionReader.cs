@@ -5,6 +5,7 @@
 
 namespace LoRaTools.Utils
 {
+    using System;
     using System.Diagnostics.CodeAnalysis;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
@@ -23,8 +24,14 @@ namespace LoRaTools.Utils
         public T? SafeRead<T>(string property, T? defaultValue = default)
             => this.twinCollection.SafeRead(property, defaultValue, this.logger);
 
-        public string ReadRequiredString(string property) =>
-                this.twinCollection.ReadRequiredString(property, this.logger);
+        public string ReadRequiredString(string property)
+        {
+            var result = ReadRequired<string>(property);
+            return string.IsNullOrEmpty(result) ? throw new InvalidOperationException($"'{property}' is empty.") : result;
+        }
+
+        public T ReadRequired<T>(string property) =>
+            this.twinCollection.ReadRequired<T>(property, this.logger);
 
         public bool Contains(string propertyName) =>
             this.twinCollection.Contains(propertyName);

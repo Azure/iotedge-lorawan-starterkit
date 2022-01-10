@@ -10,11 +10,11 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public class LoRaDeviceJoinUpdateProperties
     {
-        public string AppSKey { get; set; }
+        public AppSessionKey AppSKey { get; set; }
 
-        public string NwkSKey { get; set; }
+        public NetworkSessionKey NwkSKey { get; set; }
 
-        public string DevAddr { get; set; }
+        public DevAddr DevAddr { get; set; }
 
         public string NetID { get; set; }
 

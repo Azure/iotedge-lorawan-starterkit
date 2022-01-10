@@ -92,7 +92,7 @@ namespace LoRaWan.Tests.Integration
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null));
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
+            var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
@@ -108,10 +108,10 @@ namespace LoRaWan.Tests.Integration
             var initialTwin = new Twin();
             initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
             initialTwin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
-            initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
-            initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey;
-            initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey;
-            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr;
+            initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
+            initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
+            initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey?.ToString();
+            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr.ToString();
             if (twinGatewayID != null)
                 initialTwin.Properties.Desired[TwinProperty.GatewayID] = twinGatewayID;
             initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
@@ -129,8 +129,8 @@ namespace LoRaWan.Tests.Integration
             var shouldSaveTwin = (deviceTwinFcntDown ?? 0) != 0 || (deviceTwinFcntUp ?? 0) != 0;
             if (shouldSaveTwin)
             {
-                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                    .Callback<TwinCollection>((t) =>
+                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                    .Callback<TwinCollection, CancellationToken>((t, _) =>
                     {
                         fcntUpSavedInTwin = (int)t[TwinProperty.FCntUp];
                         fcntDownSavedInTwin = (int)t[TwinProperty.FCntDown];

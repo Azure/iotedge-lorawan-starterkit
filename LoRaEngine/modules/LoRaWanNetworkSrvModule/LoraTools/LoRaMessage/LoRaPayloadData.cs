@@ -7,7 +7,6 @@ namespace LoRaTools.LoRaMessage
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.InteropServices;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Newtonsoft.Json;
     using Org.BouncyCastle.Crypto.Engines;
@@ -31,12 +30,6 @@ namespace LoRaTools.LoRaMessage
         /// Gets the LoRa payload frame counter.
         /// </summary>
         public ushort GetFcnt() => MemoryMarshal.Read<ushort>(Fcnt.Span);
-
-        /// <summary>
-        /// Gets the DevAdd netID.
-        /// </summary>
-        [JsonIgnore]
-        public byte DevAddrNetID => (byte)(DevAddr.Span[0] & 0b11111110);
 
         /// <summary>
         /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp).
@@ -113,12 +106,7 @@ namespace LoRaTools.LoRaMessage
         {
             if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
 
-            // get the address
-            var addrbytes = new byte[4];
-            Array.Copy(inputMessage, 1, addrbytes, 0, 4);
-            // address correct but inversed
-            Array.Reverse(addrbytes);
-            DevAddr = addrbytes;
+            DevAddr = DevAddr.Read(inputMessage.AsSpan(1));
             MessageType = new MacHeader(RawMessage[0]).MessageType;
 
             // in this case the payload is not downlink of our type
@@ -165,9 +153,8 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Downstream Constructor (build a LoRa Message).
         /// </summary>
-        public LoRaPayloadData(MacMessageType messageType, byte[] devAddr, FrameControlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, FramePort? fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
+        public LoRaPayloadData(MacMessageType messageType, DevAddr devAddr, FrameControlFlags fctrlFlags, byte[] fcnt, IEnumerable<MacCommand> macCommands, FramePort? fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
-            if (devAddr is null) throw new ArgumentNullException(nameof(devAddr));
             if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
 
             var macBytes = new List<byte>(3);
@@ -197,15 +184,14 @@ namespace LoRaTools.LoRaMessage
                 fPort = FramePort.MacCommand;
             }
 
-            var macPyldSize = devAddr.Length + FrameControl.Size + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
+            var macPyldSize = DevAddr.Size + FrameControl.Size + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
             RawMessage = new byte[1 + macPyldSize + 4];
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
             RawMessage[0] = (byte)(new MacHeader(messageType));
             MessageType = messageType;
             // Array.Copy(mhdr, 0, RawMessage, 0, 1);
-            Array.Reverse(devAddr);
-            DevAddr = new Memory<byte>(RawMessage, 1, 4);
-            Array.Copy(devAddr, 0, RawMessage, 1, 4);
+            DevAddr = devAddr;
+            _ = devAddr.Write(RawMessage.AsSpan(1));
             FrameControlFlags = fctrlFlags;
             RawMessage[5] = FrameControl.Encode(fctrlFlags, fOpts?.Length ?? 0);
             Fcnt = new Memory<byte>(RawMessage, 6, 2);
@@ -247,17 +233,17 @@ namespace LoRaTools.LoRaMessage
         /// <param name="appSKey">the app key used for encryption.</param>
         /// <param name="nwkSKey">the nwk key used for encryption.</param>
         /// <returns>the Downlink message.</returns>
-        public byte[] Serialize(string appSKey, string nwkSKey)
+        public byte[] Serialize(AppSessionKey appSKey, NetworkSessionKey nwkSKey)
         {
 
             // It is a Mac Command payload, needs to encrypt with nwkskey
             if (Fport == FramePort.MacCommand)
             {
-                _ = PerformEncryption(nwkSKey);
+                _ = Serialize(nwkSKey);
             }
             else
             {
-                _ = PerformEncryption(appSKey);
+                _ = Serialize(appSKey);
             }
 
             SetMic(nwkSKey);
@@ -269,22 +255,27 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         /// <param name="nwskey">the network security key.</param>
         /// <returns>if the Mic is valid or not.</returns>
-        public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
+        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             Ensure32BitFcntValue(server32BitFcnt);
             var byteMsg = GetByteMessage();
 
             var mac = MacUtilities.GetMac("AESCMAC");
-            var key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
-            mac.Init(key);
+            var rawKey = new byte[NetworkSessionKey.Size];
+            _ = key.Write(rawKey);
+            mac.Init(new KeyParameter(rawKey));
 
             var fcntBytes = GetFcntBlockInfo();
 
             byte[] block =
             {
-                0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
-                DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)(byteMsg.Length - 4)
+                0x49,
+                0x00, 0x00, 0x00, 0x00,
+                (byte)Direction,
+                /* DevAddr */0x00, 0x00, 0x00, 0x00,
+                fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)(byteMsg.Length - 4)
             };
+            _ = DevAddr.Write(block.AsSpan(6));
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
 
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
@@ -292,19 +283,25 @@ namespace LoRaTools.LoRaMessage
             return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
         }
 
-        public void SetMic(string nwskey)
+        public void SetMic(NetworkSessionKey nwskey)
         {
             var byteMsg = GetByteMessage();
             var fcntBytes = GetFcntBlockInfo();
 
             var mac = MacUtilities.GetMac("AESCMAC");
-            var key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
+            var rawKey = new byte[NetworkSessionKey.Size];
+            _ = nwskey.Write(rawKey);
+            var key = new KeyParameter(rawKey);
             mac.Init(key);
             byte[] block =
             {
-                0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
-                DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)byteMsg.Length
+                0x49,
+                0x00, 0x00, 0x00, 0x00,
+                (byte)Direction,
+                /* DevAddr */0x00, 0x00, 0x00, 0x00,
+                fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)byteMsg.Length
             };
+            _ = DevAddr.Write(block.AsSpan(6));
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
 
             // byte[] result = new byte[16];
@@ -316,9 +313,16 @@ namespace LoRaTools.LoRaMessage
             Mic = new Memory<byte>(RawMessage, RawMessage.Length - 4, 4);
         }
 
-        public void ChangeEndianess()
+        /// <summary>
+        /// Decrypts the payload value, without changing the <see cref="RawMessage"/>.
+        /// </summary>
+        /// <remarks>
+        /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py.</remarks>
+        public byte[] GetDecryptedPayload(NetworkSessionKey key)
         {
-            DevAddr.Span.Reverse();
+            var rawKey = new byte[NetworkSessionKey.Size];
+            _ = key.Write(rawKey);
+            return GetDecryptedPayload(rawKey);
         }
 
         /// <summary>
@@ -326,22 +330,32 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         /// <remarks>
         /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py.</remarks>
-        public byte[] GetDecryptedPayload(string appSkey)
+        public byte[] GetDecryptedPayload(AppSessionKey key)
+        {
+            var rawKey = new byte[AppSessionKey.Size];
+            _ = key.Write(rawKey);
+            return GetDecryptedPayload(rawKey);
+        }
+
+        private byte[] GetDecryptedPayload(byte[] rawSessionKey)
         {
             if (!Frmpayload.Span.IsEmpty)
             {
                 try
                 {
                     var aesEngine = new AesEngine();
-                    var tmp = ConversionHelper.StringToByteArray(appSkey);
-                    aesEngine.Init(true, new KeyParameter(tmp));
+                    aesEngine.Init(true, new KeyParameter(rawSessionKey));
                     var fcntBytes = GetFcntBlockInfo();
 
                     byte[] aBlock =
                     {
-                        0x01, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
-                        DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, 0x00
+                        0x01,
+                        0x00, 0x00, 0x00, 0x00,
+                        (byte)Direction,
+                        /* DevAddr */0x00, 0x00, 0x00, 0x00,
+                        fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, 0x00
                     };
+                    _ = DevAddr.Write(aBlock.AsSpan(6));
 
                     byte[] sBlock = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                     var size = Frmpayload.Length;
@@ -393,13 +407,21 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         ///  Replaces the <see cref="Frmpayload"/>, encrypting the values.
         /// </summary>
-        public override byte[] PerformEncryption(string appSkey)
+        public override byte[] Serialize(NetworkSessionKey key) =>
+            Serialize(GetDecryptedPayload(key));
+
+        /// <summary>
+        ///  Replaces the <see cref="Frmpayload"/>, encrypting the values.
+        /// </summary>
+        public override byte[] Serialize(AppSessionKey key) =>
+            Serialize(GetDecryptedPayload(key));
+
+        private byte[] Serialize(byte[] rawDecryptedPayload)
         {
             if (!Frmpayload.Span.IsEmpty)
             {
-                var decrypted = GetDecryptedPayload(appSkey);
-                Array.Copy(decrypted, 0, RawMessage, RawMessage.Length - 4 - decrypted.Length, decrypted.Length);
-                return decrypted;
+                Array.Copy(rawDecryptedPayload, 0, RawMessage, RawMessage.Length - 4 - rawDecryptedPayload.Length, rawDecryptedPayload.Length);
+                return rawDecryptedPayload;
             }
             else
             {
@@ -411,9 +433,10 @@ namespace LoRaTools.LoRaMessage
         {
             var messageArray = new List<byte>();
             messageArray.AddRange(Mhdr.ToArray());
-            DevAddr.Span.Reverse();
-            messageArray.AddRange(DevAddr.ToArray());
-            DevAddr.Span.Reverse();
+            Span<byte> devAddrBytes = stackalloc byte[DevAddr.Size];
+            _ = DevAddr.Write(devAddrBytes);
+            foreach (var b in devAddrBytes)
+                messageArray.Add(b);
             messageArray.Add(FrameControl.Encode(FrameControlFlags, Fopts.Length));
             messageArray.AddRange(Fcnt.ToArray());
             if (!Fopts.Span.IsEmpty)
@@ -460,5 +483,9 @@ namespace LoRaTools.LoRaMessage
         {
             return Server32BitFcnt ?? (new byte[] { Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00 });
         }
+
+        public override bool CheckMic(AppKey key) => throw new NotImplementedException();
+
+        public override byte[] PerformEncryption(AppKey key) => throw new NotImplementedException();
     }
 }

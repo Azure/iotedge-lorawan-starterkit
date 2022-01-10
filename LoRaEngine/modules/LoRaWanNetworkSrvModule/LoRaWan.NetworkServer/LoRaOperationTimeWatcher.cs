@@ -116,6 +116,14 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
+        /// Calculates the time remaining to response in second join accept window.
+        /// </summary>
+        public TimeSpan GetRemainingTimeToJoinAcceptSecondWindow()
+        {
+            return TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay2) - GetElapsedTime();
+        }
+
+        /// <summary>
         /// Gets time passed since start.
         /// </summary>
         protected internal virtual TimeSpan GetElapsedTime() => DateTimeOffset.UtcNow - Start;

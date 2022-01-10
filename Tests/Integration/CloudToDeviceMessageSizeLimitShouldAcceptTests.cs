@@ -62,7 +62,7 @@ namespace LoRaWan.Tests.Integration
             {
                 upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
             }
-      
+
 
             expectedDownlinkDatr = isSendingInRx2
                 ? euRegion.GetDefaultRX2ReceiveWindow().DataRate
@@ -122,10 +122,10 @@ namespace LoRaWan.Tests.Integration
             // Get downlink message
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
+            payloadDataDown.Serialize(loraDevice.AppSKey.Value);
 
             // 3. downlink message payload contains expected message type and DevAddr
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Expected Mac commands are present
