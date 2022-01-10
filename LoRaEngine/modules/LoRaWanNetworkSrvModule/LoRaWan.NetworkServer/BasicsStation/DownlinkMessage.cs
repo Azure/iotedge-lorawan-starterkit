@@ -32,9 +32,7 @@ namespace LoRaTools.LoRaPhysical
 
         public Hertz FrequencyRx2 { get; }
 
-#pragma warning disable CA1819 // Properties should not return arrays
-        public byte[] Data { get; }
-#pragma warning restore CA1819 // Properties should not return arrays
+        public ReadOnlyMemory<byte> Data { get; }
 
         public StationEui StationEui { get; }
 

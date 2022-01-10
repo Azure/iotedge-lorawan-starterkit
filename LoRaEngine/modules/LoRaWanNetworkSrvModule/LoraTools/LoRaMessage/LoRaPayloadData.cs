@@ -96,12 +96,15 @@ namespace LoRaTools.LoRaMessage
         {
         }
 
+        public LoRaPayloadData(ReadOnlyMemory<byte> inputMessage) : this(inputMessage.ToArray())
+        { }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Upstream Constructor (decode a LoRa Message from existing array of bytes).
         /// </summary>
         /// <param name="inputMessage">the upstream Constructor.</param>
-        public LoRaPayloadData(byte[] inputMessage)
+        private LoRaPayloadData(byte[] inputMessage)
             : base(inputMessage)
         {
             if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
