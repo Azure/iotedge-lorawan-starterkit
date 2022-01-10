@@ -107,7 +107,7 @@ namespace LoRaTools.LoRaMessage
             if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
 
             DevAddr = DevAddr.Read(inputMessage.AsSpan(1));
-            MessageType = new MacHeader(RawMessage[0]).MessageType;
+            MHdr = new MacHeader(RawMessage[0]);
 
             // in this case the payload is not downlink of our type
             if (MessageType is MacMessageType.ConfirmedDataDown or
@@ -121,7 +121,6 @@ namespace LoRaTools.LoRaMessage
                 Direction = 0;
             }
 
-            Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // Fctrl Frame Control Octet
             (FrameControlFlags, var foptsSize) = FrameControl.Decode(inputMessage[5]);
             // Fcnt
@@ -186,10 +185,8 @@ namespace LoRaTools.LoRaMessage
 
             var macPyldSize = DevAddr.Size + FrameControl.Size + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
             RawMessage = new byte[1 + macPyldSize + 4];
-            Mhdr = new Memory<byte>(RawMessage, 0, 1);
-            RawMessage[0] = (byte)(new MacHeader(messageType));
-            MessageType = messageType;
-            // Array.Copy(mhdr, 0, RawMessage, 0, 1);
+            MHdr = new MacHeader(messageType);
+            RawMessage[0] = (byte)MHdr;
             DevAddr = devAddr;
             _ = devAddr.Write(RawMessage.AsSpan(1));
             FrameControlFlags = fctrlFlags;
@@ -431,8 +428,10 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] GetByteMessage()
         {
-            var messageArray = new List<byte>();
-            messageArray.AddRange(Mhdr.ToArray());
+            var messageArray = new List<byte>
+            {
+                (byte)MHdr
+            };
             Span<byte> devAddrBytes = stackalloc byte[DevAddr.Size];
             _ = DevAddr.Write(devAddrBytes);
             foreach (var b in devAddrBytes)

@@ -67,8 +67,8 @@ namespace LoRaTools.LoRaMessage
 
             var cfListLength = cfList == null ? 0 : cfList.Length;
             RawMessage = new byte[1 + 12 + cfListLength];
-            Mhdr = new Memory<byte>(RawMessage, 0, 1);
-            Array.Copy(new byte[] { 32 }, 0, RawMessage, 0, 1);
+            MHdr = new MacHeader(MacMessageType.JoinAccept);
+            RawMessage[0] = (byte)MHdr;
             AppNonce = new Memory<byte>(RawMessage, 1, 3);
             Array.Copy(appNonce, 0, RawMessage, 1, 3);
             NetID = new Memory<byte>(RawMessage, 4, 3);
@@ -103,7 +103,7 @@ namespace LoRaTools.LoRaMessage
 
             // Only MHDR is not encrypted with the key
             // ( PHYPayload = MHDR[1] | MACPayload[..] | MIC[4] )
-            Mhdr = new Memory<byte>(inputMessage, 0, 1);
+            MHdr = new MacHeader(inputMessage[0]);
             // Then we will take the rest and decrypt it
             // DecryptPayload(inputMessage);
             // var decrypted = PerformEncryption(appKey);
@@ -193,14 +193,7 @@ namespace LoRaTools.LoRaMessage
             return encryptedPayload;
         }
 
-        public override byte[] GetByteMessage()
-        {
-            var messageArray = new List<byte>();
-            messageArray.AddRange(Mhdr.ToArray());
-            messageArray.AddRange(RawMessage);
-
-            return messageArray.ToArray();
-        }
+        public override byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
@@ -209,7 +202,7 @@ namespace LoRaTools.LoRaMessage
 
         public byte[] Serialize(AppKey appKey)
         {
-            var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(GetDevAddrBytes()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
+            var algoinput = new byte[] { (byte)MHdr }.Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(GetDevAddrBytes()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)
                 algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
 
