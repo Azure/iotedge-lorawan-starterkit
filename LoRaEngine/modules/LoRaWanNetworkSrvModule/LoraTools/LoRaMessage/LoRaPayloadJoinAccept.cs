@@ -101,7 +101,7 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept(ReadOnlyMemory<byte> inputMessage, AppKey appKey) : this(inputMessage.ToArray(), appKey)
         { }
 
-        public LoRaPayloadJoinAccept(byte[] inputMessage, AppKey appKey)
+        private LoRaPayloadJoinAccept(byte[] inputMessage, AppKey appKey)
         {
             if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
 
