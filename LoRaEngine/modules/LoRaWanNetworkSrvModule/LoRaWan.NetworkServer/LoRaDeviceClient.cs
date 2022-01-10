@@ -54,6 +54,8 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
+                this.deviceClient.OperationTimeoutInMilliseconds = 60000;
+
                 this.logger.LogDebug("getting device twin");
 
                 var twins = await this.deviceClient.GetTwinAsync(cancellationToken);
