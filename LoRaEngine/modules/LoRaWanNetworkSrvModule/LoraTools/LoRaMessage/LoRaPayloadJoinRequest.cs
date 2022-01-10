@@ -43,25 +43,13 @@ namespace LoRaTools.LoRaMessage
         {
         }
 
-        public LoRaPayloadJoinRequest(byte[] inputMessage)
-            : base(inputMessage)
-        {
-            Mhdr = new Memory<byte>(inputMessage, 0, 1);
-            // get the joinEUI field
-            AppEUI = new Memory<byte>(inputMessage, 1, 8);
-            // get the DevEUI
-            DevEUI = new Memory<byte>(inputMessage, 9, 8);
-            // get the DevNonce
-            DevNonce = DevNonce.Read(inputMessage.AsSpan(17));
-        }
-
         /// <summary>
         /// Constructor used for test code only.
         /// </summary>
         internal LoRaPayloadJoinRequest(string appEUI, string devEUI, DevNonce devNonce, AppKey key)
         {
             // Mhdr is always 0 in case of a join request
-            Mhdr = new byte[1] { 0x00 };
+            MHdr = new MacHeader(MacMessageType.JoinRequest);
 
             var appEUIBytes = ConversionHelper.StringToByteArray(appEUI);
             var devEUIBytes = ConversionHelper.StringToByteArray(devEUI);
@@ -84,20 +72,19 @@ namespace LoRaTools.LoRaMessage
 
         private Mic PerformMic(AppKey key)
         {
-            var mhdr = new MacHeader(Mhdr.Span[0]);
             var joinEui = JoinEui.Read(AppEUI.Span);
             var devEui = DevEui.Read(DevEUI.Span);
-            return LoRaWan.Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, DevNonce);
+            return LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, joinEui, devEui, DevNonce);
         }
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
 
         public override byte[] GetByteMessage()
         {
-            var messageArray = new byte[Mhdr.Length + AppEUI.Length + DevEUI.Length + DevNonce.Size + LoRaWan.Mic.Size];
+            var messageArray = new byte[MacHeader.Size + AppEUI.Length + DevEUI.Length + DevNonce.Size + LoRaWan.Mic.Size];
             var start = 0;
-            Mhdr.Span.CopyTo(messageArray.AsSpan(start));
-            start += Mhdr.Length;
+            _ = MHdr.Write(messageArray.AsSpan(start));
+            start += MacHeader.Size;
             AppEUI.Span.CopyTo(messageArray.AsSpan(start));
             start += AppEUI.Length;
             DevEUI.Span.CopyTo(messageArray.AsSpan(start));
