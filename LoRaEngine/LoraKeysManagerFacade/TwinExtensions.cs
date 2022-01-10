@@ -3,38 +3,21 @@
 
 namespace LoraKeysManagerFacade
 {
+    using LoRaTools.Utils;
     using Microsoft.Azure.Devices.Shared;
 
     internal static class TwinExtensions
     {
         internal static string GetGatewayID(this Twin twin)
-        {
-            return twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID)
-                ? twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_GatewayID].Value as string
-                : string.Empty;
-        }
+            => twin.Properties.Desired.TryRead<string>(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID, null, out var someGatewayId)
+             ? someGatewayId
+             : string.Empty;
 
         internal static string GetNwkSKey(this Twin twin)
-        {
-            string networkSessionKey = null;
-            if (twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey))
-            {
-                networkSessionKey = twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey].Value as string;
-            }
-            else if (twin.Properties.Reported.Contains(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey))
-            {
-                networkSessionKey = twin.Properties.Reported[LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey].Value as string;
-            }
-
-            return networkSessionKey;
-        }
-
-        /// <summary>
-        /// Gets the twin property if exists, return string.Empty if not found.
-        /// </summary>
-        public static string GetTwinPropertyStringSafe(this TwinCollection twin, string propertyName)
-        {
-            return (twin != null && twin.Contains(propertyName)) ? twin[propertyName].Value as string ?? string.Empty : string.Empty;
-        }
+            => twin.Properties.Desired.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey, null, out string nwkSKey)
+             ? nwkSKey
+             : twin.Properties.Reported.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_NwkSKey, null, out nwkSKey)
+                ? nwkSKey
+                : null;
     }
 }

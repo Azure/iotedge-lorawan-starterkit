@@ -29,7 +29,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates the device reported properties.
         /// </summary>
-        Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties);
+        Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken);
 
         /// <summary>
         /// Receive a cloud to device message.

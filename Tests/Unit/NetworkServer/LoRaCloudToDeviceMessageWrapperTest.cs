@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public LoRaCloudToDeviceMessageWrapperTest()
         {
             this.connectionManager = new SingleDeviceConnectionManager(new Mock<ILoRaDeviceClient>().Object);
-            this.sampleDevice = new LoRaDevice("123131", "1231231232132", this.connectionManager);
+            this.sampleDevice = new LoRaDevice(new DevAddr(0x123131), "1231231232132", this.connectionManager);
         }
 
         [Fact]

@@ -13,6 +13,7 @@ namespace LoRaTools
         RXParamCmd,
         DevStatusCmd,
         NewChannelCmd,
-        RXTimingCmd
+        RXTimingCmd,
+        TxParamSetupCmd = 0x09
     }
 }
