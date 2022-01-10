@@ -4,14 +4,12 @@
 namespace LoRaTools.LoRaMessage
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Security.Cryptography;
     using LoRaTools.Utils;
     using LoRaWan;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
-    using Org.BouncyCastle.Security;
 
     /// <summary>
     /// Implementation of a LoRa Join-Accept frame.
