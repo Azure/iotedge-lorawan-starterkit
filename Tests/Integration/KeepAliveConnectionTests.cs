@@ -335,7 +335,7 @@ namespace LoRaWan.Tests.Integration
                 .Returns(true);
 
             // will save twin
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()

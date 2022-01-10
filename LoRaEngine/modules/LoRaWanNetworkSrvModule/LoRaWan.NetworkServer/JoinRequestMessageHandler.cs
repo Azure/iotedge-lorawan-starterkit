@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
@@ -57,6 +58,8 @@ namespace LoRaWan.NetworkServer
             try
             {
                 var timeWatcher = request.GetTimeWatcher();
+                var processingTimeout = timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() - TimeSpan.FromMilliseconds(100);
+                using var joinAcceptCancellationToken = new CancellationTokenSource(processingTimeout > TimeSpan.Zero ? processingTimeout : TimeSpan.Zero);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
@@ -189,12 +192,12 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);
+                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties, joinAcceptCancellationToken.Token);
 
                 if (!deviceUpdateSucceeded)
                 {
                     this.logger.LogError("join refused: join request could not save twin");
-                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ApplicationError);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.IoTHubProblem);
                     return;
                 }
 
