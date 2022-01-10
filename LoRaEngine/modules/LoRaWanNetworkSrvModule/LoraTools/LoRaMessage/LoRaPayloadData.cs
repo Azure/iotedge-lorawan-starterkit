@@ -8,10 +8,8 @@ namespace LoRaTools.LoRaMessage
     using System.Linq;
     using System.Runtime.InteropServices;
     using LoRaWan;
-    using Newtonsoft.Json;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
-    using Org.BouncyCastle.Security;
 
     /// <summary>
     /// the body of an Uplink (normal) message.
@@ -96,12 +94,15 @@ namespace LoRaTools.LoRaMessage
         {
         }
 
+        public LoRaPayloadData(ReadOnlyMemory<byte> inputMessage) : this(inputMessage.ToArray())
+        { }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Upstream Constructor (decode a LoRa Message from existing array of bytes).
         /// </summary>
         /// <param name="inputMessage">the upstream Constructor.</param>
-        public LoRaPayloadData(byte[] inputMessage)
+        private LoRaPayloadData(byte[] inputMessage)
             : base(inputMessage)
         {
             if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));

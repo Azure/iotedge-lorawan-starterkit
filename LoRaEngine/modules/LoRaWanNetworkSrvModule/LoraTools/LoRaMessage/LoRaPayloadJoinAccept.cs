@@ -4,14 +4,12 @@
 namespace LoRaTools.LoRaMessage
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Security.Cryptography;
     using LoRaTools.Utils;
     using LoRaWan;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
-    using Org.BouncyCastle.Security;
 
     /// <summary>
     /// Implementation of a LoRa Join-Accept frame.
@@ -98,7 +96,10 @@ namespace LoRaTools.LoRaMessage
             }
         }
 
-        public LoRaPayloadJoinAccept(byte[] inputMessage, AppKey appKey)
+        public LoRaPayloadJoinAccept(ReadOnlyMemory<byte> inputMessage, AppKey appKey) : this(inputMessage.ToArray(), appKey)
+        { }
+
+        private LoRaPayloadJoinAccept(byte[] inputMessage, AppKey appKey)
         {
             if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
 
