@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Simulation
                 IsIoTHubDevice = true,
                 AppSKey = GetAppSessionKey(1001),
                 NwkSKey = GetNetworkSessionKey(1001),
-                DevAddr = "00001001",
+                DevAddr = new DevAddr(0x00001001),
             };
 
             // Device1002_Simulated_OTAA: used for simulator
@@ -84,7 +84,7 @@ namespace LoRaWan.Tests.Simulation
                         SensorDecoder = "DecoderValueSensor",
                         AppSKey = GetAppSessionKey(deviceID),
                         NwkSKey = GetNetworkSessionKey(deviceID),
-                        DevAddr = deviceID.ToString("00000000", CultureInfo.InvariantCulture),
+                        DevAddr = DevAddr.Parse(deviceID.ToString("00000000", CultureInfo.InvariantCulture)),
                     });
             }
 
@@ -101,7 +101,7 @@ namespace LoRaWan.Tests.Simulation
                         KeepAliveTimeout = 0,
                         AppSKey = GetAppSessionKey(deviceID),
                         NwkSKey = GetNetworkSessionKey(deviceID),
-                        DevAddr = deviceID.ToString("00000000", CultureInfo.InvariantCulture),
+                        DevAddr = DevAddr.Parse(deviceID.ToString("00000000", CultureInfo.InvariantCulture)),
                     });
             }
 

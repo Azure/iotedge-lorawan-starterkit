@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Common
 
         public DevNonce DevNonce { get; private set; }
 
-        public bool IsJoined => !string.IsNullOrEmpty(LoRaDevice.DevAddr);
+        public bool IsJoined => LoRaDevice.DevAddr is not null;
 
         public string NetId { get; internal set; }
 
@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Common
 
         public char ClassType => LoRaDevice.ClassType;
 
-        public string DevAddr
+        public DevAddr? DevAddr
         {
             get => LoRaDevice.DevAddr;
             set => LoRaDevice.DevAddr = value;
@@ -82,10 +82,7 @@ namespace LoRaWan.Tests.Common
             }
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
-            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce);
-            joinRequest.SetMic((appkey ?? LoRaDevice.AppKey).Value);
-
-            return joinRequest;
+            return new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
         }
 
 
@@ -94,8 +91,6 @@ namespace LoRaWan.Tests.Common
         /// </summary>
         public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = FramePorts.App1, FrameControlFlags fctrlFlags = FrameControlFlags.None, bool isHexPayload = false, IList<MacCommand> macCommands = null, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
         {
-            var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
-            Array.Reverse(devAddr);
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
@@ -122,7 +117,7 @@ namespace LoRaWan.Tests.Common
 
             var payloadData = new LoRaPayloadData(
                 MacMessageType.UnconfirmedDataUp,
-                devAddr,
+                LoRaDevice.DevAddr.Value,
                 fctrlFlags,
                 fcntBytes,
                 macCommands,
@@ -152,9 +147,6 @@ namespace LoRaWan.Tests.Common
         /// </summary>
         public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = FramePorts.App1, bool isHexPayload = false, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
         {
-            var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
-            Array.Reverse(devAddr);
-
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
@@ -178,7 +170,7 @@ namespace LoRaWan.Tests.Common
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.Adr, fcntBytes, null, fport, payload, direction, Supports32BitFCnt ? fcnt : null);
+            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, LoRaDevice.DevAddr.Value, FrameControlFlags.Adr, fcntBytes, null, fport, payload, direction, Supports32BitFCnt ? fcnt : null);
             payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
             payloadData.SetMic(nwkSKey is { } someNetworkSessionKey ? someNetworkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
             return payloadData;
@@ -310,7 +302,7 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Setups the join properties.
         /// </summary>
-        public void SetupJoin(AppSessionKey appSKey, NetworkSessionKey nwkSKey, string devAddr)
+        public void SetupJoin(AppSessionKey appSKey, NetworkSessionKey nwkSKey, DevAddr devAddr)
         {
             LoRaDevice.AppSKey = appSKey;
             LoRaDevice.NwkSKey = nwkSKey;

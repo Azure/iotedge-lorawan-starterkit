@@ -126,7 +126,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var loRaDevice = new LoRaDevice(string.Empty, "ABC0200000000009", connectionManager);
+            using var loRaDevice = new LoRaDevice(null, "ABC0200000000009", connectionManager);
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
             Assert.Equal(appKey, loRaDevice.AppKey);
@@ -139,7 +139,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.False(loRaDevice.HasFrameCountChanges);
             Assert.Null(loRaDevice.AppSKey);
             Assert.Null(loRaDevice.NwkSKey);
-            Assert.Empty(loRaDevice.DevAddr ?? string.Empty);
+            Assert.Null(loRaDevice.DevAddr);
             Assert.Null(loRaDevice.DevNonce);
             Assert.Empty(loRaDevice.NetID ?? string.Empty);
             Assert.False(loRaDevice.IsABP);
@@ -187,7 +187,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(networkSessionKey, loRaDevice.NwkSKey);
             Assert.Equal(appSessionKey, loRaDevice.AppSKey);
             Assert.Equal(new DevNonce(123), loRaDevice.DevNonce);
-            Assert.Equal("0000AABB", loRaDevice.DevAddr);
+            Assert.Equal(new DevAddr(0x0000aabb), loRaDevice.DevAddr);
             Assert.Null(loRaDevice.ReportedDwellTimeSetting);
         }
 
@@ -235,7 +235,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(networkSessionKey, loRaDevice.NwkSKey);
             Assert.Equal(appSessionKey, loRaDevice.AppSKey);
             Assert.Null(loRaDevice.DevNonce);
-            Assert.Equal("0000AABB", loRaDevice.DevAddr);
+            Assert.Equal(new DevAddr(0x0000aabb), loRaDevice.DevAddr);
             Assert.Null(loRaDevice.ReportedDwellTimeSetting);
         }
 
@@ -573,6 +573,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public void When_ResetFcnt_In_Device_With_Pending_Changes_Should_Have_HasFrameCountChanges_True()
         {
+            var devAddr = new DevAddr(0x1231);
+
             // Non zero fcnt up
             using var target = CreateDefaultDevice();
             target.SetFcntUp(1);
@@ -584,7 +586,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Non zero fcnt down
             using var secondConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var secondTarget = new LoRaDevice("1231", "12312", secondConnectionManager);
+            using var secondTarget = new LoRaDevice(devAddr, "12312", secondConnectionManager);
             secondTarget.SetFcntDown(1);
             secondTarget.AcceptFrameCountChanges();
             secondTarget.ResetFcnt();
@@ -594,7 +596,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Non zero fcnt down and up
             using var thirdConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var thirdTarget = new LoRaDevice("1231", "12312", thirdConnectionManager);
+            using var thirdTarget = new LoRaDevice(devAddr, "12312", thirdConnectionManager);
             thirdTarget.SetFcntDown(1);
             thirdTarget.SetFcntDown(2);
             thirdTarget.AcceptFrameCountChanges();
@@ -607,6 +609,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public void When_ResetFcnt_In_NonZero_FcntUp_Or_FcntDown_Should_Have_HasFrameCountChanges_True()
         {
+            var devAddr = new DevAddr(0x1231);
+
             // Non zero fcnt up
             using var target = CreateDefaultDevice();
             target.SetFcntUp(1);
@@ -618,7 +622,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Non zero fcnt down
             using var secondConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var secondTarget = new LoRaDevice("1231", "12312", secondConnectionManager);
+            using var secondTarget = new LoRaDevice(devAddr, "12312", secondConnectionManager);
             secondTarget.SetFcntDown(1);
             secondTarget.AcceptFrameCountChanges();
             secondTarget.ResetFcnt();
@@ -630,7 +634,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Non zero fcnt down and up
             using var thirdConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var thirdTarget = new LoRaDevice("1231", "12312", thirdConnectionManager);
+            using var thirdTarget = new LoRaDevice(devAddr, "12312", thirdConnectionManager);
             thirdTarget.SetFcntDown(1);
             thirdTarget.SetFcntDown(2);
             thirdTarget.AcceptFrameCountChanges();
@@ -776,7 +780,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice("00000000", "0123456789", manager);
+            using var device = new LoRaDevice(DevAddr.Private0(0), "0123456789", manager);
             manager.Register(device, deviceClient.Object);
 
             var activity = device.BeginDeviceClientConnectionActivity();
@@ -797,7 +801,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice("00000000", "0123456789", manager);
+            using var device = new LoRaDevice(DevAddr.Private0(0), "0123456789", manager);
             device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
 
@@ -832,7 +836,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice("00000000", "0123456789", manager);
+            using var device = new LoRaDevice(DevAddr.Private0(0), "0123456789", manager);
             device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
 
@@ -984,7 +988,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        private LoRaDevice CreateDefaultDevice() => new LoRaDevice("FFFFFFFF", "0000000000000000", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
+        private LoRaDevice CreateDefaultDevice() => new LoRaDevice(new DevAddr(0xffffffff), "0000000000000000", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         public class FrameCounterInitTests
@@ -1114,7 +1118,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 public LoRaDeviceTest(ILoRaDeviceClient deviceClient)
 #pragma warning disable CA2000 // Dispose objects before losing scope - ownership is transferred
-                    : base ("FFFFFFFF", "0000000000000000", new SingleDeviceConnectionManager(deviceClient))
+                    : base (new DevAddr(0xffffffff), "0000000000000000", new SingleDeviceConnectionManager(deviceClient))
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 {
 
