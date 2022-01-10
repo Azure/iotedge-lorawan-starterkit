@@ -90,7 +90,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static LoRaDeviceCache CreateDefaultCache()
             => LoRaDeviceCacheDefault.CreateDefault();
 
-        private readonly IoTHubDeviceInfo DefaultDeviceInfo = new IoTHubDeviceInfo() { DevEUI = "0000000000000000", PrimaryKey = "AAAA", DevAddr = "FFFFFFFF" };
+        private readonly IoTHubDeviceInfo DefaultDeviceInfo = new IoTHubDeviceInfo
+        {
+            DevEUI = "0000000000000000",
+            PrimaryKey = "AAAA",
+            DevAddr = new DevAddr(0xffffffff),
+        };
 
         private class TestDeviceFactory : LoRaDeviceFactory
         {

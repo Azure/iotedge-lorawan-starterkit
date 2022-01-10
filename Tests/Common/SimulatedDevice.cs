@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Common
 
         public DevNonce DevNonce { get; private set; }
 
-        public bool IsJoined => !string.IsNullOrEmpty(LoRaDevice.DevAddr);
+        public bool IsJoined => LoRaDevice.DevAddr is not null;
 
         public string NetId { get; internal set; }
 
@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Common
 
         public char ClassType => LoRaDevice.ClassType;
 
-        public string DevAddr
+        public DevAddr? DevAddr
         {
             get => LoRaDevice.DevAddr;
             set => LoRaDevice.DevAddr = value;
@@ -94,8 +94,6 @@ namespace LoRaWan.Tests.Common
         /// </summary>
         public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = FramePorts.App1, FrameControlFlags fctrlFlags = FrameControlFlags.None, bool isHexPayload = false, IList<MacCommand> macCommands = null, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
         {
-            var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
-            Array.Reverse(devAddr);
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
@@ -122,7 +120,7 @@ namespace LoRaWan.Tests.Common
 
             var payloadData = new LoRaPayloadData(
                 MacMessageType.UnconfirmedDataUp,
-                devAddr,
+                LoRaDevice.DevAddr.Value,
                 fctrlFlags,
                 fcntBytes,
                 macCommands,
@@ -159,9 +157,6 @@ namespace LoRaWan.Tests.Common
         /// </summary>
         public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = FramePorts.App1, bool isHexPayload = false, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
         {
-            var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
-            Array.Reverse(devAddr);
-
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
@@ -186,7 +181,7 @@ namespace LoRaWan.Tests.Common
             // 0 = uplink, 1 = downlink
             var direction = 0;
             var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp,
-                                                  devAddr,
+                                                  LoRaDevice.DevAddr.Value,
                                                   FrameControlFlags.Adr,
                                                   fcntBytes,
                                                   null,
@@ -334,7 +329,7 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Setups the join properties.
         /// </summary>
-        public void SetupJoin(AppSessionKey appSKey, NetworkSessionKey nwkSKey, string devAddr)
+        public void SetupJoin(AppSessionKey appSKey, NetworkSessionKey nwkSKey, DevAddr devAddr)
         {
             LoRaDevice.AppSKey = appSKey;
             LoRaDevice.NwkSKey = nwkSKey;
