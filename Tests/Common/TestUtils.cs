@@ -140,7 +140,7 @@ namespace LoRaWan.Tests.Common
                 { TwinProperty.AppSKey, simulatedDevice.AppSKey?.ToString() },
                 { TwinProperty.NwkSKey, simulatedDevice.NwkSKey?.ToString() },
                 { TwinProperty.DevNonce, simulatedDevice.DevNonce.ToString() },
-                { TwinProperty.NetID, simulatedDevice.NetId },
+                { TwinProperty.NetId, simulatedDevice.NetId },
                 { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
                 { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
             };

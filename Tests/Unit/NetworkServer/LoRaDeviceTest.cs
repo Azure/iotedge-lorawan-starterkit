@@ -141,7 +141,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Null(loRaDevice.NwkSKey);
             Assert.Null(loRaDevice.DevAddr);
             Assert.Null(loRaDevice.DevNonce);
-            Assert.Null(loRaDevice.NetID);
+            Assert.Null(loRaDevice.NetId);
             Assert.False(loRaDevice.IsABP);
             Assert.False(loRaDevice.IsOurDevice);
             Assert.Null(loRaDevice.ReportedDwellTimeSetting);

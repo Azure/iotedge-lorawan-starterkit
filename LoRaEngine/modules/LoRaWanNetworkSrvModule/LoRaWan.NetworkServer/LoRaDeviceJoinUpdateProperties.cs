@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
 
         public DevAddr DevAddr { get; set; }
 
-        public NetId NetID { get; set; }
+        public NetId NetId { get; set; }
 
         public DevNonce DevNonce { get; set; }
 

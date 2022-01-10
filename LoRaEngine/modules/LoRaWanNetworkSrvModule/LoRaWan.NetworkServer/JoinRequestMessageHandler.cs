@@ -162,7 +162,7 @@ namespace LoRaWan.NetworkServer
                     AppSKey = appSKey,
                     AppNonce = appNonce,
                     DevNonce = joinReq.DevNonce,
-                    NetID = netId,
+                    NetId = netId,
                     Region = request.Region.LoRaRegion,
                     PreferredGatewayID = this.configuration.GatewayID,
                 };
