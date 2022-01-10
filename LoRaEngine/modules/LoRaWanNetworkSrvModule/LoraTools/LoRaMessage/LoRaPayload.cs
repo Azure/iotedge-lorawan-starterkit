@@ -6,19 +6,14 @@
 namespace LoRaTools.LoRaMessage
 {
     using System;
-    using System.Linq;
-    using System.Security.Cryptography;
-    using LoRaTools.Utils;
     using LoRaWan;
-    using Org.BouncyCastle.Crypto.Parameters;
-    using Org.BouncyCastle.Security;
 
     /// <summary>
     /// The LoRaPayloadWrapper class wraps all the information any LoRa message share in common.
     /// </summary>
     public abstract class LoRaPayload
     {
-        public MacMessageType MessageType { get; set; }
+        public MacMessageType MessageType => MHdr.MessageType;
 
         /// <summary>
         /// Gets or sets raw byte of the message.
@@ -26,19 +21,19 @@ namespace LoRaTools.LoRaMessage
         public byte[] RawMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets mACHeader of the message.
+        /// Gets or sets MAC header of the message.
         /// </summary>
-        public Memory<byte> Mhdr { get; set; }
+        public MacHeader MHdr { get; set; }
 
         /// <summary>
         /// Gets or sets message Integrity Code.
         /// </summary>
-        public Memory<byte> Mic { get; set; }
+        public Mic? Mic { get; set; }
 
         /// <summary>
         /// Gets or sets assigned Dev Address, TODO change??.
         /// </summary>
-        public Memory<byte> DevAddr { get; set; }
+        public DevAddr DevAddr { get; set; }
 
         /// <summary>
         /// Gets the representation of the 32bit Frame counter to be used
@@ -54,9 +49,9 @@ namespace LoRaTools.LoRaMessage
         protected LoRaPayload(byte[] inputMessage)
         {
             RawMessage = inputMessage ?? throw new ArgumentNullException(nameof(inputMessage));
-            Mhdr = new Memory<byte>(RawMessage, 0, 1);
+            MHdr = new MacHeader(RawMessage[0]);
             // MIC 4 last bytes
-            Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
+            Mic = LoRaWan.Mic.Read(RawMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
         /// <summary>
@@ -76,70 +71,36 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Method to check a Mic.
         /// </summary>
-        /// <param name="nwskey">The Network Secret Key.</param>
+        /// <param name="key">The Network Secret Key.</param>
         /// <param name="server32BitFcnt">Explicit 32bit count to use for calculating the block.</param>
-        public abstract bool CheckMic(string nwskey, uint? server32BitFcnt = null);
+        public abstract bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null);
+
+        /// <summary>
+        /// Method to check a Mic.
+        /// </summary>
+        /// <param name="key">The App Key.</param>
+        public abstract bool CheckMic(AppKey key);
 
         /// <summary>
         /// Method to calculate the encrypted version of the payload.
         /// </summary>
-        /// <param name="appSkey">the Application Secret Key.</param>
+        /// <param name="key">the Application Secret Key.</param>
         /// <returns>the encrypted bytes.</returns>
-        public abstract byte[] PerformEncryption(string appSkey);
+        public abstract byte[] Serialize(AppSessionKey key);
 
         /// <summary>
-        /// A Method to calculate the Mic of the message.
+        /// Method to calculate the encrypted version of the payload.
         /// </summary>
-        /// <returns> the Mic bytes.</returns>
-        public byte[] CalculateMic(string appKey, byte[] algoinput)
-        {
-            if (algoinput is null) throw new ArgumentNullException(nameof(algoinput));
-
-            var mac = MacUtilities.GetMac("AESCMAC");
-            var key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
-            mac.Init(key);
-            var rfu = new byte[1];
-            rfu[0] = 0x0;
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            Mic = result.Take(4).ToArray();
-            return Mic.ToArray();
-        }
+        /// <param name="key">The Network Session Key.</param>
+        /// <returns>the encrypted bytes.</returns>
+        public abstract byte[] Serialize(NetworkSessionKey key);
 
         /// <summary>
-        /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC.
+        /// Method to calculate the encrypted version of the payload.
         /// </summary>
-        public static byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, DevNonce devNonce, byte[] appKey)
-        {
-            if (keyType == LoRaPayloadKeyType.None) throw new InvalidOperationException("No key type selected.");
-            if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
-            if (netid is null) throw new ArgumentNullException(nameof(netid));
-
-            var type = new byte[1];
-            type[0] = (byte)keyType;
-            using var aes = Aes.Create("AesManaged");
-            aes.Key = appKey;
-#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
-            // Cipher is part of the LoRaWAN specification
-            aes.Mode = CipherMode.ECB;
-#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
-            aes.Padding = PaddingMode.None;
-            aes.IV = new byte[16];
-
-            var pt = new byte[type.Length + appnonce.Length + netid.Length + DevNonce.Size + 7];
-            Array.Copy(type, pt, type.Length);
-            Array.Copy(appnonce, 0, pt, type.Length, appnonce.Length);
-            Array.Copy(netid, 0, pt, type.Length + appnonce.Length, netid.Length);
-            _ = devNonce.Write(pt.AsSpan(type.Length + appnonce.Length + netid.Length));
-
-            ICryptoTransform cipher;
-#pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
-            // Part of the LoRaWAN specification
-            cipher = aes.CreateEncryptor();
-#pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
-            var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
-            return key;
-        }
+        /// <param name="key">The App Key.</param>
+        /// <returns>the encrypted bytes.</returns>
+        public abstract byte[] PerformEncryption(AppKey key);
 
         public void Reset32BitBlockInfo()
         {

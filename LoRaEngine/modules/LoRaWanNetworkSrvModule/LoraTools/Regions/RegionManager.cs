@@ -101,20 +101,6 @@ namespace LoRaTools.Regions
             }
         }
 
-        private static Region as923;
-
-        public static Region AS923
-        {
-            get
-            {
-                if (as923 == null)
-                {
-
-                    as923 = new RegionAS923();
-                }
-
-                return as923;
-            }
-        }
+        public static Region AS923 => new RegionAS923();
     }
 }

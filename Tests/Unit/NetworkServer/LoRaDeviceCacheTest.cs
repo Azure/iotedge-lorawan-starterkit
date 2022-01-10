@@ -8,7 +8,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.LoRaMessage;
-    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -60,7 +59,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Disposed_While_Refreshing_We_Shutdown_Gracefully()
         {
             using var cache = new TestDeviceCache(this.quickRefreshOptions, true);
-            var deviceMock = new Mock<LoRaDevice>("abc", "123", null);
+            var deviceMock = new Mock<LoRaDevice>(new DevAddr(0xabc), "123", null);
             deviceMock.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((NetworkServerConfiguration config, CancellationToken token) =>
                 {
@@ -86,7 +85,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Refresh_Fails_It_Is_Retried()
         {
             using var cache = new TestDeviceCache(this.quickRefreshOptions, true);
-            var deviceMock = new Mock<LoRaDevice>("abc", "123", null);
+            var deviceMock = new Mock<LoRaDevice>(new DevAddr(0xabc), "123", null);
             deviceMock.SetupSequence(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new LoRaProcessingException("Refresh failed.", LoRaProcessingErrorCode.DeviceInitializationFailed))
                 .ReturnsAsync(true);
@@ -110,7 +109,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
 
-            using var device = new LoRaDevice("abc", "123", connectionManager.Object) { LastSeen = DateTime.UtcNow };
+            using var device = new LoRaDevice(new DevAddr(0xabc), "123", connectionManager.Object) { LastSeen = DateTime.UtcNow };
 
             cache.Register(device);
             using var cts = new CancellationTokenSource(this.quickRefreshOptions.ValidationInterval * 2);
@@ -145,7 +144,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var device = CreateTestDevice();
             cache.Register(device);
             Assert.True(cache.Remove(device));
-            Assert.False(cache.HasRegistrations(device.DevAddr));
+            Assert.False(cache.HasRegistrations(device.DevAddr.Value));
         }
 
         [Fact]
@@ -180,7 +179,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.Equal(device1.DevAddr, device2.DevAddr);
 
-            var devAddr = device1.DevAddr;
+            var devAddr = device1.DevAddr.Value;
 
             cache.Register(device1);
             cache.Register(device2);
@@ -209,7 +208,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var payload = new LoRaPayloadData
             {
-                DevAddr = ConversionHelper.StringToByteArray(device.DevAddr)
+                DevAddr = device.DevAddr.Value
             };
 
             Assert.Equal(isValid, cache.TryGetForPayload(payload, out _));
@@ -243,7 +242,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var payload = new LoRaPayloadData
             {
-                DevAddr = ConversionHelper.StringToByteArray(device.DevAddr)
+                DevAddr = device.DevAddr.Value
             };
 
             var lastSeen = device.LastSeen;
@@ -261,7 +260,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = CreateNoRefreshCache();
             using var device = CreateTestDevice();
 
-            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device, device.DevAddr));
+            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device, device.DevAddr.Value));
         }
 
         [Fact]
@@ -270,7 +269,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = CreateNoRefreshCache();
             using var device = CreateTestDevice();
 
-            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device, "00FFFFFF"));
+            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device, new DevAddr(0x00ffffff)));
         }
 
         [Fact]
@@ -280,10 +279,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var device1 = CreateTestDevice();
             using var device2 = CreateTestDevice();
 
-            device2.DevAddr = "00FFFFFF";
+            device2.DevAddr = new DevAddr(0x00ffffff);
             cache.Register(device2);
 
-            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device1, "00FFFFFF"));
+            Assert.Throws<InvalidOperationException>(() => cache.CleanupOldDevAddrForDevice(device1, new DevAddr(0x00ffffff)));
         }
 
         [Fact]
@@ -294,8 +293,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             cache.Register(device);
 
-            var oldDevAddr = device.DevAddr;
-            device.DevAddr = "00FFFFFF";
+            var oldDevAddr = device.DevAddr.Value;
+            device.DevAddr = new DevAddr(0x00ffffff);
 
             cache.CleanupOldDevAddrForDevice(device, oldDevAddr);
             Assert.False(cache.HasRegistrations(oldDevAddr));
@@ -321,7 +320,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var items = Enumerable.Range(1, 2).Select(x =>
             {
                 var connectionMgr = new Mock<ILoRaDeviceClientConnectionManager>();
-                var device = new LoRaDevice($"FFFFFFF{x}", $"000000000000000{x}", connectionMgr.Object);
+#pragma warning disable CA1305 // Specify IFormatProvider
+                var device = new LoRaDevice(new DevAddr(0xfffffff0 + checked((uint)x)), x.ToString("x16"), connectionMgr.Object);
+#pragma warning restore CA1305 // Specify IFormatProvider
                 cache.Register(device);
                 return (device, connectionMgr);
             }).ToArray();
@@ -333,7 +334,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 connectionMgr.Verify(x => x.Release(device), Times.Once);
             }
         }
-        private static LoRaDevice CreateTestDevice() => new LoRaDevice("FFFFFFFF", "0000000000000000", null) { NwkSKey = "AAAAAAAA" };
+        private static LoRaDevice CreateTestDevice() => new LoRaDevice(new DevAddr(0xffffffff), "0000000000000000", null) { NwkSKey = TestKeys.CreateNetworkSessionKey(0xAAAAAAAA) };
 
         private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
 
