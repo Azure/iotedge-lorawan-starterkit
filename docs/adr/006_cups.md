@@ -1,14 +1,8 @@
 # 006. CUPS Protocol Implementation - Credential management
 
-**Feature**: [#391](https://github.com/Azure/iotedge-lorawan-starterkit/issues/391)
-
-**Date**: 19 November 2021
-
-**Author**: Daniele Antonio Maggio
-
+**Feature**: [#391](https://github.com/Azure/iotedge-lorawan-starterkit/issues/391)  
+**Author**: Daniele Antonio Maggio  
 **Status**: Accepted
-
-__________
 
 ## Overview
 

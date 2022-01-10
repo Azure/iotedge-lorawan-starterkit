@@ -2,7 +2,7 @@
 
 **Feature**: [#700](https://github.com/Azure/iotedge-lorawan-starterkit/issues/700)  
 **Authors**: Roel Fauconnier  
-**Status**: Proposes
+**Status**: Accepted
 
 ## Overview / Problem Statement
 

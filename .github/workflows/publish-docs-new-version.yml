@@ -18,10 +18,7 @@ jobs:
       - run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-      - run: | 
-          pip install mkdocs-material
-          pip install mike
-          pip install mdx_truly_sane_lists
+      - run: pip install -r requirements.txt
       - run: | 
           mike deploy --push --update-aliases ${{ github.event.inputs.version }} latest
           mike list

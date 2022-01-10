@@ -1,8 +1,8 @@
-# 005 - Observability
+# 005. Observability
 
-**Date**: 2021-11-08
-
-**Participants**:  Patrick Schuler, Bastian Burger, Eugene Fedorenko
+**Epic**: [#421](https://github.com/Azure/iotedge-lorawan-starterkit/issues/421)  
+**Authors**: Patrick Schuler, Bastian Burger, Eugene Fedorenko  
+**Status**: Accepted
 
 ## Status
 
