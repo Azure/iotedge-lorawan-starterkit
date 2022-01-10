@@ -2,7 +2,10 @@
 
 **Feature**:
 [#1189](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1189)  
-**Authors**: Daniele Antonio Maggio, Maggie Salak **Status**: Proposed
+
+**Authors**: Daniele Antonio Maggio, Maggie Salak
+
+**Status**: Proposed
 
 ## Overview
 
