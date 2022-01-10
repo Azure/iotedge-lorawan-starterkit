@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.Collections.Generic;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Xunit;
