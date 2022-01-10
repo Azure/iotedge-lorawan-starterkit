@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
-            var key = CreateCacheKey((LoRaPayloadData)loRaRequest.Payload);
+            var key = CreateCacheKey((LoRaPayloadData)loRaRequest.Payload, loRaDevice);
             if (EnsureFirstMessageInCache(key, loRaRequest, out var previousStation))
                 return ConcentratorDeduplicationResult.NotDuplicate;
 
@@ -88,24 +88,17 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        internal static string CreateCacheKey(LoRaPayloadData payload)
+        internal static string CreateCacheKey(LoRaPayloadData payload, LoRaDevice loRaDevice)
         {
-            var totalBufferLength = DevAddr.Size + Mic.Size + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
-            var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
+            var totalBufferLength = DevEui.Size + Mic.Size + payload.Fcnt.Length;
+            Span<byte> buffer = stackalloc byte[totalBufferLength];
+            var head = buffer; // keeps a view pointing at the start of the buffer
 
-            var index = 0;
-            _ = payload.DevAddr.Write(buffer);
-            index += DevAddr.Size;
+            buffer = DevEui.Parse(loRaDevice.DevEUI.AsSpan()).Write(buffer);
+            buffer = payload.Mic is { } someMic ? someMic.Write(buffer) : throw new InvalidOperationException("Mic must not be null.");
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer, BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
 
-            _ = payload.Mic is { } someMic ? someMic.Write(buffer[index..]) : throw new InvalidOperationException("Mic must not be null.");
-            index += Mic.Size;
-
-            payload.RawMessage?.CopyTo(buffer[index..]);
-            index += payload.RawMessage?.Length ?? 0;
-
-            BinaryPrimitives.WriteUInt16LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
-
-            var key = Sha256.ComputeHash(buffer.ToArray());
+            var key = Sha256.ComputeHash(head.ToArray());
 
             return BitConverter.ToString(key);
         }
