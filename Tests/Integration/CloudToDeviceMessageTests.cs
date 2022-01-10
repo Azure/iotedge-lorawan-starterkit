@@ -636,8 +636,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
-            // This is commented out as it breaks the current logic. Will be fixed in #1139
-            // also add checks to verify that the RX1 options are missing when RX2 is preferred.
+
             var expectedLnsRxDelay = LoRaOperationTimeWatcher.CalculateRXWindowsTime(expectingSecondWindow ? Region.ReceiveDelay2 : Region.ReceiveDelay1,
                                                                                      loRaDevice.ReportedRXDelay);
             Assert.Equal(expectedLnsRxDelay, PacketForwarder.DownlinkMessages[0].LnsRxDelay);
