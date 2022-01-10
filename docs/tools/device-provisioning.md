@@ -1,4 +1,4 @@
-# LoRa device provisioning CLI
+# LoRa Device Provisioning
 
 This is a Command Line Interface Provisioning Tool to list, query, verify add, update, and remove LoRaWAN leaf devices and LoRaWAN Basic Station devices configured in Azure IoT Hub for the Azure IoT Edge LoRaWAN Gateway project located at: <http://aka.ms/lora>
 
