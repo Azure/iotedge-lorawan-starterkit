@@ -19,40 +19,42 @@ insights as to how we arrived at the current solution.
 
 ## Glossary
 
-- (Leaf) device: a sensor that measures and transmits IoT telemetry
-- Concentrator or station (LBS): converts from/to LoRa messages
-- Gateway or network server (LNS): IoT Edge enabled device connected to IoTHub
+- (Leaf) device: a sensor that measures and transmits IoT telemetry data
+- Concentrator or station - LoRa Basics Station (LBS): converts from/to LoRa messages (demodulation/modulation)
+- Gateway or network server - LoRa Network Server (LNS): IoT Edge enabled device connected to IoTHub
 
-- FrameCounter strategy: can be single or multi gateway which is also the default. In the single gw mode
+- FrameCounter strategy: can be single or multi gateway which is also the default. In single mode
   a device is connected to a specific gateway. Any other gateway that receives messages from this
   device drops them immediately.
 - Deduplication strategy: indicates how duplicate messages should be handled.
   - Drop: drops messages without further processing upstream nor downstream
   - Mark: marks messages as duplicates but allows them upstream to IoTHub. The main use-case for
-    this is to triangulate the location of sensors based on the signal strength. 
-  - None (default): allows duplicates to pass through without marking them.
+    this is to triangulate the location of sensors based on the signal strength.
+  - None (default): allows duplicates to pass upstream without marking them.
 
 ## Goals of the deduplication
 
 Besides dropping duplicates accordingly, we must:
-- Avoid calling the Azure Function to not incur extra costs or
+
+- Avoid calling the Azure Function more than required to not incur extra costs or
   performance/scale overhead.
 - Support existing features like Mark, resubmissions etc.
 
 ## Overview
 
-We employ deduplication on 2 levels: on a single network server and across multiple network servers. 
+We employ deduplication on 2 levels: on a single network server and across multiple network servers.
 
 ### 1. Deduplication on the network server level
 
 At this level we rely on information we have locally on the network server to detect duplicates. No
 calls to external services need to be made for the detection. In scope for this deduplication are:
+
 - data messages (requiring confirmation or not)
 - join requests
 - Class A and C devices
 
-For the detection, a in-memory cache is utilised with a sliding expiration of entries after 1
-minute. The value of the entires is always the concentrator from where we received the message. The
+For the detection, a in-memory cache is utilised with a sliding expiration of 1
+minute. The value of the enetry is always the concentrator from where we received the message. The
 key depends on the type of message.
 
 #### a. Data messages
@@ -75,12 +77,12 @@ flowchart LR;
     LBS2-->LNS;
 ```
 
-- LNS receives message A from LBS1 for the first time. Message is marked as `NonDuplicate` and a
-  cache entry is created.
-- LNS receives again Message A this time from LBS2. LNS checks its local cache. If it's a cache
-  miss, the message is marked as a `NonDuplicate` and considered as a new telemetry. This can happen
-  for example if the second message takes longer than the retention period to arrive. If it's a cache hit, the
-  following happens:
+1. LNS receives message A from LBS1 for the first time. Message is marked as `NonDuplicate` and a
+   cache entry is created.
+1. LNS receives again Message A this time from LBS2. LNS checks its local cache. If it's a cache
+miss, the message is marked as a `NonDuplicate` and considered as a new telemetry. This can happen
+for example if the second message takes longer than the retention period to arrive. If it's a cache hit, the
+following happens:
 
 ```mermaid
 stateDiagram-v2
@@ -100,11 +102,13 @@ stateDiagram-v2
 
 Under special circumstances, a network server might receive the same message multiple times from the
 same concentrator. These circumstances can be:
+
 - a message that needs confirmation that was not confirmed in due time (missed window)
 - a restarted device that happens to send the same measurement
 - replay attacks
 
 The most basic topology showcasing this scenario is the following:
+
 ```mermaid
 flowchart LR;
     Device-->LBS-->LNS;
@@ -112,13 +116,14 @@ flowchart LR;
 
 - LNS receives message A from LBS for the first time. Message is marked as `NonDuplicate` and a
   cache entry is created where the key is a SHA256 of the message and the value is LBS.
-- LNS receives again Message A from the same LBS. LNS checks its local cache. If it's a cache miss,
+- LNS receives again message A from the same LBS. LNS checks its local cache. If it's a cache miss,
   it's marked as a `NonDuplicate` as before. If it's a cache hit the message is marked as
   `DuplicateDueToResubmission` independently of which deduplication strategy is used.
   
-#### Further handling of messages based on their duplication status 
+#### Further handling of messages based on their duplication status
 
-**TL:DR;**
+##### Short version
+
 | Status | Upstream | Downstream |
 | ---|---|--- |
 | NonDuplicate | ✔ | ✔ |
@@ -126,8 +131,7 @@ flowchart LR;
 | DuplicateDueToResubmission | depends | depends |
 | Duplicate | ❌ | ❌ |
 
-
-**Longer version**
+##### Longer version
 
 If message is `NonDuplicate`: Upstream✔, Downstream✔ (if requires confirmation)  
 We always want to process unique messages up and if they need to downstream.
@@ -136,7 +140,7 @@ If message is `SoftDuplicate`: Upstream✔, Downstream❌.
 We want to be aware of such messages on IoTHub but we skip sending downstream if they need confirmation because of possible collisions on the air.
 
 - If message is marked as `DuplicateDueToResubmission` and it requires confirmation the following
-  check happens: 
+  check happens:
 
 ```mermaid
 stateDiagram-v2
@@ -170,13 +174,13 @@ stateDiagram-v2
 ```
 
 NB:
+
 - For the first message (frame counter 1) we allow resending upstream because this could indicate a
   restarted device that simply sent the same measurement. The case that this happens for subsequent
   messages (framecounter > 1) within the retention period of the cache (1 minute) is unlikely and
   would more likely indicate a replay attack. These messages are dropped from the request validation
   logic.
 - Since this message doesn't need confirmation, no downstream messages are sent in any case.
-
 
 Finally, if message is `Duplicate`: Upstream❌, Downstream❌  
 We do not want to process the message further, no calls to the Azure Function or IoTHub happen.
@@ -187,18 +191,16 @@ Here we are detecting requests as duplicates solely based on their AppEui, DevEu
 If there is a cache hit (a request with the same values for these fields within the retention period
 of the cache) the request is considered a duplicate and dropped immediately.
 
-
 #### General notes
 
 - Deduplication at this level is one of the first things that happen before a request is processed. We considered
   even moving this higher up the processing stack when we construct the LNS DTOs. The problem with
   this approach was that at that stage we don't have the deduplication strategy employed. The
   strategy affects the decision making as we saw before and it is stored on the device twin which is
-  available later on the processing stack. 
+  available later on the processing stack.
 - The frame counter strategy does not influence the way this deduplication works but influences the
-  deduplcation across network servers. 
+  deduplcation across network servers.
 - This logic is tested with a combination of unit, integration and E2E tests.
-
 
 ### 2. Deduplication between different network servers
 
@@ -207,6 +209,7 @@ handled correctly. The categorization happens from an Azure Function where we ne
 metadata of the messages.
 
 Simplest topology showcasing this scenario would be:
+
 ```mermaid
 flowchart LR;
     Device-->LBS1-->LNS1;
