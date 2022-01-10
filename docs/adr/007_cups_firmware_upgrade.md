@@ -9,7 +9,7 @@
 
 >This ADR is an extension of [006. CUPS Protocol Implementation - Credential
 >management](./006_cups.md) and focuses of firmware upgrades. For details about
->the general CUPS protocol implementation refer to the other document.
+>the general CUPS protocol implementation please refer to the other document.
 
 ## Overview
 
@@ -61,7 +61,7 @@ the Basics Station is performed by the user.
    values.
 
 1. The LNS determines if there are discrepanices between the values stored in
-   the concentrator twin and the ones provided by the station. If there are
+   the concentrator twin and the ones provided by the Station. If there are
    differences, the LNS will trigger the firmware upgrade by sending the correct
    values to the Basics Station. The Station will then execute the actual
    firmware upgrade.
@@ -79,7 +79,7 @@ added:
   "package": "1.0.1",
   "fwUrl": "https://...",
   "fwKeyChecksum": 123456,
-  "fwSignature": STRING
+  "fwSignature": ""
 }
 ```
 
@@ -104,8 +104,8 @@ fetch firmware upgrade files from the storage account.
 ### Changes in the LoRaWan Network Server
 
 The implementation of `CupsProtocolMessageProcessor` should be extended for
-checking the package field from the concentrator device twin. In case there the
-value is different from the one received from the Basics Station in the CUPS
+checking the `package` field from the concentrator device twin. In case there
+the value is different from the one received from the Basics Station in the CUPS
 request, the Network Server will trigger the download of the firmware upgrade
 file (using the Facade Function) and populate the CUPS response accordingly, so
 that the Station can then execute the upgrade.
