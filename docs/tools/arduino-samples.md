@@ -10,7 +10,6 @@ There are multuple scenarios where we would want to have the librairies be modif
 
 Go next to the path "packages/Seeeduino/hardware/samd/1.8.2/libraries/LoRaWan and open LoRaWan.cpp and LoRaWan.h in a text editor.
 
-
 ### CN library changes
 
 To run our China samples some changes to the library need to be done as described below.
