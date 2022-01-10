@@ -79,9 +79,9 @@ namespace LoRaWan.Tests.Common
         {
             var finalDesiredProperties = new Dictionary<string, object>
                 {
-                    { TwinProperty.DevAddr, simulatedDevice.DevAddr },
-                    { TwinProperty.AppSKey, simulatedDevice.AppSKey },
-                    { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
+                    { TwinProperty.DevAddr, simulatedDevice.DevAddr.ToString() },
+                    { TwinProperty.AppSKey, simulatedDevice.AppSKey?.ToString() },
+                    { TwinProperty.NwkSKey, simulatedDevice.NwkSKey?.ToString() },
                     { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
                     { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },
                     { TwinProperty.ClassType, simulatedDevice.ClassType.ToString() },
@@ -120,7 +120,7 @@ namespace LoRaWan.Tests.Common
             var finalDesiredProperties = new Dictionary<string, object>
                 {
                     { TwinProperty.AppEUI, simulatedDevice.AppEUI },
-                    { TwinProperty.AppKey, simulatedDevice.AppKey },
+                    { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
                     { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
                     { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },
                     { TwinProperty.ClassType, simulatedDevice.ClassType.ToString() },
@@ -136,9 +136,9 @@ namespace LoRaWan.Tests.Common
 
             var finalReportedProperties = new Dictionary<string, object>
             {
-                { TwinProperty.DevAddr, simulatedDevice.DevAddr },
-                { TwinProperty.AppSKey, simulatedDevice.AppSKey },
-                { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
+                { TwinProperty.DevAddr, simulatedDevice.DevAddr?.ToString() },
+                { TwinProperty.AppSKey, simulatedDevice.AppSKey?.ToString() },
+                { TwinProperty.NwkSKey, simulatedDevice.NwkSKey?.ToString() },
                 { TwinProperty.DevNonce, simulatedDevice.DevNonce.ToString() },
                 { TwinProperty.NetID, simulatedDevice.NetId },
                 { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },

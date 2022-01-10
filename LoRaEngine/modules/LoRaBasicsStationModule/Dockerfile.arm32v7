@@ -13,6 +13,9 @@ RUN ln -s /usr/bin/arm-linux-gnueabihf-objdump ~/toolchain-rpi/bin/arm-linux-gnu
 RUN ln -s /usr/bin/arm-linux-gnueabihf-objcopy ~/toolchain-rpi/bin/arm-linux-gnueabihf-objcopy
 WORKDIR /basicstation
 
+# temporary fix for https://github.com/lorabasics/basicstation/issues/142
+RUN sed -i "s|mbedtls-2.6|archive/mbedtls-2.6|g" /basicstation/deps/mbedtls/prep.sh
+
 # make standard version
 RUN make platform=rpi variant=std
 RUN mkdir built && cp ./build-rpi-std/bin/station ./built/station.std
