@@ -22,3 +22,11 @@ This document focuses on:
 
 ## Out-of-scope
 
+## Decisions
+
+### Context
+
+The CUPS request described in the [CUPS protocol documentation](https://doc.sm.tc/station/cupsproto.html) contains a number of fields which are related to the firmware version of the Basics Station. Specifically, `station`, `model`, `package` and `keys` fields are dependent on the Station version and need to be updated whenever a firmware upgrade of the Basics Station is performed. 
+
+### Firmware upgrade flow
+
