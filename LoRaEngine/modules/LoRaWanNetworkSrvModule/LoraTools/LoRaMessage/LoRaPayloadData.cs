@@ -8,10 +8,8 @@ namespace LoRaTools.LoRaMessage
     using System.Linq;
     using System.Runtime.InteropServices;
     using LoRaWan;
-    using Newtonsoft.Json;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
-    using Org.BouncyCastle.Security;
 
     /// <summary>
     /// the body of an Uplink (normal) message.
