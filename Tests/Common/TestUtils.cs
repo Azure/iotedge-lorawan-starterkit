@@ -119,7 +119,7 @@ namespace LoRaWan.Tests.Common
         {
             var finalDesiredProperties = new Dictionary<string, object>
                 {
-                    { TwinProperty.AppEUI, simulatedDevice.AppEUI },
+                    { TwinProperty.AppEUI, simulatedDevice.AppEUI?.ToString() },
                     { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
                     { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
                     { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },

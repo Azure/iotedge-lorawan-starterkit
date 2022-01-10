@@ -21,6 +21,7 @@ namespace LoRaTools.Utils
         private static readonly Type AppSessionKeyType = typeof(AppSessionKey);
         private static readonly Type AppKeyType = typeof(AppKey);
         private static readonly Type NetworkSessionKeyType = typeof(NetworkSessionKey);
+        private static readonly Type JoinEuiType = typeof(JoinEui);
 
         public static T? SafeRead<T>(this TwinCollection twinCollection, string property, T? defaultValue = default, ILogger? logger = null)
             => twinCollection.TryRead<T>(property, logger, out var someT) ? someT : defaultValue;
@@ -72,6 +73,8 @@ namespace LoRaTools.Utils
                     value = (T)(object)AppKey.Parse(some.ToString());
                 else if (tPrime == NetworkSessionKeyType)
                     value = (T)(object)NetworkSessionKey.Parse(some.ToString());
+                else if (tPrime == JoinEuiType)
+                    value = (T)(object)JoinEui.Parse(some.ToString());
                 else
                     value = (T)Convert.ChangeType(some, t, CultureInfo.InvariantCulture);
 

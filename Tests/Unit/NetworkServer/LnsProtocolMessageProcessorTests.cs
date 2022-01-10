@@ -334,7 +334,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var expectedRadioMetadata = GetExpectedRadioMetadata();
             var expectedMhdr = new MacHeader(MacMessageType.JoinRequest);
             var expectedMic = Mic.Read(new byte[] { 101, 116, 5, 193 });
-            var expectedAppEui = new byte[] { 181, 196, 210, 229, 200, 120, 98, 71 };
+            var expectedJoinEui = JoinEui.Read(new byte[] { 181, 196, 210, 229, 200, 120, 98, 71 });
             var expectedDevEui = new byte[] { 158, 22, 164, 238, 223, 193, 39, 133 };
             var expectedDevNonce = DevNonce.Read(new byte[] { 88, 212 });
             SetDataPathParameter();
@@ -357,7 +357,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(MacMessageType.JoinRequest, loRaRequest.Payload.MessageType);
             Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic);
-            Assert.Equal(expectedAppEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEUI.Span.ToArray());
+            Assert.Equal(expectedJoinEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEUI);
             Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI.Span.ToArray());
             Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevNonce);
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);

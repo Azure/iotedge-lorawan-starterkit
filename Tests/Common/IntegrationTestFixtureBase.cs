@@ -216,9 +216,9 @@ namespace LoRaWan.Tests.Common
                 if (!string.IsNullOrEmpty(Configuration.DevicePrefix))
                 {
                     d.DeviceID = string.Concat(Configuration.DevicePrefix, d.DeviceID[Configuration.DevicePrefix.Length..]);
-                    if (!string.IsNullOrEmpty(d.AppEUI))
+                    if (d.AppEUI is { } someJoinEui)
                     {
-                        d.AppEUI = string.Concat(Configuration.DevicePrefix, d.AppEUI[Configuration.DevicePrefix.Length..]);
+                        d.AppEUI = JoinEui.Parse($"{Configuration.DevicePrefix}{someJoinEui.ToString("N", CultureInfo.InvariantCulture)[Configuration.DevicePrefix.Length..]}");
                     }
 
                     if (d.AppKey is { } someAppKey)

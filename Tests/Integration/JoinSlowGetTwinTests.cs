@@ -31,7 +31,7 @@ namespace LoRaWan.Tests.Integration
             // Device twin will be queried twice, 1st time will take 7 seconds, 2nd time 0.1 second
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
-            twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
+            twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI?.ToString();
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             if (deviceGatewayID != null) twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;

@@ -107,11 +107,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Initialized_New_OTAA_Device_Should_Have_All_Properties()
         {
             var appKey = TestKeys.CreateAppKey(0xABC0200000000000, 0x09);
+            var joinEui = new JoinEui(0xABC0200000000009);
 
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "AppEUI", "ABC0200000000009" },
+                    { "AppEUI", joinEui.ToString() },
                     { "AppKey", appKey.ToString() },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -128,7 +129,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice(null, "ABC0200000000009", connectionManager);
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
+            Assert.Equal(joinEui, loRaDevice.AppEUI);
             Assert.Equal(appKey, loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
@@ -153,11 +154,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var appKey = TestKeys.CreateAppKey(0xABC0200000000000, 0x09);
             var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
             var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
+            var joinEui = new JoinEui(0xABC0200000000009);
 
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "AppEUI", "ABC0200000000009" },
+                    { "AppEUI", joinEui.ToString() },
                     { "AppKey", appKey.ToString() },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -178,7 +180,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDevice = CreateDefaultDevice();
 
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
+            Assert.Equal(joinEui, loRaDevice.AppEUI);
             Assert.Equal(appKey, loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
@@ -221,7 +223,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDevice = CreateDefaultDevice();
 
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Empty(loRaDevice.AppEUI ?? string.Empty);
+            Assert.Null(loRaDevice.AppEUI);
             Assert.Null(loRaDevice.AppKey);
             Assert.Equal(this.configuration.GatewayID, loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
@@ -875,7 +877,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "AppEUI", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppEUI", new JoinEui(0xABCD1234).ToString() },
                     { "AppKey", "ABCD2000000000000000000000000009" },
                     { "ClassType", "C" },
                     { "GatewayID", "mygateway" },
@@ -983,7 +985,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static Dictionary<string, object> GetEssentialDesiredProperties() =>
             new Dictionary<string, object>
             {
-                ["AppEUI"] = "ABC02000000000000000000000000009ABC02000000000000000000000000009",
+                ["AppEUI"] = new JoinEui(0xABCD1234).ToString(),
                 ["AppKey"] = TestKeys.CreateAppKey(1).ToString()
             };
 
