@@ -30,7 +30,7 @@ namespace LoRaTools
         }
 
         // don't work with CFLIST atm
-        public static string CalculateKey(byte[] type, byte[] appnonce, NetId netid, DevNonce devNonce, AppKey appKey)
+        private static string CalculateKey(byte[] type, byte[] appnonce, NetId netId, DevNonce devNonce, AppKey appKey)
         {
             if (type is null) throw new ArgumentNullException(nameof(type));
             if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
@@ -51,7 +51,7 @@ namespace LoRaTools
             var pt = new byte[type.Length + appnonce.Length + NetId.Size + DevNonce.Size + 7];
             Array.Copy(type, pt, type.Length);
             Array.Copy(appnonce, 0, pt, type.Length, appnonce.Length);
-            _ = netid.Write(pt.AsSpan(type.Length + appnonce.Length));
+            _ = netId.Write(pt.AsSpan(type.Length + appnonce.Length));
             _ = devNonce.Write(pt.AsSpan(type.Length + appnonce.Length + NetId.Size));
 
             aes.IV = new byte[16];
