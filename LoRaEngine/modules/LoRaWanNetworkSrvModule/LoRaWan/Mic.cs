@@ -78,7 +78,7 @@ namespace LoRaWan
             return new Mic(BinaryPrimitives.ReadUInt32LittleEndian(cmac));
         }
 
-        public static Mic ComputeForJoinAccept(AppKey appKey, MacHeader macHeader, Memory<byte> joinNonce, Memory<byte> netId, Memory<byte> devAddr, Memory<byte> dlSettings, Memory<byte> rxDelay, Memory<byte> cfList)
+        public static Mic ComputeForJoinAccept(AppKey appKey, MacHeader macHeader, Memory<byte> joinNonce, Memory<byte> netId, DevAddr devAddr, Memory<byte> dlSettings, Memory<byte> rxDelay, Memory<byte> cfList)
         {
             var algoInput = new byte[MacHeader.Size + joinNonce.Length + NetId.Size + DevAddr.Size + dlSettings.Length + rxDelay.Length + cfList.Length];
             var index = 0;
@@ -88,7 +88,7 @@ namespace LoRaWan
             index += joinNonce.Length;
             netId.CopyTo(algoInput.AsMemory(index));
             index += netId.Length;
-            devAddr.CopyTo(algoInput.AsMemory(index));
+            _ = devAddr.Write(algoInput.AsSpan(index));
             index += DevAddr.Size;
             dlSettings.CopyTo(algoInput.AsMemory(index));
             index += dlSettings.Length;
@@ -108,7 +108,7 @@ namespace LoRaWan
             return Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
         }
 
-        public static Mic ComputeForData(NetworkSessionKey networkSessionKey, byte direction, Memory<byte> devAddr, byte[] fcnt, byte[] message)
+        public static Mic ComputeForData(NetworkSessionKey networkSessionKey, byte direction, DevAddr devAddr, byte[] fcnt, byte[] message)
         {
             if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
             if (message is null) throw new ArgumentNullException(nameof(message));
@@ -121,9 +121,10 @@ namespace LoRaWan
             byte[] block =
             {
                 0x49, 0x00, 0x00, 0x00, 0x00, direction,
-                devAddr.Span[3], devAddr.Span[2], devAddr.Span[1], devAddr.Span[0],
+                /* DevAddr */0x00, 0x00, 0x00, 0x00,
                 fcnt[0], fcnt[1], fcnt[2], fcnt[3], 0x00, (byte)message.Length
             };
+            _ = devAddr.Write(block.AsSpan(6));
             var algoinput = block.Concat(message).ToArray();
 
             mac.BlockUpdate(algoinput, 0, algoinput.Length);

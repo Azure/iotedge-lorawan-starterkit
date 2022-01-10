@@ -90,12 +90,12 @@ namespace LoRaWan.NetworkServer
 
         internal static string CreateCacheKey(LoRaPayloadData payload)
         {
-            var totalBufferLength = payload.DevAddr.Length + Mic.Size + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
+            var totalBufferLength = DevAddr.Size + Mic.Size + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
 
             var index = 0;
-            BinaryPrimitives.WriteUInt32LittleEndian(buffer, BinaryPrimitives.ReadUInt32LittleEndian(payload.DevAddr.Span));
-            index += payload.DevAddr.Length;
+            _ = payload.DevAddr.Write(buffer);
+            index += DevAddr.Size;
 
             _ = payload.Mic is { } someMic ? someMic.Write(buffer[index..]) : throw new InvalidOperationException("Mic must not be null.");
             index += Mic.Size;

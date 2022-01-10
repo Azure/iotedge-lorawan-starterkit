@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
@@ -26,7 +25,7 @@ namespace LoRaWan.Tests.Integration
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequestPayload1 = simulatedDevice.CreateJoinRequest();
 
-            var devAddr = string.Empty;
+            var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // Device twin will be queried twice, 1st time will take 7 seconds, 2nd time 0.1 second
@@ -88,7 +87,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             var joinRequestDownlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
-            Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
+            Assert.Equal(joinAccept.DevAddr.ToString(), afterJoinDevAddr);
 
             Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
 
@@ -96,7 +95,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(simulatedDevice.AppEUI, loRaDevice.AppEUI);
             Assert.Equal(afterJoinAppSKey, loRaDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, loRaDevice.NwkSKey);
-            Assert.Equal(afterJoinDevAddr, loRaDevice.DevAddr);
+            Assert.Equal(joinAccept.DevAddr, loRaDevice.DevAddr);
             if (deviceGatewayID == null)
                 Assert.Null(loRaDevice.GatewayID);
             else
