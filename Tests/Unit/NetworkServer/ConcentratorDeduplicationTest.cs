@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             if (!isCacheEmpty)
             {
-                using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, "1111:1111:1111:1111", this.connectionManager);
+                using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(0x1111111111111111UL).ToString(), this.connectionManager);
                 _ = this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, testDevice);
             }
 
@@ -96,15 +96,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData("E7-EC-EB-BC-59-0B-C8-8B-37-61-FA-6C-D0-3D-74-9F-87-46-3D-AB-B6-70-21-A5-C6-76-8C-25-EC-68-B3-F2", "0000:0000:0000:0000", 0, 0)]
-        [InlineData("E7-EC-EB-BC-59-0B-C8-8B-37-61-FA-6C-D0-3D-74-9F-87-46-3D-AB-B6-70-21-A5-C6-76-8C-25-EC-68-B3-F2", "0000:0000:0000:0000", 0, 0, "1")]
-        [InlineData("D2-B5-F8-AB-CA-DC-0B-63-F3-6D-83-2E-9E-54-FA-BA-38-11-68-66-14-52-B2-8B-B9-7D-91-80-C4-1E-3E-A0", "1111:1111:1111:1111", 0, 0)]
-        [InlineData("E8-F5-83-11-F7-68-CE-49-9B-33-19-A0-49-8E-07-C9-AA-78-69-54-54-21-A5-34-85-E9-64-A2-DF-5A-26-05", "0000:0000:0000:0000", 1, 0)]
-        [InlineData("9B-94-6D-15-EC-01-8C-3F-C5-B2-A6-02-94-4C-6C-6A-92-91-97-0B-74-CC-6F-A0-70-04-73-62-9E-EE-7B-37", "0000:0000:0000:0000", 0, 1)]
-        public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(string expectedKey, string devEui, ushort frameCounter, ushort mic, string? fieldNotUsedInKey = null)
+        [InlineData("E7-EC-EB-BC-59-0B-C8-8B-37-61-FA-6C-D0-3D-74-9F-87-46-3D-AB-B6-70-21-A5-C6-76-8C-25-EC-68-B3-F2", 0, 0, 0)]
+        [InlineData("E7-EC-EB-BC-59-0B-C8-8B-37-61-FA-6C-D0-3D-74-9F-87-46-3D-AB-B6-70-21-A5-C6-76-8C-25-EC-68-B3-F2", 0, 0, 0, "1")]
+        [InlineData("D2-B5-F8-AB-CA-DC-0B-63-F3-6D-83-2E-9E-54-FA-BA-38-11-68-66-14-52-B2-8B-B9-7D-91-80-C4-1E-3E-A0", 0x1111111111111111UL, 0, 0)]
+        [InlineData("E8-F5-83-11-F7-68-CE-49-9B-33-19-A0-49-8E-07-C9-AA-78-69-54-54-21-A5-34-85-E9-64-A2-DF-5A-26-05", 0, 1, 0)]
+        [InlineData("9B-94-6D-15-EC-01-8C-3F-C5-B2-A6-02-94-4C-6C-6A-92-91-97-0B-74-CC-6F-A0-70-04-73-62-9E-EE-7B-37", 0, 0, 1)]
+        public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(string expectedKey, ulong devEui, ushort frameCounter, ushort mic, string? fieldNotUsedInKey = null)
         {
             var options = fieldNotUsedInKey ?? string.Empty;
-            using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, devEui, this.connectionManager);
+            using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(devEui).ToString(), this.connectionManager);
 
             var payload = new LoRaPayloadDataLns(this.dataPayload.DevAddr, new MacHeader(MacMessageType.ConfirmedDataUp),
                                                  frameCounter, options, "payload", new Mic(mic));
