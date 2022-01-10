@@ -260,7 +260,7 @@ namespace LoRaWan.Tests.Integration
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
             // will search for the device by devAddr
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr))
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "ada").AsList()));
 
             // will read the device twins
@@ -335,7 +335,7 @@ namespace LoRaWan.Tests.Integration
                 .Returns(true);
 
             // will save twin
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()

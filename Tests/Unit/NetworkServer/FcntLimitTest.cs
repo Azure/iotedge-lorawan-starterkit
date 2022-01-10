@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID, supports32BitFcnt: supports32Bit));
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
+            var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null)).ReturnsAsync(true);
             var initialTwin = SetupTwins(deviceFcntUp, deviceFcntDown, startFcntUp, startFcntDown, abpRelaxed, supports32Bit, simulatedDevice, devEUI, devAddr);
@@ -73,8 +73,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint? fcntUpSavedInTwin = null;
             uint? fcntDownSavedInTwin = null;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Returns<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Returns<TwinCollection, CancellationToken>((t, _) =>
                 {
                     fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
                     fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
@@ -162,7 +162,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID));
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
+            var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null)).ReturnsAsync(true);
 
@@ -185,8 +185,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint? fcntStartUpSavedInTwin = null;
             uint? fcntStartDownSavedInTwin = null;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Returns<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Returns<TwinCollection, CancellationToken>((t, _) =>
                 {
                     fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
                     fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
@@ -218,7 +218,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             if (saveExpected)
             {
                 Assert.True(req.ProcessingSucceeded);
-                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Exactly(1));
+                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
                 Assert.Equal(fcntUpSavedInTwin, fcntStartUpSavedInTwin);
                 Assert.Equal(fcntDownSavedInTwin, fcntStartDownSavedInTwin);
                 Assert.Equal(startUpExpected, fcntStartUpSavedInTwin.Value);
@@ -226,11 +226,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
             else
             {
-                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Never());
+                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never());
             }
         }
 
-        private static Twin SetupTwins(uint? deviceFcntUp, uint? deviceFcntDown, uint? startFcntUp, uint? startFcntDown, bool abpRelaxed, bool supports32Bit, SimulatedDevice simulatedDevice, string devEUI, string devAddr)
+        private static Twin SetupTwins(uint? deviceFcntUp, uint? deviceFcntDown, uint? startFcntUp, uint? startFcntDown, bool abpRelaxed, bool supports32Bit, SimulatedDevice simulatedDevice, string devEUI, DevAddr devAddr)
         {
             var initialTwin = new Twin();
             initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
@@ -238,7 +238,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr;
+            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr.ToString();
             initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             initialTwin.Properties.Desired[TwinProperty.GatewayID] = simulatedDevice.LoRaDevice.GatewayID;
             initialTwin.Properties.Desired[TwinProperty.ABPRelaxMode] = abpRelaxed;

@@ -6,8 +6,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
-    using System.Globalization;
-    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -41,7 +39,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public DateTimeOffset LastUpdate { get; set; }
 
-        public string DevAddr { get; set; }
+        public DevAddr? DevAddr { get; set; }
 
         // Gets if a device is activated by personalization
         public bool IsABP => AppKey == null;
@@ -213,7 +211,7 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
-        public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
+        public LoRaDevice(DevAddr? devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
         {
             this.connectionManager = connectionManager;
             this.queuedRequests = new Queue<LoRaRequest>();
@@ -230,7 +228,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Use constructor for test code only.
         /// </summary>
-        internal LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
+        internal LoRaDevice(DevAddr? devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
             : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance, null)
         { }
 
@@ -278,7 +276,7 @@ namespace LoRaWan.NetworkServer
                 {
                     AppSKey = desiredTwin.ReadRequired<AppSessionKey>(TwinProperty.AppSKey);
                     NwkSKey = desiredTwin.ReadRequired<NetworkSessionKey>(TwinProperty.NwkSKey);
-                    DevAddr = desiredTwin.ReadRequiredString(TwinProperty.DevAddr);
+                    DevAddr = desiredTwin.ReadRequired<DevAddr>(TwinProperty.DevAddr);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -305,6 +303,12 @@ namespace LoRaWan.NetworkServer
                 AppSKey = reportedTwin.SafeRead(TwinProperty.AppSKey, AppSKey);
                 NwkSKey = reportedTwin.SafeRead(TwinProperty.NwkSKey, NwkSKey);
                 NetID = reportedTwin.SafeRead(TwinProperty.NetID, NetID);
+                if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
+                {
+                    DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value is string s && LoRaWan.DevAddr.TryParse(s, out var devAddr)
+                            ? devAddr
+                            : default;
+                }
 
                 DevNonce = reportedTwin.TryRead<ushort>(TwinProperty.DevNonce, out var someDevNonce) ? new DevNonce(someDevNonce) : null;
 
@@ -486,7 +490,7 @@ namespace LoRaWan.NetworkServer
                         return false;
                     }
 
-                    var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
+                    var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties, default);
                     if (result)
                     {
                         InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
@@ -693,12 +697,12 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates device on the server after a join succeeded.
         /// </summary>
-        internal virtual async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties)
+        internal virtual async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties, CancellationToken cancellationToken)
         {
             var reportedProperties = new TwinCollection();
             reportedProperties[TwinProperty.AppSKey] = updateProperties.AppSKey.ToString();
             reportedProperties[TwinProperty.NwkSKey] = updateProperties.NwkSKey.ToString();
-            reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr;
+            reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr.ToString();
             reportedProperties[TwinProperty.FCntDown] = 0;
             reportedProperties[TwinProperty.FCntUp] = 0;
             reportedProperties[TwinProperty.DevEUI] = DevEUI;
@@ -786,7 +790,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var devAddrBeforeSave = DevAddr;
-            var succeeded = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
+            var succeeded = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
             // Only save if the devAddr remains the same, otherwise ignore the save
             if (succeeded && devAddrBeforeSave == DevAddr)

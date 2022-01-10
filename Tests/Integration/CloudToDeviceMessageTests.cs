@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -83,7 +82,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             // multi gateway will ask for next fcnt down
             var isMultigateway = string.IsNullOrEmpty(deviceGatewayID);
@@ -163,7 +162,7 @@ namespace LoRaWan.Tests.Integration
 
             if (needsToSaveFcnt)
             {
-                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
             }
 
@@ -208,7 +207,7 @@ namespace LoRaWan.Tests.Integration
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loraDevice.AppSKey.Value);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -246,7 +245,7 @@ namespace LoRaWan.Tests.Integration
 
             if (needsToSaveFcnt)
             {
-                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                    .ReturnsAsync(true);
             }
 
@@ -287,7 +286,7 @@ namespace LoRaWan.Tests.Integration
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loraDevice.AppSKey.Value);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -317,7 +316,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
@@ -327,7 +326,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
@@ -375,7 +374,7 @@ namespace LoRaWan.Tests.Integration
 
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loRaDevice.AppSKey.Value);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loRaDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -403,7 +402,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
@@ -416,7 +415,7 @@ namespace LoRaWan.Tests.Integration
             using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
                 .CreateMessage();
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -460,7 +459,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loRaDevice.AppSKey.Value);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loRaDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -488,7 +487,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
@@ -501,7 +500,7 @@ namespace LoRaWan.Tests.Integration
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(deviceTwin);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
@@ -551,7 +550,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loRaDevice.AppSKey.Value);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loRaDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -667,7 +666,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
@@ -727,7 +726,7 @@ namespace LoRaWan.Tests.Integration
                 payloadDataDown.Serialize(loraDevice.AppSKey.Value);
             }
 
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -781,7 +780,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var c2dJson = $"{{\"fport\":{fport}, \"payload\":\"asd\", \"macCommands\": [ {{ \"cid\": \"{mac}\" }}] }}";
@@ -880,7 +879,7 @@ namespace LoRaWan.Tests.Integration
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loraDevice.AppSKey.Value);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -912,13 +911,13 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
             var deviceTwin = TestUtils.CreateABPTwin(simulatedDevice);
             this.LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(deviceTwin);
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
