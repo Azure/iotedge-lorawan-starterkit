@@ -10,13 +10,6 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        public static DevAddr GetNwkId(NetId netId)
-        {
-            var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
-            // The 7 LBS of the NetID become the NwkID of a DevAddr:
-            return new DevAddr(unchecked((byte)netId.NetworkId), address);
-        }
-
         public static NetworkSessionKey CalculateNetworkSessionKey(byte[] type, byte[] appnonce, NetId netid, DevNonce devNonce, AppKey appKey)
         {
             var keyString = CalculateKey(type, appnonce, netid, devNonce, appKey);

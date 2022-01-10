@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Security.Cryptography;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -139,7 +140,9 @@ namespace LoRaWan.NetworkServer
                 var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
                 var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
                 var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
-                var devAddr = OTAAKeysGenerator.GetNwkId(this.configuration.NetId);
+                var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
+                // The 7 LBS of the NetID become the NwkID of a DevAddr:
+                var devAddr = new DevAddr(unchecked((byte)netId.NetworkId), address);
 
                 var oldDevAddr = loRaDevice.DevAddr;
 
