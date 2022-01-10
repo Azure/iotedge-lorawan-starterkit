@@ -67,7 +67,7 @@ namespace LoRaTools.LoRaMessage
 
             var cfListLength = cfList == null ? 0 : cfList.Length;
             RawMessage = new byte[1 + 12 + cfListLength];
-            MHdr = new MacHeader(32);
+            MHdr = new MacHeader(MacMessageType.JoinAccept);
             RawMessage[0] = (byte)MHdr;
             AppNonce = new Memory<byte>(RawMessage, 1, 3);
             Array.Copy(appNonce, 0, RawMessage, 1, 3);
@@ -193,16 +193,7 @@ namespace LoRaTools.LoRaMessage
             return encryptedPayload;
         }
 
-        public override byte[] GetByteMessage()
-        {
-            var messageArray = new List<byte>
-            {
-                (byte)MHdr
-            };
-            messageArray.AddRange(RawMessage);
-
-            return messageArray.ToArray();
-        }
+        public override byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {

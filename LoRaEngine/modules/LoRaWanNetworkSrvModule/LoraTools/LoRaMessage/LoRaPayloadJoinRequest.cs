@@ -45,7 +45,7 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinRequest(string appEUI, string devEUI, DevNonce devNonce)
         {
             // Mhdr is always 0 in case of a join request
-            MHdr = new MacHeader(0x00);
+            MHdr = new MacHeader(MacMessageType.JoinRequest);
 
             var appEUIBytes = ConversionHelper.StringToByteArray(appEUI);
             var devEUIBytes = ConversionHelper.StringToByteArray(devEUI);
