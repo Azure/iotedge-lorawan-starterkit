@@ -4,11 +4,11 @@ Arduino samples can be found on the Arduino folder in the repository root. This 
 
 ## Accessing the library files locally
 
-There are multuple scenarios where we would want to have the librairies be modified (listed here below). To access the local installation open your arduino IDE, go to File -> Preferences and click on the line after "more preference can be edited directly in the file".
+There are multiple scenarios where we would want to have the libraries be modified (listed here below). To access the local installation, open your Arduino IDE, go to File -> Preferences and click on the line after "more preference can be edited directly in the file".
 
 ![arduino files location](../images/arduinolibrarycustomsetup.png)
 
-Go next to the path "packages/Seeeduino/hardware/samd/1.8.2/libraries/LoRaWan and open LoRaWan.cpp and LoRaWan.h in a text editor.
+Go next to the path `packages/Seeeduino/hardware/samd/1.8.2/libraries/LoRaWan` and open `LoRaWan.cpp` and `LoRaWan.h` in a text editor.
 
 ### CN library changes
 
@@ -17,8 +17,8 @@ To run our China samples some changes to the library need to be done as describe
 paste the following in the LoRaWan.h file:
 
 ``` C
-        void setChannelON(unsigned char channel);
-        void setChannelOFF(unsigned char channel);
+void setChannelON(unsigned char channel);
+void setChannelOFF(unsigned char channel);
 ```
 
 and respectively in the LoRaWan.cpp file:
