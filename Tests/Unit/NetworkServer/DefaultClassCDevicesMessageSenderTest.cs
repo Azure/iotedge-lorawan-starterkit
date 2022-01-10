@@ -64,7 +64,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(sentMessage.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr, simDevice.DevAddr);
-            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
+            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey.Value);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
         }
 
@@ -329,8 +329,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Has_Custom_RX2DR_Should_Send_Correctly()
         {
             var devAddr = new DevAddr(0x023637F8);
-            const string appSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
-            const string nwkSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
+            var appSKey = TestKeys.CreateAppSessionKey(0xABC0200000000000, 0x09);
+            var nwkSKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
             var devEUI = simDevice.DevEUI;
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
@@ -349,8 +349,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { TwinProperty.Region, LoRaRegionType.US915.ToString() },
                     // OTAA device, already joined
                     { TwinProperty.DevAddr, devAddr.ToString() },
-                    { TwinProperty.AppSKey, appSKey },
-                    { TwinProperty.NwkSKey, nwkSKey },
+                    { TwinProperty.AppSKey, appSKey.ToString() },
+                    { TwinProperty.NwkSKey, nwkSKey.ToString() },
                     { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
                 });
 
@@ -395,8 +395,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_StationEui_Missing_Should_Fail()
         {
             var devAddr = new DevAddr(0x023637F8);
-            const string appSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
-            const string nwkSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
+            var appSKey = TestKeys.CreateAppSessionKey(0xABC0200000000000, 0x09);
+            var nwkSKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
             var devEUI = simDevice.DevEUI;
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
@@ -415,8 +415,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     { TwinProperty.Region, LoRaRegionType.US915.ToString() },
                     // OTAA device, already joined
                     { TwinProperty.DevAddr, devAddr.ToString() },
-                    { TwinProperty.AppSKey, appSKey },
-                    { TwinProperty.NwkSKey, nwkSKey },
+                    { TwinProperty.AppSKey, appSKey.ToString() },
+                    { TwinProperty.NwkSKey, nwkSKey.ToString() },
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))

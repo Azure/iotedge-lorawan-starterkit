@@ -73,8 +73,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint? fcntUpSavedInTwin = null;
             uint? fcntDownSavedInTwin = null;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Returns<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Returns<TwinCollection, CancellationToken>((t, _) =>
                 {
                     fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
                     fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     Assert.Single(PacketForwarder.DownlinkMessages);
                     var downlinkMessage = PacketForwarder.DownlinkMessages[0];
                     var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-                    payloadDataDown.PerformEncryption(simulatedDevice.AppSKey);
+                    payloadDataDown.Serialize(simulatedDevice.AppSKey.Value);
                     Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
                 }
 
@@ -185,8 +185,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint? fcntStartUpSavedInTwin = null;
             uint? fcntStartDownSavedInTwin = null;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Returns<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Returns<TwinCollection, CancellationToken>((t, _) =>
                 {
                     fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
                     fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
@@ -218,7 +218,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             if (saveExpected)
             {
                 Assert.True(req.ProcessingSucceeded);
-                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Exactly(1));
+                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
                 Assert.Equal(fcntUpSavedInTwin, fcntStartUpSavedInTwin);
                 Assert.Equal(fcntDownSavedInTwin, fcntStartDownSavedInTwin);
                 Assert.Equal(startUpExpected, fcntStartUpSavedInTwin.Value);
@@ -226,7 +226,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
             else
             {
-                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Never());
+                LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never());
             }
         }
 
@@ -235,9 +235,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var initialTwin = new Twin();
             initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
             initialTwin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
-            initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
-            initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey;
-            initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey;
+            initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
+            initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
+            initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr.ToString();
             initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             initialTwin.Properties.Desired[TwinProperty.GatewayID] = simulatedDevice.LoRaDevice.GatewayID;

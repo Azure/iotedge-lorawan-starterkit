@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.Integration
             // Get downlink message
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
+            payloadDataDown.Serialize(loraDevice.AppSKey.Value);
 
             // 3. downlink message payload contains expected message type and DevAddr
             Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);

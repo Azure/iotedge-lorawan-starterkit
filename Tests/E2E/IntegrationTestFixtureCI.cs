@@ -187,6 +187,16 @@ namespace LoRaWan.Tests.E2E
             return deviceId.ToString(format, CultureInfo.InvariantCulture);
         }
 
+        public AppSessionKey GetAppSessionKey(int deviceId, bool multiGw = false) =>
+            AppSessionKey.Parse(GetKey32(deviceId, multiGw));
+
+        public AppKey GetAppKey(int deviceId, bool multiGw = false) =>
+           AppKey.Parse(GetKey32(deviceId, multiGw));
+
+        public NetworkSessionKey GetNetworkSessionKey(int deviceId, bool multiGw = false) =>
+           NetworkSessionKey.Parse(GetKey32(deviceId, multiGw));
+
+
         public string GetKey32(int deviceId, bool multiGw = false)
         {
             var target = multiGw ? Configuration.DeviceKeyFormatMultiGW : Configuration.DeviceKeyFormat;
@@ -208,7 +218,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(1),
                 AppEUI = GetKey16(1),
-                AppKey = GetKey32(1),
+                AppKey = GetAppKey(1),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -218,7 +228,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(2),
                 AppEUI = GetKey16(2),
-                AppKey = GetKey32(2),
+                AppKey = GetAppKey(2),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = false,
             };
@@ -228,7 +238,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(3),
                 AppEUI = GetKey16(3),
-                AppKey = GetKey32(3),
+                AppKey = GetAppKey(3),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -238,7 +248,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(4),
                 AppEUI = GetKey16(4),
-                AppKey = GetKey32(4),
+                AppKey = GetAppKey(4),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 RX1DROffset = 1
@@ -248,7 +258,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(4, true),
                 AppEUI = GetKey16(4, true),
-                AppKey = GetKey32(4, true),
+                AppKey = GetAppKey(4, true),
                 IsIoTHubDevice = true,
                 RX1DROffset = 1
             };
@@ -257,8 +267,8 @@ namespace LoRaWan.Tests.E2E
             Device5_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(5),
-                AppSKey = GetKey32(5),
-                NwkSKey = GetKey32(5),
+                AppSKey = GetAppSessionKey(5),
+                NwkSKey = GetNetworkSessionKey(5),
                 DevAddr = new DevAddr(0x0028b1b0),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -267,8 +277,8 @@ namespace LoRaWan.Tests.E2E
             Device5_ABP_MultiGw = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(5, true),
-                AppSKey = GetKey32(5, true),
-                NwkSKey = GetKey32(5, true),
+                AppSKey = GetAppSessionKey(5, true),
+                NwkSKey = GetNetworkSessionKey(5, true),
                 DevAddr = new DevAddr(0x0028b1b0),
                 IsIoTHubDevice = true,
             };
@@ -277,8 +287,8 @@ namespace LoRaWan.Tests.E2E
             Device6_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(6),
-                AppSKey = GetKey32(6),
-                NwkSKey = GetKey32(6),
+                AppSKey = GetAppSessionKey(6),
+                NwkSKey = GetNetworkSessionKey(6),
                 DevAddr = new DevAddr(0x00000006),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = false,
@@ -288,8 +298,8 @@ namespace LoRaWan.Tests.E2E
             Device7_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(7),
-                AppSKey = GetKey32(7),
-                NwkSKey = GetKey32(7),
+                AppSKey = GetAppSessionKey(7),
+                NwkSKey = GetNetworkSessionKey(7),
                 DevAddr = new DevAddr(0x00000007),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -299,8 +309,8 @@ namespace LoRaWan.Tests.E2E
             Device8_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(8),
-                AppSKey = GetKey32(8),
-                NwkSKey = GetKey32(8),
+                AppSKey = GetAppSessionKey(8),
+                NwkSKey = GetNetworkSessionKey(8),
                 DevAddr = new DevAddr(0x00000008),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -311,7 +321,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(9),
                 AppEUI = GetKey16(9),
-                AppKey = GetKey32(9),
+                AppKey = GetAppKey(9),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 RXDelay = 2
@@ -322,7 +332,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(10),
                 AppEUI = GetKey16(10),
-                AppKey = GetKey32(10),
+                AppKey = GetAppKey(10),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -332,7 +342,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(11),
                 AppEUI = GetKey16(11),
-                AppKey = GetKey32(11),
+                AppKey = GetAppKey(11),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "http://sensordecodermodule/api/DecoderValueSensor",
@@ -343,7 +353,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(12),
                 AppEUI = GetKey16(12),
-                AppKey = GetKey32(12),
+                AppKey = GetAppKey(12),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -353,7 +363,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(13),
                 AppEUI = GetKey16(13),
-                AppKey = GetKey32(13),
+                AppKey = GetAppKey(13),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -363,7 +373,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(14),
                 AppEUI = GetKey16(14),
-                AppKey = GetKey32(14),
+                AppKey = GetAppKey(14),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -372,7 +382,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(14, true),
                 AppEUI = GetKey16(14, true),
-                AppKey = GetKey32(14, true),
+                AppKey = GetAppKey(14, true),
                 IsIoTHubDevice = true,
             };
 
@@ -381,7 +391,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(15),
                 AppEUI = GetKey16(15),
-                AppKey = GetKey32(15),
+                AppKey = GetAppKey(15),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -390,15 +400,15 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(15, true),
                 AppEUI = GetKey16(15, true),
-                AppKey = GetKey32(15, true),
+                AppKey = GetAppKey(15, true),
                 IsIoTHubDevice = true,
             };
             // Device16_ABP: used for same DevAddr test
             Device16_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(16),
-                AppSKey = GetKey32(16),
-                NwkSKey = GetKey32(16),
+                AppSKey = GetAppSessionKey(16),
+                NwkSKey = GetNetworkSessionKey(16),
                 DevAddr = new DevAddr(0x00000016),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -408,8 +418,8 @@ namespace LoRaWan.Tests.E2E
             Device17_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(17),
-                AppSKey = GetKey32(17),
-                NwkSKey = GetKey32(17),
+                AppSKey = GetAppSessionKey(17),
+                NwkSKey = GetNetworkSessionKey(17),
                 DevAddr = Device16_ABP.DevAddr, // MUST match DevAddr from Device16
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -419,8 +429,8 @@ namespace LoRaWan.Tests.E2E
             Device18_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(18),
-                AppSKey = GetKey32(18),
-                NwkSKey = GetKey32(18),
+                AppSKey = GetAppSessionKey(18),
+                NwkSKey = GetNetworkSessionKey(18),
                 DevAddr = new DevAddr(0x00000018),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true
@@ -430,8 +440,8 @@ namespace LoRaWan.Tests.E2E
             Device19_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(19),
-                AppSKey = GetKey32(19),
-                NwkSKey = GetKey32(19),
+                AppSKey = GetAppSessionKey(19),
+                NwkSKey = GetNetworkSessionKey(19),
                 DevAddr = new DevAddr(0x00000019),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true
@@ -442,7 +452,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(20),
                 AppEUI = GetKey16(20),
-                AppKey = GetKey32(20),
+                AppKey = GetAppKey(20),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 RX2DataRate = 3,
@@ -453,7 +463,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(20, true),
                 AppEUI = GetKey16(20, true),
-                AppKey = GetKey32(20, true),
+                AppKey = GetAppKey(20, true),
                 IsIoTHubDevice = true,
                 RX2DataRate = 3,
                 PreferredWindow = 2
@@ -463,8 +473,8 @@ namespace LoRaWan.Tests.E2E
             Device21_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(21),
-                AppSKey = GetKey32(21),
-                NwkSKey = GetKey32(21),
+                AppSKey = GetAppSessionKey(21),
+                NwkSKey = GetNetworkSessionKey(21),
                 DevAddr = new DevAddr(0x00000021),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -475,8 +485,8 @@ namespace LoRaWan.Tests.E2E
             Device22_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(22),
-                AppSKey = GetKey32(22),
-                NwkSKey = GetKey32(22),
+                AppSKey = GetAppSessionKey(22),
+                NwkSKey = GetNetworkSessionKey(22),
                 DevAddr = new DevAddr(0x00000022),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -487,7 +497,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(23),
                 AppEUI = GetKey16(23),
-                AppKey = GetKey32(23),
+                AppKey = GetAppKey(23),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
             };
@@ -496,7 +506,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(23, true),
                 AppEUI = GetKey16(23, true),
-                AppKey = GetKey32(23, true),
+                AppKey = GetAppKey(23, true),
                 IsIoTHubDevice = true
             };
 
@@ -504,10 +514,9 @@ namespace LoRaWan.Tests.E2E
             Device24_ABP = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(24),
-                AppSKey = GetKey32(24),
-                NwkSKey = GetKey32(24),
+                AppSKey = GetAppSessionKey(24),
+                NwkSKey = GetNetworkSessionKey(24),
                 DevAddr = new DevAddr(0x00000024),
-                GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 ClassType = 'C',
             };
@@ -516,8 +525,8 @@ namespace LoRaWan.Tests.E2E
             Device25_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000025",
-                AppSKey = "00000000000000000000000000000025",
-                NwkSKey = "00000000000000000000000000000025",
+                AppSKey = GetAppSessionKey(25),
+                NwkSKey = GetNetworkSessionKey(25),
                 DevAddr = new DevAddr(0x00000025),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -528,8 +537,8 @@ namespace LoRaWan.Tests.E2E
             Device26_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000026",
-                AppSKey = "00000000000000000000000000000026",
-                NwkSKey = "00000000000000000000000000000026",
+                AppSKey = GetAppSessionKey(26),
+                NwkSKey = GetNetworkSessionKey(26),
                 DevAddr = new DevAddr(0x00000026),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true
@@ -539,15 +548,15 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = "0000000000000027",
                 AppEUI = "0000000000000027",
-                AppKey = "00000000000000000000000000000027",
+                AppKey = GetAppKey(27),
                 IsIoTHubDevice = true
             };
 
             Device28_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000028",
-                AppSKey = "00000000000000000000000000000028",
-                NwkSKey = "00000000000000000000000000000028",
+                AppSKey = GetAppSessionKey(28),
+                NwkSKey = GetNetworkSessionKey(28),
                 DevAddr = new DevAddr(0x00000027),
                 IsIoTHubDevice = true,
                 Deduplication = "Drop"
@@ -556,8 +565,8 @@ namespace LoRaWan.Tests.E2E
             Device29_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000029",
-                AppSKey = "00000000000000000000000000000029",
-                NwkSKey = "00000000000000000000000000000029",
+                AppSKey = GetAppSessionKey(29),
+                NwkSKey = GetNetworkSessionKey(29),
                 DevAddr = new DevAddr(0x00000029),
                 IsIoTHubDevice = true,
                 Deduplication = "Mark"
@@ -567,7 +576,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = GetKey16(30),
                 AppEUI = GetKey16(30),
-                AppKey = GetKey32(30),
+                AppKey = GetAppKey(30),
                 IsIoTHubDevice = true
             };
 
@@ -575,7 +584,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = "0000000000000031",
                 AppEUI = "0000000000000031",
-                AppKey = "00000000000000000000000000000031",
+                AppKey = GetAppKey(31),
                 IsIoTHubDevice = true,
                 Deduplication = "Drop"
             };
@@ -583,8 +592,8 @@ namespace LoRaWan.Tests.E2E
             Device32_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000032",
-                AppSKey = "00000000000000000000000000000032",
-                NwkSKey = "00000000000000000000000000000032",
+                AppSKey = GetAppSessionKey(32),
+                NwkSKey = GetNetworkSessionKey(32),
                 DevAddr = new DevAddr(0x00000032),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true
@@ -594,7 +603,7 @@ namespace LoRaWan.Tests.E2E
             {
                 DeviceID = "0000000000000033",
                 AppEUI = "0000000000000033",
-                AppKey = "00000000000000000000000000000033",
+                AppKey = GetAppKey(33),
                 IsIoTHubDevice = true
             };
         }

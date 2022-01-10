@@ -334,7 +334,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 connectionMgr.Verify(x => x.Release(device), Times.Once);
             }
         }
-        private static LoRaDevice CreateTestDevice() => new LoRaDevice(new DevAddr(0xffffffff), "0000000000000000", null) { NwkSKey = "AAAAAAAA" };
+        private static LoRaDevice CreateTestDevice() => new LoRaDevice(new DevAddr(0xffffffff), "0000000000000000", null) { NwkSKey = TestKeys.CreateNetworkSessionKey(0xAAAAAAAA) };
 
         private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
 

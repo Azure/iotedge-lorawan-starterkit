@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Common
         // Application Key
         // Dynamically activated devices (OTAA) use the Application Key (AppKey)
         // to derive the two session keys during the activation procedure
-        public string AppKey { get; set; }
+        public AppKey? AppKey { get; set; }
 
         // 32 bit device address (non-unique)
         // LoRaWAN devices have a 64 bit unique identifier that is assigned to the device
@@ -31,12 +31,12 @@ namespace LoRaWan.Tests.Common
 
         // Application Session Key
         // Used for encryption and decryption of the payload
-        public string AppSKey { get; set; }
+        public AppSessionKey? AppSKey { get; set; }
 
         // Network Session Key
         // Used for interaction between the device and Network Server.
         // This key is used to check the validity of messages (MIC check)
-        public string NwkSKey { get; set; }
+        public NetworkSessionKey? NwkSKey { get; set; }
 
         // Associated IoT Edge device
         public string GatewayID { get; set; }
@@ -72,8 +72,8 @@ namespace LoRaWan.Tests.Common
             if (!string.IsNullOrEmpty(AppEUI))
                 desiredProperties[nameof(AppEUI)] = AppEUI;
 
-            if (!string.IsNullOrEmpty(AppKey))
-                desiredProperties[nameof(AppKey)] = AppKey;
+            if (AppKey is { } someAppKey)
+                desiredProperties[nameof(AppKey)] = someAppKey.ToString();
 
             if (!string.IsNullOrEmpty(GatewayID))
                 desiredProperties[nameof(GatewayID)] = GatewayID;
@@ -81,11 +81,11 @@ namespace LoRaWan.Tests.Common
             if (!string.IsNullOrEmpty(SensorDecoder))
                 desiredProperties[nameof(SensorDecoder)] = SensorDecoder;
 
-            if (!string.IsNullOrEmpty(AppSKey))
-                desiredProperties[nameof(AppSKey)] = AppSKey;
+            if (AppSKey is { } someAppSessionKey)
+                desiredProperties[nameof(AppSKey)] = someAppSessionKey.ToString();
 
-            if (!string.IsNullOrEmpty(NwkSKey))
-                desiredProperties[nameof(NwkSKey)] = NwkSKey;
+            if (NwkSKey is { } someNetworkSessionKey)
+                desiredProperties[nameof(NwkSKey)] = someNetworkSessionKey.ToString();
 
             if (DevAddr is { } someDevAddr)
                 desiredProperties[nameof(DevAddr)] = someDevAddr.ToString();
@@ -131,8 +131,8 @@ namespace LoRaWan.Tests.Common
                 DeviceID = value16,
                 GatewayID = gatewayID,
                 SensorDecoder = sensorDecoder,
-                AppSKey = value32,
-                NwkSKey = value32,
+                AppSKey = AppSessionKey.Parse(value32),
+                NwkSKey = NetworkSessionKey.Parse(value32),
                 DevAddr = LoRaWan.DevAddr.Parse(value8) with { NetworkId = unchecked((byte)netId & 0x7f) },
                 ClassType = deviceClassType,
                 Supports32BitFCnt = supports32BitFcnt
@@ -160,7 +160,7 @@ namespace LoRaWan.Tests.Common
             {
                 DeviceID = value16,
                 AppEUI = value16,
-                AppKey = value32,
+                AppKey = LoRaWan.AppKey.Parse(value32),
                 GatewayID = gatewayID,
                 SensorDecoder = sensorDecoder,
                 ClassType = deviceClassType,

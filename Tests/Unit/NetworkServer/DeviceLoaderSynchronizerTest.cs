@@ -120,8 +120,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
-            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "pk") {
-                GatewayId = gatewayId, NwkSKey = simulatedDevice.NwkSKey
+            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "pk")
+            {
+                GatewayId = gatewayId,
+                NwkSKey = simulatedDevice.NwkSKey.Value
             };
             apiService.Setup(x => x.SearchByDevAddrAsync(It.IsAny<DevAddr>()))
                 .ReturnsAsync(new SearchDevicesResult(iotHubDeviceInfo.AsList()));
@@ -164,7 +166,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "pk")
             {
                 GatewayId = "a_different_one",
-                NwkSKey = simulatedDevice.NwkSKey
+                NwkSKey = simulatedDevice.NwkSKey.Value
             };
 
             apiService.Setup(x => x.SearchByDevAddrAsync(It.IsAny<DevAddr>()))
@@ -234,7 +236,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             _ = target.LoadAsync();
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", appSKey: simulatedDevice.AppSKey, nwkSKey: "00000000000000000000000000EEAAFF");
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", appSKey: simulatedDevice.AppSKey, nwkSKey: TestKeys.CreateNetworkSessionKey(0xEEAAFF));
 
             using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);

@@ -44,5 +44,15 @@ namespace LoRaWan.Tests.Common
                 result.Add(a, b, c);
             return result;
         }
+
+        public static TheoryData<T1, T2, T3, T4> From<T1, T2, T3, T4>(IEnumerable<(T1, T2, T3, T4)> data)
+        {
+            if (data is null) throw new ArgumentNullException(nameof(data));
+
+            var result = new TheoryData<T1, T2, T3, T4>();
+            foreach (var (a, b, c, d) in data)
+                result.Add(a, b, c, d);
+            return result;
+        }
     }
 }

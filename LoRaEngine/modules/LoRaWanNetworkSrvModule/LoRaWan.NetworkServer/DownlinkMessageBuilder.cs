@@ -74,6 +74,9 @@ namespace LoRaWan.NetworkServer
                 ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
                 : null;
 
+            if (loRaRegion is DwellTimeLimitedRegion someRegion)
+                someRegion.UseDwellTimeSetting(loRaDevice.ReportedDwellTimeSetting);
+
             if (receiveWindow == Constants.ReceiveWindow2)
             {
                 lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
@@ -208,9 +211,9 @@ namespace LoRaWan.NetworkServer
             return new DownlinkMessageBuilderResponse(downlinkMessage, isMessageTooLong, receiveWindow);
         }
 
-        private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, ushort lnsRxDelay, LoRaPayloadData loRaMessage, uint antennaPreference = 0)
+        private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, ushort lnsRxDelay, LoRaPayloadData loRaMessage, uint? antennaPreference = null)
         {
-            var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey);
+            var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey.Value, loRaDevice.NwkSKey.Value);
             var downlinkMessage = new DownlinkMessage(
                 messageBytes,
                 xTime,
@@ -363,6 +366,7 @@ namespace LoRaWan.NetworkServer
                         case Cid.DevStatusCmd:
                         case Cid.NewChannelCmd:
                         case Cid.RXTimingCmd:
+                        case Cid.TxParamSetupCmd:
                         default:
                             break;
                     }
