@@ -232,6 +232,14 @@ namespace LoRaWan.NetworkServer
                         loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
                     }
 
+                    if (loraPayload.MacCommands is { Count: > 0 } macCommands)
+                    {
+                        foreach (var macCommand in macCommands)
+                        {
+                            this.logger.LogDebug($"{macCommand.Cid} mac command detected in upstream payload: {macCommand}");
+                        }
+                    }
+
                     if (!skipDownstreamToAvoidCollisions && loraPayload.IsMacAnswerRequired)
                     {
                         fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
