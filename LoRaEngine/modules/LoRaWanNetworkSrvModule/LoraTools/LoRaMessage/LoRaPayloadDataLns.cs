@@ -78,8 +78,7 @@ namespace LoRaTools.LoRaMessage
             // Fport can be empty if no commands
             Fport = port;
 
-            Mic = new byte[LoRaWan.Mic.Size];
-            _ = mic.Write(Mic.Span);
+            Mic = mic;
         }
     }
 }

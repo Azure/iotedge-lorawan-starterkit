@@ -6,10 +6,7 @@
 namespace LoRaTools.LoRaMessage
 {
     using System;
-    using System.Linq;
     using LoRaWan;
-    using Org.BouncyCastle.Crypto.Parameters;
-    using Org.BouncyCastle.Security;
 
     /// <summary>
     /// The LoRaPayloadWrapper class wraps all the information any LoRa message share in common.
@@ -31,7 +28,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets message Integrity Code.
         /// </summary>
-        public Memory<byte> Mic { get; set; }
+        public Mic? Mic { get; set; }
 
         /// <summary>
         /// Gets or sets assigned Dev Address, TODO change??.
@@ -54,7 +51,7 @@ namespace LoRaTools.LoRaMessage
             RawMessage = inputMessage ?? throw new ArgumentNullException(nameof(inputMessage));
             MHdr = new MacHeader(RawMessage[0]);
             // MIC 4 last bytes
-            Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
+            Mic = LoRaWan.Mic.Read(RawMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
         /// <summary>
@@ -104,27 +101,6 @@ namespace LoRaTools.LoRaMessage
         /// <param name="key">The App Key.</param>
         /// <returns>the encrypted bytes.</returns>
         public abstract byte[] PerformEncryption(AppKey key);
-
-        /// <summary>
-        /// A Method to calculate the Mic of the message.
-        /// </summary>
-        /// <returns> the Mic bytes.</returns>
-        public byte[] CalculateMic(AppKey appKey, byte[] algoinput)
-        {
-            if (algoinput is null) throw new ArgumentNullException(nameof(algoinput));
-
-            var mac = MacUtilities.GetMac("AESCMAC");
-            var rawKey = new byte[AppKey.Size];
-            _ = appKey.Write(rawKey);
-            var key = new KeyParameter(rawKey);
-            mac.Init(key);
-            var rfu = new byte[1];
-            rfu[0] = 0x0;
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            Mic = result.Take(4).ToArray();
-            return Mic.ToArray();
-        }
 
         public void Reset32BitBlockInfo()
         {

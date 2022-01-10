@@ -145,7 +145,7 @@ namespace LoRaTools.LoRaMessage
                 MacCommands = MacCommand.CreateMacCommandFromBytes(Fopts);
             }
 
-            Mic = new Memory<byte>(inputMessage, inputMessage.Length - 4, 4);
+            Mic = LoRaWan.Mic.Read(inputMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
         /// <summary>
@@ -255,29 +255,11 @@ namespace LoRaTools.LoRaMessage
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             Ensure32BitFcntValue(server32BitFcnt);
-            var byteMsg = GetByteMessage();
-
-            var mac = MacUtilities.GetMac("AESCMAC");
-            var rawKey = new byte[NetworkSessionKey.Size];
-            _ = key.Write(rawKey);
-            mac.Init(new KeyParameter(rawKey));
-
+            // do not include MIC as it was already set
+            var byteMsg = GetByteMessage()[..^4].ToArray();
             var fcntBytes = GetFcntBlockInfo();
 
-            byte[] block =
-            {
-                0x49,
-                0x00, 0x00, 0x00, 0x00,
-                (byte)Direction,
-                /* DevAddr */0x00, 0x00, 0x00, 0x00,
-                fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)(byteMsg.Length - 4)
-            };
-            _ = DevAddr.Write(block.AsSpan(6));
-            var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
-
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
+            return Mic == LoRaWan.Mic.ComputeForData(key, (byte)Direction, DevAddr, fcntBytes, byteMsg);
         }
 
         public void SetMic(NetworkSessionKey nwskey)
@@ -285,29 +267,8 @@ namespace LoRaTools.LoRaMessage
             var byteMsg = GetByteMessage();
             var fcntBytes = GetFcntBlockInfo();
 
-            var mac = MacUtilities.GetMac("AESCMAC");
-            var rawKey = new byte[NetworkSessionKey.Size];
-            _ = nwskey.Write(rawKey);
-            var key = new KeyParameter(rawKey);
-            mac.Init(key);
-            byte[] block =
-            {
-                0x49,
-                0x00, 0x00, 0x00, 0x00,
-                (byte)Direction,
-                /* DevAddr */0x00, 0x00, 0x00, 0x00,
-                fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)byteMsg.Length
-            };
-            _ = DevAddr.Write(block.AsSpan(6));
-            var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
-
-            // byte[] result = new byte[16];
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            // var res = result.Take(4).ToArray();
-            // Array.Copy(result.Take(4).ToArray(), 0, RawMessage, RawMessage.Length - 4, 4);
-            Array.Copy(result, 0, RawMessage, RawMessage.Length - 4, 4);
-            Mic = new Memory<byte>(RawMessage, RawMessage.Length - 4, 4);
+            Mic = LoRaWan.Mic.ComputeForData(nwskey, (byte)Direction, DevAddr, fcntBytes, byteMsg);
+            _ = Mic.Value.Write(RawMessage.AsSpan(RawMessage.Length - 4, 4));
         }
 
         /// <summary>
@@ -453,9 +414,11 @@ namespace LoRaTools.LoRaMessage
                 messageArray.AddRange(Frmpayload.ToArray());
             }
 
-            if (Mic.Span != null)
+            if (Mic is { } someMic)
             {
-                messageArray.AddRange(Mic.Span.ToArray());
+                var micBytes = new byte[4];
+                _ = someMic.Write(micBytes);
+                messageArray.AddRange(micBytes);
             }
 
             return messageArray.ToArray();

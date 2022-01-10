@@ -4,6 +4,7 @@
 namespace LoRaTools.LoRaMessage
 {
     using System;
+    using System.Buffers.Binary;
     using System.Linq;
     using LoRaTools.Utils;
     using LoRaWan;
@@ -42,7 +43,10 @@ namespace LoRaTools.LoRaMessage
         {
         }
 
-        public LoRaPayloadJoinRequest(string appEUI, string devEUI, DevNonce devNonce)
+        /// <summary>
+        /// Constructor used for test code only.
+        /// </summary>
+        internal LoRaPayloadJoinRequest(string appEUI, string devEUI, DevNonce devNonce, AppKey key)
         {
             // Mhdr is always 0 in case of a join request
             MHdr = new MacHeader(MacMessageType.JoinRequest);
@@ -58,64 +62,26 @@ namespace LoRaTools.LoRaMessage
             AppEUI = new Memory<byte>(appEUIBytes);
             DevEUI = new Memory<byte>(devEUIBytes);
             DevNonce = devNonce;
-            Mic = default;
+            Mic = PerformMic(key);
         }
 
-        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
+        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null) =>
+            throw new NotImplementedException();
+
+        public override bool CheckMic(AppKey key) => Mic == PerformMic(key);
+
+        private Mic PerformMic(AppKey key)
         {
-            return Mic.ToArray().SequenceEqual(PerformMic(key));
-        }
-
-        public override bool CheckMic(AppKey key) => Mic.ToArray().SequenceEqual(PerformMic(key));
-
-        public void SetMic(AppKey appKey)
-        {
-            Mic = PerformMic(appKey);
-        }
-
-        private byte[] PerformMic(NetworkSessionKey key)
-        {
-            var rawKey = new byte[NetworkSessionKey.Size];
-            _ = key.Write(rawKey);
-            return PerformMic(rawKey);
-        }
-
-        private byte[] PerformMic(AppKey key)
-        {
-            var rawKey = new byte[AppKey.Size];
-            _ = key.Write(rawKey);
-            return PerformMic(rawKey);
-        }
-
-        private byte[] PerformMic(byte[] rawKey)
-        {
-            var mac = MacUtilities.GetMac("AESCMAC");
-
-            var key = new KeyParameter(rawKey);
-            mac.Init(key);
-            var algoInputBytes = new byte[19];
-            var algoInput = new Memory<byte>(algoInputBytes);
-
-            var offset = 0;
-            _ = MHdr.Write(algoInput.Span);
-            offset += MacHeader.Size;
-            AppEUI.CopyTo(algoInput[offset..]);
-            offset += AppEUI.Length;
-            DevEUI.CopyTo(algoInput[offset..]);
-            offset += DevEUI.Length;
-            _ = DevNonce.Write(algoInput[offset..].Span);
-
-            mac.BlockUpdate(algoInputBytes, 0, algoInputBytes.Length);
-
-            var result = MacUtilities.DoFinal(mac);
-            return result.Take(4).ToArray();
+            var joinEui = JoinEui.Read(AppEUI.Span);
+            var devEui = DevEui.Read(DevEUI.Span);
+            return LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, joinEui, devEui, DevNonce);
         }
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
 
         public override byte[] GetByteMessage()
         {
-            var messageArray = new byte[MacHeader.Size + AppEUI.Length + DevEUI.Length + DevNonce.Size + Mic.Length];
+            var messageArray = new byte[MacHeader.Size + AppEUI.Length + DevEUI.Length + DevNonce.Size + LoRaWan.Mic.Size];
             var start = 0;
             _ = MHdr.Write(messageArray.AsSpan(start));
             start += MacHeader.Size;
@@ -125,9 +91,10 @@ namespace LoRaTools.LoRaMessage
             start += DevEUI.Length;
             _ = DevNonce.Write(messageArray.AsSpan(start));
             start += DevNonce.Size;
-            if (!Mic.Span.IsEmpty)
+
+            if (Mic is { } someMic)
             {
-                Mic.Span.CopyTo(messageArray.AsSpan(start));
+                _ = someMic.Write(messageArray.AsSpan(start));
             }
 
             return messageArray;
