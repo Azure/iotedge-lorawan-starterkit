@@ -2,9 +2,9 @@
 
 **Feature**: [#946](https://github.com/Azure/iotedge-lorawan-starterkit/issues/946)
 
-**Date**: 23 December 2021
+**Date**: 10 January 2022
 
-**Author**: Spyros Giannakakis
+**Authors**: Spyros Giannakakis, Patrick Schuler
 
 **Status**: Accepted
 __________
@@ -34,7 +34,7 @@ insights as to how we arrived at the current solution.
 
 ## Goals of the deduplication
 
-Besides dropping duplicates accordingly, we must:
+Besides dropping duplicates correctly, we must:
 
 - Avoid calling the Azure Function more than required to not incur extra costs or
   performance/scale overhead.
@@ -54,7 +54,7 @@ calls to external services need to be made for the detection. In scope for this 
 - Class A and C devices
 
 For the detection, a in-memory cache is utilised with a sliding expiration of 1
-minute. The value of the enetry is always the concentrator from where we received the message. The
+minute. The value of the entry is always the concentrator from where we received the message. The
 key depends on the type of message.
 
 #### a. Data messages
@@ -79,10 +79,10 @@ flowchart LR;
 
 1. LNS receives message A from LBS1 for the first time. Message is marked as `NonDuplicate` and a
    cache entry is created.
-1. LNS receives again Message A this time from LBS2. LNS checks its local cache. If it's a cache
-miss, the message is marked as a `NonDuplicate` and considered as a new telemetry. This can happen
-for example if the second message takes longer than the retention period to arrive. If it's a cache hit, the
-following happens:
+1. LNS receives again message A this time from LBS2. LNS checks its local cache. If it's a cache
+   miss, the message is marked as a `NonDuplicate` and considered as a new telemetry. This can
+   happen for example if the second message takes longer than the retention period to arrive. If
+   it's a cache hit, the following happens:
 
 ```mermaid
 stateDiagram-v2
@@ -120,7 +120,7 @@ flowchart LR;
   it's marked as a `NonDuplicate` as before. If it's a cache hit the message is marked as
   `DuplicateDueToResubmission` independently of which deduplication strategy is used.
   
-#### Further handling of messages based on their duplication status
+#### Further processing of messages based on their duplication status
 
 ##### Short version
 
@@ -131,10 +131,12 @@ flowchart LR;
 | DuplicateDueToResubmission | depends | depends |
 | Duplicate | ❌ | ❌ |
 
+where ✔ indicates that the message is processed and ❌ indicates message is dropped.
+
 ##### Longer version
 
 If message is `NonDuplicate`: Upstream✔, Downstream✔ (if requires confirmation)  
-We always want to process unique messages up and if they need to downstream.
+We always want to process unique messages up and if they need to, also downstream.
 
 If message is `SoftDuplicate`: Upstream✔, Downstream❌.  
 We want to be aware of such messages on IoTHub but we skip sending downstream if they need confirmation because of possible collisions on the air.
@@ -189,17 +191,18 @@ We do not want to process the message further, no calls to the Azure Function or
 
 Here we are detecting requests as duplicates solely based on their AppEui, DevEui and DevNonce.
 If there is a cache hit (a request with the same values for these fields within the retention period
-of the cache) the request is considered a duplicate and dropped immediately.
+of the cache) the request is considered a `Duplicate` and dropped immediately. We are not
+differentiating the cases of `SoftDuplicate` and `DuplicateDueToResubmission` here.
 
 #### General notes
 
-- Deduplication at this level is one of the first things that happen before a request is processed. We considered
-  even moving this higher up the processing stack when we construct the LNS DTOs. The problem with
-  this approach was that at that stage we don't have the deduplication strategy employed. The
-  strategy affects the decision making as we saw before and it is stored on the device twin which is
-  available later on the processing stack.
+- Deduplication at this level is one of the first things that happen before a request is processed.
+  We considered even moving this higher up the processing stack when we construct the LNS DTOs. The
+  problem with this approach was that at that stage we don't yet have the deduplication strategy
+  information. The strategy affects the decision making as we saw before and it is stored on the device
+  twin which is available later on the processing stack.
 - The frame counter strategy does not influence the way this deduplication works but influences the
-  deduplcation across network servers.
+  deduplication between network servers.
 - This logic is tested with a combination of unit, integration and E2E tests.
 
 ### 2. Deduplication between different network servers
