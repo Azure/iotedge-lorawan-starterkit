@@ -51,16 +51,16 @@ namespace LoRaWan
 
         public Span<byte> Write(Span<byte> buffer)
         {
-            buffer[2] = (byte)(this.value >> 16);
-            buffer[1] = (byte)(this.value >> 8);
-            buffer[0] = (byte)this.value;
+            unchecked
+            {
+                buffer[0] = (byte)this.value;
+                buffer[1] = (byte)(this.value >> 8);
+                buffer[2] = (byte)(this.value >> 16);
+            }
             return buffer[Size..];
         }
 
-        public static NetId Read(ReadOnlySpan<byte> buffer)
-        {
-            var value = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
-            return new NetId(value);
-        }
+        public static NetId Read(ReadOnlySpan<byte> buffer) =>
+            new(buffer[0] | (buffer[1] << 8) | (buffer[2] << 16));
     }
 }

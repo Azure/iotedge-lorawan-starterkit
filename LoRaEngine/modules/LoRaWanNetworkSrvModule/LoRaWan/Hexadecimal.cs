@@ -105,19 +105,6 @@ namespace LoRaWan
             return true;
         }
 
-        public static bool TryParse(ReadOnlySpan<char> chars, out int value, char? separator = null)
-        {
-            value = default;
-            const int size = sizeof(int);
-            if (chars.IsEmpty || chars.Length != (separator is null ? size * 2 : (size * 3) - 1))
-                return false;
-            Span<byte> bytes = stackalloc byte[size];
-            if (!TryParse(chars, bytes, separator))
-                return false;
-            value = BinaryPrimitives.ReadInt32BigEndian(bytes);
-            return true;
-        }
-
         /// <remarks>
         /// For an output of over 128 bytes, this method makes a heap allocation for a temporary
         /// buffer of the expected size. Otherwise all parsing induces no heap allocation.
