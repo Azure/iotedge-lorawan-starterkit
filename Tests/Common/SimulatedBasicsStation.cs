@@ -68,9 +68,9 @@ namespace LoRaWan.Tests.Common
 
                 await Task.Delay(5000);
 
-                // We could take here additional information e.g. the basicsstation region.
+                // We could take here additional information e.g. the basicsstation region or the address.
                 Assert.Single(routerReceivedMessage);
-                await routerWebsocketClient.Stop(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "closing WS");
+                await routerWebsocketClient.Stop(WebSocketCloseStatus.NormalClosure, "closing WS");
                 var factory = new Func<ClientWebSocket>(() => new ClientWebSocket
                 {
                     Options =
@@ -79,7 +79,7 @@ namespace LoRaWan.Tests.Common
                         }
                 });
 
-                DataWebsocketClient = new WebsocketClient(new Uri(LnsUri, $"router-data/{stationEUI}"), factory)
+                DataWebsocketClient = new WebsocketClient(new Uri(LnsUri, $"router-data/{ stationEUI }"), factory)
                 {
                     ReconnectTimeout = TimeSpan.FromSeconds(5)
                 };
@@ -94,13 +94,10 @@ namespace LoRaWan.Tests.Common
                     {
                         Func<string, bool> subscriberToRemove = null;
 
-                        foreach (var subscriber in this.subscribers.Where(subscriber =>     subscriber(msg.Text)))
+                        foreach (var subscriber in this.subscribers.Where(subscriber => subscriber(msg.Text)))
                         {
-                            if (subscriber(msg.Text))
-                            {
-                                subscriberToRemove = subscriber;
-                                break;
-                            }
+                            subscriberToRemove = subscriber;
+                            break;
                         }
 
                         if (subscriberToRemove != null)
@@ -152,7 +149,7 @@ namespace LoRaWan.Tests.Common
                     snr = LoRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio
                 }
             });
-        
+
             await SendMessageAsync(msg);
 
             // TestLogger.Log($"[{LoRaDevice.DevAddr}] Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.UTF8.GetString(gatewayInfo)}");

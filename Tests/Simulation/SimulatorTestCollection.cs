@@ -41,13 +41,6 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Ten_Devices_Sending_Messages_At_Same_Time()
         {
-            var listSimulatedDevices = new List<SimulatedDevice>();
-            foreach (var device in TestFixtureSim.DeviceRange1000_ABP)
-            {
-                var simulatedDevice = new SimulatedDevice(device);
-                listSimulatedDevices.Add(simulatedDevice);
-            }
-
             var networkServerIPEndpoint = CreateNetworkServerEndpoint();
             using (var simulatedBasicsStation = new SimulatedBasicsStation("B8-27-EB-FF-FE-A3-BE-42", networkServerIPEndpoint))
             {

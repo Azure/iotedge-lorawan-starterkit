@@ -195,6 +195,12 @@ namespace LoRaWan.Tests.Common
                 var appNonce = payload.AppNonce.ToArray();
                 Array.Reverse(appNonce);
                 var devNonce = DevNonce;
+
+                if (LoRaDevice.AppKey is null)
+                {
+                    throw new ArgumentException(nameof(LoRaDevice.AppKey));
+                }
+
                 var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(appNonce, netid, devNonce, LoRaDevice.AppKey.Value);
                 var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(appNonce, netid, devNonce, LoRaDevice.AppKey.Value);
                 var devAddr = payload.DevAddr;
