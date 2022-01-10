@@ -4,6 +4,7 @@
 namespace LoRaWan
 {
     using System;
+    using System.Buffers.Binary;
     using System.Globalization;
 
     /// <summary>
@@ -31,5 +32,36 @@ namespace LoRaWan
         public int NetworkId => this.value & 0b111_1111;
 
         public override string ToString() => this.value.ToString("X6", CultureInfo.InvariantCulture);
+
+        public static NetId Parse(ReadOnlySpan<char> input) =>
+            TryParse(input, out var result) ? result : throw new FormatException();
+
+        public static bool TryParse(ReadOnlySpan<char> input, out NetId result)
+        {
+            if (int.TryParse(input, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var raw))
+            {
+                result = new NetId(raw);
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            buffer[2] = (byte)(this.value >> 16);
+            buffer[1] = (byte)(this.value >> 8);
+            buffer[0] = (byte)this.value;
+            return buffer[Size..];
+        }
+
+        public static NetId Read(ReadOnlySpan<byte> buffer)
+        {
+            var value = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
+            return new NetId(value);
+        }
     }
 }

@@ -134,14 +134,7 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
-                var netId = new byte[3]
-                {
-                    netIdBytes[0],
-                    netIdBytes[1],
-                    netIdBytes[2]
-                };
-
+                var netId = this.configuration.NetId;
                 var appNonce = OTAAKeysGenerator.GetAppNonce();
                 var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
                 var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
@@ -166,7 +159,7 @@ namespace LoRaWan.NetworkServer
                     AppSKey = appSKey,
                     AppNonce = appNonce,
                     DevNonce = joinReq.DevNonce,
-                    NetID = ConversionHelper.ByteArrayToString(netId),
+                    NetID = netId,
                     Region = request.Region.LoRaRegion,
                     PreferredGatewayID = this.configuration.GatewayID,
                 };
@@ -225,7 +218,6 @@ namespace LoRaWan.NetworkServer
                 this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                 // Build join accept downlink message
-                Array.Reverse(netId);
                 Array.Reverse(appNonceBytes);
 
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
@@ -268,7 +260,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
-                    ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
+                    netId, // NETID 0 / 1 is default test
                     devAddr, // todo add device address management
                     appNonceBytes,
                     dlSettings,

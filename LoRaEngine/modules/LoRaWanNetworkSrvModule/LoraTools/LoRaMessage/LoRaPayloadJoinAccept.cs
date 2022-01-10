@@ -27,7 +27,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets device home network aka Home_NetId.
         /// </summary>
-        public Memory<byte> NetID { get; set; }
+        public NetId NetID { get; set; }
 
         /// <summary>
         /// Gets or sets dLSettings.
@@ -57,7 +57,7 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept()
         { }
 
-        public LoRaPayloadJoinAccept(string netId, DevAddr devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
+        public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
             var rxDelay = new byte[1];
             if (rxDelayValue is >= 0 and < MaxRxDelayValue)
@@ -71,8 +71,8 @@ namespace LoRaTools.LoRaMessage
             Array.Copy(new byte[] { 32 }, 0, RawMessage, 0, 1);
             AppNonce = new Memory<byte>(RawMessage, 1, 3);
             Array.Copy(appNonce, 0, RawMessage, 1, 3);
-            NetID = new Memory<byte>(RawMessage, 4, 3);
-            Array.Copy(ConversionHelper.StringToByteArray(netId), 0, RawMessage, 4, 3);
+            NetID = netId;
+            _ = NetID.Write(RawMessage.AsSpan(4, 3));
             DevAddr = devAddr;
             _ = devAddr.Write(RawMessage.AsSpan(7));
             DlSettings = new Memory<byte>(RawMessage, 11, 1);
@@ -91,7 +91,6 @@ namespace LoRaTools.LoRaMessage
             if (BitConverter.IsLittleEndian)
             {
                 AppNonce.Span.Reverse();
-                NetID.Span.Reverse();
                 DlSettings.Span.Reverse();
                 RxDelay.Span.Reverse();
             }
@@ -139,10 +138,7 @@ namespace LoRaTools.LoRaMessage
             Array.Copy(inputMessage, 1, appNonce, 0, 3);
             Array.Reverse(appNonce);
             AppNonce = new Memory<byte>(appNonce);
-            var netID = new byte[3];
-            Array.Copy(inputMessage, 4, netID, 0, 3);
-            Array.Reverse(netID);
-            NetID = new Memory<byte>(netID);
+            NetID = NetId.Read(inputMessage.AsSpan(3));
             DevAddr = DevAddr.Read(inputMessage.AsSpan(7));
             var dlSettings = new byte[1];
             Array.Copy(inputMessage, 11, dlSettings, 0, 1);
@@ -164,9 +160,12 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] PerformEncryption(AppKey key)
         {
+            var netIdBytes = new byte[NetId.Size];
+            _ = NetID.Write(netIdBytes);
+
             var pt =
                 AppNonce.ToArray()
-                        .Concat(NetID.ToArray())
+                        .Concat(netIdBytes)
                         .Concat(GetDevAddrBytes())
                         .Concat(DlSettings.ToArray())
                         .Concat(RxDelay.ToArray())
@@ -209,7 +208,10 @@ namespace LoRaTools.LoRaMessage
 
         public byte[] Serialize(AppKey appKey)
         {
-            var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(GetDevAddrBytes()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
+            var netId = new byte[NetId.Size];
+            _ = NetID.Write(netId);
+
+            var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(netId).Concat(GetDevAddrBytes()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)
                 algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
 

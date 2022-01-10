@@ -58,7 +58,7 @@ namespace LoRaWan.NetworkServer
 
         public DevNonce? DevNonce { get; set; }
 
-        public string NetID { get; set; }
+        public NetId? NetID { get; set; }
 
         public bool IsOurDevice { get; set; }
 
@@ -311,6 +311,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 DevNonce = reportedTwin.TryRead<ushort>(TwinProperty.DevNonce, out var someDevNonce) ? new DevNonce(someDevNonce) : null;
+                NetID = reportedTwin.TryRead<NetId>(TwinProperty.NetID, out var someNetId) ? someNetId : null;
 
                 // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
                 DesiredRX2DataRate = desiredTwin.SafeRead<DataRateIndex?>(TwinProperty.RX2DataRate);
