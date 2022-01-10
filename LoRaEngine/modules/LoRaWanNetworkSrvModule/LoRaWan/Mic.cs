@@ -6,6 +6,7 @@ namespace LoRaWan
     using System;
     using System.Buffers.Binary;
     using System.Globalization;
+    using System.Linq;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
@@ -28,6 +29,8 @@ namespace LoRaWan
             return buffer[Size..];
         }
 
+        public static Mic Read(ReadOnlySpan<byte> buffer) => new(BinaryPrimitives.ReadUInt32LittleEndian(buffer));
+
         //   The Message Integrity Code (MIC) ensures the integrity and authenticity of a message.
         //   The message integrity code is calculated over all the fields in the message and then added
         //   to the message. The following list shows what fields are used to calculate the MIC for each
@@ -43,12 +46,22 @@ namespace LoRaWan
 
         public static Mic ComputeForJoinRequest(AppKey appKey, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
         {
+            var keyBytes = new byte[AppKey.Size];
+            _ = appKey.Write(keyBytes);
+            return ComputeForJoinRequest(keyBytes, mhdr, joinEui, devEui, devNonce);
+        }
+
+        public static Mic ComputeForJoinRequest(NetworkSessionKey networkSessionKey, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
+        {
+            var keyBytes = new byte[NetworkSessionKey.Size];
+            _ = networkSessionKey.Write(keyBytes);
+            return ComputeForJoinRequest(keyBytes, mhdr, joinEui, devEui, devNonce);
+        }
+
+        private static Mic ComputeForJoinRequest(byte[] keyBytes, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
+        {
             var mac = MacUtilities.GetMac("AESCMAC");
 
-            var keyBytes = new byte[AppKey.Size];
-#pragma warning disable IDE0058 // Expression value is never used
-            appKey.Write(keyBytes);
-#pragma warning restore IDE0058 // Expression value is never used
             var key = new KeyParameter(keyBytes);
             mac.Init(key);
 
@@ -57,14 +70,65 @@ namespace LoRaWan
             buffer = mhdr.Write(buffer);
             buffer = joinEui.Write(buffer);
             buffer = devEui.Write(buffer);
-#pragma warning disable IDE0058 // Expression value is never used
-            devNonce.Write(buffer);
-#pragma warning restore IDE0058 // Expression value is never used
+            _ = devNonce.Write(buffer);
 
             mac.BlockUpdate(input, 0, input.Length);
             var cmac = MacUtilities.DoFinal(mac);
 
             return new Mic(BinaryPrimitives.ReadUInt32LittleEndian(cmac));
+        }
+
+        public static Mic ComputeForJoinAccept(AppKey appKey, MacHeader macHeader, Memory<byte> joinNonce, NetId netId, DevAddr devAddr, Memory<byte> dlSettings, Memory<byte> rxDelay, Memory<byte> cfList)
+        {
+            var algoInput = new byte[MacHeader.Size + joinNonce.Length + NetId.Size + DevAddr.Size + dlSettings.Length + rxDelay.Length + cfList.Length];
+            var index = 0;
+            _ = macHeader.Write(algoInput.AsSpan(index));
+            index += MacHeader.Size;
+            joinNonce.CopyTo(algoInput.AsMemory(index));
+            index += joinNonce.Length;
+            _ = netId.Write(algoInput.AsSpan(index));
+            index += NetId.Size;
+            _ = devAddr.Write(algoInput.AsSpan(index));
+            index += DevAddr.Size;
+            dlSettings.CopyTo(algoInput.AsMemory(index));
+            index += dlSettings.Length;
+            rxDelay.CopyTo(algoInput.AsMemory(index));
+            index += rxDelay.Length;
+            if (!cfList.IsEmpty)
+                cfList.CopyTo(algoInput.AsMemory(index));
+
+            var mac = MacUtilities.GetMac("AESCMAC");
+            var rawKey = new byte[AppKey.Size];
+            _ = appKey.Write(rawKey);
+            var key = new KeyParameter(rawKey);
+            mac.Init(key);
+            var rfu = new byte[1];
+            rfu[0] = 0x0;
+            mac.BlockUpdate(algoInput, 0, algoInput.Length);
+            return Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
+        }
+
+        public static Mic ComputeForData(NetworkSessionKey networkSessionKey, byte direction, DevAddr devAddr, byte[] fcnt, byte[] message)
+        {
+            if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
+            if (message is null) throw new ArgumentNullException(nameof(message));
+
+            var mac = MacUtilities.GetMac("AESCMAC");
+            var rawKey = new byte[NetworkSessionKey.Size];
+            _ = networkSessionKey.Write(rawKey);
+            mac.Init(new KeyParameter(rawKey));
+
+            byte[] block =
+            {
+                0x49, 0x00, 0x00, 0x00, 0x00, direction,
+                /* DevAddr */0x00, 0x00, 0x00, 0x00,
+                fcnt[0], fcnt[1], fcnt[2], fcnt[3], 0x00, (byte)message.Length
+            };
+            _ = devAddr.Write(block.AsSpan(6));
+            var algoinput = block.Concat(message).ToArray();
+
+            mac.BlockUpdate(algoinput, 0, algoinput.Length);
+            return Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
         }
     }
 }

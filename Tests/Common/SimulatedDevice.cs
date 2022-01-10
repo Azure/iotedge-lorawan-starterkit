@@ -82,10 +82,7 @@ namespace LoRaWan.Tests.Common
             }
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
-            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce);
-            joinRequest.SetMic((appkey ?? LoRaDevice.AppKey).Value);
-
-            return joinRequest;
+            return new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
         }
 
 

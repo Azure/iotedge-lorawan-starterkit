@@ -96,18 +96,21 @@ namespace LoRaTools.LoRaMessage
         {
         }
 
+        public LoRaPayloadData(ReadOnlyMemory<byte> inputMessage) : this(inputMessage.ToArray())
+        { }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Upstream Constructor (decode a LoRa Message from existing array of bytes).
         /// </summary>
         /// <param name="inputMessage">the upstream Constructor.</param>
-        public LoRaPayloadData(byte[] inputMessage)
+        private LoRaPayloadData(byte[] inputMessage)
             : base(inputMessage)
         {
             if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
 
             DevAddr = DevAddr.Read(inputMessage.AsSpan(1));
-            MessageType = new MacHeader(RawMessage[0]).MessageType;
+            MHdr = new MacHeader(RawMessage[0]);
 
             // in this case the payload is not downlink of our type
             if (MessageType is MacMessageType.ConfirmedDataDown or
@@ -121,7 +124,6 @@ namespace LoRaTools.LoRaMessage
                 Direction = 0;
             }
 
-            Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // Fctrl Frame Control Octet
             (FrameControlFlags, var foptsSize) = FrameControl.Decode(inputMessage[5]);
             // Fcnt
@@ -146,7 +148,7 @@ namespace LoRaTools.LoRaMessage
                 MacCommands = MacCommand.CreateMacCommandFromBytes(Fopts);
             }
 
-            Mic = new Memory<byte>(inputMessage, inputMessage.Length - 4, 4);
+            Mic = LoRaWan.Mic.Read(inputMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
         /// <summary>
@@ -186,10 +188,8 @@ namespace LoRaTools.LoRaMessage
 
             var macPyldSize = DevAddr.Size + FrameControl.Size + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
             RawMessage = new byte[1 + macPyldSize + 4];
-            Mhdr = new Memory<byte>(RawMessage, 0, 1);
-            RawMessage[0] = (byte)(new MacHeader(messageType));
-            MessageType = messageType;
-            // Array.Copy(mhdr, 0, RawMessage, 0, 1);
+            MHdr = new MacHeader(messageType);
+            RawMessage[0] = (byte)MHdr;
             DevAddr = devAddr;
             _ = devAddr.Write(RawMessage.AsSpan(1));
             FrameControlFlags = fctrlFlags;
@@ -258,29 +258,11 @@ namespace LoRaTools.LoRaMessage
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             Ensure32BitFcntValue(server32BitFcnt);
-            var byteMsg = GetByteMessage();
-
-            var mac = MacUtilities.GetMac("AESCMAC");
-            var rawKey = new byte[NetworkSessionKey.Size];
-            _ = key.Write(rawKey);
-            mac.Init(new KeyParameter(rawKey));
-
+            // do not include MIC as it was already set
+            var byteMsg = GetByteMessage()[..^4].ToArray();
             var fcntBytes = GetFcntBlockInfo();
 
-            byte[] block =
-            {
-                0x49,
-                0x00, 0x00, 0x00, 0x00,
-                (byte)Direction,
-                /* DevAddr */0x00, 0x00, 0x00, 0x00,
-                fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)(byteMsg.Length - 4)
-            };
-            _ = DevAddr.Write(block.AsSpan(6));
-            var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
-
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
+            return Mic == LoRaWan.Mic.ComputeForData(key, (byte)Direction, DevAddr, fcntBytes, byteMsg);
         }
 
         public void SetMic(NetworkSessionKey nwskey)
@@ -288,29 +270,8 @@ namespace LoRaTools.LoRaMessage
             var byteMsg = GetByteMessage();
             var fcntBytes = GetFcntBlockInfo();
 
-            var mac = MacUtilities.GetMac("AESCMAC");
-            var rawKey = new byte[NetworkSessionKey.Size];
-            _ = nwskey.Write(rawKey);
-            var key = new KeyParameter(rawKey);
-            mac.Init(key);
-            byte[] block =
-            {
-                0x49,
-                0x00, 0x00, 0x00, 0x00,
-                (byte)Direction,
-                /* DevAddr */0x00, 0x00, 0x00, 0x00,
-                fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)byteMsg.Length
-            };
-            _ = DevAddr.Write(block.AsSpan(6));
-            var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
-
-            // byte[] result = new byte[16];
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            // var res = result.Take(4).ToArray();
-            // Array.Copy(result.Take(4).ToArray(), 0, RawMessage, RawMessage.Length - 4, 4);
-            Array.Copy(result, 0, RawMessage, RawMessage.Length - 4, 4);
-            Mic = new Memory<byte>(RawMessage, RawMessage.Length - 4, 4);
+            Mic = LoRaWan.Mic.ComputeForData(nwskey, (byte)Direction, DevAddr, fcntBytes, byteMsg);
+            _ = Mic.Value.Write(RawMessage.AsSpan(RawMessage.Length - 4, 4));
         }
 
         /// <summary>
@@ -431,8 +392,10 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] GetByteMessage()
         {
-            var messageArray = new List<byte>();
-            messageArray.AddRange(Mhdr.ToArray());
+            var messageArray = new List<byte>
+            {
+                (byte)MHdr
+            };
             Span<byte> devAddrBytes = stackalloc byte[DevAddr.Size];
             _ = DevAddr.Write(devAddrBytes);
             foreach (var b in devAddrBytes)
@@ -454,9 +417,11 @@ namespace LoRaTools.LoRaMessage
                 messageArray.AddRange(Frmpayload.ToArray());
             }
 
-            if (Mic.Span != null)
+            if (Mic is { } someMic)
             {
-                messageArray.AddRange(Mic.Span.ToArray());
+                var micBytes = new byte[4];
+                _ = someMic.Write(micBytes);
+                messageArray.AddRange(micBytes);
             }
 
             return messageArray.ToArray();

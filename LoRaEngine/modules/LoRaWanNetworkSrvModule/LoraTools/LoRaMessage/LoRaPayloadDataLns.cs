@@ -46,16 +46,13 @@ namespace LoRaTools.LoRaMessage
                 throw new NotImplementedException();
             };
 
-            MessageType = messageType;
-
             // in this case the payload is not downlink of our type
             Direction = messageType is MacMessageType.ConfirmedDataDown or
                                        MacMessageType.JoinAccept or
                                        MacMessageType.UnconfirmedDataDown ? 1 : 0;
 
             // Setting MHdr value
-            Mhdr = new byte[1];
-            _ = macHeader.Write(Mhdr.Span);
+            MHdr = macHeader;
 
             // Setting Fctrl
             FrameControlFlags = fctrlFlags;
@@ -81,8 +78,7 @@ namespace LoRaTools.LoRaMessage
             // Fport can be empty if no commands
             Fport = port;
 
-            Mic = new byte[LoRaWan.Mic.Size];
-            _ = mic.Write(Mic.Span);
+            Mic = mic;
         }
     }
 }
