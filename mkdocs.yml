@@ -1,5 +1,5 @@
 site_name: IoTEdge LoRaWAN StarterKit - documentation
-theme: 
+theme:
   name: material
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -75,7 +75,7 @@ nav:
       - user-guide/station-authentication-modes.md
       - user-guide/station-module-configuration.md
     - 'Region specifics':
-      - user-guide/as923.md  
+      - user-guide/as923.md
     - Testing:
       - user-guide/testing/e2e_tests.md
       - user-guide/testing/integration_tests.md
@@ -92,6 +92,7 @@ nav:
       - samples/decoders/cayenne.md
   - Tools:
     - tools/device-provisioning.md
+    - tools/arduino-samples.md
   - 'Decision Log':
     - adr/001_region_cn470_implementation.md
     - adr/002_lbs_configuration.md
