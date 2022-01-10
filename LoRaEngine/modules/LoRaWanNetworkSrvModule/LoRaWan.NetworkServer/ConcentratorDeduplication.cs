@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Buffers.Binary;
-    using System.Security.Cryptography;
     using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
@@ -18,11 +17,6 @@ namespace LoRaWan.NetworkServer
         private readonly IMemoryCache cache;
         private readonly ILogger<IConcentratorDeduplication> logger;
         private static readonly object cacheLock = new object();
-
-        [ThreadStatic]
-        private static SHA256? sha256;
-
-        private static SHA256 Sha256 => sha256 ??= SHA256.Create();
 
         public ConcentratorDeduplication(
             IMemoryCache cache,
@@ -98,9 +92,7 @@ namespace LoRaWan.NetworkServer
             buffer = payload.Mic is { } someMic ? someMic.Write(buffer) : throw new InvalidOperationException("Mic must not be null.");
             BinaryPrimitives.WriteUInt16LittleEndian(buffer, BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
 
-            var key = Sha256.ComputeHash(head.ToArray());
-
-            return BitConverter.ToString(key);
+            return ToHexKey(head);
         }
 
         internal static string CreateCacheKey(LoRaPayloadJoinRequest payload)
@@ -118,9 +110,14 @@ namespace LoRaWan.NetworkServer
             var devNonce = payload.DevNonce;
             _ = devNonce.Write(buffer);
 
-            var key = Sha256.ComputeHash(head.ToArray());
+            return ToHexKey(head);
+        }
 
-            return BitConverter.ToString(key);
+        private static string ToHexKey(ReadOnlySpan<byte> buffer)
+        {
+            Span<char> key = stackalloc char[(buffer.Length * 3) - 1];
+            Hexadecimal.Write(buffer, key, separator: '-');
+            return key.ToString();
         }
     }
 }
