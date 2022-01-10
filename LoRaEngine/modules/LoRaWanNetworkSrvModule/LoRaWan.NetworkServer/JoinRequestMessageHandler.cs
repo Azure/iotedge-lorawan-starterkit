@@ -6,9 +6,11 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
@@ -56,6 +58,8 @@ namespace LoRaWan.NetworkServer
             try
             {
                 var timeWatcher = request.GetTimeWatcher();
+                var processingTimeout = timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() - TimeSpan.FromMilliseconds(100);
+                using var joinAcceptCancellationToken = new CancellationTokenSource(processingTimeout > TimeSpan.Zero ? processingTimeout : TimeSpan.Zero);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
@@ -81,12 +85,14 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                if (string.IsNullOrEmpty(loRaDevice.AppKey))
+                if (loRaDevice.AppKey is null)
                 {
                     this.logger.LogError("join refused: missing AppKey for OTAA device");
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
                     return;
                 }
+
+                var appKey = loRaDevice.AppKey.Value;
 
                 this.joinRequestCounter?.Add(1);
 
@@ -97,7 +103,7 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                if (!joinReq.CheckMic(loRaDevice.AppKey))
+                if (!joinReq.CheckMic(appKey))
                 {
                     this.logger.LogError("join refused: invalid MIC");
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.JoinMicCheckFailed);
@@ -131,17 +137,16 @@ namespace LoRaWan.NetworkServer
                 var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
                 var netId = new byte[3]
                 {
-                netIdBytes[0],
-                netIdBytes[1],
-                netIdBytes[2]
+                    netIdBytes[0],
+                    netIdBytes[1],
+                    netIdBytes[2]
                 };
 
                 var appNonce = OTAAKeysGenerator.GetAppNonce();
                 var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
-                var appKeyBytes = ConversionHelper.StringToByteArray(loRaDevice.AppKey);
-                var appSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
-                var nwkSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
-                var devAddr = OTAAKeysGenerator.GetNwkId(netId);
+                var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
+                var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
+                var devAddr = OTAAKeysGenerator.GetNwkId(this.configuration.NetId);
 
                 var oldDevAddr = loRaDevice.DevAddr;
 
@@ -173,13 +178,13 @@ namespace LoRaWan.NetworkServer
                     updatedProperties.StationEui = request.StationEui;
                 }
 
+                DeviceJoinInfo deviceJoinInfo = null;
                 if (request.Region.LoRaRegion == LoRaRegionType.CN470RP2)
                 {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                    if (request.Region.TryGetJoinChannelIndex(request.Rxpk, out var channelIndex))
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                    if (request.Region.TryGetJoinChannelIndex(request.RadioMetadata.Frequency, out var channelIndex))
                     {
                         updatedProperties.CN470JoinChannel = channelIndex;
+                        deviceJoinInfo = new DeviceJoinInfo(channelIndex);
                     }
                     else
                     {
@@ -187,12 +192,12 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);
+                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties, joinAcceptCancellationToken.Token);
 
                 if (!deviceUpdateSucceeded)
                 {
                     this.logger.LogError("join refused: join request could not save twin");
-                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ApplicationError);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.IoTHubProblem);
                     return;
                 }
 
@@ -205,36 +210,16 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                Hertz freq;
-                string datr = null;
-                uint tmst = 0;
                 ushort lnsRxDelay = 0;
                 if (windowToUse == Constants.ReceiveWindow1)
                 {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                    datr = loraRegion.GetDownstreamDataRate(request.Rxpk);
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                    if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk.FreqHertz, out freq) || datr == null)
-                    {
-                        this.logger.LogError("could not resolve DR and/or frequency for downstream");
-                        request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidRxpk);
-                        return;
-                    }
-
                     // set tmst for the normal case
-                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay1 * 1000000);
                     lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1;
                 }
                 else
                 {
                     this.logger.LogDebug("processing of the join request took too long, using second join accept receive window");
-                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
                     lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
-
-                    freq = loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger);
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                    datr = loraRegion.GetDownstreamRX2DataRate(devEUI, this.configuration.Rx2DataRate, null, logger);
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 }
 
                 this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
@@ -284,29 +269,48 @@ namespace LoRaWan.NetworkServer
 
                 var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
                     ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
-                    ConversionHelper.StringToByteArray(devAddr), // todo add device address management
+                    devAddr, // todo add device address management
                     appNonceBytes,
                     dlSettings,
                     loraSpecDesiredRxDelay,
                     null);
 
-                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.Rxpk.Rfch, request.Rxpk.Time, request.StationEui);
-                if (joinAccept != null)
+                if (!loraRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, out var freq, deviceJoinInfo: deviceJoinInfo))
                 {
-                    this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
-                    _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);
-                    request.NotifySucceeded(loRaDevice, joinAccept);
-
-                    if (this.logger.IsEnabled(LogLevel.Debug))
-                    {
-                        var jsonMsg = JsonConvert.SerializeObject(joinAccept);
-                        this.logger.LogDebug($"{MacMessageType.JoinAccept} {jsonMsg}");
-                    }
-                    else
-                    {
-                        this.logger.LogInformation("join accepted");
-                    }
+                    this.logger.LogError("could not resolve DR and/or frequency for downstream");
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidUpstreamMessage);
+                    return;
                 }
+
+                var joinAcceptBytes = loRaPayloadJoinAccept.Serialize(appKey);
+                var downlinkMessage = new DownlinkMessage(
+                  joinAcceptBytes,
+                  request.RadioMetadata.UpInfo.Xtime,
+                  loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset),
+                  loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, logger),
+                  freq,
+                  loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger),
+                  DevEui.Parse(loRaDevice.DevEUI),
+                  lnsRxDelay,
+                  request.StationEui,
+                  request.RadioMetadata.UpInfo.AntennaPreference
+                  );
+
+
+                this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
+                _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessage);
+                request.NotifySucceeded(loRaDevice, downlinkMessage);
+
+                if (this.logger.IsEnabled(LogLevel.Debug))
+                {
+                    var jsonMsg = JsonConvert.SerializeObject(downlinkMessage);
+                    this.logger.LogDebug($"{MacMessageType.JoinAccept} {jsonMsg}");
+                }
+                else
+                {
+                    this.logger.LogInformation("join accepted");
+                }
+
             }
             catch (Exception ex) when
                 (ExceptionFilterUtility.True(() => this.logger.LogError(ex, $"failed to handle join request. {ex.Message}", LogLevel.Error),

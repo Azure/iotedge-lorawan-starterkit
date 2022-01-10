@@ -12,8 +12,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
-    public sealed class ConcentratorDeduplication :
-        IConcentratorDeduplication
+    public sealed class ConcentratorDeduplication : IConcentratorDeduplication
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
         private readonly IMemoryCache cache;
@@ -50,6 +49,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+
             var key = CreateCacheKey((LoRaPayloadData)loRaRequest.Payload);
             if (EnsureFirstMessageInCache(key, loRaRequest, out var previousStation))
                 return ConcentratorDeduplicationResult.NotDuplicate;
@@ -88,26 +88,17 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        internal static string CreateCacheKey(LoRaRequest loRaRequest)
-            => loRaRequest.Payload switch
-            {
-                LoRaPayloadData asDataPayload => CreateCacheKey(asDataPayload),
-                LoRaPayloadJoinRequest asJoinPayload => CreateCacheKey(asJoinPayload),
-                _ => throw new ArgumentException($"Provided request is of type {loRaRequest.GetType()} which is not valid for deduplication.")
-            };
-
-        private static string CreateCacheKey(LoRaPayloadData payload)
+        internal static string CreateCacheKey(LoRaPayloadData payload)
         {
-            var totalBufferLength = payload.DevAddr.Length + payload.Mic.Length + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
+            var totalBufferLength = DevAddr.Size + Mic.Size + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
             var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
 
             var index = 0;
-            BinaryPrimitives.WriteUInt32LittleEndian(buffer, BinaryPrimitives.ReadUInt32LittleEndian(payload.DevAddr.Span));
-            index += payload.DevAddr.Length;
+            _ = payload.DevAddr.Write(buffer);
+            index += DevAddr.Size;
 
-            if (!payload.Mic.IsEmpty)
-                BinaryPrimitives.WriteUInt32LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt32LittleEndian(payload.Mic.Span));
-            index += payload.Mic.Length;
+            _ = payload.Mic is { } someMic ? someMic.Write(buffer[index..]) : throw new InvalidOperationException("Mic must not be null.");
+            index += Mic.Size;
 
             payload.RawMessage?.CopyTo(buffer[index..]);
             index += payload.RawMessage?.Length ?? 0;
@@ -119,7 +110,7 @@ namespace LoRaWan.NetworkServer
             return BitConverter.ToString(key);
         }
 
-        private static string CreateCacheKey(LoRaPayloadJoinRequest payload)
+        internal static string CreateCacheKey(LoRaPayloadJoinRequest payload)
         {
             var joinEui = JoinEui.Read(payload.AppEUI.Span);
             var devEui = DevEui.Read(payload.DevEUI.Span);

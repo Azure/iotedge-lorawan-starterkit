@@ -4,11 +4,14 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System;
+    using System.IO;
     using System.Net;
     using System.Text;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools.CommonAPI;
+    using LoRaWan.Tests.Common;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Client.Exceptions;
@@ -20,6 +23,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
     public class SendCloudToDeviceMessageTest
     {
+        private const FramePort TestPort = FramePorts.App1;
+
         private readonly LoRaInMemoryDeviceStore cacheStore;
         private readonly Mock<IServiceClient> serviceClient;
         private readonly Mock<RegistryManager> registryManager;
@@ -38,9 +43,26 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [InlineData("")]
         public async Task When_DevEUI_Is_Missing_Should_Return_BadRequest(string devEUI)
         {
-            var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
-                new LoRaCloudToDeviceMessage());
+            var c2dMessage = new LoRaCloudToDeviceMessage()
+            {
+                DevEUI = devEUI,
+            };
+
+            var request = new DefaultHttpContext().Request;
+            request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
+
+            var result = await this.sendCloudToDeviceMessage.Run(request, devEUI);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+
+            this.serviceClient.VerifyAll();
+            this.registryManager.VerifyAll();
+        }
+
+        [Fact]
+        public async Task When_Request_Is_Missing_Should_Return_BadRequest()
+        {
+            var actual = await this.sendCloudToDeviceMessage.Run(null, "0123456789");
 
             Assert.IsType<BadRequestObjectResult>(actual);
 
@@ -67,7 +89,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 DevEUI = "0123456789",
-                Fport = LoRaFPort.MacCommand,
+                Fport = FramePort.MacCommand,
                 Payload = "hello",
             };
 
@@ -90,7 +112,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
-                Fport = 1,
+                Fport = TestPort,
                 Payload = "hello",
             };
 
@@ -132,7 +154,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = TestPort,
                 });
 
             Assert.IsType<ObjectResult>(actual);
@@ -156,7 +178,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = TestPort,
                 });
 
             Assert.IsType<ObjectResult>(actual);
@@ -183,7 +205,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = TestPort,
                 });
 
             Assert.IsType<BadRequestObjectResult>(actual);
@@ -210,7 +232,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = TestPort,
                 });
 
             Assert.IsType<ObjectResult>(actual);
@@ -238,7 +260,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 devEUI,
                 new LoRaCloudToDeviceMessage()
                 {
-                    Fport = 1,
+                    Fport = TestPort,
                 });
 
             Assert.IsType<NotFoundObjectResult>(actual);
@@ -273,7 +295,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
-                Fport = 1,
+                Fport = TestPort,
                 Payload = "hello",
             };
 
@@ -315,7 +337,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             {
                 Properties = new TwinProperties()
                 {
-                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
+                    Desired = new TwinCollection($"{{\"DevAddr\": \"{new DevAddr(100)}\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
                     Reported = new TwinCollection(),
                 }
             };
@@ -330,7 +352,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
-                Fport = 1,
+                Fport = TestPort,
                 Payload = "hello",
             };
 
@@ -364,6 +386,47 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         }
 
         [Fact]
+        public async Task When_Querying_Devices_And_Finds_No_Gateway_For_Class_C_Should_Return_InternalServerError()
+        {
+            var devEUI = new DevEui(0123456789);
+            var devAddr = new DevAddr(03010101);
+            var deviceTwin = new Twin
+            {
+                Properties = new TwinProperties()
+                {
+                    Desired = new TwinCollection($"{{\"DevAddr\": \"{devAddr}\", \"ClassType\": \"C\"}}"),
+                    Reported = new TwinCollection(),
+                }
+            };
+
+            var query = new Mock<IQuery>(MockBehavior.Strict);
+            query.Setup(x => x.HasMoreResults).Returns(true);
+            query.Setup(x => x.GetNextAsTwinAsync())
+                .ReturnsAsync(new[] { deviceTwin });
+
+            this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
+                .Returns(query.Object);
+
+            var actualMessage = new LoRaCloudToDeviceMessage()
+            {
+                Fport = TestPort,
+                Payload = "hello",
+            };
+
+            var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
+                devEUI.ToString(),
+                actualMessage);
+
+            var result = Assert.IsType<ObjectResult>(actual);
+            Assert.Equal(500, result.StatusCode);
+            Assert.Equal("Class C devices must sent at least one message upstream. None has been received", result.Value.ToString());
+
+            this.serviceClient.VerifyAll();
+            this.registryManager.VerifyAll();
+            query.VerifyAll();
+        }
+
+        [Fact]
         public async Task When_Querying_Devices_And_Finds_Class_A_Should_Send_Message()
         {
             const string devEUI = "0123456789";
@@ -387,7 +450,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
                 MessageId = "myMessageId-1234",
-                Fport = 1,
+                Fport = TestPort,
                 Payload = "hello",
             };
 
@@ -442,7 +505,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
                 MessageId = "myMessageId-1234",
-                Fport = 1,
+                Fport = TestPort,
                 Payload = "hello",
             };
 

@@ -7,8 +7,9 @@ namespace LoRaWan.Tests.Unit
 {
     using System.Collections.Generic;
     using global::LoRaTools.ADR;
-    using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
+    using LoRaWan.NetworkServer.BasicsStation;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
@@ -26,10 +27,10 @@ namespace LoRaWan.Tests.Unit
 
         [Theory]
         [ClassData(typeof(ADRTestData))]
-        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, IList<LoRaADRTableEntry> tableEntries, Rxpk rxpk, bool expectDefaultAnswer, LoRaADRResult expectedResult)
+        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, IList<LoRaADRTableEntry> tableEntries, RadioMetadata radioMetadata, bool expectDefaultAnswer, LoRaADRResult expectedResult)
         {
             this.output.WriteLine($"Starting test {testName}");
-            var region = RegionManager.EU868;
+            var region = TestUtils.TestRegion;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider(NullLoggerFactory.Instance);
             using var inMemoryStore = new LoRaADRInMemoryStore();
             var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, inMemoryStore, provider, NullLogger<LoRaADRManagerBase>.Instance)
@@ -41,9 +42,7 @@ namespace LoRaWan.Tests.Unit
             // If the test does not expect a default answer we trigger default reset before
             if (!expectDefaultAnswer)
             {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                _ = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                _ = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)region.RequiredSnr(radioMetadata.DataRate), radioMetadata.DataRate, region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
                 {
                     Snr = 0,
                     FCnt = 1,
@@ -58,9 +57,7 @@ namespace LoRaWan.Tests.Unit
                 await loRaADRManager.Object.StoreADREntryAsync(tableEntries[i]);
             }
 
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            var adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate);
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+            var adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)region.RequiredSnr(radioMetadata.DataRate), radioMetadata.DataRate, region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate);
 
             Assert.Equal(expectedResult.DataRate, adrResult.DataRate);
             Assert.Equal(expectedResult.NbRepetition, adrResult.NbRepetition);
@@ -77,10 +74,7 @@ namespace LoRaWan.Tests.Unit
             var devEUI = "myloratest";
             var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider(NullLoggerFactory.Instance);
-            var rxpk = new Rxpk
-            {
-                Datr = "SF7BW125"
-            };
+            var datarate = DataRateIndex.DR5;
             using var inMemoryStore = new LoRaADRInMemoryStore();
             var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, inMemoryStore, provider, NullLogger<LoRaADRManagerBase>.Instance)
             {
@@ -89,9 +83,7 @@ namespace LoRaWan.Tests.Unit
             _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // setup table with default value
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            _ = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+            _ = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)region.RequiredSnr(datarate), region.GetDownstreamDataRate(datarate), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
             {
                 Snr = 0,
                 FCnt = 1,
@@ -114,9 +106,7 @@ namespace LoRaWan.Tests.Unit
                     });
             }
 
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            var adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate);
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+            var adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)region.RequiredSnr(datarate), region.GetDownstreamDataRate(datarate), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate);
             Assert.Equal(DR5, adrResult.DataRate);
             Assert.Equal(7, adrResult.TxPower);
             Assert.Equal(1, adrResult.NbRepetition);
@@ -124,9 +114,7 @@ namespace LoRaWan.Tests.Unit
             // reset cache and check we get default values
             _ = await loRaADRManager.Object.ResetAsync(devEUI);
 
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-            adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+            adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)region.RequiredSnr(datarate), region.GetDownstreamDataRate(datarate), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
             {
                 Snr = 0,
                 FCnt = 1,

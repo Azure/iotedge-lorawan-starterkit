@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
@@ -26,28 +25,28 @@ namespace LoRaWan.Tests.Integration
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequestPayload1 = simulatedDevice.CreateJoinRequest();
 
-            var devAddr = string.Empty;
+            var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // Device twin will be queried twice, 1st time will take 7 seconds, 2nd time 0.1 second
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
+            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
+            if (deviceGatewayID != null) twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             // Device twin will be updated
-            string afterJoinAppSKey = null;
-            string afterJoinNwkSKey = null;
+            AppSessionKey? afterJoinAppSKey = null;
+            NetworkSessionKey? afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Callback<TwinCollection>((updatedTwin) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Callback<TwinCollection, CancellationToken>((updatedTwin, _) =>
                 {
-                    afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
-                    afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
+                    afterJoinAppSKey = AppSessionKey.Parse(updatedTwin[TwinProperty.AppSKey].Value);
+                    afterJoinNwkSKey = NetworkSessionKey.Parse(updatedTwin[TwinProperty.NwkSKey].Value);
                     afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
                 })
                 .ReturnsAsync(true);
@@ -87,8 +86,8 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(joinRequest2.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var joinRequestDownlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinRequestDownlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
-            Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
+            var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
+            Assert.Equal(joinAccept.DevAddr.ToString(), afterJoinDevAddr);
 
             Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
 
@@ -96,7 +95,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(simulatedDevice.AppEUI, loRaDevice.AppEUI);
             Assert.Equal(afterJoinAppSKey, loRaDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, loRaDevice.NwkSKey);
-            Assert.Equal(afterJoinDevAddr, loRaDevice.DevAddr);
+            Assert.Equal(joinAccept.DevAddr, loRaDevice.DevAddr);
             if (deviceGatewayID == null)
                 Assert.Null(loRaDevice.GatewayID);
             else

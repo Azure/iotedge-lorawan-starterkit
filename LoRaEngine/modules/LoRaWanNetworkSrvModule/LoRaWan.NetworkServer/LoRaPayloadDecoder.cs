@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer
             this.httpClient = httpClient;
         }
 
-        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, byte fport, string sensorDecoder)
+        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, FramePort fport, string sensorDecoder)
         {
             sensorDecoder ??= string.Empty;
 
@@ -63,7 +63,7 @@ namespace LoRaWan.NetworkServer
 
                 var query = HttpUtility.ParseQueryString(url.Query);
                 query["devEUI"] = devEUI;
-                query["fport"] = fport.ToString(CultureInfo.InvariantCulture);
+                query["fport"] = fport.ToString();
                 query["payload"] = base64Payload;
 
                 var urlBuilder = new UriBuilder(url) { Query = query.ToString() };
@@ -166,7 +166,7 @@ namespace LoRaWan.NetworkServer
 #pragma warning disable CA1801 // Review unused parameters
 #pragma warning disable IDE0060 // Remove unused parameter
         // Method is invoked via reflection.
-        public static object DecoderValueSensor(string devEUI, byte[] payload, uint fport)
+        public static object DecoderValueSensor(string devEUI, byte[] payload, FramePort fport)
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore CA1801 // Review unused parameters
         {
@@ -195,7 +195,7 @@ namespace LoRaWan.NetworkServer
 #pragma warning disable CA1801 // Review unused parameters
 #pragma warning disable IDE0060 // Remove unused parameter
         // Method is invoked via reflection and part of a public API.
-        public static object DecoderHexSensor(string devEUI, byte[] payload, uint fport)
+        public static object DecoderHexSensor(string devEUI, byte[] payload, FramePort fport)
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore CA1801 // Review unused parameters
         {

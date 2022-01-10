@@ -102,7 +102,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               RadioMetadataProperties.Freq,
                               RadioMetadataProperties.UpInfo,
                               (_, mhdr, devAddr, fctrlFlags, cnt, opts, port, payload, mic, dr, freq, upInfo) =>
-                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), fctrlFlags, cnt, opts, new FramePort(port), payload, mic,
+                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), fctrlFlags, cnt, opts, (FramePort)port, payload, mic,
                                                       new RadioMetadata(dr, freq, upInfo)));
         /*
          * {

@@ -5,8 +5,8 @@ namespace LoRaTools.Regions
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.Linq;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
     using static LoRaWan.DataRateIndex;
@@ -25,40 +25,55 @@ namespace LoRaTools.Regions
         // the corresponding downstream join frequency and the channel index
         public Dictionary<Hertz, (Hertz downstreamFreq, int joinChannelIndex)> UpstreamJoinFrequenciesToDownstreamAndChannelIndex { get; }
 
+        private static readonly ImmutableDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DrToConfigurationByDrIndex =
+            new Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)>
+            {
+                // Values assuming FOpts param is not used
+                [DR0] = (LoRaDataRate.SF12BW125, MaxPayloadSize: 59),
+                [DR1] = (LoRaDataRate.SF11BW125, MaxPayloadSize: 31),
+                [DR2] = (LoRaDataRate.SF10BW125, MaxPayloadSize: 94),
+                [DR3] = (LoRaDataRate.SF9BW125, MaxPayloadSize: 192),
+                [DR4] = (LoRaDataRate.SF8BW125, MaxPayloadSize: 250),
+                [DR5] = (LoRaDataRate.SF7BW125, MaxPayloadSize: 250),
+                [DR6] = (LoRaDataRate.SF7BW500, MaxPayloadSize: 250),
+                [DR7] = (FskDataRate.Fsk50000, MaxPayloadSize: 250),
+            }.ToImmutableDictionary();
+
+        public override IReadOnlyDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration => DrToConfigurationByDrIndex;
+
+        private static readonly ImmutableDictionary<uint, double> MaxEirpByTxPower =
+            new Dictionary<uint, double>
+            {
+                [0] = 19,
+                [1] = 17,
+                [2] = 15,
+                [3] = 13,
+                [4] = 11,
+                [5] = 9,
+                [6] = 7,
+                [7] = 5,
+            }.ToImmutableDictionary();
+
+        public override IReadOnlyDictionary<uint, double> TXPowertoMaxEIRP => MaxEirpByTxPower;
+
+        private static readonly ImmutableArray<IReadOnlyList<DataRateIndex>> RX1DROffsetTableInternal =
+            new IReadOnlyList<DataRateIndex>[]
+            {
+                new[] { DR0, DR0, DR0, DR0, DR0, DR0 }.ToImmutableArray(),
+                new[] { DR1, DR1, DR1, DR1, DR1, DR1 }.ToImmutableArray(),
+                new[] { DR2, DR1, DR1, DR1, DR1, DR1 }.ToImmutableArray(),
+                new[] { DR3, DR2, DR1, DR1, DR1, DR1 }.ToImmutableArray(),
+                new[] { DR4, DR3, DR2, DR1, DR1, DR1 }.ToImmutableArray(),
+                new[] { DR5, DR4, DR3, DR2, DR1, DR1 }.ToImmutableArray(),
+                new[] { DR6, DR5, DR4, DR3, DR2, DR1 }.ToImmutableArray(),
+                new[] { DR7, DR6, DR5, DR4, DR3, DR2 }.ToImmutableArray(),
+            }.ToImmutableArray();
+
+        public override IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable => RX1DROffsetTableInternal;
+
         public RegionCN470RP2()
             : base(LoRaRegionType.CN470RP2)
         {
-            // Values assuming FOpts param is not used
-            DRtoConfiguration.Add(DR0, (LoRaDataRate.SF12BW125, MaxPayloadSize: 59));
-            DRtoConfiguration.Add(DR1, (LoRaDataRate.SF11BW125, MaxPayloadSize: 31));
-            DRtoConfiguration.Add(DR2, (LoRaDataRate.SF10BW125, MaxPayloadSize: 94));
-            DRtoConfiguration.Add(DR3, (LoRaDataRate.SF9BW125, MaxPayloadSize: 192));
-            DRtoConfiguration.Add(DR4, (LoRaDataRate.SF8BW125, MaxPayloadSize: 250));
-            DRtoConfiguration.Add(DR5, (LoRaDataRate.SF7BW125, MaxPayloadSize: 250));
-            DRtoConfiguration.Add(DR6, (LoRaDataRate.SF7BW500, MaxPayloadSize: 250));
-            DRtoConfiguration.Add(DR7, (FskDataRate.Fsk50000, MaxPayloadSize: 250));
-
-            TXPowertoMaxEIRP.Add(0, 19);
-            TXPowertoMaxEIRP.Add(1, 17);
-            TXPowertoMaxEIRP.Add(2, 15);
-            TXPowertoMaxEIRP.Add(3, 13);
-            TXPowertoMaxEIRP.Add(4, 11);
-            TXPowertoMaxEIRP.Add(5, 9);
-            TXPowertoMaxEIRP.Add(6, 7);
-            TXPowertoMaxEIRP.Add(7, 5);
-
-            RX1DROffsetTable = new[]
-            {
-                new[] { DR0, DR0, DR0, DR0, DR0, DR0 },
-                new[] { DR1, DR1, DR1, DR1, DR1, DR1 },
-                new[] { DR2, DR1, DR1, DR1, DR1, DR1 },
-                new[] { DR3, DR2, DR1, DR1, DR1, DR1 },
-                new[] { DR4, DR3, DR2, DR1, DR1, DR1 },
-                new[] { DR5, DR4, DR3, DR2, DR1, DR1 },
-                new[] { DR6, DR5, DR4, DR3, DR2, DR1 },
-                new[] { DR7, DR6, DR5, DR4, DR3, DR2 },
-            };
-
             var validDatarates = new HashSet<DataRate>
             {
                 LoRaDataRate.SF12BW125, // 0
@@ -130,25 +145,6 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Returns join channel index for region CN470 matching the frequency of the join request.
         /// </summary>
-        /// <param name="joinChannel">Channel on which the join request was received.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public override bool TryGetJoinChannelIndex(Rxpk joinChannel, out int channelIndex)
-        {
-            if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
-
-            channelIndex = -1;
-
-            if (UpstreamJoinFrequenciesToDownstreamAndChannelIndex.TryGetValue(joinChannel.FreqHertz, out var elem))
-            {
-                channelIndex = elem.joinChannelIndex;
-            }
-
-            return channelIndex != -1;
-        }
-
-        /// <summary>
-        /// Returns join channel index for region CN470 matching the frequency of the join request.
-        /// </summary>
         public override bool TryGetJoinChannelIndex(Hertz frequency, out int channelIndex)
         {
             channelIndex = -1;
@@ -159,62 +155,6 @@ namespace LoRaTools.Regions
             }
 
             return channelIndex != -1;
-        }
-
-        /// <summary>
-        /// Logic to get the correct downstream transmission frequency for region CN470.
-        /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo)
-        {
-            if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
-
-            if (!IsValidUpstreamRxpk(upstreamChannel))
-                throw new LoRaProcessingException($"Invalid upstream channel: {upstreamChannel.Freq}, {upstreamChannel.Datr}.");
-
-            frequency = 0;
-
-            // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
-            // over desired twin properties (set for APB devices).
-            var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
-
-            if (joinChannelIndex == null)
-                return false;
-
-            int channelNumber;
-
-            // 20 MHz plan A
-            if (joinChannelIndex <= 7)
-            {
-                channelNumber = upstreamChannel.Freq < 500 ? GetChannelNumber(upstreamChannel, 470.3) : GetChannelNumber(upstreamChannel, 503.5, 32);
-                frequency = this.downstreamFrequenciesByPlanType[0][channelNumber].InMega;
-                return true;
-            }
-            // 20 MHz plan B
-            if (joinChannelIndex <= 9)
-            {
-                channelNumber = upstreamChannel.Freq < 490 ? GetChannelNumber(upstreamChannel, 476.9) : GetChannelNumber(upstreamChannel, 496.9, 32);
-                frequency = this.downstreamFrequenciesByPlanType[1][channelNumber].InMega;
-                return true;
-            }
-            // 26 MHz plan A
-            if (joinChannelIndex <= 14)
-            {
-                channelNumber = GetChannelNumber(upstreamChannel, 470.3);
-                frequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24].InMega;
-                return true;
-            }
-            // 26 MHz plan B
-            if (joinChannelIndex <= 19)
-            {
-                channelNumber = GetChannelNumber(upstreamChannel, 480.3);
-                frequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24].InMega;
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -327,9 +267,5 @@ namespace LoRaTools.Regions
 
             return rx2Window;
         }
-
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        private static int GetChannelNumber(Rxpk upstreamChannel, double startUpstreamFreq, int startChannelNumber = 0) =>
-            startChannelNumber + (int)Math.Round((upstreamChannel.Freq - startUpstreamFreq) / FrequencyIncrement.Value, 0, MidpointRounding.AwayFromZero);
     }
 }

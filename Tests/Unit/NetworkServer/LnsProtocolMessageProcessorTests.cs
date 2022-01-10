@@ -12,7 +12,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading.Tasks;
     using Common;
     using global::LoRaTools.LoRaMessage;
-    using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
@@ -284,29 +283,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                        CancellationToken.None);
         }
 
-        private static Rxpk GetExpectedRxpk()
+        private static RadioMetadata GetExpectedRadioMetadata()
         {
-            var radioMetadataUpInfo = new RadioMetadataUpInfo(0, 68116944405337035, 0, -53, (float)8.25);
-            var radioMetadata = new RadioMetadata(DataRateIndex.DR5, new Hertz(868300000), radioMetadataUpInfo);
-            return new BasicStationToRxpk(radioMetadata, RegionManager.EU868);
+            var radioMetadataUpInfo = new RadioMetadataUpInfo(0, 68116944405337035, 0, -53, 8.25f);
+            return new RadioMetadata(DataRateIndex.DR5, new Hertz(868300000), radioMetadataUpInfo);
         }
-
-        private static bool AreRxpkEqual(Rxpk subject, Rxpk other) =>
-            subject.Chan == other.Chan
-            && subject.Codr == other.Codr
-            && subject.Data == other.Data
-            && subject.Datr == other.Datr
-            && subject.Freq == other.Freq
-            && subject.Lsnr == other.Lsnr
-            && subject.Modu == other.Modu
-            && subject.RequiredSnr == other.RequiredSnr
-            && subject.Rfch == other.Rfch
-            && subject.Rssi == other.Rssi
-            && subject.Size == other.Size
-            && subject.Stat == other.Stat
-            && subject.Time == other.Time
-            && subject.Tmms == other.Tmms
-            && subject.Tmst == other.Tmst;
 
         [Fact]
         public async Task InternalHandleDataAsync_ShouldProperlyCreateLoraPayloadForUpdfRequest()
@@ -315,10 +296,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var message = JsonUtil.Strictify(@"{'msgtype':'updf','MHdr':128,'DevAddr':50244358,'FCtrl':0,'FCnt':1,'FOpts':'','FPort':8,'FRMPayload':'CB',
                                                 'MIC':45234788,'RefTime':0.000000,'DR':5,'Freq':868300000,'upinfo':{'rctx':0,'xtime':68116944405337035,
                                                 'gpstime':0,'fts':-1,'rssi':-53,'snr':8.25,'rxtime':1636131701.731686}}");
-            var expectedRxpk = GetExpectedRxpk();
-            var expectedMhdr = new byte[] { 128 };
-            var expectedDevAddr = new byte[] { 2, 254, 171, 6 };
-            var expectedMic = new byte[] { 100, 58, 178, 2 };
+            var expectedRadioMetadata = GetExpectedRadioMetadata();
+            var expectedMhdr = new MacHeader(MacMessageType.ConfirmedDataUp);
+            var expectedDevAddr = new DevAddr(50244358);
+            var expectedMic = Mic.Read(new byte[] { 100, 58, 178, 2 });
             SetDataPathParameter();
             SetupSocketReceiveAsync(message);
 
@@ -334,11 +315,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.NotNull(loRaRequest);
-            Assert.True(AreRxpkEqual(loRaRequest.Rxpk, expectedRxpk));
-            Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr.Span.ToArray());
+            Assert.Equal(loRaRequest.RadioMetadata, expectedRadioMetadata);
+            Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr);
             Assert.Equal(MacMessageType.ConfirmedDataUp, loRaRequest.Payload.MessageType);
-            Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
-            Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
+            Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
+            Assert.Equal(expectedMic, loRaRequest.Payload.Mic);
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
             Assert.Equal(RegionManager.EU868, loRaRequest.Region);
         }
@@ -350,9 +331,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var message = JsonUtil.Strictify(@"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E',
                                                 'DevNonce':54360,'MIC':-1056607131,'RefTime':0.000000,'DR':5,'Freq':868300000,'upinfo':{'rctx':0,
                                                 'xtime':68116944405337035,'gpstime':0,'fts':-1,'rssi':-53,'snr':8.25,'rxtime':1636131701.731686}}");
-            var expectedRxpk = GetExpectedRxpk();
-            var expectedMhdr = new byte[] { 0 };
-            var expectedMic = new byte[] { 101, 116, 5, 193 };
+            var expectedRadioMetadata = GetExpectedRadioMetadata();
+            var expectedMhdr = new MacHeader(MacMessageType.JoinRequest);
+            var expectedMic = Mic.Read(new byte[] { 101, 116, 5, 193 });
             var expectedAppEui = new byte[] { 181, 196, 210, 229, 200, 120, 98, 71 };
             var expectedDevEui = new byte[] { 158, 22, 164, 238, 223, 193, 39, 133 };
             var expectedDevNonce = DevNonce.Read(new byte[] { 88, 212 });
@@ -371,11 +352,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.NotNull(loRaRequest);
-            Assert.True(AreRxpkEqual(loRaRequest.Rxpk, expectedRxpk));
+            Assert.Equal(loRaRequest.RadioMetadata, expectedRadioMetadata);
             Assert.IsType<LoRaPayloadJoinRequestLns>(loRaRequest.Payload);
             Assert.Equal(MacMessageType.JoinRequest, loRaRequest.Payload.MessageType);
-            Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
-            Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
+            Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
+            Assert.Equal(expectedMic, loRaRequest.Payload.Mic);
             Assert.Equal(expectedAppEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEUI.Span.ToArray());
             Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI.Span.ToArray());
             Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevNonce);

@@ -50,15 +50,9 @@ namespace LoRaWan.Tests.Integration
             var euRegion = RegionManager.EU868;
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
-            var upstreamMessageMacCommandSize = 0;
-            DataRate expectedDownlinkDatr;
+            DataRateIndex expectedDownlinkDatr;
 
-            if (hasMacInUpstream)
-            {
-                upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
-            }
-
-            expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate;
+            expectedDownlinkDatr = euRegion.GetDataRateIndex(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate);
 
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(euRegion.GetDefaultRX2ReceiveWindow().DataRate)
                 - c2dMessageMacCommandSize
@@ -70,7 +64,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessagePayload,
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             if (hasMacInC2D)
@@ -111,16 +105,17 @@ namespace LoRaWan.Tests.Integration
 
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Equal(expectedDownlinkDatr.XpkDatr, request.ResponseDownlink.Txpk.Datr);
+
+            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.DataRateRx2);
 
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
+            var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
+            payloadDataDown.Serialize(loraDevice.AppSKey.Value);
 
             // 3. Fpending flag is set
             Assert.True(payloadDataDown.IsDownlinkFramePending);
 
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // Expected Mac command is present

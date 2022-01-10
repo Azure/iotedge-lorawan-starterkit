@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer
         NotMatchingDeviceByDevAddr,
         NotMatchingDeviceByMicCheck,
         InvalidNetId,
-        InvalidRxpk,
+        InvalidUpstreamMessage,
         InvalidRegion,
         UnknownDevice,
         InvalidJoinRequest,

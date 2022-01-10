@@ -5,10 +5,13 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
 {
     using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class LoRaCloudToDeviceMessageTest
     {
+        private static FramePort ReservedFramePort(byte n) => (FramePort)checked((byte)(FramePort.ReservedMin + n));
+
         [Fact]
         public void When_FPort_Is_For_Mac_Command_Should_Be_Invalid_For_Payload()
         {
@@ -16,7 +19,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = LoRaFPort.MacCommand,
+                Fport = FramePort.MacCommand,
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
@@ -26,7 +29,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 RawPayload = "AAAA",
-                Fport = LoRaFPort.MacCommand,
+                Fport = FramePort.MacCommand,
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
@@ -40,21 +43,21 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = LoRaFPort.ReservedForFutureAplications,
+                Fport = ReservedFramePort(0),
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
-            Assert.Equal("invalid fport '224' in cloud to device message '01'", errorMessage);
+            Assert.Equal("invalid fport '225' in cloud to device message '01'", errorMessage);
 
             var rawPayloadC2d = new LoRaCloudToDeviceMessage()
             {
                 MessageId = "02",
                 RawPayload = "AAAA",
-                Fport = LoRaFPort.ReservedForFutureAplications + 1,
+                Fport = ReservedFramePort(1),
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
-            Assert.Equal("invalid fport '225' in cloud to device message '02'", errorMessage);
+            Assert.Equal("invalid fport '226' in cloud to device message '02'", errorMessage);
         }
 
         [Fact]
@@ -64,7 +67,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 MacCommands = { new DevStatusRequest() },
-                Fport = LoRaFPort.MacCommand,
+                Fport = FramePort.MacCommand,
             };
 
             Assert.True(c2d.IsValid(out var errorMessage));
@@ -79,7 +82,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
                 MessageId = "01",
                 Payload = "hello",
                 MacCommands = { new DevStatusRequest() },
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             Assert.True(payloadC2d.IsValid(out var errorMessage));
@@ -90,7 +93,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
                 MessageId = "01",
                 RawPayload = "AAAA",
                 MacCommands = { new DevStatusRequest() },
-                Fport = 2,
+                Fport = FramePorts.App2,
             };
 
             Assert.True(rawPayloadC2d.IsValid(out errorMessage));
@@ -104,7 +107,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = 1,
+                Fport = FramePorts.App1,
             };
 
             Assert.True(payloadC2d.IsValid(out var errorMessage));
@@ -114,7 +117,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 RawPayload = "AAAA",
-                Fport = 2,
+                Fport = FramePorts.App2,
             };
 
             Assert.True(rawPayloadC2d.IsValid(out errorMessage));
@@ -128,7 +131,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "01",
                 Payload = "hello",
-                Fport = LoRaFPort.MacCommand,
+                Fport = FramePort.MacCommand,
                 MacCommands = { new DevStatusRequest() },
             };
 
@@ -139,7 +142,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             {
                 MessageId = "02",
                 RawPayload = "AAAA",
-                Fport = LoRaFPort.MacCommand,
+                Fport = FramePort.MacCommand,
                 MacCommands = { new DevStatusRequest() },
             };
 

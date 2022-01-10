@@ -6,11 +6,12 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
-    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.Mac;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Logging;
@@ -82,7 +83,6 @@ namespace LoRaWan.NetworkServer
             var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
             this.logger.LogDebug($"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}");
 
-            var payloadPort = loraPayload.FPortValue;
             var requiresConfirmation = request.Payload.RequiresConfirmation;
 
             LoRaADRResult loRaADRResult = null;
@@ -214,7 +214,7 @@ namespace LoRaWan.NetworkServer
                     {
                         try
                         {
-                            decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey);
+                            decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey.Value);
                         }
                         catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.PayloadDecryptionFailed)
                         {
@@ -223,7 +223,7 @@ namespace LoRaWan.NetworkServer
                     }
 
                     #region Handling MacCommands
-                    if (payloadPort == LoRaFPort.MacCommand)
+                    if (loraPayload.Fport == FramePort.MacCommand)
                     {
                         if (!skipDownstreamToAvoidCollisions)
                         {
@@ -244,18 +244,39 @@ namespace LoRaWan.NetworkServer
                                 requiresConfirmation = true;
                             }
                         }
+
+                        // Persist dwell time settings in device reported properties
+                        if (loraPayload.MacCommands is not null && loraPayload.MacCommands.Any(m => m.Cid == Cid.TxParamSetupCmd))
+                        {
+                            if (request.Region is DwellTimeLimitedRegion someRegion)
+                            {
+                                if (someRegion.DesiredDwellTimeSetting != loRaDevice.ReportedDwellTimeSetting)
+                                {
+                                    loRaDevice.UpdateDwellTimeSetting(someRegion.DesiredDwellTimeSetting, acceptChanges: false);
+                                    _ = await loRaDevice.SaveChangesAsync(force: true);
+                                }
+                                else
+                                {
+                                    this.logger.LogDebug("Received 'TxParamSetupAns' even though reported dwell time settings match desired dwell time settings.");
+                                }
+                            }
+                            else
+                            {
+                                this.logger.LogWarning("Received 'TxParamSetupAns' in region '{Region}' which does not support dwell limitations.", request.Region.LoRaRegion);
+                            }
+                        }
                     }
                     #endregion
-                    else
+                    else if (loraPayload.Fport is { } payloadPort)
                     {
                         if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
                         {
-                            this.logger.LogDebug($"no decoder set in device twin. port: {payloadPort}");
+                            this.logger.LogDebug($"no decoder set in device twin. port: {(byte)payloadPort}");
                             payloadData = new UndecodedPayload(decryptedPayloadData);
                         }
                         else
                         {
-                            this.logger.LogDebug($"decoding with: {loRaDevice.SensorDecoder} port: {payloadPort}");
+                            this.logger.LogDebug($"decoding with: {loRaDevice.SensorDecoder} port: {(byte)payloadPort}");
                             var decodePayloadResult = await this.payloadDecoder.DecodeMessageAsync(loRaDevice.DevEUI, decryptedPayloadData, payloadPort, loRaDevice.SensorDecoder);
                             payloadData = decodePayloadResult.GetDecodedPayload();
 
@@ -287,12 +308,23 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
+                    if (request.Region is DwellTimeLimitedRegion someDwellTimeLimitedRegion
+                        && loRaDevice.ReportedDwellTimeSetting != someDwellTimeLimitedRegion.DesiredDwellTimeSetting
+                        && cloudToDeviceMessage == null)
+                    {
+                        this.logger.LogDebug("Preparing 'TxParamSetupReq' MAC command downstream.");
+                        // put the MAC command into a C2D message.
+                        cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { MacCommands = { new TxParamSetupRequest(someDwellTimeLimitedRegion.DesiredDwellTimeSetting) } };
+                        fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                        requiresConfirmation = true;
+                    }
+
                     var sendUpstream = concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || loRaDevice.Deduplication is not DeduplicationMode.Drop;
 
                     // We send it to the IoT Hub:
                     // - when it's a new message or it's a resubmission/duplicate but with a strategy that is not drop
                     // - and it's not a MAC command
-                    if (sendUpstream && payloadPort != LoRaFPort.MacCommand)
+                    if (sendUpstream && loraPayload.Fport != FramePort.MacCommand)
                     {
                         // combine the results of the 2 deduplications: on the concentrator level and on the network server layer
                         var isDuplicate = concentratorDeduplicationResult is not ConcentratorDeduplicationResult.NotDuplicate || (bundlerResult?.DeduplicationResult?.IsDuplicate ?? false);
@@ -343,10 +375,10 @@ namespace LoRaWan.NetworkServer
                         loRaADRResult,
                         this.logger);
 
-                    if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
+                    if (downlinkMessageBuilderResp.DownlinkMessage != null)
                     {
                         this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)downlinkMessageBuilderResp.ReceiveWindow));
-                        _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                        _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
 
                         if (cloudToDeviceMessage != null)
                         {
@@ -362,7 +394,7 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessageBuilderResp.DownlinkMessage);
                 }
 
                 // Flag indicating if there is another C2D message waiting
@@ -444,7 +476,7 @@ namespace LoRaWan.NetworkServer
 
                 if (cloudToDeviceMessage != null)
                 {
-                    if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage == null)
+                    if (confirmDownlinkMessageBuilderResp.DownlinkMessage == null)
                     {
                         this.receiveWindowMissed?.Add(1);
                         this.logger.LogInformation($"out of time for downstream message, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
@@ -462,13 +494,13 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
+                if (confirmDownlinkMessageBuilderResp.DownlinkMessage != null)
                 {
                     this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)confirmDownlinkMessageBuilderResp.ReceiveWindow));
                     _ = SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp);
                 }
 
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkMessage);
                 #endregion
             }
             finally
@@ -511,7 +543,7 @@ namespace LoRaWan.NetworkServer
             _ = request ?? throw new ArgumentNullException(nameof(request));
             _ = confirmDownlinkMessageBuilderResp ?? throw new ArgumentNullException(nameof(confirmDownlinkMessageBuilderResp));
 
-            return request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+            return request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkMessage);
         }
 
         protected virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
@@ -580,7 +612,7 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            var rxpk = request.Rxpk;
+            var radioMetadata = request.RadioMetadata;
             var loRaRegion = request.Region;
             uint maxPayload;
 
@@ -588,7 +620,7 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
             {
                 // Get max. payload size for RX2, considering possible user provided Rx2DataRate
-                if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
+                if (this.configuration.Rx2DataRate is null)
                 {
                     if (loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2)
                     {
@@ -603,24 +635,15 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                    maxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate);
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                    maxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate.Value);
                 }
             }
 
             // Otherwise, it is RX1.
             else
             {
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                var downstreamDataRate = loRaRegion.GetDownstreamDataRate(rxpk);
-                if (downstreamDataRate == null)
-                {
-                    this.logger.LogError("Failed to get downstream data rate");
-                    return false;
-                }
+                var downstreamDataRate = loRaRegion.GetDownstreamDataRate(radioMetadata.DataRate);
                 maxPayload = loRaRegion.GetMaxPayloadSize(downstreamDataRate);
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
 
             // Deduct 8 bytes from max payload size.
@@ -655,7 +678,7 @@ namespace LoRaWan.NetworkServer
             _ = request ?? throw new ArgumentNullException(nameof(request));
 
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
-            var deviceTelemetry = new LoRaDeviceTelemetry(request.Rxpk, loRaPayloadData, decodedValue, decryptedPayloadData)
+            var deviceTelemetry = new LoRaDeviceTelemetry(request, loRaPayloadData, decodedValue, decryptedPayloadData)
             {
                 DeviceEUI = loRaDevice.DevEUI,
                 GatewayID = this.configuration.GatewayID,
@@ -779,7 +802,7 @@ namespace LoRaWan.NetworkServer
                 DevEUI = loRaDevice.DevEUI,
                 FCnt = payloadFcnt,
                 GatewayId = this.configuration.GatewayID,
-                Snr = request.Rxpk.Lsnr
+                Snr = request.RadioMetadata.UpInfo.SignalNoiseRatio
             };
 
             // If the ADR req bit is not set we don't perform rate adaptation.
@@ -794,10 +817,8 @@ namespace LoRaWan.NetworkServer
                     this.configuration.GatewayID,
                     payloadFcnt,
                     loRaDevice.FCntDown,
-                    (float)request.Rxpk.RequiredSnr,
-#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
-                    request.Region.GetDRFromFreqAndChan(request.Rxpk.Datr),
-#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                    (float)request.Region.RequiredSnr(request.RadioMetadata.DataRate),
+                    request.RadioMetadata.DataRate,
                     request.Region.TXPowertoMaxEIRP.Count - 1,
                     request.Region.MaxADRDataRate,
                     loRaADRTableEntry);

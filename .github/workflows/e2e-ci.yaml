@@ -86,6 +86,23 @@ jobs:
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
       CertRemotePath: "/var/lorastarterkit/certs"
+  
+  power_on_azure_vm:
+    name: Power ON EFLOW
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Power ON Azure VM
+        uses: ./.github/actions/power-azure-vm
+        with:
+          AZURE_VM_NAME: eflow
+          AZURE_RG_NAME: lorae2etests
+          POWER_SWITCH: true
+          AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
+          AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
@@ -357,7 +374,7 @@ jobs:
           iot_edge_deployment_id: '${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}'
 
 # Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
-  e2e_tests_job :
+  e2e_tests_job:
     timeout-minutes: 150
     name: Run E2E Tests
     environment:
@@ -501,5 +518,22 @@ jobs:
       with:
         name: e2e-test-results
         path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
+  
+  power_off_azure_vm:
+    name: Power OFF EFLOW
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      - e2e_tests_job
+    steps:
+      - uses: actions/checkout@v2
 
-
+      - name: Power OFF Azure VM
+        uses: ./.github/actions/power-azure-vm
+        with:
+          AZURE_VM_NAME: eflow
+          AZURE_RG_NAME: lorae2etests
+          POWER_SWITCH: false
+          AZURE_SP_CLIENTID: ${{ secrets.AZURE_SP_CLIENTID }}
+          AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}

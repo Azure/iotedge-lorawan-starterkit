@@ -78,10 +78,10 @@ namespace LoRaWan.NetworkServer
         /// It takes into consideration region and device settings.
         /// </summary>
         /// <returns>Integer containing the delay in seconds.</returns>
-        public int GetReceiveWindow1Delay(LoRaDevice loRaDevice)
+        public uint GetReceiveWindow1Delay(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return CalculateRXWindowsTime((int)this.loraRegion.ReceiveDelay1, loRaDevice.ReportedRXDelay);
+            return CalculateRXWindowsTime(this.loraRegion.ReceiveDelay1, loRaDevice.ReportedRXDelay);
         }
 
         private bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow1Delay(loRaDevice);
@@ -91,10 +91,10 @@ namespace LoRaWan.NetworkServer
         /// It takes into consideration region and device settings.
         /// </summary>
         /// <returns>Integer containing the delay in seconds.</returns>
-        public int GetReceiveWindow2Delay(LoRaDevice loRaDevice)
+        public uint GetReceiveWindow2Delay(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return CalculateRXWindowsTime((int)this.loraRegion.ReceiveDelay2, loRaDevice.ReportedRXDelay);
+            return CalculateRXWindowsTime(this.loraRegion.ReceiveDelay2, loRaDevice.ReportedRXDelay);
         }
 
         private bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow2Delay(loRaDevice);
@@ -113,6 +113,14 @@ namespace LoRaWan.NetworkServer
         public TimeSpan GetRemainingTimeToJoinAcceptFirstWindow()
         {
             return TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay1) - GetElapsedTime();
+        }
+
+        /// <summary>
+        /// Calculates the time remaining to response in second join accept window.
+        /// </summary>
+        public TimeSpan GetRemainingTimeToJoinAcceptSecondWindow()
+        {
+            return TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay2) - GetElapsedTime();
         }
 
         /// <summary>
@@ -197,7 +205,7 @@ namespace LoRaWan.NetworkServer
             return TimeSpan.Zero;
         }
 
-        private static int CalculateRXWindowsTime(int windowTime, ushort rXDelay)
+        private static uint CalculateRXWindowsTime(uint windowTime, ushort rXDelay)
         {
             // RxDelay follows specification of RXTimingSetupReq and the delay
             // | rXDelay | Delay |
