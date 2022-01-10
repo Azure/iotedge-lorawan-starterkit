@@ -78,31 +78,16 @@ namespace LoRaTools.LoRaMessage
         }
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null) =>
-            Mic == PerformMic(key);
+            throw new NotImplementedException();
 
         public override bool CheckMic(AppKey key) => Mic == PerformMic(key);
 
-        private Mic PerformMic(NetworkSessionKey key)
-        {
-            var (mhdr, joinEui, devEui) = GetTypedMicInputs();
-            return LoRaWan.Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, DevNonce);
-        }
-
         private Mic PerformMic(AppKey key)
-        {
-            var (mhdr, joinEui, devEui) = GetTypedMicInputs();
-            return LoRaWan.Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, DevNonce);
-        }
-
-        /// <summary>
-        /// This method will go away once we start using all the primitives everywhere.
-        /// </summary>
-        private (MacHeader, JoinEui, DevEui) GetTypedMicInputs()
         {
             var mhdr = new MacHeader(Mhdr.Span[0]);
             var joinEui = JoinEui.Read(AppEUI.Span);
             var devEui = DevEui.Read(DevEUI.Span);
-            return (mhdr, joinEui, devEui);
+            return LoRaWan.Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, DevNonce);
         }
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
