@@ -66,7 +66,7 @@ Configure LoRa Basics Station and Network Server to run on your concentrator:
     select Create Deployment for Single Device.
 
 4. Provision a device in your IoT Hub by following the [Basics Station
-   configuration](../station-device-provisioning.md)
+   configuration](../../user-guide/station-device-provisioning.md)
    docs.
 
 ### End device setup
