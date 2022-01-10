@@ -208,12 +208,41 @@ At this deduplication we ensure that duplicate messages coming from different ne
 handled correctly. The categorization happens from an Azure Function where we need to send some
 metadata of the messages.
 
-Simplest topology showcasing this scenario would be:
+If a device is not configured for a single gateway - no gateway assigned - we reach out
+to the function to determine, if a particular message from a device was already processed.
 
 ```mermaid
 flowchart LR;
-    Device-->LBS1-->LNS1;
-    Device-->LBS2-->LNS2;
+    Device-->LBS1-->LNS1-->Function-->Redis;
+    Device-->LBS2-->LNS2-->Function-->Redis;
 ```
 
-TODO
+1. Message A from Device 1 arrives at LNS 1
+1. Message A from Device 1 arrives at LNS 2
+1. LNS 1 calls the function
+1. The function receives a lock on redis and tries to read the state of the message -
+   the key is composed out of the Dev EUI and the Gateway Id
+1. The last processed FcntUp is compared to the Message's FcntUp
+1. We mark the request to be duplicate=false in the following cases:
+   1. The incoming FcntUp is > than the cached FcntUp
+   1. The incoming FcntUp is == to the cached FcntUp and the Gateway Id matches (reprocessing)
+1. Other cases are considered duplicates and the result contains the processing gateway id
+
+Once the LNS receives the result, it does apply different actions based on the deduplication
+strategy selected for the device.
+
+#### Upstream Processing
+
+**Note**: all cases are describing the action, when receiving the information that the message is a duplicate.
+
+1. **Drop**: Stop processing.
+1. **Mark**: Mark the message "DupMsg": true.
+1. **None**: Process every message without marking.
+
+#### Downstream Processing
+
+The downstream processing is different in that it is not depending on the deduplication strategy.
+We only ever send a single downstream message, if we have to. Also this is driven by the function.
+In the same process, we determine, if we are the first gateway to process the message. Only that
+gateway will receive a fcnt down to confirm the message. All other gateways, will not receive
+a fcnt down.
