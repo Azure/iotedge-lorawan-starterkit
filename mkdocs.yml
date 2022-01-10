@@ -51,6 +51,10 @@ markdown_extensions:
 
 plugins:
   - search
+  - git-revision-date-localized:
+      type: timeago
+      enable_creation_date: true
+      fallback_to_build_date: true
 
 extra_css:
   - https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css
@@ -62,29 +66,30 @@ nav:
   - quickstart.md
   - 'User Guide':
     - user-guide/devguide.md
-    - user-guide/architecture.md
-    - user-guide/message-flows.md
     - user-guide/partner.md
-    - user-guide/caching.md
     - user-guide/upgrade.md
     - user-guide/documentation.md
     - user-guide/observability.md
-    - user-guide/ci-setup.md
     - 'Basic Station configuration':
       - user-guide/station-device-provisioning.md
       - user-guide/station-authentication-modes.md
       - user-guide/station-module-configuration.md
     - 'Region specifics':
-      - user-guide/as923.md
+      - user-guide/as923.md  
+    - Testing:
+      - user-guide/testing/e2e_tests.md
+      - user-guide/testing/integration_tests.md
+  - 'Reference':
+    - user-guide/architecture.md
+    - user-guide/message-flows.md
+    - user-guide/caching.md
+    - user-guide/ci-setup.md
   - 'Samples':
     - samples/arduino.md
     - 'Decoders':
       - samples/decoders/decoder.md
       - samples/decoders/universal.md
       - samples/decoders/cayenne.md
-  - Testing:
-    - testing/e2e_tests.md
-    - testing/integration_tests.md
   - Tools:
     - tools/device-provisioning.md
   - 'Decision Log':

@@ -1,8 +1,8 @@
 # 001. Region CN470 implementation
 
-Milestone / Epic: [#416](https://github.com/Azure/iotedge-lorawan-starterkit/issues/416)
-
-Authors: Maggie Salak, Mikhail Chatillon
+**Epic**: [#416](https://github.com/Azure/iotedge-lorawan-starterkit/issues/416)  
+**Authors**: Maggie Salak, Mikhail Chatillon  
+**Status**: Accepted
 
 ## Overview / Problem Statement
 

@@ -1,8 +1,8 @@
 # 002. LoRa Basic Station configuration endpoint implementation
 
-Milestone / Epic: [#388](https://github.com/Azure/iotedge-lorawan-starterkit/issues/388)
-
-Authors: Bastian Burger, Spyros Giannakakis
+**Epic**: [#388](https://github.com/Azure/iotedge-lorawan-starterkit/issues/388)  
+**Authors**: Bastian Burger, Spyros Giannakakis  
+**Status**: Accepted
 
 ## Overview / Problem Statement
 

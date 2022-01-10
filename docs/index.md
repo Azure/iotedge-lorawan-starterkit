@@ -28,9 +28,11 @@ Azure IoT Edge users to experiment with LoRaWAN technology.
 - LoRaWAN 1.0.2 implementation
 (see [LoRaWAN Specification Support](#LoRaWAN-1.0.2-Specification-Support)
 for more details)
+- Multiple concentrator support
 - Device and Gateway management done completely through Azure IoT Hub.
 - Bi-directional communication between LoRa end devices and Azure cloud.
 - Custom packet decoding framework.
+- Device Agnostic.
 - Identity Translation for LoRa devices with caching support.
 - Partial Offline and Casually connected Gateways scenarios.*
 - Easy deployment and setup using Azure ARM templates.
@@ -45,32 +47,16 @@ to our release notes for more details on what is available.
 
 - Current supported Specification: *1.0.2*.
 - Support of Class A and C devices.
-- Support of **EU868** and **US915** channel frequencies.
+- Support of **EU868**, **US915**, **AS923** and **CN470** channel frequencies.
 - Activation through ABP and OTAA.
 - Confirmed and unconfirmed upstream messages.
 - Confirmed and unconfirmed downstream messages.
 - Multi-gateways.
+- Multi-concentrators.
+- [LoRa Basics™ Station](https://github.com/lorabasics/basicstation) Support
 - Message de-duplication.
 - Support of MAC commands.
 - ADR Support.
-
-## Prerequisites
-
-The following should be completed before proceeding with the LoRaWAN starter kit
-development or deployment in your environment.
-
-- You must have an Azure subscription. Get an
-[Azure Free account](https://azure.microsoft.com/en-us/offers/ms-azr-0044p/)
-to get started.
-- We are based on Azure IoT Edge so it is important that you understand the
-concepts and deployment model for Azure IoT Edge. Refer to Azure
-[IoT Edge documentation](https://docs.microsoft.com/en-us/azure/iot-edge/)
-to see how it works.
-- Understand how LoRa and LoRaWAN works. A great primer is available at the
-[LoRa Alliance website](https://lora-alliance.org/resource_hub/what-is-lorawan/).
-- To test the solution on a device, you need to have a LoRaWAN Device Kit
-Gateway and a LoRa end node. We have some recommendations in the
-[Tested Gateways](#tested-gateways) section below.
 
 ## Getting Started
 
@@ -91,11 +77,11 @@ and deploy the kit in your dev environment. We also support a
 
 - **Enable a gateway or device to be compatible with the starter kit**: We have
 developed the LoRaWAN starter kit agnostic of a device manufacturer
-implementation and focussed on the specifics on underlying architectures
+implementation and focused on the specifics on underlying architectures
 (arm, x86). However, we understand that device manufacturers can have specific
-requirements; these could be specific to a gateway and the basic station
-they use or to the LoRa nodes and the decoders the device may use. We have
-provided specific instructions on making these specialized hardware compatible
+requirements; these could be specific to the gateway and the concentrator
+they use, or to the LoRa nodes and the decoders the device may use. We have
+provided specific instructions on making such specialized hardware compatible
 with our kit. You can follow these [instructions](user-guide/partner.md) depending on
 your scenarios and also have your device gateway highlighted on our repo.
 
