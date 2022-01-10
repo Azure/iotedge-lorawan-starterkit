@@ -26,10 +26,6 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<LoRaDeviceClient> logger;
         private DeviceClient deviceClient;
 
-        // TODO: verify if those are thread safe and can be static
-        private readonly NoRetry noRetryPolicy;
-        private readonly ExponentialBackoff exponentialBackoff;
-
         private readonly string primaryKey;
 
         public LoRaDeviceClient(string devEUI, string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger)
@@ -41,44 +37,24 @@ namespace LoRaWan.NetworkServer
             this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
 
             this.devEUI = devEUI;
-            this.noRetryPolicy = new NoRetry();
-            this.exponentialBackoff = new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
 
             this.connectionString = connectionString;
             this.primaryKey = primaryKey;
             this.logger = logger;
-            this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
-
-            SetRetry(false);
+            var deviceClient = this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
+            deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
+                                                               minBackoff: TimeSpan.FromMilliseconds(100),
+                                                               maxBackoff: TimeSpan.FromSeconds(10),
+                                                               deltaBackoff: TimeSpan.FromMilliseconds(100)));
         }
 
         public bool IsMatchingKey(string primaryKey) => this.primaryKey == primaryKey;
-
-        private void SetRetry(bool retryon)
-        {
-            if (retryon)
-            {
-                if (this.deviceClient != null)
-                {
-                    this.deviceClient.SetRetryPolicy(this.exponentialBackoff);
-                }
-            }
-            else
-            {
-                if (this.deviceClient != null)
-                {
-                    this.deviceClient.SetRetryPolicy(this.noRetryPolicy);
-                }
-            }
-        }
 
         public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 60000;
-
-                SetRetry(true);
 
                 this.logger.LogDebug("getting device twin");
 
@@ -101,10 +77,6 @@ namespace LoRaWan.NetworkServer
             {
                 throw new LoRaProcessingException("An error occured in IoT Hub when fetching the device twin.", ex, LoRaProcessingErrorCode.TwinFetchFailed);
             }
-            finally
-            {
-                SetRetry(false);
-            }
         }
 
         public async Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
@@ -117,8 +89,6 @@ namespace LoRaWan.NetworkServer
                     cts = new CancellationTokenSource(twinUpdateTimeout);
                     cancellationToken = cts.Token;
                 }
-
-                SetRetry(true);
 
                 this.logger.LogDebug("updating twin");
 
@@ -135,7 +105,6 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                SetRetry(false);
                 cts?.Dispose();
             }
         }
@@ -147,9 +116,6 @@ namespace LoRaWan.NetworkServer
                 try
                 {
                     this.deviceClient.OperationTimeoutInMilliseconds = 120000;
-
-                    // Enable retry for this send message, off by default
-                    SetRetry(true);
 
                     var messageJson = JsonConvert.SerializeObject(telemetry, Formatting.None);
                     using var message = new Message(Encoding.UTF8.GetBytes(messageJson));
@@ -173,11 +139,6 @@ namespace LoRaWan.NetworkServer
                 {
                     // continue
                 }
-                finally
-                {
-                    // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                    SetRetry(false);
-                }
             }
 
             return false;
@@ -190,8 +151,6 @@ namespace LoRaWan.NetworkServer
                 // Set the operation timeout to accepted timeout plus one second
                 // Should not return an operation timeout since we wait less that it
                 this.deviceClient.OperationTimeoutInMilliseconds = (uint)(timeout.TotalMilliseconds + 1000);
-
-                SetRetry(true);
 
                 this.logger.LogDebug($"checking cloud to device message for {timeout}");
 
@@ -211,11 +170,6 @@ namespace LoRaWan.NetworkServer
             {
                 return null;
             }
-            finally
-            {
-                // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                SetRetry(false);
-            }
         }
 
         public async Task<bool> CompleteAsync(Message cloudToDeviceMessage)
@@ -225,8 +179,6 @@ namespace LoRaWan.NetworkServer
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
-
-                SetRetry(true);
 
                 this.logger.LogDebug($"completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
@@ -240,11 +192,6 @@ namespace LoRaWan.NetworkServer
             {
                 return false;
             }
-            finally
-            {
-                // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                SetRetry(false);
-            }
         }
 
         public async Task<bool> AbandonAsync(Message cloudToDeviceMessage)
@@ -254,8 +201,6 @@ namespace LoRaWan.NetworkServer
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
-
-                SetRetry(true);
 
                 this.logger.LogDebug($"abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
@@ -269,11 +214,6 @@ namespace LoRaWan.NetworkServer
             {
                 return false;
             }
-            finally
-            {
-                // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                SetRetry(false);
-            }
         }
 
         public async Task<bool> RejectAsync(Message cloudToDeviceMessage)
@@ -283,8 +223,6 @@ namespace LoRaWan.NetworkServer
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
-
-                SetRetry(true);
 
                 this.logger.LogDebug($"rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
@@ -297,11 +235,6 @@ namespace LoRaWan.NetworkServer
             catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not reject cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}")))
             {
                 return false;
-            }
-            finally
-            {
-                // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                SetRetry(false);
             }
         }
 

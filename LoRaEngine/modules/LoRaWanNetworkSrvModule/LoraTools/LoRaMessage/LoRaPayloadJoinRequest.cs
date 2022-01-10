@@ -4,12 +4,8 @@
 namespace LoRaTools.LoRaMessage
 {
     using System;
-    using System.Buffers.Binary;
-    using System.Linq;
     using LoRaTools.Utils;
     using LoRaWan;
-    using Org.BouncyCastle.Crypto.Parameters;
-    using Org.BouncyCastle.Security;
 
     /// <summary>
     /// Implementation of the Join Request message type.
