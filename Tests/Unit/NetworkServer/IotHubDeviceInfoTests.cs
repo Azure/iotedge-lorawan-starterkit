@@ -15,7 +15,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             from networkSessionKey in new[] { (NetworkSessionKey?)null, TestKeys.CreateNetworkSessionKey(3) }
             select new IoTHubDeviceInfo
             {
-                DevAddr = new DevAddr(1).ToString(),
+                DevAddr = new DevAddr(1),
                 DevEUI = new DevEui(2).ToString(),
                 GatewayId = "foo",
                 NwkSKey = networkSessionKey,
