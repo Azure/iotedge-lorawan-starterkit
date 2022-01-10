@@ -80,6 +80,12 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Fact]
+        public void TryParse_Does_Not_Throw_When_Argument_Out_Of_Range()
+        {
+            Assert.False(NetId.TryParse("FFFFFFFF", out var _));
+        }
+
+        [Fact]
         public void Parse_ToString_Preserves_Information()
         {
             var expected = new NetId(1);
