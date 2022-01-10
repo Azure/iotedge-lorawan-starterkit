@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Common
 
             if (fport == FramePort.MacCommand)
             {
-                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)} when fport is set to 0."));
             }
             else
             {
