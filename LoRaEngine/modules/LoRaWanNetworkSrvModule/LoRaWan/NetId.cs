@@ -4,7 +4,6 @@
 namespace LoRaWan
 {
     using System;
-    using System.Buffers.Binary;
     using System.Globalization;
 
     /// <summary>
@@ -21,7 +20,7 @@ namespace LoRaWan
 
         public NetId(int value)
         {
-            if (unchecked((uint)value & 0xffff_0000_0000_0000) != 0)
+            if (unchecked((uint)value & 0xff00_0000) != 0)
                 throw new ArgumentOutOfRangeException(nameof(value), value, null);
             this.value = value;
         }

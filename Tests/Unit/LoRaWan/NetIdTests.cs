@@ -28,15 +28,22 @@ namespace LoRaWan.Tests.Unit
         }
 
         [Fact]
+        public void Constructor_Should_Check_Allowed_Limits()
+        {
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new NetId(0x0100_0000));
+            Assert.Equal("value", ex.ParamName);
+        }
+
+        [Fact]
         public void ToString_Returns_Hexadecimal_String()
         {
             Assert.Equal("1A2B3C", this.subject.ToString());
         }
 
         public static TheoryData<string, int> Parse_Data() =>
-            TheoryDataFactory.From(("1234abcd", 0x1234abcd),
-                                   ("1234aBcd", 0x1234abcd),
-                                   ("1234ABCD", 0x1234abcd));
+            TheoryDataFactory.From(("34abcd", 0x34abcd),
+                                   ("0034aBcd", 0x34abcd),
+                                   ("0034ABCD", 0x34abcd));
 
         [Theory]
         [MemberData(nameof(Parse_Data))]
