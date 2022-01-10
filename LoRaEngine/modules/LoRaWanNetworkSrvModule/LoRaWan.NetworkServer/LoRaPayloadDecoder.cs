@@ -63,7 +63,7 @@ namespace LoRaWan.NetworkServer
 
                 var query = HttpUtility.ParseQueryString(url.Query);
                 query["devEUI"] = devEUI;
-                query["fport"] = fport.ToString();
+                query["fport"] = ((int)fport).ToString(CultureInfo.InvariantCulture);
                 query["payload"] = base64Payload;
 
                 var urlBuilder = new UriBuilder(url) { Query = query.ToString() };
