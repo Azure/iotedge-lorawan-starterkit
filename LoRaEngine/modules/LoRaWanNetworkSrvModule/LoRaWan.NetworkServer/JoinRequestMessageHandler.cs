@@ -137,16 +137,16 @@ namespace LoRaWan.NetworkServer
                 var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
                 var netId = new byte[3]
                 {
-                netIdBytes[0],
-                netIdBytes[1],
-                netIdBytes[2]
+                    netIdBytes[0],
+                    netIdBytes[1],
+                    netIdBytes[2]
                 };
 
                 var appNonce = OTAAKeysGenerator.GetAppNonce();
                 var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
                 var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(appNonceBytes, netId, joinReq.DevNonce, appKey);
                 var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(appNonceBytes, netId, joinReq.DevNonce, appKey);
-                var devAddr = OTAAKeysGenerator.GetNwkId(netId);
+                var devAddr = OTAAKeysGenerator.GetNwkId(this.configuration.NetId);
 
                 var oldDevAddr = loRaDevice.DevAddr;
 
@@ -269,7 +269,7 @@ namespace LoRaWan.NetworkServer
 
                 var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
                     ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
-                    ConversionHelper.StringToByteArray(devAddr), // todo add device address management
+                    devAddr, // todo add device address management
                     appNonceBytes,
                     dlSettings,
                     loraSpecDesiredRxDelay,

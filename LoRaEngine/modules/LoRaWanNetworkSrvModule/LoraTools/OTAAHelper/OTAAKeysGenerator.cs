@@ -10,19 +10,11 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        private static readonly RandomNumberGenerator RndKeysGenerator = RandomNumberGenerator.Create();
-
-        public static string GetNwkId(byte[] netId)
+        public static DevAddr GetNwkId(uint netId)
         {
-            if (netId is null) throw new ArgumentNullException(nameof(netId));
-
-            var nwkPart = netId[0] << 1;
-            var devAddr = new byte[4];
-
-            RndKeysGenerator.GetBytes(devAddr);
-
-            devAddr[0] = (byte)((nwkPart & 0b11111110) | (devAddr[0] & 0b00000001));
-            return ConversionHelper.ByteArrayToString(devAddr);
+            var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
+            // The 7 LBS of the NetID become the NwkID of a DevAddr:
+            return new DevAddr(unchecked((byte)netId) & 0b0111_1111, address);
         }
 
         public static NetworkSessionKey CalculateNetworkSessionKey(byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
@@ -115,9 +107,11 @@ namespace LoRaTools
 
         public static string GetAppNonce()
         {
-            var appNonce = new byte[3];
-            RndKeysGenerator.GetBytes(appNonce);
-            return ConversionHelper.ByteArrayToString(appNonce);
+            Span<byte> bytes = stackalloc byte[3];
+            RandomNumberGenerator.Fill(bytes);
+            Span<char> chars = stackalloc char[bytes.Length * 2];
+            Hexadecimal.Write(bytes, chars);
+            return new string(chars);
         }
     }
 }

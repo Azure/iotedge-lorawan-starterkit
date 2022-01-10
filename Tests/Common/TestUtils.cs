@@ -79,7 +79,7 @@ namespace LoRaWan.Tests.Common
         {
             var finalDesiredProperties = new Dictionary<string, object>
                 {
-                    { TwinProperty.DevAddr, simulatedDevice.DevAddr },
+                    { TwinProperty.DevAddr, simulatedDevice.DevAddr.ToString() },
                     { TwinProperty.AppSKey, simulatedDevice.AppSKey?.ToString() },
                     { TwinProperty.NwkSKey, simulatedDevice.NwkSKey?.ToString() },
                     { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
@@ -136,7 +136,7 @@ namespace LoRaWan.Tests.Common
 
             var finalReportedProperties = new Dictionary<string, object>
             {
-                { TwinProperty.DevAddr, simulatedDevice.DevAddr },
+                { TwinProperty.DevAddr, simulatedDevice.DevAddr?.ToString() },
                 { TwinProperty.AppSKey, simulatedDevice.AppSKey?.ToString() },
                 { TwinProperty.NwkSKey, simulatedDevice.NwkSKey?.ToString() },
                 { TwinProperty.DevNonce, simulatedDevice.DevNonce.ToString() },

@@ -104,7 +104,7 @@ namespace LoRaWan.Tests.Integration
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(parallelTestConfiguration.DeviceID ?? 1, gatewayID: null));
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
+            var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
 
             // Using loose mock because sometimes we might call receive async
             var looseDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
@@ -132,7 +132,7 @@ namespace LoRaWan.Tests.Integration
             initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr;
+            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr.ToString();
             if (parallelTestConfiguration.GatewayID != null)
                 initialTwin.Properties.Desired[TwinProperty.GatewayID] = parallelTestConfiguration.GatewayID;
             initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
@@ -304,7 +304,7 @@ namespace LoRaWan.Tests.Integration
             };
             var device2Twin = TestUtils.CreateABPTwin(device2);
             var device3 = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(3));
-            device3.SetupJoin(TestKeys.CreateAppSessionKey(0x88), TestKeys.CreateNetworkSessionKey(0x88), "02000088");
+            device3.SetupJoin(TestKeys.CreateAppSessionKey(0x88), TestKeys.CreateNetworkSessionKey(0x88), new DevAddr(0x02000088));
             var device3Twin = TestUtils.CreateOTAATwin(device3);
             var device4 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(4));
             var device4Twin = TestUtils.CreateABPTwin(device4);
@@ -315,13 +315,13 @@ namespace LoRaWan.Tests.Integration
                 new IoTHubDeviceInfo(device2.DevAddr, device2.DevEUI, "2"),
             };
 
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(device1.DevAddr))
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(device1.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(device1And2Result), TimeSpan.FromMilliseconds(searchDelay));
 
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(device3.DevAddr))
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(device3.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(device3.DevAddr, device3.DevEUI, "3").AsList()), TimeSpan.FromMilliseconds(searchDelay));
 
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(device4.DevAddr))
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(device4.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(device4.DevAddr, device4.DevEUI, "3").AsList()), TimeSpan.FromMilliseconds(searchDelay));
 
             var deviceClient1 = new Mock<ILoRaDeviceClient>();

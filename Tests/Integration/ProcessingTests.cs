@@ -436,7 +436,7 @@ namespace LoRaWan.Tests.Integration
         [InlineData(16777215, 16777215)]
         [InlineData(127, 127)]
         [InlineData(255, 255)]
-        public async Task ABP_Device_NetId_Should_Match_Server(uint deviceNetId, uint serverNetId)
+        public async Task ABP_Device_NetId_Should_Match_Server(int deviceNetId, uint serverNetId)
         {
             var msgPayload = "1234";
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: deviceNetId));
@@ -662,7 +662,7 @@ namespace LoRaWan.Tests.Integration
         public async Task When_Second_Gateway_Does_Not_Find_Device_Should_Keep_Trying_On_Subsequent_Requests()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1));
-            const string devAddr = "02AABBCC";
+            var devAddr = new DevAddr(0x02aabbcc);
             var nwkSKey = TestKeys.CreateNetworkSessionKey(2);
             var appSKey = TestKeys.CreateAppSessionKey(1);
             var devEUI = simulatedDevice.DevEUI;
@@ -680,7 +680,7 @@ namespace LoRaWan.Tests.Integration
                 {
                     { TwinProperty.AppSKey, appSKey.ToString() },
                     { TwinProperty.NwkSKey, nwkSKey.ToString() },
-                    { TwinProperty.DevAddr, devAddr },
+                    { TwinProperty.DevAddr, devAddr.ToString() },
                     { TwinProperty.DevNonce, "ABCD" },
                 });
 
@@ -873,7 +873,7 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
 
             // Device twin will be queried
             var twin = simulatedDevice.CreateABPTwin();
@@ -975,7 +975,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             // will search for the device twice
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr))
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa").AsList()));
 
             // add device to cache already
@@ -1049,7 +1049,7 @@ namespace LoRaWan.Tests.Integration
             // Lora device api
 
             // will search for the device twice
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr))
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa").AsList()));
 
             using var cache = new MemoryCache(new MemoryCacheOptions());
@@ -1067,7 +1067,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
 
-            Assert.False(DeviceCache.HasRegistrations(simulatedDevice.DevAddr));
+            Assert.False(DeviceCache.HasRegistrations(simulatedDevice.DevAddr.Value));
 
             LoRaDeviceApi.VerifyAll();
             LoRaDeviceClient.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Once);
@@ -1239,12 +1239,12 @@ namespace LoRaWan.Tests.Integration
             deviceClient.Setup(dc => dc.Dispose());
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0, gatewayID: ServerGatewayID));
 
-            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
+            var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
 
             // Add this device to the allowed dev address list
-            ServerConfiguration.AllowedDevAddresses = new HashSet<string>(1)
+            ServerConfiguration.AllowedDevAddresses = new HashSet<DevAddr>(1)
             {
-                simulatedDevice.DevAddr
+                simulatedDevice.DevAddr.Value
             };
 
             using var cache = NewMemoryCache();
@@ -1313,7 +1313,7 @@ namespace LoRaWan.Tests.Integration
             var isResetingDevice = payloadFcntUp <= 1;
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID), frmCntDown: 5, frmCntUp: 10);
 
-            var devAddr = simulatedDevice1.LoRaDevice.DevAddr;
+            var devAddr = simulatedDevice1.LoRaDevice.DevAddr.Value;
 
             var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2, gatewayID: ServerGatewayID), frmCntDown: 6, frmCntUp: 10)
             {
@@ -1392,7 +1392,7 @@ namespace LoRaWan.Tests.Integration
 
             // Ensure that the devices have been cached
 
-            Assert.Equal(2, DeviceCache.RegistrationCount(simulatedDevice1.DevAddr));
+            Assert.Equal(2, DeviceCache.RegistrationCount(simulatedDevice1.DevAddr.Value));
             Assert.True(DeviceCache.TryGetForPayload(request1.Payload, out var loRaDevice1));
 
             // If the fcnt made a reset (0-1) the fcntdown is zero
@@ -1417,7 +1417,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.VerifyAll();
 
             // devices were loaded only once
-            LoRaDeviceApi.Verify(x => x.SearchByDevAddrAsync(It.IsAny<string>()), Times.Once());
+            LoRaDeviceApi.Verify(x => x.SearchByDevAddrAsync(It.IsAny<DevAddr>()), Times.Once());
             deviceClient1.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Once());
             deviceClient2.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Once());
         }
@@ -1429,7 +1429,7 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
-            var devAddr = simulatedDevice1.LoRaDevice.DevAddr;
+            var devAddr = simulatedDevice1.LoRaDevice.DevAddr.Value;
 
             var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2, gatewayID: ServerGatewayID))
             {
@@ -1641,7 +1641,7 @@ namespace LoRaWan.Tests.Integration
                 FrmCntUp = 50
             };
 
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr))
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
 
             LoRaDeviceClient.SetupSequence(x => x.GetTwinAsync(CancellationToken.None))
@@ -1676,7 +1676,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request2.WaitCompleteAsync());
             Assert.True(request2.ProcessingSucceeded);
 
-            LoRaDeviceApi.Verify(x => x.SearchByDevAddrAsync(simDevice.DevAddr), Times.Exactly(2));
+            LoRaDeviceApi.Verify(x => x.SearchByDevAddrAsync(simDevice.DevAddr.Value), Times.Exactly(2));
             LoRaDeviceApi.VerifyAll();
             LoRaDeviceClient.VerifyAll();
         }
@@ -1689,7 +1689,7 @@ namespace LoRaWan.Tests.Integration
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: gatewayID));
 
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr))
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
 
             if (string.IsNullOrEmpty(gatewayID))
