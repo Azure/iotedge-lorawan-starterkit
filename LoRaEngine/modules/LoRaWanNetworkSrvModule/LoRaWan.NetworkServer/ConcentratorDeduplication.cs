@@ -91,7 +91,7 @@ namespace LoRaWan.NetworkServer
             Span<byte> buffer = stackalloc byte[totalBufferLength];
             var head = buffer; // keeps a view pointing at the start of the buffer
 
-            buffer = DevEui.Parse(loRaDevice.DevEUI.AsSpan()).Write(buffer);
+            buffer = DevEui.Parse(loRaDevice.DevEUI).Write(buffer);
             buffer = payload.Mic is { } someMic ? someMic.Write(buffer) : throw new InvalidOperationException("Mic must not be null.");
             BinaryPrimitives.WriteUInt16LittleEndian(buffer, BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
 
