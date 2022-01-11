@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Security.Cryptography;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -142,10 +143,9 @@ namespace LoRaWan.NetworkServer
                     netIdBytes[2]
                 };
 
-                var appNonce = OTAAKeysGenerator.GetAppNonce();
-                var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
-                var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
-                var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
+                var appNonce = new AppNonce(RandomNumberGenerator.GetInt32(toExclusive: AppNonce.MaxValue + 1));
+                var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, appNonce, netId, joinReq.DevNonce, appKey);
+                var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[1] { 0x01 }, appNonce, netId, joinReq.DevNonce, appKey);
                 var devAddr = OTAAKeysGenerator.GetNwkId(this.configuration.NetId);
 
                 var oldDevAddr = loRaDevice.DevAddr;
@@ -226,7 +226,6 @@ namespace LoRaWan.NetworkServer
 
                 // Build join accept downlink message
                 Array.Reverse(netId);
-                Array.Reverse(appNonceBytes);
 
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
                 var dlSettings = new byte[1];
@@ -270,7 +269,7 @@ namespace LoRaWan.NetworkServer
                 var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
                     ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
                     devAddr, // todo add device address management
-                    appNonceBytes,
+                    appNonce,
                     dlSettings,
                     loraSpecDesiredRxDelay,
                     null);

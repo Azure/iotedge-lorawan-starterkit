@@ -21,7 +21,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets server Nonce aka JoinNonce.
         /// </summary>
-        public Memory<byte> AppNonce { get; set; }
+        public AppNonce AppNonce { get; set; }
 
         /// <summary>
         /// Gets or sets device home network aka Home_NetId.
@@ -56,7 +56,7 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept()
         { }
 
-        public LoRaPayloadJoinAccept(string netId, DevAddr devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
+        public LoRaPayloadJoinAccept(string netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
             var rxDelay = new byte[1];
             if (rxDelayValue is >= 0 and < MaxRxDelayValue)
@@ -68,8 +68,8 @@ namespace LoRaTools.LoRaMessage
             RawMessage = new byte[1 + 12 + cfListLength];
             MHdr = new MacHeader(MacMessageType.JoinAccept);
             RawMessage[0] = (byte)MHdr;
-            AppNonce = new Memory<byte>(RawMessage, 1, 3);
-            Array.Copy(appNonce, 0, RawMessage, 1, 3);
+            AppNonce = appNonce;
+            _ = appNonce.Write(RawMessage.AsSpan(1));
             NetID = new Memory<byte>(RawMessage, 4, 3);
             Array.Copy(ConversionHelper.StringToByteArray(netId), 0, RawMessage, 4, 3);
             DevAddr = devAddr;
@@ -89,7 +89,6 @@ namespace LoRaTools.LoRaMessage
             Fcnt = BitConverter.GetBytes(0x01);
             if (BitConverter.IsLittleEndian)
             {
-                AppNonce.Span.Reverse();
                 NetID.Span.Reverse();
                 DlSettings.Span.Reverse();
                 RxDelay.Span.Reverse();
@@ -137,10 +136,7 @@ namespace LoRaTools.LoRaMessage
             // We will copy back in the main inputMessage the content
             Array.Copy(decryptedPayload, 0, inputMessage, 1, decryptedPayload.Length);
             // ( MACPayload = AppNonce[3] | NetID[3] | DevAddr[4] | DLSettings[1] | RxDelay[1] | CFList[0|15] )
-            var appNonce = new byte[3];
-            Array.Copy(inputMessage, 1, appNonce, 0, 3);
-            Array.Reverse(appNonce);
-            AppNonce = new Memory<byte>(appNonce);
+            AppNonce = AppNonce.Read(inputMessage.AsSpan(1));
             var netID = new byte[3];
             Array.Copy(inputMessage, 4, netID, 0, 3);
             Array.Reverse(netID);
@@ -167,8 +163,11 @@ namespace LoRaTools.LoRaMessage
             var micBytes = new byte[4];
             _ = Mic is { } someMic ? someMic.Write(micBytes) : throw new InvalidOperationException("MIC must not be null.");
 
+            Span<byte> appNonce = stackalloc byte[AppNonce.Size];
+            _ = AppNonce.Write(appNonce);
+
             var pt =
-                AppNonce.ToArray()
+                appNonce.ToArray()
                         .Concat(NetID.ToArray())
                         .Concat(GetDevAddrBytes())
                         .Concat(DlSettings.ToArray())
