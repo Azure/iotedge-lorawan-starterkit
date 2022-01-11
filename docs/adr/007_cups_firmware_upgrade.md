@@ -124,6 +124,6 @@ The CLI tool will:
 
 1. Upload a blob with the firmware file to the storage account.
 1. Update concentrator device twin with the new blob URL, signature and CRC32
-   checksum of the key used to generate the signature.
+   checksum of the key used to generate the signature and the new package version
 
 [cupsproto]: https://doc.sm.tc/station/cupsproto.html
