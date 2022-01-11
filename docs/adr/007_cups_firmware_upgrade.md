@@ -78,6 +78,28 @@ the Basics Station is performed by the user.
 
 1. The Basics Station will then execute the actual firmware upgrade.
 
+```mermaid
+  sequenceDiagram
+    autonumber
+    User->>LoRa Device Provisioning CLI: Request Station upgrade
+    LoRa Device Provisioning CLI->>Facade Function: Upload firmware file to storage
+    LoRa Device Provisioning CLI->>IoT Hub: Update 'Concentrator' twin
+    Concentrator->>CUPS Server: POST /update-info
+    CUPS Server->>IoT Hub: Retrieve 'Concentrator' twin
+    CUPS Server->>CUPS Server: Check if versions of the Station are different
+    alt versions are the same
+        CUPS Server->>Concentrator: CUPS response without firmware upgrade
+    else versions are different
+      CUPS Server->>CUPS Server: Verify if any of the `keys` from CUPS request match the `fwKeyChecksum`
+      alt no match
+        CUPS Server->>CUPS Server: Throw as this indicates a misconfiguration
+      else one of the keys match `fwKeyChecksum`
+        CUPS Server->>Facade Function: Retrieve firmware upgrade file
+        CUPS Server->>Concentrator: CUPS response with firmware upgrade requested
+      end
+    end
+```
+
 ### IoT Hub related changes
 
 Only change is related to the concentrator device twin.
