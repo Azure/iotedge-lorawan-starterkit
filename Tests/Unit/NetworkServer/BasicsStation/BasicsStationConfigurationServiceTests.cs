@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using System;
     using System.Globalization;
@@ -38,7 +39,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
             this.sut = new BasicsStationConfigurationService(this.loRaDeviceApiServiceMock.Object,
                                                              this.loRaDeviceFactoryMock.Object,
-                                                             this.memoryCache);
+                                                             this.memoryCache,
+                                                             NullLogger<BasicsStationConfigurationService>.Instance);
         }
 
         private void SetupDeviceKeyLookup() => SetupDeviceKeyLookup("foo");
@@ -180,6 +182,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // act and assert
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));
                 Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, exception.ErrorCode);
+            }
+
+            [Fact]
+            public async Task Fails_With_InvalidCast()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                SetupDeviceKeyLookup(primaryKey);
+                SetupTwinResponse(primaryKey, JsonUtil.Strictify("{ 'clientThumbprint': 'x'}"));
+
+                // act and assert
+                var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));
+                Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, exception.ErrorCode);
+                Assert.IsType<InvalidCastException>(exception.InnerException);
             }
         }
 

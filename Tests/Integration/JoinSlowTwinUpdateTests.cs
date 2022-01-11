@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Integration
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
@@ -27,45 +28,46 @@ namespace LoRaWan.Tests.Integration
             var joinRequestPayload1 = simulatedDevice.CreateJoinRequest();
             var joinRequestPayload2 = simulatedDevice.CreateJoinRequest();
 
-            var devAddr = string.Empty;
+            var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
             // Device twin will be queried
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             // Device twin will be updated
-            string afterJoin1AppSKey = null;
-            string afterJoin1NwkSKey = null;
-            string afterJoin1DevAddr = null;
-            string afterJoin2AppSKey = null;
-            string afterJoin2NwkSKey = null;
-            string afterJoin2DevAddr = null;
+            AppSessionKey? afterJoin2AppSKey = null;
+            NetworkSessionKey? afterJoin2NwkSKey = null;
+            DevAddr? afterJoin2DevAddr = null;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .ReturnsAsync(true, TimeSpan.FromSeconds(10))
-                .Callback<TwinCollection>((updatedTwin) =>
-                {
-                    afterJoin1AppSKey = updatedTwin[TwinProperty.AppSKey];
-                    afterJoin1NwkSKey = updatedTwin[TwinProperty.NwkSKey];
-                    afterJoin1DevAddr = updatedTwin[TwinProperty.DevAddr];
-
-                    // update setup for no delay
-                    LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                        .ReturnsAsync(true)
-                        .Callback<TwinCollection>((updatedTwin2) =>
-                        {
-                            afterJoin2AppSKey = updatedTwin2[TwinProperty.AppSKey];
-                            afterJoin2NwkSKey = updatedTwin2[TwinProperty.NwkSKey];
-                            afterJoin2DevAddr = updatedTwin2[TwinProperty.DevAddr];
-                        });
-                });
+            var mockSequence = new MockSequence();
+            LoRaDeviceClient.InSequence(mockSequence)
+                            .Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                            .Returns<TwinCollection, CancellationToken>(async (_, token) =>
+                            {
+                                try
+                                {
+                                    await Task.Delay(TimeSpan.FromSeconds(20), token);
+                                    Assert.True(false, "Token timeout expected");
+                                }
+                                catch (OperationCanceledException) { }
+                                return false;
+                            });
+            LoRaDeviceClient.InSequence(mockSequence)
+                            .Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                            .Returns<TwinCollection, CancellationToken>((updatedTwin, token) =>
+                            {
+                                afterJoin2AppSKey = updatedTwin.SafeRead<AppSessionKey>(TwinProperty.AppSKey);
+                                afterJoin2NwkSKey = updatedTwin.SafeRead<NetworkSessionKey>(TwinProperty.NwkSKey);
+                                afterJoin2DevAddr = updatedTwin.SafeRead<DevAddr>(TwinProperty.DevAddr);
+                                return Task.FromResult(true);
+                            });
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestPayload1.DevNonce))
@@ -92,6 +94,7 @@ namespace LoRaWan.Tests.Integration
             await Task.WhenAll(joinRequest1.WaitCompleteAsync(), joinRequest2.WaitCompleteAsync());
             Assert.True(joinRequest1.ProcessingFailed);
             Assert.Null(joinRequest1.ResponseDownlink);
+            Assert.Equal(LoRaDeviceRequestFailedReason.IoTHubProblem, joinRequest1.ProcessingFailedReason);
             Assert.True(joinRequest2.ProcessingSucceeded);
             Assert.NotNull(joinRequest2.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);

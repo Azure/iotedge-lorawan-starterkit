@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 {
     using System;
     using System.Collections.Generic;
-    using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
     using global::LoRaTools.Utils;
     using LoRaWan;

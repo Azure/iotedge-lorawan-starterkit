@@ -190,17 +190,10 @@ namespace LoRaWan.NetworkServer
                 fctrl |= FrameControlFlags.Adr;
             }
 
-            var srcDevAddr = upstreamPayload.DevAddr.Span;
-            var reversedDevAddr = new byte[srcDevAddr.Length];
-            for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
-            {
-                reversedDevAddr[i] = srcDevAddr[^(1 + i)];
-            }
-
             var msgType = requiresDeviceAcknowlegement ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
-                reversedDevAddr,
+                upstreamPayload.DevAddr,
                 fctrl,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
@@ -220,7 +213,7 @@ namespace LoRaWan.NetworkServer
 
         private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, ushort lnsRxDelay, LoRaPayloadData loRaMessage, uint? antennaPreference = null)
         {
-            var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey);
+            var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey.Value, loRaDevice.NwkSKey.Value);
             var downlinkMessage = new DownlinkMessage(
                 messageBytes,
                 xTime,
@@ -315,17 +308,10 @@ namespace LoRaWan.NetworkServer
 
             Array.Reverse(frmPayload);
 
-            var payloadDevAddr = ConversionHelper.StringToByteArray(loRaDevice.DevAddr);
-            var reversedDevAddr = new byte[payloadDevAddr.Length];
-            for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
-            {
-                reversedDevAddr[i] = payloadDevAddr[^(1 + i)];
-            }
-
             var msgType = cloudToDeviceMessage.Confirmed ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
-                reversedDevAddr,
+                loRaDevice.DevAddr.Value,
                 FrameControlFlags.None,
                 BitConverter.GetBytes(fcntDownToSend),
                 macCommands,

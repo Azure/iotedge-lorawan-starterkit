@@ -90,7 +90,11 @@ namespace LoRaWan.Tests.Integration
             });
 
             this.simulatedABPDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            this.loraABPDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, ConnectionManager);
+            this.loraABPDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, this.simulatedABPDevice.DevEUI, ConnectionManager)
+            {
+                AppSKey = this.simulatedABPDevice.AppSKey,
+                NwkSKey = this.simulatedABPDevice.NwkSKey
+            };
 
             _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(this.loraABPDevice, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
             _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(this.loraABPDevice.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
@@ -98,9 +102,9 @@ namespace LoRaWan.Tests.Integration
 
         #region UnconfirmedDataMessage
         [Theory]
-        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 2)] // resubmission for unconfirmed messages should not happen anyway but we allow the first message to pass through due to IsABPRelaxedFrameCounter
-        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // ditto
-        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // ditto
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 2)] // resubmission for unconfirmed first messages can happen when the device was reset + sends the same payload within the cache retention timewindow, 
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // [cont] we have no reliable way of knowing that
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // [cont] so deduplication here is on a best-effort case
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // duplicate
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.None, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // soft duplicate
@@ -121,7 +125,7 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // resubmission for unconfirmed message should not happen anyway but it is still dropped as invalid
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // resubmission for unconfirmed subsequent messages is even more unlikely (compared to first messages) so messages are dropped as invalid
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // ditto
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // ditto
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, expectedFrameCounterResets: 0, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // duplicate
@@ -144,7 +148,7 @@ namespace LoRaWan.Tests.Integration
         }
         #endregion
 
-        #region ConfirmedDataMessage                                                                                                       
+        #region ConfirmedDataMessage
         [Theory]
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 1, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission with drop
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 2, expectedMessagesUp: 2, expectedMessagesDown: 2, expectedTwinSaves: 2)] // resubmission
@@ -211,19 +215,19 @@ namespace LoRaWan.Tests.Integration
             int expectedTwinSaves)
         {
 
-            var value8 = "00000000";
             var value32 = "00000000000000000000000000000000";
-            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0)) { DevAddr = value8 };
+            var simulatedOTAADevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0)) { DevAddr = new DevAddr(0) };
 
-            var dataPayload = simulatedOTAADevice.CreateUnconfirmedDataUpMessage("payload", appSKey: value32, nwkSKey: value32);
+            var dataPayload = simulatedOTAADevice.CreateUnconfirmedDataUpMessage("payload", appSKey: AppSessionKey.Parse(value32), nwkSKey: NetworkSessionKey.Parse(value32));
             var request1 = CreateOTAARequest(dataPayload, station1);
             var request2 = CreateOTAARequest(dataPayload, station2);
 
             using var loraOTAADevice = new LoRaDevice(simulatedOTAADevice.DevAddr, simulatedOTAADevice.DevEUI, ConnectionManager);
-            loraOTAADevice.AppKey = value32;
+            loraOTAADevice.AppKey = AppKey.Parse(value32);
 
             loraOTAADevice.Deduplication = deduplicationMode;
-            loraOTAADevice.NwkSKey = station1;
+            loraOTAADevice.NwkSKey = TestKeys.CreateNetworkSessionKey(1);
+            loraOTAADevice.AppSKey = TestKeys.CreateAppSessionKey(2);
 
             _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(loraOTAADevice, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
 
@@ -256,7 +260,8 @@ namespace LoRaWan.Tests.Integration
             this.loraABPDevice.GatewayID = gwId;
             _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(gwId)).Returns(this.frameCounterStrategyMock.Object);
             this.loraABPDevice.Deduplication = DeduplicationMode.None; // default
-            this.loraABPDevice.NwkSKey = station1;
+            this.loraABPDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(1);
+            this.loraABPDevice.AppSKey = TestKeys.CreateAppSessionKey(2);
 
             // act/assert
             await ActAndAssert(request1, request2, this.loraABPDevice, null, expectedNumberOfBundlerCalls, null, expectedMessagesUp, expectedMessagesDown, null);
@@ -276,7 +281,8 @@ namespace LoRaWan.Tests.Integration
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.Mark; // or None
-            this.loraABPDevice.NwkSKey = station1;
+            this.loraABPDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(1);
+            this.loraABPDevice.AppSKey = TestKeys.CreateAppSessionKey(2);
 
             // act/assert
             await ActAndAssert(request1, request2, this.loraABPDevice);
@@ -297,7 +303,8 @@ namespace LoRaWan.Tests.Integration
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.Mark; // or Drop or None
-            this.loraABPDevice.NwkSKey = station1;
+            this.loraABPDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(1);
+            this.loraABPDevice.AppSKey = TestKeys.CreateAppSessionKey(2);
 
             _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
             {
@@ -319,15 +326,13 @@ namespace LoRaWan.Tests.Integration
             int expectedNumberOfFrameCounterDownCalls)
         {
             // arrange
-            var dataPayload = this.simulatedABPDevice.CreateUnconfirmedDataUpMessage("payload");
-            // MAC command
-            dataPayload.Fport = FramePort.MacCommand;
-            dataPayload.MacCommands = new List<MacCommand> { new LinkCheckAnswer(1, 1) };
+            var dataPayload = this.simulatedABPDevice.CreateUnconfirmedDataUpMessage(null,
+                                                                                     fport: FramePort.MacCommand,
+                                                                                     macCommands: new List<MacCommand> { new LinkCheckRequest() });
 
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.None; // or Mark
-            this.loraABPDevice.NwkSKey = station1;
 
             // act/assert
             await ActAndAssert(request1, request2, this.loraABPDevice, expectedFrameCounterDownCalls: expectedNumberOfFrameCounterDownCalls, expectedMessagesUp: 0);
@@ -348,7 +353,6 @@ namespace LoRaWan.Tests.Integration
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
             this.loraABPDevice.Deduplication = deduplicationMode;
-            this.loraABPDevice.NwkSKey = station1;
 
             await ActAndAssert(request1, request2, this.loraABPDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }

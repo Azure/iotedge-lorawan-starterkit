@@ -14,6 +14,8 @@ namespace LoRaWan.Tests.Unit
         protected abstract int Size { get; }
         protected abstract T Parse(string input);
         protected abstract bool TryParse(string input, out T result);
+        protected abstract Span<byte> Write(T instance, Span<byte> buffer);
+        protected abstract T Read(ReadOnlySpan<byte> buffer);
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()
@@ -74,6 +76,15 @@ namespace LoRaWan.Tests.Unit
             Assert.False(succeeded);
             Assert.Equal(default, result);
         }
+
+        [Fact]
+        public void Write_Read_Composition_Is_Identity()
+        {
+            var buffer = new byte[Size];
+            _ = Write(Subject, buffer);
+            var result = Read(buffer);
+            Assert.Equal(Subject, result);
+        }
     }
 
     public class AppKeyTests : KeyTests<AppKey>
@@ -81,6 +92,8 @@ namespace LoRaWan.Tests.Unit
         protected override int Size => AppKey.Size;
         protected override AppKey Parse(string input) => AppKey.Parse(input);
         protected override bool TryParse(string input, out AppKey result) => AppKey.TryParse(input, out result);
+        protected override AppKey Read(ReadOnlySpan<byte> buffer) => AppKey.Read(buffer);
+        protected override Span<byte> Write(AppKey instance, Span<byte> buffer) => instance.Write(buffer);
     }
 
     public class AppSessionKeyTests : KeyTests<AppSessionKey>
@@ -88,6 +101,8 @@ namespace LoRaWan.Tests.Unit
         protected override int Size => AppSessionKey.Size;
         protected override AppSessionKey Parse(string input) => AppSessionKey.Parse(input);
         protected override bool TryParse(string input, out AppSessionKey result) => AppSessionKey.TryParse(input, out result);
+        protected override AppSessionKey Read(ReadOnlySpan<byte> buffer) => AppSessionKey.Read(buffer);
+        protected override Span<byte> Write(AppSessionKey instance, Span<byte> buffer) => instance.Write(buffer);
     }
 
     public class NetworkSessionKeyTests : KeyTests<NetworkSessionKey>
@@ -95,5 +110,7 @@ namespace LoRaWan.Tests.Unit
         protected override int Size => NetworkSessionKey.Size;
         protected override NetworkSessionKey Parse(string input) => NetworkSessionKey.Parse(input);
         protected override bool TryParse(string input, out NetworkSessionKey result) => NetworkSessionKey.TryParse(input, out result);
+        protected override NetworkSessionKey Read(ReadOnlySpan<byte> buffer) => NetworkSessionKey.Read(buffer);
+        protected override Span<byte> Write(NetworkSessionKey instance, Span<byte> buffer) => instance.Write(buffer);
     }
 }

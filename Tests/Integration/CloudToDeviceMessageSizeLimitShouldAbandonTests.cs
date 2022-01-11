@@ -110,12 +110,18 @@ namespace LoRaWan.Tests.Integration
 
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
+            if (hasMacInUpstream)
+            {
+                payloadDataDown.Serialize(loraDevice.NwkSKey ?? throw new InvalidOperationException("NwkSKey can't be null"));
+            } else
+            {
+                payloadDataDown.Serialize(loraDevice.AppSKey ?? throw new InvalidOperationException("AppSKey can't be null"));
+            }
 
             // 3. Fpending flag is set
             Assert.True(payloadDataDown.IsDownlinkFramePending);
 
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // Expected Mac command is present

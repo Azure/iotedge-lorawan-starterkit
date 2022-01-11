@@ -64,13 +64,13 @@ namespace LoRaWan.Tests.Integration
         private static void EnsureDownlinkIsCorrect(DownlinkMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
-            Assert.NotEmpty(downlink.Data);
+            Assert.False(downlink.Data.IsEmpty);
 
             var downstreamPayloadBytes = downlink.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(sentMessage.Fport, downstreamPayload.Fport);
-            Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
-            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
+            Assert.Equal(downstreamPayload.DevAddr, simDevice.DevAddr);
+            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey.Value);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
         }
 
@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Integration
 
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
                 .ReturnsAsync(new SearchDevicesResult(
-                    new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                    new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
 
             var twin = simulatedDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
             {
@@ -141,7 +141,7 @@ namespace LoRaWan.Tests.Integration
             // Get C2D message payload
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(simulatedDevice.AppSKey);
+            payloadDataDown.Serialize(simulatedDevice.AppSKey.Value);
 
             // Verify that expected Mac commands are present
             var expectedMacCommandsCount = 0;
@@ -176,7 +176,7 @@ namespace LoRaWan.Tests.Integration
             var devEUI = simulatedDevice.DevEUI;
 
             this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simulatedDevice.CreateABPTwin());

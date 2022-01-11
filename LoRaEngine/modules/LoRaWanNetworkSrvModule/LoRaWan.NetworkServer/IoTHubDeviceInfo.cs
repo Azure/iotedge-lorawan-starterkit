@@ -3,9 +3,19 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using Newtonsoft.Json;
+
     public class IoTHubDeviceInfo
     {
-        public string DevAddr { get; set; }
+        [JsonProperty("DevAddr")]
+        public string DevAddrString
+        {
+            get => DevAddr?.ToString();
+            set => DevAddr = value is { Length: 8 } some ? LoRaWan.DevAddr.Parse(some) : null;
+        }
+
+        [JsonIgnore]
+        public DevAddr? DevAddr { get; set; }
 
         public string DevEUI { get; set; }
 
@@ -13,13 +23,21 @@ namespace LoRaWan.NetworkServer
 
         public string GatewayId { get; set; }
 
-        public string NwkSKey { get; set; }
+        [JsonProperty("NwkSKey")]
+        public string NwkSKeyString
+        {
+            get => NwkSKey?.ToString();
+            set => NwkSKey = string.IsNullOrEmpty(value) ? null : NetworkSessionKey.Parse(value);
+        }
+
+        [JsonIgnore]
+        public NetworkSessionKey? NwkSKey { get; set; }
 
         public IoTHubDeviceInfo()
         {
         }
 
-        public IoTHubDeviceInfo(string devAddr, string devEUI, string primaryKey)
+        public IoTHubDeviceInfo(DevAddr? devAddr, string devEUI, string primaryKey)
         {
             DevAddr = devAddr;
             DevEUI = devEUI;

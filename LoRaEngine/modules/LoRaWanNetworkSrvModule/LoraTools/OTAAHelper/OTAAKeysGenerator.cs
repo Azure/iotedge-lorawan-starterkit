@@ -10,30 +10,36 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        private static readonly RandomNumberGenerator RndKeysGenerator = RandomNumberGenerator.Create();
-
-        public static string GetNwkId(byte[] netId)
+        public static DevAddr GetNwkId(uint netId)
         {
-            if (netId is null) throw new ArgumentNullException(nameof(netId));
+            var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
+            // The 7 LBS of the NetID become the NwkID of a DevAddr:
+            return new DevAddr(unchecked((byte)netId) & 0b0111_1111, address);
+        }
 
-            var nwkPart = netId[0] << 1;
-            var devAddr = new byte[4];
+        public static NetworkSessionKey CalculateNetworkSessionKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        {
+            var keyString = CalculateKey(type, appnonce, netid, devNonce, appKey);
+            return NetworkSessionKey.Parse(keyString);
+        }
 
-            RndKeysGenerator.GetBytes(devAddr);
-
-            devAddr[0] = (byte)((nwkPart & 0b11111110) | (devAddr[0] & 0b00000001));
-            return ConversionHelper.ByteArrayToString(devAddr);
+        public static AppSessionKey CalculateAppSessionKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        {
+            var keyString = CalculateKey(type, appnonce, netid, devNonce, appKey);
+            return AppSessionKey.Parse(keyString);
         }
 
         // don't work with CFLIST atm
-        public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, byte[] appKey)
+        private static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
         {
             if (type is null) throw new ArgumentNullException(nameof(type));
             if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
             if (netid is null) throw new ArgumentNullException(nameof(netid));
 
             using var aes = Aes.Create("AesManaged");
-            aes.Key = appKey;
+            var rawAppKey = new byte[AppKey.Size];
+            _ = appKey.Write(rawAppKey);
+            aes.Key = rawAppKey;
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
             // Cipher is part of the LoRaWAN specification
             aes.Mode = CipherMode.ECB;
@@ -101,9 +107,11 @@ namespace LoRaTools
 
         public static string GetAppNonce()
         {
-            var appNonce = new byte[3];
-            RndKeysGenerator.GetBytes(appNonce);
-            return ConversionHelper.ByteArrayToString(appNonce);
+            Span<byte> bytes = stackalloc byte[3];
+            RandomNumberGenerator.Fill(bytes);
+            Span<char> chars = stackalloc char[bytes.Length * 2];
+            Hexadecimal.Write(bytes, chars);
+            return new string(chars);
         }
     }
 }
