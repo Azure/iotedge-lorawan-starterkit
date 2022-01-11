@@ -353,16 +353,18 @@ Sending cloud to device messages in the solution uses the following JSON format 
 
 ### Sending messages using the Azure Function
 
-Sending messages to class A devices is a simple task, since those devices will send an upstream link giving the network server the chance of looking in [Azure IoT Hub cloud to device message queue](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d) for pending downlink messages. Class C devices are complexer because they, for the most part, are only listening for messages. Using the cloud to message queue would not be very effective as it would require the network server to keep a client connection that would rarely be used, wasting resources. In this solution sending messages to class C devices is available through a direct method in the network server. However, in a multiple gateway scenario there is still the need to resolve the closest gateway before calling the relevant network server.
+Sending messages to class A devices is a simple task, since those devices will send an upstream link giving the network server the chance of looking in [Azure IoT Hub cloud to device message queue](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d) for pending downlink messages. Class C devices are more complex because they, for the most part, are only listening for messages. Using the cloud to device message queue would not be very effective as it would require the network server to keep a client connection that would rarely be used, wasting resources. In this solution sending messages to class C devices is available through a direct method in the network server.
 
-The companion Azure Function deployed with the solution has a HTTP based endpoint to send messages to LoRa devices. It takes away the complexity of figuring out the device type and closest gateway.
+The Azure Function deployed with the solution can handle both class A and class C devices and, depending on the device type, sends the message via C2D message queue for class A or via direct method for class C devices. In a multiple gateway scenario there is still the need to resolve the closest gateway for a Class C device before calling the relevant network server via direct method. The gateway is resolved in the Azure Function by fetching the device twin and selecting the gateway ID from the twin properties. In order for this mechanism to work, the device first needs to send at least one upstream message so that the LNS can determine the gateway ID and save it in the device twin.
+
+In order to send a C2D message to a device using the Azure Function, the [`SendCloudToDeviceMessage`](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/SendCloudToDeviceMessage/SendCloudToDeviceMessage.cs) endpoint should be used which takes away the complexity of figuring out the device type and closest gateway.
 
 The function endpoint looks like `https://YOUR-FUNCTION-NAME.azurewebsites.net/api/cloudtodevicemessage/{devEUI}?code=YOUR-FUNCTION-APP-CODE`
 
 To send a message to a device send a POST request including the content as the body:
 
 ```bash
-curl -d '{"rawPayload": "AAA=","fport": 1}' -H "Content-Type: application/json" https://YOUR-FUNCTION-NAME.azurewebsites.net/api/cloudtodevicemessage/YOUR-DEVEUI?code=YOUR-FUNCTION-APP-CODE
+curl -d '{"rawPayload": "AAA=","fport": 1}' -H "Content-Type: application/json" -H "api-version: API-VERSION" https://YOUR-FUNCTION-NAME.azurewebsites.net/api/cloudtodevicemessage/YOUR-DEVEUI?code=YOUR-FUNCTION-APP-CODE
 ```
 
 Should return
@@ -373,7 +375,7 @@ Should return
 
 ### Class A devices
 
-The solution support sending Cloud to device (C2D) messages to LoRa class A devices using [standard IoT Hub SDKs](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d). The message body should follow the following contract:
+The solution also support sending Cloud to device (C2D) messages to LoRa class A devices using [standard IoT Hub SDKs](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d). The message body should follow the following contract:
 
 ![C2D portal](images/cloudtodevice.png)
 
@@ -393,7 +395,9 @@ As soon as the device acknowledges the message, it will report it in the logs an
 
 ### Class C devices
 
-To send downstream messages to class C devices the following is required:
+Using the [`SendCloudToDeviceMessage`](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/SendCloudToDeviceMessage/SendCloudToDeviceMessage.cs) endpoint is the preferred way of sending messages to class C devices. However, it's also possible to use the standard IoT Hub SDK directly.
+
+To send downstream messages to class C devices using this method the following is required:
 
 - The device twin desired property `"ClassType": "C"` must be set.
 - The device must send at least one message upstream.
