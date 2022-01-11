@@ -82,7 +82,7 @@ the Basics Station is performed by the user.
   sequenceDiagram
     autonumber
     User->>LoRa Device Provisioning CLI: Request Station upgrade
-    LoRa Device Provisioning CLI->>Facade Function: Upload firmware file to storage
+    LoRa Device Provisioning CLI->>Storage account: Upload firmware file
     LoRa Device Provisioning CLI->>IoT Hub: Update 'Concentrator' twin
     Concentrator->>CUPS Server: POST /update-info
     CUPS Server->>IoT Hub: Retrieve 'Concentrator' twin
@@ -95,6 +95,7 @@ the Basics Station is performed by the user.
         CUPS Server->>CUPS Server: Throw as this indicates a misconfiguration
       else one of the keys match `fwKeyChecksum`
         CUPS Server->>Facade Function: Retrieve firmware upgrade file
+        Facade Function->>Storage account: Download firmware file
         CUPS Server->>Concentrator: CUPS response with firmware upgrade requested
       end
     end
