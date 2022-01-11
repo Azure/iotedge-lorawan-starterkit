@@ -117,9 +117,18 @@ document).
 The implementation of `CupsProtocolMessageProcessor` should be extended for
 checking the `package` field from the concentrator device twin. In case there
 the value is different from the one received from the Basics Station in the CUPS
-request, the Network Server will trigger the download of the firmware upgrade
-file (using the Facade Function) and populate the CUPS response accordingly, so
-that the Station can then execute the upgrade.
+request, we will first check whether any of the keys in the `keys` array from
+the CUPS request is equal to the `fwKeyChecksum` field that is stored in the
+twin.
+
+If there is no matching checksum, it means that the concentrator is missing the
+key required for calculating the digest and verifying the update file. When this
+happens we will throw an appropriate error.
+
+If there is a match for the `fwKeyChecksum`, the Network Server will trigger the
+download of the firmware upgrade file (using the Facade Function endpoint) and
+populate the CUPS response accordingly, so that the Station can then execute the
+upgrade.
 
 ### LoRa Device Provisioning CLI changes
 
