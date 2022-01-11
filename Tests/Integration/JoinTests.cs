@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Integration
         [InlineData(null, 200, 50, 37, 28)]
         [InlineData(null, 0, 0, 0, 23)]
         [InlineData(null, 0, 0, 47, 10000)]
-        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, uint initialFcntUp, uint initialFcntDown, uint startingPayloadFcnt, uint netId)
+        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, uint initialFcntUp, uint initialFcntDown, uint startingPayloadFcnt, int netId)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequestPayload = simulatedDevice.CreateJoinRequest();
@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.Integration
             var devAddr = (DevAddr?)null;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
-            ServerConfiguration.NetId = netId;
+            ServerConfiguration.NetId = new NetId(netId);
             // Device twin will be queried
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;

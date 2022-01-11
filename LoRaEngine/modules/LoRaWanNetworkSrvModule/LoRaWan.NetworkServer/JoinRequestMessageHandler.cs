@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Security.Cryptography;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -133,19 +134,14 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
-                var netId = new byte[3]
-                {
-                    netIdBytes[0],
-                    netIdBytes[1],
-                    netIdBytes[2]
-                };
-
+                var netId = this.configuration.NetId;
                 var appNonce = OTAAKeysGenerator.GetAppNonce();
                 var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
                 var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
                 var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKey);
-                var devAddr = OTAAKeysGenerator.GetNwkId(this.configuration.NetId);
+                var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
+                // The 7 LBS of the NetID become the NwkID of a DevAddr:
+                var devAddr = new DevAddr(unchecked((byte)netId.NetworkId), address);
 
                 var oldDevAddr = loRaDevice.DevAddr;
 
@@ -165,7 +161,7 @@ namespace LoRaWan.NetworkServer
                     AppSKey = appSKey,
                     AppNonce = appNonce,
                     DevNonce = joinReq.DevNonce,
-                    NetID = ConversionHelper.ByteArrayToString(netId),
+                    NetId = netId,
                     Region = request.Region.LoRaRegion,
                     PreferredGatewayID = this.configuration.GatewayID,
                 };
@@ -224,7 +220,6 @@ namespace LoRaWan.NetworkServer
                 this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                 // Build join accept downlink message
-                Array.Reverse(netId);
                 Array.Reverse(appNonceBytes);
 
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
@@ -267,7 +262,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
-                    ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
+                    netId, // NETID 0 / 1 is default test
                     devAddr, // todo add device address management
                     appNonceBytes,
                     dlSettings,
