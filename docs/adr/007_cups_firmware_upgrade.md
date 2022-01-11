@@ -59,7 +59,7 @@ the Basics Station is performed by the user.
 1. When provisioning a device that will need firmware upgrades, the end user
    should generate a `sig-0.key` and store it on the device and in a centralized
    repository of their own choice (example on how to generate it can be found in
-   the appendix, and [LoRa Basics Station repository][lbs-example]).
+   the appendix).
 
 1. When a firmware upgrade needs to be provided to the device, the user should
    generate a digest of the executable file of the upgrade (as in examples
