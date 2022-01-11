@@ -8,7 +8,7 @@
 **Status**: Proposed
 
 >This ADR is an extension of [006. CUPS Protocol Implementation - Credential
->management](./docs/adr/006_cups.md) and focuses of firmware upgrades. For
+>management](./006_cups.md) and focuses of firmware upgrades. For
 >details about the general CUPS protocol implementation please refer to the
 >other document.
 
