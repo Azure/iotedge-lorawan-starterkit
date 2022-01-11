@@ -14,6 +14,9 @@ namespace LoRaWan.NetworkServer
     public sealed class ConcentratorDeduplication : IConcentratorDeduplication
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
+        internal const string DataMessageCacheKeyPrefix = "datamessage:";
+        internal const string JoinMessageCacheKeyPrefix = "joinmessage:";
+
         private readonly IMemoryCache cache;
         private readonly ILogger<IConcentratorDeduplication> logger;
         private static readonly object cacheLock = new object();
@@ -92,7 +95,7 @@ namespace LoRaWan.NetworkServer
             buffer = payload.Mic is { } someMic ? someMic.Write(buffer) : throw new InvalidOperationException("Mic must not be null.");
             BinaryPrimitives.WriteUInt16LittleEndian(buffer, BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
 
-            return ToHexKey(head);
+            return CreateCacheKeyCore(DataMessageCacheKeyPrefix, head);
         }
 
         internal static string CreateCacheKey(LoRaPayloadJoinRequest payload)
@@ -110,14 +113,14 @@ namespace LoRaWan.NetworkServer
             var devNonce = payload.DevNonce;
             _ = devNonce.Write(buffer);
 
-            return ToHexKey(head);
+            return CreateCacheKeyCore(JoinMessageCacheKeyPrefix, head);
         }
 
-        private static string ToHexKey(ReadOnlySpan<byte> buffer)
+        private static string CreateCacheKeyCore(string prefix, ReadOnlySpan<byte> buffer)
         {
             Span<char> key = stackalloc char[(buffer.Length * 3) - 1];
             Hexadecimal.Write(buffer, key, separator: '-');
-            return key.ToString();
+            return string.Concat(prefix, key.ToString());
         }
     }
 }
