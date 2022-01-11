@@ -5,13 +5,22 @@ namespace LoRaTools.CommonAPI
 {
     using System.Collections.Generic;
     using LoRaWan;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// Defines the contract for a LoRa cloud to device message.
     /// </summary>
     public class LoRaCloudToDeviceMessage : ILoRaCloudToDeviceMessage
     {
-        public string DevEUI { get; set; }
+        [JsonIgnore]
+        public DevEui? DevEUI { get; set; }
+
+        [JsonProperty("DevEUI")]
+        public string DevEuiString
+        {
+            get => DevEUI?.ToString("N", null);
+            set => DevEUI = string.IsNullOrEmpty(value) ? null : DevEui.Parse(value);
+        }
 
         public FramePort Fport { get; set; }
 

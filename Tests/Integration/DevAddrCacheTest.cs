@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Integration
     using System.Text;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
+    using LoRaTools.Utils;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -80,7 +81,7 @@ namespace LoRaWan.Tests.Integration
                     {
                         var deviceTwin = new Twin
                         {
-                            DeviceId = devaddrItem.DevEUI,
+                            DeviceId = devaddrItem.DevEUI.Value.AsIotHubDeviceId(),
                             Properties = new TwinProperties()
                             {
                                 Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
@@ -142,7 +143,7 @@ namespace LoRaWan.Tests.Integration
         {
             var devAddrcache = new LoRaDevAddrCache(this.cache, null, null);
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake == null ? null : new[] { lockToTake });
-            var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = NewUniqueEUI64(), DevAddr = CreateDevAddr() } };
+            var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = CreateDevEui(), DevAddr = CreateDevAddr() } };
             var registryManagerMock = InitRegistryManager(managerInput);
             registryManagerMock.Setup(x => x.CreateQuery(It.IsAny<string>())).Throws(new RedisException(string.Empty));
             await devAddrcache.PerformNeededSyncs(registryManagerMock.Object);
@@ -177,7 +178,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr()
                 });
             }
@@ -223,7 +224,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr()
                 });
             }
@@ -271,7 +272,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     LastUpdatedTwins = dateTime
@@ -317,7 +318,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     LastUpdatedTwins = dateTime
@@ -364,7 +365,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     PrimaryKey = primaryKey,
@@ -411,7 +412,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     PrimaryKey = primaryKey,
@@ -430,7 +431,7 @@ namespace LoRaWan.Tests.Integration
             var queryResult = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
             Assert.Single(queryResult);
             var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
-            Assert.Equal(resultObject.DevEUI, string.Empty);
+            Assert.Null(resultObject.DevEUI);
             Assert.Null(resultObject.PrimaryKey);
             Assert.Null(resultObject.GatewayId);
             var query2Result = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
@@ -455,7 +456,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                 });
@@ -503,7 +504,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
                     LastUpdatedTwins = dateTime
@@ -571,7 +572,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = newGatewayId,
                     LastUpdatedTwins = dateTime
@@ -580,7 +581,7 @@ namespace LoRaWan.Tests.Integration
 
             managerInput.Add(new DevAddrCacheInfo()
             {
-                DevEUI = NewUniqueEUI64(),
+                DevEUI = CreateDevEui(),
                 DevAddr = adressForDuplicateDevAddr,
                 GatewayId = newGatewayId,
                 LastUpdatedTwins = dateTime
@@ -606,10 +607,10 @@ namespace LoRaWan.Tests.Integration
             cacheInput[2].PrimaryKey = primaryKey;
             cacheInput[3].PrimaryKey = primaryKey;
 
-            var devEuiDoubleItem = NewUniqueEUI64();
+            var devEui = CreateDevEui();
             cacheInput.Add(new DevAddrCacheInfo()
             {
-                DevEUI = devEuiDoubleItem,
+                DevEUI = devEui,
                 DevAddr = adressForDuplicateDevAddr,
                 GatewayId = oldGatewayId,
                 PrimaryKey = primaryKey,
@@ -644,7 +645,7 @@ namespace LoRaWan.Tests.Integration
             for (var i = 0; i < 2; i++)
             {
                 var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(query2Result[0].Value);
-                if (resultObject.DevEUI == devEuiDoubleItem)
+                if (resultObject.DevEUI == devEui)
                 {
                     Assert.Equal(oldGatewayId, resultObject.GatewayId);
                     Assert.Equal(primaryKey, resultObject.PrimaryKey);
@@ -684,7 +685,7 @@ namespace LoRaWan.Tests.Integration
             {
                 managerInput.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = newGatewayId,
                     LastUpdatedTwins = updateDateTime
@@ -754,7 +755,7 @@ namespace LoRaWan.Tests.Integration
             {
                 newValues.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = newGatewayId,
                     LastUpdatedTwins = dateTime
@@ -763,7 +764,7 @@ namespace LoRaWan.Tests.Integration
 
             newValues.Add(new DevAddrCacheInfo()
             {
-                DevEUI = NewUniqueEUI64(),
+                DevEUI = CreateDevEui(),
                 DevAddr = adressForDuplicateDevAddr,
                 GatewayId = newGatewayId,
                 LastUpdatedTwins = dateTime
@@ -790,7 +791,7 @@ namespace LoRaWan.Tests.Integration
             cacheInput[3].PrimaryKey = primaryKey;
 
             // this is a device that will be overwritten by the update as it share a devaddr with an updated device
-            var devEuiDoubleItem = NewUniqueEUI64();
+            var devEuiDoubleItem = CreateDevEui();
 
             cacheInput.Add(new DevAddrCacheInfo()
             {
@@ -851,7 +852,7 @@ namespace LoRaWan.Tests.Integration
             {
                 newValues.Add(new DevAddrCacheInfo()
                 {
-                    DevEUI = NewUniqueEUI64(),
+                    DevEUI = CreateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = newGatewayId,
                     LastUpdatedTwins = updateDateTime
@@ -902,5 +903,6 @@ namespace LoRaWan.Tests.Integration
         }
 
         private static DevAddr CreateDevAddr() => new DevAddr((uint)RandomNumberGenerator.GetInt32(int.MaxValue));
+        private static DevEui CreateDevEui() => TestEui.GenerateDevEui();
     }
 }

@@ -66,7 +66,7 @@ namespace LoRaWan.NetworkServer
 
         public string MessageId => this.parseCloudToDeviceMessage?.MessageId ?? this.message.MessageId;
 
-        public string DevEUI => this.loRaDevice.DevEUI;
+        public DevEui? DevEUI => DevEui.Parse(this.loRaDevice.DevEUI);
 
         public byte[] GetPayload()
         {

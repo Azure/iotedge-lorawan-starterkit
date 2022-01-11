@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
-                DevEUI = devEUI,
+                DevEUI = null,
             };
 
             var request = new DefaultHttpContext().Request;
@@ -62,7 +62,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Request_Is_Missing_Should_Return_BadRequest()
         {
-            var actual = await this.sendCloudToDeviceMessage.Run(null, "0123456789");
+            var actual = await this.sendCloudToDeviceMessage.Run(null, new DevEui(123456789).ToString());
 
             Assert.IsType<BadRequestObjectResult>(actual);
 
@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         public async Task When_Message_Is_Missing_Should_Return_BadRequest()
         {
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                "0123456789",
+                new DevEui(123456789),
                 null);
 
             Assert.IsType<BadRequestObjectResult>(actual);
@@ -86,15 +86,16 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Message_Is_Invalid_Should_Return_BadRequest()
         {
+            var devEui = new DevEui(123456789);
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
-                DevEUI = "0123456789",
+                DevEUI = devEui,
                 Fport = FramePort.MacCommand,
                 Payload = "hello",
             };
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                "0123456789",
+                devEui,
                 c2dMessage);
 
             Assert.IsType<BadRequestObjectResult>(actual);
@@ -106,9 +107,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Device_Is_Found_In_Cache_Should_Send_Via_Direct_Method()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(123456789);
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
-            LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway);
+            LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEui, preferredGateway);
 
             var actualMessage = new LoRaCloudToDeviceMessage()
             {
@@ -126,14 +127,14 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 actualMessage);
 
             Assert.IsType<OkObjectResult>(actual);
             var responseValue = ((OkObjectResult)actual).Value as SendCloudToDeviceMessageResult;
             Assert.NotNull(responseValue);
             Assert.Equal("C", responseValue.ClassType);
-            Assert.Equal(devEUI, responseValue.DevEUI);
+            Assert.Equal(devEui, responseValue.DevEui);
             Assert.Null(responseValue.MessageID);
 
             this.serviceClient.VerifyAll();
@@ -143,15 +144,15 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Direct_Method_Returns_Error_Code_Should_Forward_Status_Error()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(0123456789);
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
-            LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway);
+            LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEui, preferredGateway);
 
             this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.BadRequest });
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 new LoRaCloudToDeviceMessage()
                 {
                     Fport = TestPort,
@@ -167,15 +168,15 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Direct_Method_Throws_Exception_Should_Return_Application_Error()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(123456789);
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
-            LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway);
+            LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEui, preferredGateway);
 
             this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
                 .ThrowsAsync(new IotHubCommunicationException(string.Empty));
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 new LoRaCloudToDeviceMessage()
                 {
                     Fport = TestPort,
@@ -191,7 +192,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Device_Does_Not_Have_DevAddr_Should_Return_BadRequest()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(123456789);
 
             var query = new Mock<IQuery>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
@@ -202,7 +203,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 .Returns(query.Object);
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 new LoRaCloudToDeviceMessage()
                 {
                     Fport = TestPort,
@@ -218,7 +219,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Querying_Devices_Throws_Exception_Should_Return_ApplicationError()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(123456789);
 
             var query = new Mock<IQuery>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
@@ -229,7 +230,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 .Returns(query.Object);
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 new LoRaCloudToDeviceMessage()
                 {
                     Fport = TestPort,
@@ -246,7 +247,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Querying_Devices_Is_Empty_Should_Return_NotFound()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(123456789);
 
             var query = new Mock<IQuery>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
@@ -257,7 +258,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 .Returns(query.Object);
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 new LoRaCloudToDeviceMessage()
                 {
                     Fport = TestPort,
@@ -274,7 +275,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Querying_Devices_And_Finds_Class_C_Should_Update_Cache_And_Send_Direct_Method()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(123456789);
 
             var deviceTwin = new Twin
             {
@@ -309,17 +310,17 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 actualMessage);
 
             Assert.IsType<OkObjectResult>(actual);
             var responseValue = ((OkObjectResult)actual).Value as SendCloudToDeviceMessageResult;
             Assert.NotNull(responseValue);
             Assert.Equal("C", responseValue.ClassType);
-            Assert.Equal(devEUI, responseValue.DevEUI);
+            Assert.Equal(devEui, responseValue.DevEui);
             Assert.Null(responseValue.MessageID);
 
-            var cachedPreferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEUI);
+            var cachedPreferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEui);
             Assert.NotNull(cachedPreferredGateway);
             Assert.Equal("gateway1", cachedPreferredGateway.GatewayID);
 
@@ -331,7 +332,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Querying_Devices_And_Finds_Single_Gateway_Class_C_Should_Update_Cache_And_Send_Direct_Method()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(123456789);
 
             var deviceTwin = new Twin
             {
@@ -366,17 +367,17 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 actualMessage);
 
             Assert.IsType<OkObjectResult>(actual);
             var responseValue = ((OkObjectResult)actual).Value as SendCloudToDeviceMessageResult;
             Assert.NotNull(responseValue);
             Assert.Equal("C", responseValue.ClassType);
-            Assert.Equal(devEUI, responseValue.DevEUI);
+            Assert.Equal(devEui, responseValue.DevEui);
             Assert.Null(responseValue.MessageID);
 
-            var cachedPreferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEUI);
+            var cachedPreferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEui);
             Assert.NotNull(cachedPreferredGateway);
             Assert.Equal("mygateway", cachedPreferredGateway.GatewayID);
 
@@ -388,7 +389,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Querying_Devices_And_Finds_No_Gateway_For_Class_C_Should_Return_InternalServerError()
         {
-            var devEUI = new DevEui(0123456789);
+            var devEui = new DevEui(0123456789);
             var devAddr = new DevAddr(03010101);
             var deviceTwin = new Twin
             {
@@ -414,7 +415,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             };
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI.ToString(),
+                devEui,
                 actualMessage);
 
             var result = Assert.IsType<ObjectResult>(actual);
@@ -429,7 +430,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Querying_Devices_And_Finds_Class_A_Should_Send_Message()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(123456789);
 
             var deviceTwin = new Twin
             {
@@ -454,8 +455,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 Payload = "hello",
             };
 
-            this.serviceClient.Setup(x => x.SendAsync(devEUI, It.IsNotNull<Message>()))
-                .Callback<string, Message>((d, m) =>
+            this.serviceClient.Setup(x => x.SendAsync(devEui, It.IsNotNull<Message>()))
+                .Callback((DevEui d, Message m) =>
                 {
                     Assert.Empty(m.Properties);
                     var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(Encoding.UTF8.GetString(m.GetBytes()));
@@ -466,14 +467,14 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 .Returns(Task.CompletedTask);
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 actualMessage);
 
             Assert.IsType<OkObjectResult>(actual);
             var responseValue = ((OkObjectResult)actual).Value as SendCloudToDeviceMessageResult;
             Assert.NotNull(responseValue);
             Assert.Equal("A", responseValue.ClassType);
-            Assert.Equal(devEUI, responseValue.DevEUI);
+            Assert.Equal(devEui, responseValue.DevEui);
             Assert.Equal(actualMessage.MessageId, responseValue.MessageID);
 
             this.serviceClient.VerifyAll();
@@ -484,7 +485,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Sending_Message_Throws_Error_Should_Return_Application_Error()
         {
-            const string devEUI = "0123456789";
+            var devEui = new DevEui(123456789);
 
             var deviceTwin = new Twin
             {
@@ -509,11 +510,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 Payload = "hello",
             };
 
-            this.serviceClient.Setup(x => x.SendAsync(devEUI, It.IsNotNull<Message>()))
+            this.serviceClient.Setup(x => x.SendAsync(devEui, It.IsNotNull<Message>()))
                 .ThrowsAsync(new IotHubCommunicationException(string.Empty));
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
-                devEUI,
+                devEui,
                 actualMessage);
 
             Assert.IsType<ObjectResult>(actual);

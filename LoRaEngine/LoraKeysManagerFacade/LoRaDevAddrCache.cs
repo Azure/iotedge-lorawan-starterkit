@@ -56,6 +56,7 @@ namespace LoraKeysManagerFacade
         private readonly string lockOwner;
 
         private static string GenerateKey(DevAddr devAddr) => CacheKeyPrefix + devAddr;
+        private static string GenerateKey(DevEui devEui) => devEui.ToString("N", CultureInfo.InvariantCulture);
 
         public LoRaDevAddrCache(ILoRaDeviceCacheStore cacheStore, RegistryManager registryManager, ILogger logger, string gatewayId)
         {
@@ -104,8 +105,9 @@ namespace LoraKeysManagerFacade
             var serializedObjectValue = JsonConvert.SerializeObject(info);
 
             var cacheKeyToUse = GenerateKey(info.DevAddr);
+            var subKey = info.DevEUI is { } someDevEui ? GenerateKey(someDevEui) : string.Empty;
 
-            if (this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue))
+            if (this.cacheStore.TrySetHashObject(cacheKeyToUse, subKey, serializedObjectValue))
             {
                 this.logger.LogInformation($"Successfully saved dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info.DevEUI}, object: {serializedObjectValue}");
 
@@ -239,7 +241,7 @@ namespace LoraKeysManagerFacade
                         devAddrCacheInfos.Add(new DevAddrCacheInfo()
                         {
                             DevAddr = devAddr,
-                            DevEUI = twin.DeviceId,
+                            DevEUI = DevEui.Parse(twin.DeviceId),
                             GatewayId = twin.GetGatewayID(),
                             NwkSKey = twin.GetNwkSKey(),
                             LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
@@ -277,7 +279,7 @@ namespace LoraKeysManagerFacade
         private static IDictionary<string, DevAddrCacheInfo> KeepExistingCacheInformation(HashEntry[] cacheDevEUIEntry, IGrouping<DevAddr, DevAddrCacheInfo> newDevEUIList, bool canDeleteExistingDevice)
         {
             // if the new value are not different we want to ensure we don't save, to not update the TTL of the item.
-            var toSyncValues = newDevEUIList.ToDictionary(x => x.DevEUI);
+            var toSyncValues = newDevEUIList.ToDictionary(x => GenerateKey(x.DevEUI.Value));
 
             // If nothing is in the cache we want to return the new values.
             if (cacheDevEUIEntry.Length == 0)
@@ -350,7 +352,7 @@ namespace LoraKeysManagerFacade
                 // In this case we want to make sure we import any new value that were not contained in the old cache information
                 foreach (var remainingElementToImport in valueArrayimport)
                 {
-                    valueArrayBase.Add(remainingElementToImport.Value.DevEUI, remainingElementToImport.Value);
+                    valueArrayBase.Add(GenerateKey(remainingElementToImport.Value.DevEUI.Value), remainingElementToImport.Value);
                 }
             }
 

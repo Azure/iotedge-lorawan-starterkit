@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
@@ -37,13 +38,14 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            var devEUI = req.Query["DevEUI"];
+            var rawDevEui = req.Query["DevEUI"];
             var fCntDown = req.Query["FCntDown"];
             var fCntUp = req.Query["FCntUp"];
             var gatewayId = req.Query["GatewayId"];
             var abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
 
-            EUIValidator.ValidateDevEUI(devEUI);
+            EUIValidator.ValidateDevEUI(rawDevEui);
+            var devEui = DevEui.Parse(rawDevEui.ToString());
 
             if (!uint.TryParse(fCntUp, out var clientFCntUp))
             {
@@ -52,7 +54,7 @@ namespace LoraKeysManagerFacade
 
             if (abpFcntCacheReset != StringValues.Empty)
             {
-                using (var deviceCache = new LoRaDeviceCache(this.deviceCache, devEUI, gatewayId))
+                using (var deviceCache = new LoRaDeviceCache(this.deviceCache, devEui, gatewayId))
                 {
                     if (await deviceCache.TryToLockAsync())
                     {
@@ -63,7 +65,7 @@ namespace LoraKeysManagerFacade
                             // and continued processing
                             if (deviceInfo.FCntUp > 1)
                             {
-                                log.LogDebug("Resetting cache for device {devEUI}. FCntUp: {fcntup}", devEUI, deviceInfo.FCntUp);
+                                log.LogDebug("Resetting cache for device {devEUI}. FCntUp: {fcntup}", devEui, deviceInfo.FCntUp);
                                 deviceCache.ClearCache();
                             }
                         }
@@ -81,12 +83,12 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentException(errorMsg);
             }
 
-            var newFCntDown = await GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
+            var newFCntDown = await GetNextFCntDownAsync(devEui, gatewayId, clientFCntUp, clientFCntDown);
 
             return new OkObjectResult(newFCntDown);
         }
 
-        public async Task<uint> GetNextFCntDownAsync(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
+        public async Task<uint> GetNextFCntDownAsync(DevEui devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
             uint newFCntDown = 0;
             using (var deviceCache = new LoRaDeviceCache(this.deviceCache, devEUI, gatewayId))

@@ -843,7 +843,7 @@ namespace LoRaWan.Tests.Integration
                     Fport = TestPort,
                     MessageId = "123",
                     Payload = "12",
-                    DevEUI = c2dDevEUI
+                    DevEUI = c2dDevEUI is { } someDevEui ? DevEui.Parse(someDevEui) : null
                 },
             };
 

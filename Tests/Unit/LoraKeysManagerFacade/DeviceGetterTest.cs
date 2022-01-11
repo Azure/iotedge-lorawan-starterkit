@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Collections.Generic;
     using System.Text;
     using global::LoraKeysManagerFacade;
+    using global::LoRaTools.Utils;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -20,8 +21,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async void DeviceGetter_OTAA_Join()
         {
-            var devEUI = NewUniqueEUI64();
-            var devEUI2 = NewUniqueEUI64();
+            var devEUI = TestEui.GenerateDevEui();
+            var devEUI2 = TestEui.GenerateDevEui();
             var gatewayId = NewUniqueEUI64();
 
             var deviceGetter = new DeviceGetter(InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
@@ -31,7 +32,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.Equal(devEUI, items[0].DevEUI);
         }
 
-        private static RegistryManager InitRegistryManager(string devEui1, string devEui2)
+        private static RegistryManager InitRegistryManager(DevEui devEui1, DevEui devEui2)
         {
             var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
@@ -51,7 +52,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 .Setup(x => x.HasMoreResults)
                 .Returns(() => deviceCount < numberOfDevices);
 
-            var deviceIds = new string[numberOfDevices] { devEui1, devEui2 };
+            var deviceIds = new string[numberOfDevices] { devEui1.AsIotHubDeviceId(), devEui2.AsIotHubDeviceId() };
 
             IEnumerable<Twin> Twins()
             {

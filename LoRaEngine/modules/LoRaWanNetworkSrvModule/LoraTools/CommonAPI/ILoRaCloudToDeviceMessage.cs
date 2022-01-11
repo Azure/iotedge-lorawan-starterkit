@@ -11,7 +11,7 @@ namespace LoRaTools.CommonAPI
     /// </summary>
     public interface ILoRaCloudToDeviceMessage
     {
-        string DevEUI { get; }
+        DevEui? DevEUI { get; }
 
         public byte FportByte => (byte)Fport;
 

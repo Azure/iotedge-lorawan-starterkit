@@ -3,9 +3,11 @@
 
 namespace LoRaTools.ADR
 {
+    using LoRaWan;
+
     public class LoRaADRTableEntry
     {
-        public string DevEUI { get; set; }
+        public DevEui DevEUI { get; set; }
 
         public uint FCnt { get; set; }
 

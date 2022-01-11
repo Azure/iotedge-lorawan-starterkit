@@ -341,7 +341,7 @@ namespace LoRaWan.Tests.Integration
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "hello",
-                DevEUI = devEUI,
+                DevEUI = DevEui.Parse(devEUI),
                 Fport = FramePorts.App10,
                 MessageId = Guid.NewGuid().ToString(),
             };

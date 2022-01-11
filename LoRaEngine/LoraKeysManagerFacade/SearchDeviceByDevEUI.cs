@@ -6,6 +6,8 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using LoRaTools.Utils;
+    using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
@@ -43,29 +45,30 @@ namespace LoraKeysManagerFacade
 
         private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log)
         {
-            var devEUI = req.Query["DevEUI"];
-            if (StringValues.IsNullOrEmpty(devEUI))
+            var rawDevEui = req.Query["DevEUI"];
+            if (StringValues.IsNullOrEmpty(rawDevEui))
             {
                 log.LogError("DevEUI missing in request");
                 return new BadRequestObjectResult("DevEUI missing in request");
             }
+            var devEui = DevEui.Parse(rawDevEui.ToString());
 
             var result = new List<IoTHubDeviceInfo>();
-            var device = await this.registryManager.GetDeviceAsync(devEUI);
+            var device = await this.registryManager.GetDeviceAsync(devEui.AsIotHubDeviceId());
             if (device != null)
             {
                 result.Add(new IoTHubDeviceInfo()
                 {
-                    DevEUI = devEUI,
+                    DevEUI = devEui,
                     PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
                 });
 
-                log.LogDebug($"Search for {devEUI} found 1 device");
+                log.LogDebug($"Search for {rawDevEui} found 1 device");
                 return new OkObjectResult(result);
             }
             else
             {
-                log.LogInformation($"Search for {devEUI} found 0 devices");
+                log.LogInformation($"Search for {rawDevEui} found 0 devices");
                 return new NotFoundObjectResult(result);
             }
         }

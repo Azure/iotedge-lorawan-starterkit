@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using LoRaWan;
 
     /// <summary>
     /// Contains the preferred gateway for a class C device
@@ -61,16 +62,16 @@ namespace LoraKeysManagerFacade
             };
         }
 
-        internal static string PreferredGatewayCacheKey(string devEUI) => $"preferredGateway:{devEUI}";
+        internal static string PreferredGatewayCacheKey(DevEui devEUI) => $"preferredGateway:{devEUI:N}";
 
-        internal static string PreferredGatewayFcntUpItemListCacheKey(string devEUI, uint fcntUp) => $"preferredGateway:{devEUI}:{fcntUp}";
+        internal static string PreferredGatewayFcntUpItemListCacheKey(DevEui devEUI, uint fcntUp) => $"preferredGateway:{devEUI:N}:{fcntUp}";
 
-        internal static LoRaDevicePreferredGateway LoadFromCache(ILoRaDeviceCacheStore cacheStore, string devEUI)
+        internal static LoRaDevicePreferredGateway LoadFromCache(ILoRaDeviceCacheStore cacheStore, DevEui devEUI)
         {
             return CreateFromCachedString(cacheStore.StringGet(PreferredGatewayCacheKey(devEUI)));
         }
 
-        internal static bool SaveToCache(ILoRaDeviceCacheStore cacheStore, string devEUI, LoRaDevicePreferredGateway preferredGateway, bool onlyIfNotExists = false)
+        internal static bool SaveToCache(ILoRaDeviceCacheStore cacheStore, DevEui devEUI, LoRaDevicePreferredGateway preferredGateway, bool onlyIfNotExists = false)
         {
             return cacheStore.StringSet(PreferredGatewayCacheKey(devEUI), preferredGateway.ToCachedString(), null, onlyIfNotExists);
         }

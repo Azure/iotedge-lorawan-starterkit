@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade
 {
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.Azure.Devices;
 
     /// <summary>
@@ -13,6 +14,6 @@ namespace LoraKeysManagerFacade
     {
         Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod);
 
-        Task SendAsync(string deviceId, Message message);
+        Task SendAsync(DevEui deviceId, Message message);
     }
 }

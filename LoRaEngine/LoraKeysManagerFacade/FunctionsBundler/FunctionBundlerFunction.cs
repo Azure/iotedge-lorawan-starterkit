@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System.Linq;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
@@ -46,12 +47,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             var functionBundlerRequest = JsonConvert.DeserializeObject<FunctionBundlerRequest>(requestBody);
-            var result = await HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, logger);
+            var result = await HandleFunctionBundlerInvoke(DevEui.Parse(devEUI), functionBundlerRequest, logger);
 
             return new OkObjectResult(result);
         }
 
-        public async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request, ILogger logger = null)
+        public async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(DevEui devEUI, FunctionBundlerRequest request, ILogger logger = null)
         {
             var pipeline = new FunctionBundlerPipelineExecuter(this.executionItems, devEUI, request, logger);
             return await pipeline.Execute();

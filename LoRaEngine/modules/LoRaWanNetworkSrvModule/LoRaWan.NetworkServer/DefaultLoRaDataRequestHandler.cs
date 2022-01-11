@@ -289,7 +289,7 @@ namespace LoRaWan.NetworkServer
 
                             if (decodePayloadResult.CloudToDeviceMessage != null)
                             {
-                                if (string.IsNullOrEmpty(decodePayloadResult.CloudToDeviceMessage.DevEUI) || string.Equals(loRaDevice.DevEUI, decodePayloadResult.CloudToDeviceMessage.DevEUI, StringComparison.OrdinalIgnoreCase))
+                                if (decodePayloadResult.CloudToDeviceMessage.DevEUI == default || DevEui.Parse(loRaDevice.DevEUI) == decodePayloadResult.CloudToDeviceMessage.DevEUI)
                                 {
                                     // sending c2d to same device
                                     cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
@@ -804,9 +804,10 @@ namespace LoRaWan.NetworkServer
 
             var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
 
+            var devEui = DevEui.Parse(loRaDevice.DevEUI);
             var loRaADRTableEntry = new LoRaADRTableEntry()
             {
-                DevEUI = loRaDevice.DevEUI,
+                DevEUI = devEui,
                 FCnt = payloadFcnt,
                 GatewayId = this.configuration.GatewayID,
                 Snr = request.RadioMetadata.UpInfo.SignalNoiseRatio
@@ -820,7 +821,7 @@ namespace LoRaWan.NetworkServer
             else
             {
                 loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntryAsync(
-                    loRaDevice.DevEUI,
+                    devEui,
                     this.configuration.GatewayID,
                     payloadFcnt,
                     loRaDevice.FCntDown,

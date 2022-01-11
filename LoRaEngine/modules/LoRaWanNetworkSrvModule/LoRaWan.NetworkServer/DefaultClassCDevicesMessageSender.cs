@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
+    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
 
     public class DefaultClassCDevicesMessageSender : IClassCDeviceMessageSender
@@ -39,7 +40,7 @@ namespace LoRaWan.NetworkServer
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
 
-            if (string.IsNullOrEmpty(message.DevEUI))
+            if (message.DevEUI == default)
             {
                 this.logger.LogError($"[class-c] devEUI missing in payload");
                 return false;
@@ -51,10 +52,10 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(message.DevEUI);
+            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(message.DevEUI.Value.AsIotHubDeviceId());
             if (loRaDevice == null)
             {
-                this.logger.LogError(message.DevEUI, $"[class-c] device {message.DevEUI} not found or not joined");
+                this.logger.LogError($"[class-c] device {message.DevEUI} not found or not joined");
                 return false;
             }
 

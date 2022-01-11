@@ -7,6 +7,7 @@ namespace LoraKeysManagerFacade
     using System.Collections.Generic;
     using System.Globalization;
     using System.Threading.Tasks;
+    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,6 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Primitives;
     using Newtonsoft.Json;
 
     public class DeviceGetter
@@ -50,20 +50,21 @@ namespace LoraKeysManagerFacade
             // ABP parameters
             string devAddrString = req.Query["DevAddr"];
             // OTAA parameters
-            var devEUI = req.Query["DevEUI"];
+            string rawDevEui = req.Query["DevEUI"];
             string rawDevNonce = req.Query["DevNonce"];
             var gatewayId = req.Query["GatewayId"];
 
-            if (devEUI != StringValues.Empty)
+            if (!string.IsNullOrEmpty(rawDevEui))
             {
-                EUIValidator.ValidateDevEUI(devEUI);
+                EUIValidator.ValidateDevEUI(rawDevEui);
             }
 
             try
             {
                 DevNonce? devNonce = ushort.TryParse(rawDevNonce, NumberStyles.None, CultureInfo.InvariantCulture, out var d) ? new DevNonce(d) : null;
                 DevAddr? devAddr = DevAddr.TryParse(devAddrString, out var someDevAddr) ? someDevAddr : null;
-                var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
+                DevEui? devEui = DevEui.TryParse(rawDevEui, out var someDevEui) ? someDevEui : null;
+                var results = await GetDeviceList(devEui, gatewayId, devNonce, devAddr, log);
                 var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);
             }
@@ -82,23 +83,23 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public async Task<List<IoTHubDeviceInfo>> GetDeviceList(string devEUI, string gatewayId, DevNonce? devNonce, DevAddr? devAddr, ILogger log = null)
+        public async Task<List<IoTHubDeviceInfo>> GetDeviceList(DevEui? devEUI, string gatewayId, DevNonce? devNonce, DevAddr? devAddr, ILogger log = null)
         {
             var results = new List<IoTHubDeviceInfo>();
 
-            if (devEUI != null)
+            if (devEUI is { } someDevEui)
             {
-                var joinInfo = await TryGetJoinInfoAndValidateAsync(devEUI, gatewayId, log);
+                var joinInfo = await TryGetJoinInfoAndValidateAsync(someDevEui, gatewayId, log);
 
                 // OTAA join
-                using var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId);
+                using var deviceCache = new LoRaDeviceCache(this.cacheStore, someDevEui, gatewayId);
                 var cacheKeyDevNonce = string.Concat(devEUI, ":", devNonce);
 
                 if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce?.ToString(), TimeSpan.FromMinutes(5), onlyIfNotExists: true))
                 {
                     var iotHubDeviceInfo = new IoTHubDeviceInfo
                     {
-                        DevEUI = devEUI,
+                        DevEUI = someDevEui,
                         PrimaryKey = joinInfo.PrimaryKey
                     };
 
@@ -107,16 +108,16 @@ namespace LoraKeysManagerFacade
                     if (await deviceCache.TryToLockAsync())
                     {
                         deviceCache.ClearCache(); // clear the fcnt up/down after the join
-                        log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
+                        log?.LogDebug("Removed key '{key}':{gwid}", someDevEui, gatewayId);
                     }
                     else
                     {
-                        log?.LogWarning("Failed to acquire lock for '{key}'", devEUI);
+                        log?.LogWarning("Failed to acquire lock for '{key}'", someDevEui);
                     }
                 }
                 else
                 {
-                    log?.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", devEUI, gatewayId);
+                    log?.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", someDevEui, gatewayId);
                     throw new DeviceNonceUsedException();
                 }
             }
@@ -134,7 +135,7 @@ namespace LoraKeysManagerFacade
                         {
                             for (var i = 0; i < devAddressesInfo.Count; i++)
                             {
-                                if (!string.IsNullOrEmpty(devAddressesInfo[i].DevEUI))
+                                if (devAddressesInfo[i].DevEUI is { } someDevEuiPrime)
                                 {
                                     // device was not yet populated
                                     if (!string.IsNullOrEmpty(devAddressesInfo[i].PrimaryKey))
@@ -145,7 +146,7 @@ namespace LoraKeysManagerFacade
                                     {
                                         // we need to load the primaryKey from IoTHub
                                         // Add a lock loadPrimaryKey get lock get
-                                        devAddressesInfo[i].PrimaryKey = await LoadPrimaryKeyAsync(devAddressesInfo[i].DevEUI);
+                                        devAddressesInfo[i].PrimaryKey = await LoadPrimaryKeyAsync(someDevEuiPrime);
                                         results.Add(devAddressesInfo[i]);
                                         _ = devAddrCache.StoreInfo(devAddressesInfo[i]);
                                     }
@@ -173,7 +174,7 @@ namespace LoraKeysManagerFacade
                                         var iotHubDeviceInfo = new DevAddrCacheInfo
                                         {
                                             DevAddr = someDevAddr,
-                                            DevEUI = twin.DeviceId,
+                                            DevEUI = DevEui.Parse(twin.DeviceId),
                                             PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey,
                                             GatewayId = twin.GetGatewayID(),
                                             NwkSKey = twin.GetNwkSKey(),
@@ -192,8 +193,7 @@ namespace LoraKeysManagerFacade
                             {
                                 _ = devAddrCache.StoreInfo(new DevAddrCacheInfo()
                                 {
-                                    DevAddr = someDevAddr,
-                                    DevEUI = string.Empty
+                                    DevAddr = someDevAddr
                                 });
                             }
                         }
@@ -212,9 +212,9 @@ namespace LoraKeysManagerFacade
             return results;
         }
 
-        private async Task<string> LoadPrimaryKeyAsync(string devEUI)
+        private async Task<string> LoadPrimaryKeyAsync(DevEui devEUI)
         {
-            var device = await this.registryManager.GetDeviceAsync(devEUI);
+            var device = await this.registryManager.GetDeviceAsync(devEUI.AsIotHubDeviceId());
             if (device == null)
             {
                 return null;
@@ -223,7 +223,7 @@ namespace LoraKeysManagerFacade
             return device.Authentication.SymmetricKey?.PrimaryKey;
         }
 
-        private async Task<JoinInfo> TryGetJoinInfoAndValidateAsync(string devEUI, string gatewayId, ILogger log)
+        private async Task<JoinInfo> TryGetJoinInfoAndValidateAsync(DevEui devEUI, string gatewayId, ILogger log)
         {
             var cacheKeyJoinInfo = string.Concat(devEUI, ":joininfo");
             var lockKeyJoinInfo = string.Concat(devEUI, ":joinlockjoininfo");
@@ -238,11 +238,11 @@ namespace LoraKeysManagerFacade
                     {
                         joinInfo = new JoinInfo();
 
-                        var device = await this.registryManager.GetDeviceAsync(devEUI);
+                        var device = await this.registryManager.GetDeviceAsync(devEUI.AsIotHubDeviceId());
                         if (device != null)
                         {
                             joinInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
-                            var twin = await this.registryManager.GetTwinAsync(devEUI);
+                            var twin = await this.registryManager.GetTwinAsync(devEUI.AsIotHubDeviceId());
                             var deviceGatewayId = twin.GetGatewayID();
                             if (!string.IsNullOrEmpty(deviceGatewayId))
                             {

@@ -68,18 +68,14 @@ namespace LoraKeysManagerFacade
             }
 
             var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(requestBody);
-            c2dMessage.DevEUI = devEUI;
+            var parsedDevEui = DevEui.Parse(devEUI);
+            c2dMessage.DevEUI = parsedDevEui;
 
-            return await SendCloudToDeviceMessageImplementationAsync(devEUI, c2dMessage);
+            return await SendCloudToDeviceMessageImplementationAsync(parsedDevEui, c2dMessage);
         }
 
-        public async Task<IActionResult> SendCloudToDeviceMessageImplementationAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        public async Task<IActionResult> SendCloudToDeviceMessageImplementationAsync(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
-            if (string.IsNullOrEmpty(devEUI))
-            {
-                return new BadRequestObjectResult($"Missing {nameof(devEUI)} value");
-            }
-
             if (c2dMessage == null)
             {
                 return new BadRequestObjectResult("Missing cloud to device message");
@@ -152,7 +148,7 @@ namespace LoraKeysManagerFacade
             return new NotFoundObjectResult($"Device '{devEUI}' was not found");
         }
 
-        private async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        private async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
             try
             {
@@ -173,7 +169,7 @@ namespace LoraKeysManagerFacade
 
                 return new OkObjectResult(new SendCloudToDeviceMessageResult()
                 {
-                    DevEUI = devEUI,
+                    DevEui = devEUI,
                     MessageID = message.MessageId,
                     ClassType = "A",
                 });
@@ -187,7 +183,7 @@ namespace LoraKeysManagerFacade
 
         private async Task<IActionResult> SendMessageViaDirectMethodAsync(
             string preferredGatewayID,
-            string devEUI,
+            DevEui devEUI,
             LoRaCloudToDeviceMessage c2dMessage)
         {
             try
@@ -202,7 +198,7 @@ namespace LoraKeysManagerFacade
 
                     return new OkObjectResult(new SendCloudToDeviceMessageResult()
                     {
-                        DevEUI = devEUI,
+                        DevEui = devEUI,
                         MessageID = c2dMessage.MessageId,
                         ClassType = "C",
                     });

@@ -74,10 +74,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Sending_Message_Should_Send_Downlink_To_PacketForwarder(string deviceGatewayID)
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
-            var devEUI = simDevice.DevEUI;
+            var devEUI = DevEui.Parse(simDevice.DevEUI);
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(devEUI))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI.ToString("N", null), "123").AsList()));
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
@@ -91,7 +91,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
                 // will update the fcnt down
-                this.deviceApi.Setup(x => x.NextFCntDownAsync(devEUI, simDevice.FrmCntDown, 0, this.serverConfiguration.GatewayID))
+                this.deviceApi.Setup(x => x.NextFCntDownAsync(devEUI.ToString("N", null), simDevice.FrmCntDown, 0, this.serverConfiguration.GatewayID))
                     .ReturnsAsync((ushort)(simDevice.FrmCntDown + 1));
             }
 
@@ -131,10 +131,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Device_Is_Not_Class_C_Should_Fail()
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
-            var devEUI = simDevice.DevEUI;
+            var devEUI = DevEui.Parse(simDevice.DevEUI);
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(devEUI))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI.ToString("N", null), "123").AsList()));
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simDevice.CreateABPTwin());
@@ -191,10 +191,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Device_Is_Not_Joined_Should_Fail()
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
-            var devEUI = simDevice.DevEUI;
+            var devEUI = DevEui.Parse(simDevice.DevEUI);
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(devEUI))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI.ToString("N", null), "123").AsList()));
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simDevice.CreateOTAATwin());
@@ -226,10 +226,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Fails_To_Get_FcntDown_Should_Fail()
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c'));
-            var devEUI = simDevice.DevEUI;
+            var devEUI = DevEui.Parse(simDevice.DevEUI);
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(devEUI))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI.ToString("N", null), "123").AsList()));
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
@@ -249,7 +249,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
             // will update the fcnt down
-            this.deviceApi.Setup(x => x.NextFCntDownAsync(devEUI, simDevice.FrmCntDown, 0, this.serverConfiguration.GatewayID))
+            this.deviceApi.Setup(x => x.NextFCntDownAsync(devEUI.ToString("N", null), simDevice.FrmCntDown, 0, this.serverConfiguration.GatewayID))
                 .ThrowsAsync(new TimeoutException());
 
             var target = new DefaultClassCDevicesMessageSender(
@@ -271,7 +271,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Message_Is_Invalid_Should_Fail()
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
-            var devEUI = simDevice.DevEUI;
+            var devEUI = DevEui.Parse(simDevice.DevEUI);
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
@@ -300,7 +300,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Regions_Is_Not_Defined_Should_Fail()
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
-            var devEUI = simDevice.DevEUI;
+            var devEUI = DevEui.Parse(simDevice.DevEUI);
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
@@ -332,11 +332,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var appSKey = TestKeys.CreateAppSessionKey(0xABC0200000000000, 0x09);
             var nwkSKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
-            var devEUI = simDevice.DevEUI;
+            var devEUI = DevEui.Parse(simDevice.DevEUI);
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(devEUI))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI.ToString("N", null), "123").AsList()));
 
             var twin = simDevice.CreateOTAATwin(
                 desiredProperties: new Dictionary<string, object>
@@ -398,11 +398,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var appSKey = TestKeys.CreateAppSessionKey(0xABC0200000000000, 0x09);
             var nwkSKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
-            var devEUI = simDevice.DevEUI;
+            var devEUI = DevEui.Parse(simDevice.DevEUI);
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.SearchByEuiAsync(devEUI))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI.ToString("N", null), "123").AsList()));
 
             var twin = simDevice.CreateOTAATwin(
                 desiredProperties: new Dictionary<string, object>
