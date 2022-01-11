@@ -113,9 +113,11 @@ namespace LoRaWan.NetworkServer
 
         private static string CreateCacheKeyCore(string prefix, ReadOnlySpan<byte> buffer)
         {
-            Span<char> key = stackalloc char[(buffer.Length * 3) - 1];
-            Hexadecimal.Write(buffer, key, separator: '-');
-            return string.Concat(prefix, key.ToString());
+            var bufferToHexLength = (buffer.Length * 3) - 1;
+            Span<char> hexBuffer = bufferToHexLength <= 128 ? stackalloc char[bufferToHexLength] : new char[bufferToHexLength]; // uses the stack for small allocations, otherwise the heap
+            Hexadecimal.Write(buffer, hexBuffer, separator: '-');
+
+            return string.Concat(prefix, hexBuffer.ToString());
         }
     }
 }
