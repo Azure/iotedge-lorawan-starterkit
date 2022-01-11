@@ -40,6 +40,11 @@ This document focuses on:
 
 ## Out-of-scope
 
+- Generating of the signature key, CRC32 checksum of the signature and digest in
+  the LoRa Device Provisioning CLI is considered a stretch and will not be added
+  to the tool as a functionality for the time being. This document provides
+  sample commands which can be used to generate required values in the appendix.
+
 ## Decisions
 
 ### Context
