@@ -142,7 +142,7 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device13_OTAA;
             LogTestStart(device);
 
-            var appEUIToUse = JoinEui.Parse("FF7A00000000FCE3");
+            var appEUIToUse = new JoinEui(0xFF7A00000000FCE3);
             Assert.NotEqual(appEUIToUse, device.AppEUI);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, appEUIToUse);
