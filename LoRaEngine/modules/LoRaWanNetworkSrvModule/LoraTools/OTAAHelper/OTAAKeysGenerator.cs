@@ -4,6 +4,7 @@
 namespace LoRaTools
 {
     using System;
+    using System.Diagnostics;
     using System.Security.Cryptography;
     using LoRaTools.Utils;
     using LoRaWan;
@@ -17,22 +18,23 @@ namespace LoRaTools
             return new DevAddr(unchecked((byte)netId) & 0b0111_1111, address);
         }
 
-        public static NetworkSessionKey CalculateNetworkSessionKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        private enum SessionKeyType { Network = 1, Application = 2 }
+
+        public static NetworkSessionKey CalculateNetworkSessionKey(byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
         {
-            var keyString = CalculateKey(type, appnonce, netid, devNonce, appKey);
+            var keyString = CalculateKey(SessionKeyType.Network, appnonce, netid, devNonce, appKey);
             return NetworkSessionKey.Parse(keyString);
         }
 
-        public static AppSessionKey CalculateAppSessionKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        public static AppSessionKey CalculateAppSessionKey(byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
         {
-            var keyString = CalculateKey(type, appnonce, netid, devNonce, appKey);
+            var keyString = CalculateKey(SessionKeyType.Application, appnonce, netid, devNonce, appKey);
             return AppSessionKey.Parse(keyString);
         }
 
         // don't work with CFLIST atm
-        private static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        private static string CalculateKey(SessionKeyType type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
         {
-            if (type is null) throw new ArgumentNullException(nameof(type));
             if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
             if (netid is null) throw new ArgumentNullException(nameof(netid));
 
@@ -49,11 +51,17 @@ namespace LoRaTools
             var devNonceBytes = new byte[DevNonce.Size];
             _ = devNonce.Write(devNonceBytes);
 
-            var pt = new byte[type.Length + appnonce.Length + netid.Length + DevNonce.Size + 7];
-            Array.Copy(type, pt, type.Length);
-            Array.Copy(appnonce, 0, pt, type.Length, appnonce.Length);
-            Array.Copy(netid, 0, pt, type.Length + appnonce.Length, netid.Length);
-            _ = devNonce.Write(pt.AsSpan(type.Length + appnonce.Length + netid.Length));
+            const int typeLength = 1;
+            var buffer = new byte[typeLength + appnonce.Length + netid.Length + DevNonce.Size + 7];
+            var pt = buffer.AsSpan();
+            Debug.Assert(pt.Length == 16);
+            pt[0] = unchecked((byte)type);
+            pt = pt[1..];
+            appnonce.CopyTo(pt);
+            pt = pt[appnonce.Length..];
+            netid.CopyTo(pt);
+            pt = pt[netid.Length..];
+            _ = devNonce.Write(pt);
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
@@ -62,7 +70,7 @@ namespace LoRaTools
             cipher = aes.CreateEncryptor();
 #pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
 
-            var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
+            var key = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
             return ConversionHelper.ByteArrayToString(key);
         }
 
