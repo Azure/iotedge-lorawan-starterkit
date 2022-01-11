@@ -2,8 +2,8 @@
 set -e
 
 DEFAULT_CERTS_PATH="/var/lorastarterkit/certs"
-DEFAULT_TC_TRUST_PATH="$DEFAULT_CERTS_PATH/tc.trust"
-CA_PATH="/usr/local/share/ca-certificates/lns.crt"
+DEFAULT_CLIENT_CA_PATH="$DEFAULT_CERTS_PATH/client.ca.crt"
+CA_PATH="/usr/local/share/ca-certificates/lnsclientca.crt"
 
 conditionalCopy() {
     if [[ -z "$1" ]]; then
@@ -22,7 +22,7 @@ conditionalCopy() {
 if [[ -z "$LNS_SERVER_PFX_PATH" ]]; then
     echo "No PFX is set for the server side authentication. No need to trust any certificate."
 else
-    conditionalCopy "$TC_TRUST_PATH" "$DEFAULT_TC_TRUST_PATH"
+    conditionalCopy "$CLIENT_CA_PATH" "$DEFAULT_CLIENT_CA_PATH"
 fi
 
 if [ -z "$(ls -A $CA_PATH 2> /dev/null)" ]; then
