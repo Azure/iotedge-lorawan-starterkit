@@ -99,7 +99,15 @@ firmware upgrade files.
 ### Azure Function related changes
 
 A new endpoint will be added in the Facade Azure Function which will be used to
-fetch firmware upgrade files from the storage account.
+fetch firmware upgrade files from the storage account. The endpoint will accept
+the `StationEui` as input, then retrieve the concentrator twin from IoT Hub,
+download the firmware file from the storage account and send it back in the
+response.
+
+This mechanism will have a theoretical limit of 100MB for the firmware upgrade
+(as we cannot process more with Azure Function). This should be enough given the
+size of the Basics Station executable (around 1MB at the time of writing this
+document).
 
 ### Changes in the LoRaWan Network Server
 
