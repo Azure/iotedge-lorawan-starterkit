@@ -30,4 +30,5 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim
 WORKDIR /app
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/start.sh ./
+RUN chmod +x ./start.sh
 ENTRYPOINT ["./start.sh"]
