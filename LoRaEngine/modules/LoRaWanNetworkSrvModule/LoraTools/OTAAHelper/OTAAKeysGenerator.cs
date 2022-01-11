@@ -11,32 +11,24 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        public static DevAddr GetNwkId(uint netId)
-        {
-            var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
-            // The 7 LBS of the NetID become the NwkID of a DevAddr:
-            return new DevAddr(unchecked((byte)netId) & 0b0111_1111, address);
-        }
-
         private enum SessionKeyType { Network = 1, Application = 2 }
 
-        public static NetworkSessionKey CalculateNetworkSessionKey(byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        public static NetworkSessionKey CalculateNetworkSessionKey(byte[] appnonce, NetId netid, DevNonce devNonce, AppKey appKey)
         {
             var keyString = CalculateKey(SessionKeyType.Network, appnonce, netid, devNonce, appKey);
             return NetworkSessionKey.Parse(keyString);
         }
 
-        public static AppSessionKey CalculateAppSessionKey(byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        public static AppSessionKey CalculateAppSessionKey(byte[] appnonce, NetId netid, DevNonce devNonce, AppKey appKey)
         {
             var keyString = CalculateKey(SessionKeyType.Application, appnonce, netid, devNonce, appKey);
             return AppSessionKey.Parse(keyString);
         }
 
         // don't work with CFLIST atm
-        private static string CalculateKey(SessionKeyType type, byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        private static string CalculateKey(SessionKeyType type, byte[] appnonce, NetId netid, DevNonce devNonce, AppKey appKey)
         {
             if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
-            if (netid is null) throw new ArgumentNullException(nameof(netid));
 
             using var aes = Aes.Create("AesManaged");
             var rawAppKey = new byte[AppKey.Size];
@@ -51,16 +43,14 @@ namespace LoRaTools
             var devNonceBytes = new byte[DevNonce.Size];
             _ = devNonce.Write(devNonceBytes);
 
-            const int typeLength = 1;
-            var buffer = new byte[typeLength + appnonce.Length + netid.Length + DevNonce.Size + 7];
+            var buffer = new byte[1 + appnonce.Length + NetId.Size + DevNonce.Size + 7];
             var pt = buffer.AsSpan();
             Debug.Assert(pt.Length == 16);
             pt[0] = unchecked((byte)type);
             pt = pt[1..];
             appnonce.CopyTo(pt);
             pt = pt[appnonce.Length..];
-            netid.CopyTo(pt);
-            pt = pt[netid.Length..];
+            pt = netid.Write(pt);
             _ = devNonce.Write(pt);
 
             aes.IV = new byte[16];
@@ -71,45 +61,6 @@ namespace LoRaTools
 #pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
 
             var key = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
-            return ConversionHelper.ByteArrayToString(key);
-        }
-
-        // don't work with CFLIST atm
-        public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, ReadOnlyMemory<byte> devnonce, byte[] appKey)
-        {
-            if (type is null) throw new ArgumentNullException(nameof(type));
-            if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
-            if (netid is null) throw new ArgumentNullException(nameof(netid));
-
-            using var aes = Aes.Create("AesManaged");
-            aes.Key = appKey;
-#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
-            // Cipher is part of the LoRaWAN specification
-            aes.Mode = CipherMode.ECB;
-#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
-            aes.Padding = PaddingMode.None;
-
-            var pt = new byte[type.Length + appnonce.Length + netid.Length + devnonce.Length + 7];
-            var destIndex = 0;
-            Array.Copy(type, 0, pt, destIndex, type.Length);
-
-            destIndex += type.Length;
-            Array.Copy(appnonce, 0, pt, destIndex, appnonce.Length);
-
-            destIndex += appnonce.Length;
-            Array.Copy(netid, 0, pt, destIndex, netid.Length);
-
-            destIndex += netid.Length;
-            devnonce.CopyTo(new Memory<byte>(pt, destIndex, devnonce.Length));
-
-            aes.IV = new byte[16];
-            ICryptoTransform cipher;
-#pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
-            // Part of the LoRaWAN specification
-            cipher = aes.CreateEncryptor();
-#pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
-
-            var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
             return ConversionHelper.ByteArrayToString(key);
         }
 
