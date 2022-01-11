@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
@@ -112,7 +113,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "AppEUI", joinEui.ToString() },
+                    { "AppEUI", joinEui.ToString("N", CultureInfo.InvariantCulture) },
                     { "AppKey", appKey.ToString() },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
