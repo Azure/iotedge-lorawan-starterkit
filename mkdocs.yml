@@ -100,6 +100,7 @@ nav:
     - adr/004_region_as923_implementation.md
     - adr/005_observability.md
     - adr/006_cups.md
+    - adr/007_message_deduplication.md
   - About:
     - 'Known Issues': issues.md
     - 'Support': support.md
