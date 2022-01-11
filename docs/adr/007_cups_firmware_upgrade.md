@@ -118,7 +118,7 @@ user to trigger a firmware upgrade. The command will accept the follwing inputs:
 - firmware upgrade file
 - signature
 - CRC32 checksum of the key used for the signature
-- Basics Station package version
+- new package version
 
 The CLI tool will:
 
