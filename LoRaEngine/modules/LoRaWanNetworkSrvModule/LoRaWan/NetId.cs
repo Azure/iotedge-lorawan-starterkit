@@ -20,7 +20,7 @@ namespace LoRaWan
 
         public NetId(int value)
         {
-            if (unchecked((uint)value & 0xffff_0000_0000_0000) != 0)
+            if (!IsSesquiWord(value))
                 throw new ArgumentOutOfRangeException(nameof(value), value, null);
             this.value = value;
         }
@@ -31,5 +31,38 @@ namespace LoRaWan
         public int NetworkId => this.value & 0b111_1111;
 
         public override string ToString() => this.value.ToString("X6", CultureInfo.InvariantCulture);
+
+        public static NetId Parse(ReadOnlySpan<char> input) =>
+            TryParse(input, out var result) ? result : throw new FormatException();
+
+        public static bool TryParse(ReadOnlySpan<char> input, out NetId result)
+        {
+            if (int.TryParse(input, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var raw) && IsSesquiWord(raw))
+            {
+                result = new NetId(raw);
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        private static bool IsSesquiWord(int n) => unchecked((uint)n & 0xff00_0000) == 0;
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            unchecked
+            {
+                buffer[0] = (byte)this.value;
+                buffer[1] = (byte)(this.value >> 8);
+                buffer[2] = (byte)(this.value >> 16);
+            }
+            return buffer[Size..];
+        }
+
+        public static NetId Read(ReadOnlySpan<byte> buffer) =>
+            new(buffer[0] | (buffer[1] << 8) | (buffer[2] << 16));
     }
 }

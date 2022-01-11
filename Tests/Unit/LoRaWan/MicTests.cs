@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Unit
             var key = TestKeys.CreateAppKey(0x0005100000000004);
             var mhdr = new MacHeader(1);
             var joinNonce = new byte[] { 0xab, 0xcd };
-            var netId = new byte[] { 0xba, 0xbb, 0xbc };
+            var netId = new NetId(0xbcbbba);
             var devAddr = new DevAddr(0x14131211);
             var dlSettings = new byte[] { 0xca };
             var rxDelay = new byte[] { 0xda };
