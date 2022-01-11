@@ -146,4 +146,31 @@ The CLI tool will:
 1. Update concentrator device twin with the new blob URL, signature and CRC32
    checksum of the key used to generate the signature and the new package version
 
+## Appendix
+
+### Generating signature keys
+
+The following commands can be used to generate a signature key:
+
+```shell
+openssl ecparam -name prime256v1 -genkey | openssl ec -out sig-0.pem
+openssl ec -in sig-0.pem -pubout -out sig-0.pub
+openssl ec -in sig-0.pub -inform PEM -outform DER -pubin | tail -c 64 > sig-0.key
+```
+
+### Calculating the CRC32 checksum of the signature key
+
+```shell
+cat sig-0.key | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo > sig-0.crc
+```
+
+### Calculating the digest of a firmware upgrade file
+
+Digest of an upgrade file (`upgrade.sh`) can be calculated using the previously
+generated signature key using the command:
+
+```shell
+openssl dgst -sha512 -sign sig-0.pem update.sh > update.sh.sig-0.sha512
+```
+
 [cupsproto]: https://doc.sm.tc/station/cupsproto.html
