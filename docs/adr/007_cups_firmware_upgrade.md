@@ -186,4 +186,3 @@ openssl dgst -sha512 -sign sig-0.pem update.sh > update.sh.sig-0.sha512
 ```
 
 [cupsproto]: https://doc.sm.tc/station/cupsproto.html
-[lbs-example]: https://github.com/lorabasics/basicstation/blob/master/examples/cups/prep.sh
