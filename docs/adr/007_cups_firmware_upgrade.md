@@ -8,9 +8,8 @@
 **Status**: Proposed
 
 >This ADR is an extension of [006. CUPS Protocol Implementation - Credential
->management](./006_cups.md) and focuses of firmware upgrades. For
->details about the general CUPS protocol implementation please refer to the
->other document.
+>management][cups-adr] and focuses of firmware upgrades. For details about the
+>general CUPS protocol implementation please refer to the other document.
 
 ## Overview
 
@@ -96,12 +95,14 @@ added:
 }
 ```
 
-- **'package'**: desired package version of the Station (matching what will be extracted as version.txt file during update)
+- **'package'**: desired package version of the Station (matching what will be
+  extracted as version.txt file during update)
 - **'fwUrl'**: URL pointing to the storage location of the file required to run
   the upgrade
 - **'fwKeyChecksum'**: checksum of the key used to sign the digest of the
   firmware upgrade file
-- **'fwSignature'**: signature of the uploaded firmware upgrade file (as base64 encoded string)
+- **'fwSignature'**: signature of the uploaded firmware upgrade file (as base64
+  encoded string)
 
 ### Storage related changes
 
@@ -156,7 +157,8 @@ The CLI tool will:
 
 1. Upload a blob with the firmware file to the storage account.
 1. Update concentrator device twin with the new blob URL, signature and CRC32
-   checksum of the key used to generate the signature and the new package version
+   checksum of the key used to generate the signature and the new package
+   version
 
 ## Appendix
 
@@ -185,4 +187,5 @@ generated signature key using the command:
 openssl dgst -sha512 -sign sig-0.pem update.sh > update.sh.sig-0.sha512
 ```
 
+[cups-adr]: https://azure.github.io/iotedge-lorawan-starterkit/dev/adr/006_cups/
 [cupsproto]: https://doc.sm.tc/station/cupsproto.html
