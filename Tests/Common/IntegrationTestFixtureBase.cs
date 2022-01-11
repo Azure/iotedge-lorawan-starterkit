@@ -184,21 +184,6 @@ namespace LoRaWan.Tests.Common
             return this.moduleClient;
         }
 
-        public async Task InvokeModuleDirectMethodAsync(string edgeDeviceId, string moduleId, string methodName, object body)
-        {
-            try
-            {
-                var c2d = new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-                c2d.SetPayloadJson(JsonConvert.SerializeObject(body));
-                await GetServiceClient().InvokeDeviceMethodAsync(edgeDeviceId, moduleId, c2d);
-            }
-            catch (Exception ex)
-            {
-                TestLogger.Log($"[ERROR] Failed to call direct method, deviceId: {edgeDeviceId}, moduleId: {moduleId}, method: {methodName}: {ex.Message}");
-                throw;
-            }
-        }
-
         public async Task InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod method)
         {
             using var sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHubConnectionString);
@@ -235,31 +220,32 @@ namespace LoRaWan.Tests.Common
                         d.AppEUI = string.Concat(Configuration.DevicePrefix, d.AppEUI[Configuration.DevicePrefix.Length..]);
                     }
 
-                    if (!string.IsNullOrEmpty(d.AppKey))
+                    if (d.AppKey is { } someAppKey)
                     {
-                        d.AppKey = string.Concat(Configuration.DevicePrefix, d.AppKey[Configuration.DevicePrefix.Length..]);
+                        d.AppKey = AppKey.Parse(string.Concat(Configuration.DevicePrefix, someAppKey.ToString()[Configuration.DevicePrefix.Length..]));
                     }
 
-                    if (!string.IsNullOrEmpty(d.AppSKey))
+                    if (d.AppSKey is { } someAppSessionKey)
                     {
-                        d.AppSKey = string.Concat(Configuration.DevicePrefix, d.AppSKey[Configuration.DevicePrefix.Length..]);
+                        d.AppSKey = AppSessionKey.Parse(string.Concat(Configuration.DevicePrefix, someAppSessionKey.ToString()[Configuration.DevicePrefix.Length..]));
                     }
 
-                    if (!string.IsNullOrEmpty(d.NwkSKey))
+                    if (d.NwkSKey is { } someNetworkSessionKey)
                     {
-                        d.NwkSKey = string.Concat(Configuration.DevicePrefix, d.NwkSKey[Configuration.DevicePrefix.Length..]);
+                        d.NwkSKey = NetworkSessionKey.Parse(string.Concat(Configuration.DevicePrefix, someNetworkSessionKey.ToString()[Configuration.DevicePrefix.Length..]));
                     }
 
-                    if (!string.IsNullOrEmpty(d.DevAddr))
+                    if (d.DevAddr is { } someDevAddr)
                     {
-                        d.DevAddr = NetIdHelper.SetNwkIdPart(string.Concat(Configuration.DevicePrefix, d.DevAddr[Configuration.DevicePrefix.Length..]), Configuration.NetId);
+                        d.DevAddr = DevAddr.Parse(Configuration.DevicePrefix + someDevAddr.ToString()[Configuration.DevicePrefix.Length..])
+                                    with { NetworkId = checked((int)Configuration.NetId) };
                     }
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(d.DevAddr))
+                    if (d.DevAddr is { } someDevAddr)
                     {
-                        d.DevAddr = NetIdHelper.SetNwkIdPart(d.DevAddr, Configuration.NetId);
+                        d.DevAddr = someDevAddr with { NetworkId = checked((int)Configuration.NetId) };
                     }
                 }
             }
