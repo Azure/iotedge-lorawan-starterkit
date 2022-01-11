@@ -6,6 +6,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Collections.Generic;
     using global::LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -95,13 +96,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, foundStation);
         }
 
+        public static IEnumerable<object[]> CreateKeyDataMessagesTheoryData =>
+            new List<object[]>
+            {
+                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 0), 0, 0, 0 },
+                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 0), 0, 0, 0, "1" }, // a non-relevant field should not influence the key
+                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0x1010101010101010UL), new Mic(0), 0), 0x1010101010101010UL, 0, 0 },
+                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(1), 0), 0, 1, 0 },
+                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 1), 0, 0, 1 },
+            };
+
         [Theory]
-        [InlineData(ConcentratorDeduplication.DataMessageCacheKeyPrefix + "00-00-00-00-00-00-00-00-00-00-00-00-00-00", 0, 0, 0)]
-        [InlineData(ConcentratorDeduplication.DataMessageCacheKeyPrefix + "00-00-00-00-00-00-00-00-00-00-00-00-00-00", 0, 0, 0, "1")] // a non-relevant field should not influence the key
-        [InlineData(ConcentratorDeduplication.DataMessageCacheKeyPrefix + "10-10-10-10-10-10-10-10-00-00-00-00-00-00", 0x1010101010101010UL, 0, 0)]
-        [InlineData(ConcentratorDeduplication.DataMessageCacheKeyPrefix + "00-00-00-00-00-00-00-00-01-00-00-00-00-00", 0, 1, 0)]
-        [InlineData(ConcentratorDeduplication.DataMessageCacheKeyPrefix + "00-00-00-00-00-00-00-00-00-00-00-00-01-00", 0, 0, 1)]
-        public void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(string expectedKey, ulong devEui, ushort mic, ushort frameCounter, string? fieldNotUsedInKey = null)
+        [MemberData(nameof(CreateKeyDataMessagesTheoryData))]
+        internal void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(ConcentratorDeduplication.DataMessageKey expectedKey, ulong devEui, ushort mic, ushort frameCounter, string? fieldNotUsedInKey = null)
         {
             var options = fieldNotUsedInKey ?? string.Empty;
             using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(devEui).ToString(), this.connectionManager);
@@ -161,13 +168,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, addedStation);
         }
 
+        public static IEnumerable<object[]> CreateKeyJoinMessagesTheoryData =>
+            new List<object[]>
+            {
+                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0 },
+                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0, (uint)1 }, // a non-relevant field should not influence the key
+                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0x1010101010101010UL), new DevEui(0), new DevNonce(0)), 0x1010101010101010UL, 0, 0 },
+                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0x1010101010101010UL), new DevNonce(0)), 0, 0x1010101010101010UL, 0 },
+                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(1)), 0, 0, 1 },
+           };
+
         [Theory]
-        [InlineData(ConcentratorDeduplication.JoinMessageCacheKeyPrefix + "00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00", 0, 0, 0)]
-        [InlineData(ConcentratorDeduplication.JoinMessageCacheKeyPrefix + "00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00", 0, 0, 0, (uint)1)] // a non-relevant field should not influence the key
-        [InlineData(ConcentratorDeduplication.JoinMessageCacheKeyPrefix + "10-10-10-10-10-10-10-10-00-00-00-00-00-00-00-00-00-00", 0x1010101010101010UL, 0, 0)]
-        [InlineData(ConcentratorDeduplication.JoinMessageCacheKeyPrefix + "00-00-00-00-00-00-00-00-10-10-10-10-10-10-10-10-00-00", 0, 0x1010101010101010UL, 0)]
-        [InlineData(ConcentratorDeduplication.JoinMessageCacheKeyPrefix + "00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-01-00", 0, 0, 1)]
-        public void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(string expectedKey, ulong joinEui, ulong devEui, ushort devNonce, uint? fieldNotUsedInKey = null)
+        [MemberData(nameof(CreateKeyJoinMessagesTheoryData))]
+        internal void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(ConcentratorDeduplication.JoinMessageKey expectedKey, ulong joinEui, ulong devEui, ushort devNonce, uint? fieldNotUsedInKey = null)
         {
             var micValue = fieldNotUsedInKey ?? 0;
             var payload = new LoRaPayloadJoinRequestLns(new MacHeader(MacMessageType.JoinRequest),
@@ -177,17 +190,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(payload));
         }
         #endregion
-
-        [Fact]
-        public void Ensure_Cache_Keys_Are_Different_For_Different_Message_Types_To_Avoid_Collisions()
-        {
-            this.dataPayload.Fcnt = new byte[2] { 0, 0 }; // reset counter
-            var dataMessageKey = ConcentratorDeduplication.CreateCacheKey(this.dataPayload, this.loRaDevice);
-            var joinMessageKey = ConcentratorDeduplication.CreateCacheKey(this.joinPayload);
-
-            Assert.NotEqual(dataMessageKey.Length, joinMessageKey.Length);
-            Assert.NotEqual(dataMessageKey, joinMessageKey);
-        }
 
         public void Dispose()
         {

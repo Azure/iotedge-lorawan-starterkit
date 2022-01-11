@@ -6,7 +6,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Buffers.Binary;
     using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
@@ -14,12 +13,14 @@ namespace LoRaWan.NetworkServer
     public sealed class ConcentratorDeduplication : IConcentratorDeduplication
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
-        internal const string DataMessageCacheKeyPrefix = "datamessage:";
-        internal const string JoinMessageCacheKeyPrefix = "joinmessage:";
 
         private readonly IMemoryCache cache;
         private readonly ILogger<IConcentratorDeduplication> logger;
         private static readonly object cacheLock = new object();
+
+        internal sealed record DataMessageKey(DevEui DevEui, Mic Mic, ushort FCnt);
+
+        internal sealed record JoinMessageKey(JoinEui JoinEui, DevEui DevEui, DevNonce DevNonce);
 
         public ConcentratorDeduplication(
             IMemoryCache cache,
@@ -66,7 +67,7 @@ namespace LoRaWan.NetworkServer
             return result;
         }
 
-        private bool EnsureFirstMessageInCache(string key, LoRaRequest loRaRequest, out StationEui previousStation)
+        private bool EnsureFirstMessageInCache(object key, LoRaRequest loRaRequest, out StationEui previousStation)
         {
             var stationEui = loRaRequest.StationEui;
 
@@ -85,41 +86,12 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        internal static string CreateCacheKey(LoRaPayloadData payload, LoRaDevice loRaDevice)
-        {
-            var someMic = payload.Mic ?? throw new ArgumentException(nameof(payload.Mic));
+        internal static DataMessageKey CreateCacheKey(LoRaPayloadData payload, LoRaDevice loRaDevice) =>
+            payload.Mic is { } someMic
+                ? new DataMessageKey(DevEui.Parse(loRaDevice.DevEUI), someMic, payload.GetFcnt())
+                : throw new ArgumentException(nameof(payload.Mic));
 
-            var totalBufferLength = DevEui.Size + Mic.Size + payload.Fcnt.Length;
-            Span<byte> buffer = stackalloc byte[totalBufferLength];
-            var head = buffer; // keeps a view pointing at the start of the buffer
-
-            buffer = DevEui.Parse(loRaDevice.DevEUI).Write(buffer);
-            buffer = someMic.Write(buffer);
-            BinaryPrimitives.WriteUInt16LittleEndian(buffer, BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
-
-            return CreateCacheKeyCore(DataMessageCacheKeyPrefix, head);
-        }
-
-        internal static string CreateCacheKey(LoRaPayloadJoinRequest payload)
-        {
-            var totalBufferLength = JoinEui.Size + DevEui.Size + DevNonce.Size;
-            Span<byte> buffer = stackalloc byte[totalBufferLength];
-            var head = buffer; // keeps a view pointing at the start of the buffer
-
-            buffer = JoinEui.Read(payload.AppEUI.Span).Write(buffer);
-            buffer = DevEui.Read(payload.DevEUI.Span).Write(buffer);
-            _ = payload.DevNonce.Write(buffer);
-
-            return CreateCacheKeyCore(JoinMessageCacheKeyPrefix, head);
-        }
-
-        private static string CreateCacheKeyCore(string prefix, ReadOnlySpan<byte> buffer)
-        {
-            var bufferToHexLength = (buffer.Length * 3) - 1;
-            Span<char> hexBuffer = bufferToHexLength <= 128 ? stackalloc char[bufferToHexLength] : new char[bufferToHexLength]; // uses the stack for small allocations, otherwise the heap
-            Hexadecimal.Write(buffer, hexBuffer, separator: '-');
-
-            return string.Concat(prefix, hexBuffer.ToString());
-        }
+        internal static JoinMessageKey CreateCacheKey(LoRaPayloadJoinRequest payload) =>
+            new JoinMessageKey(JoinEui.Read(payload.AppEUI.Span), DevEui.Read(payload.DevEUI.Span), payload.DevNonce);
     }
 }
