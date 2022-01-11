@@ -223,12 +223,5 @@ namespace LoRaTools.LoRaMessage
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException();
 
         public override bool CheckMic(AppKey key) => throw new NotImplementedException();
-
-        private byte[] GetDevAddrBytes()
-        {
-            var bytes = new byte[DevAddr.Size];
-            _ = DevAddr.Write(bytes);
-            return bytes;
-        }
     }
 }
