@@ -160,21 +160,28 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] PerformEncryption(AppKey key)
         {
-            var micBytes = new byte[4];
-            _ = Mic is { } someMic ? someMic.Write(micBytes) : throw new InvalidOperationException("MIC must not be null.");
+            var mic = Mic ?? throw new InvalidOperationException("MIC must not be null.");
 
-            Span<byte> appNonce = stackalloc byte[AppNonce.Size];
-            _ = AppNonce.Write(appNonce);
+            var channelFrequencies = !CfList.Span.IsEmpty ? CfList.ToArray() : Array.Empty<byte>();
 
-            var pt =
-                appNonce.ToArray()
-                        .Concat(NetID.ToArray())
-                        .Concat(GetDevAddrBytes())
-                        .Concat(DlSettings.ToArray())
-                        .Concat(RxDelay.ToArray())
-                        .Concat(!CfList.Span.IsEmpty ? CfList.ToArray() : Array.Empty<byte>())
-                        .Concat(micBytes)
-                        .ToArray();
+            var buffer = new byte[AppNonce.Size + NetId.Size + DevAddr.Size + DlSettings.Length +
+                                  RxDelay.Length + channelFrequencies.Length + LoRaWan.Mic.Size];
+
+            static Span<byte> Copy(ReadOnlyMemory<byte> source, Span<byte> target)
+            {
+                source.Span.CopyTo(target);
+                target = target[source.Length..];
+                return target;
+            }
+
+            var pt = buffer.AsSpan();
+            pt = AppNonce.Write(pt);
+            pt = Copy(NetID, pt);
+            pt = DevAddr.Write(pt);
+            pt = Copy(DlSettings, pt);
+            pt = Copy(RxDelay, pt);
+            pt = Copy(channelFrequencies, pt);
+            _ = mic.Write(pt);
 
             using var aes = Aes.Create("AesManaged");
             var rawKey = new byte[AppKey.Size];
@@ -190,7 +197,7 @@ namespace LoRaTools.LoRaMessage
             ICryptoTransform cipher;
 
             cipher = aes.CreateDecryptor();
-            var encryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
+            var encryptedPayload = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
             RawMessage = new byte[encryptedPayload.Length];
             Array.Copy(encryptedPayload, 0, RawMessage, 0, encryptedPayload.Length);
             return encryptedPayload;
