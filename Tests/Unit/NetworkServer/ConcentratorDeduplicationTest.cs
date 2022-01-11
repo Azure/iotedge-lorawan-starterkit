@@ -171,7 +171,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("BF-67-81-DB-77-1A-EF-1C-14-55-9E-2C-22-E7-D1-CF-4F-57-77-77-65-6E-2C-D6-E3-D4-1A-6E-A1-6A-17-86", 0x101010101010101UL, 0, 0)]
         [InlineData("40-25-81-8B-EA-C7-AC-CD-32-4E-2A-02-CE-15-C8-9B-72-A4-81-32-9D-91-9F-FE-7A-62-D8-BA-3A-C4-E4-00", 0, 0x101010101010101UL, 0)]
         [InlineData("B0-EF-53-E1-22-B3-C4-0B-57-93-55-21-96-95-43-03-29-F4-6C-3B-24-93-6C-BD-73-49-67-78-0A-60-9B-E2", 0, 0, 1)]
-        public void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(string expectedKey, ulong joinEui, ulong devEui, ushort devNonce, uint? fieldNotUsedInKey = null)
+        public void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(string expectedKey, ulong joinEui, ulong devEui, ushort devNonce, int? fieldNotUsedInKey = null)
         {
             var micValue = fieldNotUsedInKey ?? 0;
             var payload = new LoRaPayloadJoinRequestLns(new MacHeader(MacMessageType.JoinRequest),

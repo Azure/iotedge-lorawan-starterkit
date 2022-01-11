@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.E2E
 {
     using System.Threading.Tasks;
+    using LoRaWan.Tests.Common;
     using Xunit;
     using XunitRetryHelper;
 

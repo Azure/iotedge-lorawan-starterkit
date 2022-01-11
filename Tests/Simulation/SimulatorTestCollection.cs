@@ -20,6 +20,7 @@ namespace LoRaWan.Tests.Simulation
     {
         private readonly TimeSpan intervalBetweenMessages;
         private readonly TimeSpan intervalAfterJoin;
+        private const string StationEUI = "B8-27-EB-FF-FE-A3-BE-42";
 
         public TestConfiguration Configuration { get; } = TestConfiguration.GetConfiguration();
 
@@ -42,7 +43,7 @@ namespace LoRaWan.Tests.Simulation
         public async Task Ten_Devices_Sending_Messages_At_Same_Time()
         {
             var networkServerIPEndpoint = CreateNetworkServerEndpoint();
-            using (var simulatedBasicsStation = new SimulatedBasicsStation("B8-27-EB-FF-FE-A3-BE-42", networkServerIPEndpoint))
+            using (var simulatedBasicsStation = new SimulatedBasicsStation(StationEui.Parse(StationEUI), networkServerIPEndpoint))
             {
                 await simulatedBasicsStation.StartAsync();
 
@@ -73,7 +74,7 @@ namespace LoRaWan.Tests.Simulation
             var simulatedDevice = new Common.SimulatedDevice(device);
             var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 
-            using var simulatedBasicsStation = new SimulatedBasicsStation("B8-27-EB-FF-FE-A3-BE-42", networkServerIPEndpoint);
+            using var simulatedBasicsStation = new SimulatedBasicsStation(StationEui.Parse(StationEUI), networkServerIPEndpoint);
             await simulatedBasicsStation.StartAsync();
 
             for (var i = 1; i <= MessageCount; i++)
@@ -82,6 +83,9 @@ namespace LoRaWan.Tests.Simulation
                 await simulatedBasicsStation.SendDataMessageAsync(request);
                 await Task.Delay(this.intervalBetweenMessages);
             }
+            var msgsFromDevice = TestFixture.IoTHubMessages.Events.Where(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID);
+            var actualAmountOfMsgs = msgsFromDevice.Count(x => !x.Properties.ContainsKey("iothub-message-schema"));
+            Assert.Equal(MessageCount, actualAmountOfMsgs);
 
             await simulatedBasicsStation.StopAsync();
         }
@@ -95,7 +99,7 @@ namespace LoRaWan.Tests.Simulation
             var simulatedDevice = new Common.SimulatedDevice(device);
             var networkserverUri = CreateNetworkServerEndpoint();
 
-            using (var simulatedBasicsStation = new SimulatedBasicsStation("B8-27-EB-FF-FE-A3-BE-42", networkserverUri))
+            using (var simulatedBasicsStation = new SimulatedBasicsStation(StationEui.Parse(StationEUI), networkserverUri))
             {
                 using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateJoinRequest());
 

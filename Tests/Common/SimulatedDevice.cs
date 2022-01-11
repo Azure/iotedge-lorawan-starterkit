@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.InteropServices;
+    using System.Globalization;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Common
     /// <summary>
     /// Defines a simulated device.
     /// </summary>
-    public partial class SimulatedDevice
+    public sealed class SimulatedDevice
     {
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
@@ -209,7 +209,7 @@ namespace LoRaWan.Tests.Common
                 LoRaDevice.NwkSKey = nwkSKey;
                 NetId = BitConverter.ToString(netid).Replace("-", string.Empty, StringComparison.Ordinal);
                 AppNonce = BitConverter.ToString(appNonce).Replace("-", string.Empty, StringComparison.Ordinal);
-                LoRaDevice.DevAddr = BitConverter.ToString(devAddr.ToArray()).Replace("-", string.Empty, StringComparison.Ordinal);
+                LoRaDevice.DevAddr = devAddr;
 
                 return true;
             }
@@ -222,8 +222,9 @@ namespace LoRaWan.Tests.Common
         }
 
         // Performs join
-        public async Task<bool> JoinAsync(LoRaRequest joinRequest, SimulatedBasicsStation basicsStation, int timeoutInMs = 30 * 1000)
+        public async Task<bool> JoinAsync(LoRaRequest joinRequest, SimulatedBasicsStation basicsStation, TimeSpan? timeout = null)
         {
+            timeout ??= TimeSpan.FromSeconds(30);
             using var joinCompleted = new SemaphoreSlim(0);
             var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
 
@@ -252,8 +253,8 @@ namespace LoRaWan.Tests.Common
                 msgtype = "jreq",
                 DevEui = DevEui.Read(joinRequestPayload.DevEUI.Span).ToString("G", null),
                 DevNonce = joinRequestPayload.DevNonce.AsUInt16,
-                MHdr = (uint)joinRequestPayload.Mhdr.Span[0],
-                MIC = MemoryMarshal.Read<int>(joinRequestPayload.Mic.Span),
+                MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                MIC = joinRequestPayload.Mic.Value.AsInt32,
                 DR = joinRequest.RadioMetadata.DataRate,
                 Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
                 upinfo = new
@@ -269,11 +270,11 @@ namespace LoRaWan.Tests.Common
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                timeoutInMs = 60 * 1000;
+                timeout = TimeSpan.FromSeconds(60);
             }
 #endif
 
-            return await joinCompleted.WaitAsync(timeoutInMs);
+            return await joinCompleted.WaitAsync(timeout.Value);
         }
 
 

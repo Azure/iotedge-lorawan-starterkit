@@ -10,6 +10,9 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
+        // Those fields are constants defined in the specs.
+        private const int NwkKeyCalculationType = 0x01;
+        private const int AppKeyCalculationType = 0x02;
         public static DevAddr GetNwkId(uint netId)
         {
             var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
@@ -19,13 +22,13 @@ namespace LoRaTools
 
         public static NetworkSessionKey CalculateNetworkSessionKey(byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
         {
-            var keyString = CalculateKey(new byte[1] { 0x01 }, appnonce, netid, devNonce, appKey);
+            var keyString = CalculateKey(new byte[1] { NwkKeyCalculationType }, appnonce, netid, devNonce, appKey);
             return NetworkSessionKey.Parse(keyString);
         }
 
         public static AppSessionKey CalculateAppSessionKey(byte[] appnonce, byte[] netid, DevNonce devNonce, AppKey appKey)
         {
-            var keyString = CalculateKey(new byte[1] { 0x02 }, appnonce, netid, devNonce, appKey);
+            var keyString = CalculateKey(new byte[1] { AppKeyCalculationType }, appnonce, netid, devNonce, appKey);
             return AppSessionKey.Parse(keyString);
         }
 

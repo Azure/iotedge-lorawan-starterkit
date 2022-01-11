@@ -16,7 +16,7 @@ namespace LoRaWan.Tests.Simulation
         // Device1002_Simulated_OTAA: used for simulator
         public TestDeviceInfo Device1002_Simulated_OTAA { get; private set; }
 
-        //// Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
+        // Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
         //public TestDeviceInfo Device1003_Simulated_HttpBasedDecoder { get; private set; }
 
         private readonly List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();

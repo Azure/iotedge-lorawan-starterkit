@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Simulation.Models
 {
     using System.Text.Json.Serialization;
 
-    public class LnsVersionRequest
+    public sealed record LnsVersionRequest
     {
         [JsonPropertyName("msgtype")]
         public string Msgtype { get; set; } = "version";
@@ -28,9 +28,9 @@ namespace LoRaWan.Tests.Simulation.Models
         [JsonPropertyName("features")]
         public string Features { get; set; }
 
-        public LnsVersionRequest(string station, string firmware, string package, string model, int protocol, string features)
+        public LnsVersionRequest(StationEui station, string firmware, string package, string model, int protocol, string features)
         {
-            Station = station;
+            Station = station.ToString();
             Firmware = firmware;
             Package = package;
             Model = model;

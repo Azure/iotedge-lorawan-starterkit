@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System.Text.Json.Serialization;
 
-    internal class JoinAcceptResponse
+    internal sealed record JoinAcceptResponse
     {
         [JsonPropertyName("pdu")]
         public string Pdu { get; set; }

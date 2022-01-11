@@ -6,15 +6,13 @@ namespace LoRaWan.Tests.Simulation.Models
     using System.Text.Json;
     using Newtonsoft.Json;
 
-    public class RouterMessage
+    public sealed record RouterMessage
     {
         /// <summary>
         /// Should be simplified to property
         /// </summary>
         [JsonProperty("router")]
-#pragma warning disable CA1051 // Do not declare visible instance fields
-        public string Router { get; set; }
-#pragma warning restore CA1051 // Do not declare visible instance fields
+        public string Router { get; }
 
         public RouterMessage(string router)
         {
