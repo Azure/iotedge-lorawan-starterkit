@@ -11,30 +11,22 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        public static DevAddr GetNwkId(uint netId)
-        {
-            var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
-            // The 7 LBS of the NetID become the NwkID of a DevAddr:
-            return new DevAddr(unchecked((byte)netId) & 0b0111_1111, address);
-        }
-
-        public static NetworkSessionKey CalculateNetworkSessionKey(byte[] type, AppNonce appNonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        public static NetworkSessionKey CalculateNetworkSessionKey(byte[] type, AppNonce appNonce, NetId netid, DevNonce devNonce, AppKey appKey)
         {
             var keyString = CalculateKey(type, appNonce, netid, devNonce, appKey);
             return NetworkSessionKey.Parse(keyString);
         }
 
-        public static AppSessionKey CalculateAppSessionKey(byte[] type, AppNonce appNonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        public static AppSessionKey CalculateAppSessionKey(byte[] type, AppNonce appNonce, NetId netid, DevNonce devNonce, AppKey appKey)
         {
             var keyString = CalculateKey(type, appNonce, netid, devNonce, appKey);
             return AppSessionKey.Parse(keyString);
         }
 
         // don't work with CFLIST atm
-        private static string CalculateKey(byte[] type, AppNonce appNonce, byte[] netid, DevNonce devNonce, AppKey appKey)
+        private static string CalculateKey(byte[] type, AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
         {
             if (type is null) throw new ArgumentNullException(nameof(type));
-            if (netid is null) throw new ArgumentNullException(nameof(netid));
 
             using var aes = Aes.Create("AesManaged");
             var rawAppKey = new byte[AppKey.Size];
@@ -46,14 +38,13 @@ namespace LoRaTools
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
             aes.Padding = PaddingMode.None;
 
-            var buffer = new byte[type.Length + AppNonce.Size + netid.Length + DevNonce.Size + 7];
+            var buffer = new byte[type.Length + AppNonce.Size + NetId.Size + DevNonce.Size + 7];
             var pt = buffer.AsSpan();
             Debug.Assert(pt.Length == 16);
             type.CopyTo(pt);
             pt = pt[type.Length..];
             pt = appNonce.Write(pt);
-            netid.CopyTo(pt);
-            pt = pt[netid.Length..];
+            pt = netId.Write(pt);
             pt = devNonce.Write(pt);
             Debug.Assert(pt.Length == 7);
 

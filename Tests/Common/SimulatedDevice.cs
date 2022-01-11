@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Common
 
         public bool IsJoined => LoRaDevice.DevAddr is not null;
 
-        public string NetId { get; internal set; }
+        public NetId? NetId { get; internal set; }
 
         public string AppNonce { get; internal set; }
 

@@ -6,7 +6,6 @@ namespace LoRaTools.LoRaMessage
     using System;
     using System.Linq;
     using System.Security.Cryptography;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
@@ -26,7 +25,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets device home network aka Home_NetId.
         /// </summary>
-        public Memory<byte> NetID { get; set; }
+        public NetId NetId { get; set; }
 
         /// <summary>
         /// Gets or sets dLSettings.
@@ -56,7 +55,7 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept()
         { }
 
-        public LoRaPayloadJoinAccept(string netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
+        public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
             var rxDelay = new byte[1];
             if (rxDelayValue is >= 0 and < MaxRxDelayValue)
@@ -70,8 +69,8 @@ namespace LoRaTools.LoRaMessage
             RawMessage[0] = (byte)MHdr;
             AppNonce = appNonce;
             _ = appNonce.Write(RawMessage.AsSpan(1));
-            NetID = new Memory<byte>(RawMessage, 4, 3);
-            Array.Copy(ConversionHelper.StringToByteArray(netId), 0, RawMessage, 4, 3);
+            NetId = netId;
+            _ = NetId.Write(RawMessage.AsSpan(4, 3));
             DevAddr = devAddr;
             _ = devAddr.Write(RawMessage.AsSpan(7));
             DlSettings = new Memory<byte>(RawMessage, 11, 1);
@@ -89,7 +88,6 @@ namespace LoRaTools.LoRaMessage
             Fcnt = BitConverter.GetBytes(0x01);
             if (BitConverter.IsLittleEndian)
             {
-                NetID.Span.Reverse();
                 DlSettings.Span.Reverse();
                 RxDelay.Span.Reverse();
             }
@@ -137,10 +135,7 @@ namespace LoRaTools.LoRaMessage
             Array.Copy(decryptedPayload, 0, inputMessage, 1, decryptedPayload.Length);
             // ( MACPayload = AppNonce[3] | NetID[3] | DevAddr[4] | DLSettings[1] | RxDelay[1] | CFList[0|15] )
             AppNonce = AppNonce.Read(inputMessage.AsSpan(1));
-            var netID = new byte[3];
-            Array.Copy(inputMessage, 4, netID, 0, 3);
-            Array.Reverse(netID);
-            NetID = new Memory<byte>(netID);
+            NetId = NetId.Read(inputMessage.AsSpan(3));
             DevAddr = DevAddr.Read(inputMessage.AsSpan(7));
             var dlSettings = new byte[1];
             Array.Copy(inputMessage, 11, dlSettings, 0, 1);
@@ -176,7 +171,7 @@ namespace LoRaTools.LoRaMessage
 
             var pt = buffer.AsSpan();
             pt = AppNonce.Write(pt);
-            pt = Copy(NetID, pt);
+            pt = NetId.Write(pt);
             pt = DevAddr.Write(pt);
             pt = Copy(DlSettings, pt);
             pt = Copy(RxDelay, pt);
@@ -212,7 +207,7 @@ namespace LoRaTools.LoRaMessage
 
         public byte[] Serialize(AppKey appKey)
         {
-            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetID, DevAddr, DlSettings, RxDelay, CfList);
+            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
             _ = PerformEncryption(appKey);
 
             return GetByteMessage();
