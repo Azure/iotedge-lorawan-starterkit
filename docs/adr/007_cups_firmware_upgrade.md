@@ -88,7 +88,7 @@ added:
   the upgrade
 - **'fwKeyChecksum'**: checksum of the key used to sign the digest of the
   firmware upgrade file
-- **'fwSignature'**: signature of the uploaded firmware upgrade file
+- **'fwSignature'**: signature of the uploaded firmware upgrade file (as base64 encoded string)
 
 ### Storage related changes
 
