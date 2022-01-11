@@ -167,7 +167,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [InlineData("60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4", 0, 0, 0)]
-        [InlineData("60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4", 0, 0, 0, (uint)1)] // a non-relevant field should not influence the key
+        [InlineData("60-DA-A3-A5-F7-DB-FA-20-0F-8C-82-84-0E-CF-5B-42-64-0B-70-F3-B7-21-8A-4C-6B-BD-67-DB-54-2E-75-A4", 0, 0, 0, 1)] // a non-relevant field should not influence the key
         [InlineData("BF-67-81-DB-77-1A-EF-1C-14-55-9E-2C-22-E7-D1-CF-4F-57-77-77-65-6E-2C-D6-E3-D4-1A-6E-A1-6A-17-86", 0x101010101010101UL, 0, 0)]
         [InlineData("40-25-81-8B-EA-C7-AC-CD-32-4E-2A-02-CE-15-C8-9B-72-A4-81-32-9D-91-9F-FE-7A-62-D8-BA-3A-C4-E4-00", 0, 0x101010101010101UL, 0)]
         [InlineData("B0-EF-53-E1-22-B3-C4-0B-57-93-55-21-96-95-43-03-29-F4-6C-3B-24-93-6C-BD-73-49-67-78-0A-60-9B-E2", 0, 0, 1)]
