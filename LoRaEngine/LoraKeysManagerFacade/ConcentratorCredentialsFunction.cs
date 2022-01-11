@@ -64,13 +64,11 @@ namespace LoraKeysManagerFacade
 
         internal async Task<IActionResult> RunFetchConcentratorCredentials(HttpRequest req, CancellationToken cancellationToken)
         {
-            var rawStationEui = req.Query["StationEui"];
-            if (StringValues.IsNullOrEmpty(rawStationEui))
+            if (!StationEui.TryParse((string)req.Query["StationEui"], out var stationEui))
             {
-                this.logger.LogError("StationEui missing in request");
-                return new BadRequestObjectResult("StationEui missing in request");
+                this.logger.LogError("StationEui missing in request or invalid");
+                return new BadRequestObjectResult("StationEui missing in request or invalid");
             }
-            var stationEui = StationEui.Parse((string)rawStationEui);
 
             var credentialTypeQueryString = req.Query["CredentialType"];
             if (StringValues.IsNullOrEmpty(credentialTypeQueryString))
