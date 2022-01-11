@@ -67,7 +67,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             // Getting and writing payload bytes
             var pduBytes = message.Data;
             var pduChars = new char[pduBytes.Length * 2];
-            Hexadecimal.Write(pduBytes, pduChars);
+            Hexadecimal.Write(pduBytes.Span, pduChars);
             writer.WriteString("pdu", pduChars);
 
 #pragma warning disable CA5394 // Do not use insecure randomness. This is fine as not used for any crypto operations.

@@ -82,10 +82,7 @@ namespace LoRaWan.Tests.Common
             }
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
-            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce);
-            joinRequest.SetMic((appkey ?? LoRaDevice.AppKey).Value);
-
-            return joinRequest;
+            return new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
         }
 
 
@@ -129,7 +126,14 @@ namespace LoRaWan.Tests.Common
                 direction,
                 Supports32BitFCnt ? fcnt : null);
 
-            payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            if (fport == FramePort.MacCommand)
+            {
+                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)} when fport is set to 0."));
+            }
+            else
+            {
+                payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
             payloadData.SetMic(nwkSKey is { } someNetworkSessionKey ? someNetworkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
 
             // We want to ensure we simulate a message coming from the device, therefore only the 16 bits of the framecounter should be available.
@@ -173,9 +177,26 @@ namespace LoRaWan.Tests.Common
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, LoRaDevice.DevAddr.Value, FrameControlFlags.Adr, fcntBytes, null, fport, payload, direction, Supports32BitFCnt ? fcnt : null);
-            payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp,
+                                                  LoRaDevice.DevAddr.Value,
+                                                  FrameControlFlags.Adr,
+                                                  fcntBytes,
+                                                  null,
+                                                  fport,
+                                                  payload,
+                                                  direction,
+                                                  Supports32BitFCnt ? fcnt : null);
+
+            if (fport == FramePort.MacCommand)
+            {
+                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)} when fport is set to 0."));
+            }
+            else
+            {
+                payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
             payloadData.SetMic(nwkSKey is { } someNetworkSessionKey ? someNetworkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
+
             return payloadData;
         }
 

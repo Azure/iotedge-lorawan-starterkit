@@ -64,7 +64,7 @@ namespace LoRaWan.Tests.Integration
         private static void EnsureDownlinkIsCorrect(DownlinkMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
-            Assert.NotEmpty(downlink.Data);
+            Assert.False(downlink.Data.IsEmpty);
 
             var downstreamPayloadBytes = downlink.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);

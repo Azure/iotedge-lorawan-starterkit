@@ -110,7 +110,13 @@ namespace LoRaWan.Tests.Integration
 
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.Serialize(loraDevice.AppSKey.Value);
+            if (hasMacInUpstream)
+            {
+                payloadDataDown.Serialize(loraDevice.NwkSKey ?? throw new InvalidOperationException("NwkSKey can't be null"));
+            } else
+            {
+                payloadDataDown.Serialize(loraDevice.AppSKey ?? throw new InvalidOperationException("AppSKey can't be null"));
+            }
 
             // 3. Fpending flag is set
             Assert.True(payloadDataDown.IsDownlinkFramePending);

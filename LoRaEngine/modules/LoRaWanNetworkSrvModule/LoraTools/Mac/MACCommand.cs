@@ -113,9 +113,6 @@ namespace LoRaTools
                             logger?.LogError($"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing");
                             return null;
                     }
-
-                    var addedMacCommand = macCommands[^1];
-                    logger?.LogDebug($"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}");
                 }
             }
             catch (MacCommandException ex) when (ExceptionFilterUtility.True(() => logger?.LogError(ex.ToString())))
