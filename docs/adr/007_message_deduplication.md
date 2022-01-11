@@ -53,14 +53,17 @@ calls to external services need to be made for the detection. In scope for this 
 - join requests
 - Class A and C devices
 
-For the detection, a in-memory cache is utilised with a sliding expiration of 1
-minute. The value of the entry is always the concentrator from where we received the message. The
-key depends on the type of message.
+For the detection, a in-memory cache is utilised with a sliding expiration of 1 minute. The value of
+the cache entry is always the concentrator from where we received the message. The key depends on
+the type of message.
 
 #### a. Data messages
 
-The relevant fields for detection are DevAddr, Mic, payload and frame counter. Out of these a
-SHA256 hash is created and stored as the key to the in-memory cache.
+The relevant fields used for duplicate detection are the DevEui of the device the message came from,
+Mic and frame counter from the message. These fields are concatenated and Hex encoded for easier
+debugging. The result is appended to a constant (for this message type) prefix and used as the cache
+key. The reason for the prefix is to differentiate this key from other keys of the shared in-memory
+cache and avoid key collisions.
 
 ##### Duplicates from different concentrators
 
@@ -189,10 +192,13 @@ We do not want to process the message further, no calls to the Azure Function or
 
 #### b. Join requests
 
-Here we are detecting requests as duplicates solely based on their AppEui, DevEui and DevNonce.
-If there is a cache hit (a request with the same values for these fields within the retention period
-of the cache) the request is considered a `Duplicate` and dropped immediately. We are not
-differentiating the cases of `SoftDuplicate` and `DuplicateDueToResubmission` here.
+Here we are detecting requests as duplicates solely based on their AppEui (aka JoinEui), DevEui and
+DevNonce. If there is a cache hit (a request with the same values for these fields within the
+retention period of the cache) the request is considered a `Duplicate` and dropped immediately. We
+are not differentiating the cases of `SoftDuplicate` and `DuplicateDueToResubmission` here.
+
+Similar encoding with a different prefix is used as explained for [the data messages
+before](#a-data-messages).
 
 #### General notes
 
