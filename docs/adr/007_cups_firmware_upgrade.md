@@ -8,8 +8,9 @@
 **Status**: Proposed
 
 >This ADR is an extension of [006. CUPS Protocol Implementation - Credential
->management](./006_cups.md) and focuses of firmware upgrades. For details about
->the general CUPS protocol implementation please refer to the other document.
+>management](./docs/adr/006_cups.md) and focuses of firmware upgrades. For
+>details about the general CUPS protocol implementation please refer to the
+>other document.
 
 ## Overview
 
@@ -93,8 +94,10 @@ added:
 ### Storage related changes
 
 We will use the same storage solution as the one selected for the general CUPS
-protocol support (storage account). A new container will be used to store the
-firmware upgrade files.
+protocol support (storage account). A new container named `"fwupgrades"` will be
+used to store the firmware upgrade files.  The file names will be in the format
+`"{stationEui}-{package}"` (without any extension, as anyways these are going to
+be downloaded as `update.bin` from the Basics Station executable).
 
 ### Azure Function related changes
 
