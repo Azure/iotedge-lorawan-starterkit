@@ -83,7 +83,7 @@ added:
 }
 ```
 
-- **'package'**: current package version of the Station
+- **'package'**: desired package version of the Station (matching what will be extracted as version.txt file during update)
 - **'fwUrl'**: URL pointing to the storage location of the file required to run
   the upgrade
 - **'fwKeyChecksum'**: checksum of the key used to sign the digest of the
