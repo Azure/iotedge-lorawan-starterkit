@@ -118,7 +118,7 @@ namespace LoRaWan.NetworkServer
             Span<byte> buffer = stackalloc byte[totalBufferLength];
             var head = buffer; // keeps a view pointing at the start of the buffer
 
-            buffer = payload.AppEUI.Write(buffer);
+            buffer = payload.AppEui.Write(buffer);
             buffer = devEui.Write(buffer);
 
             var devNonce = payload.DevNonce;

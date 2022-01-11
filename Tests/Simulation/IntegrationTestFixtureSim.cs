@@ -53,7 +53,7 @@ namespace LoRaWan.Tests.Simulation
             Device1002_Simulated_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000001002",
-                AppEUI = GetJoinEui(1002),
+                AppEui = GetJoinEui(1002),
                 AppKey = GetAppKey(1002),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -64,7 +64,7 @@ namespace LoRaWan.Tests.Simulation
             Device1003_Simulated_HttpBasedDecoder = new TestDeviceInfo
             {
                 DeviceID = "0000000000001003",
-                AppEUI = GetJoinEui(1003),
+                AppEui = GetJoinEui(1003),
                 AppKey = GetAppKey(1003),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -77,7 +77,7 @@ namespace LoRaWan.Tests.Simulation
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-                        AppEUI = GetJoinEui(deviceID),
+                        AppEui = GetJoinEui(deviceID),
                         AppKey = GetAppKey(deviceID),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
@@ -112,7 +112,7 @@ namespace LoRaWan.Tests.Simulation
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-                        AppEUI = GetJoinEui(deviceID),
+                        AppEui = GetJoinEui(deviceID),
                         AppKey = GetAppKey(deviceID),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,

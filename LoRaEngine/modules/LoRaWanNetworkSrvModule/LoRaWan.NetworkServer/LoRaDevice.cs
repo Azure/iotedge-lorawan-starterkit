@@ -48,7 +48,7 @@ namespace LoRaWan.NetworkServer
 
         public AppKey? AppKey { get; set; }
 
-        public JoinEui? AppEUI { get; set; }
+        public JoinEui? AppEui { get; set; }
 
         public NetworkSessionKey? NwkSKey { get; set; }
 
@@ -291,7 +291,7 @@ namespace LoRaWan.NetworkServer
                 try
                 {
                     AppKey = desiredTwin.ReadRequired<AppKey>(TwinProperty.AppKey);
-                    AppEUI = desiredTwin.ReadRequired<JoinEui>(TwinProperty.AppEUI);
+                    AppEui = desiredTwin.ReadRequired<JoinEui>(TwinProperty.AppEui);
                 }
                 catch (InvalidOperationException ex)
                 {

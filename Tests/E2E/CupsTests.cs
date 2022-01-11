@@ -73,7 +73,7 @@ namespace LoRaWan.Tests.E2E
                 //the concentrator should be ready at this point to receive messages
                 //if receiving 'updf' is succeeding, cups worked successfully
                 await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-                await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+                await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
                 await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
                 await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);

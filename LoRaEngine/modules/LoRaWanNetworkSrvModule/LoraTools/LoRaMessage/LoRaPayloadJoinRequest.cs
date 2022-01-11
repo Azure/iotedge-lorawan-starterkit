@@ -15,7 +15,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets aka JoinEUI.
         /// </summary>
-        public JoinEui AppEUI { get; set; }
+        public JoinEui AppEui { get; set; }
 
         public Memory<byte> DevEUI { get; set; }
 
@@ -48,7 +48,7 @@ namespace LoRaTools.LoRaMessage
             // When coming from real device is is reversed
             // message processor reverses both values before getting it
             Array.Reverse(devEUIBytes);
-            AppEUI = joinEui;
+            AppEui = joinEui;
             DevEUI = new Memory<byte>(devEUIBytes);
             DevNonce = devNonce;
             Mic = PerformMic(key);
@@ -62,7 +62,7 @@ namespace LoRaTools.LoRaMessage
         private Mic PerformMic(AppKey key)
         {
             var devEui = DevEui.Read(DevEUI.Span);
-            return LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, AppEUI, devEui, DevNonce);
+            return LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, AppEui, devEui, DevNonce);
         }
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
@@ -73,7 +73,7 @@ namespace LoRaTools.LoRaMessage
             var start = 0;
             _ = MHdr.Write(messageArray.AsSpan(start));
             start += MacHeader.Size;
-            _ = AppEUI.Write(messageArray.AsSpan(start));
+            _ = AppEui.Write(messageArray.AsSpan(start));
             start += JoinEui.Size;
             DevEUI.Span.CopyTo(messageArray.AsSpan(start));
             start += DevEUI.Length;

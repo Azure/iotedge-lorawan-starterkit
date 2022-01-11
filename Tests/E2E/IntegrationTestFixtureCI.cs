@@ -220,7 +220,7 @@ namespace LoRaWan.Tests.E2E
             Device1_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(1),
-                AppEUI = GetJoinEui(1),
+                AppEui = GetJoinEui(1),
                 AppKey = GetAppKey(1),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -230,7 +230,7 @@ namespace LoRaWan.Tests.E2E
             Device2_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(2),
-                AppEUI = GetJoinEui(2),
+                AppEui = GetJoinEui(2),
                 AppKey = GetAppKey(2),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = false,
@@ -240,7 +240,7 @@ namespace LoRaWan.Tests.E2E
             Device3_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(3),
-                AppEUI = GetJoinEui(3),
+                AppEui = GetJoinEui(3),
                 AppKey = GetAppKey(3),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -250,7 +250,7 @@ namespace LoRaWan.Tests.E2E
             Device4_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(4),
-                AppEUI = GetJoinEui(4),
+                AppEui = GetJoinEui(4),
                 AppKey = GetAppKey(4),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -260,7 +260,7 @@ namespace LoRaWan.Tests.E2E
             Device4_OTAA_MultiGw = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(4, true),
-                AppEUI = GetJoinEui(4, true),
+                AppEui = GetJoinEui(4, true),
                 AppKey = GetAppKey(4, true),
                 IsIoTHubDevice = true,
                 RX1DROffset = 1
@@ -323,7 +323,7 @@ namespace LoRaWan.Tests.E2E
             Device9_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(9),
-                AppEUI = GetJoinEui(9),
+                AppEui = GetJoinEui(9),
                 AppKey = GetAppKey(9),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -334,7 +334,7 @@ namespace LoRaWan.Tests.E2E
             Device10_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(10),
-                AppEUI = GetJoinEui(10),
+                AppEui = GetJoinEui(10),
                 AppKey = GetAppKey(10),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -344,7 +344,7 @@ namespace LoRaWan.Tests.E2E
             Device11_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(11),
-                AppEUI = GetJoinEui(11),
+                AppEui = GetJoinEui(11),
                 AppKey = GetAppKey(11),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -355,7 +355,7 @@ namespace LoRaWan.Tests.E2E
             Device12_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(12),
-                AppEUI = GetJoinEui(12),
+                AppEui = GetJoinEui(12),
                 AppKey = GetAppKey(12),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -365,7 +365,7 @@ namespace LoRaWan.Tests.E2E
             Device13_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(13),
-                AppEUI = GetJoinEui(13),
+                AppEui = GetJoinEui(13),
                 AppKey = GetAppKey(13),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -375,7 +375,7 @@ namespace LoRaWan.Tests.E2E
             Device14_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(14),
-                AppEUI = GetJoinEui(14),
+                AppEui = GetJoinEui(14),
                 AppKey = GetAppKey(14),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -384,7 +384,7 @@ namespace LoRaWan.Tests.E2E
             Device14_OTAA_MultiGw = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(14, true),
-                AppEUI = GetJoinEui(14, true),
+                AppEui = GetJoinEui(14, true),
                 AppKey = GetAppKey(14, true),
                 IsIoTHubDevice = true,
             };
@@ -393,7 +393,7 @@ namespace LoRaWan.Tests.E2E
             Device15_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(15),
-                AppEUI = GetJoinEui(15),
+                AppEui = GetJoinEui(15),
                 AppKey = GetAppKey(15),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -402,7 +402,7 @@ namespace LoRaWan.Tests.E2E
             Device15_OTAA_MultiGw = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(15, true),
-                AppEUI = GetJoinEui(15, true),
+                AppEui = GetJoinEui(15, true),
                 AppKey = GetAppKey(15, true),
                 IsIoTHubDevice = true,
             };
@@ -454,7 +454,7 @@ namespace LoRaWan.Tests.E2E
             Device20_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(20),
-                AppEUI = GetJoinEui(20),
+                AppEui = GetJoinEui(20),
                 AppKey = GetAppKey(20),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -465,7 +465,7 @@ namespace LoRaWan.Tests.E2E
             Device20_OTAA_MultiGw = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(20, true),
-                AppEUI = GetJoinEui(20, true),
+                AppEui = GetJoinEui(20, true),
                 AppKey = GetAppKey(20, true),
                 IsIoTHubDevice = true,
                 RX2DataRate = 3,
@@ -499,7 +499,7 @@ namespace LoRaWan.Tests.E2E
             Device23_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(23),
-                AppEUI = GetJoinEui(23),
+                AppEui = GetJoinEui(23),
                 AppKey = GetAppKey(23),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -508,7 +508,7 @@ namespace LoRaWan.Tests.E2E
             Device23_OTAA_MultiGw = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(23, true),
-                AppEUI = GetJoinEui(23, true),
+                AppEui = GetJoinEui(23, true),
                 AppKey = GetAppKey(23, true),
                 IsIoTHubDevice = true
             };
@@ -550,7 +550,7 @@ namespace LoRaWan.Tests.E2E
             Device27_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000027",
-                AppEUI = GetJoinEui(27),
+                AppEui = GetJoinEui(27),
                 AppKey = GetAppKey(27),
                 IsIoTHubDevice = true
             };
@@ -578,7 +578,7 @@ namespace LoRaWan.Tests.E2E
             Device30_OTAA = new TestDeviceInfo()
             {
                 DeviceID = GetKey16(30),
-                AppEUI = GetJoinEui(30),
+                AppEui = GetJoinEui(30),
                 AppKey = GetAppKey(30),
                 IsIoTHubDevice = true
             };
@@ -586,7 +586,7 @@ namespace LoRaWan.Tests.E2E
             Device31_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000031",
-                AppEUI = GetJoinEui(31),
+                AppEui = GetJoinEui(31),
                 AppKey = GetAppKey(31),
                 IsIoTHubDevice = true,
                 Deduplication = "Drop"
@@ -605,7 +605,7 @@ namespace LoRaWan.Tests.E2E
             Device33_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000033",
-                AppEUI = GetJoinEui(33),
+                AppEui = GetJoinEui(33),
                 AppKey = GetAppKey(33),
                 IsIoTHubDevice = true
             };

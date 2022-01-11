@@ -130,7 +130,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice(null, "ABC0200000000009", connectionManager);
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal(joinEui, loRaDevice.AppEUI);
+            Assert.Equal(joinEui, loRaDevice.AppEui);
             Assert.Equal(appKey, loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
@@ -181,7 +181,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDevice = CreateDefaultDevice();
 
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal(joinEui, loRaDevice.AppEUI);
+            Assert.Equal(joinEui, loRaDevice.AppEui);
             Assert.Equal(appKey, loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
@@ -224,7 +224,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDevice = CreateDefaultDevice();
 
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Null(loRaDevice.AppEUI);
+            Assert.Null(loRaDevice.AppEui);
             Assert.Null(loRaDevice.AppKey);
             Assert.Equal(this.configuration.GatewayID, loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);

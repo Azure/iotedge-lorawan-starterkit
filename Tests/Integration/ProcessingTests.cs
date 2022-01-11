@@ -672,7 +672,7 @@ namespace LoRaWan.Tests.Integration
             var updatedTwin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { TwinProperty.AppEUI, simulatedDevice.AppEUI?.ToString() },
+                    { TwinProperty.AppEui, simulatedDevice.AppEui?.ToString() },
                     { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
                     { TwinProperty.SensorDecoder, nameof(LoRaPayloadDecoder.DecoderValueSensor) },
                 },

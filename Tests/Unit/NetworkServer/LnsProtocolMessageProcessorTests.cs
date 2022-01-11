@@ -357,7 +357,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(MacMessageType.JoinRequest, loRaRequest.Payload.MessageType);
             Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic);
-            Assert.Equal(expectedJoinEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEUI);
+            Assert.Equal(expectedJoinEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEui);
             Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI.Span.ToArray());
             Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevNonce);
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);

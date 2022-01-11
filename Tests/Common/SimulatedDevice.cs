@@ -40,7 +40,7 @@ namespace LoRaWan.Tests.Common
 
         public AppKey? AppKey => LoRaDevice.AppKey;
 
-        public JoinEui? AppEUI => LoRaDevice.AppEUI;
+        public JoinEui? AppEui => LoRaDevice.AppEui;
 
         public char ClassType => LoRaDevice.ClassType;
 
@@ -82,7 +82,7 @@ namespace LoRaWan.Tests.Common
             }
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
-            return new LoRaPayloadJoinRequest(LoRaDevice.AppEUI.Value, LoRaDevice.DeviceID, DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
+            return new LoRaPayloadJoinRequest(LoRaDevice.AppEui.Value, LoRaDevice.DeviceID, DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
         }
 
 

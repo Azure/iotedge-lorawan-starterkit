@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Common
         {
             var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, connectionManager)
             {
-                AppEUI = simulatedDevice.LoRaDevice.AppEUI,
+                AppEui = simulatedDevice.LoRaDevice.AppEui,
                 AppKey = simulatedDevice.LoRaDevice.AppKey,
                 SensorDecoder = simulatedDevice.LoRaDevice.SensorDecoder,
                 AppSKey = simulatedDevice.LoRaDevice.AppSKey,
@@ -119,7 +119,7 @@ namespace LoRaWan.Tests.Common
         {
             var finalDesiredProperties = new Dictionary<string, object>
                 {
-                    { TwinProperty.AppEUI, simulatedDevice.AppEUI?.ToString() },
+                    { TwinProperty.AppEui, simulatedDevice.AppEui?.ToString() },
                     { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
                     { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
                     { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },
