@@ -56,21 +56,28 @@ the Basics Station is performed by the user.
 
 ### Firmware upgrade flow
 
-1. The `package` parameter, along with URL pointing to the location of the
-   firmware upgrade binary in a storage account, will be stored in the desired
-   properties of the device twin of the concentrator running the Basics Station.
-   Those values reflect the up-to-date firmware version that needs to be used
-   when communicating with the CUPS server. The firmware upgrade is initiated
-   through updating these parameters in the concentrator device twin.
+1. When provisioning a device that will need firmware upgrades, the end user
+   should generate a `sig-0.key` and store it on the device and in a centralized
+   repository of their own choice (example on how to generate it can be found in
+   the appendix, and [LoRa Basics Station repository][lbs-example]).
+
+1. When a firmware upgrade needs to be provided to the device, the user should
+   generate a digest of the executable file of the upgrade (as in examples
+   mentioned above) and retrieve the CRC32 Checksum of the `sig-0.key`. Then 4
+   inputs (file, digest, checksum and new version) should be provided to the
+   LoRa Device Provisioning CLI tool to properly upload the file to a blob
+   storage and store the needed information in the concentrator twin (blob URL
+   in storage, digest, checksum and the new version number).
 
 1. The Basics Station sends the CUPS request containing the currently used
-   values.
+   version (in the `package` field).
 
-1. The LNS determines if there are discrepanices between the values stored in
-   the concentrator twin and the ones provided by the Station. If there are
-   differences, the LNS will trigger the firmware upgrade by sending the correct
-   values to the Basics Station. The Station will then execute the actual
-   firmware upgrade.
+1. The LNS compares the values from the device twin and the CUPS request, and
+   determines if an upgrade is required. If that's the case, the LNS will
+   download the upgrade file from storage and send a properly populated response
+   to the Basics Station.
+
+1. The Basics Station will then execute the actual firmware upgrade.
 
 ### IoT Hub related changes
 
@@ -179,3 +186,4 @@ openssl dgst -sha512 -sign sig-0.pem update.sh > update.sh.sig-0.sha512
 ```
 
 [cupsproto]: https://doc.sm.tc/station/cupsproto.html
+[lbs-example]: https://github.com/lorabasics/basicstation/blob/master/examples/cups/prep.sh
