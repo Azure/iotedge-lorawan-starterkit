@@ -9,7 +9,7 @@ In the following we describe how to register an LBS in IoT Hub by using the [LoR
 1. Retrieve the LBS EUI in its hex-representation (e.g. `AABBCCFFFE001122`). If you are running a dev kit on a Linux machine, the EUI can be retrieved from the MAC address of the eth0 interface as follows:
 
   !!! info Eth
-      Assuming aa:bb:cc:00:11:22 is the returned MAC Address your EUI will be AABBCCFFFE001122.  
+      Assuming aa:bb:cc:00:11:22 is the returned MAC Address your EUI will be AABBCCFFFE001122.
       Please note the insertion of the literals 'FFFE' in the middle, as per [Basic Station Glossary](https://doc.sm.tc/station/glossary.html?highlight=mac)
 
    ```bash
@@ -49,7 +49,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
     ```bash
     cat /sys/class/net/eth0/address # prints the MAC Address of eth0
     # Assuming aa:bb:cc:00:11:22 is the returned MAC Address
-    # your EUI will be AABBCCFFFE001122 
+    # your EUI will be AABBCCFFFE001122
     # Please note the insertion of the literals 'FFFE'  in the middle, as per https://doc.sm.tc/station/glossary.html?highlight=mac
     ```
 
@@ -59,6 +59,8 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
    - The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]`
 
    - A full configuration example might look like this, relative to the desired twin property path `properties.desired`: <!-- markdownlint-disable MD046 -->
+
+   - The default settings here below are compatible from the Region Example we provide in the Arduino folder.
 
     === "EU863 Example Configuration"
 
@@ -158,13 +160,101 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
         }
         ```
 
+        === "CN470RP1 Example Configuration"
+
+        ``` json
+        "routerConfig": {
+          "NetID": [ 1 ],
+          "JoinEui": [[ "0000000000000000", "FFFFFFFFFFFFFFFF"]],
+          "region": "CN470RP1",
+          "hwspec": "sx1301/1",
+          "freq_range": [ 470000000, 510000000 ],
+          "DRs": [
+            [12, 125, 0],
+            [11, 125, 0],
+            [10, 125, 0],
+            [9, 125, 0],
+            [8, 125, 0],
+            [7, 125, 0],
+            [7, 500, 0]
+          ],
+          "sx1301_conf": [
+            {
+              "radio_0": { "enable": true, "freq": 470600000 },
+              "radio_1": { "enable": true, "freq": 478400000 },
+              "chan_FSK": { "enable": false, "radio": 0, "if": 1 },
+              "chan_Lora_std": {
+                "enable": false,
+                "radio": 0,
+                "if": 1,
+                "bandwidth": 125000,
+                "spread_factor": 7
+              },
+              "chan_multiSF_0": { "enable": true, "radio": 0, "if": -300000 },
+              "chan_multiSF_1": { "enable": true, "radio": 0, "if": -100000 },
+              "chan_multiSF_2": { "enable": true, "radio": 0, "if": 100000 },
+              "chan_multiSF_3": { "enable": true, "radio": 0, "if": 300000 },
+              "chan_multiSF_4": { "enable": true, "radio": 1, "if": -300000 },
+              "chan_multiSF_5": { "enable": true, "radio": 1, "if": -100000 },
+              "chan_multiSF_6": { "enable": true, "radio": 1, "if": 100000 },
+              "chan_multiSF_7": { "enable": true, "radio": 1, "if": 300000 }
+            }
+          ],
+          "nocca": true,
+          "nodc": true,
+          "nodwell": true
+        }
+        ```
+
+        === "CN470RP2 Example Configuration"
+
+        ``` json
+        {
+          "NetID": [ 1 ],
+          "JoinEui": [[ "0000000000000000", "FFFFFFFFFFFFFFFF" ]],
+          "region": "CN470RP2",
+          "hwspec": "sx1301/1",
+          "freq_range": [ 470000000, 510000000 ],
+          "DRs": [
+            [12, 125, 0],
+            [11, 125, 0],
+            [10, 125, 0],
+            [9, 125, 0],
+            [8, 125, 0],
+            [7, 125, 0],
+            [7, 500, 0]
+          ],
+          "sx1301_conf": [
+            {
+              "radio_0": { "enable": true, "freq": 498700000 },
+              "radio_1": { "enable": true, "freq": 499600000 },
+              "chan_FSK": { "enable": false, "radio": 0, "if": 1
+              },
+              "chan_Lora_std": { "enable": false, "radio": 0, "if": 1, "bandwidth": 125000, "spread_factor": 7},
+              "chan_multiSF_0": { "enable": true, "radio": 0, "if": -400000 },
+              "chan_multiSF_1": { "enable": true, "radio": 0, "if": 0 },
+              "chan_multiSF_2": { "enable": true, "radio": 0, "if": 200000 },
+              "chan_multiSF_3": { "enable": true, "radio": 0, "if": 400000 },
+              "chan_multiSF_4": { "enable": true, "radio": 1, "if": -300000 },
+              "chan_multiSF_5": { "enable": true, "radio": 1, "if": -100000 },
+              "chan_multiSF_6": { "enable": true, "radio": 1, "if": 100000 },
+              "chan_multiSF_7": { "enable": true, "radio": 1, "if": 300000 }
+            }
+          ],
+          "nocca": true,
+          "nodc": true,
+          "nodwell": true
+        }
+
+        ```
+
    - <!-- markdownlint-enable MD046 --> A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
 
 3. If you want to enable client certificate validation for this device, make sure to define the `properties.desired.clientThumbprint` desired property as an array of strings (each of them being one of the allowed thumbprints for client certificates of this device)
 
 4. If you want to enable CUPS for this device, after generating the certificates, you will need to:
 
-    1. upload the .bundle credential file to the 'stationcredentials' container in the Azure Function Storage Account created by the Starter Kit template ([Quickstart: Upload, download, and list blobs - Azure portal - Azure Storage | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal#upload-a-block-blob))  
+    1. upload the .bundle credential file to the 'stationcredentials' container in the Azure Function Storage Account created by the Starter Kit template ([Quickstart: Upload, download, and list blobs - Azure portal - Azure Storage | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal#upload-a-block-blob))
     The .bundle file is the concatenation of the .trust, .crt and .key files in DER format as described in official [Basics Station documentation](https://doc.sm.tc/station/cupsproto.html)
     2. make sure to define the `properties.desired.cups` desired property as follows:
 
@@ -181,13 +271,13 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
 
     with
 
-    **'cupsCredCrc'**: computed as CRC32 checksum calculated over the concatenated credentials files `cups.{trust,cert,key}` (or the .bundle file if certificates were generated with the tool provided in this kit)  
+    **'cupsCredCrc'**: computed as CRC32 checksum calculated over the concatenated credentials files `cups.{trust,cert,key}` (or the .bundle file if certificates were generated with the tool provided in this kit)
 
-    **'tcCredCrc'**: computed as CRC32 checksum calculated over the concatenated credentials files `tc.{trust,cert,key}` (or the .bundle file if certificates were generated with the tool provided in this kit)  
+    **'tcCredCrc'**: computed as CRC32 checksum calculated over the concatenated credentials files `tc.{trust,cert,key}` (or the .bundle file if certificates were generated with the tool provided in this kit)
 
-    **'cupsCredentialUrl'**: should point to the blob in the Azure Function storage account containing the concatenated credentials (i.e.: .bundle file generated with the tool provided in this kit)  
+    **'cupsCredentialUrl'**: should point to the blob in the Azure Function storage account containing the concatenated credentials (i.e.: .bundle file generated with the tool provided in this kit)
 
-    **'tcCredentialUrl'**: should point to the blob in the Azure Function storage account containing the concatenated credentials (i.e.: .bundle file generated with the tool provided in this kit)  
+    **'tcCredentialUrl'**: should point to the blob in the Azure Function storage account containing the concatenated credentials (i.e.: .bundle file generated with the tool provided in this kit)
 <!-- markdownlint-disable MD029 -->
 
 By saving the configuration per LBS in its device twin, the LBS will be able to successfully connect to the LNS and it can start sending frames.
