@@ -28,11 +28,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: ServerConfiguration.GatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
             loRaDeviceRegistryMock.Setup(x => x.RegisterDeviceInitializer(It.IsNotNull<ILoRaDeviceInitializer>()));
-            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, joinRequest.DevNonce))
+            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEui, joinRequest.DevNonce))
                 .ReturnsAsync(() => null);
 
             // Send to message processor
@@ -64,11 +64,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // this former join request is just to set the loradevice cache to another devnonce.
             _ = simulatedDevice.CreateJoinRequest();
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
-
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(It.IsNotNull<string>(), devEUI, joinRequest.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123") { GatewayId = ServerConfiguration.GatewayID }.AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(It.IsNotNull<string>(), devEui, joinRequest.DevNonce))
+                         .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEui, "123") { GatewayId = ServerConfiguration.GatewayID }.AsList()));
 
             // Ensure that the device twin was updated
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.Is<TwinCollection>((t) =>
@@ -97,7 +96,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.AppKey.Value);
 
             Assert.Equal(1, DeviceCache.RegistrationCount(joinAccept.DevAddr));
-            Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
+            Assert.True(DeviceCache.TryGetByDevEui(devEui, out var loRaDevice));
             Assert.Equal(joinAccept.DevAddr, loRaDevice.DevAddr);
 
             // Device properties were set with the computes values of the join operation
@@ -134,11 +133,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loRaDevice.SetFcntDown(10);
             loRaDevice.SetFcntUp(20);
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>(MockBehavior.Loose);
             loRaDeviceRegistryMock.Setup(x => x.RegisterDeviceInitializer(It.IsNotNull<ILoRaDeviceInitializer>()));
-            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, joinRequest.DevNonce))
+            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEui, joinRequest.DevNonce))
                 .ReturnsAsync(loRaDevice);
 
             // Send to message processor
@@ -178,11 +177,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loRaDevice.SetFcntDown(10);
             loRaDevice.SetFcntUp(20);
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
             loRaDeviceRegistryMock.Setup(x => x.RegisterDeviceInitializer(It.IsNotNull<ILoRaDeviceInitializer>()));
-            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, joinRequest.DevNonce))
+            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEui, joinRequest.DevNonce))
                 .ReturnsAsync(() => loRaDevice);
 
             // Send to message processor
@@ -215,7 +214,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: ServerConfiguration.GatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             simulatedDevice.LoRaDevice.AppEUI = "FFFFFFFFFFFFFFFF";
 
@@ -226,7 +225,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
             loRaDeviceRegistryMock.Setup(x => x.RegisterDeviceInitializer(It.IsNotNull<ILoRaDeviceInitializer>()));
-            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, joinRequest.DevNonce))
+            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEui, joinRequest.DevNonce))
                 .ReturnsAsync(() => loRaDevice);
 
             // Send to message processor
@@ -258,7 +257,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: "another-gateway"));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             using var loRaDevice = CreateLoRaDevice(simulatedDevice);
             loRaDevice.IsOurDevice = false;
@@ -267,7 +266,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>();
             loRaDeviceRegistryMock.Setup(x => x.RegisterDeviceInitializer(It.IsNotNull<ILoRaDeviceInitializer>()));
-            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, joinRequest.DevNonce))
+            loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEui, joinRequest.DevNonce))
                 .ReturnsAsync(loRaDevice);
 
             // Send to message processor
@@ -297,11 +296,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             var devAddr = (DevAddr?)null;
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             if (deviceGatewayID != null) twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -322,8 +321,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(true);
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequest.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequest.DevNonce))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -345,7 +344,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // check that the device is in cache
             Assert.True(DeviceCache.HasRegistrations(joinAccept.DevAddr));
-            Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var cachedDevice));
+            Assert.True(DeviceCache.TryGetByDevEui(devEui, out var cachedDevice));
             Assert.Equal(afterJoinAppSKey, cachedDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, cachedDevice.NwkSKey);
             Assert.Equal(joinAccept.DevAddr, cachedDevice.DevAddr);
@@ -367,11 +366,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: null));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
-            var devAddr = string.Empty;
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequest.DevNonce))
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequest.DevNonce))
                 .ReturnsAsync(new SearchDevicesResult() { IsDevNonceAlreadyUsed = true });
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -403,11 +401,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             var devAddr = (DevAddr?)null;
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -421,8 +419,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(true);
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequest.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequest.DevNonce))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -468,7 +466,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint startingPayloadFcnt = 0;
 
             var devAddr = (DevAddr?)null;
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // message will be sent
             var sentTelemetry = new List<LoRaDeviceTelemetry>();
@@ -482,7 +480,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -504,8 +502,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(true);
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequest.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequest.DevNonce))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -564,7 +562,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var afterJoinFcntDown = -1;
             var afterJoinFcntUp = -1;
             var devAddr = (DevAddr?)null;
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // message will be sent
             var sentTelemetry = new List<LoRaDeviceTelemetry>();
@@ -578,7 +576,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -624,8 +622,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequest.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequest.DevNonce))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
             using var request = CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(), joinRequest);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
@@ -669,7 +667,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
 
             var devAddr = (DevAddr?)null;
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // message will be sent
             var sentTelemetry = new List<LoRaDeviceTelemetry>();
@@ -683,7 +681,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -705,8 +703,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(true);
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequest.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequest.DevNonce))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -783,7 +781,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint startingPayloadFcnt = 0;
 
             var devAddr = (DevAddr?)null;
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // message will be sent
             var sentTelemetry = new List<LoRaDeviceTelemetry>();
@@ -797,7 +795,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -819,8 +817,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(true);
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequest.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequest.DevNonce))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);

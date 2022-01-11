@@ -113,7 +113,7 @@ namespace LoRaWan.NetworkServer
         internal static string CreateCacheKey(LoRaPayloadJoinRequest payload)
         {
             var joinEui = JoinEui.Read(payload.AppEUI.Span);
-            var devEui = DevEui.Read(payload.DevEUI.Span);
+            var devEui = payload.DevEUI;
 
             var totalBufferLength = JoinEui.Size + DevEui.Size + DevNonce.Size;
             Span<byte> buffer = stackalloc byte[totalBufferLength];

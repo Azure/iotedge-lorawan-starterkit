@@ -10,7 +10,7 @@ namespace LoRaWan.Tests.Common
     public sealed class TestLoRaDeviceFactory : LoRaDeviceFactory
     {
         private readonly ILoRaDeviceClient loRaDeviceClient;
-        private readonly IDictionary<string, ILoRaDeviceClient> deviceClientMap = new Dictionary<string, ILoRaDeviceClient>();
+        private readonly IDictionary<DevEui, ILoRaDeviceClient> deviceClientMap = new Dictionary<DevEui, ILoRaDeviceClient>();
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, LoRaDeviceCache deviceCache, ILoRaDeviceClientConnectionManager connectionManager = null)
             : this(null, connectionManager, deviceCache, null, loRaDeviceClient)
@@ -45,9 +45,9 @@ namespace LoRaWan.Tests.Common
             this.loRaDeviceClient = loRaDeviceClient;
         }
 
-        public void SetClient(string devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
+        public void SetClient(DevEui devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
 
-        public override ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey) =>
+        public override ILoRaDeviceClient CreateDeviceClient(DevEui eui, string primaryKey) =>
             this.deviceClientMap.TryGetValue(eui, out var deviceClientToAssign) ? deviceClientToAssign : this.loRaDeviceClient;
     }
 }

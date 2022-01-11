@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = deviceInfo ?? throw new ArgumentNullException(nameof(deviceInfo));
 
-            if (string.IsNullOrEmpty(deviceInfo.PrimaryKey) || string.IsNullOrEmpty(deviceInfo.DevEUI))
+            if (string.IsNullOrEmpty(deviceInfo.PrimaryKey) || deviceInfo.DevEUI == default)
                 throw new ArgumentException($"Incomplete {nameof(IoTHubDeviceInfo)}", nameof(deviceInfo));
 
             if (this.loRaDeviceCache.TryGetByDevEui(deviceInfo.DevEUI, out _))
@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer
             return connectionString;
         }
 
-        public virtual ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey)
+        public virtual ILoRaDeviceClient CreateDeviceClient(DevEui eui, string primaryKey)
         {
             try
             {
@@ -141,7 +141,7 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(eui, deviceConnectionStr, transportSettings, primaryKey, this.loggerFactory.CreateLogger<LoRaDeviceClient>());
+                return new LoRaDeviceClient(deviceConnectionStr, transportSettings, primaryKey, this.loggerFactory.CreateLogger<LoRaDeviceClient>());
             }
             catch (Exception ex)
             {

@@ -28,12 +28,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         private readonly Mock<ILoRaDeviceFactory> loRaDeviceFactoryMock;
         private readonly IMemoryCache memoryCache;
         private readonly StationEui stationEui;
+        private readonly DevEui devEui;
         private readonly BasicsStationConfigurationService sut;
         private bool disposedValue;
 
         public BasicsStationConfigurationServiceTests()
         {
             this.stationEui = new StationEui(ulong.MaxValue);
+            this.devEui = DevEui.Parse(this.stationEui.ToString());
             this.loRaDeviceApiServiceMock = new Mock<LoRaDeviceAPIServiceBase>();
             this.loRaDeviceFactoryMock = new Mock<ILoRaDeviceFactory>();
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -46,7 +48,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         private void SetupDeviceKeyLookup() => SetupDeviceKeyLookup("foo");
 
         private void SetupDeviceKeyLookup(string primaryKey) =>
-            SetupDeviceKeyLookup(new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
+            SetupDeviceKeyLookup(new[] { new IoTHubDeviceInfo { DevEUI = this.devEui, PrimaryKey = primaryKey } });
 
         private void SetupDeviceKeyLookup(params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
             loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByEuiAsync(this.stationEui))
@@ -117,7 +119,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             var deviceTwin = new Twin(new TwinProperties { Desired = new TwinCollection(json) });
             var deviceClientMock = new Mock<ILoRaDeviceClient>();
             deviceClientMock.Setup(dc => dc.GetTwinAsync(CancellationToken.None)).Returns(Task.FromResult(deviceTwin));
-            this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(this.stationEui.ToString(), primaryKey))
+            this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(this.devEui, primaryKey))
                                       .Returns(deviceClientMock.Object);
         }
 
@@ -280,7 +282,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
                 // assert
                 Assert.Equal(result.Length, numberOfConcurrentAccess);
-                this.loRaDeviceFactoryMock.Verify(ldf => ldf.CreateDeviceClient(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+                this.loRaDeviceFactoryMock.Verify(ldf => ldf.CreateDeviceClient(It.IsAny<DevEui>(), It.IsAny<string>()), Times.Once);
                 this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByEuiAsync(It.IsAny<StationEui>()), Times.Once);
                 foreach (var r in result)
                     Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), r);
@@ -309,7 +311,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                              .Throws(new InvalidOperationException())
                                              .Returns(Task.FromResult(new SearchDevicesResult(new[]
                                              {
-                                                 new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey }
+                                                 new IoTHubDeviceInfo { DevEUI = this.devEui, PrimaryKey = primaryKey }
                                              })));
 
                 // act

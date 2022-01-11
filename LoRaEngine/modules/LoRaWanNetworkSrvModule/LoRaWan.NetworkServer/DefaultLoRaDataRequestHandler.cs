@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -289,7 +290,7 @@ namespace LoRaWan.NetworkServer
 
                             if (decodePayloadResult.CloudToDeviceMessage != null)
                             {
-                                if (decodePayloadResult.CloudToDeviceMessage.DevEUI == default || DevEui.Parse(loRaDevice.DevEUI) == decodePayloadResult.CloudToDeviceMessage.DevEUI)
+                                if (decodePayloadResult.CloudToDeviceMessage.DevEUI == default || loRaDevice.DevEUI == decodePayloadResult.CloudToDeviceMessage.DevEUI)
                                 {
                                     // sending c2d to same device
                                     cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
@@ -687,7 +688,7 @@ namespace LoRaWan.NetworkServer
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
             var deviceTelemetry = new LoRaDeviceTelemetry(request, loRaPayloadData, decodedValue, decryptedPayloadData)
             {
-                DeviceEUI = loRaDevice.DevEUI,
+                DeviceEUI = loRaDevice.DevEUI.ToString("N", CultureInfo.InvariantCulture),
                 GatewayID = this.configuration.GatewayID,
                 Edgets = (long)(timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds
             };
@@ -804,10 +805,9 @@ namespace LoRaWan.NetworkServer
 
             var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
 
-            var devEui = DevEui.Parse(loRaDevice.DevEUI);
             var loRaADRTableEntry = new LoRaADRTableEntry()
             {
-                DevEUI = devEui,
+                DevEUI = loRaDevice.DevEUI,
                 FCnt = payloadFcnt,
                 GatewayId = this.configuration.GatewayID,
                 Snr = request.RadioMetadata.UpInfo.SignalNoiseRatio
@@ -821,7 +821,7 @@ namespace LoRaWan.NetworkServer
             else
             {
                 loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntryAsync(
-                    devEui,
+                    loRaDevice.DevEUI,
                     this.configuration.GatewayID,
                     payloadFcnt,
                     loRaDevice.FCntDown,

@@ -5,10 +5,10 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Diagnostics.Metrics;
+    using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
 
     public class DefaultClassCDevicesMessageSender : IClassCDeviceMessageSender
@@ -52,7 +52,7 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(message.DevEUI.Value.AsIotHubDeviceId());
+            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(message.DevEUI.Value);
             if (loRaDevice == null)
             {
                 this.logger.LogError($"[class-c] device {message.DevEUI} not found or not joined");
@@ -79,7 +79,7 @@ namespace LoRaWan.NetworkServer
 
             if (loRaDevice.ClassType != LoRaDeviceClassType.C)
             {
-                this.logger.LogError(loRaDevice.DevEUI, $"[class-c] sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}");
+                this.logger.LogError(loRaDevice.DevEUI.ToString("N", CultureInfo.InvariantCulture), $"[class-c] sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}");
                 return false;
             }
 

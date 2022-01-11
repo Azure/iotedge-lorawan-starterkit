@@ -29,11 +29,11 @@ namespace LoRaWan.Tests.Integration
             var joinRequestPayload2 = simulatedDevice.CreateJoinRequest();
 
             var devAddr = (DevAddr?)null;
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui;
             twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -70,11 +70,11 @@ namespace LoRaWan.Tests.Integration
                             });
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestPayload1.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload1.DevNonce))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
 
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestPayload2.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload2.DevNonce))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(joinRequest2.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
 
-            Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
+            Assert.True(DeviceCache.TryGetByDevEui(devEui, out var loRaDevice));
             Assert.True(loRaDevice.IsOurDevice);
             Assert.Equal(afterJoin2DevAddr, loRaDevice.DevAddr);
             Assert.Equal(afterJoin2NwkSKey, loRaDevice.NwkSKey);

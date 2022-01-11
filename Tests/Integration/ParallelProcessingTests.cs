@@ -103,12 +103,12 @@ namespace LoRaWan.Tests.Integration
             Console.WriteLine("---");
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(parallelTestConfiguration.DeviceID ?? 1, gatewayID: null));
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
 
             // Using loose mock because sometimes we might call receive async
             var looseDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
-            LoRaDeviceFactory.SetClient(devEUI, looseDeviceClient.Object);
+            LoRaDeviceFactory.SetClient(devEui, looseDeviceClient.Object);
 
             looseDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
@@ -127,7 +127,7 @@ namespace LoRaWan.Tests.Integration
 
             // twin will be loaded
             var initialTwin = new Twin();
-            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEui;
             initialTwin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
             initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
@@ -171,7 +171,7 @@ namespace LoRaWan.Tests.Integration
 
             if (expectedToSaveTwin && string.IsNullOrEmpty(parallelTestConfiguration.GatewayID))
             {
-                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
+                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEui, It.IsAny<uint>(), It.IsNotNull<string>()))
                     .Returns(() =>
                     {
                         var duration = parallelTestConfiguration.DeviceApiResetFcntDuration.Next();
@@ -188,7 +188,7 @@ namespace LoRaWan.Tests.Integration
                     var duration = parallelTestConfiguration.SearchByDevAddrDuration.Next();
                     Console.WriteLine($"{nameof(LoRaDeviceApi.Object.SearchByDevAddrAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith((a) => new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()),
+                        .ContinueWith((a) => new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc").AsList()),
                                       CancellationToken.None,
                                       TaskContinuationOptions.ExecuteSynchronously,
                                       TaskScheduler.Default);
@@ -254,7 +254,7 @@ namespace LoRaWan.Tests.Integration
             // verify that the device in device registry has correct properties and frame counters
             Assert.True(DeviceCache.TryGetForPayload(req1.Payload, out var loRaDevice));
             Assert.Equal(devAddr, loRaDevice.DevAddr);
-            Assert.Equal(devEUI, loRaDevice.DevEUI);
+            Assert.Equal(devEui, loRaDevice.DevEUI);
             Assert.True(loRaDevice.IsABP);
             Assert.Equal(3U, loRaDevice.FCntUp);
             Assert.Equal(0U, loRaDevice.FCntDown);

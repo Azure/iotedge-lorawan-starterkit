@@ -95,7 +95,7 @@ namespace LoRaWan.Tests.Integration
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
-                DevEUI = DevEui.Parse(simDevice.DevEUI),
+                DevEUI = simDevice.DevEUI,
                 MessageId = Guid.NewGuid().ToString(),
                 Payload = "aaaa",
                 Fport = FramePorts.App18,
@@ -201,7 +201,7 @@ namespace LoRaWan.Tests.Integration
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
-                DevEUI = DevEui.Parse(simDevice.DevEUI),
+                DevEUI = simDevice.DevEUI,
                 MessageId = Guid.NewGuid().ToString(),
                 Payload = "aaaa",
                 Fport = FramePorts.App14,
@@ -440,7 +440,7 @@ namespace LoRaWan.Tests.Integration
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
                 LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
-                    .Callback<string, FunctionBundlerRequest>((devEUI, bundlerRequest) =>
+                    .Callback((DevEui _, FunctionBundlerRequest bundlerRequest) =>
                     {
                         Assert.Equal(PayloadFcnt, bundlerRequest.ClientFCntUp);
                         Assert.Equal(ServerGatewayID, bundlerRequest.GatewayId);
@@ -532,7 +532,7 @@ namespace LoRaWan.Tests.Integration
             };
 
             LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
-                .Callback<string, FunctionBundlerRequest>((devEUI, bundlerRequest) =>
+                .Callback((DevEui _, FunctionBundlerRequest bundlerRequest) =>
                 {
                     Assert.Equal(PayloadFcnt, bundlerRequest.ClientFCntUp);
                     Assert.Equal(ServerGatewayID, bundlerRequest.GatewayId);

@@ -20,7 +20,6 @@ namespace LoRaWan.NetworkServer
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
         private static readonly TimeSpan twinUpdateTimeout = TimeSpan.FromSeconds(10);
-        private readonly string devEUI;
         private readonly string connectionString;
         private readonly ITransportSettings[] transportSettings;
         private readonly ILogger<LoRaDeviceClient> logger;
@@ -28,15 +27,12 @@ namespace LoRaWan.NetworkServer
 
         private readonly string primaryKey;
 
-        public LoRaDeviceClient(string devEUI, string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger)
+        public LoRaDeviceClient(string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger)
         {
-            if (string.IsNullOrEmpty(devEUI)) throw new ArgumentException($"'{nameof(devEUI)}' cannot be null or empty.", nameof(devEUI));
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or empty.", nameof(connectionString));
             if (string.IsNullOrEmpty(primaryKey)) throw new ArgumentException($"'{nameof(primaryKey)}' cannot be null or empty.", nameof(primaryKey));
 
             this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
-
-            this.devEUI = devEUI;
 
             this.connectionString = connectionString;
             this.primaryKey = primaryKey;

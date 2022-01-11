@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var payload = device.CreateConfirmedDataUpMessage("foo");
             using var request = WaitableLoRaRequest.Create(TestUtils.GenerateTestRadioMetadata(rssi: rssi), payload);
             var deviceApiServiceMock = new Mock<LoRaDeviceAPIServiceBase>();
-            deviceApiServiceMock.Setup(s => s.ExecuteFunctionBundlerAsync(It.IsAny<string>(), It.IsAny<FunctionBundlerRequest>())).ReturnsAsync(new FunctionBundlerResult());
+            deviceApiServiceMock.Setup(s => s.ExecuteFunctionBundlerAsync(It.IsAny<DevEui>(), It.IsAny<FunctionBundlerRequest>())).ReturnsAsync(new FunctionBundlerResult());
             var subject = new FunctionBundlerProvider(deviceApiServiceMock.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance);
 
             // act
@@ -33,9 +33,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             // assert
             deviceApiServiceMock.Verify(s => s.ExecuteFunctionBundlerAsync(loRaDevice.DevEUI,
                                                                            It.Is<FunctionBundlerRequest>(actual => actual.ClientFCntDown == 0
-                                                                                                                   && actual.ClientFCntUp == 1
-                                                                                                                   && actual.GatewayId == gatewayId
-                                                                                                                   && actual.Rssi == rssi)));
+                                                                               && actual.ClientFCntUp == 1
+                                                                               && actual.GatewayId == gatewayId
+                                                                               && actual.Rssi == rssi)));
         }
     }
 }

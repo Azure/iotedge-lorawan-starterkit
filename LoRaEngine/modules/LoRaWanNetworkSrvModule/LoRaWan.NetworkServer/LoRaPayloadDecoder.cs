@@ -49,7 +49,8 @@ namespace LoRaWan.NetworkServer
             this.httpClient = httpClient;
         }
 
-        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, FramePort fport, string sensorDecoder)
+        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(DevEui devEui, byte[] payload, FramePort fport,
+                                                                       string sensorDecoder)
         {
             sensorDecoder ??= string.Empty;
 
@@ -62,7 +63,7 @@ namespace LoRaWan.NetworkServer
                 // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
 
                 var query = HttpUtility.ParseQueryString(url.Query);
-                query["devEUI"] = devEUI;
+                query["devEUI"] = devEui.ToString("N", CultureInfo.InvariantCulture);
                 query["fport"] = ((int)fport).ToString(CultureInfo.InvariantCulture);
                 query["payload"] = base64Payload;
 
@@ -80,7 +81,7 @@ namespace LoRaWan.NetworkServer
 
                 if (toInvoke != null)
                 {
-                    return new DecodePayloadResult(toInvoke.Invoke(null, new object[] { devEUI, payload, fport }));
+                    return new DecodePayloadResult(toInvoke.Invoke(null, new object[] { devEui, payload, fport }));
                 }
                 else
                 {
@@ -159,14 +160,14 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Value sensor decoding, from <see cref="byte[]"/> to <see cref="DecodePayloadResult"/>.
         /// </summary>
-        /// <param name="devEUI">Device identifier.</param>
+        /// <param name="devEui">Device identifier.</param>
         /// <param name="payload">The payload to decode.</param>
         /// <param name="fport">The received frame port.</param>
         /// <returns>The decoded value as a JSON string.</returns>
 #pragma warning disable CA1801 // Review unused parameters
 #pragma warning disable IDE0060 // Remove unused parameter
         // Method is invoked via reflection.
-        public static object DecoderValueSensor(string devEUI, byte[] payload, FramePort fport)
+        public static object DecoderValueSensor(DevEui devEui, byte[] payload, FramePort fport)
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore CA1801 // Review unused parameters
         {
@@ -188,14 +189,14 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Value Hex decoding, from <see cref="byte[]"/> to <see cref="DecodePayloadResult"/>.
         /// </summary>
-        /// <param name="devEUI">Device identifier.</param>
+        /// <param name="devEui">Device identifier.</param>
         /// <param name="payload">The payload to decode.</param>
         /// <param name="fport">The received frame port.</param>
         /// <returns>The decoded value as a JSON string.</returns>
 #pragma warning disable CA1801 // Review unused parameters
 #pragma warning disable IDE0060 // Remove unused parameter
         // Method is invoked via reflection and part of a public API.
-        public static object DecoderHexSensor(string devEUI, byte[] payload, FramePort fport)
+        public static object DecoderHexSensor(DevEui devEui, byte[] payload, FramePort fport)
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore CA1801 // Review unused parameters
         {

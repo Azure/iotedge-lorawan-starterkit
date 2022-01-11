@@ -11,6 +11,8 @@ namespace LoRaWan.Tests.Common
         // Device ID in IoT Hub
         public string DeviceID { get; set; }
 
+        public DevEui DevEui => DevEui.Parse(DeviceID);
+
         // Indicates if the device actually exists in IoT Hub
         public bool IsIoTHubDevice { get; set; }
 

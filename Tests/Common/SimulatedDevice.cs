@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Common
             set => LoRaDevice.DevAddr = value;
         }
 
-        public string DevEUI => LoRaDevice.DeviceID;
+        public DevEui DevEUI => LoRaDevice.DevEui;
 
         public bool Supports32BitFCnt
         {

@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Common
             ILoRaDeviceClientConnectionManager connectionManager,
             DefaultLoRaDataRequestHandler requestHandler = null)
         {
-            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, connectionManager)
+            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, DevEui.Parse(simulatedDevice.LoRaDevice.DeviceID), connectionManager)
             {
                 AppEUI = simulatedDevice.LoRaDevice.AppEUI,
                 AppKey = simulatedDevice.LoRaDevice.AppKey,

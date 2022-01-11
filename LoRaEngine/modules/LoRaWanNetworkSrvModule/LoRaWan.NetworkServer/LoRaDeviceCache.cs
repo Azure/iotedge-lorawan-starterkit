@@ -19,8 +19,8 @@ namespace LoRaWan.NetworkServer
     public class LoRaDeviceCache : IDisposable
     {
         private readonly LoRaDeviceCacheOptions options;
-        private readonly ConcurrentDictionary<DevAddr, ConcurrentDictionary<string, LoRaDevice>> devAddrCache = new();
-        private readonly ConcurrentDictionary<string, LoRaDevice> euiCache = new();
+        private readonly ConcurrentDictionary<DevAddr, ConcurrentDictionary<DevEui, LoRaDevice>> devAddrCache = new();
+        private readonly ConcurrentDictionary<DevEui, LoRaDevice> euiCache = new();
         private readonly object syncLock = new object();
         private readonly NetworkServerConfiguration configuration;
         private readonly ILogger<LoRaDeviceCache> logger;
@@ -200,7 +200,7 @@ namespace LoRaWan.NetworkServer
 
                 if (device.DevAddr is { } someDevAddr)
                 {
-                    var devAddrLookup = this.devAddrCache.GetOrAdd(someDevAddr, (_) => new ConcurrentDictionary<string, LoRaDevice>());
+                    var devAddrLookup = this.devAddrCache.GetOrAdd(someDevAddr, _ => new ConcurrentDictionary<DevEui, LoRaDevice>());
                     devAddrLookup[device.DevEUI] = device;
                 }
                 device.LastSeen = DateTimeOffset.UtcNow;
@@ -238,11 +238,11 @@ namespace LoRaWan.NetworkServer
             return device.ValidateMic(loRaPayload);
         }
 
-        public bool TryGetByDevEui(string devEUI, [MaybeNullWhen(returnValue: false)] out LoRaDevice device)
+        public bool TryGetByDevEui(DevEui devEui, [MaybeNullWhen(returnValue: false)] out LoRaDevice device)
         {
             lock (this.syncLock)
             {
-                _ = this.euiCache.TryGetValue(devEUI, out device);
+                _ = this.euiCache.TryGetValue(devEui, out device);
             }
 
             TrackCacheStats(device);

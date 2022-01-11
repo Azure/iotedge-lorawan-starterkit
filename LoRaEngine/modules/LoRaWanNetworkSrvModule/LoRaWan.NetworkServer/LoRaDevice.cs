@@ -44,7 +44,7 @@ namespace LoRaWan.NetworkServer
         // Gets if a device is activated by personalization
         public bool IsABP => AppKey == null;
 
-        public string DevEUI { get; set; }
+        public DevEui DevEUI { get; set; }
 
         public AppKey? AppKey { get; set; }
 
@@ -211,13 +211,13 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
-        public LoRaDevice(DevAddr? devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
+        public LoRaDevice(DevAddr? devAddr, DevEui devEui, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
         {
             this.connectionManager = connectionManager;
             this.queuedRequests = new Queue<LoRaRequest>();
             this.logger = logger;
             DevAddr = devAddr;
-            DevEUI = devEUI;
+            DevEUI = devEui;
             DownlinkEnabled = true;
             IsABPRelaxedFrameCounter = true;
             PreferredWindow = 1;
@@ -228,8 +228,8 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Use constructor for test code only.
         /// </summary>
-        internal LoRaDevice(DevAddr? devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
-            : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance, null)
+        internal LoRaDevice(DevAddr? devAddr, DevEui devEui, ILoRaDeviceClientConnectionManager connectionManager)
+            : this(devAddr, devEui, connectionManager, NullLogger<LoRaDevice>.Instance, null)
         { }
 
         /// <summary>

@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading;
@@ -36,7 +37,7 @@ namespace LoRaWan.NetworkServer
             this.deviceLoadRequests = meter.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
         }
 
-        public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
+        public override async Task<uint> NextFCntDownAsync(DevEui devEUI, uint fcntDown, uint fcntUp, string gatewayId)
         {
             this.logger.LogDebug("syncing FCntDown for multigateway");
 
@@ -57,7 +58,7 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
+        public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(DevEui devEUI, FunctionBundlerRequest request)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"FunctionBundler/{devEUI}?code={AuthCode}");
@@ -76,7 +77,7 @@ namespace LoRaWan.NetworkServer
             return JsonConvert.DeserializeObject<FunctionBundlerResult>(payload);
         }
 
-        public override async Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId)
+        public override async Task<bool> ABPFcntCacheResetAsync(DevEui devEUI, uint fcntUp, string gatewayId)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}");
@@ -91,8 +92,8 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, DevNonce devNonce)
-            => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, devNonce: devNonce);
+        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, DevEui devEUI, DevNonce devNonce)
+            => SearchDevicesAsync(gatewayID: gatewayID, devEui: devEUI, devNonce: devNonce);
 
         /// <inheritdoc />
         public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(DevAddr devAddr)
@@ -101,7 +102,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Helper method that calls the API GetDevice method.
         /// </summary>
-        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, DevAddr? devAddr = null, string devEUI = null, string appEUI = null, DevNonce? devNonce = null)
+        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, DevAddr? devAddr = null, DevEui? devEui = null, string appEUI = null, DevNonce? devNonce = null)
         {
             this.deviceLoadRequests?.Add(1);
 
@@ -112,7 +113,7 @@ namespace LoRaWan.NetworkServer
                 ["code"] = AuthCode,
                 ["GateWayId"] = gatewayID,
                 ["DevAddr"] = devAddr?.ToString(),
-                ["DevEUI"] = devEUI,
+                ["DevEUI"] = devEui?.ToString("N", CultureInfo.InvariantCulture),
                 ["AppEUI"] = appEUI,
                 ["DevNonce"] = devNonce?.ToString()
             });
