@@ -44,7 +44,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             using var scope = this.logger.BeginEuiScope(stationEui);
 
             // Logging any chain related issue that is causing verification to fail
-            if (chain.ChainStatus.Any())
+            if (chain.ChainStatus.Any(s => s.Status != X509ChainStatusFlags.NoError))
             {
                 foreach (var status in chain.ChainStatus)
                 {
