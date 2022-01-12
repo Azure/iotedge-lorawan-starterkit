@@ -12,7 +12,6 @@ namespace LoraKeysManagerFacade
         /// DevEUI are required to be IEEE EUI-64.
         /// </summary>
         /// <param name="devEui">devEUI to validate.</param>
-        /// <exception cref="ArgumentException">If an invalid devEUI string was passed.</exception>
         internal static bool TryParseAndValidate(string devEui, out DevEui result)
         {
             if (!DevEui.TryParse(devEui, out result))
