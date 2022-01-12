@@ -706,7 +706,7 @@ namespace LoRaWan.NetworkServer
             reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr.ToString();
             reportedProperties[TwinProperty.FCntDown] = 0;
             reportedProperties[TwinProperty.FCntUp] = 0;
-            reportedProperties[TwinProperty.DevEUI] = DevEUI;
+            reportedProperties[TwinProperty.DevEUI] = DevEUI.ToString();
             reportedProperties[TwinProperty.NetId] = updateProperties.NetId.ToString();
             reportedProperties[TwinProperty.DevNonce] = updateProperties.DevNonce.AsUInt16;
 
