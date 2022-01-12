@@ -75,6 +75,10 @@ the Basics Station is performed by the user.
 
 1. The Basics Station will then execute the actual firmware upgrade.
 
+1. After the upgrade is complete, next time when the Network Server receives a
+   CUPS request, the new version of the Station will be saved in reported
+   properties of the device twin.
+
 ```mermaid
   sequenceDiagram
     autonumber
@@ -149,6 +153,10 @@ size of the Basics Station executable (around 1MB at the time of writing this
 document).
 
 ### Changes in the LoRaWan Network Server
+
+When the Network Server receives a CUPS request, it should update the current
+version of the Station in the reported properties of the concentrator device
+twin, as long as the reported value is different from the current version.
 
 The implementation of `CupsProtocolMessageProcessor` should be extended for
 checking the `package` field from the concentrator device twin. In case there
