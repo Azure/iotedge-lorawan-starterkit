@@ -13,20 +13,14 @@ namespace LoRaTools
     {
         private enum SessionKeyType { Network = 1, Application = 2 }
 
-        public static NetworkSessionKey CalculateNetworkSessionKey(AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
-        {
-            var keyString = CalculateKey(SessionKeyType.Network, appNonce, netId, devNonce, appKey);
-            return NetworkSessionKey.Parse(keyString);
-        }
+        public static NetworkSessionKey CalculateNetworkSessionKey(AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey) =>
+            NetworkSessionKey.Read(CalculateKey(SessionKeyType.Network, appNonce, netId, devNonce, appKey));
 
-        public static AppSessionKey CalculateAppSessionKey(AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
-        {
-            var keyString = CalculateKey(SessionKeyType.Application, appNonce, netId, devNonce, appKey);
-            return AppSessionKey.Parse(keyString);
-        }
+        public static AppSessionKey CalculateAppSessionKey(AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey) =>
+            AppSessionKey.Read(CalculateKey(SessionKeyType.Application, appNonce, netId, devNonce, appKey));
 
         // don't work with CFLIST atm
-        private static string CalculateKey(SessionKeyType type, AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
+        private static byte[] CalculateKey(SessionKeyType type, AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
         {
             using var aes = Aes.Create("AesManaged");
             var rawAppKey = new byte[AppKey.Size];
@@ -55,8 +49,7 @@ namespace LoRaTools
             cipher = aes.CreateEncryptor();
 #pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
 
-            var key = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
-            return ConversionHelper.ByteArrayToString(key);
+            return cipher.TransformFinalBlock(buffer, 0, buffer.Length);
         }
     }
 }
