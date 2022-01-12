@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Common
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
@@ -31,9 +32,9 @@ namespace LoRaWan.Tests.Common
 
         public bool IsJoined => LoRaDevice.DevAddr is not null;
 
-        public string NetId { get; internal set; }
+        public NetId? NetId { get; internal set; }
 
-        public string AppNonce { get; internal set; }
+        public AppNonce AppNonce { get; internal set; }
 
         public AppSessionKey? AppSKey => LoRaDevice.AppSKey;
 
@@ -41,7 +42,7 @@ namespace LoRaWan.Tests.Common
 
         public AppKey? AppKey => LoRaDevice.AppKey;
 
-        public string AppEUI => LoRaDevice.AppEUI;
+        public JoinEui? AppEui => LoRaDevice.AppEui;
 
         public char ClassType => LoRaDevice.ClassType;
 
@@ -83,7 +84,7 @@ namespace LoRaWan.Tests.Common
             }
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
-            return new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
+            return new LoRaPayloadJoinRequest(LoRaDevice.AppEui.Value, LoRaDevice.DeviceID, DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
         }
 
 
@@ -127,7 +128,14 @@ namespace LoRaWan.Tests.Common
                 direction,
                 Supports32BitFCnt ? fcnt : null);
 
-            payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            if (fport == FramePort.MacCommand)
+            {
+                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)} when fport is set to 0."));
+            }
+            else
+            {
+                payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
             payloadData.SetMic(nwkSKey is { } someNetworkSessionKey ? someNetworkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
 
             // We want to ensure we simulate a message coming from the device, therefore only the 16 bits of the framecounter should be available.
@@ -171,9 +179,26 @@ namespace LoRaWan.Tests.Common
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, LoRaDevice.DevAddr.Value, FrameControlFlags.Adr, fcntBytes, null, fport, payload, direction, Supports32BitFCnt ? fcnt : null);
-            payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp,
+                                                  LoRaDevice.DevAddr.Value,
+                                                  FrameControlFlags.Adr,
+                                                  fcntBytes,
+                                                  null,
+                                                  fport,
+                                                  payload,
+                                                  direction,
+                                                  Supports32BitFCnt ? fcnt : null);
+
+            if (fport == FramePort.MacCommand)
+            {
+                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)} when fport is set to 0."));
+            }
+            else
+            {
+                payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
             payloadData.SetMic(nwkSKey is { } someNetworkSessionKey ? someNetworkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
+
             return payloadData;
         }
 
@@ -181,10 +206,6 @@ namespace LoRaWan.Tests.Common
         {
 
             // Calculate the keys
-            var netid = payload.NetID.ToArray();
-            Array.Reverse(netid);
-            var appNonce = payload.AppNonce.ToArray();
-            Array.Reverse(appNonce);
             var devNonce = DevNonce;
 
             if (LoRaDevice.AppKey is null)
@@ -192,8 +213,8 @@ namespace LoRaWan.Tests.Common
                 throw new ArgumentException(nameof(LoRaDevice.AppKey));
             }
 
-            var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(appNonce, netid, devNonce, LoRaDevice.AppKey.Value);
-            var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(appNonce, netid, devNonce, LoRaDevice.AppKey.Value);
+            var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, payload.AppNonce, payload.NetId, devNonce, LoRaDevice.AppKey.Value);
+            var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[1] { 0x01 }, payload.AppNonce, payload.NetId, devNonce, LoRaDevice.AppKey.Value);
             var devAddr = payload.DevAddr;
 
             // if mic check failed, return false
@@ -204,8 +225,8 @@ namespace LoRaWan.Tests.Common
 
             LoRaDevice.AppSKey = appSKey;
             LoRaDevice.NwkSKey = nwkSKey;
-            NetId = BitConverter.ToString(netid).Replace("-", string.Empty, StringComparison.Ordinal);
-            AppNonce = BitConverter.ToString(appNonce).Replace("-", string.Empty, StringComparison.Ordinal);
+            NetId = payload.NetId;
+            AppNonce = payload.AppNonce;
             LoRaDevice.DevAddr = devAddr;
 
             return true;
@@ -239,7 +260,7 @@ namespace LoRaWan.Tests.Common
 
             await basicsStation.SendMessageAsync(JsonSerializer.Serialize(new
             {
-                JoinEui = JoinEui.Read(joinRequestPayload.AppEUI.Span).ToString("G", null),
+                JoinEui = joinRequestPayload.AppEui.ToString("G", null),
                 msgtype = "jreq",
                 DevEui = DevEui.Read(joinRequestPayload.DevEUI.Span).ToString("G", null),
                 DevNonce = joinRequestPayload.DevNonce.AsUInt16,

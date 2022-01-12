@@ -112,14 +112,13 @@ namespace LoRaWan.NetworkServer
 
         internal static string CreateCacheKey(LoRaPayloadJoinRequest payload)
         {
-            var joinEui = JoinEui.Read(payload.AppEUI.Span);
             var devEui = DevEui.Read(payload.DevEUI.Span);
 
             var totalBufferLength = JoinEui.Size + DevEui.Size + DevNonce.Size;
             Span<byte> buffer = stackalloc byte[totalBufferLength];
             var head = buffer; // keeps a view pointing at the start of the buffer
 
-            buffer = joinEui.Write(buffer);
+            buffer = payload.AppEui.Write(buffer);
             buffer = devEui.Write(buffer);
 
             var devNonce = payload.DevNonce;

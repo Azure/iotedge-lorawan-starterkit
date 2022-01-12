@@ -5,6 +5,7 @@
 
 namespace LoRaWan.Tests.Integration
 {
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Text.Json;
     using System.Threading;
@@ -102,15 +103,16 @@ namespace LoRaWan.Tests.Integration
             this.dataRequestHandlerMock.Verify(x => x.SendMessageDownstreamAsyncAssert(It.IsAny<DownlinkMessageBuilderResponse>()), Times.Never);
         }
 
-        public static TheoryData<DwellTimeSetting?> Persists_Reported_Dwell_Time_On_TxParamSetupAns_TheoryData() =>
-            TheoryDataFactory.From(new DwellTimeSetting?[]
+        public static TheoryData<DwellTimeSetting?, bool> Persists_Reported_Dwell_Time_On_TxParamSetupAns_TheoryData() =>
+            TheoryDataFactory.From(new (DwellTimeSetting?, bool)[]
             {
-                null, new DwellTimeSetting(true, false, 9)
+                (null, false), (new DwellTimeSetting(true, false, 9), false),
+                (null, true), (new DwellTimeSetting(true, false, 9), true)
             });
 
         [Theory]
         [MemberData(nameof(Persists_Reported_Dwell_Time_On_TxParamSetupAns_TheoryData))]
-        public async Task Persists_Reported_Dwell_Time_On_TxParamSetupAns(DwellTimeSetting? reported)
+        public async Task Persists_Reported_Dwell_Time_On_TxParamSetupAns(DwellTimeSetting? reported, bool macCommandInPayload)
         {
             // arrange
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>();
@@ -119,7 +121,7 @@ namespace LoRaWan.Tests.Integration
             loRaDeviceClient.Setup(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                             .Callback((TwinCollection t, CancellationToken _) => actualTwinCollection = t)
                             .ReturnsAsync(true);
-            using var request = SetupRequest(As923, reported, new TxParamSetupAnswer());
+            using var request = SetupRequest(As923, reported, new TxParamSetupAnswer(), macCommandInPayload: macCommandInPayload);
 
             // act
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request, this.loRaDevice);
@@ -182,7 +184,7 @@ namespace LoRaWan.Tests.Integration
             using var request = SetupRequest(region, reportedDwellTimeSetting, createConfirmed: true, dataRateIndex: upstreamDataRate);
             LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
-
+            
             // act
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request, this.loRaDevice);
 
@@ -193,16 +195,15 @@ namespace LoRaWan.Tests.Integration
                     Times.Once);
         }
 
-        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, bool createConfirmed = false, DataRateIndex dataRateIndex = DataRateIndex.DR0) =>
-            SetupRequest(region, reportedDwellTimeSetting, null, createConfirmed, dataRateIndex: dataRateIndex);
-
-        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, MacCommand? macCommand, bool createConfirmed = false, DataRateIndex dataRateIndex = DataRateIndex.DR0)
+        private WaitableLoRaRequest SetupRequest(Region region, DwellTimeSetting? reportedDwellTimeSetting, MacCommand? macCommand = null, bool createConfirmed = false, DataRateIndex dataRateIndex = DataRateIndex.DR0, bool macCommandInPayload = false)
         {
             LoRaPayloadData payload;
             if (macCommand is { } someMacCommand)
             {
-                payload = this.simulatedDevice.CreateUnconfirmedDataUpMessage(((int)someMacCommand.Cid).ToString("X2", CultureInfo.InvariantCulture), fcnt: 1,
-                                                                              fport: 0, isHexPayload: true);
+                payload = macCommandInPayload
+                    ? this.simulatedDevice.CreateUnconfirmedDataUpMessage(((int)someMacCommand.Cid).ToString("X2", CultureInfo.InvariantCulture), fcnt: 1,
+                                                                          fport: 0, isHexPayload: true)
+                    : this.simulatedDevice.CreateUnconfirmedDataUpMessage("foo", macCommands: new List<MacCommand> { someMacCommand }, fcnt: 1);
             }
             else if (createConfirmed)
             {

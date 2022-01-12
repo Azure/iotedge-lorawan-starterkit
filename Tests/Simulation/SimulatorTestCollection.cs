@@ -20,7 +20,7 @@ namespace LoRaWan.Tests.Simulation
     {
         private readonly TimeSpan intervalBetweenMessages;
         private readonly TimeSpan intervalAfterJoin;
-        private const string StationEUI = "B8-27-EB-FF-FE-A3-BE-42";
+        private const string StationEUI = "B827EBFFFEA3BE42";
 
         public TestConfiguration Configuration { get; } = TestConfiguration.GetConfiguration();
 

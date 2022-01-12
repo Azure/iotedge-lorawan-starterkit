@@ -102,7 +102,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets the gateway netword id.
         /// </summary>
-        public uint NetId { get; set; } = 1;
+        public NetId NetId { get; set; } = new NetId(1);
 
         /// <summary>
         /// Gets list of allowed dev addresses.
@@ -153,7 +153,7 @@ namespace LoRaWan.NetworkServer
             config.LogToHub = envVars.GetEnvVar("LOG_TO_HUB", config.LogToHub);
             config.LogToTcpAddress = envVars.GetEnvVar("LOG_TO_TCP_ADDRESS", string.Empty);
             config.LogToTcpPort = envVars.GetEnvVar("LOG_TO_TCP_PORT", config.LogToTcpPort);
-            config.NetId = envVars.GetEnvVar("NETID", config.NetId);
+            config.NetId = new NetId(envVars.GetEnvVar("NETID", config.NetId.NetworkId));
             config.AllowedDevAddresses = envVars.GetEnvVar("AllowedDevAddresses", string.Empty)
                                                 .Split(";")
                                                 .Select(s => DevAddr.TryParse(s, out var devAddr) ? (true, Value: devAddr) : default)
