@@ -56,12 +56,12 @@ namespace LoRaWan
             return format switch
             {
 #pragma warning disable format
-                null or "G" or "D" => ToHex(value, '-', LetterCase.Upper),
-                "g" or "d"         => ToHex(value, '-', LetterCase.Lower),
+                null or "G" or "N" => ToHex(value, LetterCase.Upper),
+                "d"                => ToHex(value, '-', LetterCase.Lower),
+                "D"                => ToHex(value, '-', LetterCase.Upper),
                 "E"                => ToHex(value, ':', LetterCase.Upper),
                 "e"                => ToHex(value, ':', LetterCase.Lower),
-                "N"                => ToHex(value, null, LetterCase.Upper),
-                "n"                => ToHex(value, null, LetterCase.Lower),
+                "n" or "g"         => ToHex(value, LetterCase.Lower),
                 "I"                => Id6.Format(value, Id6.FormatOptions.FixedWidth),
                 "i"                => Id6.Format(value, Id6.FormatOptions.FixedWidth | Id6.FormatOptions.Lowercase),
 #pragma warning restore format

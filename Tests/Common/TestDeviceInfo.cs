@@ -72,7 +72,7 @@ namespace LoRaWan.Tests.Common
         {
             var desiredProperties = new Dictionary<string, object>();
             if (AppEui is { } someAppEui)
-                desiredProperties[nameof(AppEui)] = someAppEui.ToString("N", null);
+                desiredProperties[nameof(AppEui)] = someAppEui.ToHex();
 
             if (AppKey is { } someAppKey)
                 desiredProperties[nameof(AppKey)] = someAppKey.ToString();

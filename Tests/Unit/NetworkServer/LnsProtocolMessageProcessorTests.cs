@@ -223,7 +223,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                            });
 
             var muxs = Id6.Format(firstNic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
-            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B8-27-EB-FF-FE-E1-E3-9A""}}";
+            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B827EBFFFEE1E39A""}}";
 
             // act
             await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(this.httpContextMock.Object, this.socketMock.Object, CancellationToken.None);

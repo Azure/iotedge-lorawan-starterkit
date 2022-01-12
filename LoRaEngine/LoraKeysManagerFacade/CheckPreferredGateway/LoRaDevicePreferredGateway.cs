@@ -62,9 +62,9 @@ namespace LoraKeysManagerFacade
             };
         }
 
-        internal static string PreferredGatewayCacheKey(DevEui devEUI) => $"preferredGateway:{devEUI:N}";
+        internal static string PreferredGatewayCacheKey(DevEui devEUI) => FormattableString.Invariant($"preferredGateway:{devEUI}");
 
-        internal static string PreferredGatewayFcntUpItemListCacheKey(DevEui devEUI, uint fcntUp) => $"preferredGateway:{devEUI:N}:{fcntUp}";
+        internal static string PreferredGatewayFcntUpItemListCacheKey(DevEui devEUI, uint fcntUp) => FormattableString.Invariant($"preferredGateway:{devEUI}:{fcntUp}");
 
         internal static LoRaDevicePreferredGateway LoadFromCache(ILoRaDeviceCacheStore cacheStore, DevEui devEUI)
         {
