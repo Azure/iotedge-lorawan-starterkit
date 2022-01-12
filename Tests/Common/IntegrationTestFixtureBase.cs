@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -215,9 +216,9 @@ namespace LoRaWan.Tests.Common
                 if (!string.IsNullOrEmpty(Configuration.DevicePrefix))
                 {
                     d.DeviceID = string.Concat(Configuration.DevicePrefix, d.DeviceID[Configuration.DevicePrefix.Length..]);
-                    if (!string.IsNullOrEmpty(d.AppEUI))
+                    if (d.AppEui is { } someJoinEui)
                     {
-                        d.AppEUI = string.Concat(Configuration.DevicePrefix, d.AppEUI[Configuration.DevicePrefix.Length..]);
+                        d.AppEui = JoinEui.Parse($"{Configuration.DevicePrefix}{someJoinEui.ToString("N", CultureInfo.InvariantCulture)[Configuration.DevicePrefix.Length..]}");
                     }
 
                     if (d.AppKey is { } someAppKey)
@@ -274,32 +275,34 @@ namespace LoRaWan.Tests.Common
             }
         }
 
-        public async Task UpdateExistingConcentratorThumbprint(string stationEui, Func<string[], bool> condition, Action<List<string>> action)
+        public async Task UpdateExistingConcentratorThumbprint(StationEui stationEui, Func<string[], bool> condition, Action<List<string>> action)
         {
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationEui);
+            var stationDeviceId = GetDeviceId(stationEui);
+            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
-            var deviceTwin = await registryManager.GetTwinAsync(stationEui);
+            var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
             var initialClientThumbprints = ((JArray)deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName]).ToObject<string[]>();
             if (condition(initialClientThumbprints))
             {
                 var arrayToList = new List<string>(initialClientThumbprints);
                 action(arrayToList);
                 deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName] = arrayToList.ToArray();
-                await registryManager.UpdateTwinAsync(stationEui, deviceTwin, deviceTwin.ETag);
+                await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
             }
         }
 
-        public async Task UpdateExistingConcentratorCrcValues(string stationEui, uint crc)
+        public async Task UpdateExistingConcentratorCrcValues(StationEui stationEui, uint crc)
         {
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationEui);
+            var stationDeviceId = GetDeviceId(stationEui);
+            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
-            var deviceTwin = await registryManager.GetTwinAsync(stationEui);
+            var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
             var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
             var deserializedCupsTwinInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson);
             var newCupsInfo = new CupsTwinInfo(deserializedCupsTwinInfo.CupsUri,
@@ -309,8 +312,10 @@ namespace LoRaWan.Tests.Common
                                                deserializedCupsTwinInfo.CupsCredentialUrl,
                                                deserializedCupsTwinInfo.TcCredentialUrl);
             deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
-            await registryManager.UpdateTwinAsync(stationEui, deviceTwin, deviceTwin.ETag);
+            await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
         }
+
+        private static string GetDeviceId(StationEui eui) => eui.ToString("N", CultureInfo.InvariantCulture);
 
         private async Task CreateOrUpdateDevicesAsync()
         {
