@@ -637,9 +637,7 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(request.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
 
-            var expectedLnsRxDelay = LoRaOperationTimeWatcher.CalculateRXWindowsTime(expectingSecondWindow ? Region.ReceiveDelay2 : Region.ReceiveDelay1,
-                                                                                     loRaDevice.ReportedRXDelay);
-            Assert.Equal(expectedLnsRxDelay, PacketForwarder.DownlinkMessages[0].LnsRxDelay);
+            Assert.Equal(loRaDevice.ReportedRXDelay, PacketForwarder.DownlinkMessages[0].LnsRxDelay);
             if (expectingSecondWindow)
             {
                 Assert.Equal(default, PacketForwarder.DownlinkMessages[0].DataRateRx1);
