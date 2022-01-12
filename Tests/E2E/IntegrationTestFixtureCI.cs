@@ -550,7 +550,7 @@ namespace LoRaWan.Tests.E2E
             Device27_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000027",
-                AppEui = GetJoinEui(27),
+                AppEui = JoinEui.Parse("0000000000000027"),
                 AppKey = GetAppKey(27),
                 IsIoTHubDevice = true
             };
@@ -586,7 +586,7 @@ namespace LoRaWan.Tests.E2E
             Device31_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000031",
-                AppEui = GetJoinEui(31),
+                AppEui = JoinEui.Parse("0000000000000031"),
                 AppKey = GetAppKey(31),
                 IsIoTHubDevice = true,
                 Deduplication = "Drop"
@@ -605,7 +605,7 @@ namespace LoRaWan.Tests.E2E
             Device33_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000033",
-                AppEui = GetJoinEui(33),
+                AppEui = JoinEui.Parse("0000000000000033"),
                 AppKey = GetAppKey(33),
                 IsIoTHubDevice = true
             };
