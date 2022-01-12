@@ -25,7 +25,7 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device11_OTAA;
             LogTestStart(device);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device12_OTAA;
             LogTestStart(device);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);

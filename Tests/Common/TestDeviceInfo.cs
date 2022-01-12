@@ -18,7 +18,7 @@ namespace LoRaWan.Tests.Common
 
         // Application Identifier
         // Used by OTAA devices
-        public string AppEUI { get; set; }
+        public JoinEui? AppEui { get; set; }
 
         // Application Key
         // Dynamically activated devices (OTAA) use the Application Key (AppKey)
@@ -71,8 +71,8 @@ namespace LoRaWan.Tests.Common
         public Dictionary<string, object> GetDesiredProperties()
         {
             var desiredProperties = new Dictionary<string, object>();
-            if (!string.IsNullOrEmpty(AppEUI))
-                desiredProperties[nameof(AppEUI)] = AppEUI;
+            if (AppEui is { } someAppEui)
+                desiredProperties[nameof(AppEui)] = someAppEui.ToString("N", null);
 
             if (AppKey is { } someAppKey)
                 desiredProperties[nameof(AppKey)] = someAppKey.ToString();
@@ -161,7 +161,7 @@ namespace LoRaWan.Tests.Common
             var result = new TestDeviceInfo
             {
                 DeviceID = value16,
-                AppEUI = value16,
+                AppEui = JoinEui.Parse(value16),
                 AppKey = LoRaWan.AppKey.Parse(value32),
                 GatewayID = gatewayID,
                 SensorDecoder = sensorDecoder,
