@@ -6,7 +6,6 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.Collections.Generic;
     using global::LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -96,15 +95,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, foundStation);
         }
 
-        public static IEnumerable<object[]> CreateKeyDataMessagesTheoryData =>
-            new List<object[]>
-            {
-                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 0), 0, 0, 0 },
-                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 0), 0, 0, 0, "1" }, // a non-relevant field should not influence the key
-                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0x1010101010101010UL), new Mic(0), 0), 0x1010101010101010UL, 0, 0 },
-                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(1), 0), 0, 1, 0 },
-                new object[] { new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 1), 0, 0, 1 },
-            };
+        public static TheoryData CreateKeyDataMessagesTheoryData
+            => TheoryDataFactory.From<object, ulong, ushort, ushort, string?>(
+                new (object, ulong, ushort, ushort, string?)[]
+                {
+                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 0), 0, 0, 0, null),
+                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 0), 0, 0, 0, "1"), // a non-relevant field should not influence the key
+                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0x1010101010101010UL), new Mic(0), 0), 0x1010101010101010UL, 0, 0, null),
+                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(1), 0), 0, 1, 0, null),
+                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 1), 0, 0, 1, null)
+                }
+            );
 
         [Theory]
         [MemberData(nameof(CreateKeyDataMessagesTheoryData))]
@@ -168,15 +169,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, addedStation);
         }
 
-        public static IEnumerable<object[]> CreateKeyJoinMessagesTheoryData =>
-            new List<object[]>
-            {
-                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0 },
-                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0, (uint)1 }, // a non-relevant field should not influence the key
-                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0x1010101010101010UL), new DevEui(0), new DevNonce(0)), 0x1010101010101010UL, 0, 0 },
-                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0x1010101010101010UL), new DevNonce(0)), 0, 0x1010101010101010UL, 0 },
-                new object[] { new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(1)), 0, 0, 1 },
-           };
+        public static TheoryData CreateKeyJoinMessagesTheoryData
+            => TheoryDataFactory.From<object, ulong, ulong, ushort, uint?>(
+                new (object, ulong, ulong, ushort, uint?)[]
+                {
+                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0, null),
+                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0, 1 ), // a non-relevant field should not influence the key
+                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0x1010101010101010UL), new DevEui(0), new DevNonce(0)), 0x1010101010101010UL, 0, 0, null),
+                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0x1010101010101010UL), new DevNonce(0)), 0, 0x1010101010101010UL, 0, null),
+                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(1)), 0, 0, 1, null),
+                }
+            );
 
         [Theory]
         [MemberData(nameof(CreateKeyJoinMessagesTheoryData))]
