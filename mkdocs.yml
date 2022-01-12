@@ -101,6 +101,7 @@ nav:
     - adr/005_observability.md
     - adr/006_cups.md
     - adr/007_message_deduplication.md
+    - adr/008_cups_firmware_upgrade.md
   - About:
     - 'Known Issues': issues.md
     - 'Support': support.md
