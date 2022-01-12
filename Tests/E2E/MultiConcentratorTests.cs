@@ -49,7 +49,7 @@ namespace LoRaWan.Tests.E2E
                 { "RADIODEV", TestFixture.Configuration.RadioDev }
             }, out this.temporaryDirectoryName);
             var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1);
+                (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1, new SearchLogOptions(TestFixture.Configuration.DefaultBasicStationEui));
             this.initializationSucceeded = log.Found;
         }
 
@@ -70,7 +70,7 @@ namespace LoRaWan.Tests.E2E
             Assert.True(joinSucceeded, "Join failed");
 
             var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1);
+                (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(this.expectedLog));
             Assert.NotNull(droppedLog.MatchedEvent);
 
             // wait 1 second after joined
@@ -96,7 +96,7 @@ namespace LoRaWan.Tests.E2E
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
                 droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1);
+                    (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(this.expectedLog));
                 Assert.NotNull(droppedLog.MatchedEvent);
 
                 TestFixtureCi.ClearLogs();

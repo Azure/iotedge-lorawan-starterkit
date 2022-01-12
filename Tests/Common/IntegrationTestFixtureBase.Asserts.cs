@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.Common
                 new SearchLogOptions(string.Concat(logMessageStart1, " or ", logMessageStart2)));
         }
 
-        public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null) =>
+        public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options) =>
             this.tcpLogListener != null
                 ? await SearchTcpLogs(predicate, options)
                 : await SearchIoTHubLogs(predicate, options);
@@ -283,7 +283,7 @@ namespace LoRaWan.Tests.Common
             }
             else
             {
-                log = await SearchTcpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchTcpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter, Description = message });
             }
 
             var timeIndexStart = log.FoundLogResult.IndexOf(token, StringComparison.Ordinal) + token.Length;
@@ -305,16 +305,16 @@ namespace LoRaWan.Tests.Common
             };
         }
 
-        private async Task<SearchLogResult> SearchTcpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchTcpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options)
         {
-            var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
+            var maxAttempts = options.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
             for (var i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(options?.Description))
+                    if (!string.IsNullOrEmpty(options.Description))
                     {
                         TestLogger.Log($"TCP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
@@ -326,7 +326,7 @@ namespace LoRaWan.Tests.Common
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                var sourceIdFilter = options?.SourceIdFilter;
+                var sourceIdFilter = options.SourceIdFilter;
 
                 foreach (var item in this.tcpLogListener.Events)
                 {
@@ -350,7 +350,7 @@ namespace LoRaWan.Tests.Common
             return new SearchLogResult(false, processedEvents);
         }
 
-        private async Task<SearchLogResult> SearchTcpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchTcpLogs(Func<string, bool> predicate, SearchLogOptions options)
         {
             return await SearchTcpLogs(evt => predicate(evt.Message), options);
         }

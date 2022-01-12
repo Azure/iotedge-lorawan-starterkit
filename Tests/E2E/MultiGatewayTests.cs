@@ -111,8 +111,8 @@ namespace LoRaWan.Tests.E2E
                     var notDuplicate = "\"IsDuplicate\":false";
                     var isDuplicate = "\"IsDuplicate\":true";
 
-                    var notDuplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(notDuplicate, StringComparison.Ordinal) != -1);
-                    var duplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(isDuplicate, StringComparison.Ordinal) != -1);
+                    var notDuplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(notDuplicate, StringComparison.Ordinal) != -1, new SearchLogOptions(notDuplicate));
+                    var duplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(isDuplicate, StringComparison.Ordinal) != -1, new SearchLogOptions(isDuplicate));
 
                     Assert.NotNull(notDuplicateResult.MatchedEvent);
                     Assert.NotNull(duplicateResult.MatchedEvent);

@@ -67,7 +67,8 @@ namespace LoRaWan.Tests.E2E
             Assert.True(joinSucceeded, "Join failed");
 
             // find the gateway that accepted the join
-            var joinAccept = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("JoinAccept", StringComparison.OrdinalIgnoreCase) != -1);
+            const string expectedLog = "JoinAccept";
+            var joinAccept = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(expectedLog, StringComparison.OrdinalIgnoreCase) != -1, new SearchLogOptions(expectedLog));
             Assert.NotNull(joinAccept);
             Assert.NotNull(joinAccept.MatchedEvent);
 

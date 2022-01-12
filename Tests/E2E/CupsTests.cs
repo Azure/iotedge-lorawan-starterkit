@@ -41,7 +41,8 @@ namespace LoRaWan.Tests.E2E
                     //update allowed client thumbprints in IoT Hub Twin to only have the one being added
                     await TestFixture.UpdateExistingConcentratorThumbprint(stationEui,
                                                                            condition: (originalArray) => !originalArray.Any(x => x.Equals(clientThumbprint, StringComparison.OrdinalIgnoreCase)),
-                                                                           action: (originalList) => {
+                                                                           action: (originalList) =>
+                                                                           {
                                                                                originalList.RemoveAll(x => true); // remove all keys
                                                                                originalList.Add(clientThumbprint); // add only new thumbprint
                                                                            });
@@ -66,8 +67,13 @@ namespace LoRaWan.Tests.E2E
                 // Waiting 30s for being sure that BasicStation actually started up
                 await Task.Delay(30_000);
 
+                var expectedLog = stationEui + ": Received 'version' message for station";
                 var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(stationEui + ": Received 'version' message for station", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 1 });
+                    (log) => log.IndexOf(expectedLog, StringComparison.Ordinal) != -1,
+                    new SearchLogOptions(expectedLog)
+                    {
+                        MaxAttempts = 1,
+                    });
                 Assert.True(log.Found);
 
                 //the concentrator should be ready at this point to receive messages
@@ -81,8 +87,13 @@ namespace LoRaWan.Tests.E2E
                 var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
                 Assert.True(joinSucceeded, "Join failed");
 
+                var expectedLog2 = stationEui + ": Received 'jreq' message";
                 var jreqLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(stationEui + ": Received 'jreq' message", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 2 });
+                    (log) => log.IndexOf(expectedLog2, StringComparison.Ordinal) != -1,
+                    new SearchLogOptions(expectedLog2)
+                    {
+                        MaxAttempts = 2,
+                    });
                 Assert.NotNull(jreqLog.MatchedEvent);
 
                 // wait 1 second after joined
@@ -98,8 +109,13 @@ namespace LoRaWan.Tests.E2E
                 var expectedPayload = $"{{\"value\":{msg}}}";
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions { MaxAttempts = 2 });
 
+                var expectedLog3 = stationEui + ": Received 'updf' message";
                 var updfLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(stationEui + ": Received 'updf' message", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 2 });
+                    (log) => log.IndexOf(expectedLog3, StringComparison.Ordinal) != -1,
+                    new SearchLogOptions(expectedLog3)
+                    {
+                        MaxAttempts = 2,
+                    });
                 Assert.True(updfLog.Found);
             }
             finally
