@@ -31,16 +31,13 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Constructor used for test code only.
         /// </summary>
-        internal LoRaPayloadJoinRequest(JoinEui joinEui, string devEui, DevNonce devNonce, AppKey key)
+        internal LoRaPayloadJoinRequest(JoinEui joinEui, DevEui devEui, DevNonce devNonce, AppKey key)
         {
             // Mhdr is always 0 in case of a join request
             MHdr = new MacHeader(MacMessageType.JoinRequest);
 
-            // Store as reversed value
-            // When coming from real device is is reversed
-            // message processor reverses both values before getting it
             AppEui = joinEui;
-            DevEUI = DevEui.Parse(devEui);
+            DevEUI = devEui;
             DevNonce = devNonce;
             Mic = PerformMic(key);
         }
