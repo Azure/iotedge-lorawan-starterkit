@@ -620,8 +620,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#changing-client-certificate-mode-in-lorawan-network-server-module" class="md-nav__link">
-    Changing 'Client Certificate Mode' in 'LoRaWan Network Server module'
+  <a href="#changing-client-certificate-mode-in-lorawan-network-server-module-and-trusting-certificate-chain" class="md-nav__link">
+    Changing 'Client Certificate Mode' in 'LoRaWan Network Server module' and trusting certificate chain
   </a>
   
 </li>
@@ -1388,8 +1388,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#changing-client-certificate-mode-in-lorawan-network-server-module" class="md-nav__link">
-    Changing 'Client Certificate Mode' in 'LoRaWan Network Server module'
+  <a href="#changing-client-certificate-mode-in-lorawan-network-server-module-and-trusting-certificate-chain" class="md-nav__link">
+    Changing 'Client Certificate Mode' in 'LoRaWan Network Server module' and trusting certificate chain
   </a>
   
 </li>
@@ -1521,7 +1521,7 @@
 <p>Same can be done for a cups.trust file by overriding the <strong>'CUPS_TRUST_PATH'</strong> environment variable</p>
 <h2 id="client-authentication">Client authentication</h2>
 <p>The LoRaWan Network Server implementation provided by this starter kit is allowing client authentication from a Basics Station client.</p>
-<h3 id="changing-client-certificate-mode-in-lorawan-network-server-module">Changing 'Client Certificate Mode' in 'LoRaWan Network Server module'</h3>
+<h3 id="changing-client-certificate-mode-in-lorawan-network-server-module-and-trusting-certificate-chain">Changing 'Client Certificate Mode' in 'LoRaWan Network Server module' and trusting certificate chain</h3>
 <p>By default, the 'LoRaWanNetworkSrvModule' is not accepting/requiring any client certificate for its exposed endpoints.</p>
 <p>It is possible to modify the behavior of the module to actually either allow or require a client certificate for accessing to its endpoints.</p>
 <p>For example, to always require a client certificate for reaching <abbr title="LoRaWAN Network Server">LNS</abbr>/<abbr title="Configuration and Update Server">CUPS</abbr> endpoints, you should set the <strong>'CLIENT_CERTIFICATE_MODE'</strong> environment variable in 'LoRaWanNetworkSrvModule' to a value of '2' or 'RequireCertificate'.</p>
@@ -1531,6 +1531,16 @@
 <li><code>1</code> or <code>AllowCertificate</code>: client certificate will be requested; however, authentication will not fail if a certificate is not provided by the client</li>
 <li><code>2</code> or <code>RequireCertificate</code>: client certificate will be requested, and the client must provide a valid certificate for authentication to succeed</li>
 </ul>
+<p>When a client certificate is used, two verifications are done on the 'LoRaWanNetworkSrvModule' side:</p>
+<ol>
+<li>The certificate chain is validated.<br />
+This implies that <code>LoRaWanNetworkSrvModule</code> will need to trust the root/intermediate certificates that generated the client one.<br />
+If your certificate was not signed by a well-known CA, you will need to import one (or more) <code>.crt</code> PEM-encoded files for trusting the chain. The instructions for mounting volumes can be found in previous paragraphs.<br />
+The client certificate will be searched by default at <code>/var/lorastarterkit/certs/client.ca.crt</code>.<br />
+You can override this path to pass multiple files by specifying a <code>;</code> separated list of paths in the <code>CLIENT_CA_PATH</code> environment variable.<br />
+Exempli gratia, if you need to trust one root certificate located at module path <code>/var/lorastarterkit/certs/root.crt</code> plus one intermediate certificate at <code>/var/lorastarterkit/certs/intermediate.crt</code> you will need to set the CLIENT_CA_PATH environment variable to <code>/var/lorastarterkit/certs/root.crt;/var/lorastarterkit/certs/intermediate.crt</code></li>
+<li>The certificate thumbprint gets compared with what is stored in the Concentrator Twin in IoT Hub.</li>
+</ol>
 <h3 id="importing-tccrttckeycupscrtcupskey-in-bundled-lorabasicsstationmodule">Importing 'tc.crt/tc.key/cups.crt/cups.key' in bundled 'LoRaBasicsStationModule'</h3>
 <p>If you are making use of the bundled 'LoRaBasicsStationModule', it's possible to import a client certificate (.crt + .key files) in the module itself.</p>
 <p>The default path where the files will be searched is <code>var/lorastarterkit/certs/</code>. As described in the previous section, it is possible to bind a folder on the host OS to the one mentioned above.</p>
@@ -1578,11 +1588,11 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-12T16:19:19+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-12</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-12T17:26:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-12</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-12T16:19:19+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-12</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-12T17:26:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-12</span>
       
     
   </small>
