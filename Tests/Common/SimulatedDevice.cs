@@ -212,8 +212,8 @@ namespace LoRaWan.Tests.Common
                 throw new ArgumentException(nameof(LoRaDevice.AppKey));
             }
 
-            var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(new byte[1] { 0x02 }, payload.AppNonce, payload.NetId, devNonce, LoRaDevice.AppKey.Value);
-            var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[1] { 0x01 }, payload.AppNonce, payload.NetId, devNonce, LoRaDevice.AppKey.Value);
+            var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(payload.AppNonce, payload.NetId, devNonce, LoRaDevice.AppKey.Value);
+            var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(payload.AppNonce, payload.NetId, devNonce, LoRaDevice.AppKey.Value);
             var devAddr = payload.DevAddr;
 
             // if mic check failed, return false

@@ -83,8 +83,8 @@ namespace LoRaWan.Tests.Simulation
                 await simulatedBasicsStation.SendDataMessageAsync(request);
                 await Task.Delay(this.intervalBetweenMessages);
             }
-            var msgsFromDevice = TestFixture.IoTHubMessages.Events.Where(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID);
-            var actualAmountOfMsgs = msgsFromDevice.Count(x => !x.Properties.ContainsKey("iothub-message-schema"));
+
+            var actualAmountOfMsgs = TestFixture.IoTHubMessages.Events.Count(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID && !x.Properties.ContainsKey("iothub-message-schema"));
             Assert.Equal(MessageCount, actualAmountOfMsgs);
 
             await simulatedBasicsStation.StopAsync();
@@ -122,8 +122,7 @@ namespace LoRaWan.Tests.Simulation
             // wait 10 seconds before checking if iot hub content is available
             await Task.Delay(TimeSpan.FromSeconds(10));
 
-            var msgsFromDevice = TestFixture.IoTHubMessages.Events.Where(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID);
-            var actualAmountOfMsgs = msgsFromDevice.Count(x => !x.Properties.ContainsKey("iothub-message-schema"));
+            var actualAmountOfMsgs = TestFixture.IoTHubMessages.Events.Count(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID && !x.Properties.ContainsKey("iothub-message-schema"));
             Assert.Equal(MessageCount, actualAmountOfMsgs);
         }
 
