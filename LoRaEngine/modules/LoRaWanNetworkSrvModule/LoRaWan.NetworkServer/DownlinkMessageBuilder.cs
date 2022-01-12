@@ -68,7 +68,6 @@ namespace LoRaWan.NetworkServer
 
             DataRateIndex datr;
             Hertz freq;
-            ushort lnsRxDelay = 0;
 
             var deviceJoinInfo = request.Region.LoRaRegion == LoRaRegionType.CN470RP2
                 ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
@@ -79,7 +78,6 @@ namespace LoRaWan.NetworkServer
 
             if (receiveWindow == Constants.ReceiveWindow2)
             {
-                lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
                 freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo);
                 datr = loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo);
             }
@@ -93,8 +91,6 @@ namespace LoRaWan.NetworkServer
                     logger.LogError("there was a problem in setting the frequency in the downstream message packet forwarder settings");
                     return new DownlinkMessageBuilderResponse(null, false, receiveWindow);
                 }
-
-                lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow1Delay(loRaDevice);
             }
 
             // get max. payload size based on data rate from LoRaRegion
@@ -211,7 +207,7 @@ namespace LoRaWan.NetworkServer
                                                          loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo),
                                                          receiveWindow == Constants.ReceiveWindow2 ? default : freq,
                                                          loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo),
-                                                         lnsRxDelay,
+                                                         loRaDevice.ReportedRXDelay,
                                                          ackLoRaMessage,
                                                          radioMetadata.UpInfo.AntennaPreference);
 
