@@ -73,13 +73,13 @@ Supported values for 'CLIENT_CERTIFICATE_MODE' environment variables are:
 
 When a client certificate is used, two verifications are done on the 'LoRaWanNetworkSrvModule' side:
 
-- The certificate chain is validated.  
+1. The certificate chain is validated.  
 This implies that `LoRaWanNetworkSrvModule` will need to trust the root/intermediate certificates that generated the client one.  
 If your certificate was not signed by a well-known CA, you will need to import one (or more) `.crt` PEM-encoded files for trusting the chain. The instructions for mounting volumes can be found in previous paragraphs.  
 The client certificate will be searched by default at `/var/lorastarterkit/certs/client.ca.crt`.  
 You can override this path to pass multiple files by specifying a `;` separated list of paths in the `CLIENT_CA_PATH` environment variable.  
 Exempli gratia, if you need to trust one root certificate located at module path `/var/lorastarterkit/certs/root.crt` plus one intermediate certificate at `/var/lorastarterkit/certs/intermediate.crt` you will need to set the CLIENT_CA_PATH environment variable to `/var/lorastarterkit/certs/root.crt;/var/lorastarterkit/certs/intermediate.crt`
-- The certificate thumbprint gets compared with what is stored in the Concentrator Twin in IoT Hub.
+1. The certificate thumbprint gets compared with what is stored in the Concentrator Twin in IoT Hub.
 
 ### Importing 'tc.crt/tc.key/cups.crt/cups.key' in bundled 'LoRaBasicsStationModule'
 
