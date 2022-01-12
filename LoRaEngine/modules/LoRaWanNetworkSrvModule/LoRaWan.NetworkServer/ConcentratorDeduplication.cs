@@ -92,6 +92,6 @@ namespace LoRaWan.NetworkServer
                 : throw new ArgumentException(nameof(payload.Mic));
 
         internal static JoinMessageKey CreateCacheKey(LoRaPayloadJoinRequest payload) =>
-            new JoinMessageKey(JoinEui.Read(payload.AppEUI.Span), DevEui.Read(payload.DevEUI.Span), payload.DevNonce);
+            new JoinMessageKey(payload.AppEui, DevEui.Read(payload.DevEUI.Span), payload.DevNonce);
     }
 }

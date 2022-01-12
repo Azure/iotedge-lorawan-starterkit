@@ -78,16 +78,16 @@ namespace LoRaWan
             return new Mic(BinaryPrimitives.ReadUInt32LittleEndian(cmac));
         }
 
-        public static Mic ComputeForJoinAccept(AppKey appKey, MacHeader macHeader, Memory<byte> joinNonce, Memory<byte> netId, DevAddr devAddr, Memory<byte> dlSettings, Memory<byte> rxDelay, Memory<byte> cfList)
+        public static Mic ComputeForJoinAccept(AppKey appKey, MacHeader macHeader, AppNonce joinNonce, NetId netId, DevAddr devAddr, Memory<byte> dlSettings, Memory<byte> rxDelay, Memory<byte> cfList)
         {
-            var algoInput = new byte[MacHeader.Size + joinNonce.Length + NetId.Size + DevAddr.Size + dlSettings.Length + rxDelay.Length + cfList.Length];
+            var algoInput = new byte[MacHeader.Size + AppNonce.Size + NetId.Size + DevAddr.Size + dlSettings.Length + rxDelay.Length + cfList.Length];
             var index = 0;
             _ = macHeader.Write(algoInput.AsSpan(index));
             index += MacHeader.Size;
-            joinNonce.CopyTo(algoInput.AsMemory(index));
-            index += joinNonce.Length;
-            netId.CopyTo(algoInput.AsMemory(index));
-            index += netId.Length;
+            _ = joinNonce.Write(algoInput.AsSpan(index));
+            index += AppNonce.Size;
+            _ = netId.Write(algoInput.AsSpan(index));
+            index += NetId.Size;
             _ = devAddr.Write(algoInput.AsSpan(index));
             index += DevAddr.Size;
             dlSettings.CopyTo(algoInput.AsMemory(index));
