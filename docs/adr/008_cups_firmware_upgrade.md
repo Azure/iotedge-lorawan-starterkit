@@ -100,7 +100,7 @@ the Basics Station is performed by the user.
 
 ### IoT Hub related changes
 
-Only change is related to the concentrator device twin.
+The only change is related to the concentrator device twin.
 
 In addition to the values already stored in the twin, the following need to be
 added:
@@ -135,10 +135,13 @@ be downloaded as `update.bin` from the Basics Station executable).
 ### Azure Function related changes
 
 A new endpoint will be added in the Facade Azure Function which will be used to
-fetch firmware upgrade files from the storage account. The endpoint will accept
-the `StationEui` as input, then retrieve the concentrator twin from IoT Hub,
-download the firmware file from the storage account and send it back in the
-response.
+fetch firmware upgrade files from the storage account. The function will be
+authenticating to the storage account with a connection string which is already
+being used for function runtime itself. The endpoint will accept the
+`StationEui` as input, then retrieve the concentrator twin from IoT Hub,
+retrieve the firmware file from the storage account and send it in the response
+(the file will be processed as a stream to avoid loading the contents into
+memory).
 
 This mechanism will have a theoretical limit of 100MB for the firmware upgrade
 (as we cannot process more with Azure Function). This should be enough given the
