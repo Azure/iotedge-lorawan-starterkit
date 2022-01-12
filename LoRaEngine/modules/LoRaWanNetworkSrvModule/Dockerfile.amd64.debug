@@ -39,5 +39,6 @@ RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out --no-resto
 FROM base
 WORKDIR /app
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
-
-ENTRYPOINT ["dotnet", "LoRaWanNetworkSrvModule.dll"]
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/start.sh ./
+RUN chmod +x ./start.sh
+ENTRYPOINT ["./start.sh"]
