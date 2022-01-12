@@ -6,21 +6,28 @@ namespace LoRaTools
     using System;
     using System.Diagnostics;
     using System.Security.Cryptography;
+    using LoRaTools.Utils;
     using LoRaWan;
 
     public static class OTAAKeysGenerator
     {
-        private enum SessionKeyType { Network = 1, Application = 2 }
+        public static NetworkSessionKey CalculateNetworkSessionKey(byte[] type, AppNonce appNonce, NetId netid, DevNonce devNonce, AppKey appKey)
+        {
+            var keyString = CalculateKey(type, appNonce, netid, devNonce, appKey);
+            return NetworkSessionKey.Parse(keyString);
+        }
 
-        public static NetworkSessionKey CalculateNetworkSessionKey(AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey) =>
-            NetworkSessionKey.Read(CalculateKey(SessionKeyType.Network, appNonce, netId, devNonce, appKey));
-
-        public static AppSessionKey CalculateAppSessionKey(AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey) =>
-            AppSessionKey.Read(CalculateKey(SessionKeyType.Application, appNonce, netId, devNonce, appKey));
+        public static AppSessionKey CalculateAppSessionKey(byte[] type, AppNonce appNonce, NetId netid, DevNonce devNonce, AppKey appKey)
+        {
+            var keyString = CalculateKey(type, appNonce, netid, devNonce, appKey);
+            return AppSessionKey.Parse(keyString);
+        }
 
         // don't work with CFLIST atm
-        private static byte[] CalculateKey(SessionKeyType type, AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
+        private static string CalculateKey(byte[] type, AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
         {
+            if (type is null) throw new ArgumentNullException(nameof(type));
+
             using var aes = Aes.Create("AesManaged");
             var rawAppKey = new byte[AppKey.Size];
             _ = appKey.Write(rawAppKey);
@@ -31,11 +38,11 @@ namespace LoRaTools
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
             aes.Padding = PaddingMode.None;
 
-            var buffer = new byte[1 + AppNonce.Size + NetId.Size + DevNonce.Size + 7];
+            var buffer = new byte[type.Length + AppNonce.Size + NetId.Size + DevNonce.Size + 7];
             var pt = buffer.AsSpan();
             Debug.Assert(pt.Length == 16);
-            pt[0] = unchecked((byte)type);
-            pt = pt[1..];
+            type.CopyTo(pt);
+            pt = pt[type.Length..];
             pt = appNonce.Write(pt);
             pt = netId.Write(pt);
             pt = devNonce.Write(pt);
@@ -48,7 +55,8 @@ namespace LoRaTools
             cipher = aes.CreateEncryptor();
 #pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
 
-            return cipher.TransformFinalBlock(buffer, 0, buffer.Length);
+            var key = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
+            return ConversionHelper.ByteArrayToString(key);
         }
     }
 }
