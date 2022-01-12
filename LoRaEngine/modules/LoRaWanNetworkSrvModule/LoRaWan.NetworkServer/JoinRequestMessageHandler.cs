@@ -13,7 +13,6 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -135,10 +134,9 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var netId = this.configuration.NetId;
-                var appNonce = OTAAKeysGenerator.GetAppNonce();
-                var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
-                var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(appNonceBytes, netId, joinReq.DevNonce, appKey);
-                var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(appNonceBytes, netId, joinReq.DevNonce, appKey);
+                var appNonce = new AppNonce(RandomNumberGenerator.GetInt32(toExclusive: AppNonce.MaxValue + 1));
+                var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(appNonce, netId, joinReq.DevNonce, appKey);
+                var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(appNonce, netId, joinReq.DevNonce, appKey);
                 var address = RandomNumberGenerator.GetInt32(toExclusive: DevAddr.MaxNetworkAddress + 1);
                 // The 7 LBS of the NetID become the NwkID of a DevAddr:
                 var devAddr = new DevAddr(unchecked((byte)netId.NetworkId), address);
@@ -220,7 +218,6 @@ namespace LoRaWan.NetworkServer
                 this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                 // Build join accept downlink message
-                Array.Reverse(appNonceBytes);
 
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
                 var dlSettings = new byte[1];
@@ -264,7 +261,7 @@ namespace LoRaWan.NetworkServer
                 var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
                     netId, // NETID 0 / 1 is default test
                     devAddr, // todo add device address management
-                    appNonceBytes,
+                    appNonce,
                     dlSettings,
                     loraSpecDesiredRxDelay,
                     null);
