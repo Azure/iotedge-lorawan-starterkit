@@ -6,7 +6,6 @@ namespace LoRaTools
     using System;
     using System.Diagnostics;
     using System.Security.Cryptography;
-    using LoRaTools.Utils;
     using LoRaWan;
 
     public static class OTAAKeysGenerator
