@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         [MemberData(nameof(CalculateAppSessionKeyData))]
         public void CalculateAppSessionKey(AppSessionKey expected, AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
         {
-            Assert.Equal(expected, OTAAKeysGenerator.CalculateAppSessionKey(new byte[] { 2 }, appNonce, netId, devNonce, appKey));
+            Assert.Equal(expected, OTAAKeysGenerator.CalculateAppSessionKey(appNonce, netId, devNonce, appKey));
         }
 
         public static readonly TheoryData<NetworkSessionKey, AppNonce, NetId, DevNonce, AppKey> CalculateNetworkSessionKeyData =
@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         [MemberData(nameof(CalculateNetworkSessionKeyData))]
         public void CalculateNetworkSessionKey(NetworkSessionKey expected, AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
         {
-            Assert.Equal(expected, OTAAKeysGenerator.CalculateNetworkSessionKey(new byte[] { 1 }, appNonce, netId, devNonce, appKey));
+            Assert.Equal(expected, OTAAKeysGenerator.CalculateNetworkSessionKey(appNonce, netId, devNonce, appKey));
         }
     }
 }
