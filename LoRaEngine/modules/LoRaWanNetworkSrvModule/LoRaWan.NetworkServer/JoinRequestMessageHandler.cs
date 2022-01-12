@@ -65,7 +65,6 @@ namespace LoRaWan.NetworkServer
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
                 devEUI = joinReq.GetDevEUIAsString();
-                var appEUI = joinReq.GetAppEUIAsString();
 
                 using var scope = this.logger.BeginDeviceScope(devEUI);
 
@@ -97,7 +96,7 @@ namespace LoRaWan.NetworkServer
 
                 this.joinRequestCounter?.Add(1);
 
-                if (loRaDevice.AppEUI != appEUI)
+                if (loRaDevice.AppEui != joinReq.AppEui)
                 {
                     this.logger.LogError("join refused: AppEUI for OTAA does not match device");
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
