@@ -71,7 +71,7 @@ namespace LoRaWan.Tests.Simulation
             const int MessageCount = 5;
 
             var device = TestFixtureSim.Device1001_Simulated_ABP;
-            var simulatedDevice = new Common.SimulatedDevice(device);
+            var simulatedDevice = new SimulatedDevice(device);
             var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 
             using var simulatedBasicsStation = new SimulatedBasicsStation(StationEui.Parse(StationEUI), networkServerIPEndpoint);

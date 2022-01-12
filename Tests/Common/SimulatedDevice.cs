@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Common
             FrmCntUp = frmCntUp;
         }
 
-        public LoRaPayloadJoinRequest CreateJoinRequest(AppKey? appkey = null, DevNonce? devNonce = null )
+        public LoRaPayloadJoinRequest CreateJoinRequest(AppKey? appkey = null, DevNonce? devNonce = null)
         {
             // Some tests provide a special nonce as input to make the mic check fail.
             // We only generate one in case the value is not set.
@@ -179,46 +179,36 @@ namespace LoRaWan.Tests.Common
 
         private bool HandleJoinAccept(LoRaPayloadJoinAccept payload)
         {
-            try
+
+            // Calculate the keys
+            var netid = payload.NetID.ToArray();
+            Array.Reverse(netid);
+            var appNonce = payload.AppNonce.ToArray();
+            Array.Reverse(appNonce);
+            var devNonce = DevNonce;
+
+            if (LoRaDevice.AppKey is null)
             {
-                // Calculate the keys
-                var netid = payload.NetID.ToArray();
-                Array.Reverse(netid);
-                var appNonce = payload.AppNonce.ToArray();
-                Array.Reverse(appNonce);
-                var devNonce = DevNonce;
-
-                if (LoRaDevice.AppKey is null)
-                {
-                    throw new ArgumentException(nameof(LoRaDevice.AppKey));
-                }
-
-                var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(appNonce, netid, devNonce, LoRaDevice.AppKey.Value);
-                var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(appNonce, netid, devNonce, LoRaDevice.AppKey.Value);
-                var devAddr = payload.DevAddr;
-
-                // if mic check failed, return false
-                /*
-                if (!payload.CheckMic(BitConverter.ToString(nwkSKey).Replace("-", "")))
-                {
-                    return false;
-                }
-                */
-
-                LoRaDevice.AppSKey = appSKey;
-                LoRaDevice.NwkSKey = nwkSKey;
-                NetId = BitConverter.ToString(netid).Replace("-", string.Empty, StringComparison.Ordinal);
-                AppNonce = BitConverter.ToString(appNonce).Replace("-", string.Empty, StringComparison.Ordinal);
-                LoRaDevice.DevAddr = devAddr;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                TestLogger.Log("ERROR:" + ex);
+                throw new ArgumentException(nameof(LoRaDevice.AppKey));
             }
 
-            return false;
+            var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(appNonce, netid, devNonce, LoRaDevice.AppKey.Value);
+            var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(appNonce, netid, devNonce, LoRaDevice.AppKey.Value);
+            var devAddr = payload.DevAddr;
+
+            // if mic check failed, return false
+            if (!payload.CheckMic(LoRaDevice.AppKey.Value))
+            {
+                return false;
+            }
+
+            LoRaDevice.AppSKey = appSKey;
+            LoRaDevice.NwkSKey = nwkSKey;
+            NetId = BitConverter.ToString(netid).Replace("-", string.Empty, StringComparison.Ordinal);
+            AppNonce = BitConverter.ToString(appNonce).Replace("-", string.Empty, StringComparison.Ordinal);
+            LoRaDevice.DevAddr = devAddr;
+
+            return true;
         }
 
         // Performs join
@@ -227,7 +217,7 @@ namespace LoRaWan.Tests.Common
             timeout ??= TimeSpan.FromSeconds(30);
             using var joinCompleted = new SemaphoreSlim(0);
             var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
-
+            var joinSuccessfull = false;
 
             basicsStation.SubscribeOnce((response) =>
             {
@@ -240,7 +230,7 @@ namespace LoRaWan.Tests.Common
 
                     var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
                     joinCompleted.Release();
-
+                    joinSuccessfull = result;
                     return result;
                 }
 
@@ -274,7 +264,9 @@ namespace LoRaWan.Tests.Common
             }
 #endif
 
-            return await joinCompleted.WaitAsync(timeout.Value);
+            await joinCompleted.WaitAsync(timeout.Value);
+
+            return joinSuccessfull;
         }
 
 

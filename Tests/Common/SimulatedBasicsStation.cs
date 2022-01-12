@@ -77,10 +77,7 @@ namespace LoRaWan.Tests.Common
                         }
             });
 
-            DataWebsocketClient = new WebsocketClient(new Uri(LnsUri, $"router-data/{ stationEUI }"), factory)
-            {
-                ReconnectTimeout = TimeSpan.FromSeconds(5)
-            };
+            DataWebsocketClient = new WebsocketClient(new Uri(LnsUri, $"router-data/{ stationEUI }"), factory);
             DataWebsocketClient.ReconnectionHappened.Subscribe(info =>
             {
                 Console.WriteLine("Reconnection happened, type: " + info.Type);
