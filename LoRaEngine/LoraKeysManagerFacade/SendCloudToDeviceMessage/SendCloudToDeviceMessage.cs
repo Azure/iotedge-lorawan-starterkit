@@ -47,10 +47,15 @@ namespace LoraKeysManagerFacade
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "cloudtodevicemessage/{devEUI}")] HttpRequest req,
             string devEUI)
         {
+            DevEui parsedDevEui;
+
             try
             {
                 VersionValidator.Validate(req);
-                EUIValidator.ValidateDevEUI(devEUI);
+                if (!EuiValidator.TryParseAndValidate(devEUI, out parsedDevEui))
+                {
+                    return new BadRequestObjectResult("Dev EUI is invalid.");
+                }
             }
             catch (IncompatibleVersionException ex)
             {
@@ -68,7 +73,6 @@ namespace LoraKeysManagerFacade
             }
 
             var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(requestBody);
-            var parsedDevEui = DevEui.Parse(devEUI);
             c2dMessage.DevEUI = parsedDevEui;
 
             return await SendCloudToDeviceMessageImplementationAsync(parsedDevEui, c2dMessage);

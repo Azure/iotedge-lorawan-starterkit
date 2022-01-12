@@ -38,14 +38,16 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            var rawDevEui = req.Query["DevEUI"];
+            string rawDevEui = req.Query["DevEUI"];
             var fCntDown = req.Query["FCntDown"];
             var fCntUp = req.Query["FCntUp"];
             var gatewayId = req.Query["GatewayId"];
             var abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
 
-            EUIValidator.ValidateDevEUI(rawDevEui);
-            var devEui = DevEui.Parse(rawDevEui.ToString());
+            if (!EuiValidator.TryParseAndValidate(rawDevEui, out var devEui))
+            {
+                return new BadRequestObjectResult("Dev EUI is invalid.");
+            }
 
             if (!uint.TryParse(fCntUp, out var clientFCntUp))
             {

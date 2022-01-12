@@ -22,14 +22,14 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [InlineData("   ")]
         [InlineData("1A88d")]
         [InlineData(".")]
-        [InlineData("0000000000000000")]
         public async Task DevEUI_Validation(string devEUI)
         {
             var dummyExecContext = new ExecutionContext();
             var apiCalls = new Func<HttpRequest, Task<IActionResult>>[]
             {
                 (req) => Task.Run(() => new FCntCacheCheck(null).NextFCntDownInvoke(req, NullLogger.Instance)),
-                (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>()).FunctionBundler(req, NullLogger.Instance, string.Empty))
+                (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>()).FunctionBundler(req, NullLogger.Instance, string.Empty)),
+                (req) => new DeviceGetter(null, null).GetDevice(req, NullLogger.Instance)
             };
 
             foreach (var apiCall in apiCalls)
@@ -41,31 +41,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                         { "DevEUI", devEUI }
                     });
 
-                await Assert.ThrowsAsync<ArgumentException>(async () => await apiCall(request));
+                _ = Assert.IsType<BadRequestObjectResult>(await apiCall(request));
             }
-        }
-
-        [Theory]
-        [InlineData("", false)]
-        [InlineData("   ", true)]
-        [InlineData("1A88d", true)]
-        [InlineData(".", true)]
-        [InlineData("0000000000000000", true)]
-        public async Task DevEUI_Validation_DeviceGetter(string devEUI, bool throws)
-        {
-            var request = new DefaultHttpContext().Request;
-            request.Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
-            {
-                { ApiVersion.QueryStringParamName, ApiVersion.LatestVersion.Name },
-                { "DevEUI", devEUI }
-            });
-
-            var act = () => new DeviceGetter(null, null).GetDevice(request, NullLogger.Instance);
-
-            if (!throws)
-                Assert.IsType<BadRequestObjectResult>(await act());
-            else
-                await Assert.ThrowsAsync<ArgumentException>(act);
         }
     }
 }

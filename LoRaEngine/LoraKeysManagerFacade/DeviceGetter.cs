@@ -54,16 +54,23 @@ namespace LoraKeysManagerFacade
             string rawDevNonce = req.Query["DevNonce"];
             var gatewayId = req.Query["GatewayId"];
 
+            DevEui? devEui = null;
             if (!string.IsNullOrEmpty(rawDevEui))
             {
-                EUIValidator.ValidateDevEUI(rawDevEui);
+                if (EuiValidator.TryParseAndValidate(rawDevEui, out var parsedDevEui))
+                {
+                    devEui = parsedDevEui;
+                }
+                else
+                {
+                    return new BadRequestObjectResult("Dev EUI is invalid.");
+                }
             }
 
             try
             {
                 DevNonce? devNonce = ushort.TryParse(rawDevNonce, NumberStyles.None, CultureInfo.InvariantCulture, out var d) ? new DevNonce(d) : null;
                 DevAddr? devAddr = DevAddr.TryParse(devAddrString, out var someDevAddr) ? someDevAddr : null;
-                DevEui? devEui = DevEui.TryParse(rawDevEui, out var someDevEui) ? someDevEui : null;
                 var results = await GetDeviceList(devEui, gatewayId, devNonce, devAddr, log);
                 var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);

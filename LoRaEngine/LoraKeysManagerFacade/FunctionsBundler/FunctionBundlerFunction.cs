@@ -38,7 +38,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            EUIValidator.ValidateDevEUI(devEUI);
+            if (!EuiValidator.TryParseAndValidate(devEUI, out var parsedDevEui))
+            {
+                return new BadRequestObjectResult("Dev EUI is invalid.");
+            }
 
             var requestBody = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(requestBody))
@@ -47,7 +50,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             var functionBundlerRequest = JsonConvert.DeserializeObject<FunctionBundlerRequest>(requestBody);
-            var result = await HandleFunctionBundlerInvoke(DevEui.Parse(devEUI), functionBundlerRequest, logger);
+            var result = await HandleFunctionBundlerInvoke(parsedDevEui, functionBundlerRequest, logger);
 
             return new OkObjectResult(result);
         }

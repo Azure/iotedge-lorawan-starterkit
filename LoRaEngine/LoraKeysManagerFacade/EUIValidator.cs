@@ -4,40 +4,23 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using LoRaWan;
 
-    internal static class EUIValidator
+    internal static class EuiValidator
     {
-        private const string InvalidZero = "0000000000000000";
-
         /// <summary>
         /// DevEUI are required to be IEEE EUI-64.
         /// </summary>
-        /// <param name="devEUI">devEUI to validate.</param>
+        /// <param name="devEui">devEUI to validate.</param>
         /// <exception cref="ArgumentException">If an invalid devEUI string was passed.</exception>
-        internal static void ValidateDevEUI(string devEUI)
+        internal static bool TryParseAndValidate(string devEui, out DevEui result)
         {
-            const int ExpectedLength = 16;
-
-            if (!string.IsNullOrEmpty(devEUI))
+            if (!DevEui.TryParse(devEui, out result))
             {
-                devEUI = devEUI.Trim();
-                if (devEUI.Length == ExpectedLength && devEUI != InvalidZero)
-                {
-                    for (var i = 0; i < devEUI.Length; i++)
-                    {
-                        var c = devEUI[i];
-                        var isHex = c is (>= '0' and <= '9') or (>= 'a' and <= 'f') or (>= 'A' and <= 'F');
-                        if (!isHex)
-                        {
-                            throw new ArgumentException($"Invalid DevEUI '{devEUI}'");
-                        }
-                    }
-
-                    return; // valid
-                }
+                return false;
             }
 
-            throw new ArgumentException($"Invalid DevEUI '{devEUI}'");
+            return result != default;
         }
     }
 }
