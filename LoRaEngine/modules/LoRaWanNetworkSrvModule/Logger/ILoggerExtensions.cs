@@ -5,7 +5,6 @@ namespace LoRaWan
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using Microsoft.Extensions.Logging;
 
     public static class ILoggerExtensions
@@ -15,7 +14,7 @@ namespace LoRaWan
         public const string StationEuiKey = "StationEUI";
 
         public static IDisposable BeginDeviceScope(this ILogger logger, DevEui? devEUI) =>
-            devEUI is { } someDevEui ? BeginDeviceScope(logger, someDevEui.ToString("N", CultureInfo.InvariantCulture)) : NoopDisposable.Instance;
+            devEUI is { } someDevEui ? BeginDeviceScope(logger, someDevEui.ToHex()) : NoopDisposable.Instance;
 
         public static IDisposable BeginDeviceScope(this ILogger logger, string devEUI) =>
             logger?.BeginScope(new Dictionary<string, object> { [DevEUIKey] = devEUI });
@@ -27,6 +26,6 @@ namespace LoRaWan
             logger?.BeginScope(new Dictionary<string, object> { [DeviceAddressKey] = deviceAddress });
 
         public static IDisposable BeginEuiScope(this ILogger logger, StationEui eui) =>
-            logger?.BeginScope(new Dictionary<string, object> { [StationEuiKey] = eui.ToString("N", null) });
+            logger?.BeginScope(new Dictionary<string, object> { [StationEuiKey] = eui.ToHex() });
     }
 }

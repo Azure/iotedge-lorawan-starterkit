@@ -5,7 +5,6 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -218,7 +217,7 @@ namespace LoRaWan.Tests.Common
                     d.DeviceID = string.Concat(Configuration.DevicePrefix, d.DeviceID[Configuration.DevicePrefix.Length..]);
                     if (d.AppEui is { } someJoinEui)
                     {
-                        d.AppEui = JoinEui.Parse($"{Configuration.DevicePrefix}{someJoinEui.ToString("N", CultureInfo.InvariantCulture)[Configuration.DevicePrefix.Length..]}");
+                        d.AppEui = JoinEui.Parse($"{Configuration.DevicePrefix}{someJoinEui.ToHex()[Configuration.DevicePrefix.Length..]}");
                     }
 
                     if (d.AppKey is { } someAppKey)
@@ -315,7 +314,7 @@ namespace LoRaWan.Tests.Common
             await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
         }
 
-        private static string GetDeviceId(StationEui eui) => eui.ToString("N", CultureInfo.InvariantCulture);
+        private static string GetDeviceId(StationEui eui) => eui.ToHex();
 
         private async Task CreateOrUpdateDevicesAsync()
         {

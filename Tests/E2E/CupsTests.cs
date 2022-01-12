@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.E2E
                 {
                     { "TLS_SNI", "false" },
                     { "CUPS_URI", TestFixture.Configuration.SharedCupsEndpoint },
-                    { "FIXED_STATION_EUI", stationEui.ToString("N", CultureInfo.InvariantCulture) },
+                    { "FIXED_STATION_EUI", stationEui.ToHex() },
                     { "RADIODEV", TestFixture.Configuration.RadioDev }
                 }, out temporaryDirectoryName);
 

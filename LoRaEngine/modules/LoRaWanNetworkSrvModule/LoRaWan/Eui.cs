@@ -67,16 +67,20 @@ namespace LoRaWan
 #pragma warning restore format
                 _ => throw new FormatException(@"Format string can only be null, ""G"", ""g"", ""D"", ""d"", ""I"", ""i"", ""N"", ""n"", ""E"" or ""e"".")
             };
+        }
 
-            static string ToHex(ulong value, char? separator, LetterCase letterCase)
-            {
-                Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-                BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
-                var nChars = separator is null ? bytes.Length * 2 : (bytes.Length * 3) - 1;
-                Span<char> chars = stackalloc char[nChars];
-                Hexadecimal.Write(bytes, chars, separator, letterCase);
-                return new string(chars);
-            }
+        public static string ToHex(ulong value) => ToHex(value, null);
+        public static string ToHex(ulong value, LetterCase letterCase) => ToHex(value, null, letterCase);
+        public static string ToHex(ulong value, char? separator) => ToHex(value, separator, LetterCase.Upper);
+
+        public static string ToHex(ulong value, char? separator, LetterCase letterCase)
+        {
+            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
+            BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
+            var length = separator is null ? bytes.Length * 2 : (bytes.Length * 3) - 1;
+            var chars = length <= 128 ? stackalloc char[length] : new char[length];
+            Hexadecimal.Write(bytes, chars, separator, letterCase);
+            return new string(chars);
         }
 
         public static bool TryParse(ReadOnlySpan<char> input, out ulong result) =>

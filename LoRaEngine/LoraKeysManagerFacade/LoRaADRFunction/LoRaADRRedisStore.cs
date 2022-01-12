@@ -4,7 +4,6 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaWan;
@@ -135,7 +134,7 @@ namespace LoraKeysManagerFacade
 
         private static string GetEntryKey(DevEui devEUI)
         {
-            return devEUI.ToString("N", CultureInfo.InvariantCulture) + CacheToken;
+            return devEUI.ToHex() + CacheToken;
         }
     }
 }

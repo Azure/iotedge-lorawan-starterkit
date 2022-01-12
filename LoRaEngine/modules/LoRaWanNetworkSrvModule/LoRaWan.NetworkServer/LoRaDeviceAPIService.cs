@@ -6,7 +6,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
-    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading;
@@ -113,7 +112,7 @@ namespace LoRaWan.NetworkServer
                 ["code"] = AuthCode,
                 ["GateWayId"] = gatewayID,
                 ["DevAddr"] = devAddr?.ToString(),
-                ["DevEUI"] = devEui?.ToString("N", CultureInfo.InvariantCulture),
+                ["DevEUI"] = devEui?.ToHex(),
                 ["AppEUI"] = appEUI,
                 ["DevNonce"] = devNonce?.ToString()
             });
@@ -155,11 +154,11 @@ namespace LoRaWan.NetworkServer
 
         /// <inheritdoc />
         public override Task<SearchDevicesResult> SearchByEuiAsync(DevEui eui) =>
-            SearchByEuiAsync(eui.ToString("N", null));
+            SearchByEuiAsync(eui.ToHex());
 
         /// <inheritdoc />
         public override Task<SearchDevicesResult> SearchByEuiAsync(StationEui eui) =>
-            SearchByEuiAsync(eui.ToString("N", null));
+            SearchByEuiAsync(eui.ToHex());
 
         private async Task<SearchDevicesResult> SearchByEuiAsync(string eui)
         {
@@ -217,7 +216,7 @@ namespace LoRaWan.NetworkServer
             var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
-                ["StationEui"] = eui.ToString("N", null),
+                ["StationEui"] = eui.ToHex(),
                 ["CredentialType"] = credentialtype.ToString()
             });
 

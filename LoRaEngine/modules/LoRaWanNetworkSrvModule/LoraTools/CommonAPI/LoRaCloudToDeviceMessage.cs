@@ -18,7 +18,7 @@ namespace LoRaTools.CommonAPI
         [JsonProperty("DevEUI")]
         public string DevEuiString
         {
-            get => DevEUI?.ToString("N", null);
+            get => DevEUI?.ToHex();
             set => DevEUI = string.IsNullOrEmpty(value) ? null : DevEui.Parse(value);
         }
 

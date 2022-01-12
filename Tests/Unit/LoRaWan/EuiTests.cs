@@ -16,13 +16,15 @@ namespace LoRaWan.Tests.Unit
 
     public abstract class EuiTests<T> where T : struct, IEquatable<T>, IFormattable
     {
-        private T Subject => Parse("01-23-45-67-89-AB-CD-EF");
-
-        private T Other => Parse("FE-DC-BA-98-76-54-32-10");
+        protected T Subject => Parse("01-23-45-67-89-AB-CD-EF");
 
         protected abstract int Size { get; }
         protected abstract T Parse(string input);
         protected abstract bool TryParse(string input, out T result);
+        protected abstract string ToHex(T eui);
+        protected abstract string ToHex(T eui, char? separator);
+        protected abstract string ToHex(T eui, LetterCase letterCase);
+        protected abstract string ToHex(T eui, char? separator, LetterCase letterCase);
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()
@@ -151,6 +153,38 @@ namespace LoRaWan.Tests.Unit
             var result = string.Format(CultureInfo.InvariantCulture, format, Subject);
             Assert.Equal(expected, result);
         }
+
+        [Fact]
+        public void ToHex_Returns_Eui_Formatted_Using_UpperCase_Digits()
+        {
+            Assert.Equal("0123456789ABCDEF", ToHex(Subject));
+        }
+
+        [Theory]
+        [InlineData("0123456789ABCDEF", null)]
+        [InlineData("01-23-45-67-89-AB-CD-EF", '-')]
+        public void ToHex_With_Separator(string expected, char? separator)
+        {
+            Assert.Equal(expected, ToHex(Subject, separator));
+        }
+
+        [Theory]
+        [InlineData("0123456789ABCDEF", LetterCase.Upper)]
+        [InlineData("0123456789abcdef", LetterCase.Lower)]
+        public void ToHex_With_Case(string expected, LetterCase letterCase)
+        {
+            Assert.Equal(expected, ToHex(Subject, letterCase));
+        }
+
+        [Theory]
+        [InlineData("0123456789ABCDEF", null, LetterCase.Upper)]
+        [InlineData("01-23-45-67-89-AB-CD-EF", '-', LetterCase.Upper)]
+        [InlineData("0123456789abcdef", null, LetterCase.Lower)]
+        [InlineData("01-23-45-67-89-ab-cd-ef", '-', LetterCase.Lower)]
+        public void ToHex_With_Separator_With_Case(string expected, char? separator, LetterCase letterCase)
+        {
+            Assert.Equal(expected, ToHex(Subject, separator, letterCase));
+        }
     }
 
     public abstract class DevOrStationEuiTests<T> : EuiTests<T>
@@ -176,6 +210,10 @@ namespace LoRaWan.Tests.Unit
         protected override DevEui Parse(string input) => DevEui.Parse(input);
         protected override bool TryParse(string input, out DevEui result) => DevEui.TryParse(input, out result);
         protected override bool IsValid(DevEui eui) => eui.IsValid;
+        protected override string ToHex(DevEui eui) => eui.ToHex();
+        protected override string ToHex(DevEui eui, char? separator) => eui.ToHex(separator);
+        protected override string ToHex(DevEui eui, LetterCase letterCase) => eui.ToHex(letterCase);
+        protected override string ToHex(DevEui eui, char? separator, LetterCase letterCase) => eui.ToHex(separator, letterCase);
     }
 
     public class JoinEuiTests : EuiTests<JoinEui>
@@ -183,6 +221,10 @@ namespace LoRaWan.Tests.Unit
         protected override int Size => JoinEui.Size;
         protected override JoinEui Parse(string input) => JoinEui.Parse(input);
         protected override bool TryParse(string input, out JoinEui result) => JoinEui.TryParse(input, out result);
+        protected override string ToHex(JoinEui eui) => eui.ToHex();
+        protected override string ToHex(JoinEui eui, char? separator) => eui.ToHex(separator);
+        protected override string ToHex(JoinEui eui, LetterCase letterCase) => eui.ToHex(letterCase);
+        protected override string ToHex(JoinEui eui, char? separator, LetterCase letterCase) => eui.ToHex(separator, letterCase);
     }
 
     public class StationEuiTests : DevOrStationEuiTests<StationEui>
@@ -191,5 +233,9 @@ namespace LoRaWan.Tests.Unit
         protected override StationEui Parse(string input) => StationEui.Parse(input);
         protected override bool TryParse(string input, out StationEui result) => StationEui.TryParse(input, out result);
         protected override bool IsValid(StationEui eui) => eui.IsValid;
+        protected override string ToHex(StationEui eui) => eui.ToHex();
+        protected override string ToHex(StationEui eui, char? separator) => eui.ToHex(separator);
+        protected override string ToHex(StationEui eui, LetterCase letterCase) => eui.ToHex(letterCase);
+        protected override string ToHex(StationEui eui, char? separator, LetterCase letterCase) => eui.ToHex(separator, letterCase);
     }
 }

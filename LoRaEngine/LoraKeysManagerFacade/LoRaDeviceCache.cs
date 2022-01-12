@@ -4,7 +4,6 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaWan;
     using Newtonsoft.Json;
@@ -33,7 +32,7 @@ namespace LoraKeysManagerFacade
             this.cacheStore = cacheStore;
             this.devEUI = devEUI;
             this.gatewayId = gatewayId;
-            this.cacheKey = devEUI.ToString("N", CultureInfo.InvariantCulture);
+            this.cacheKey = devEUI.ToHex();
         }
 
         public async Task<bool> TryToLockAsync(string lockKey = null, bool block = true)

@@ -6,7 +6,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
-    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -688,7 +687,7 @@ namespace LoRaWan.NetworkServer
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
             var deviceTelemetry = new LoRaDeviceTelemetry(request, loRaPayloadData, decodedValue, decryptedPayloadData)
             {
-                DeviceEUI = loRaDevice.DevEUI.ToString("N", CultureInfo.InvariantCulture),
+                DeviceEUI = loRaDevice.DevEUI.ToHex(),
                 GatewayID = this.configuration.GatewayID,
                 Edgets = (long)(timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds
             };

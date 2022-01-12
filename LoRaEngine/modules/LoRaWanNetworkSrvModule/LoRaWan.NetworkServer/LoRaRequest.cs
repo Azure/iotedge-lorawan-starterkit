@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Globalization;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
@@ -45,7 +44,7 @@ namespace LoRaWan.NetworkServer
 
         internal void NotifyFailed(LoRaDevice loRaDevice, Exception error) => NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ApplicationError, error);
 
-        internal void NotifyFailed(LoRaDevice loRaDevice, LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed(loRaDevice?.DevEUI.ToString("N", CultureInfo.InvariantCulture), reason, exception);
+        internal void NotifyFailed(LoRaDevice loRaDevice, LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed(loRaDevice?.DevEUI.ToHex(), reason, exception);
 
         internal virtual void NotifyFailed(LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed((string)null, reason, exception);
 

@@ -56,7 +56,7 @@ namespace LoraKeysManagerFacade
         private readonly string lockOwner;
 
         private static string GenerateKey(DevAddr devAddr) => CacheKeyPrefix + devAddr;
-        private static string GenerateKey(DevEui devEui) => devEui.ToString("N", CultureInfo.InvariantCulture);
+        private static string GenerateKey(DevEui devEui) => devEui.ToHex();
 
         public LoRaDevAddrCache(ILoRaDeviceCacheStore cacheStore, RegistryManager registryManager, ILogger logger, string gatewayId)
         {

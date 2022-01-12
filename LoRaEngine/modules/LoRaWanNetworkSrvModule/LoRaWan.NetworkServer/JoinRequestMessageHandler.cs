@@ -6,7 +6,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
-    using System.Globalization;
     using System.Security.Cryptography;
     using System.Threading;
     using System.Threading.Tasks;
@@ -64,7 +63,7 @@ namespace LoRaWan.NetworkServer
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
                 var devEui = joinReq.DevEUI;
-                var devEuiHexString = devEui.ToString("N", CultureInfo.InvariantCulture);
+                var devEuiHexString = devEui.ToHex();
 
                 using var scope = this.logger.BeginDeviceScope(devEuiHexString);
 

@@ -3,11 +3,10 @@
 
 namespace LoRaTools.Utils
 {
-    using System.Globalization;
     using LoRaWan;
 
     public static class EuiExtensions
     {
-        public static string AsIotHubDeviceId(this DevEui devEui) => devEui.ToString("N", CultureInfo.InvariantCulture);
+        public static string AsIotHubDeviceId(this DevEui devEui) => devEui.ToHex();
     }
 }

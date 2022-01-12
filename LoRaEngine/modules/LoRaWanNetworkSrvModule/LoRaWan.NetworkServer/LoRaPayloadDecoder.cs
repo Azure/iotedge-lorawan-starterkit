@@ -63,7 +63,7 @@ namespace LoRaWan.NetworkServer
                 // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
 
                 var query = HttpUtility.ParseQueryString(url.Query);
-                query["devEUI"] = devEui.ToString("N", CultureInfo.InvariantCulture);
+                query["devEUI"] = devEui.ToHex();
                 query["fport"] = ((int)fport).ToString(CultureInfo.InvariantCulture);
                 query["payload"] = base64Payload;
 
