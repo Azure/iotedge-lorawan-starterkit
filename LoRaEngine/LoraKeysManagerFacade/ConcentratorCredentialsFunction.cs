@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Security.Cryptography;
     using System.Threading;
@@ -12,6 +13,7 @@ namespace LoraKeysManagerFacade
     using Azure.Storage.Blobs.Models;
     using LoRaTools.CommonAPI;
     using LoRaTools.Utils;
+    using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
@@ -62,11 +64,10 @@ namespace LoraKeysManagerFacade
 
         internal async Task<IActionResult> RunFetchConcentratorCredentials(HttpRequest req, CancellationToken cancellationToken)
         {
-            var stationEui = req.Query["StationEui"];
-            if (StringValues.IsNullOrEmpty(stationEui))
+            if (!StationEui.TryParse((string)req.Query["StationEui"], out var stationEui))
             {
-                this.logger.LogError("StationEui missing in request");
-                return new BadRequestObjectResult("StationEui missing in request");
+                this.logger.LogError("StationEui missing in request or invalid");
+                return new BadRequestObjectResult("StationEui missing in request or invalid");
             }
 
             var credentialTypeQueryString = req.Query["CredentialType"];
@@ -81,10 +82,10 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult($"Could not parse desired concentrator credential type '{credentialTypeQueryString}'.");
             }
 
-            var twin = await this.registryManager.GetTwinAsync(stationEui, cancellationToken);
+            var twin = await this.registryManager.GetTwinAsync(stationEui.ToString("N", CultureInfo.InvariantCulture), cancellationToken);
             if (twin != null)
             {
-                this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui.ToString());
+                this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui);
                 try
                 {
                     const string cupsKey = "cups";

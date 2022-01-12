@@ -14,9 +14,7 @@ namespace LoRaTools.LoRaMessage
                                          Mic mic)
         {
             MHdr = macHeader;
-
-            AppEUI = new byte[JoinEui.Size];
-            _ = joinEui.Write(AppEUI.Span);
+            AppEui = joinEui;
 
             DevEUI = new byte[DevEui.Size];
             _ = devEui.Write(DevEUI.Span);

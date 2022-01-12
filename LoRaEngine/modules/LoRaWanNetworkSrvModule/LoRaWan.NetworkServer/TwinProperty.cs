@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer
         public const string NwkSKey = "NwkSKey";
         public const string DevAddr = "DevAddr";
         public const string DevNonce = "DevNonce";
-        public const string AppEUI = "AppEUI";
+        public const string AppEui = "AppEUI";
         public const string AppKey = "AppKey";
         public const string GatewayID = "GatewayID";
         public const string LastProcessingStationEui = "LastProcessingStationEui";
