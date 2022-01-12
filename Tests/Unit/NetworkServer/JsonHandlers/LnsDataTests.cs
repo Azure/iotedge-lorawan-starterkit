@@ -64,7 +64,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Equal(164, updf.Counter);
             Assert.Equal("5ABBBA", updf.Payload);
             Assert.Equal(new MacHeader(128), updf.MacHeader);
-            Assert.Equal(new Mic(unchecked((uint)-1943282916)), updf.Mic);
+            Assert.Equal(new Mic(unchecked(-1943282916)), updf.Mic);
             Assert.Equal(DR4, updf.RadioMetadata.DataRate);
             Assert.Equal(new Hertz(868100000), updf.RadioMetadata.Frequency);
             Assert.Equal((ulong)40250921680313459, updf.RadioMetadata.UpInfo.Xtime);

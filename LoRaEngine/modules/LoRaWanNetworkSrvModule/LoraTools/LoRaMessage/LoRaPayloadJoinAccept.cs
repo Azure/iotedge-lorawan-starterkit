@@ -135,7 +135,7 @@ namespace LoRaTools.LoRaMessage
             Array.Copy(decryptedPayload, 0, inputMessage, 1, decryptedPayload.Length);
             // ( MACPayload = AppNonce[3] | NetID[3] | DevAddr[4] | DLSettings[1] | RxDelay[1] | CFList[0|15] )
             AppNonce = AppNonce.Read(inputMessage.AsSpan(1));
-            NetId = NetId.Read(inputMessage.AsSpan(3));
+            NetId = NetId.Read(inputMessage.AsSpan(4));
             DevAddr = DevAddr.Read(inputMessage.AsSpan(7));
             var dlSettings = new byte[1];
             Array.Copy(inputMessage, 11, dlSettings, 0, 1);
@@ -217,6 +217,10 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException();
 
-        public override bool CheckMic(AppKey key) => throw new NotImplementedException();
+        public override bool CheckMic(AppKey key)
+        {
+            var expectedMic = LoRaWan.Mic.ComputeForJoinAccept(key, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
+            return expectedMic == Mic;
+        }
     }
 }

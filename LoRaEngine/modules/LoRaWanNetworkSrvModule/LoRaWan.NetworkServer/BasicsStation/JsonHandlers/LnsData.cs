@@ -70,7 +70,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
         private static readonly IJsonProperty<Mic> MicProperty =
             JsonReader.Property("MIC", from i in JsonReader.Int32()
-                                       select new Mic(unchecked((uint)i)));
+                                       select new Mic(unchecked(i)));
 
         /*
             {
