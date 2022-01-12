@@ -8,19 +8,19 @@
       
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
     
     
       
-        <title>Cayenne Decoder - IoTEdge LoRaWAN StarterKit - documentation</title>
+        <title>007. Deduplication of messages - IoTEdge LoRaWAN StarterKit - documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.edf004c2.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.edf004c2.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.e6a45f82.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
         
       
     
@@ -34,11 +34,11 @@
       
     
     
-      <link rel="stylesheet" href="../../../css/timeago.css">
+      <link rel="stylesheet" href="../../css/timeago.css">
     
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cayenne-decoder" class="md-skip">
+        <a href="#007-deduplication-of-messages" class="md-skip">
           Skip to content
         </a>
       
@@ -86,7 +86,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-header__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-header__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Cayenne Decoder
+              007. Deduplication of messages
             
           </span>
         </div>
@@ -204,7 +204,7 @@
 
 
   <li class="md-tabs__item">
-    <a href="../../.." class="md-tabs__link">
+    <a href="../.." class="md-tabs__link">
       Home
     </a>
   </li>
@@ -216,7 +216,7 @@
 
 
   <li class="md-tabs__item">
-    <a href="../../../quickstart/" class="md-tabs__link">
+    <a href="../../quickstart/" class="md-tabs__link">
       Quick Start
     </a>
   </li>
@@ -231,7 +231,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../user-guide/devguide/" class="md-tabs__link">
+      <a href="../../user-guide/devguide/" class="md-tabs__link">
         User Guide
       </a>
     </li>
@@ -247,8 +247,40 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../user-guide/architecture/" class="md-tabs__link">
+      <a href="../../user-guide/architecture/" class="md-tabs__link">
         Reference
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../samples/arduino/" class="md-tabs__link">
+        Samples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tools/device-provisioning/" class="md-tabs__link">
+        Tools
       </a>
     </li>
   
@@ -265,39 +297,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../arduino/" class="md-tabs__link md-tabs__link--active">
-        Samples
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../../tools/device-provisioning/" class="md-tabs__link">
-        Tools
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../../adr/001_region_cn470_implementation/" class="md-tabs__link">
+      <a href="../001_region_cn470_implementation/" class="md-tabs__link md-tabs__link--active">
         Decision Log
       </a>
     </li>
@@ -313,7 +313,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../issues/" class="md-tabs__link">
+      <a href="../../issues/" class="md-tabs__link">
         About
       </a>
     </li>
@@ -341,7 +341,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-nav__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-nav__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
@@ -372,7 +372,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         Home
       </a>
     </li>
@@ -387,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../quickstart/" class="md-nav__link">
+      <a href="../../quickstart/" class="md-nav__link">
         Quick Start
       </a>
     </li>
@@ -428,7 +428,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/devguide/" class="md-nav__link">
+      <a href="../../user-guide/devguide/" class="md-nav__link">
         Developer Guidance
       </a>
     </li>
@@ -442,7 +442,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/partner/" class="md-nav__link">
+      <a href="../../user-guide/partner/" class="md-nav__link">
         Device Manufacturer Guidance
       </a>
     </li>
@@ -456,7 +456,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/upgrade/" class="md-nav__link">
+      <a href="../../user-guide/upgrade/" class="md-nav__link">
         Upgrade to a new version
       </a>
     </li>
@@ -470,7 +470,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/documentation/" class="md-nav__link">
+      <a href="../../user-guide/documentation/" class="md-nav__link">
         Working with the documentation
       </a>
     </li>
@@ -484,7 +484,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/observability/" class="md-nav__link">
+      <a href="../../user-guide/observability/" class="md-nav__link">
         Observability
       </a>
     </li>
@@ -526,7 +526,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/station-device-provisioning/" class="md-nav__link">
+      <a href="../../user-guide/station-device-provisioning/" class="md-nav__link">
         Concentrator provisioning
       </a>
     </li>
@@ -540,7 +540,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/station-authentication-modes/" class="md-nav__link">
+      <a href="../../user-guide/station-authentication-modes/" class="md-nav__link">
         Authentication modes
       </a>
     </li>
@@ -554,7 +554,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/station-module-configuration/" class="md-nav__link">
+      <a href="../../user-guide/station-module-configuration/" class="md-nav__link">
         LBS IoT Edge Module configuration
       </a>
     </li>
@@ -603,7 +603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/as923/" class="md-nav__link">
+      <a href="../../user-guide/as923/" class="md-nav__link">
         Region AS923
       </a>
     </li>
@@ -652,7 +652,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/testing/e2e_tests/" class="md-nav__link">
+      <a href="../../user-guide/testing/e2e_tests/" class="md-nav__link">
         E2E Tests
       </a>
     </li>
@@ -666,7 +666,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/testing/integration_tests/" class="md-nav__link">
+      <a href="../../user-guide/testing/integration_tests/" class="md-nav__link">
         Integration Tests
       </a>
     </li>
@@ -721,7 +721,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/architecture/" class="md-nav__link">
+      <a href="../../user-guide/architecture/" class="md-nav__link">
         Architecture and Concepts
       </a>
     </li>
@@ -735,7 +735,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/message-flows/" class="md-nav__link">
+      <a href="../../user-guide/message-flows/" class="md-nav__link">
         Message Flows
       </a>
     </li>
@@ -749,7 +749,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/caching/" class="md-nav__link">
+      <a href="../../user-guide/caching/" class="md-nav__link">
         Caching
       </a>
     </li>
@@ -763,7 +763,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/ci-setup/" class="md-nav__link">
+      <a href="../../user-guide/ci-setup/" class="md-nav__link">
         Continuous Integration Setup
       </a>
     </li>
@@ -783,14 +783,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
       
       
       
@@ -813,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../arduino/" class="md-nav__link">
+      <a href="../../samples/arduino/" class="md-nav__link">
         Arduino Demo Code
       </a>
     </li>
@@ -825,16 +823,14 @@
               
   
   
-    
-  
   
     
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
       
       
       
@@ -857,7 +853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decoder/" class="md-nav__link">
+      <a href="../../samples/decoders/decoder/" class="md-nav__link">
         Decoder
       </a>
     </li>
@@ -871,7 +867,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../universal/" class="md-nav__link">
+      <a href="../../samples/decoders/universal/" class="md-nav__link">
         Universal Decoder
       </a>
     </li>
@@ -883,59 +879,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Cayenne Decoder
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/cayenne/" class="md-nav__link">
         Cayenne Decoder
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#how-to-use-the-sample-decoder" class="md-nav__link">
-    How to use the sample decoder
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#supported-cayenne-devices" class="md-nav__link">
-    Supported Cayenne devices
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -988,7 +936,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../tools/device-provisioning/" class="md-nav__link">
+      <a href="../../tools/device-provisioning/" class="md-nav__link">
         LoRa Device Provisioning
       </a>
     </li>
@@ -1002,7 +950,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../tools/arduino-samples/" class="md-nav__link">
+      <a href="../../tools/arduino-samples/" class="md-nav__link">
         Arduino Samples
       </a>
     </li>
@@ -1022,12 +970,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
       
       
       
@@ -1050,7 +1000,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/001_region_cn470_implementation/" class="md-nav__link">
+      <a href="../001_region_cn470_implementation/" class="md-nav__link">
         001. Region CN470 implementation
       </a>
     </li>
@@ -1064,7 +1014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/002_lbs_configuration/" class="md-nav__link">
+      <a href="../002_lbs_configuration/" class="md-nav__link">
         002. LoRa Basic Station configuration endpoint implementation
       </a>
     </li>
@@ -1078,7 +1028,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/003_documentation/" class="md-nav__link">
+      <a href="../003_documentation/" class="md-nav__link">
         003. Documentation
       </a>
     </li>
@@ -1092,7 +1042,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/004_region_as923_implementation/" class="md-nav__link">
+      <a href="../004_region_as923_implementation/" class="md-nav__link">
         004. Region AS923 implementation
       </a>
     </li>
@@ -1106,7 +1056,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/005_observability/" class="md-nav__link">
+      <a href="../005_observability/" class="md-nav__link">
         005. Observability
       </a>
     </li>
@@ -1120,7 +1070,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/006_cups/" class="md-nav__link">
+      <a href="../006_cups/" class="md-nav__link">
         006. CUPS Protocol Implementation - Credential management
       </a>
     </li>
@@ -1132,11 +1082,187 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../../adr/007_message_deduplication/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          007. Deduplication of messages
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         007. Deduplication of messages
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    Introduction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#glossary" class="md-nav__link">
+    Glossary
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals-of-the-deduplication" class="md-nav__link">
+    Goals of the deduplication
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-deduplication-on-the-network-server-level" class="md-nav__link">
+    1. Deduplication on the network server level
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Deduplication on the network server level">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-data-messages" class="md-nav__link">
+    a. Data messages
+  </a>
+  
+    <nav class="md-nav" aria-label="a. Data messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#duplicates-from-different-concentrators" class="md-nav__link">
+    Duplicates from different concentrators
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicates-from-the-same-concentrator" class="md-nav__link">
+    Duplicates from the same concentrator
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#further-processing-of-messages-based-on-their-duplication-status" class="md-nav__link">
+    Further processing of messages based on their duplication status
+  </a>
+  
+    <nav class="md-nav" aria-label="Further processing of messages based on their duplication status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#short-version" class="md-nav__link">
+    Short version
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#longer-version" class="md-nav__link">
+    Longer version
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-join-requests" class="md-nav__link">
+    b. Join requests
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general-notes" class="md-nav__link">
+    General notes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-deduplication-between-different-network-servers" class="md-nav__link">
+    2. Deduplication between different network servers
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Deduplication between different network servers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upstream-processing" class="md-nav__link">
+    Upstream Processing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#downstream-processing" class="md-nav__link">
+    Downstream Processing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1148,7 +1274,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/008_cups_firmware_upgrade/" class="md-nav__link">
+      <a href="../008_cups_firmware_upgrade/" class="md-nav__link">
         008. CUPS Protocol Implementation - Firmware Upgrade
       </a>
     </li>
@@ -1196,7 +1322,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../issues/" class="md-nav__link">
+      <a href="../../issues/" class="md-nav__link">
         Known Issues
       </a>
     </li>
@@ -1210,7 +1336,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../support/" class="md-nav__link">
+      <a href="../../support/" class="md-nav__link">
         Support
       </a>
     </li>
@@ -1224,7 +1350,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contributing/" class="md-nav__link">
+      <a href="../../contributing/" class="md-nav__link">
         Contributing
       </a>
     </li>
@@ -1238,7 +1364,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../license/" class="md-nav__link">
+      <a href="../../license/" class="md-nav__link">
         License
       </a>
     </li>
@@ -1279,16 +1405,144 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#how-to-use-the-sample-decoder" class="md-nav__link">
-    How to use the sample decoder
+  <a href="#introduction" class="md-nav__link">
+    Introduction
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#supported-cayenne-devices" class="md-nav__link">
-    Supported Cayenne devices
+  <a href="#glossary" class="md-nav__link">
+    Glossary
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals-of-the-deduplication" class="md-nav__link">
+    Goals of the deduplication
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-deduplication-on-the-network-server-level" class="md-nav__link">
+    1. Deduplication on the network server level
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Deduplication on the network server level">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-data-messages" class="md-nav__link">
+    a. Data messages
+  </a>
+  
+    <nav class="md-nav" aria-label="a. Data messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#duplicates-from-different-concentrators" class="md-nav__link">
+    Duplicates from different concentrators
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicates-from-the-same-concentrator" class="md-nav__link">
+    Duplicates from the same concentrator
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#further-processing-of-messages-based-on-their-duplication-status" class="md-nav__link">
+    Further processing of messages based on their duplication status
+  </a>
+  
+    <nav class="md-nav" aria-label="Further processing of messages based on their duplication status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#short-version" class="md-nav__link">
+    Short version
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#longer-version" class="md-nav__link">
+    Longer version
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-join-requests" class="md-nav__link">
+    b. Join requests
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general-notes" class="md-nav__link">
+    General notes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-deduplication-between-different-network-servers" class="md-nav__link">
+    2. Deduplication between different network servers
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Deduplication between different network servers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upstream-processing" class="md-nav__link">
+    Upstream Processing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#downstream-processing" class="md-nav__link">
+    Downstream Processing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1304,25 +1558,245 @@
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/samples/decoders/cayenne.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/adr/007_message_deduplication.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
-<h1 id="cayenne-decoder">Cayenne Decoder</h1>
-<p>This sample allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. It is based on the sample decoder.</p>
-<h2 id="how-to-use-the-sample-decoder">How to use the sample decoder</h2>
-<p>This decode takes a Lora payload and decode it based on the <a href="https://github.com/myDevicesIoT/cayenne-docs/blob/master/docs/LORA.md">Cayenne encoding specification</a>.</p>
-<p>The payload is decoded and transformed into a json object.</p>
-<p>The payload <code>AWcA5gJoMANzJigEZQD9</code> will then be transformed as:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;value&quot;</span><span class="p">:{</span><span class="nt">&quot;IlluminanceSensor&quot;</span><span class="p">:[{</span><span class="nt">&quot;Channel&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="mi">253</span><span class="p">}],</span><span class="nt">&quot;TemperatureSensor&quot;</span><span class="p">:[{</span><span class="nt">&quot;Channel&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="mf">23.0</span><span class="p">}],</span><span class="nt">&quot;HumiditySensor&quot;</span><span class="p">:[{</span><span class="nt">&quot;Channel&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="mf">24.0</span><span class="p">}],</span><span class="nt">&quot;Barometer&quot;</span><span class="p">:[{</span><span class="nt">&quot;Channel&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="mf">976.8</span><span class="p">}]}}</span><span class="w"></span>
-</code></pre></div>
-<p>You can build the docker image or use the module.json file to build an iot edge module. You can then use the following command to start the module:</p>
-<div class="highlight"><pre><span></span><code>docker run --rm -it -p <span class="m">8881</span>:80 your.azurecr.io/cayennedecoder:tag
-</code></pre></div>
-<p>You can then submit the payload from the example here above by hitting the following URL: <a href="http://yourhost:8881/api/CayenneDecoder?fport=1&amp;payload=AWcA5gJoMANzJigEZQD9">http://yourhost:8881/api/CayenneDecoder?fport=1&amp;payload=AWcA5gJoMANzJigEZQD9</a></p>
-<h2 id="supported-cayenne-devices">Supported Cayenne devices</h2>
-<p>All Cayenne devices are supported.</p>
+<h1 id="007-deduplication-of-messages">007. Deduplication of messages</h1>
+<p><strong>Feature</strong>: <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/946">#946</a></p>
+<p><strong>Date</strong>: 10 January 2022</p>
+<p><strong>Authors</strong>: Spyros Giannakakis, Patrick Schuler</p>
+<p><strong>Status</strong>: Accepted</p>
+<hr />
+<h2 id="introduction">Introduction</h2>
+<p>LoRaWan is a broadcast protocol. As such, a message sent from a device can be picked up by multiple
+concentrators which would then pass it upstream more than once. For some use-cases, sending
+upstream duplicate messages is not acceptable. With this ADR we provide an overview of the
+deduplication strategies employed in the Azure IoT Edge Starterkit. The goal is also to provide
+insights as to how we arrived at the current solution.</p>
+<h2 id="glossary">Glossary</h2>
+<ul>
+<li>(Leaf) device: a sensor that measures and transmits IoT telemetry data</li>
+<li>Concentrator or station - LoRa Basics Station (LBS): converts from/to LoRa messages (demodulation/modulation)</li>
+<li>Gateway or network server - LoRa Network Server (LNS): IoT Edge enabled device connected to IoTHub</li>
+</ul>
+<ul>
+<li>FrameCounter strategy: can be single or multi gateway which is also the default. In single mode
+  a device is connected to a specific gateway. Any other gateway that receives messages from this
+  device drops them immediately.</li>
+<li>Deduplication strategy: indicates how duplicate messages should be handled.<ul>
+<li>Drop: drops messages without further processing upstream nor downstream</li>
+<li>Mark: marks messages as duplicates but allows them upstream to IoTHub. The main use-case for
+  this is to triangulate the location of sensors based on the signal strength.</li>
+<li>None (default): allows duplicates to pass upstream without marking them.</li>
+</ul>
+</li>
+</ul>
+<h2 id="goals-of-the-deduplication">Goals of the deduplication</h2>
+<p>Besides dropping duplicates correctly, we must:</p>
+<ul>
+<li>Avoid calling the Azure Function more than required to not incur extra costs or
+  performance/scale overhead.</li>
+<li>Support existing features like Mark, resubmissions etc.</li>
+</ul>
+<h2 id="overview">Overview</h2>
+<p>We employ deduplication on 2 levels: on a single network server and across multiple network servers.</p>
+<h3 id="1-deduplication-on-the-network-server-level">1. Deduplication on the network server level</h3>
+<p>At this level we rely on information we have locally on the network server to detect duplicates. No
+calls to external services need to be made for the detection. In scope for this deduplication are:</p>
+<ul>
+<li>data messages (requiring confirmation or not)</li>
+<li>join requests</li>
+<li>Class A and C devices</li>
+</ul>
+<p>For the detection, a in-memory cache is utilised with a sliding expiration of 1 minute. The value of
+the cache entry is always the concentrator from where we received the message. The key depends on
+the type of message.</p>
+<h4 id="a-data-messages">a. Data messages</h4>
+<p>The relevant fields used for duplicate detection are the DevEui of the device the message came from,
+Mic and frame counter from the message.</p>
+<h5 id="duplicates-from-different-concentrators">Duplicates from different concentrators</h5>
+<p>This deduplication ensures that messages coming from different concentrators connected to the same
+network server are handled correctly.</p>
+<p>The most basic topology showcasing this scenario is the following:</p>
+<div class="mermaid">flowchart LR;
+    Device--&gt;LBS1;
+    Device--&gt;LBS2;
+    LBS1--&gt;LNS;
+    LBS2--&gt;LNS;</div>
+<ol>
+<li>LNS receives message A from LBS1 for the first time. Message is marked as <code>NonDuplicate</code> and a
+   cache entry is created.</li>
+<li>LNS receives again message A this time from LBS2. LNS checks its local cache. If it's a cache
+   miss, the message is marked as a <code>NonDuplicate</code> and considered as a new telemetry. This can
+   happen for example if the second message takes longer than the retention period to arrive. If
+   it's a cache hit, the following happens:</li>
+</ol>
+<div class="mermaid">stateDiagram-v2
+    direction LR
+    state if_drop &lt;&lt;choice&gt;&gt;
+
+    [*] --&gt; Is_strategy_drop
+    Is_strategy_drop --&gt; if_drop
+    if_drop --&gt; True
+    if_drop --&gt; False
+
+    True --&gt; Duplicate
+    False --&gt; SoftDuplicate</div>
+<h5 id="duplicates-from-the-same-concentrator">Duplicates from the same concentrator</h5>
+<p>Under special circumstances, a network server might receive the same message multiple times from the
+same concentrator. These circumstances can be:</p>
+<ul>
+<li>a message that needs confirmation that was not confirmed in due time (missed window)</li>
+<li>a restarted device that happens to send the same measurement</li>
+<li>replay attacks</li>
+</ul>
+<p>The most basic topology showcasing this scenario is the following:</p>
+<div class="mermaid">flowchart LR;
+    Device--&gt;LBS--&gt;LNS;</div>
+<ul>
+<li>LNS receives message A from LBS for the first time. Message is marked as <code>NonDuplicate</code> and a
+  cache entry is created where the key is a SHA256 of the message and the value is LBS.</li>
+<li>LNS receives again message A from the same LBS. LNS checks its local cache. If it's a cache miss,
+  it's marked as a <code>NonDuplicate</code> as before. If it's a cache hit the message is marked as
+  <code>DuplicateDueToResubmission</code> independently of which deduplication strategy is used.</li>
+</ul>
+<h4 id="further-processing-of-messages-based-on-their-duplication-status">Further processing of messages based on their duplication status</h4>
+<h5 id="short-version">Short version</h5>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Upstream</th>
+<th>Downstream</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NonDuplicate</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>SoftDuplicate</td>
+<td>✔</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>DuplicateDueToResubmission</td>
+<td>depends</td>
+<td>depends</td>
+</tr>
+<tr>
+<td>Duplicate</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p>where ✔ indicates that the message is processed and ❌ indicates message is dropped.</p>
+<h5 id="longer-version">Longer version</h5>
+<p>If message is <code>NonDuplicate</code>: Upstream✔, Downstream✔ (if requires confirmation)<br />
+We always want to process unique messages up and if they need to, also downstream.</p>
+<p>If message is <code>SoftDuplicate</code>: Upstream✔, Downstream❌.<br />
+We want to be aware of such messages on IoTHub but we skip sending downstream if they need confirmation because of possible collisions on the air.</p>
+<ul>
+<li>If message is marked as <code>DuplicateDueToResubmission</code> and it requires confirmation the following
+  check happens:</li>
+</ul>
+<div class="mermaid">stateDiagram-v2
+    direction LR
+    state if_drop &lt;&lt;choice&gt;&gt;
+
+    [*] --&gt; Is_strategy_drop
+    Is_strategy_drop --&gt; if_drop
+    if_drop --&gt; True
+    if_drop --&gt; False
+
+    True --&gt; Upstream❌,Downstream✔
+    False --&gt; Upstream✔,Downstream✔</div>
+<ul>
+<li>If message is marked as <code>DuplicateDueToResubmission</code> and it does not require confirmation the
+  following check happens:</li>
+</ul>
+<div class="mermaid">stateDiagram-v2
+    direction LR
+    state if_drop &lt;&lt;choice&gt;&gt;
+
+    [*] --&gt; Is_strategy_drop
+    Is_strategy_drop --&gt; if_drop
+    if_drop --&gt; True
+    if_drop --&gt; False
+
+    True --&gt; Upstream❌,Downstream❌
+    False --&gt; Upstream_when_first_message✔,Downstream❌</div>
+<p>NB:</p>
+<ul>
+<li>For the first message (frame counter 1) we allow resending upstream because this could indicate a
+  restarted device that simply sent the same measurement. The case that this happens for subsequent
+  messages (framecounter &gt; 1) within the retention period of the cache (1 minute) is unlikely and
+  would more likely indicate a replay attack. These messages are dropped from the request validation
+  logic.</li>
+<li>Since this message doesn't need confirmation, no downstream messages are sent in any case.</li>
+</ul>
+<p>Finally, if message is <code>Duplicate</code>: Upstream❌, Downstream❌<br />
+We do not want to process the message further, no calls to the Azure Function or IoTHub happen.</p>
+<h4 id="b-join-requests">b. Join requests</h4>
+<p>Here we are detecting requests as duplicates based on their AppEui (aka JoinEui), DevEui and
+DevNonce. If there is a cache hit (a request with the same values for these fields within the
+retention period of the cache) the request is considered a <code>Duplicate</code> and dropped immediately. We
+are not differentiating the cases of <code>SoftDuplicate</code> and <code>DuplicateDueToResubmission</code> here as we do
+for data messages.</p>
+<h4 id="general-notes">General notes</h4>
+<ul>
+<li>Deduplication at this level is one of the first things that happen before a request is processed.
+  We considered even moving this higher up the processing stack when we construct the LNS DTOs. The
+  problem with this approach was that at that stage we don't yet have the deduplication strategy
+  information. The strategy affects the decision making as we saw before and it is stored on the device
+  twin which is available later on the processing stack.</li>
+<li>The frame counter strategy does not influence the way this deduplication works but influences the
+  deduplication between network servers.</li>
+<li>This logic is tested with a combination of unit, integration and E2E tests.</li>
+</ul>
+<h3 id="2-deduplication-between-different-network-servers">2. Deduplication between different network servers</h3>
+<p>At this deduplication we ensure that duplicate messages coming from different network servers are
+handled correctly. The categorization happens from an Azure Function where we need to send some
+metadata of the messages.</p>
+<p>If a device is not configured for a single gateway - no gateway assigned - we reach out
+to the function to determine, if a particular message from a device was already processed.</p>
+<div class="mermaid">flowchart LR;
+    Device--&gt;LBS1--&gt;LNS1--&gt;Function--&gt;Redis;
+    Device--&gt;LBS2--&gt;LNS2--&gt;Function--&gt;Redis;</div>
+<ol>
+<li>Message A from Device 1 arrives at LNS 1</li>
+<li>Message A from Device 1 arrives at LNS 2</li>
+<li>LNS 1 calls the function</li>
+<li>The function receives a lock on redis and tries to read the state of the message -
+   the key is composed out of the Dev EUI and the Gateway Id</li>
+<li>The last processed FcntUp is compared to the Message's FcntUp</li>
+<li>We mark the request to be duplicate=false in the following cases:<ol>
+<li>The incoming FcntUp is &gt; than the cached FcntUp</li>
+<li>The incoming FcntUp is == to the cached FcntUp and the Gateway Id matches (reprocessing)</li>
+</ol>
+</li>
+<li>Other cases are considered duplicates and the result contains the processing gateway id</li>
+</ol>
+<p>Once the LNS receives the result, it does apply different actions based on the deduplication
+strategy selected for the device.</p>
+<h4 id="upstream-processing">Upstream Processing</h4>
+<p><strong>Note</strong>: all cases are describing the action, when receiving the information that the message is a duplicate.</p>
+<ol>
+<li><strong>Drop</strong>: Stop processing.</li>
+<li><strong>Mark</strong>: Mark the message "DupMsg": true.</li>
+<li><strong>None</strong>: Process every message without marking.</li>
+</ol>
+<h4 id="downstream-processing">Downstream Processing</h4>
+<p>The downstream processing is different in that it is not depending on the deduplication strategy.
+We only ever send a single downstream message, if we have to. Also this is driven by the function.
+In the same process, we determine, if we are the first gateway to process the message. Only that
+gateway will receive a fcnt down to confirm the message. All other gateways, will not receive
+a fcnt down.</p>
 
   <hr>
 <div class="md-source-file">
@@ -1356,7 +1830,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../universal/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Universal Decoder" rel="prev">
+        <a href="../006_cups/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 006. CUPS Protocol Implementation - Credential management" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1365,20 +1839,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Universal Decoder
+              006. CUPS Protocol Implementation - Credential management
             </div>
           </div>
         </a>
       
       
         
-        <a href="../../../tools/device-provisioning/" class="md-footer__link md-footer__link--next" aria-label="Next: LoRa Device Provisioning" rel="next">
+        <a href="../008_cups_firmware_upgrade/" class="md-footer__link md-footer__link--next" aria-label="Next: 008. CUPS Protocol Implementation - Firmware Upgrade" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              LoRa Device Provisioning
+              008. CUPS Protocol Implementation - Firmware Upgrade
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -1418,14 +1892,14 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.e1a181d9.min.js"></script>
+      <script src="../../assets/javascripts/bundle.e1a181d9.min.js"></script>
       
-        <script src="../../../js/timeago.min.js"></script>
+        <script src="../../js/timeago.min.js"></script>
       
-        <script src="../../../js/timeago_mkdocs_material.js"></script>
+        <script src="../../js/timeago_mkdocs_material.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       
