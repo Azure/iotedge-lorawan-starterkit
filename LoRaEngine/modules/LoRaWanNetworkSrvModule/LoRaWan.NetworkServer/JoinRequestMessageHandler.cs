@@ -63,9 +63,8 @@ namespace LoRaWan.NetworkServer
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
                 var devEui = joinReq.DevEUI;
-                var devEuiHexString = devEui.ToHex();
 
-                using var scope = this.logger.BeginDeviceScope(devEuiHexString);
+                using var scope = this.logger.BeginDeviceScope(devEui);
 
                 this.logger.LogInformation("join request received");
 
@@ -79,7 +78,7 @@ namespace LoRaWan.NetworkServer
                 loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEui, joinReq.DevNonce);
                 if (loRaDevice == null)
                 {
-                    request.NotifyFailed(devEuiHexString, LoRaDeviceRequestFailedReason.UnknownDevice);
+                    request.NotifyFailed(devEui.ToHex(), LoRaDeviceRequestFailedReason.UnknownDevice);
                     // we do not log here as we assume that the deviceRegistry does a more informed logging if returning null
                     return;
                 }
@@ -278,9 +277,9 @@ namespace LoRaWan.NetworkServer
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,
                   loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset),
-                  loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, logger),
+                  loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, this.logger),
                   freq,
-                  loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger),
+                  loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, this.logger),
                   loRaDevice.DevEUI,
                   lnsRxDelay,
                   request.StationEui,

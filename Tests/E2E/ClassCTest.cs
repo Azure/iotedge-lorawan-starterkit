@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.E2E
             TestLogger.Log($"[INFO] {JsonConvert.SerializeObject(c2d, Formatting.None)}");
 
             // send message using the SendCloudToDeviceMessage API endpoint
-            Assert.True(await LoRaAPIHelper.SendCloudToDeviceMessage(device.DeviceID, c2d));
+            Assert.True(await LoRaAPIHelper.SendCloudToDeviceMessage(device.DevEui, c2d));
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
