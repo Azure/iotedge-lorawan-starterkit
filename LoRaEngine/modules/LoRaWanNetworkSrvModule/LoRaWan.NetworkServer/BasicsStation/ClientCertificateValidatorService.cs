@@ -43,13 +43,18 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             using var scope = this.logger.BeginEuiScope(stationEui);
 
-            // Logging any chain related issue, but not failing on it.
-            foreach (var status in chain.ChainStatus)
+            // Logging any chain related issue that is causing verification to fail
+            if (chain.ChainStatus.Any(s => s.Status != X509ChainStatusFlags.NoError))
             {
-                this.logger.LogDebug("{Status} {StatusInformation}", status.Status, status.StatusInformation);
+                foreach (var status in chain.ChainStatus)
+                {
+                    this.logger.LogError("{Status} {StatusInformation}", status.Status, status.StatusInformation);
+                }
+                this.logger.LogError("Some errors were found in the chain.");
+                return false;
             }
 
-            // Only validation is currently done on thumprint
+            // Additional validation is done on certificate thumprint
             try
             {
                 var thumbprints = await this.stationConfigurationService.GetAllowedClientThumbprintsAsync(stationEui, token);
