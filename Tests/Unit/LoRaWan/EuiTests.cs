@@ -153,11 +153,29 @@ namespace LoRaWan.Tests.Unit
         }
     }
 
-    public class DevEuiTests : EuiTests<DevEui>
+    public abstract class DevOrStationEuiTests<T> : EuiTests<T>
+        where T : struct, IEquatable<T>, IFormattable
+    {
+        protected abstract bool IsValid(T eui);
+
+        [Theory]
+        [InlineData(false, "::")]
+        [InlineData(false, "ffff:ffff:ffff:ffff")]
+        [InlineData(true, "::1")]
+        [InlineData(true, "0123:4567:89ab:cdef")]
+        public void Validation(bool expected, string input)
+        {
+            var subject = Parse(input);
+            Assert.Equal(expected, IsValid(subject));
+        }
+    }
+
+    public class DevEuiTests : DevOrStationEuiTests<DevEui>
     {
         protected override int Size => DevEui.Size;
         protected override DevEui Parse(string input) => DevEui.Parse(input);
         protected override bool TryParse(string input, out DevEui result) => DevEui.TryParse(input, out result);
+        protected override bool IsValid(DevEui eui) => eui.IsValid;
     }
 
     public class JoinEuiTests : EuiTests<JoinEui>
@@ -165,13 +183,13 @@ namespace LoRaWan.Tests.Unit
         protected override int Size => JoinEui.Size;
         protected override JoinEui Parse(string input) => JoinEui.Parse(input);
         protected override bool TryParse(string input, out JoinEui result) => JoinEui.TryParse(input, out result);
-
     }
 
-    public class StationEuiTests : EuiTests<StationEui>
+    public class StationEuiTests : DevOrStationEuiTests<StationEui>
     {
         protected override int Size => StationEui.Size;
         protected override StationEui Parse(string input) => StationEui.Parse(input);
         protected override bool TryParse(string input, out StationEui result) => StationEui.TryParse(input, out result);
+        protected override bool IsValid(StationEui eui) => eui.IsValid;
     }
 }

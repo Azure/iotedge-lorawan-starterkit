@@ -18,7 +18,10 @@ namespace LoRaWan
     /// <para>
     /// EUI are 8 bytes multi-octet fields and are transmitted as little endian.</para>
     /// </remarks>
-    public partial record struct DevEui { }
+    public partial record struct DevEui
+    {
+        public bool IsValid => Eui.IsValid(this.value);
+    }
 
     /// <summary>
     /// Global application ID in IEEE EUI-64 (64-bit Extended Unique Identifier) address space
@@ -41,7 +44,10 @@ namespace LoRaWan
     /// <remarks>
     /// EUI are 8 bytes multi-octet fields and are transmitted as little endian.
     /// </remarks>
-    public partial record struct StationEui { }
+    public partial record struct StationEui
+    {
+        public bool IsValid => Eui.IsValid(this.value);
+    }
 
     internal static class Eui
     {
@@ -81,5 +87,7 @@ namespace LoRaWan
                 16 => Hexadecimal.TryParse(input, out result),      // e.g. "8899AABBCCDDEEFF"
                 _ => Id6.TryParse(input, out result)                // e.g. "8899:AABB:CCDD:EEFF"
             };
+
+        public static bool IsValid(ulong value) => value is not 0 and not 0xffff_ffff_ffff_ffff;
     }
 }
