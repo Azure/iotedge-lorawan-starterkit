@@ -9,7 +9,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading.Tasks;
     using global::LoRaTools.LoRaMessage;
     using global::LoRaTools.Regions;
-    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -100,7 +99,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(joinAccept.DevAddr, loRaDevice.DevAddr);
 
             // Device properties were set with the computes values of the join operation
-            Assert.Equal(joinAccept.AppNonce.ToArray(), ReversedByteArray(loRaDevice.AppNonce).ToArray());
+            Assert.Equal(joinAccept.AppNonce, loRaDevice.AppNonce);
             Assert.NotNull(loRaDevice.NwkSKey);
             Assert.NotNull(loRaDevice.AppSKey);
             Assert.True(loRaDevice.IsOurDevice);
@@ -113,14 +112,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Twin property were updated
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
-        }
-
-        private static Memory<byte> ReversedByteArray(string value)
-        {
-            var array = ConversionHelper.StringToByteArray(value);
-
-            Array.Reverse(array);
-            return array;
         }
 
         [Fact]
