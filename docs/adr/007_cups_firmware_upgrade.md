@@ -81,19 +81,19 @@ the Basics Station is performed by the user.
     User->>LoRa Device Provisioning CLI: Request Station upgrade
     LoRa Device Provisioning CLI->>Storage account: Upload firmware file
     LoRa Device Provisioning CLI->>IoT Hub: Update 'Concentrator' twin
-    Concentrator->>CUPS Server: POST /update-info
-    CUPS Server->>IoT Hub: Retrieve 'Concentrator' twin
-    CUPS Server->>CUPS Server: Check if versions of the Station are different
+    Concentrator->>Network Server: POST /update-info
+    Network Server->>IoT Hub: Retrieve 'Concentrator' twin
+    Network Server->>Network Server: Check if versions of the Station are different
     alt versions are the same
-        CUPS Server->>Concentrator: CUPS response without firmware upgrade
+        Network Server->>Concentrator: CUPS response without firmware upgrade
     else versions are different
-      CUPS Server->>CUPS Server: Verify if any of the `keys` from CUPS request match the `fwKeyChecksum`
+      Network Server->>Network Server: Verify if any of the `keys` from CUPS request match the `fwKeyChecksum`
       alt no match
-        CUPS Server->>CUPS Server: Throw as this indicates a misconfiguration
+        Network Server->>Network Server: Throw as this indicates a misconfiguration
       else one of the keys matches `fwKeyChecksum`
-        CUPS Server->>Facade Function: Retrieve firmware upgrade file
+        Network Server->>Facade Function: Retrieve firmware upgrade file
         Facade Function->>Storage account: Download firmware file
-        CUPS Server->>Concentrator: CUPS response with firmware upgrade fields populated
+        Network Server->>Concentrator: CUPS response with firmware upgrade fields populated
       end
     end
 ```
