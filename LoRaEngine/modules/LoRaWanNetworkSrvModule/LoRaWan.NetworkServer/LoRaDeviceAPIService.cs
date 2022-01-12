@@ -153,14 +153,14 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public override Task<SearchDevicesResult> SearchByEuiAsync(DevEui eui) =>
-            SearchByEuiAsync(eui.ToHex());
+        public override Task<IoTHubDeviceInfo> SearchByEuiAsync(DevEui eui) =>
+            SearchByEuiAsync<IoTHubDeviceInfo>(eui.ToHex());
 
         /// <inheritdoc />
-        public override Task<SearchDevicesResult> SearchByEuiAsync(StationEui eui) =>
-            SearchByEuiAsync(eui.ToHex());
+        public override Task<IotHubStationInfo> SearchByEuiAsync(StationEui eui) =>
+            SearchByEuiAsync<IotHubStationInfo>(eui.ToHex());
 
-        private async Task<SearchDevicesResult> SearchByEuiAsync(string eui)
+        private async Task<T> SearchByEuiAsync<T>(string eui)
         {
             this.deviceLoadRequests?.Add(1);
 
@@ -176,17 +176,16 @@ namespace LoRaWan.NetworkServer
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    return new SearchDevicesResult();
+                    return default;
                 }
 
                 this.logger.LogError($"error calling get device/station by EUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
 
-                return new SearchDevicesResult();
+                return default;
             }
 
             var result = await response.Content.ReadAsStringAsync();
-            var devices = (List<IoTHubDeviceInfo>)JsonConvert.DeserializeObject(result, typeof(List<IoTHubDeviceInfo>));
-            return new SearchDevicesResult(devices);
+            return JsonConvert.DeserializeObject<T>(result);
         }
 
         internal Uri GetFullUri(string relativePath)

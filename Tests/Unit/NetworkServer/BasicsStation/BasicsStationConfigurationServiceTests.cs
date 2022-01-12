@@ -48,11 +48,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         private void SetupDeviceKeyLookup() => SetupDeviceKeyLookup("foo");
 
         private void SetupDeviceKeyLookup(string primaryKey) =>
-            SetupDeviceKeyLookup(new[] { new IoTHubDeviceInfo { DevEUI = this.devEui, PrimaryKey = primaryKey } });
+            SetupDeviceKeyLookup(new IotHubStationInfo(this.stationEui.ToString(), primaryKey));
 
-        private void SetupDeviceKeyLookup(params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
+        private void SetupDeviceKeyLookup(IotHubStationInfo iotHubStationInfo) =>
             loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByEuiAsync(this.stationEui))
-                                    .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
+                                    .Returns(Task.FromResult(iotHubStationInfo));
 
         private const string TcUri = "wss://tc.local:5001";
         private const string CupsUri = "https://cups.local:5002";
@@ -252,14 +252,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
             }
 
-            [Theory]
-            [InlineData(0)]
-            [InlineData(2)]
-            public async Task When_Device_Key_Lookup_Is_Non_Unique_Fails(int count)
+            [Fact]
+            public async Task When_Device_Key_Lookup_Is_Empty_Fails()
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(Enumerable.Range(0, count).Select(_ => new IoTHubDeviceInfo()).ToArray());
+                SetupDeviceKeyLookup((IotHubStationInfo)null);
                 SetupTwinResponse(primaryKey);
 
                 // act + assert
@@ -309,10 +307,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 SetupTwinResponse(primaryKey);
                 this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.SearchByEuiAsync(It.IsAny<StationEui>()))
                                              .Throws(new InvalidOperationException())
-                                             .Returns(Task.FromResult(new SearchDevicesResult(new[]
-                                             {
-                                                 new IoTHubDeviceInfo { DevEUI = this.devEui, PrimaryKey = primaryKey }
-                                             })));
+                                             .Returns(Task.FromResult(new IotHubStationInfo(this.stationEui.ToString(), primaryKey)));
 
                 // act
                 Task<string> Act() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None);

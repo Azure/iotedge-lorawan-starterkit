@@ -4,17 +4,18 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System;
-    using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools.CommonAPI;
     using global::LoRaTools.Utils;
+    using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
+    using Newtonsoft.Json;
     using Xunit;
 
     // Ensure tests don't run in parallel since LoRaRegistryManager is shared
@@ -74,7 +75,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
             var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
-            Assert.IsType<NotFoundObjectResult>(result);
+            Assert.IsType<NotFoundResult>(result);
 
             registryManager.VerifyAll();
         }
@@ -82,31 +83,54 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Device_Is_Found_Should_Returns_Device_Information()
         {
+            // arrange
             var devEui = new DevEui(13213123212131);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
+            var (registryManager, request) = SetupIotHubQuery(devEui.ToHex(), PrimaryKey);
+            var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
+
+            // act
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(request, NullLogger.Instance);
+
+            // assert
+            var okObjectResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(JsonConvert.SerializeObject(new { DevEUI = devEui.ToString(), PrimaryKey = primaryKey }), JsonConvert.SerializeObject(okObjectResult.Value));
+            registryManager.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Complies_With_Contract()
+        {
+            // arrange
+            var devEui = SearchByDevEuiContract.Eui;
+            var primaryKey = SearchByDevEuiContract.PrimaryKey;
+            var (registryManager, request) = SetupIotHubQuery(devEui, primaryKey);
+            var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
+
+            // act
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(request, NullLogger.Instance);
+
+            // assert
+            var okObjectResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(SearchByDevEuiContract.Response, JsonConvert.SerializeObject(okObjectResult.Value));
+            registryManager.VerifyAll();
+        }
+
+        private static (Mock<RegistryManager>, HttpRequest) SetupIotHubQuery(string devEui, string primaryKey)
+        {
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI={devEui}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
-            var deviceInfo = new Device(devEui.AsIotHubDeviceId())
+            var deviceInfo = new Device(devEui)
             {
-                Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } },
+                Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(primaryKey)) } },
             };
 
-            registryManager.Setup(x => x.GetDeviceAsync(devEui.AsIotHubDeviceId()))
-                .ReturnsAsync(deviceInfo);
+            registryManager.Setup(x => x.GetDeviceAsync(devEui))
+                           .ReturnsAsync(deviceInfo);
 
-            var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
-
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
-            Assert.IsType<OkObjectResult>(result);
-            Assert.IsType<List<IoTHubDeviceInfo>>(((OkObjectResult)result).Value);
-            var devices = (List<IoTHubDeviceInfo>)((OkObjectResult)result).Value;
-            Assert.Single(devices);
-            Assert.Equal(devEui, devices[0].DevEUI);
-            Assert.Equal(primaryKey, devices[0].PrimaryKey);
-
-            registryManager.VerifyAll();
+            return (registryManager, ctx.Request);
         }
     }
 }

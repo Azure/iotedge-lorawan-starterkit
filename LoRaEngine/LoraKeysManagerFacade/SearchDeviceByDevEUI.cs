@@ -14,7 +14,6 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Primitives;
 
     public class SearchDeviceByDevEUI
     {
@@ -45,31 +44,26 @@ namespace LoraKeysManagerFacade
 
         private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log)
         {
-            var rawDevEui = req.Query["DevEUI"];
-            if (StringValues.IsNullOrEmpty(rawDevEui))
+            string devEui = req.Query["DevEUI"];
+            if (!DevEui.TryParse(devEui, out var parsedDevEui))
             {
-                log.LogError("DevEUI missing in request");
-                return new BadRequestObjectResult("DevEUI missing in request");
+                return new BadRequestObjectResult("DevEUI missing or invalid.");
             }
-            var devEui = DevEui.Parse(rawDevEui.ToString());
 
-            var result = new List<IoTHubDeviceInfo>();
-            var device = await this.registryManager.GetDeviceAsync(devEui.AsIotHubDeviceId());
+            var device = await this.registryManager.GetDeviceAsync(parsedDevEui.AsIotHubDeviceId());
             if (device != null)
             {
-                result.Add(new IoTHubDeviceInfo()
+                log.LogDebug($"Search for {devEui} found 1 device");
+                return new OkObjectResult(new
                 {
                     DevEUI = devEui,
-                    PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
+                    device.Authentication.SymmetricKey.PrimaryKey
                 });
-
-                log.LogDebug($"Search for {rawDevEui} found 1 device");
-                return new OkObjectResult(result);
             }
             else
             {
-                log.LogInformation($"Search for {rawDevEui} found 0 devices");
-                return new NotFoundObjectResult(result);
+                log.LogInformation($"Search for {devEui} found 0 devices");
+                return new NotFoundResult();
             }
         }
     }

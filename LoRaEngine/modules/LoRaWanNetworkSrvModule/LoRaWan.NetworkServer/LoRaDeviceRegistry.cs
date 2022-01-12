@@ -154,12 +154,11 @@ namespace LoRaWan.NetworkServer
                 return cachedDevice;
             }
 
-            var searchResult = await this.loRaDeviceAPIService.SearchByEuiAsync(devEUI);
-            if (searchResult == null || searchResult.Count == 0)
+            var device = await this.loRaDeviceAPIService.SearchByEuiAsync(devEUI);
+            if (device == null)
                 return null;
 
-            var firstDevice = searchResult[0];
-            var loRaDevice = await this.deviceFactory.CreateAndRegisterAsync(firstDevice, CancellationToken.None);
+            var loRaDevice = await this.deviceFactory.CreateAndRegisterAsync(device, CancellationToken.None);
 
             if (this.initializers != null)
             {

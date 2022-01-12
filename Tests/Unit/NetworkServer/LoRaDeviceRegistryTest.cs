@@ -475,7 +475,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             deviceApi.Setup(x => x.SearchByEuiAsync(simDevice.DevEUI))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+                .ReturnsAsync(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123"));
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
@@ -515,7 +515,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             deviceApi.Setup(x => x.SearchByEuiAsync(It.IsNotNull<DevEui>()))
-                .ReturnsAsync((SearchDevicesResult)null);
+                .ReturnsAsync((IoTHubDeviceInfo)null);
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
 
@@ -540,7 +540,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             deviceApi.Setup(x => x.SearchByEuiAsync(It.IsNotNull<DevEui>()))
-                .ReturnsAsync(new SearchDevicesResult());
+                .ReturnsAsync((IoTHubDeviceInfo)null);
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
 

@@ -44,7 +44,7 @@ namespace LoRaWan.NetworkServer
         /// Searches station devices in IoT Hub.
         /// </summary>
         /// <param name="eui">EUI of the station.</param>
-        public abstract Task<SearchDevicesResult> SearchByEuiAsync(StationEui eui);
+        public abstract Task<IotHubStationInfo> SearchByEuiAsync(StationEui eui);
 
         /// <summary>
         /// Fetch station credentials in IoT Hub.
@@ -56,7 +56,7 @@ namespace LoRaWan.NetworkServer
         /// Searches LoRa devices in IoT Hub.
         /// </summary>
         /// <param name="eui">EUI of the LoRa device.</param>
-        public abstract Task<SearchDevicesResult> SearchByEuiAsync(DevEui eui);
+        public abstract Task<IoTHubDeviceInfo> SearchByEuiAsync(DevEui eui);
 
         /// <summary>
         /// Sets the authorization code for the URL.
