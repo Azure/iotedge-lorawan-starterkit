@@ -323,6 +323,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByEuiAsync(It.IsAny<StationEui>()), Times.Exactly(2));
                 Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
             }
+
+            /// <summary>
+            /// Since stations are also devices in IoT Hub, we use the <see cref="IoTHubDeviceInfo"/> when searching for station configuration.
+            /// This requires that we can interpret a station EUI also as a device EUI. If that property does not hold, we need to change the way we query
+            /// IoT Hub for station devices.
+            /// </summary>
+            [Fact]
+            public void StationEui_Can_Be_Interpreted_As_Dev_Eui()
+            {
+                const ulong value = 0x1a2b3c;
+                var devEui = new DevEui(value);
+                var stationEui = new StationEui(value);
+                Assert.Equal(devEui.ToString(), stationEui.ToString());
+            }
         }
 
         protected virtual void Dispose(bool disposing)
