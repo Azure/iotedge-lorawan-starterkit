@@ -6,8 +6,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Buffers.Binary;
-    using System.Security.Cryptography;
     using LoRaTools.LoRaMessage;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
@@ -15,14 +13,14 @@ namespace LoRaWan.NetworkServer
     public sealed class ConcentratorDeduplication : IConcentratorDeduplication
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(1);
+
         private readonly IMemoryCache cache;
         private readonly ILogger<IConcentratorDeduplication> logger;
         private static readonly object cacheLock = new object();
 
-        [ThreadStatic]
-        private static SHA256? sha256;
+        internal sealed record DataMessageKey(DevEui DevEui, Mic Mic, ushort FCnt);
 
-        private static SHA256 Sha256 => sha256 ??= SHA256.Create();
+        internal sealed record JoinMessageKey(JoinEui JoinEui, DevEui DevEui, DevNonce DevNonce);
 
         public ConcentratorDeduplication(
             IMemoryCache cache,
@@ -50,7 +48,7 @@ namespace LoRaWan.NetworkServer
             _ = loRaRequest ?? throw new ArgumentNullException(nameof(loRaRequest));
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
-            var key = CreateCacheKey((LoRaPayloadData)loRaRequest.Payload);
+            var key = CreateCacheKey((LoRaPayloadData)loRaRequest.Payload, loRaDevice);
             if (EnsureFirstMessageInCache(key, loRaRequest, out var previousStation))
                 return ConcentratorDeduplicationResult.NotDuplicate;
 
@@ -69,7 +67,7 @@ namespace LoRaWan.NetworkServer
             return result;
         }
 
-        private bool EnsureFirstMessageInCache(string key, LoRaRequest loRaRequest, out StationEui previousStation)
+        private bool EnsureFirstMessageInCache(object key, LoRaRequest loRaRequest, out StationEui previousStation)
         {
             var stationEui = loRaRequest.StationEui;
 
@@ -88,46 +86,12 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        internal static string CreateCacheKey(LoRaPayloadData payload)
-        {
-            var totalBufferLength = DevAddr.Size + Mic.Size + (payload.RawMessage?.Length ?? 0) + payload.Fcnt.Length;
-            var buffer = totalBufferLength <= 128 ? stackalloc byte[totalBufferLength] : new byte[totalBufferLength]; // uses the stack for small allocations, otherwise the heap
+        internal static DataMessageKey CreateCacheKey(LoRaPayloadData payload, LoRaDevice loRaDevice) =>
+            payload.Mic is { } someMic
+                ? new DataMessageKey(DevEui.Parse(loRaDevice.DevEUI), someMic, payload.GetFcnt())
+                : throw new ArgumentException(nameof(payload.Mic));
 
-            var index = 0;
-            _ = payload.DevAddr.Write(buffer);
-            index += DevAddr.Size;
-
-            _ = payload.Mic is { } someMic ? someMic.Write(buffer[index..]) : throw new InvalidOperationException("Mic must not be null.");
-            index += Mic.Size;
-
-            payload.RawMessage?.CopyTo(buffer[index..]);
-            index += payload.RawMessage?.Length ?? 0;
-
-            BinaryPrimitives.WriteUInt16LittleEndian(buffer[index..], BinaryPrimitives.ReadUInt16LittleEndian(payload.Fcnt.Span));
-
-            var key = Sha256.ComputeHash(buffer.ToArray());
-
-            return BitConverter.ToString(key);
-        }
-
-        internal static string CreateCacheKey(LoRaPayloadJoinRequest payload)
-        {
-            var joinEui = JoinEui.Read(payload.AppEUI.Span);
-            var devEui = DevEui.Read(payload.DevEUI.Span);
-
-            var totalBufferLength = JoinEui.Size + DevEui.Size + DevNonce.Size;
-            Span<byte> buffer = stackalloc byte[totalBufferLength];
-            var head = buffer; // keeps a view pointing at the start of the buffer
-
-            buffer = joinEui.Write(buffer);
-            buffer = devEui.Write(buffer);
-
-            var devNonce = payload.DevNonce;
-            _ = devNonce.Write(buffer);
-
-            var key = Sha256.ComputeHash(head.ToArray());
-
-            return BitConverter.ToString(key);
-        }
+        internal static JoinMessageKey CreateCacheKey(LoRaPayloadJoinRequest payload) =>
+            new JoinMessageKey(payload.AppEui, DevEui.Read(payload.DevEUI.Span), payload.DevNonce);
     }
 }

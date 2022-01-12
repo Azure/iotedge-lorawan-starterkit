@@ -436,7 +436,7 @@ namespace LoRaWan.Tests.Integration
         [InlineData(16777215, 16777215)]
         [InlineData(127, 127)]
         [InlineData(255, 255)]
-        public async Task ABP_Device_NetId_Should_Match_Server(int deviceNetId, uint serverNetId)
+        public async Task ABP_Device_NetId_Should_Match_Server(int deviceNetId, int serverNetId)
         {
             var msgPayload = "1234";
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: deviceNetId));
@@ -464,7 +464,7 @@ namespace LoRaWan.Tests.Integration
             DeviceCache.Register(loRaDevice);
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            ServerConfiguration.NetId = serverNetId;
+            ServerConfiguration.NetId = new NetId(serverNetId);
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
@@ -672,7 +672,7 @@ namespace LoRaWan.Tests.Integration
             var updatedTwin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { TwinProperty.AppEUI, simulatedDevice.AppEUI },
+                    { TwinProperty.AppEui, simulatedDevice.AppEui?.ToString() },
                     { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
                     { TwinProperty.SensorDecoder, nameof(LoRaPayloadDecoder.DecoderValueSensor) },
                 },

@@ -48,17 +48,17 @@ namespace LoRaWan.NetworkServer
 
         public AppKey? AppKey { get; set; }
 
-        public string AppEUI { get; set; }
+        public JoinEui? AppEui { get; set; }
 
         public NetworkSessionKey? NwkSKey { get; set; }
 
         public AppSessionKey? AppSKey { get; set; }
 
-        public string AppNonce { get; set; }
+        public AppNonce AppNonce { get; set; }
 
         public DevNonce? DevNonce { get; set; }
 
-        public string NetID { get; set; }
+        public NetId? NetId { get; set; }
 
         public bool IsOurDevice { get; set; }
 
@@ -291,7 +291,7 @@ namespace LoRaWan.NetworkServer
                 try
                 {
                     AppKey = desiredTwin.ReadRequired<AppKey>(TwinProperty.AppKey);
-                    AppEUI = desiredTwin.ReadRequiredString(TwinProperty.AppEUI);
+                    AppEui = desiredTwin.ReadRequired<JoinEui>(TwinProperty.AppEui);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -302,7 +302,7 @@ namespace LoRaWan.NetworkServer
                 DevAddr = reportedTwin.SafeRead(TwinProperty.DevAddr, DevAddr);
                 AppSKey = reportedTwin.SafeRead(TwinProperty.AppSKey, AppSKey);
                 NwkSKey = reportedTwin.SafeRead(TwinProperty.NwkSKey, NwkSKey);
-                NetID = reportedTwin.SafeRead(TwinProperty.NetID, NetID);
+                NetId = reportedTwin.SafeRead(TwinProperty.NetId, NetId);
                 if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
                 {
                     DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value is string s && LoRaWan.DevAddr.TryParse(s, out var devAddr)
@@ -311,6 +311,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 DevNonce = reportedTwin.TryRead<ushort>(TwinProperty.DevNonce, out var someDevNonce) ? new DevNonce(someDevNonce) : null;
+                NetId = reportedTwin.TryRead<NetId>(TwinProperty.NetId, out var someNetId) ? someNetId : null;
 
                 // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
                 DesiredRX2DataRate = desiredTwin.SafeRead<DataRateIndex?>(TwinProperty.RX2DataRate);
@@ -706,7 +707,7 @@ namespace LoRaWan.NetworkServer
             reportedProperties[TwinProperty.FCntDown] = 0;
             reportedProperties[TwinProperty.FCntUp] = 0;
             reportedProperties[TwinProperty.DevEUI] = DevEUI;
-            reportedProperties[TwinProperty.NetID] = updateProperties.NetID;
+            reportedProperties[TwinProperty.NetId] = updateProperties.NetId.ToString();
             reportedProperties[TwinProperty.DevNonce] = updateProperties.DevNonce.AsUInt16;
 
             if (updateProperties.SaveRegion)
@@ -800,7 +801,7 @@ namespace LoRaWan.NetworkServer
                 AppSKey = updateProperties.AppSKey;
                 AppNonce = updateProperties.AppNonce;
                 DevNonce = updateProperties.DevNonce;
-                NetID = updateProperties.NetID;
+                NetId = updateProperties.NetId;
                 ReportedCN470JoinChannel = updateProperties.CN470JoinChannel;
 
                 if (currentRegion.IsValidRX1DROffset(DesiredRX1DROffset))
