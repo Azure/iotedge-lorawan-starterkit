@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public class PreferredGatewayResult
     {
+        [JsonIgnore]
         public DevEui DevEUI { get; set; }
 
         [JsonProperty("DevEUI")]
