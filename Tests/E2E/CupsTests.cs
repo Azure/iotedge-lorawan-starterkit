@@ -27,13 +27,13 @@ namespace LoRaWan.Tests.E2E
         {
             //arrange
             var temporaryDirectoryName = string.Empty;
-            var stationEui = TestFixture.Configuration.CupsBasicStationEui;
+            var stationEui = StationEui.Parse(TestFixture.Configuration.CupsBasicStationEui);
             var clientThumbprint = TestFixture.Configuration.ClientThumbprint;
             var crcParseResult = uint.TryParse(TestFixture.Configuration.ClientBundleCrc, out var crc);
             try
             {
                 var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device33_OTAA));
-                LogTestStart(device, stationEui);
+                LogTestStart(device, stationEui.ToString());
 
                 if (!string.IsNullOrEmpty(clientThumbprint))
                 {
@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.E2E
                 {
                     { "TLS_SNI", "false" },
                     { "CUPS_URI", TestFixture.Configuration.SharedCupsEndpoint },
-                    { "FIXED_STATION_EUI", stationEui },
+                    { "FIXED_STATION_EUI", stationEui.ToString("N", CultureInfo.InvariantCulture) },
                     { "RADIODEV", TestFixture.Configuration.RadioDev }
                 }, out temporaryDirectoryName);
 
@@ -67,13 +67,13 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(30_000);
 
                 var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf($"{stationEui}: Received 'version' message for station", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 1 });
+                    (log) => log.IndexOf($"{stationEui:N}: Received 'version' message for station", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 1 });
                 Assert.True(log.Found);
 
                 //the concentrator should be ready at this point to receive messages
                 //if receiving 'updf' is succeeding, cups worked successfully
                 await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-                await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+                await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
                 await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
                 await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -82,7 +82,7 @@ namespace LoRaWan.Tests.E2E
                 Assert.True(joinSucceeded, "Join failed");
 
                 var jreqLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf($"{stationEui}: Received 'jreq' message", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 2 });
+                    (log) => log.IndexOf($"{stationEui:N}: Received 'jreq' message", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 2 });
                 Assert.NotNull(jreqLog.MatchedEvent);
 
                 // wait 1 second after joined
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.E2E
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions { MaxAttempts = 2 });
 
                 var updfLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf($"{stationEui}: Received 'updf' message", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 2 });
+                    (log) => log.IndexOf($"{stationEui:N}: Received 'updf' message", StringComparison.Ordinal) != -1, new SearchLogOptions { MaxAttempts = 2 });
                 Assert.True(updfLog.Found);
             }
             finally

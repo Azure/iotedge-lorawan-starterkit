@@ -32,7 +32,7 @@ namespace LoRaWan.Tests.Integration
                 CallBase = true
             };
             this.deviceMock.Object.AppKey = this.simulatedDevice.AppKey;
-            this.deviceMock.Object.AppEUI = this.simulatedDevice.AppEUI;
+            this.deviceMock.Object.AppEui = this.simulatedDevice.AppEui;
             this.deviceMock.Object.IsOurDevice = true;
 
             this.cache = new MemoryCache(new MemoryCacheOptions());
