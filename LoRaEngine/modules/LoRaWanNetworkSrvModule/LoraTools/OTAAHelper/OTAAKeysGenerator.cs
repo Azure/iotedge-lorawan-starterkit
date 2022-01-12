@@ -13,15 +13,15 @@ namespace LoRaTools
     {
         private enum SessionKeyType { Network = 1, Application = 2 }
 
-        public static NetworkSessionKey CalculateNetworkSessionKey(AppNonce appNonce, NetId netid, DevNonce devNonce, AppKey appKey)
+        public static NetworkSessionKey CalculateNetworkSessionKey(AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
         {
-            var keyString = CalculateKey(SessionKeyType.Network, appNonce, netid, devNonce, appKey);
+            var keyString = CalculateKey(SessionKeyType.Network, appNonce, netId, devNonce, appKey);
             return NetworkSessionKey.Parse(keyString);
         }
 
-        public static AppSessionKey CalculateAppSessionKey(AppNonce appNonce, NetId netid, DevNonce devNonce, AppKey appKey)
+        public static AppSessionKey CalculateAppSessionKey(AppNonce appNonce, NetId netId, DevNonce devNonce, AppKey appKey)
         {
-            var keyString = CalculateKey(SessionKeyType.Application, appNonce, netid, devNonce, appKey);
+            var keyString = CalculateKey(SessionKeyType.Application, appNonce, netId, devNonce, appKey);
             return AppSessionKey.Parse(keyString);
         }
 
