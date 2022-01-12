@@ -4,7 +4,7 @@ on: # rebuild any PRs and main branch changes
   schedule:
     - cron: '59 23 * * 1,2,3,4,5'
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [labeled]
   workflow_dispatch:
     inputs:
       RunE2ETestsOnly:
