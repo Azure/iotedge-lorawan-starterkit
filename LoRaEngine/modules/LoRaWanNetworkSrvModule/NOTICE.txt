@@ -3331,7 +3331,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-Newtonsoft.Json 12.0.3 - MIT
+Newtonsoft.Json 13.0.1 - MIT
 
 
 (c) 2008 VeriSign, Inc.
@@ -3365,7 +3365,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-Newtonsoft.Json 13.0.1 - MIT
+Newtonsoft.Json 12.0.3 - MIT
 
 
 (c) 2008 VeriSign, Inc.
