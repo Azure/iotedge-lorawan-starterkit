@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using Newtonsoft.Json;
 
-    public sealed record IotHubStationInfo
+    public sealed class IotHubStationInfo
     {
         [JsonProperty("DevEUI")]
         public string StationEuiString
