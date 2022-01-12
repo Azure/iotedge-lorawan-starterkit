@@ -106,8 +106,8 @@ namespace LoRaWan.Tests.Integration
 
             // twin will be loaded
             var initialTwin = new Twin();
-            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
+            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToHex();
+            initialTwin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToHex();
             initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey?.ToString();

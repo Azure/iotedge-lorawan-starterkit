@@ -94,7 +94,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             // assert
             var okObjectResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(JsonConvert.SerializeObject(new { DevEUI = devEui.ToString(), PrimaryKey = primaryKey }), JsonConvert.SerializeObject(okObjectResult.Value));
+            Assert.Equal(JsonConvert.SerializeObject(new { DevEUI = devEui.ToHex(), PrimaryKey = primaryKey }), JsonConvert.SerializeObject(okObjectResult.Value));
             registryManager.VerifyAll();
         }
 

@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.E2E
             try
             {
                 var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device33_OTAA));
-                LogTestStart(device, stationEui.ToString());
+                LogTestStart(device, stationEui.ToHex());
 
                 if (!string.IsNullOrEmpty(clientThumbprint))
                 {

@@ -146,7 +146,7 @@ namespace LoRaWan.NetworkServer
                 {
                     tagValue = tagName switch
                     {
-                        MetricRegistry.ConcentratorIdTagName when metricTagBag.StationEui.Value is { } stationEui => stationEui.ToString(),
+                        MetricRegistry.ConcentratorIdTagName when metricTagBag.StationEui.Value is { } stationEui => stationEui.ToHex(),
                         MetricRegistry.GatewayIdTagName => metricTagBag.GatewayId,
                         _ => null
                     };
