@@ -367,7 +367,7 @@ namespace LoRaWan.Tests.Integration
             // Device twin will be queried
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui;
+            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
             twin.Properties.Desired[TwinProperty.AppKey] = "012345678901234567890123456789FF";
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
