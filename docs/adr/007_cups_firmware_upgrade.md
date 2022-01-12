@@ -14,12 +14,9 @@
 ## Overview
 
 Firmware upgrades for LoRa Basics™ Station need to be supported in the CUPS
-protocol implementation, since certain pieces of the information exchanged
-between the Basics Station and the CUPS server reflect the current version of
-the Station.
-
-More information on the protocol and can be found in [The CUPS protocol -
-documentation][cupsproto].
+protocol implementation. More information on the protocol and parameters
+exchanged between the Station and the CUPS server which are relevant to firmware
+upgrades can be found in [The CUPS protocol - documentation][cupsproto].
 
 ## In-scope
 
@@ -93,10 +90,10 @@ the Basics Station is performed by the user.
       CUPS Server->>CUPS Server: Verify if any of the `keys` from CUPS request match the `fwKeyChecksum`
       alt no match
         CUPS Server->>CUPS Server: Throw as this indicates a misconfiguration
-      else one of the keys match `fwKeyChecksum`
+      else one of the keys matches `fwKeyChecksum`
         CUPS Server->>Facade Function: Retrieve firmware upgrade file
         Facade Function->>Storage account: Download firmware file
-        CUPS Server->>Concentrator: CUPS response with firmware upgrade requested
+        CUPS Server->>Concentrator: CUPS response with firmware upgrade fields populated
       end
     end
 ```
@@ -114,7 +111,7 @@ added:
   "package": "1.0.1",
   "fwUrl": "https://...",
   "fwKeyChecksum": 123456,
-  "fwSignature": ""
+  "fwSignature": "..."
 }
 ```
 
@@ -172,16 +169,16 @@ A new command will be added to the Device Provisioning CLI which will allow the
 user to trigger a firmware upgrade. The command will accept the follwing inputs:
 
 - firmware upgrade file
-- signature
+- signature (digest of the file)
 - CRC32 checksum of the key used for the signature
-- new package version
+- new package version (e.g. `1.0.1`)
 
 The CLI tool will:
 
 1. Upload a blob with the firmware file to the storage account.
 1. Update concentrator device twin with the new blob URL, signature and CRC32
    checksum of the key used to generate the signature and the new package
-   version
+   version.
 
 ## Appendix
 
@@ -204,7 +201,7 @@ cat sig-0.key | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | 
 ### Calculating the digest of a firmware upgrade file
 
 Digest of an upgrade file (`upgrade.sh`) can be calculated using the previously
-generated signature key using the command:
+generated signature key with the command:
 
 ```shell
 openssl dgst -sha512 -sign sig-0.pem update.sh > update.sh.sig-0.sha512
