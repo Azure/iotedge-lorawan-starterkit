@@ -1,4 +1,4 @@
-# 007. CUPS Protocol Implementation - Firmware Upgrade
+# 008. CUPS Protocol Implementation - Firmware Upgrade
 
 **Feature**:
 [#1189](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1189)  
