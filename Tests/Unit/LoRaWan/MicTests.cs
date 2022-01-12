@@ -55,7 +55,7 @@ namespace LoRaWan.Tests.Unit
             var key = TestKeys.CreateAppKey(0x0005100000000004);
             var mhdr = new MacHeader(0);
             var mic = Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, devNonce);
-            Assert.Equal(new Mic(0xb6dee36c), mic);
+            Assert.Equal(new Mic(unchecked((int)(0xb6dee36c))), mic);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ namespace LoRaWan.Tests.Unit
             var key = TestKeys.CreateNetworkSessionKey(0x0005100000000004);
             var mhdr = new MacHeader(0);
             var mic = Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, devNonce);
-            Assert.Equal(new Mic(0xb6dee36c), mic);
+            Assert.Equal(new Mic(unchecked((int)(0xb6dee36c))), mic);
         }
 
         [Fact]
