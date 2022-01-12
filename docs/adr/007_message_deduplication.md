@@ -60,10 +60,7 @@ the type of message.
 #### a. Data messages
 
 The relevant fields used for duplicate detection are the DevEui of the device the message came from,
-Mic and frame counter from the message. These fields are concatenated and Hex encoded for easier
-debugging. The result is appended to a constant (for this message type) prefix and used as the cache
-key. The reason for the prefix is to differentiate this key from other keys of the shared in-memory
-cache and avoid key collisions.
+Mic and frame counter from the message.
 
 ##### Duplicates from different concentrators
 
@@ -192,13 +189,11 @@ We do not want to process the message further, no calls to the Azure Function or
 
 #### b. Join requests
 
-Here we are detecting requests as duplicates solely based on their AppEui (aka JoinEui), DevEui and
+Here we are detecting requests as duplicates based on their AppEui (aka JoinEui), DevEui and
 DevNonce. If there is a cache hit (a request with the same values for these fields within the
 retention period of the cache) the request is considered a `Duplicate` and dropped immediately. We
-are not differentiating the cases of `SoftDuplicate` and `DuplicateDueToResubmission` here.
-
-Similar encoding with a different prefix is used as explained for [the data messages
-before](#a-data-messages).
+are not differentiating the cases of `SoftDuplicate` and `DuplicateDueToResubmission` here as we do
+for data messages.
 
 #### General notes
 
