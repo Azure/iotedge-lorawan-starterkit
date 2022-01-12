@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
 
         public AppSessionKey? AppSKey { get; set; }
 
-        public string AppNonce { get; set; }
+        public AppNonce AppNonce { get; set; }
 
         public DevNonce? DevNonce { get; set; }
 
