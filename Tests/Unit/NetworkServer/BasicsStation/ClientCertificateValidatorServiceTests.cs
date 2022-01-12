@@ -107,7 +107,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         }
 
         [Fact]
-        public async Task ValidateAsync_ReturnsTrue_WithUntrustedRoot()
+        public async Task ValidateAsync_ReturnsFalse_WithUntrustedRoot()
         {
             if (string.IsNullOrEmpty(this.clientCertificateWithEuiPath))
             {
@@ -123,7 +123,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
             var result = await this.clientCertValidatorSvc.ValidateAsync(cert, chain, System.Net.Security.SslPolicyErrors.None, default);
 
-            Assert.True(result);
+            Assert.False(result);
             Assert.Contains(this.logger.Invocations, i => i.Arguments.Any(a => a.ToString()!.Contains(X509ChainStatusFlags.UntrustedRoot.ToString(), StringComparison.OrdinalIgnoreCase)));
         }
 
