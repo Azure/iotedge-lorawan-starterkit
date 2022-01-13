@@ -289,7 +289,7 @@ namespace LoRaWan.NetworkServer
 
                             if (decodePayloadResult.CloudToDeviceMessage != null)
                             {
-                                if (decodePayloadResult.CloudToDeviceMessage.DevEUI == default || loRaDevice.DevEUI == decodePayloadResult.CloudToDeviceMessage.DevEUI)
+                                if (decodePayloadResult.CloudToDeviceMessage.DevEUI is null || loRaDevice.DevEUI == decodePayloadResult.CloudToDeviceMessage.DevEUI)
                                 {
                                     // sending c2d to same device
                                     cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
