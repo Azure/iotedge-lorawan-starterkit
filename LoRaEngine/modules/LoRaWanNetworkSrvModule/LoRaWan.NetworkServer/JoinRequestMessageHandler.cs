@@ -203,18 +203,6 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                ushort lnsRxDelay = 0;
-                if (windowToUse == Constants.ReceiveWindow1)
-                {
-                    // set tmst for the normal case
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1;
-                }
-                else
-                {
-                    this.logger.LogDebug("processing of the join request took too long, using second join accept receive window");
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
-                }
-
                 this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                 // Build join accept downlink message
@@ -282,7 +270,7 @@ namespace LoRaWan.NetworkServer
                   windowToUse == Constants.ReceiveWindow2 ? default : freq,
                   loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger),
                   DevEui.Parse(loRaDevice.DevEUI),
-                  lnsRxDelay,
+                  (ushort)loraRegion.JoinAcceptDelay1,
                   request.StationEui,
                   request.RadioMetadata.UpInfo.AntennaPreference
                   );
