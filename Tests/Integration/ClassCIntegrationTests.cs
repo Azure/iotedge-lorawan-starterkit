@@ -15,7 +15,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Logging.Abstractions;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
     using Xunit.Abstractions;
@@ -24,7 +24,13 @@ namespace LoRaWan.Tests.Integration
     // Class C device tests
     public class ClassCIntegrationTests : MessageProcessorTestBase
     {
-        public ClassCIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+        private readonly TestOutputLoggerFactory testOutputLoggerFactory;
+        private bool _disposedValue;
+
+        public ClassCIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+            this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
+        }
 
         [Theory]
         [InlineData(null, 0U, 0U)]
@@ -93,7 +99,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                this.testOutputLoggerFactory.CreateLogger<DefaultClassCDevicesMessageSender>(),
                 TestMeter.Instance);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
@@ -199,7 +205,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                this.testOutputLoggerFactory.CreateLogger<DefaultClassCDevicesMessageSender>(),
                 TestMeter.Instance);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
@@ -586,6 +592,22 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
 
             LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!this._disposedValue)
+            {
+                if (disposing)
+                {
+                    this.testOutputLoggerFactory.Dispose();
+                }
+
+                this._disposedValue = true;
+            }
+
+            // Call base class implementation.
+            base.Dispose(disposing);
         }
     }
 }

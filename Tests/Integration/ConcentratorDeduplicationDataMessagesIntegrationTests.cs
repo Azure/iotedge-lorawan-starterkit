@@ -69,7 +69,8 @@ namespace LoRaWan.Tests.Integration
                 new DeduplicationStrategyFactory(this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<DeduplicationStrategyFactory>()),
                 new LoRaADRStrategyProvider(this.testOutputLoggerFactory),
                 new LoRAADRManagerFactory(LoRaDeviceApi.Object, this.testOutputLoggerFactory),
-                new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()))
+                new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()),
+                testOutputHelper)
             {
                 CallBase = true
             };

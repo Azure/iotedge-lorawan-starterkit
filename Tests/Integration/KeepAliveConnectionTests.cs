@@ -15,7 +15,6 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
     using Xunit.Abstractions;
@@ -24,7 +23,12 @@ namespace LoRaWan.Tests.Integration
     // Devices that have keep alive set
     public class KeepAliveConnectionTests : MessageProcessorTestBase
     {
-        public KeepAliveConnectionTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public KeepAliveConnectionTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+            this.testOutputHelper = testOutputHelper;
+        }
 
         public static int MaxWaitForDeviceConnectionInMs
         {
@@ -365,7 +369,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                new TestOutputLogger<DefaultClassCDevicesMessageSender>(testOutputHelper),
                 TestMeter.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));

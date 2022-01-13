@@ -15,7 +15,7 @@ namespace LoRaWan.Tests.Common
     /// Logger class that offers integration with XUnit's <see cref="ITestOutputHelper"/>.
     /// It forwards log statements directly to <see cref="ITestOutputHelper"/> without taking into account scope information.
     /// </summary>
-    public sealed class TestOutputLogger : ILogger
+    public class TestOutputLogger : ILogger
     {
         private const LogLevel TestLogLevel = LogLevel.Debug;
 
@@ -34,6 +34,11 @@ namespace LoRaWan.Tests.Common
             var message = formatter(state, exception);
             this.testOutputHelper.WriteLine(message);
         }
+    }
+
+    public sealed class TestOutputLogger<T> : TestOutputLogger, ILogger<T>
+    {
+        public TestOutputLogger(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
     }
 
     public sealed class TestOutputLoggerFactory : ILoggerFactory
