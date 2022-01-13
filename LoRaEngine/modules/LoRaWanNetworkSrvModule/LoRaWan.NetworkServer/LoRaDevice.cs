@@ -897,7 +897,7 @@ namespace LoRaWan.NetworkServer
                 {
                     // this is an indication that the lower 16 bits rolled over on the client
                     // we adjust the server to the new higher 16bits and keep the lower 16bits
-                    Rollover32BitFCnt();
+                    SetFcntUp(IncrementUpper16bit(this.fcntUp));
                 }
             }
 
@@ -923,8 +923,6 @@ namespace LoRaWan.NetworkServer
                 var delta = payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp);
                 return delta <= Constants.MaxFcntGap;
             }
-
-            void Rollover32BitFCnt() => SetFcntUp(IncrementUpper16bit(this.fcntUp));
 
             static uint IncrementUpper16bit(uint val)
             {
