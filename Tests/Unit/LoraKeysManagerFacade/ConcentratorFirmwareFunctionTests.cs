@@ -92,7 +92,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task RunFetchConcentratorFirmware_Returns_NotFound_ForMissingTwin()
         {
-            // http request
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
             {
@@ -100,7 +99,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             });
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
-            // twin mock
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
                 'package': '1.0.1',
@@ -115,6 +113,20 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             Assert.NotNull(result);
             Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task RunFetchConcentratorFirmware_Returns_BadRequest_ForMissingQueryParams()
+        {
+            var httpRequest = new Mock<HttpRequest>();
+            var queryDictionary = new Dictionary<string, StringValues>();
+            var queryCollection = new QueryCollection(queryDictionary);
+            httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
+
+            var result = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
+
+            Assert.NotNull(result);
+            Assert.IsType<BadRequestObjectResult>(result);
         }
     }
 }
