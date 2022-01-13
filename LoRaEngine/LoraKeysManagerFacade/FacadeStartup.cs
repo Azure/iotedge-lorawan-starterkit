@@ -10,6 +10,7 @@ namespace LoraKeysManagerFacade
     using LoRaTools.ADR;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -17,6 +18,8 @@ namespace LoraKeysManagerFacade
 
     public class FacadeStartup : FunctionsStartup
     {
+        internal const string WebJobsStorageClientName = "WebJobsStorage";
+
         public override void Configure(IFunctionsHostBuilder builder)
         {
             if (builder is null) throw new ArgumentNullException(nameof(builder));
@@ -43,6 +46,11 @@ namespace LoraKeysManagerFacade
             // Object is handled by DI container.
             _ = builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
 #pragma warning restore CA2000 // Dispose objects before losing scope
+            builder.Services.AddAzureClients(builder =>
+            {
+                _ = builder.AddBlobServiceClient(configHandler.StorageConnectionString)
+                           .WithName(WebJobsStorageClientName);
+            });
             _ = builder.Services
                     .AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)))
                     .AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore)
@@ -65,6 +73,7 @@ namespace LoraKeysManagerFacade
         {
             internal const string IoTHubConnectionStringKey = "IoTHubConnectionString";
             internal const string RedisConnectionStringKey = "RedisConnectionString";
+            internal const string StorageConnectionStringKey = "AzureWebJobsStorage";
 
             internal static ConfigHandler Create(IFunctionsHostBuilder builder)
             {
@@ -79,6 +88,8 @@ namespace LoraKeysManagerFacade
 
                 return new LocalConfigHandler();
             }
+
+            internal abstract string StorageConnectionString { get; }
 
             internal abstract string RedisConnectionString { get; }
 
@@ -96,6 +107,8 @@ namespace LoraKeysManagerFacade
                 internal override string RedisConnectionString => this.config.GetConnectionString(RedisConnectionStringKey);
 
                 internal override string IoTHubConnectionString => this.config.GetConnectionString(IoTHubConnectionStringKey);
+
+                internal override string StorageConnectionString => this.config.GetConnectionStringOrSetting(StorageConnectionStringKey);
             }
 
             private class LocalConfigHandler : ConfigHandler
@@ -114,6 +127,7 @@ namespace LoraKeysManagerFacade
                 internal override string RedisConnectionString => this.config.GetValue<string>(RedisConnectionStringKey);
 
                 internal override string IoTHubConnectionString => this.config.GetValue<string>(IoTHubConnectionStringKey);
+                internal override string StorageConnectionString => this.config.GetConnectionStringOrSetting(StorageConnectionStringKey);
             }
         }
     }

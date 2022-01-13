@@ -4,15 +4,23 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Diagnostics.Metrics;
     using System.Globalization;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Logger;
     using LoRaTools.ADR;
     using LoRaWan;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
+    using Microsoft.ApplicationInsights;
+    using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Server.Kestrel.Https;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -55,12 +63,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                                                            NetworkServerConfiguration.LogToTcpPort,
                                                                                            NetworkServerConfiguration.GatewayID));
                             }
+                            if (NetworkServerConfiguration.LogToHub)
+                                _ = loggingBuilder.AddIotHubLogger(c => c.LogLevel = logLevel);
 
                             if (useApplicationInsights)
                             {
                                 _ = loggingBuilder.AddApplicationInsights(appInsightsKey)
                                                   .AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, logLevel);
-
+                                _ = services.AddSingleton<ITelemetryInitializer>(_ => new TelemetryInitializer(NetworkServerConfiguration));
                             }
                         })
                         .AddMemoryCache()
@@ -86,11 +96,26 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
                         .AddSingleton<IPacketForwarder, DownstreamSender>()
+                        .AddSingleton<LoRaDeviceCache>()
+                        .AddSingleton(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddSingleton(typeof(IConcentratorDeduplication<>), typeof(ConcentratorDeduplication<>));
+                        .AddTransient<ICupsProtocolMessageProcessor, CupsProtocolMessageProcessor>()
+                        .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>()
+                        .AddSingleton(new RegistryMetricTagBag(NetworkServerConfiguration))
+                        .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
+                        .AddHostedService(sp =>
+                            new MetricExporterHostedService(
+                                new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>(),
+                                                                                                                           sp.GetRequiredService<RegistryMetricTagBag>(),
+                                                                                                                           sp.GetRequiredService<ILogger<ApplicationInsightsMetricExporter>>()) : null,
+                                                            new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>(), sp.GetRequiredService<ILogger<PrometheusMetricExporter>>()))))
+                        .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version));
 
             if (useApplicationInsights)
                 _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
+
+            if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
+                _ = services.AddSingleton<IClientCertificateValidatorService, ClientCertificateValidatorService>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
@@ -112,23 +137,42 @@ namespace LoRaWan.NetworkServer.BasicsStation
             dataHandlerImplementation.SetClassCMessageSender(classCMessageSender);
 
 
+
             _ = app.UseRouting()
                    .UseWebSockets()
                    .UseEndpoints(endpoints =>
                    {
-                       _ = endpoints.MapGet(BasicsStationNetworkServer.DiscoveryEndpoint, async context =>
-                           {
-                               var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
-                               await lnsProtocolMessageProcessor.HandleDiscoveryAsync(context, context.RequestAborted);
-                           });
-                       _ = endpoints.MapGet($"{BasicsStationNetworkServer.DataEndpoint}/{{{BasicsStationNetworkServer.RouterIdPathParameterName}:required}}", async context =>
-                           {
-                               var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
-                               await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);
-                           });
-                   });
+                       _ = endpoints.MapMetrics();
 
-            _ = app.UseMetricServer();
+                       Map(HttpMethod.Get, BasicsStationNetworkServer.DiscoveryEndpoint,
+                           context => context.Request.Host.Port is BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort,
+                           (ILnsProtocolMessageProcessor processor) => processor.HandleDiscoveryAsync);
+
+                       Map(HttpMethod.Get, $"{BasicsStationNetworkServer.DataEndpoint}/{{{BasicsStationNetworkServer.RouterIdPathParameterName}:required}}",
+                           context => context.Request.Host.Port is BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort,
+                           (ILnsProtocolMessageProcessor processor) => processor.HandleDataAsync);
+
+                       Map(HttpMethod.Post, BasicsStationNetworkServer.UpdateInfoEndpoint,
+                           context => context.Connection.LocalPort is BasicsStationNetworkServer.CupsPort,
+                           (ICupsProtocolMessageProcessor processor) => processor.HandleUpdateInfoAsync);
+
+                       void Map<TService>(HttpMethod method, string pattern,
+                                          Predicate<HttpContext> predicate,
+                                          Func<TService, Func<HttpContext, CancellationToken, Task>> handlerMapper)
+                       {
+                           _ = endpoints.MapMethods(pattern, new[] { method.ToString() }, async context =>
+                           {
+                               if (!predicate(context))
+                               {
+                                   context.Response.StatusCode = (int)System.Net.HttpStatusCode.MethodNotAllowed;
+                                   return;
+                               }
+                               var processor = context.RequestServices.GetRequiredService<TService>();
+                               var handler = handlerMapper(processor);
+                               await handler(context, context.RequestAborted);
+                           });
+                       }
+                   });
         }
     }
 }

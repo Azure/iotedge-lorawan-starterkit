@@ -33,16 +33,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets the value that must be persisted in twin collection.
         /// </summary>
-        object IChangeTrackingProperty.Value
-        {
-            get
-            {
-                if (typeof(T).IsEnum || this.current is StationEui)
-                    return this.current.ToString();
-
-                return this.current;
-            }
-        }
+        object IChangeTrackingProperty.Value => this.current;
 
         /// <summary>
         /// Gets the current value.

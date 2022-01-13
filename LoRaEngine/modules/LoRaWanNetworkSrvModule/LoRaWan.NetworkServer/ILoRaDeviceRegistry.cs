@@ -11,12 +11,12 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets devices that matches an OTAA join request.
         /// </summary>
-        Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string devNonce);
+        Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, DevNonce devNonce);
 
         /// <summary>
         /// Updates device after a succesfull join request.
         /// </summary>
-        void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, string oldDevAddr = null);
+        void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, DevAddr? oldDevAddr = null);
 
         /// <summary>
         /// Registers a <see cref="ILoRaDeviceInitializer"/>.

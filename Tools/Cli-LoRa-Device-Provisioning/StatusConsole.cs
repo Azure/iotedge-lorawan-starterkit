@@ -7,7 +7,7 @@ namespace LoRaWan.Tools.CLI
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json.Linq;
 
-    public static class StatusConsole
+    internal static class StatusConsole
     {
         public static void WriteIfVerbose(string message, bool isVerbose)
         {
@@ -79,8 +79,8 @@ namespace LoRaWan.Tools.CLI
         private static string TwinToString(Twin twin)
         {
             var twinData = JObject.Parse(twin.Properties.Desired.ToJson());
-            twinData.Remove("$metadata");
-            twinData.Remove("$version");
+            _ = twinData.Remove("$metadata");
+            _ = twinData.Remove("$version");
             return twinData.ToString();
         }
     }

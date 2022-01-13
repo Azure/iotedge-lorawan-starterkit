@@ -9,7 +9,7 @@ namespace LoRaWan
     /// <summary>
     /// Represents a frequency in Hertz.
     /// </summary>
-    public readonly struct Hertz : IEquatable<Hertz>
+    public readonly record struct Hertz : IComparable<Hertz>
     {
 #pragma warning disable IDE0032 // Use auto property
         private readonly ulong value;
@@ -21,19 +21,27 @@ namespace LoRaWan
         public ulong AsUInt64 => this.value;
 #pragma warning restore IDE0032 // Use auto property
 
-        public double Kilo => this.value / 1e3;
-        public double Mega => this.value / 1e6;
-        public double Giga => this.value / 1e9;
+        public double InKilo => this.value / 1e3;
+        public double InMega => this.value / 1e6;
+        public double InGiga => this.value / 1e9;
 
-        public static Hertz FromMega(double value) => new Hertz(checked((ulong)(value * 1e6)));
+        public static Hertz Mega(double value) => new Hertz(checked((ulong)(value * 1e6)));
 
-        public bool Equals(Hertz other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is Hertz other && Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
+        public static implicit operator Hertz(Mega value) => new Hertz(checked((ulong)value.Units));
 
         public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
 
-        public static bool operator ==(Hertz left, Hertz right) => left.Equals(right);
-        public static bool operator !=(Hertz left, Hertz right) => !left.Equals(right);
+        public static explicit operator ulong(Hertz value) => value.value;
+
+        public int CompareTo(Hertz other) => this.value.CompareTo(other.value);
+
+        public static bool operator <(Hertz a, Hertz b) => a.CompareTo(b) < 0;
+        public static bool operator <=(Hertz a, Hertz b) => a.CompareTo(b) <= 0;
+        public static bool operator >(Hertz a, Hertz b) => a.CompareTo(b) > 0;
+        public static bool operator >=(Hertz a, Hertz b) => a.CompareTo(b) >= 0;
+
+        public static Hertz operator +(Hertz a, long offset) => new(checked((ulong)((long)a.value + offset)));
+        public static Hertz operator +(Hertz a, Mega offset) => new(checked((ulong)((long)a.value + offset.Units)));
+        public static long operator -(Hertz a, Hertz b) => checked((long)a.value - (long)b.value);
     }
 }

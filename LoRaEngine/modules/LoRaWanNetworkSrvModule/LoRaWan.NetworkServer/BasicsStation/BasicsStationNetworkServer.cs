@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
@@ -11,6 +13,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Server.Kestrel.Https;
     using Microsoft.Extensions.DependencyInjection;
 
     public static class BasicsStationNetworkServer
@@ -18,8 +21,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
         internal const string DiscoveryEndpoint = "/router-info";
         internal const string RouterIdPathParameterName = "routerId";
         internal const string DataEndpoint = "/router-data";
-        private const int SecurePort = 5001;
-        private const int Port = 5000;
+        internal const string UpdateInfoEndpoint = "/update-info";
+        internal const int LnsSecurePort = 5001;
+        internal const int LnsPort = 5000;
+        internal const int CupsPort = 5002;
 
         public static async Task RunServerAsync(NetworkServerConfiguration configuration, CancellationToken cancellationToken)
         {
@@ -27,21 +32,17 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             var shouldUseCertificate = !string.IsNullOrEmpty(configuration.LnsServerPfxPath);
             using var webHost = WebHost.CreateDefaultBuilder()
-                                       .UseUrls(shouldUseCertificate ? FormattableString.Invariant($"https://0.0.0.0:{SecurePort}")
-                                                                     : FormattableString.Invariant($"http://0.0.0.0:{Port}"))
+                                       .UseUrls(shouldUseCertificate ? new[] { FormattableString.Invariant($"https://0.0.0.0:{LnsSecurePort}"),
+                                                                               FormattableString.Invariant($"https://0.0.0.0:{CupsPort}") }
+                                                                     : new[] { FormattableString.Invariant($"http://0.0.0.0:{LnsPort}") })
                                        .UseStartup<BasicsStationNetworkServerStartup>()
                                        .UseKestrel(config =>
                                        {
                                            if (shouldUseCertificate)
                                            {
-                                               config.ConfigureHttpsDefaults(https =>
-                                               {
-                                                   https.ServerCertificate = string.IsNullOrEmpty(configuration.LnsServerPfxPassword)
-                                                                             ? new X509Certificate2(configuration.LnsServerPfxPath)
-                                                                             : new X509Certificate2(configuration.LnsServerPfxPath,
-                                                                                                    configuration.LnsServerPfxPassword,
-                                                                                                    X509KeyStorageFlags.DefaultKeySet);
-                                               });
+                                               config.ConfigureHttpsDefaults(https => ConfigureHttpsSettings(configuration,
+                                                                                                             config.ApplicationServices.GetService<IClientCertificateValidatorService>(),
+                                                                                                             https));
                                            }
                                        })
                                        .Build();
@@ -64,6 +65,24 @@ namespace LoRaWan.NetworkServer.BasicsStation
             {
                 telemetryClient?.Flush();
                 await Task.Delay(TimeSpan.FromSeconds(5), CancellationToken.None);
+            }
+        }
+
+        internal static void ConfigureHttpsSettings(NetworkServerConfiguration configuration,
+                                                    IClientCertificateValidatorService? clientCertificateValidatorService,
+                                                    HttpsConnectionAdapterOptions https)
+        {
+            https.ServerCertificate = string.IsNullOrEmpty(configuration.LnsServerPfxPassword) ? new X509Certificate2(configuration.LnsServerPfxPath)
+                                                                                               : new X509Certificate2(configuration.LnsServerPfxPath,
+                                                                                                                      configuration.LnsServerPfxPassword,
+                                                                                                                      X509KeyStorageFlags.DefaultKeySet);
+
+            if (configuration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
+            {
+                if (clientCertificateValidatorService is null)
+                    throw new ArgumentNullException(nameof(clientCertificateValidatorService));
+                https.ClientCertificateMode = configuration.ClientCertificateMode;
+                https.ClientCertificateValidation = (cert, chain, err) => clientCertificateValidatorService.ValidateAsync(cert, chain, err, default).GetAwaiter().GetResult();
             }
         }
     }

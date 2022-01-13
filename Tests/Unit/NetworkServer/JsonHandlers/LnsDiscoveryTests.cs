@@ -53,7 +53,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         {
             var stationEui = stationId6.Contains(':', StringComparison.Ordinal)
                 ? Id6.TryParse(stationId6, out var id6) ? new StationEui(id6) : throw new JsonException()
-                : Hexadecimal.TryParse(stationId6, out var hhd, '-')
+                : Hexadecimal.TryParse(stationId6, out ulong hhd, '-')
                     ? new StationEui(hhd)
                     : throw new JsonException();
 

@@ -23,21 +23,23 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR_Single()
         {
-            return Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(nameof(TestFixtureCi.Device5_ABP));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device5_ABP));
+            LogTestStart(device);
+            return Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(device);
         }
 
         [RetryFact]
         public Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR_MultiGw()
         {
-            return Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(nameof(TestFixtureCi.Device5_ABP_MultiGw));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device5_ABP_MultiGw));
+            LogTestStart(device);
+            return Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(device);
         }
 
         // Verifies that ABP confirmed and unconfirmed messages are working
         // Uses Device5_ABP
-        private async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(string devicePropertyName)
+        private async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(TestDeviceInfo device)
         {
-            var device = TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
-
             if (device.IsMultiGw)
             {
                 Assert.True(await LoRaAPIHelper.ResetADRCache(device.DeviceID));
@@ -45,7 +47,6 @@ namespace LoRaWan.Tests.E2E
 
             await ArduinoDevice.setDeviceDefaultAsync();
             const int MESSAGES_COUNT = 10;
-            LogTestStart(device);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
@@ -101,7 +102,7 @@ namespace LoRaWan.Tests.E2E
 
                 if (device.IsMultiGw)
                 {
-                    var searchTokenSending = $"{device.DeviceID}: sending a downstream message";
+                    var searchTokenSending = $"{device.DeviceID}: sending message to station with EUI";
                     var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase));
                     Assert.NotNull(sending.MatchedEvent);
 
@@ -175,7 +176,7 @@ namespace LoRaWan.Tests.E2E
                 await ArduinoDevice.transferPacketAsync(message, 10);
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
-                await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DevAddr}: LinkADRCmd mac command detected in upstream payload: Type: LinkADRCmd Answer, power: changed, data rate: changed,", $"{device.DevAddr}: LinkADRCmd mac command detected in upstream payload: Type: LinkADRCmd Answer, power: not changed, data rate: changed,");
+                await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: LinkADRCmd mac command detected in upstream payload: Type: LinkADRCmd Answer, power: changed, data rate: changed,", $"{device.DevAddr}: LinkADRCmd mac command detected in upstream payload: Type: LinkADRCmd Answer, power: not changed, data rate: changed,");
             }
         }
 
@@ -190,8 +191,8 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device7_ABP;
             LogTestStart(device);
 
-            var appSKeyToUse = "000102030405060708090A0B0C0D0E0F";
-            var nwkSKeyToUse = "01020304050607080910111213141516";
+            var appSKeyToUse = AppSessionKey.Parse("000102030405060708090A0B0C0D0E0F");
+            var nwkSKeyToUse = NetworkSessionKey.Parse("01020304050607080910111213141516");
             Assert.NotEqual(appSKeyToUse, device.AppSKey);
             Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
@@ -236,7 +237,7 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device8_ABP;
             LogTestStart(device);
 
-            var nwkSKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+            var nwkSKeyToUse = NetworkSessionKey.Parse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
             Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);

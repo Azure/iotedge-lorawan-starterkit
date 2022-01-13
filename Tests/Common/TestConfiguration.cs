@@ -76,5 +76,29 @@ namespace LoRaWan.Tests.Common
 
         // Gets/sets the TXPower value to use in tests
         public short TxPower { get; set; } = 14;
+
+        public bool RunningInCI { get; set; }
+
+        public string RemoteConcentratorConnection { get; set; } //i.e. pi@raspberrypi
+
+        public string RadioDev { get; set; } // i.e. "/dev/ttyACM0"
+
+        public string DefaultBasicStationEui { get; set; } //i.e. "ABC111FFFEDEF000"
+
+        // The path of where the station binary is located on local pc
+        public string BasicStationExecutablePath { get; set; } //i.e. "C:\\folder\\station"
+
+        // The path where the SSH Private Key is located (needed for remotely copying needed files and/or executing commands)
+        public string SshPrivateKeyPath { get; set; } //i.e. "~/.ssh/mykey" (on WSL, it's the path in the WSL environment)
+
+        public string SharedLnsEndpoint { get; set; } //i.e. "wss://hostname:5001"
+
+        public string SharedCupsEndpoint { get; set; } //i.e. "https://hostname:5002"
+
+        public string CupsBasicStationEui { get; set; } //i.e. "ABC111FFFEDEF000" to be used for CUPS tests
+
+        public string ClientThumbprint { get; set; } //i.e. 4a0639c9c67221919fdb9618fa6fa0680259eaf2 (SHA1 thumbprint of cups.crt)
+
+        public string ClientBundleCrc { get; set; } //i.e. 4004975634 (CRC32 of .bundle file)
     }
 }

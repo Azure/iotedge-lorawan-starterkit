@@ -2,3 +2,4 @@
 *.sh text eol=lf
 *.bat text eol=crlf
 *.cmd txt eol=crlf
+Tools/BasicStation-Certificates-Generation/helper-functions text eol=lf

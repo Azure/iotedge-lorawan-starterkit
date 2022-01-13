@@ -5,6 +5,7 @@ namespace LoRaTools.ADR
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.Extensions.Logging;
 
     public class LoRaADRManagerBase : ILoRaADRManager
@@ -40,7 +41,7 @@ namespace LoRaTools.ADR
             _ = await this.store.AddTableEntry(newEntry);
         }
 
-        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, int dataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null)
+        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, DataRateIndex dataRate, int minTxPower, DataRateIndex maxDr, LoRaADRTableEntry newEntry = null)
         {
             var table = newEntry != null
                         ? await this.store.AddTableEntry(newEntry)
@@ -48,7 +49,7 @@ namespace LoRaTools.ADR
 
             var currentStrategy = this.strategyProvider.GetStrategy();
 
-            var result = currentStrategy.ComputeResult(devEUI, table, requiredSnr, dataRate, minTxPower, maxDr);
+            var result = currentStrategy.ComputeResult(table, requiredSnr, dataRate, minTxPower, maxDr);
 
             if (result == null)
             {
@@ -122,7 +123,7 @@ namespace LoRaTools.ADR
             return await this.store.Reset(devEUI);
         }
 
-        private static LoRaADRResult ReturnDefaultValues(int upstreamDataRate, int defaultNbRep, int maxTxPowerIndex)
+        private static LoRaADRResult ReturnDefaultValues(DataRateIndex upstreamDataRate, int defaultNbRep, int maxTxPowerIndex)
         {
             return new LoRaADRResult
             {

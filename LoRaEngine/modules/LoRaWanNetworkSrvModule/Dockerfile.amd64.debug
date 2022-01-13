@@ -15,6 +15,8 @@ WORKDIR /build
 COPY Directory.Build.props ./
 COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
+COPY LICENSE ./
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/NOTICE.txt ./
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj", "LoRaWanNetworkSrvModule/"]
@@ -37,5 +39,6 @@ RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out --no-resto
 FROM base
 WORKDIR /app
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
-
-ENTRYPOINT ["dotnet", "LoRaWanNetworkSrvModule.dll"]
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/start.sh ./
+RUN chmod +x ./start.sh
+ENTRYPOINT ["./start.sh"]

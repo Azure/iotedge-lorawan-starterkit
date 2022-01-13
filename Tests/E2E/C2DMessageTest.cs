@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.E2E
             LogTestStart(device);
 
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 1,
+                Fport = FramePorts.App1,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -127,18 +127,7 @@ namespace LoRaWan.Tests.E2E
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 // Check that RXDelay was correctly used
-                if (ArduinoDevice.SerialLogs.Any(x => x.StartsWith("+CMSG: RXWIN1", StringComparison.OrdinalIgnoreCase)))
-                {
-                    await TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, false, device.GatewayID);
-                }
-                else if (ArduinoDevice.SerialLogs.Any(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.OrdinalIgnoreCase)))
-                {
-                    await TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, true, device.GatewayID);
-                }
-                else
-                {
-                    Assert.True(false, "We were not able to determine in which windows the acknowledgement was submitted");
-                }
+                await TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay, device.GatewayID);
 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
@@ -198,7 +187,7 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device10_OTAA;
             LogTestStart(device);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -231,7 +220,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 1,
+                Fport = FramePorts.App1,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -308,27 +297,30 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message_Single()
         {
-            return Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(nameof(TestFixtureCi.Device15_OTAA));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device15_OTAA));
+            LogTestStart(device);
+            return Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(device);
         }
 
         /* Commented multi gateway tests as they make C2D tests flaky for now
         [RetryFact]
         public Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message_MultiGw()
         {
-            return Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(nameof(TestFixtureCi.Device15_OTAA_MultiGw));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device15_OTAA_MultiGw));
+            LogTestStart(device);
+            return Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(device);
         }
         */
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device15_OTAA
-        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(TestDeviceInfo device)
         {
             const int messagesToSend = 10;
             const int warmUpMessageCount = 2;
-            var device = TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
-            LogTestStart(device);
+
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -367,7 +359,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 2,
+                Fport = FramePorts.App2,
                 MessageId = Guid.NewGuid().ToString(),
             };
 
@@ -444,27 +436,30 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message_Single()
         {
-            return Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(nameof(TestFixtureCi.Device14_OTAA));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device14_OTAA));
+            LogTestStart(device);
+            return Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(device);
         }
 
         /* Commented multi gateway tests as they make C2D tests flaky for now
         [RetryFact]
         public Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message_MultiGw()
         {
-            return Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(nameof(TestFixtureCi.Device14_OTAA_MultiGw));
+            var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device14_OTAA_MultiGw));
+            LogTestStart(device);
+            return Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(device);
         }
         */
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
-        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(TestDeviceInfo device)
         {
             const int messagesToSend = 10;
             const int warmUpMessageCount = 2;
-            var device = TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
-            LogTestStart(device);
+
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -502,7 +497,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 1,
+                Fport = FramePorts.App1,
                 MessageId = msgId,
                 Confirmed = true,
             };
@@ -588,7 +583,7 @@ namespace LoRaWan.Tests.E2E
             LogTestStart(device);
             // Setup LoRa device properties
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             // Setup protocol properties
@@ -616,7 +611,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
-                Fport = 1,
+                Fport = FramePorts.App1,
                 MessageId = msgId,
                 Confirmed = true,
             };

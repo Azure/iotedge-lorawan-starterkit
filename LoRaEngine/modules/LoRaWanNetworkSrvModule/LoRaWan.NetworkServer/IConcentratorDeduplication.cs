@@ -1,17 +1,51 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaWan.NetworkServer
 {
-    public interface IConcentratorDeduplication<T> where T : class
+    public interface IConcentratorDeduplication
     {
         /// <summary>
-        /// Detects frames (messages) that should be dropped based on whether
-        /// they were encountered from the same or a different concentrator before.
+        /// Validates if a particular Join request was handled by this LNS before.
         /// </summary>
-        /// <param name="frame">The received frame.</param>
-        /// <param name="stationEui">The current station that the frame was sent from.</param>
-        /// <returns><code>true</code>, if the frame has been encountered in the past and should be dropped.</returns>
-        public bool ShouldDrop(T frame, StationEui stationEui);
+        /// <param name="loRaRequest">The Join request</param>
+        /// <returns><see cref="ConcentratorDeduplicationResult.NotDuplicate"/> if this join request was not processed before
+        /// on this LNS otherwise <see cref="ConcentratorDeduplicationResult.Duplicate"/></returns>
+        public ConcentratorDeduplicationResult CheckDuplicateJoin(LoRaRequest loRaRequest);
+
+        /// <summary>
+        /// Validates if a particular telemetry message has been processed before by this LNS and
+        /// if so, what continuation strategy we should use depending on the deduplication strategy of
+        /// the device.
+        /// </summary>
+        /// <param name="loRaRequest">The telemetry request</param>
+        /// <param name="loRaDevice">The device that sent the message</param>
+        /// <returns>Any of the <see cref="ConcentratorDeduplicationResult"/> values described.</returns>
+        public ConcentratorDeduplicationResult CheckDuplicateData(LoRaRequest loRaRequest, LoRaDevice loRaDevice);
+    }
+
+    public enum ConcentratorDeduplicationResult
+    {
+        /// <summary>
+        /// First message on this LNS
+        /// </summary>
+        NotDuplicate,
+        /// <summary>
+        /// Duplicate message due to resubmit of a confirmed
+        /// message of the same station (concentrator).
+        /// </summary>
+        DuplicateDueToResubmission,
+        /// <summary>
+        /// Detected as a duplicate but due to the DeduplicationStrategy,
+        /// marked only as a "soft" duplicate - allow upstream (Mark and None)
+        /// </summary>
+        SoftDuplicateDueToDeduplicationStrategy,
+        /// <summary>
+        /// Message is a duplicate and does not need to be
+        /// sent upstream.
+        /// </summary>
+        Duplicate
     }
 }

@@ -9,20 +9,14 @@ namespace LoRaWan
     /// <summary>
     /// Represents byte data of 128 bits as a single unit.
     /// </summary>
-    internal readonly struct Data128 : IEquatable<Data128>
+    internal readonly record struct Data128
     {
         public const int Size = sizeof(ulong) * 2;
+
         private readonly ulong lo;
         private readonly ulong hi;
 
         public Data128(ulong hi, ulong lo) => (this.hi, this.lo) = (hi, lo);
-
-        public bool Equals(Data128 other) => this.lo == other.lo && this.hi == other.hi;
-        public override bool Equals(object? obj) => obj is Data128 other && this.Equals(other);
-        public override int GetHashCode() => HashCode.Combine(this.lo, this.hi);
-
-        public static bool operator ==(Data128 left, Data128 right) => left.Equals(right);
-        public static bool operator !=(Data128 left, Data128 right) => !left.Equals(right);
 
         public override string ToString()
         {
@@ -38,15 +32,15 @@ namespace LoRaWan
             TryParse(input) is (true, var result) ? result : throw new FormatException();
 
         internal static (bool, Data128) TryParse(ReadOnlySpan<char> input) =>
-            input.Length == Size * 2 && Hexadecimal.TryParse(input[..16], out var hi)
-                                     && Hexadecimal.TryParse(input[16..], out var lo)
+            input.Length == Size * 2 && Hexadecimal.TryParse(input[..16], out ulong hi)
+                                     && Hexadecimal.TryParse(input[16..], out ulong lo)
                 ? (true, new Data128(hi, lo))
                 : default;
 
         public static Data128 Read(ReadOnlySpan<byte> buffer)
         {
-            var lo = BinaryPrimitives.ReadUInt64BigEndian(buffer);
-            var hi = BinaryPrimitives.ReadUInt64BigEndian(buffer[8..]);
+            var hi = BinaryPrimitives.ReadUInt64BigEndian(buffer);
+            var lo = BinaryPrimitives.ReadUInt64BigEndian(buffer[8..]);
             return new Data128(hi, lo);
         }
 

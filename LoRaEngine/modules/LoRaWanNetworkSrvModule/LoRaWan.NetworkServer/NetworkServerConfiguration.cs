@@ -5,6 +5,8 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using Microsoft.AspNetCore.Server.Kestrel.Https;
 
     // Network server configuration
     public class NetworkServerConfiguration
@@ -42,12 +44,12 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets the 2nd receive windows datarate.
         /// </summary>
-        public string Rx2DataRate { get; set; }
+        public DataRateIndex? Rx2DataRate { get; set; }
 
         /// <summary>
         /// Gets or sets the 2nd receive windows data frequency.
         /// </summary>
-        public double? Rx2Frequency { get; set; }
+        public Hertz? Rx2Frequency { get; set; }
 
         /// <summary>
         /// Gets or sets the IoT Edge timeout in milliseconds, 0 keeps default value,.
@@ -82,6 +84,12 @@ namespace LoRaWan.NetworkServer
         public bool LogToTcp { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether logging to IoT Hub is enabled.
+        /// Default is false.
+        /// </summary>
+        public bool LogToHub { get; set; }
+
+        /// <summary>
         /// Gets or sets TCP address to send log to.
         /// </summary>
         public string LogToTcpAddress { get; set; }
@@ -94,22 +102,28 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets the gateway netword id.
         /// </summary>
-        public uint NetId { get; set; } = 1;
+        public NetId NetId { get; set; } = new NetId(1);
 
         /// <summary>
         /// Gets list of allowed dev addresses.
         /// </summary>
-        public HashSet<string> AllowedDevAddresses { get; internal set; }
+        public HashSet<DevAddr> AllowedDevAddresses { get; internal set; }
 
         /// <summary>
         /// Path of the .pfx certificate to be used for LNS Server endpoint
         /// </summary>
-        public string LnsServerPfxPath { get; private set; }
+        public string LnsServerPfxPath { get; internal set; }
 
         /// <summary>
         /// Password of the .pfx certificate to be used for LNS Server endpoint
         /// </summary>
-        public string LnsServerPfxPassword { get; private set; }
+        public string LnsServerPfxPassword { get; internal set; }
+
+        /// <summary>
+        /// Specifies the client certificate mode with which the server should be run
+        /// Allowed values can be found at https://docs.microsoft.com/dotnet/api/microsoft.aspnetcore.server.kestrel.https.clientcertificatemode?view=aspnetcore-6.0
+        /// </summary>
+        public ClientCertificateMode ClientCertificateMode { get; internal set; }
 
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
@@ -125,8 +139,8 @@ namespace LoRaWan.NetworkServer
             config.EnableGateway = envVars.GetEnvVar("ENABLE_GATEWAY", config.EnableGateway);
             config.GatewayID = envVars.GetEnvVar("IOTEDGE_DEVICEID", string.Empty);
             config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);
-            config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);
-            config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ");
+            config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", -1) is var datrNum && (DataRateIndex)datrNum is var datr && Enum.IsDefined(datr) ? datr : null;
+            config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ") is { } someFreq ? Hertz.Mega(someFreq) : null;
             config.IoTEdgeTimeout = envVars.GetEnvVar("IOTEDGE_TIMEOUT", config.IoTEdgeTimeout);
 
             // facadeurl is allowed to be null as the value is coming from the twin in production.
@@ -136,12 +150,20 @@ namespace LoRaWan.NetworkServer
             config.LogLevel = envVars.GetEnvVar("LOG_LEVEL", config.LogLevel);
             config.LogToConsole = envVars.GetEnvVar("LOG_TO_CONSOLE", config.LogToConsole);
             config.LogToTcp = envVars.GetEnvVar("LOG_TO_TCP", config.LogToTcp);
+            config.LogToHub = envVars.GetEnvVar("LOG_TO_HUB", config.LogToHub);
             config.LogToTcpAddress = envVars.GetEnvVar("LOG_TO_TCP_ADDRESS", string.Empty);
             config.LogToTcpPort = envVars.GetEnvVar("LOG_TO_TCP_PORT", config.LogToTcpPort);
-            config.NetId = envVars.GetEnvVar("NETID", config.NetId);
-            config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
+            config.NetId = new NetId(envVars.GetEnvVar("NETID", config.NetId.NetworkId));
+            config.AllowedDevAddresses = envVars.GetEnvVar("AllowedDevAddresses", string.Empty)
+                                                .Split(";")
+                                                .Select(s => DevAddr.TryParse(s, out var devAddr) ? (true, Value: devAddr) : default)
+                                                .Where(a => a is (true, _))
+                                                .Select(a => a.Value)
+                                                .ToHashSet();
             config.LnsServerPfxPath = envVars.GetEnvVar("LNS_SERVER_PFX_PATH", string.Empty);
             config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
+            var clientCertificateModeString = envVars.GetEnvVar("CLIENT_CERTIFICATE_MODE", "NoCertificate"); // Defaulting to NoCertificate if missing mode
+            config.ClientCertificateMode = Enum.Parse<ClientCertificateMode>(clientCertificateModeString, true);
 
             return config;
         }

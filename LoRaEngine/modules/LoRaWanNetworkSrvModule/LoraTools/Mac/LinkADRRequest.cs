@@ -5,6 +5,7 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using LoRaWan;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -23,7 +24,7 @@ namespace LoRaTools
 
         public override int Length => 5;
 
-        public int DataRate => (DataRateTXPower >> 4) & 0b00001111;
+        public DataRateIndex DataRate => (DataRateIndex)((DataRateTXPower >> 4) & 0b00001111);
 
         public int TxPower => DataRateTXPower & 0b00001111;
 
@@ -34,7 +35,7 @@ namespace LoRaTools
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRRequest"/> class.
         /// </summary>
-        public LinkADRRequest(byte datarate, byte txPower, ushort chMask, byte chMaskCntl, byte nbTrans)
+        public LinkADRRequest(ushort datarate, ushort txPower, ushort chMask, ushort chMaskCntl, ushort nbTrans)
         {
             Cid = Cid.LinkADRCmd;
             DataRateTXPower = (byte)((datarate << 4) | txPower);
@@ -72,7 +73,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {Cid} Answer, datarate: {DataRate}, txpower: {TxPower}, nbTrans: {NbRep}, channel Mask Control: {ChMaskCntl}, Redundancy: {Redundancy}";
+            return $"Type: {Cid} Answer, datarate: {(int)DataRate}, txpower: {TxPower}, nbTrans: {NbRep}, channel Mask Control: {ChMaskCntl}, Redundancy: {Redundancy}";
         }
     }
 }

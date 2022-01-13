@@ -46,5 +46,10 @@ namespace LoRaWan.Tests.Common
         public string Message { get; set; }
 
         public string SourceId { get; set; }
+
+        public override string ToString()
+        {
+            return $"{SourceId}: {Message}";
+        }
     }
 }

@@ -3,13 +3,15 @@
 
 namespace LoRaTools.ADR
 {
+    using LoRaWan;
+
     public class LoRaADRResult
     {
         public int? NbRepetition { get; set; }
 
         public int? TxPower { get; set; }
 
-        public int DataRate { get; set; }
+        public DataRateIndex DataRate { get; set; }
 
         public bool CanConfirmToDevice { get; set; }
 

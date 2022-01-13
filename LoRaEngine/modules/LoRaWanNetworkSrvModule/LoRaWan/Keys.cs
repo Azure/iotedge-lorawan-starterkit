@@ -7,16 +7,16 @@ namespace LoRaWan
     /// Data encryption key used to "encode" the messages between the end nodes and the Application
     /// Server.
     /// </summary>
-    public partial struct AppKey { }
+    public partial record struct AppKey { }
 
     /// <summary>
     /// Data encryption key (AppSKey) used for encryption and decryption of payload.
     /// </summary>
-    public partial struct AppSessionKey { }
+    public partial record struct AppSessionKey { }
 
     /// <summary>
     /// Data encryption key (NwkSKey) used to "encode" the messages between the end nodes and the
     /// Network Server.
     /// </summary>
-    public partial struct NetworkSessionKey { }
+    public partial record struct NetworkSessionKey { }
 }

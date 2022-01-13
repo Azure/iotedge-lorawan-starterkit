@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
@@ -16,19 +17,22 @@ namespace LoRaWan.NetworkServer
         private readonly IPacketForwarder packetForwarder;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly ILogger<DefaultClassCDevicesMessageSender> logger;
+        private readonly Counter<int> c2dMessageTooLong;
 
         public DefaultClassCDevicesMessageSender(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry loRaDeviceRegistry,
             IPacketForwarder packetForwarder,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-            ILogger<DefaultClassCDevicesMessageSender> logger)
+            ILogger<DefaultClassCDevicesMessageSender> logger,
+            Meter meter)
         {
             this.configuration = configuration;
             this.loRaDeviceRegistry = loRaDeviceRegistry;
             this.packetForwarder = packetForwarder;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.logger = logger;
+            this.c2dMessageTooLong = meter?.CreateCounter<int>(MetricRegistry.C2DMessageTooLong);
         }
 
         public async Task<bool> SendAsync(IReceivedLoRaCloudToDeviceMessage message, CancellationToken cts = default)
@@ -50,7 +54,7 @@ namespace LoRaWan.NetworkServer
             var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(message.DevEUI);
             if (loRaDevice == null)
             {
-                this.logger.LogError($"[class-c] device {message.DevEUI} not found");
+                this.logger.LogError(message.DevEUI, $"[class-c] device {message.DevEUI} not found or not joined");
                 return false;
             }
 
@@ -66,7 +70,7 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            if (string.IsNullOrEmpty(loRaDevice.DevAddr))
+            if (loRaDevice.DevAddr is null)
             {
                 this.logger.LogError("[class-c] devAddr is empty, cannot send cloud to device message. Ensure the device has connected at least once with the network");
                 return false;
@@ -108,18 +112,39 @@ namespace LoRaWan.NetworkServer
                 fcntDown,
                 this.logger);
 
+            var messageIdLog = message.MessageId ?? "undefined";
+
             if (downlinkMessageBuilderResp.IsMessageTooLong)
             {
-                this.logger.LogError($"[class-c] cloud to device message too large, rejecting. Id: {message.MessageId ?? "undefined"}");
+                this.c2dMessageTooLong?.Add(1);
+                this.logger.LogError($"[class-c] cloud to device message too large, rejecting. Id: {messageIdLog}");
                 if (!await message.RejectAsync())
                 {
-                    this.logger.LogError($"[class-c] failed to reject. Id: {message.MessageId ?? "undefined"}");
+                    this.logger.LogError($"[class-c] failed to reject. Id: {messageIdLog}");
                 }
                 return false;
             }
             else
             {
-                await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                try
+                {
+                    await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError($"[class-c] failed to send the message, abandoning. Id: {messageIdLog}, ex: {ex.Message}");
+                    if (!await message.AbandonAsync())
+                    {
+                        this.logger.LogError($"[class-c] failed to abandon the message. Id: {messageIdLog}");
+                    }
+                    throw;
+                }
+
+                if (!await message.CompleteAsync())
+                {
+                    this.logger.LogError($"[class-c] failed to complete the message. Id: {messageIdLog}");
+                }
+
                 if (!await frameCounterStrategy.SaveChangesAsync(loRaDevice))
                 {
                     this.logger.LogWarning("[class-c] failed to update framecounter.");

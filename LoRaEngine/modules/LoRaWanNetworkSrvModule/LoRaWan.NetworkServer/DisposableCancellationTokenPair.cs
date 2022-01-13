@@ -8,9 +8,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Threading;
 
-    public readonly struct DisposableCancellationTokenPair :
-        IEquatable<DisposableCancellationTokenPair>,
-        IDisposable
+    public readonly record struct DisposableCancellationTokenPair : IDisposable
     {
         private readonly IDisposable? disposable;
         private readonly CancellationToken cancellationToken;
@@ -19,17 +17,6 @@ namespace LoRaWan.NetworkServer
             (this.disposable, this.cancellationToken) = (disposable, cancellationToken);
 
         public void Dispose() => this.disposable?.Dispose();
-
-        public bool Equals(DisposableCancellationTokenPair other) =>
-            Equals(this.disposable, other.disposable) && this.cancellationToken.Equals(other.cancellationToken);
-
-        public override bool Equals(object? obj) =>
-            obj is DisposableCancellationTokenPair other && Equals(other);
-
-        public override int GetHashCode() => HashCode.Combine(this.disposable, this.cancellationToken);
-
-        public static bool operator ==(DisposableCancellationTokenPair left, DisposableCancellationTokenPair right) => left.Equals(right);
-        public static bool operator !=(DisposableCancellationTokenPair left, DisposableCancellationTokenPair right) => !left.Equals(right);
 
         public static implicit operator CancellationToken(DisposableCancellationTokenPair tokenPair) => tokenPair.cancellationToken;
     }

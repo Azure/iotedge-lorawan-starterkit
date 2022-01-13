@@ -7,7 +7,9 @@ namespace LoRaWan.NetworkServer
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
 
     /// <summary>
     /// LoRa Device API contract.
@@ -31,18 +33,24 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Searchs devices based on devAddr.
         /// </summary>
-        public abstract Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr);
+        public abstract Task<SearchDevicesResult> SearchByDevAddrAsync(DevAddr devAddr);
 
         /// <summary>
         /// Search and locks device for join request.
         /// </summary>
-        public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string devNonce);
+        public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, DevNonce devNonce);
 
         /// <summary>
         /// Searches station devices in IoT Hub.
         /// </summary>
         /// <param name="eui">EUI of the station.</param>
         public abstract Task<SearchDevicesResult> SearchByEuiAsync(StationEui eui);
+
+        /// <summary>
+        /// Fetch station credentials in IoT Hub.
+        /// </summary>
+        /// <param name="eui">EUI of the station.</param>
+        public abstract Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype, CancellationToken token);
 
         /// <summary>
         /// Searches LoRa devices in IoT Hub.

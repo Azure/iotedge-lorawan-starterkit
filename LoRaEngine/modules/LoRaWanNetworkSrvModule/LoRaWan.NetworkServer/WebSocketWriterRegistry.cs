@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
+    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Net.WebSockets;
     using System.Threading;
@@ -23,7 +24,7 @@ namespace LoRaWan.NetworkServer
     public partial class WebSocketWriterRegistry<TKey, TMessage>
     {
         [DebuggerDisplay("{" + nameof(key) + "}")]
-        private sealed class Handle : IWebSocketWriterHandle<TMessage>
+        private sealed record Handle : IWebSocketWriterHandle<TMessage>
         {
             private readonly WebSocketWriterRegistry<TKey, TMessage> registry;
             private readonly TKey key;
@@ -39,15 +40,6 @@ namespace LoRaWan.NetworkServer
 
             bool IEquatable<IWebSocketWriterHandle<TMessage>>.Equals(IWebSocketWriterHandle<TMessage>? other) =>
                 Equals(other as Handle);
-
-            public override bool Equals(object? obj) =>
-                ReferenceEquals(this, obj) || Equals(obj as Handle);
-
-            private bool Equals(Handle? other) =>
-                other is not null && this.registry == other.registry
-                                  && EqualityComparer<TKey>.Default.Equals(this.key, other.key);
-
-            public override int GetHashCode() => HashCode.Combine(this.registry, this.key);
         }
     }
 
@@ -60,29 +52,28 @@ namespace LoRaWan.NetworkServer
     {
         private readonly Dictionary<TKey, (IWebSocketWriter<TMessage> Object, Handle Handle)> sockets = new();
         private readonly ILogger? logger;
+        private readonly ObservableGauge<int>? activeStationConnectionsHistogram;
+        private readonly Counter<int>? stationConnectivityLostCounter;
 
-        public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<TKey, TMessage>>? logger) =>
+        public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<TKey, TMessage>>? logger, Meter? meter)
+        {
             this.logger = logger;
+            this.activeStationConnectionsHistogram = meter?.CreateObservableGauge(MetricRegistry.ActiveStationConnections, () => this.sockets.Count);
+            this.stationConnectivityLostCounter = meter?.CreateCounter<int>(MetricRegistry.StationConnectivityLost);
+        }
 
         /// <summary>
         /// Attempts to retrieve the socket writer handle for the given key.
         /// </summary>
         public bool TryGetHandle(TKey key, [NotNullWhen(true)] out IWebSocketWriterHandle<TMessage>? handle)
         {
-            var keyFound = TryGetValue(key, out var value);
-            handle = value?.Handle;
-            return keyFound;
+            lock (this.sockets)
+            {
+                var keyFound = this.sockets.TryGetValue(key, out var value);
+                handle = value.Handle;
+                return keyFound;
+            }
         }
-
-        /// <summary>
-        /// Checks whether the socket writer associated with the given key
-        /// is flagged as open. Actual connectivity is not checked.
-        /// </summary>
-        /// <remarks>
-        /// Implementation does not throw when key is not present in the underlying dictionary.
-        /// </remarks>
-        public bool IsSocketWriterOpen(TKey key)
-            => TryGetValue(key, out var value) && !value!.Value.Object.IsClosed; // when key found, value will not be null
 
         /// <summary>
         /// Registers a socket writer under a key, returning a handle to the writer.
@@ -122,6 +113,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (this.sockets.TryGetValue(key, out var current))
                 {
+                    this.stationConnectivityLostCounter?.Add(1);
                     _ = this.sockets.Remove(key);
                     return current.Object;
                 }
@@ -197,16 +189,6 @@ namespace LoRaWan.NetworkServer
                     _ = this.sockets.Remove(key);
 
                 return keys;
-            }
-        }
-
-        private bool TryGetValue(TKey key, [NotNullWhen(true)] out (IWebSocketWriter<TMessage> Object, Handle Handle)? value)
-        {
-            lock (this.sockets)
-            {
-                var keyFound = this.sockets.TryGetValue(key, out var v);
-                value = v; // converts to nullable type
-                return keyFound;
             }
         }
     }

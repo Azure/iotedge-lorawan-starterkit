@@ -12,14 +12,15 @@ namespace LoRaWan
     /// end-devices (i.e., DevAddr) so that uplink frames sent by those devices even when they are
     /// roaming outside their home network can be forwarded to their home network.
     /// </summary>
-    public readonly struct NetId : IEquatable<NetId>
+    public readonly record struct NetId
     {
         public const int Size = 3;
+
         private readonly int value; // 24-bit
 
         public NetId(int value)
         {
-            if (unchecked((uint)value & 0xffff_0000_0000_0000) != 0)
+            if (!IsSesquiWord(value))
                 throw new ArgumentOutOfRangeException(nameof(value), value, null);
             this.value = value;
         }
@@ -29,13 +30,39 @@ namespace LoRaWan
         /// </summary>
         public int NetworkId => this.value & 0b111_1111;
 
-        public bool Equals(NetId other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is NetId other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString("X6", CultureInfo.InvariantCulture);
 
-        public static bool operator ==(NetId left, NetId right) => left.Equals(right);
-        public static bool operator !=(NetId left, NetId right) => !left.Equals(right);
+        public static NetId Parse(ReadOnlySpan<char> input) =>
+            TryParse(input, out var result) ? result : throw new FormatException();
+
+        public static bool TryParse(ReadOnlySpan<char> input, out NetId result)
+        {
+            if (int.TryParse(input, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var raw) && IsSesquiWord(raw))
+            {
+                result = new NetId(raw);
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        private static bool IsSesquiWord(int n) => unchecked((uint)n & 0xff00_0000) == 0;
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            unchecked
+            {
+                buffer[0] = (byte)this.value;
+                buffer[1] = (byte)(this.value >> 8);
+                buffer[2] = (byte)(this.value >> 16);
+            }
+            return buffer[Size..];
+        }
+
+        public static NetId Read(ReadOnlySpan<byte> buffer) =>
+            new(buffer[0] | (buffer[1] << 8) | (buffer[2] << 16));
     }
 }

@@ -25,7 +25,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var gatewayId = NewUniqueEUI64();
 
             var deviceGetter = new DeviceGetter(InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
-            var items = await deviceGetter.GetDeviceList(devEUI, gatewayId, "ABCD", null);
+            var items = await deviceGetter.GetDeviceList(devEUI, gatewayId, new DevNonce(0xABCD), null);
 
             Assert.Single(items);
             Assert.Equal(devEUI, items[0].DevEUI);

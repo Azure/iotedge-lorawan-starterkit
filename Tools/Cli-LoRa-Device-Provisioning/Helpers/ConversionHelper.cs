@@ -6,7 +6,7 @@ namespace LoRaWan.Tools.CLI.Helpers
     using System;
     using System.Text;
 
-    public static class ConversionHelper
+    internal static class ConversionHelper
     {
         /// <summary>
         /// Method enabling to convert a hex string to a byte array.
@@ -14,13 +14,13 @@ namespace LoRaWan.Tools.CLI.Helpers
         /// <param name="hex">Input hex string</param>
         public static byte[] StringToByteArray(string hex)
         {
-            int numberChars = hex.Length;
+            var numberChars = hex.Length;
 
-            byte[] bytes = new byte[numberChars >> 1];
+            var bytes = new byte[numberChars >> 1];
 
             if (numberChars % 2 == 0)
             {
-                for (int i = 0; i < numberChars; i += 2)
+                for (var i = 0; i < numberChars; i += 2)
                     bytes[i >> 1] = Convert.ToByte(hex.Substring(i, 2), 16);
             }
 
@@ -34,8 +34,8 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             for (var i = 0; i < bytes.Length; i++)
             {
-                result.Append(Constants.HexAlphabet[byteSpan[i] >> 4]);
-                result.Append(Constants.HexAlphabet[byteSpan[i] & 0xF]);
+                _ = result.Append(Constants.HexAlphabet[byteSpan[i] >> 4])
+                          .Append(Constants.HexAlphabet[byteSpan[i] & 0xF]);
             }
 
             return result.ToString();
@@ -48,21 +48,8 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             for (var i = bytes.Length - 1; i >= 0; --i)
             {
-                result.Append(Constants.HexAlphabet[byteSpan[i] >> 4]);
-                result.Append(Constants.HexAlphabet[byteSpan[i] & 0xF]);
-            }
-
-            return result.ToString();
-        }
-
-        static string ByteArrayToString(byte[] bytes)
-        {
-            var result = new StringBuilder(bytes.Length * 2);
-
-            foreach (byte b in bytes)
-            {
-                result.Append(Constants.HexAlphabet[b >> 4]);
-                result.Append(Constants.HexAlphabet[b & 0xF]);
+                _ = result.Append(Constants.HexAlphabet[byteSpan[i] >> 4])
+                          .Append(Constants.HexAlphabet[byteSpan[i] & 0xF]);
             }
 
             return result.ToString();

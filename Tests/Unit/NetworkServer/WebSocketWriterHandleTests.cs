@@ -17,7 +17,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             const string message = "bar";
             using var cts = new CancellationTokenSource();
-            var registry = new WebSocketWriterRegistry<string, string>(null);
+            var registry = new WebSocketWriterRegistry<string, string>(null, null);
             var writerMock = new Mock<IWebSocketWriter<string>>();
             var sut = registry.Register("foo", writerMock.Object);
 
@@ -33,8 +33,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var registry = new
             {
-                A = new WebSocketWriterRegistry<string, string>(null),
-                B = new WebSocketWriterRegistry<string, string>(null),
+                A = new WebSocketWriterRegistry<string, string>(null, null),
+                B = new WebSocketWriterRegistry<string, string>(null, null),
             };
 
             var sut = registry.A.Register("a", new Mock<IWebSocketWriter<string>>().Object);

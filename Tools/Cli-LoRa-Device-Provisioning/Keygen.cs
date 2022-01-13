@@ -3,21 +3,20 @@
 
 namespace LoRaWan.Tools.CLI
 {
-    using System;
+    using System.Globalization;
+    using System.Security.Cryptography;
     using System.Text;
 
     public static class Keygen
     {
-        private static Random rnd = new Random();
-
         public static string Generate(int keyLength)
         {
             var randomKey = new StringBuilder(keyLength * 2);
 
-            for (int i = 0; i < keyLength; i++)
+            for (var i = 0; i < keyLength; i++)
             {
-                var newKey = rnd.Next(0, 256);
-                randomKey.Append(newKey.ToString("X2"));
+                var newKey = RandomNumberGenerator.GetInt32(0, 256);
+                _ = randomKey.Append(newKey.ToString("X2", CultureInfo.InvariantCulture));
             }
 
             return randomKey.ToString();

@@ -60,8 +60,8 @@ void sendPacketString(String packetString)
     short length;
     short rssi;
 
-    memset(buffer, 0, 256);
-    length = lora.receivePacket(buffer, 256, &rssi);
+    memset(buffer, 0, sizeof(buffer));
+    length = lora.receivePacket(buffer, sizeof(buffer), &rssi);
 
     if (length)
     {

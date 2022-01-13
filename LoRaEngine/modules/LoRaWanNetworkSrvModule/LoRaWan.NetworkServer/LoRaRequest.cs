@@ -7,12 +7,13 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
+    using LoRaWan.NetworkServer.BasicsStation;
 
     public class LoRaRequest
     {
         public virtual StationEui StationEui { get; private set; }
 
-        public virtual Rxpk Rxpk { get; }
+        public virtual RadioMetadata RadioMetadata { get; }
 
         public virtual LoRaPayload Payload { get; private set; }
 
@@ -32,11 +33,11 @@ namespace LoRaWan.NetworkServer
         }
 
         public LoRaRequest(
-            Rxpk rxpk,
+            RadioMetadata radioMetadata,
             IPacketForwarder packetForwarder,
             DateTime startTime)
         {
-            Rxpk = rxpk;
+            RadioMetadata = radioMetadata;
             PacketForwarder = packetForwarder;
             StartTime = startTime;
         }
@@ -45,13 +46,13 @@ namespace LoRaWan.NetworkServer
 
         internal void NotifyFailed(LoRaDevice loRaDevice, LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed(loRaDevice?.DevEUI, reason, exception);
 
-        internal void NotifyFailed(LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed((string)null, reason, exception);
+        internal virtual void NotifyFailed(LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed((string)null, reason, exception);
 
         public virtual void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {
         }
 
-        public virtual void NotifySucceeded(LoRaDevice loRaDevice, DownlinkPktFwdMessage downlink)
+        public virtual void NotifySucceeded(LoRaDevice loRaDevice, DownlinkMessage downlink)
         {
         }
 

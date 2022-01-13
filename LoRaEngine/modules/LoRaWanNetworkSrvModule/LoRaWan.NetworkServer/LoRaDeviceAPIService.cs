@@ -5,9 +5,12 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -18,14 +21,19 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
         private readonly ILogger<LoRaDeviceAPIService> logger;
+        private readonly Counter<int> deviceLoadRequests;
 
         public LoRaDeviceAPIService(NetworkServerConfiguration configuration,
                                     IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider,
-                                    ILogger<LoRaDeviceAPIService> logger)
+                                    ILogger<LoRaDeviceAPIService> logger,
+                                    Meter meter)
             : base(configuration)
         {
+            if (meter is null) throw new ArgumentNullException(nameof(meter));
+
             this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;
             this.logger = logger;
+            this.deviceLoadRequests = meter.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
         }
 
         public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
@@ -83,28 +91,30 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string devNonce)
+        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, DevNonce devNonce)
             => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, devNonce: devNonce);
 
         /// <inheritdoc />
-        public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr)
+        public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(DevAddr devAddr)
             => SearchDevicesAsync(devAddr: devAddr);
 
         /// <summary>
         /// Helper method that calls the API GetDevice method.
         /// </summary>
-        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
+        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, DevAddr? devAddr = null, string devEUI = null, string appEUI = null, DevNonce? devNonce = null)
         {
+            this.deviceLoadRequests?.Add(1);
+
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
 
             var url = BuildUri("GetDevice", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
                 ["GateWayId"] = gatewayID,
-                ["DevAddr"] = devAddr,
+                ["DevAddr"] = devAddr?.ToString(),
                 ["DevEUI"] = devEUI,
                 ["AppEUI"] = appEUI,
-                ["DevNonce"] = devNonce
+                ["DevNonce"] = devNonce?.ToString()
             });
 
             var response = await client.GetAsync(url);
@@ -152,6 +162,8 @@ namespace LoRaWan.NetworkServer
 
         private async Task<SearchDevicesResult> SearchByEuiAsync(string eui)
         {
+            this.deviceLoadRequests?.Add(1);
+
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = BuildUri("GetDeviceByDevEUI", new Dictionary<string, string>
             {
@@ -159,7 +171,7 @@ namespace LoRaWan.NetworkServer
                 ["DevEUI"] = eui
             });
 
-            var response = await client.GetAsync(new Uri(url.ToString()));
+            var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -196,6 +208,30 @@ namespace LoRaWan.NetworkServer
                 .Aggregate(queryParameterSb, (sb, qp) => sb.Append(qp));
 
             return new Uri(baseUrl, queryParameterSb.ToString());
+        }
+
+        public override async Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype, CancellationToken token)
+        {
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
+            {
+                ["code"] = AuthCode,
+                ["StationEui"] = eui.ToString("N", null),
+                ["CredentialType"] = credentialtype.ToString()
+            });
+
+            var response = await client.GetAsync(url, token);
+            if (!response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode is not System.Net.HttpStatusCode.NotFound)
+                {
+                    this.logger.LogError($"error calling fetch station credentials api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
+                }
+
+                return string.Empty;
+            }
+
+            return await response.Content.ReadAsStringAsync(token);
         }
     }
 }

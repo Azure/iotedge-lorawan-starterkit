@@ -3,15 +3,19 @@
 
 namespace LoRaWan.Tests.Integration
 {
-    using LoRaTools.LoRaPhysical;
+    using LoRaTools.LoRaMessage;
+    using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
 
     public class CloudToDeviceMessageSizeLimitBaseTests : MessageProcessorTestBase
     {
-        public static Rxpk CreateUpstreamRxpk(bool isConfirmed, bool hasMacInUpstream, string datr, SimulatedDevice simulatedDevice)
+        public static (RadioMetadata RadioMetadata, LoRaPayload LoRaPayload) CreateUpstreamMessage(bool isConfirmed, bool hasMacInUpstream, DataRate datr, SimulatedDevice simulatedDevice)
         {
-            Rxpk rxpk;
+            LoRaPayload loRaPayload;
             string msgPayload;
+
+            var datarateindex = TestUtils.TestRegion.GetDataRateIndex(datr);
+            var radioMetadata = TestUtils.GenerateTestRadioMetadata(dataRate: datarateindex);
 
             if (isConfirmed)
             {
@@ -19,15 +23,13 @@ namespace LoRaWan.Tests.Integration
                 {
                     // Cofirmed message with Mac command in upstream
                     msgPayload = "02";
-                    var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage(msgPayload, isHexPayload: true, fport: 0);
-                    rxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, datr: datr).Rxpk[0];
+                    loRaPayload = simulatedDevice.CreateConfirmedDataUpMessage(msgPayload, isHexPayload: true, fport: 0);
                 }
                 else
                 {
                     // Cofirmed message without Mac command in upstream
                     msgPayload = "1234567890";
-                    var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage(msgPayload);
-                    rxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, datr: datr).Rxpk[0];
+                    loRaPayload = simulatedDevice.CreateConfirmedDataUpMessage(msgPayload);
                 }
             }
             else
@@ -36,19 +38,17 @@ namespace LoRaWan.Tests.Integration
                 {
                     // Uncofirmed message with Mac command in upstream
                     msgPayload = "02";
-                    var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, isHexPayload: true, fport: 0);
-                    rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, datr: datr).Rxpk[0];
+                    loRaPayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, isHexPayload: true, fport: 0);
                 }
                 else
                 {
                     // Uncofirmed message without Mac command in upstream
                     msgPayload = "1234567890";
-                    var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload);
-                    rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, datr: datr).Rxpk[0];
+                    loRaPayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload);
                 }
             }
 
-            return rxpk;
+            return (radioMetadata, loRaPayload);
         }
     }
 }

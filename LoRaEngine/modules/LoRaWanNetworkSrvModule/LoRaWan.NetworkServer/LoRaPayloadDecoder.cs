@@ -49,14 +49,31 @@ namespace LoRaWan.NetworkServer
             this.httpClient = httpClient;
         }
 
-        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, byte fport, string sensorDecoder)
+        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, FramePort fport, string sensorDecoder)
         {
             sensorDecoder ??= string.Empty;
 
             var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
 
             // Call local decoder (no "http://" in SensorDecoder)
-            if (!sensorDecoder.Contains("http://", StringComparison.Ordinal))
+            if (Uri.TryCreate(sensorDecoder, UriKind.Absolute, out var url) && url.Scheme is "http")
+            {
+                // Support decoders that have a parameter in the URL
+                // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
+
+                var query = HttpUtility.ParseQueryString(url.Query);
+                query["devEUI"] = devEUI;
+                query["fport"] = ((int)fport).ToString(CultureInfo.InvariantCulture);
+                query["payload"] = base64Payload;
+
+                var urlBuilder = new UriBuilder(url) { Query = query.ToString() };
+
+                if (urlBuilder.Path.EndsWith('/'))
+                    urlBuilder.Path = urlBuilder.Path[..^1];
+
+                return await CallSensorDecoderModule(urlBuilder.Uri);
+            }
+            else
             {
                 var decoderType = typeof(LoRaPayloadDecoder);
                 var toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
@@ -72,31 +89,6 @@ namespace LoRaWan.NetworkServer
                         Error = $"'{sensorDecoder}' decoder not found",
                     };
                 }
-            }
-            else
-            {
-                // Call SensorDecoderModule hosted in seperate container ("http://" in SensorDecoder)
-                // Format: http://containername/api/decodername
-                var toCall = sensorDecoder;
-
-                if (sensorDecoder.EndsWith("/", StringComparison.Ordinal))
-                {
-                    toCall = sensorDecoder[..^1];
-                }
-
-                // Support decoders that have a parameter in the URL
-                // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
-                var queryStringParamSeparator = toCall.Contains('?', StringComparison.Ordinal) ? "&" : "?";
-
-                // use HttpUtility to UrlEncode Fport and payload
-                var payloadEncoded = HttpUtility.UrlEncode(base64Payload);
-                var devEUIEncoded = HttpUtility.UrlEncode(devEUI);
-
-                // Add Fport and Payload to URL
-                var url = new Uri($"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport}&payload={payloadEncoded}");
-
-                // Call SensorDecoderModule
-                return await CallSensorDecoderModule(url);
             }
         }
 
@@ -174,7 +166,7 @@ namespace LoRaWan.NetworkServer
 #pragma warning disable CA1801 // Review unused parameters
 #pragma warning disable IDE0060 // Remove unused parameter
         // Method is invoked via reflection.
-        public static object DecoderValueSensor(string devEUI, byte[] payload, uint fport)
+        public static object DecoderValueSensor(string devEUI, byte[] payload, FramePort fport)
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore CA1801 // Review unused parameters
         {
@@ -203,7 +195,7 @@ namespace LoRaWan.NetworkServer
 #pragma warning disable CA1801 // Review unused parameters
 #pragma warning disable IDE0060 // Remove unused parameter
         // Method is invoked via reflection and part of a public API.
-        public static object DecoderHexSensor(string devEUI, byte[] payload, uint fport)
+        public static object DecoderHexSensor(string devEUI, byte[] payload, FramePort fport)
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore CA1801 // Review unused parameters
         {

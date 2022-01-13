@@ -4,11 +4,8 @@
 namespace LoRaTools.LoRaMessage
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Security.Cryptography;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
@@ -23,12 +20,12 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets server Nonce aka JoinNonce.
         /// </summary>
-        public Memory<byte> AppNonce { get; set; }
+        public AppNonce AppNonce { get; set; }
 
         /// <summary>
         /// Gets or sets device home network aka Home_NetId.
         /// </summary>
-        public Memory<byte> NetID { get; set; }
+        public NetId NetId { get; set; }
 
         /// <summary>
         /// Gets or sets dLSettings.
@@ -52,9 +49,13 @@ namespace LoRaTools.LoRaMessage
 
         public int Rx1DrOffset => (DlSettings.Span[0] >> 4) & 0b00000111;
 
-        public int Rx2Dr => DlSettings.Span[0] & 0b00001111;
+        public DataRateIndex Rx2Dr => (DataRateIndex)(DlSettings.Span[0] & 0b00001111);
 
-        public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
+        /// Constructor needed for mocking
+        public LoRaPayloadJoinAccept()
+        { }
+
+        public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
             var rxDelay = new byte[1];
             if (rxDelayValue is >= 0 and < MaxRxDelayValue)
@@ -64,14 +65,14 @@ namespace LoRaTools.LoRaMessage
 
             var cfListLength = cfList == null ? 0 : cfList.Length;
             RawMessage = new byte[1 + 12 + cfListLength];
-            Mhdr = new Memory<byte>(RawMessage, 0, 1);
-            Array.Copy(new byte[] { 32 }, 0, RawMessage, 0, 1);
-            AppNonce = new Memory<byte>(RawMessage, 1, 3);
-            Array.Copy(appNonce, 0, RawMessage, 1, 3);
-            NetID = new Memory<byte>(RawMessage, 4, 3);
-            Array.Copy(ConversionHelper.StringToByteArray(netId), 0, RawMessage, 4, 3);
-            DevAddr = new Memory<byte>(RawMessage, 7, 4);
-            Array.Copy(devAddr, 0, RawMessage, 7, 4);
+            MHdr = new MacHeader(MacMessageType.JoinAccept);
+            RawMessage[0] = (byte)MHdr;
+            AppNonce = appNonce;
+            _ = appNonce.Write(RawMessage.AsSpan(1));
+            NetId = netId;
+            _ = NetId.Write(RawMessage.AsSpan(4, 3));
+            DevAddr = devAddr;
+            _ = devAddr.Write(RawMessage.AsSpan(7));
             DlSettings = new Memory<byte>(RawMessage, 11, 1);
             Array.Copy(dlSettings, 0, RawMessage, 11, 1);
             RxDelay = new Memory<byte>(RawMessage, 12, 1);
@@ -87,31 +88,32 @@ namespace LoRaTools.LoRaMessage
             Fcnt = BitConverter.GetBytes(0x01);
             if (BitConverter.IsLittleEndian)
             {
-                AppNonce.Span.Reverse();
-                NetID.Span.Reverse();
-                DevAddr.Span.Reverse();
                 DlSettings.Span.Reverse();
                 RxDelay.Span.Reverse();
             }
         }
 
-        public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)
+        public LoRaPayloadJoinAccept(ReadOnlyMemory<byte> inputMessage, AppKey appKey) : this(inputMessage.ToArray(), appKey)
+        { }
+
+        private LoRaPayloadJoinAccept(byte[] inputMessage, AppKey appKey)
         {
             if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
 
             // Only MHDR is not encrypted with the key
             // ( PHYPayload = MHDR[1] | MACPayload[..] | MIC[4] )
-            Mhdr = new Memory<byte>(inputMessage, 0, 1);
+            MHdr = new MacHeader(inputMessage[0]);
             // Then we will take the rest and decrypt it
             // DecryptPayload(inputMessage);
             // var decrypted = PerformEncryption(appKey);
             // Array.Copy(decrypted, 0, inputMessage, 0, decrypted.Length);
             // DecryptPayload(inputMessage);
             var aesEngine = new AesEngine();
-            var key = ConversionHelper.StringToByteArray(appKey);
-            aesEngine.Init(true, new KeyParameter(key));
+            var rawKey = new byte[AppKey.Size];
+            _ = appKey.Write(rawKey);
+            aesEngine.Init(true, new KeyParameter(rawKey));
             using var aes = Aes.Create("AesManaged");
-            aes.Key = key;
+            aes.Key = rawKey;
             aes.IV = new byte[16];
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
             // Cipher is part of the LoRaWAN specification
@@ -132,18 +134,9 @@ namespace LoRaTools.LoRaMessage
             // We will copy back in the main inputMessage the content
             Array.Copy(decryptedPayload, 0, inputMessage, 1, decryptedPayload.Length);
             // ( MACPayload = AppNonce[3] | NetID[3] | DevAddr[4] | DLSettings[1] | RxDelay[1] | CFList[0|15] )
-            var appNonce = new byte[3];
-            Array.Copy(inputMessage, 1, appNonce, 0, 3);
-            Array.Reverse(appNonce);
-            AppNonce = new Memory<byte>(appNonce);
-            var netID = new byte[3];
-            Array.Copy(inputMessage, 4, netID, 0, 3);
-            Array.Reverse(netID);
-            NetID = new Memory<byte>(netID);
-            var devAddr = new byte[4];
-            Array.Copy(inputMessage, 7, devAddr, 0, 4);
-            Array.Reverse(devAddr);
-            DevAddr = new Memory<byte>(devAddr);
+            AppNonce = AppNonce.Read(inputMessage.AsSpan(1));
+            NetId = NetId.Read(inputMessage.AsSpan(4));
+            DevAddr = DevAddr.Read(inputMessage.AsSpan(7));
             var dlSettings = new byte[1];
             Array.Copy(inputMessage, 11, dlSettings, 0, 1);
             DlSettings = new Memory<byte>(dlSettings);
@@ -157,25 +150,38 @@ namespace LoRaTools.LoRaMessage
             Array.Copy(inputMessage, 12, cfList, 0, inputMessage.Length - 17);
             Array.Reverse(cfList);
             CfList = new Memory<byte>(cfList);
-            var mic = new byte[4];
-            Array.Copy(inputMessage, inputMessage.Length - 4, mic, 0, 4);
-            Mic = new Memory<byte>(mic);
+            Mic = LoRaWan.Mic.Read(inputMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
-        public override byte[] PerformEncryption(string appSkey)
+        public override byte[] PerformEncryption(AppKey key)
         {
-            byte[] pt;
-            if (!CfList.Span.IsEmpty)
+            var mic = Mic ?? throw new InvalidOperationException("MIC must not be null.");
+
+            var channelFrequencies = !CfList.Span.IsEmpty ? CfList.ToArray() : Array.Empty<byte>();
+
+            var buffer = new byte[AppNonce.Size + NetId.Size + DevAddr.Size + DlSettings.Length +
+                                  RxDelay.Length + channelFrequencies.Length + LoRaWan.Mic.Size];
+
+            static Span<byte> Copy(ReadOnlyMemory<byte> source, Span<byte> target)
             {
-                pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).Concat(CfList.ToArray()).Concat(Mic.ToArray()).ToArray();
-            }
-            else
-            {
-                pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).Concat(Mic.ToArray()).ToArray();
+                source.Span.CopyTo(target);
+                target = target[source.Length..];
+                return target;
             }
 
+            var pt = buffer.AsSpan();
+            pt = AppNonce.Write(pt);
+            pt = NetId.Write(pt);
+            pt = DevAddr.Write(pt);
+            pt = Copy(DlSettings, pt);
+            pt = Copy(RxDelay, pt);
+            pt = Copy(channelFrequencies, pt);
+            _ = mic.Write(pt);
+
             using var aes = Aes.Create("AesManaged");
-            aes.Key = ConversionHelper.StringToByteArray(appSkey);
+            var rawKey = new byte[AppKey.Size];
+            _ = key.Write(rawKey);
+            aes.Key = rawKey;
             aes.IV = new byte[16];
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
             // Cipher is part of the LoRaWAN specification
@@ -186,36 +192,35 @@ namespace LoRaTools.LoRaMessage
             ICryptoTransform cipher;
 
             cipher = aes.CreateDecryptor();
-            var encryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
+            var encryptedPayload = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
             RawMessage = new byte[encryptedPayload.Length];
             Array.Copy(encryptedPayload, 0, RawMessage, 0, encryptedPayload.Length);
             return encryptedPayload;
         }
 
-        public override byte[] GetByteMessage()
-        {
-            var messageArray = new List<byte>();
-            messageArray.AddRange(Mhdr.ToArray());
-            messageArray.AddRange(RawMessage);
+        public override byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
 
-            return messageArray.ToArray();
-        }
-
-        public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
+        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             throw new NotImplementedException();
         }
 
-        public DownlinkPktFwdMessage Serialize(string appKey, string datr, double freq, string devEui, long tmst, ushort lnsRxDelay = 0, uint? rfch = 0, string time = "", StationEui stationEui = default)
+        public byte[] Serialize(AppKey appKey)
         {
-            var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
-            if (!CfList.Span.IsEmpty)
-                algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
-
-            _ = CalculateMic(appKey, algoinput);
+            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
             _ = PerformEncryption(appKey);
 
-            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEui, tmst, lnsRxDelay, rfch, time, stationEui: stationEui);
+            return GetByteMessage();
+        }
+
+        public override byte[] Serialize(NetworkSessionKey key) => throw new NotImplementedException();
+
+        public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException();
+
+        public override bool CheckMic(AppKey key)
+        {
+            var expectedMic = LoRaWan.Mic.ComputeForJoinAccept(key, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
+            return expectedMic == Mic;
         }
     }
 }

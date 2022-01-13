@@ -73,12 +73,30 @@ namespace LoRaTools
                     case Cid.One:
                     case Cid.LinkCheckCmd:
                     case Cid.LinkADRCmd:
+                    {
+                        GetValue("dataRate", out var datarate);
+                        GetValue("txPower", out var txpower);
+                        GetValue("chMask", out var chmask);
+                        GetValue("chMaskCntl", out var chmaskcntl);
+                        GetValue("nbRep", out var nbrep);
+
+                        void GetValue(string propertyName, out JToken value)
+                        {
+                            if (!item.TryGetValue(propertyName, StringComparison.OrdinalIgnoreCase, out value))
+                                throw new JsonReaderException($"Property '{propertyName}' is missing");
+                        }
+
+                        var cmd = new LinkADRRequest((ushort)datarate, (ushort)txpower, (ushort)chmask, (byte)chmaskcntl, (byte)nbrep);
+                        serializer.Populate(item.CreateReader(), cmd);
+                        return cmd;
+                    }
+                    case Cid.TxParamSetupCmd:
                     default:
                         throw new JsonReaderException($"Unhandled command identifier: {macCommandType}");
                 }
             }
 
-            throw new JsonReaderException($"Unkown MAC command identifier: {cidPropertyValue}");
+            throw new JsonReaderException($"Unknown MAC command identifier: {cidPropertyValue}");
         }
 
         public override bool CanWrite => false;

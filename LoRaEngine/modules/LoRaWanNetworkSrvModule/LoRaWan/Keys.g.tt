@@ -21,7 +21,7 @@ namespace LoRaWan
         })
     { #>
 
-    readonly partial struct <#= t #> : IEquatable<<#= t #>>
+    readonly partial record struct <#= t #>
     {
         public const int Size = Data128.Size;
 
@@ -29,14 +29,7 @@ namespace LoRaWan
 
         <#= t #>(Data128 value) => this.value = value;
 
-        public bool Equals(<#= t #> other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is <#= t #> other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => this.value.ToString();
-
-        public static bool operator ==(<#= t #> left, <#= t #> right) => left.Equals(right);
-        public static bool operator !=(<#= t #> left, <#= t #> right) => !left.Equals(right);
 
         public static <#= t #> Parse(ReadOnlySpan<char> input) =>
             TryParse(input, out var result) ? result : throw new FormatException();

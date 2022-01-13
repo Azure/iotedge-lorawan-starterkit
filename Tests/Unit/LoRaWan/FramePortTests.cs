@@ -3,81 +3,50 @@
 
 namespace LoRaWan.Tests.Unit
 {
+    using System.Linq;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class FramePortTests
     {
-        private readonly FramePort subject = new(0);
-        private readonly FramePort other = new(15);
-
         [Fact]
-        public void Size()
+        public void UnderlyingType_Is_Byte()
         {
-            Assert.Equal(1, FramePort.Size);
+            Assert.Equal(typeof(byte), typeof(FramePort).GetEnumUnderlyingType());
         }
 
         [Fact]
-        public void Equals_Returns_True_When_Value_Equals()
+        public void MacCommand_Is_Zero()
         {
-            var other = this.subject; // assignment = value copy semantics
-            Assert.True(this.subject.Equals(other));
+            Assert.Equal(0, (byte)FramePort.MacCommand);
         }
 
         [Fact]
-        public void Equals_Returns_False_When_Value_Is_Different()
+        public void MacLayerTest_Is_224()
         {
-            var other = this.other;
-            Assert.False(this.subject.Equals(other));
+            Assert.Equal(224, (byte)FramePort.MacLayerTest);
         }
 
-        [Fact]
-        public void Equals_Returns_False_When_Other_Type_Is_Different()
+        public static readonly TheoryData<bool, FramePort> AppFramePorts =
+            TheoryDataFactory.From(from n in Enumerable.Range(0, 256)
+                                   select (n is >= 1 and <= 223, checked((FramePort)n)));
+
+        [Theory]
+        [MemberData(nameof(AppFramePorts))]
+        public void IsAppSpecific(bool expected, FramePort fport)
         {
-            Assert.False(this.subject.Equals(new object()));
+            Assert.Equal(expected, fport.IsAppSpecific());
         }
 
-        [Fact]
-        public void Equals_Returns_False_When_Other_Type_Is_Null()
-        {
-            Assert.False(this.subject.Equals(null));
-        }
+        public static readonly TheoryData<bool, FramePort> ReservedFramePorts =
+            TheoryDataFactory.From(from n in Enumerable.Range(0, 256)
+                                   select (n is >= 225 and <= 255, checked((FramePort)n)));
 
-        [Fact]
-        public void Op_Equality_Returns_True_When_Values_Equal()
+        [Theory]
+        [MemberData(nameof(ReservedFramePorts))]
+        public void IsReserved(bool expected, FramePort fport)
         {
-            var other = this.subject; // assignment = value copy semantics
-            Assert.True(this.subject == other);
-        }
-
-        [Fact]
-        public void Op_Equality_Returns_False_When_Values_Differ()
-        {
-            Assert.False(this.subject == this.other);
-        }
-
-        [Fact]
-        public void Op_Inequality_Returns_False_When_Values_Equal()
-        {
-            var other = this.subject; // assignment = value copy semantics
-            Assert.False(this.subject != other);
-        }
-
-        [Fact]
-        public void Op_Inequality_Returns_True_When_Values_Differ()
-        {
-            Assert.True(this.subject != this.other);
-        }
-
-        [Fact]
-        public void MacCommandFPort_Should_Be_Flagged()
-        {
-            Assert.True(new FramePort(0).IsMacCommandFPort);
-        }
-
-        [Fact]
-        public void MacLayerTestFPort_Should_Be_Flagged()
-        {
-            Assert.True(new FramePort(224).IsMacLayerTestFPort);
+            Assert.Equal(expected, fport.IsReserved());
         }
     }
 }

@@ -30,5 +30,11 @@ namespace LoRaWan.Tests.Common
             var deviceIdList = string.Join(',', devices.Select(x => x.DeviceID));
             Log($"[INFO] ** Starting {memberName} using devices {deviceIdList} **");
         }
+
+        // Logs starts of a test method call
+        protected static void LogTestStart(TestDeviceInfo device, string concentratorEui, [CallerMemberName] string memberName = "")
+        {
+            Log($"[INFO] ** Starting {memberName} using device {device.DeviceID} and concentrator {concentratorEui} **");
+        }
     }
 }

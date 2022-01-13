@@ -22,7 +22,7 @@ namespace LoRaWan
         })
     { #>
 
-    readonly partial struct <#= t #> : IEquatable<<#= t #>>, IFormattable
+    readonly partial record struct <#= t #> : IFormattable
     {
         public const int Size = sizeof(ulong);
 
@@ -32,14 +32,7 @@ namespace LoRaWan
 
         public ulong AsUInt64 => this.value;
 
-        public bool Equals(<#= t #> other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is <#= t #> other && this.Equals(other);
-        public override int GetHashCode() => this.value.GetHashCode();
-
         public override string ToString() => ToString(null, null);
-
-        public static bool operator ==(<#= t #> left, <#= t #> right) => left.Equals(right);
-        public static bool operator !=(<#= t #> left, <#= t #> right) => !left.Equals(right);
 
         public static <#= t #> Read(ReadOnlySpan<byte> buffer) =>
             new(BinaryPrimitives.ReadUInt64LittleEndian(buffer));

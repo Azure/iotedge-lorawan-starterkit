@@ -5,12 +5,13 @@ namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Text;
     using LoRaWan.Tools.CLI.Options;
 
-    public static class ValidationHelper
+    internal static class ValidationHelper
     {
-        private static List<string> euValidDataranges = new List<string>()
+        private static readonly List<string> EuValidDataranges = new List<string>()
             {
                 "SF12BW125", // 0
                 "SF11BW125", // 1
@@ -22,7 +23,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 "50" // 7 FSK 50
             };
 
-        private static List<string> usValidDataranges = new List<string>()
+        private static readonly List<string> UsValidDataranges = new List<string>()
             {
                 "SF10BW125", // 0
                 "SF9BW125", // 1
@@ -39,22 +40,22 @@ namespace LoRaWan.Tools.CLI.Helpers
 
         public static string GetDataRatesforLocale(string locale)
         {
-            StringBuilder result = new StringBuilder();
-            result.Append(locale + ": ");
+            var result = new StringBuilder();
+            _ = result.Append(locale + ": ");
 
             if (string.Equals(locale, "EU", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (string dr in euValidDataranges)
-                    result.Append(dr + ", ");
+                foreach (var dr in EuValidDataranges)
+                    _ = result.Append(dr + ", ");
             }
             else
             {
-                foreach (string dr in usValidDataranges)
-                    result.Append(dr + ", ");
+                foreach (var dr in UsValidDataranges)
+                    _ = result.Append(dr + ", ");
             }
 
-            result.Remove(result.Length - 2, 2);
-            result.Append(".");
+            _ = result.Remove(result.Length - 2, 2)
+                      .Append('.');
 
             return result.ToString();
         }
@@ -63,7 +64,7 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             if (!string.IsNullOrEmpty(workString))
             {
-                workString = workString.Trim().Replace("\'", string.Empty);
+                workString = workString.Trim().Replace("\'", string.Empty, StringComparison.Ordinal);
             }
 
             return workString;
@@ -75,12 +76,12 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             if (!string.IsNullOrEmpty(inNetId))
             {
-                outNetId = inNetId.Trim().Replace("\'", string.Empty);
+                outNetId = inNetId.Trim().Replace("\'", string.Empty, StringComparison.Ordinal);
                 if (outNetId.Length < 6)
-                    outNetId = string.Concat(new string('0', 6).Substring(outNetId.Length), outNetId);
+                    outNetId = string.Concat(new string('0', 6)[outNetId.Length..], outNetId);
 
                 if (outNetId.Length > 6)
-                    outNetId = outNetId.Substring(outNetId.Length - 6);
+                    outNetId = outNetId[^6..];
             }
 
             return outNetId;
@@ -100,7 +101,9 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             if (value is bool valueBool)
             {
-                return valueBool ? bool.TrueString.ToLower() : bool.FalseString.ToLower();
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                return valueBool ? bool.TrueString.ToLower(CultureInfo.InvariantCulture) : bool.FalseString.ToLower(CultureInfo.InvariantCulture);
+#pragma warning restore CA1308 // Normalize strings to uppercase
             }
 
             return value.ToString();
@@ -125,9 +128,9 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
 
             // Verify each individual byte for validity.
-            for (int i = 0; i + 1 < hexString.Length; i += 2)
+            for (var i = 0; i + 1 < hexString.Length; i += 2)
             {
-                if (!int.TryParse(hexString.Substring(i, 2), System.Globalization.NumberStyles.HexNumber, null, out _))
+                if (!int.TryParse(hexString.AsSpan(i, 2), NumberStyles.HexNumber, null, out _))
                 {
                     error = $"Hex string contains invalid byte {hexString.Substring(i, 2)}";
                     return false;
@@ -287,7 +290,7 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             error = null;
 
-            if (!euValidDataranges.Contains(property) && !usValidDataranges.Contains(property))
+            if (!EuValidDataranges.Contains(property) && !UsValidDataranges.Contains(property))
             {
                 error = "Property is not a valid data rate";
                 return false;
@@ -307,7 +310,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 return false;
             }
 
-            if (sensorDecoder == string.Empty)
+            if (string.IsNullOrEmpty(sensorDecoder))
             {
                 if (isVerbose)
                     StatusConsole.WriteLogLine(MessageType.Info, "SensorDecoder is empty. No decoder will be used.");
@@ -315,9 +318,9 @@ namespace LoRaWan.Tools.CLI.Helpers
                 return true;
             }
 
-            if (sensorDecoder.StartsWith("http", StringComparison.OrdinalIgnoreCase) || sensorDecoder.Contains('/'))
+            if (sensorDecoder.StartsWith("http", StringComparison.OrdinalIgnoreCase) || sensorDecoder.Contains('/', StringComparison.Ordinal))
             {
-                if (!Uri.TryCreate(sensorDecoder, UriKind.Absolute, out Uri validatedUri))
+                if (!Uri.TryCreate(sensorDecoder, UriKind.Absolute, out var validatedUri))
                 {
                     StatusConsole.WriteLogLine(MessageType.Error, "SensorDecoder has an invalid URL.");
                     isValid = false;
@@ -325,13 +328,13 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 // if (validatedUri.Host.Any(char.IsUpper))
                 if (!sensorDecoder.StartsWith(validatedUri.Scheme, StringComparison.OrdinalIgnoreCase)
-                    || sensorDecoder.IndexOf(validatedUri.Host) != validatedUri.Scheme.Length + 3)
+                    || sensorDecoder.IndexOf(validatedUri.Host, StringComparison.Ordinal) != validatedUri.Scheme.Length + 3)
                 {
                     StatusConsole.WriteLogLine(MessageType.Error, "SensorDecoder Hostname must be all lowercase.");
                     isValid = false;
                 }
 
-                if (validatedUri.AbsolutePath.IndexOf("/api/") < 0)
+                if (validatedUri.AbsolutePath.IndexOf("/api/", StringComparison.Ordinal) < 0)
                 {
                     if (isVerbose)
                         StatusConsole.WriteLogLine(MessageType.Warning, "SensorDecoder is missing \"api\" keyword.");

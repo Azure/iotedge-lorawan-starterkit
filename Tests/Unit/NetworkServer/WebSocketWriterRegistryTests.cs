@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         public WebSocketWriterRegistryTests()
         {
-            this.sut = new WebSocketWriterRegistry<string, string>(NullLogger<WebSocketWriterRegistry<string, string>>.Instance);
+            this.sut = new WebSocketWriterRegistry<string, string>(NullLogger<WebSocketWriterRegistry<string, string>>.Instance, null);
         }
 
         [Fact]
@@ -186,29 +186,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.True(succeeded);
             Assert.Same(initialHandle, handle);
-        }
-
-        [Fact]
-        public void IsSocketWriterOpen_Returns_False_When_Socket_Not_Registered_Under_Given_Key()
-        {
-            var isOpen = this.sut.IsSocketWriterOpen("foo");
-
-            Assert.False(isOpen);
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsSocketWriterOpen_Returns_According_To_SocketWriter_Status(bool expectedOpenStatus)
-        {
-            const string key = "key";
-            var (_, socketWriterMock) = CreateAndRegisterWebSocketWriterMock(key);
-            if (!expectedOpenStatus)
-                _ = socketWriterMock.Setup(x => x.IsClosed).Returns(true);
-
-            var actualStatus = this.sut.IsSocketWriterOpen(key);
-
-            Assert.Equal(expectedOpenStatus, actualStatus);
         }
 
         private (IWebSocketWriterHandle<string> Handle, Mock<IWebSocketWriter<string>> WriterMock)

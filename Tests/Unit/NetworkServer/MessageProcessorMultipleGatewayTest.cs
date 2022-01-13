@@ -45,10 +45,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var connectionManager2 = new SingleDeviceConnectionManager(SecondLoRaDeviceClient.Object);
             using var loRaDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, connectionManager2, SecondRequestHandlerImplementation);
 
-            using var cache1 = NewNonEmptyCache(loRaDevice1);
-            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory);
-            using var cache2 = NewNonEmptyCache(loRaDevice2);
-            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(ServerConfiguration, cache2, SecondLoRaDeviceApi.Object, SecondLoRaDeviceFactory);
+            using var cache1 = EmptyMemoryCache();
+            using var loraDeviceCache = CreateDeviceCache(loRaDevice1);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            using var cache2 = EmptyMemoryCache();
+            using var loraDeviceCache2 = CreateDeviceCache(loRaDevice2);
+            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(ServerConfiguration, cache2, SecondLoRaDeviceApi.Object, SecondLoRaDeviceFactory, loraDeviceCache2);
 
             // Send to message processor
             using var messageProcessor1 = new MessageDispatcher(
@@ -68,9 +70,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
             // Create Rxpk
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request1 = CreateWaitableRequest(rxpk, PacketForwarder);
-            using var request2 = CreateWaitableRequest(rxpk, SecondPacketForwarder);
+            using var request1 = CreateWaitableRequest(payload, PacketForwarder);
+            using var request2 = CreateWaitableRequest(payload, SecondPacketForwarder);
             messageProcessor1.DispatchRequest(request1);
             messageProcessor2.DispatchRequest(request2);
 
