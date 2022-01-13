@@ -459,7 +459,7 @@ namespace LoRaWan.NetworkServer
                     {
                         reportedProperties[prop.PropertyName] = prop.Value switch
                         {
-                            StationEui v => v.ToHex(),
+                            StationEui v => v.ToString(),
                             DataRateIndex v => (int)v,
                             Enum v => v.ToString(),
                             var v => v,
@@ -706,7 +706,7 @@ namespace LoRaWan.NetworkServer
             reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr.ToString();
             reportedProperties[TwinProperty.FCntDown] = 0;
             reportedProperties[TwinProperty.FCntUp] = 0;
-            reportedProperties[TwinProperty.DevEUI] = DevEUI.ToHex();
+            reportedProperties[TwinProperty.DevEUI] = DevEUI.ToString();
             reportedProperties[TwinProperty.NetId] = updateProperties.NetId.ToString();
             reportedProperties[TwinProperty.DevNonce] = updateProperties.DevNonce.AsUInt16;
 
@@ -724,7 +724,7 @@ namespace LoRaWan.NetworkServer
                 this.lastProcessingStationEui.Set(updateProperties.StationEui);
                 if (this.lastProcessingStationEui.IsDirty())
                 {
-                    reportedProperties[this.lastProcessingStationEui.PropertyName] = updateProperties.StationEui.ToHex();
+                    reportedProperties[this.lastProcessingStationEui.PropertyName] = updateProperties.StationEui.ToString();
                 }
             }
 
