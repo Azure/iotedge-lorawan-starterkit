@@ -137,7 +137,8 @@ namespace LoRaWan.NetworkServer
                             Pooling = true,
                             // pool size 1 => 995 devices.
                             MaxPoolSize = 1
-                        }
+                        },
+                        OperationTimeout = TimeSpan.FromSeconds(10)
                     }
                 };
 
