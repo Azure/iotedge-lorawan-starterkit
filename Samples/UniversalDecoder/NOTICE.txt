@@ -896,7 +896,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-camelcase 5.0.0 - MIT
+camelcase 5.3.1 - MIT
 https://github.com/sindresorhus/camelcase#readme
 
 (c) Sindre Sorhus (https://sindresorhus.com)
@@ -917,7 +917,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-camelcase 5.3.1 - MIT
+camelcase 5.0.0 - MIT
 https://github.com/sindresorhus/camelcase#readme
 
 (c) Sindre Sorhus (https://sindresorhus.com)
