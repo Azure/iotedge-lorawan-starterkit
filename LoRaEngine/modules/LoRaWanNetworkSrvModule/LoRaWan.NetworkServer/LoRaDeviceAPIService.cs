@@ -186,7 +186,13 @@ namespace LoRaWan.NetworkServer
             }
 
             var result = await response.Content.ReadAsStringAsync();
-            return JsonDocument.Parse(result).RootElement.GetProperty("PrimaryKey").GetString();
+
+            if (string.IsNullOrEmpty(result))
+                return null;
+
+            return JsonDocument.Parse(result).RootElement is { ValueKind: JsonValueKind.Object } someObject
+                ? someObject.TryGetProperty("PrimaryKey", out var propertyValue) ? propertyValue.GetString() : null
+                : null;
         }
 
         internal Uri GetFullUri(string relativePath)

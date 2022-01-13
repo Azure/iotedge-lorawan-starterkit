@@ -96,6 +96,33 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(Convert.ToBase64String(Encoding.UTF8.GetBytes(SearchByDevEuiContract.PrimaryKey)), result);
         }
 
+        [Theory]
+        [InlineData("null", null)]
+        [InlineData(@"""""", null)]
+        [InlineData(@"{""PrimaryKey"":""1234""}", "1234")]
+        [InlineData(@"{""PrimaryKey"":""""}", "")]
+        [InlineData("{}", null)]
+        [InlineData("", null)]
+        public async Task SearchByEuiAsync_DevEui_Parses_Json(string json, string expected)
+        {
+            // arrange
+            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
+            using var httpHandlerMock = new HttpMessageHandlerMock();
+            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json"),
+            });
+            using var httpClient = new HttpClient(httpHandlerMock);
+            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
+            var subject = Setup(facadeMock.Object);
+
+            // act
+            var result = await subject.GetPrimaryKeyByEuiAsync(new DevEui(1));
+
+            // assert
+            Assert.Equal(expected, result);
+        }
+
         private static LoRaDeviceAPIService Setup(string basePath) =>
             new LoRaDeviceAPIService(new NetworkServerConfiguration { FacadeServerUrl = new Uri(basePath) },
                                      new Mock<IServiceFacadeHttpClientProvider>().Object,
