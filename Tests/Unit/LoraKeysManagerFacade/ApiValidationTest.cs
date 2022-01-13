@@ -22,6 +22,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [InlineData("   ")]
         [InlineData("1A88d")]
         [InlineData(".")]
+        [InlineData("0000:0000:0000:0000")]
+        [InlineData("FFFF:FFFF:FFFF:FFFF")]
         public async Task DevEUI_Validation(string devEUI)
         {
             var dummyExecContext = new ExecutionContext();
