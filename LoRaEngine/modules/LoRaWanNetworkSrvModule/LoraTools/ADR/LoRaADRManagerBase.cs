@@ -32,9 +32,9 @@ namespace LoRaTools.ADR
                 return;
             }
 
-            if (string.IsNullOrEmpty(newEntry.GatewayId))
+            if (!newEntry.DevEUI.IsValid || string.IsNullOrEmpty(newEntry.GatewayId))
             {
-                throw new ArgumentException("Missing GatewayId");
+                throw new ArgumentException("Missing Gateway ID or invalid DevEUI");
             }
 
             _ = await this.store.AddTableEntry(newEntry);
