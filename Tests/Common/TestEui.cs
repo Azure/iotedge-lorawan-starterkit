@@ -7,6 +7,9 @@ namespace LoRaWan.Tests.Common
 
     public static class TestEui
     {
-        public static DevEui GenerateDevEui() => new DevEui((uint)RandomNumberGenerator.GetInt32(int.MaxValue));
+        /// <remarks>
+        /// While DevEUI are 64 bits wide, this generates a random DevEUI with only 31 LSB set.
+        /// </remarks>
+        public static DevEui GenerateDevEui() => new(unchecked((uint)RandomNumberGenerator.GetInt32(int.MaxValue) + 1));
     }
 }
