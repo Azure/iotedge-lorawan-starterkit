@@ -16,11 +16,14 @@ namespace LoRaWan.Tests.Integration
     using Moq;
     using Newtonsoft.Json;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Decoder tests tests
     public class DecoderTests : MessageProcessorTestBase
     {
+        public DecoderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         /// <summary>
         /// SensorDecoder: none
         /// Payload: multiple

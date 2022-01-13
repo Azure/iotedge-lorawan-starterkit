@@ -14,13 +14,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class FcntLimitTest : MessageProcessorTestBase
     {
         private readonly Mock<LoRaDeviceAPIServiceBase> loRaDeviceApi;
         private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
 
-        public FcntLimitTest()
+        public FcntLimitTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             this.loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);

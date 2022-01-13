@@ -16,11 +16,14 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Only join tests
     public class JoinTests : MessageProcessorTestBase
     {
+        public JoinTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory]
         [InlineData(ServerGatewayID, 200, 50, 0, 0)]
         [InlineData(ServerGatewayID, 200, 50, 17, 1)]

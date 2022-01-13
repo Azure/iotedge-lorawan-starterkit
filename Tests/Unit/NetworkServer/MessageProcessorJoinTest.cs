@@ -17,10 +17,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
     using static LoRaWan.DataRateIndex;
 
     public class MessageProcessorJoinTest : MessageProcessorTestBase
     {
+        public MessageProcessorJoinTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Fact]
         public async Task When_Device_Is_Not_Found_In_Api_Should_Return_Null()
         {

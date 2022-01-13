@@ -10,9 +10,10 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging.Abstractions;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public sealed class ConcentratorDeduplicationJoinRequestsIntegrationTests : MessageProcessorTestBase
     {
@@ -20,8 +21,10 @@ namespace LoRaWan.Tests.Integration
         private readonly JoinRequestMessageHandler joinRequestHandler;
         private readonly SimulatedDevice simulatedDevice;
         private readonly Mock<LoRaDevice> deviceMock;
+        private readonly TestOutputLoggerFactory testOutputLoggerFactory;
+        private bool _disposedValue;
 
-        public ConcentratorDeduplicationJoinRequestsIntegrationTests()
+        public ConcentratorDeduplicationJoinRequestsIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
             this.deviceMock = new Mock<LoRaDevice>(MockBehavior.Default,
@@ -34,9 +37,10 @@ namespace LoRaWan.Tests.Integration
             this.deviceMock.Object.AppKey = this.simulatedDevice.AppKey;
             this.deviceMock.Object.AppEui = this.simulatedDevice.AppEui;
             this.deviceMock.Object.IsOurDevice = true;
+            this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
 
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            var concentratorDeduplication = new ConcentratorDeduplication(this.cache, NullLogger<IConcentratorDeduplication>.Instance);
+            var concentratorDeduplication = new ConcentratorDeduplication(this.cache, this.testOutputLoggerFactory.CreateLogger<IConcentratorDeduplication>());
             var deviceRegistryMock = new Mock<ILoRaDeviceRegistry>();
             _ = deviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(It.IsAny<string>(), It.IsAny<DevNonce>()))
                 .ReturnsAsync(this.deviceMock.Object);
@@ -49,7 +53,7 @@ namespace LoRaWan.Tests.Integration
                 ServerConfiguration,
                 concentratorDeduplication,
                 deviceRegistryMock.Object,
-                NullLogger<JoinRequestMessageHandler>.Instance,
+                this.testOutputLoggerFactory.CreateLogger<JoinRequestMessageHandler>(),
                 null);
         }
 
@@ -75,6 +79,23 @@ namespace LoRaWan.Tests.Integration
             loraRequest.SetPayload(joinRequest);
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
             this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!this._disposedValue)
+            {
+                if (disposing)
+                {
+                    this.cache.Dispose();
+                    this.testOutputLoggerFactory.Dispose();
+                }
+
+                this._disposedValue = true;
+            }
+
+            // Call base class implementation.
+            base.Dispose(disposing);
         }
     }
 }

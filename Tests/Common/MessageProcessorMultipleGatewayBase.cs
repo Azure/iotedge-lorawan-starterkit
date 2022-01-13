@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.Common
 
         protected TestLoRaDeviceFactory SecondLoRaDeviceFactory { get; }
 
-        public MessageProcessorMultipleGatewayBase(ITestOutputHelper testOutputHelper)
+        public MessageProcessorMultipleGatewayBase(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             SecondServerConfiguration = new NetworkServerConfiguration
             {

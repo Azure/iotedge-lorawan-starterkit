@@ -18,11 +18,14 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Devices that have keep alive set
     public class KeepAliveConnectionTests : MessageProcessorTestBase
     {
+        public KeepAliveConnectionTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         public static int MaxWaitForDeviceConnectionInMs
         {
             get

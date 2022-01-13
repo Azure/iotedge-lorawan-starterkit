@@ -18,11 +18,14 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class C device tests
     public class ClassCIntegrationTests : MessageProcessorTestBase
     {
+        public ClassCIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory]
         [InlineData(null, 0U, 0U)]
         [InlineData(null, 0U, 9U)]

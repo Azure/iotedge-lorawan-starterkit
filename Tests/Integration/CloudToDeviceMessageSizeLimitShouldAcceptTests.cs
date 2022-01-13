@@ -14,12 +14,15 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Cloud to device message processing max payload size tests (Join tests are handled in other class)
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public class CloudToDeviceMessageSizeLimitShouldAcceptTests : CloudToDeviceMessageSizeLimitBaseTests
     {
+        public CloudToDeviceMessageSizeLimitShouldAcceptTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory(Skip = "Fails on CI - works locally. To enable with #562")]
         [CombinatorialData]
         public async Task Should_Accept(
