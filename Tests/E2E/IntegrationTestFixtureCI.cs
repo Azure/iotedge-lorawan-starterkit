@@ -199,19 +199,6 @@ namespace LoRaWan.Tests.E2E
         public NetworkSessionKey GetNetworkSessionKey(int deviceId, bool multiGw = false) =>
            NetworkSessionKey.Parse(GetKey32(deviceId, multiGw));
 
-
-        public string GetKey32(int deviceId, bool multiGw = false)
-        {
-            var target = multiGw ? Configuration.DeviceKeyFormatMultiGW : Configuration.DeviceKeyFormat;
-            var format = string.IsNullOrEmpty(target) ? "00000000000000000000000000000000" : target;
-            if (format.Length < 32)
-            {
-                format = format.PadLeft(32, '0');
-            }
-
-            return deviceId.ToString(format, CultureInfo.InvariantCulture);
-        }
-
         public override void SetupTestDevices()
         {
             var gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? Configuration.LeafDeviceGatewayID;
