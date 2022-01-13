@@ -18,6 +18,7 @@ on:
         description: 'Push docker image to the repository'
         type: boolean
         required: false
+        default: 'false'
 
 jobs:
   Build_And_Test:
