@@ -12,27 +12,41 @@ hide:
 
 <!-- markdown-link-check-enable -->
 
+!!! info ""
+
+    Built for Low Power Wide Area Network Connectivity to Azure IoT Hub
+
 The LoRaWAN starter kit is an OSS cross platform private network implementation
 of the [LoRaWAN specification](https://lora-alliance.org/resource_hub/lorawan-specification-v1-0-2/)
 built for connectivity to Azure IoT Hub. It enables users to setup their own
 LoRaWAN network that can connect to LoRa based nodes (sensors) and send decoded
 message packets to Azure IoT Hub for cloud based processing, analytics and other
-workloads. Alternatively, it allows sending commands from the cloud to the end
+workloads.
+
+Alternatively, it allows sending commands from the cloud to the end
 nodes. The goal of the the project is to provide guidance and a reference for
 Azure IoT Edge users to experiment with LoRaWAN technology.
 
-![Architecture](images/EdgeArchitecture.png)
+![Architecture](images/EdgeArchitecture-updated.png)
+
+## Key Challenges
+
+- Allows LoRa-enabled field gateways to connect directly to Azure without the need for a network operator as intermediary.
+- Enables Azure IoT Edge capabilities for the LoRaWAN network, e.g.:
+  - Local processing on the Edge gateway
+  - Routing to local storage from the Edge gateway
+  - Offline capabilities of the gateway
+- Homogenous management of devices and concentrators independent of connectivity technology through Azure IoT.
+- Off-the-shelf integration with Azure IoT ecosystem, e.g., Azure IoT Central, Azure Digital Twins, Time Series Insights, etc...
 
 ## Features
 
 - LoRaWAN 1.0.2 implementation
 (see [LoRaWAN Specification Support](#LoRaWAN-1.0.2-Specification-Support)
 for more details)
-- Multiple concentrator support
-- Device and Gateway management done completely through Azure IoT Hub.
+- Device and Concentrator management done completely through Azure IoT Hub.
 - Bi-directional communication between LoRa end devices and Azure cloud.
 - Custom packet decoding framework.
-- Device Agnostic.
 - Identity Translation for LoRa devices with caching support.
 - Partial Offline and Casually connected Gateways scenarios.*
 - Easy deployment and setup using Azure ARM templates.
