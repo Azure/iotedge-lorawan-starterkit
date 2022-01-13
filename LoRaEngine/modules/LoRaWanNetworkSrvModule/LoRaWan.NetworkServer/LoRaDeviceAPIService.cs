@@ -186,12 +186,10 @@ namespace LoRaWan.NetworkServer
                 return default;
             }
 
-            var result = await response.Content.ReadAsStringAsync();
-
-            return result is { Length: > 0 } json
+            return await response.Content.ReadAsStringAsync() is { Length: > 0 } json
                    && JsonDocument.Parse(json).RootElement is { ValueKind: JsonValueKind.Object } root
                    && root.EnumerateObject()
-                          .FirstOrDefault(p => PrimaryKeyPropertyName.Equals(p.Name, StringComparison.OrdinalIgnoreCase)) is { Value: { ValueKind: JsonValueKind.String } } property
+                          .FirstOrDefault(p => PrimaryKeyPropertyName.Equals(p.Name, StringComparison.OrdinalIgnoreCase)) is { Value.ValueKind: JsonValueKind.String } property
                    ? property.Value.GetString()
                    : null;
         }
