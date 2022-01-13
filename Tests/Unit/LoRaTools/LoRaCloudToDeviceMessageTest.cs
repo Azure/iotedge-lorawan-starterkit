@@ -196,7 +196,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
         {
             var c2dMessage = new LoRaCloudToDeviceMessage { DevEUI = new DevEui(1) };
             var result = serialize(c2dMessage);
-            Assert.Contains(@"""DevEUI"":""0000000000000001""", result, StringComparison.Ordinal);
+            var devEuiString = System.Text.Json.JsonDocument.Parse(result).RootElement.GetProperty("DevEUI").GetString();
+            Assert.Equal("0000000000000001", devEuiString);
         }
     }
 }
