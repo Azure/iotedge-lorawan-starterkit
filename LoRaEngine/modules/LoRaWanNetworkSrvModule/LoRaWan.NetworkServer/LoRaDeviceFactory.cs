@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = deviceInfo ?? throw new ArgumentNullException(nameof(deviceInfo));
 
-            if (string.IsNullOrEmpty(deviceInfo.PrimaryKey) || deviceInfo.DevEUI == default)
+            if (string.IsNullOrEmpty(deviceInfo.PrimaryKey) || !deviceInfo.DevEUI.IsValid)
                 throw new ArgumentException($"Incomplete {nameof(IoTHubDeviceInfo)}", nameof(deviceInfo));
 
             if (this.loRaDeviceCache.TryGetByDevEui(deviceInfo.DevEUI, out _))
