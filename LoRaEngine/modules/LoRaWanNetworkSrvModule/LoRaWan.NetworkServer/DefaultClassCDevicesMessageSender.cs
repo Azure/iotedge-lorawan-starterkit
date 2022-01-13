@@ -39,9 +39,10 @@ namespace LoRaWan.NetworkServer
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
 
-            if (message.DevEUI == default)
+            var devEui = message.DevEUI.GetValueOrDefault();
+            if (!devEui.IsValid)
             {
-                this.logger.LogError($"[class-c] devEUI missing in payload");
+                this.logger.LogError($"[class-c] devEUI missing/invalid in payload");
                 return false;
             }
 
@@ -51,7 +52,7 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(message.DevEUI.Value);
+            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(devEui);
             if (loRaDevice == null)
             {
                 this.logger.LogError($"[class-c] device {message.DevEUI} not found or not joined");

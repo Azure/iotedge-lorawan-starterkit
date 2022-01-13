@@ -33,9 +33,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             // assert
             deviceApiServiceMock.Verify(s => s.ExecuteFunctionBundlerAsync(loRaDevice.DevEUI,
                                                                            It.Is<FunctionBundlerRequest>(actual => actual.ClientFCntDown == 0
-                                                                               && actual.ClientFCntUp == 1
-                                                                               && actual.GatewayId == gatewayId
-                                                                               && actual.Rssi == rssi)));
+                                                                                                                   && actual.ClientFCntUp == 1
+                                                                                                                   && actual.GatewayId == gatewayId
+                                                                                                                   && actual.Rssi == rssi)));
         }
     }
 }
