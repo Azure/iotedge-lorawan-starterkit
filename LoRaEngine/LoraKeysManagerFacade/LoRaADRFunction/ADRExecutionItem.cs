@@ -7,6 +7,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
+    using LoRaWan;
 
     public class ADRExecutionItem : IFunctionBundlerExecutionItem
     {
@@ -44,7 +45,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             context.Result.AdrResult = await HandleADRRequest(context.DevEUI, context.Request.AdrRequest);
         }
 
-        internal async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request)
+        internal async Task<LoRaADRResult> HandleADRRequest(DevEui devEUI, LoRaADRRequest request)
         {
             if (request == null)
             {

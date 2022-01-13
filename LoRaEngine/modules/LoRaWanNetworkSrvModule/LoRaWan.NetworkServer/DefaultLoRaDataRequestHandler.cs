@@ -289,7 +289,7 @@ namespace LoRaWan.NetworkServer
 
                             if (decodePayloadResult.CloudToDeviceMessage != null)
                             {
-                                if (string.IsNullOrEmpty(decodePayloadResult.CloudToDeviceMessage.DevEUI) || string.Equals(loRaDevice.DevEUI, decodePayloadResult.CloudToDeviceMessage.DevEUI, StringComparison.OrdinalIgnoreCase))
+                                if (decodePayloadResult.CloudToDeviceMessage.DevEUI is null || loRaDevice.DevEUI == decodePayloadResult.CloudToDeviceMessage.DevEUI)
                                 {
                                     // sending c2d to same device
                                     cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
@@ -687,7 +687,7 @@ namespace LoRaWan.NetworkServer
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
             var deviceTelemetry = new LoRaDeviceTelemetry(request, loRaPayloadData, decodedValue, decryptedPayloadData)
             {
-                DeviceEUI = loRaDevice.DevEUI,
+                DeviceEUI = loRaDevice.DevEUI.ToString(),
                 GatewayID = this.configuration.GatewayID,
                 Edgets = (long)(timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds
             };
