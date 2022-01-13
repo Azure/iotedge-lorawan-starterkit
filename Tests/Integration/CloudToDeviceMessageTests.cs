@@ -216,7 +216,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has pending changes?
             if (needsToSaveFcnt)
@@ -295,7 +295,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has pending changes?
             if (needsToSaveFcnt)
@@ -384,7 +384,7 @@ namespace LoRaWan.Tests.Integration
             // 5. Frame counter down is updated
             var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
 
             // 6. Frame count has no pending changes
             Assert.False(loRaDevice.HasFrameCountChanges);
@@ -469,7 +469,7 @@ namespace LoRaWan.Tests.Integration
             // 5. Frame counter down is updated
             var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
 
             // 6. Frame count has no pending changes
             Assert.False(loRaDevice.HasFrameCountChanges);
@@ -560,7 +560,7 @@ namespace LoRaWan.Tests.Integration
             // 5. Frame counter down is updated
             var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta - 1 + 1; // adding 9 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
             Assert.Equal(0U, loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown);
 
             // 6. Frame count has no pending changes
@@ -735,7 +735,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has no pending changes
             Assert.False(loraDevice.HasFrameCountChanges);
@@ -888,7 +888,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has pending changes
             Assert.True(loraDevice.HasFrameCountChanges);

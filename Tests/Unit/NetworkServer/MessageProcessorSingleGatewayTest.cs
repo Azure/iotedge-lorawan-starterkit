@@ -288,7 +288,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // 5. Frame counter down was incremented
             Assert.Equal(1U, loraDevice.FCntDown);
-            Assert.Equal(1, MemoryMarshal.Read<ushort>(payloadDataDown.Fcnt.Span));
+            Assert.Equal(1, payloadDataDown.Fcnt);
         }
 
         [Fact]
@@ -501,7 +501,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var cachedDevice));
             Assert.True(cachedDevice.IsOurDevice);
             Assert.Equal(Constants.MaxFcntUnsavedDelta - 1U, cachedDevice.FCntDown);
-            Assert.Equal(payload.GetFcnt(), (ushort)cachedDevice.FCntUp);
+            Assert.Equal(payload.Fcnt, (ushort)cachedDevice.FCntUp);
 
             // Device was searched by DevAddr
             LoRaDeviceApi.VerifyAll();

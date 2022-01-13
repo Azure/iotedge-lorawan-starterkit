@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(loRaRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication, target.Rssi);
             Assert.Equal(loRaRequest.RadioMetadata.UpInfo.Xtime, target.Time);
             Assert.Equal(unchecked((uint)loRaRequest.RadioMetadata.UpInfo.Xtime), target.GpsTime);
-            Assert.Equal(payload.GetFcnt(), target.Fcnt);
+            Assert.Equal(payload.Fcnt, target.Fcnt);
             Assert.Equal(payload.Fport, target.Port);
         }
     }

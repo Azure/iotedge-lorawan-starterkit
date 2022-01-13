@@ -888,7 +888,7 @@ namespace LoRaWan.NetworkServer
 
             var adjusted32bit = payloadData != null ? Get32BitAjustedFcntIfSupported(payloadData) : null;
             var ret = payload.CheckMic(NwkSKey.Value, adjusted32bit);
-            if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.GetFcnt()))
+            if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.Fcnt))
             {
                 payloadData.Reset32BitBlockInfo();
                 // if the upper 16bits changed on the client, it can be that we can't decrypt
@@ -916,7 +916,7 @@ namespace LoRaWan.NetworkServer
                 serverValue = IncrementUpper16bit(serverValue);
             }
 
-            return LoRaPayload.InferUpper32BitsForClientFcnt(payload.GetFcnt(), serverValue);
+            return LoRaPayload.InferUpper32BitsForClientFcnt(payload.Fcnt, serverValue);
         }
 
         internal bool CanRolloverToNext16Bits(ushort payloadFcntUp)

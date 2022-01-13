@@ -126,7 +126,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
         }
 
         [Theory]
@@ -240,7 +240,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 // 5. Frame counter down is updated
                 Assert.Equal(ExpectedDeviceFcntDown + 1, loraDevice.FCntDown);
-                Assert.Equal(ExpectedDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+                Assert.Equal(ExpectedDeviceFcntDown + 1, payloadDataDown.Fcnt);
             }
         }
 
@@ -332,7 +332,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // ****************************************************
             // Second part reduce connectivity and verify the DR stay to 5 and power set to max
@@ -378,7 +378,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 2, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 2, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 2, payloadDataDown.Fcnt);
 
             // Expectations
             // 1. Message was sent to IoT Hub
@@ -543,7 +543,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // 5. Frame counter down is updated
             Assert.Equal(ExpectedDeviceFcntDown, loraDevice.FCntDown);
-            Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.Fcnt);
         }
 
         private async Task<uint> SendMessage(float currentLsnr, LoRaDataRate currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, FrameControlFlags fctrl)

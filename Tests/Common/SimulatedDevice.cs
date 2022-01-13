@@ -95,8 +95,6 @@ namespace LoRaWan.Tests.Common
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
-            var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
-
             // TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
             byte[] payload = null;
             if (data != null)
@@ -120,7 +118,7 @@ namespace LoRaWan.Tests.Common
                 MacMessageType.UnconfirmedDataUp,
                 LoRaDevice.DevAddr.Value,
                 fctrlFlags,
-                fcntBytes,
+                unchecked((ushort)fcnt.Value),
                 macCommands,
                 fport,
                 payload,
@@ -158,8 +156,6 @@ namespace LoRaWan.Tests.Common
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
-            var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
-
             byte[] payload = null;
 
             if (data != null)
@@ -181,7 +177,7 @@ namespace LoRaWan.Tests.Common
             var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp,
                                                   LoRaDevice.DevAddr.Value,
                                                   FrameControlFlags.Adr,
-                                                  fcntBytes,
+                                                  unchecked((ushort)fcnt.Value),
                                                   null,
                                                   fport,
                                                   payload,

@@ -114,9 +114,8 @@ namespace LoRaWan
             return Read(MacUtilities.DoFinal(mac).AsSpan(0, 4));
         }
 
-        public static Mic ComputeForData(NetworkSessionKey networkSessionKey, byte direction, DevAddr devAddr, byte[] fcnt, byte[] message)
+        public static Mic ComputeForData(NetworkSessionKey networkSessionKey, byte direction, DevAddr devAddr, uint fcnt, byte[] message)
         {
-            if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
             if (message is null) throw new ArgumentNullException(nameof(message));
 
             var mac = MacUtilities.GetMac("AESCMAC");
@@ -128,9 +127,12 @@ namespace LoRaWan
             {
                 0x49, 0x00, 0x00, 0x00, 0x00, direction,
                 /* DevAddr */0x00, 0x00, 0x00, 0x00,
-                fcnt[0], fcnt[1], fcnt[2], fcnt[3], 0x00, (byte)message.Length
+                /* FCnt */0x00, 0x00, 0x00, 0x00,
+                0x00, (byte)message.Length
             };
-            _ = devAddr.Write(block.AsSpan(6));
+
+            var pt = devAddr.Write(block.AsSpan(6));
+            BinaryPrimitives.WriteUInt32LittleEndian(pt, fcnt);
             var algoinput = block.Concat(message).ToArray();
 
             mac.BlockUpdate(algoinput, 0, algoinput.Length);

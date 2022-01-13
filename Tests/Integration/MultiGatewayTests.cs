@@ -247,7 +247,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(initialFcntDown, loRaDevice.FCntDown);
 
             // fcnt up changed
-            Assert.Equal(unconfirmedMessagePayload.GetFcnt(), loRaDevice.FCntUp);
+            Assert.Equal(unconfirmedMessagePayload.Fcnt, loRaDevice.FCntUp);
 
             LoRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Once());
             LoRaDeviceClient.Verify(x => x.AbandonAsync(It.IsAny<Message>()), Times.Once());

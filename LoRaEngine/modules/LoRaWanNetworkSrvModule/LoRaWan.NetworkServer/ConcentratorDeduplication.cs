@@ -88,7 +88,7 @@ namespace LoRaWan.NetworkServer
 
         internal static DataMessageKey CreateCacheKey(LoRaPayloadData payload, LoRaDevice loRaDevice) =>
             payload.Mic is { } someMic
-                ? new DataMessageKey(DevEui.Parse(loRaDevice.DevEUI), someMic, payload.GetFcnt())
+                ? new DataMessageKey(DevEui.Parse(loRaDevice.DevEUI), someMic, payload.Fcnt)
                 : throw new ArgumentException(nameof(payload.Mic));
 
         internal static JoinMessageKey CreateCacheKey(LoRaPayloadJoinRequest payload) =>

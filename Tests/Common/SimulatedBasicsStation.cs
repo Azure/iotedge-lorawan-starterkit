@@ -123,7 +123,7 @@ namespace LoRaWan.Tests.Common
                 msgtype = "updf",
                 DevAddr = int.Parse(payload.DevAddr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 FCtrl = (uint)payload.FrameControlFlags,
-                FCnt = MemoryMarshal.Read<ushort>(payload.Fcnt.Span),
+                FCnt = payload.Fcnt,
                 FOpts = ConversionHelper.ByteArrayToString(payload.Fopts),
                 FPort = (int)payload.Fport,
                 FRMPayload = ConversionHelper.ByteArrayToString(payload.Frmpayload),
