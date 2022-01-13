@@ -42,10 +42,10 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider,
                 ConcentratorDeduplication,
                 PayloadDecoder,
-                new DeduplicationStrategyFactory(testOutputLoggerFactory, testOutputLoggerFactory.CreateLogger<DeduplicationStrategyFactory>()),
-                new LoRaADRStrategyProvider(testOutputLoggerFactory),
-                new LoRAADRManagerFactory(LoRaDeviceApi.Object, testOutputLoggerFactory),
-                new FunctionBundlerProvider(LoRaDeviceApi.Object, testOutputLoggerFactory, testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()),
+                new DeduplicationStrategyFactory(this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<DeduplicationStrategyFactory>()),
+                new LoRaADRStrategyProvider(this.testOutputLoggerFactory),
+                new LoRAADRManagerFactory(LoRaDeviceApi.Object, this.testOutputLoggerFactory),
+                new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()),
                 testOutputHelper)
             { CallBase = true };
 
