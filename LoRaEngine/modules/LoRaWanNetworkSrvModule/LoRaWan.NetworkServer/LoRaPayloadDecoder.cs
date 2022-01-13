@@ -49,8 +49,7 @@ namespace LoRaWan.NetworkServer
             this.httpClient = httpClient;
         }
 
-        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(DevEui devEui, byte[] payload, FramePort fport,
-                                                                       string sensorDecoder)
+        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(DevEui devEui, byte[] payload, FramePort fport, string sensorDecoder)
         {
             sensorDecoder ??= string.Empty;
 

@@ -18,7 +18,6 @@ namespace LoRaWan.Tests.Common
 
         public void SetDecoder(ILoRaPayloadDecoder decoder) => this.decoder = decoder;
 
-        public ValueTask<DecodePayloadResult> DecodeMessageAsync(DevEui devEui, byte[] payload, FramePort fport,
-                                                                 string sensorDecoder) => this.decoder.DecodeMessageAsync(devEui, payload, fport, sensorDecoder);
+        public ValueTask<DecodePayloadResult> DecodeMessageAsync(DevEui devEui, byte[] payload, FramePort fport, string sensorDecoder) => this.decoder.DecodeMessageAsync(devEui, payload, fport, sensorDecoder);
     }
 }
