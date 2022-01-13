@@ -42,11 +42,6 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public Memory<byte> CfList { get; set; }
 
-        /// <summary>
-        /// Gets or sets frame Counter.
-        /// </summary>
-        public Memory<byte> Fcnt { get; set; }
-
         public int Rx1DrOffset => (DlSettings.Span[0] >> 4) & 0b00000111;
 
         public DataRateIndex Rx2Dr => (DataRateIndex)(DlSettings.Span[0] & 0b00001111);
@@ -85,7 +80,6 @@ namespace LoRaTools.LoRaMessage
             }
 
             // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
-            Fcnt = BitConverter.GetBytes(0x01);
             if (BitConverter.IsLittleEndian)
             {
                 DlSettings.Span.Reverse();
