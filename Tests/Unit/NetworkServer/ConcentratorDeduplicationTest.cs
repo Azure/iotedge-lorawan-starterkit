@@ -170,8 +170,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         public static TheoryData CreateKeyJoinMessagesTheoryData
-            => TheoryDataFactory.From<object, ulong, ulong, ushort, uint?>(
-                new (object, ulong, ulong, ushort, uint?)[]
+            => TheoryDataFactory.From<object, ulong, ulong, ushort, int?>(
+                new (object, ulong, ulong, ushort, int?)[]
                 {
                     (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0, null),
                     (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0, 1 ), // a non-relevant field should not influence the key
@@ -183,7 +183,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [MemberData(nameof(CreateKeyJoinMessagesTheoryData))]
-        internal void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(ConcentratorDeduplication.JoinMessageKey expectedKey, ulong joinEui, ulong devEui, ushort devNonce, uint? fieldNotUsedInKey = null)
+        internal void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(ConcentratorDeduplication.JoinMessageKey expectedKey, ulong joinEui, ulong devEui, ushort devNonce, int? fieldNotUsedInKey = null)
         {
             var micValue = fieldNotUsedInKey ?? 0;
             var payload = new LoRaPayloadJoinRequestLns(new MacHeader(MacMessageType.JoinRequest),
