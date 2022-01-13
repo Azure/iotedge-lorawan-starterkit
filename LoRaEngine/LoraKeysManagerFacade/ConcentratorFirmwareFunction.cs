@@ -9,7 +9,6 @@ namespace LoraKeysManagerFacade
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Web.Http;
     using Azure.Storage.Blobs;
     using LoRaTools.Utils;
     using LoRaWan;
