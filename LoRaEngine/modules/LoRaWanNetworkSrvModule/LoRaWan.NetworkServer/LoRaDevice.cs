@@ -890,7 +890,7 @@ namespace LoRaWan.NetworkServer
             var ret = payload.CheckMic(NwkSKey.Value, adjusted32bit);
             if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.Fcnt))
             {
-                payloadData.Reset32BitBlockInfo();
+                payloadData.Reset32BitFcnt();
                 // if the upper 16bits changed on the client, it can be that we can't decrypt
                 ret = payloadData.CheckMic(NwkSKey.Value, Get32BitAdjustedFcntIfSupported(payloadData, true));
                 if (ret)

@@ -102,7 +102,7 @@ namespace LoRaTools.LoRaMessage
         /// <returns>the encrypted bytes.</returns>
         public abstract byte[] PerformEncryption(AppKey key);
 
-        public void Reset32BitBlockInfo() => Server32BitFcnt = null;
+        public void Reset32BitFcnt() => Server32BitFcnt = null;
         public void Ensure32BitFcntValue(uint? server32bitFcnt) => Server32BitFcnt ??= server32bitFcnt;
 
         /// <summary>
