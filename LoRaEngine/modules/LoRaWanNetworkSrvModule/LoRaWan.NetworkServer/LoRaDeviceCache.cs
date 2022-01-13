@@ -69,7 +69,6 @@ namespace LoRaWan.NetworkServer
                     foreach (var expiredDevice in itemsToRemove)
                     {
                         _ = Remove(expiredDevice);
-                        expiredDevice.Dispose();
                     }
                 }
 
@@ -112,7 +111,7 @@ namespace LoRaWan.NetworkServer
             return device.InitializeAsync(this.configuration, cancellationToken);
         }
 
-        public virtual bool Remove(LoRaDevice device)
+        public virtual bool Remove(LoRaDevice device, bool dispose = true)
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
 
@@ -130,6 +129,11 @@ namespace LoRaWan.NetworkServer
                     {
                         result &= this.devAddrCache.Remove(someDevAddr, out _);
                     }
+                }
+
+                if (dispose)
+                {
+                    device.Dispose();
                 }
             }
             return result;
