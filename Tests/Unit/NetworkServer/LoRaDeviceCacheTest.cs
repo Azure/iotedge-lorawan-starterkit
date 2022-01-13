@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
+    using Moq.Protected;
     using Xunit;
 
     public class LoRaDeviceCacheTest
@@ -167,6 +168,21 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 Assert.Equal(hit, cacheStats.Hit);
                 Assert.Equal(miss, cacheStats.Miss);
             }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void When_Removing_Device_Is_Disposed_On_Request(bool dispose)
+        {
+            using var cache = CreateNoRefreshCache();
+            var deviceMock = new Mock<LoRaDevice>(new DevAddr(200), new DevEui(100).ToString(), Mock.Of<ILoRaDeviceClientConnectionManager>());
+            var device = deviceMock.Object;
+            cache.Register(device);
+            Assert.True(cache.Remove(device, dispose));
+            Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
+
+            deviceMock.Protected().Verify(nameof(device.Dispose), dispose ? Times.Once() : Times.Never(), true, true);
         }
 
         [Fact]
@@ -419,12 +435,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 RefreshOperationsCount++;
             }
 
-            public override bool Remove(LoRaDevice loRaDevice)
+            public override bool Remove(LoRaDevice loRaDevice, bool dispose = true)
             {
                 if (this.removeTick.CurrentCount == 0)
                     this.removeTick.Release();
 
-                var ret = base.Remove(loRaDevice);
+                var ret = base.Remove(loRaDevice, dispose);
 
                 return ret;
             }
