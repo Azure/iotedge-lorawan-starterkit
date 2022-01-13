@@ -902,45 +902,37 @@ namespace LoRaWan.NetworkServer
             }
 
             return ret;
-        }
 
-        internal uint? Get32BitAdjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false)
-        {
-            if (!Supports32BitFCnt || payload == null)
-                return null;
-
-            var serverValue = FCntUp;
-
-            if (rollHi)
+            uint? Get32BitAdjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false)
             {
-                serverValue = IncrementUpper16bit(serverValue);
+                if (!Supports32BitFCnt || payload == null)
+                    return null;
+
+                var serverValue = rollHi ? IncrementUpper16bit(FCntUp) : FCntUp;
+                return LoRaPayload.InferUpper32BitsForClientFcnt(payload.Fcnt, serverValue);
             }
 
-            return LoRaPayload.InferUpper32BitsForClientFcnt(payload.Fcnt, serverValue);
-        }
-
-        internal bool CanRolloverToNext16Bits(ushort payloadFcntUp)
-        {
-            if (!Supports32BitFCnt)
+            bool CanRolloverToNext16Bits(ushort payloadFcntUp)
             {
-                // rollovers are only supported on 32bit devices
-                return false;
+                if (!Supports32BitFCnt)
+                {
+                    // rollovers are only supported on 32bit devices
+                    return false;
+                }
+
+                var delta = payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp);
+                return delta <= Constants.MaxFcntGap;
             }
 
-            var delta = payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp);
-            return delta <= Constants.MaxFcntGap;
+            void Rollover32BitFCnt() => SetFcntUp(IncrementUpper16bit(this.fcntUp));
+
+            static uint IncrementUpper16bit(uint val)
+            {
+                val |= 0x0000FFFF;
+                return ++val;
+            }
         }
 
-        internal void Rollover32BitFCnt()
-        {
-            SetFcntUp(IncrementUpper16bit(this.fcntUp));
-        }
-
-        private static uint IncrementUpper16bit(uint val)
-        {
-            val |= 0x0000FFFF;
-            return ++val;
-        }
 
         private Task RunAndQueueNext(LoRaRequest request)
         {
