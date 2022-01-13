@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("DevEUI")]
         public string DevEuiString
         {
-            get => DevEUI.ToHex();
+            get => DevEUI.ToString();
             set => DevEUI = DevEui.Parse(value);
         }
 

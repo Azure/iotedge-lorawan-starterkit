@@ -174,7 +174,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var result = MetricExporterHelper.GetTagsInOrder(new[] { MetricRegistry.ConcentratorIdTagName }, Array.Empty<KeyValuePair<string, object?>>(), this.metricTagBag);
 
             // assert
-            Assert.Equal(new[] { stationEui.ToHex() }, result);
+            Assert.Equal(new[] { stationEui.ToString() }, result);
         }
 
         [Fact]

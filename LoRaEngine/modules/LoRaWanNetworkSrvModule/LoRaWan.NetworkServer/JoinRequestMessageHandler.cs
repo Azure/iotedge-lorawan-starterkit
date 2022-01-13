@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer
                 loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEui, joinReq.DevNonce);
                 if (loRaDevice == null)
                 {
-                    request.NotifyFailed(devEui.ToHex(), LoRaDeviceRequestFailedReason.UnknownDevice);
+                    request.NotifyFailed(devEui.ToString(), LoRaDeviceRequestFailedReason.UnknownDevice);
                     // we do not log here as we assume that the deviceRegistry does a more informed logging if returning null
                     return;
                 }

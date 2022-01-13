@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Integration
             ServerConfiguration.NetId = new NetId(netId);
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToHex();
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
             twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             if (deviceGatewayID != null) twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -221,7 +221,7 @@ namespace LoRaWan.Tests.Integration
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToHex();
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
             twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             if (deviceGatewayID != null) twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -321,7 +321,7 @@ namespace LoRaWan.Tests.Integration
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToHex();
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
             twin.Properties.Desired[TwinProperty.AppEui] = "012345678901234567890123456789FF";
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -366,8 +366,8 @@ namespace LoRaWan.Tests.Integration
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToHex();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToHex();
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
+            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
             twin.Properties.Desired[TwinProperty.AppKey] = "012345678901234567890123456789FF";
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
@@ -417,7 +417,7 @@ namespace LoRaWan.Tests.Integration
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToHex();
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
             twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
@@ -470,7 +470,7 @@ namespace LoRaWan.Tests.Integration
 
             // Device twin will be queried
             var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToHex();
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
             twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;

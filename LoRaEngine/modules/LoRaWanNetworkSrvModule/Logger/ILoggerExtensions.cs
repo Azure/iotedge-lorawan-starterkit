@@ -15,7 +15,7 @@ namespace LoRaWan
 
         public static IDisposable BeginDeviceScope(this ILogger logger, DevEui? devEUI) =>
             devEUI is { } someDevEui
-            ? logger?.BeginScope(new Dictionary<string, object> { [DevEUIKey] = someDevEui.ToHex() })
+            ? logger?.BeginScope(new Dictionary<string, object> { [DevEUIKey] = someDevEui.ToString() })
             : NoopDisposable.Instance;
 
         public static IDisposable BeginDeviceAddressScope(this ILogger logger, DevAddr devAddr) =>
@@ -25,6 +25,6 @@ namespace LoRaWan
             logger?.BeginScope(new Dictionary<string, object> { [DeviceAddressKey] = deviceAddress });
 
         public static IDisposable BeginEuiScope(this ILogger logger, StationEui eui) =>
-            logger?.BeginScope(new Dictionary<string, object> { [StationEuiKey] = eui.ToHex() });
+            logger?.BeginScope(new Dictionary<string, object> { [StationEuiKey] = eui.ToString() });
     }
 }

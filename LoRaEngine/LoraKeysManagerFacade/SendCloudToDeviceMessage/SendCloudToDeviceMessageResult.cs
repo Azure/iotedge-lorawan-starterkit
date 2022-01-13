@@ -17,7 +17,7 @@ namespace LoraKeysManagerFacade
         [JsonProperty("devEUI")]
         public string DevEuiString
         {
-            get => DevEui.ToHex();
+            get => DevEui.ToString();
             set => DevEui = DevEui.Parse(value);
         }
 

@@ -86,7 +86,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             // arrange
             var devEui = new DevEui(13213123212131);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
-            var (registryManager, request) = SetupIotHubQuery(devEui.ToHex(), PrimaryKey);
+            var (registryManager, request) = SetupIotHubQuery(devEui.ToString(), PrimaryKey);
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
             // act
@@ -94,7 +94,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             // assert
             var okObjectResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(JsonConvert.SerializeObject(new { DevEUI = devEui.ToHex(), PrimaryKey = primaryKey }), JsonConvert.SerializeObject(okObjectResult.Value));
+            Assert.Equal(JsonConvert.SerializeObject(new { DevEUI = devEui.ToString(), PrimaryKey = primaryKey }), JsonConvert.SerializeObject(okObjectResult.Value));
             registryManager.VerifyAll();
         }
 

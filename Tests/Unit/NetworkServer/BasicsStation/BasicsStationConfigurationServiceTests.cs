@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         public BasicsStationConfigurationServiceTests()
         {
             this.stationEui = new StationEui(ulong.MaxValue);
-            this.devEui = DevEui.Parse(this.stationEui.ToHex());
+            this.devEui = DevEui.Parse(this.stationEui.ToString());
             this.loRaDeviceApiServiceMock = new Mock<LoRaDeviceAPIServiceBase>();
             this.loRaDeviceFactoryMock = new Mock<ILoRaDeviceFactory>();
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -48,7 +48,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         private void SetupDeviceKeyLookup() => SetupDeviceKeyLookup("foo");
 
         private void SetupDeviceKeyLookup(string primaryKey) =>
-            SetupDeviceKeyLookup(new IotHubStationInfo(this.stationEui.ToHex(), primaryKey));
+            SetupDeviceKeyLookup(new IotHubStationInfo(this.stationEui.ToString(), primaryKey));
 
         private void SetupDeviceKeyLookup(IotHubStationInfo iotHubStationInfo) =>
             loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByEuiAsync(this.stationEui))
@@ -307,7 +307,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 SetupTwinResponse(primaryKey);
                 this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.SearchByEuiAsync(It.IsAny<StationEui>()))
                                              .Throws(new InvalidOperationException())
-                                             .Returns(Task.FromResult(new IotHubStationInfo(this.stationEui.ToHex(), primaryKey)));
+                                             .Returns(Task.FromResult(new IotHubStationInfo(this.stationEui.ToString(), primaryKey)));
 
                 // act
                 Task<string> Act() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None);
@@ -330,7 +330,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 const ulong value = 0x1a2b3c;
                 var devEui = new DevEui(value);
                 var stationEui = new StationEui(value);
-                Assert.Equal(devEui.ToHex(), stationEui.ToHex());
+                Assert.Equal(devEui.ToString(), stationEui.ToString());
             }
         }
 

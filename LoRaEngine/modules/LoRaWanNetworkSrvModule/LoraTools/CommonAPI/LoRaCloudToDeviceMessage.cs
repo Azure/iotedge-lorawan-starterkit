@@ -21,7 +21,7 @@ namespace LoRaTools.CommonAPI
         [System.Text.Json.Serialization.JsonPropertyName(DevEuiPropertyName)]
         public string DevEuiString
         {
-            get => DevEUI?.ToHex();
+            get => DevEUI?.ToString();
             set => DevEUI = string.IsNullOrEmpty(value) ? null : DevEui.Parse(value);
         }
 

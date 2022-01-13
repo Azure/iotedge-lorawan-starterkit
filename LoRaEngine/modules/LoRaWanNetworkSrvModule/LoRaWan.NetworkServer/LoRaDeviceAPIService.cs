@@ -112,7 +112,7 @@ namespace LoRaWan.NetworkServer
                 ["code"] = AuthCode,
                 ["GateWayId"] = gatewayID,
                 ["DevAddr"] = devAddr?.ToString(),
-                ["DevEUI"] = devEui?.ToHex(),
+                ["DevEUI"] = devEui?.ToString(),
                 ["AppEUI"] = appEUI,
                 ["DevNonce"] = devNonce?.ToString()
             });
@@ -154,11 +154,11 @@ namespace LoRaWan.NetworkServer
 
         /// <inheritdoc />
         public override Task<IoTHubDeviceInfo> SearchByEuiAsync(DevEui eui) =>
-            SearchByEuiAsync<IoTHubDeviceInfo>(eui.ToHex());
+            SearchByEuiAsync<IoTHubDeviceInfo>(eui.ToString());
 
         /// <inheritdoc />
         public override Task<IotHubStationInfo> SearchByEuiAsync(StationEui eui) =>
-            SearchByEuiAsync<IotHubStationInfo>(eui.ToHex());
+            SearchByEuiAsync<IotHubStationInfo>(eui.ToString());
 
         private async Task<T> SearchByEuiAsync<T>(string eui)
         {
@@ -215,7 +215,7 @@ namespace LoRaWan.NetworkServer
             var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
-                ["StationEui"] = eui.ToHex(),
+                ["StationEui"] = eui.ToString(),
                 ["CredentialType"] = credentialtype.ToString()
             });
 

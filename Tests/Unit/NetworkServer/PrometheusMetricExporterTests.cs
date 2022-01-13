@@ -140,7 +140,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             await observeValue.RetryVerifyAsync(ov => ov.Invoke(), Times.Once);
-            this.recordObservableGaugeMock.Verify(r => r.Invoke(ObservableGauge.Name, new[] { stationEui.ToHex() }, measurement.Value), Times.Once);
+            this.recordObservableGaugeMock.Verify(r => r.Invoke(ObservableGauge.Name, new[] { stationEui.ToString() }, measurement.Value), Times.Once);
         }
 
         [Theory]
@@ -190,7 +190,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             counter.Add(value);
 
             // assert
-            this.incCounterMock.Verify(me => me.Invoke(Counter.Name, new[] { stationEui.ToHex() }, value), Times.Once);
+            this.incCounterMock.Verify(me => me.Invoke(Counter.Name, new[] { stationEui.ToString() }, value), Times.Once);
         }
 
         private class TestablePrometheusMetricExporter : PrometheusMetricExporter

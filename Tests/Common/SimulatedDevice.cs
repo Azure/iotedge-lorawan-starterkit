@@ -259,9 +259,9 @@ namespace LoRaWan.Tests.Common
 
             await basicsStation.SendMessageAsync(JsonSerializer.Serialize(new
             {
-                JoinEui = joinRequestPayload.AppEui.ToHex(),
+                JoinEui = joinRequestPayload.AppEui.ToString(),
                 msgtype = "jreq",
-                DevEui = joinRequestPayload.DevEUI.ToHex(),
+                DevEui = joinRequestPayload.DevEUI.ToString(),
                 DevNonce = joinRequestPayload.DevNonce.AsUInt16,
                 MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 MIC = joinRequestPayload.Mic.Value.AsInt32,

@@ -32,7 +32,7 @@ namespace LoraKeysManagerFacade
             this.cacheStore = cacheStore;
             this.devEUI = devEUI;
             this.gatewayId = gatewayId;
-            this.cacheKey = devEUI.ToHex();
+            this.cacheKey = devEUI.ToString();
         }
 
         public async Task<bool> TryToLockAsync(string lockKey = null, bool block = true)

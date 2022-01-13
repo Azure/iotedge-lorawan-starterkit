@@ -29,7 +29,7 @@ namespace LoraKeysManagerFacade
         [JsonProperty("DevEUI")]
         public string DevEuiString
         {
-            get => DevEUI?.ToHex();
+            get => DevEUI?.ToString();
             set => DevEUI = string.IsNullOrEmpty(value) ? null : DevEui.Parse(value);
         }
 

@@ -134,7 +134,7 @@ namespace LoraKeysManagerFacade
 
         private static string GetEntryKey(DevEui devEUI)
         {
-            return devEUI.ToHex() + CacheToken;
+            return devEUI + CacheToken;
         }
     }
 }

@@ -247,7 +247,7 @@ namespace LoRaWan.Tests.E2E
         }
 
         public Task setIdAsync(DevAddr? DevAddr, string DevEUI, JoinEui? AppEUI) =>
-            setIdAsync(DevAddr?.ToString(), DevEUI, AppEUI?.ToHex());
+            setIdAsync(DevAddr?.ToString(), DevEUI, AppEUI?.ToString());
 
         private async Task setIdAsync(string DevAddr, string DevEUI, string AppEUI)
         {

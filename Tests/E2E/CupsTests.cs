@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.E2E
             try
             {
                 var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device33_OTAA));
-                LogTestStart(device, stationEui.ToHex());
+                LogTestStart(device, stationEui);
 
                 if (!string.IsNullOrEmpty(clientThumbprint))
                 {
@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.E2E
                 {
                     { "TLS_SNI", "false" },
                     { "CUPS_URI", TestFixture.Configuration.SharedCupsEndpoint },
-                    { "FIXED_STATION_EUI", stationEui.ToHex() },
+                    { "FIXED_STATION_EUI", stationEui.ToString() },
                     { "RADIODEV", TestFixture.Configuration.RadioDev }
                 }, out temporaryDirectoryName);
 

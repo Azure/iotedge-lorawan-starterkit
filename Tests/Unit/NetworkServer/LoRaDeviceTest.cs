@@ -112,7 +112,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "AppEUI", joinEui.ToHex() },
+                    { "AppEUI", joinEui.ToString() },
                     { "AppKey", appKey.ToString() },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -159,7 +159,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "AppEUI", joinEui.ToHex() },
+                    { "AppEUI", joinEui.ToString() },
                     { "AppKey", appKey.ToString() },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },

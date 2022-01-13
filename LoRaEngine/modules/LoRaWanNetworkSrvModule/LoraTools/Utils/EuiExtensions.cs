@@ -7,6 +7,6 @@ namespace LoRaTools.Utils
 
     public static class EuiExtensions
     {
-        public static string AsIotHubDeviceId(this DevEui devEui) => devEui.ToHex();
+        public static string AsIotHubDeviceId(this DevEui devEui) => devEui.ToString();
     }
 }

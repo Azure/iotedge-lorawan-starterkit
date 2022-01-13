@@ -57,7 +57,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             writer.WriteStartObject();
 
             writer.WriteString("msgtype", LnsMessageType.DownlinkMessage.ToBasicStationString());
-            writer.WriteString("DevEui", message.DevEui.ToHex());
+            writer.WriteString("DevEui", message.DevEui.ToString());
 
             // 0 is for Class A devices, 2 is for Class C devices
             // Ideally there Class C downlink frame which answers an uplink which have RxDelay set

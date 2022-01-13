@@ -81,7 +81,7 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult($"Could not parse desired concentrator credential type '{credentialTypeQueryString}'.");
             }
 
-            var twin = await this.registryManager.GetTwinAsync(stationEui.ToHex(), cancellationToken);
+            var twin = await this.registryManager.GetTwinAsync(stationEui.ToString(), cancellationToken);
             if (twin != null)
             {
                 this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui);

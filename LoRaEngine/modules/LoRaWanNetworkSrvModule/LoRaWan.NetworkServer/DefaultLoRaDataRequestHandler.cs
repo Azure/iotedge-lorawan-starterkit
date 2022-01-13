@@ -687,7 +687,7 @@ namespace LoRaWan.NetworkServer
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
             var deviceTelemetry = new LoRaDeviceTelemetry(request, loRaPayloadData, decodedValue, decryptedPayloadData)
             {
-                DeviceEUI = loRaDevice.DevEUI.ToHex(),
+                DeviceEUI = loRaDevice.DevEUI.ToString(),
                 GatewayID = this.configuration.GatewayID,
                 Edgets = (long)(timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds
             };

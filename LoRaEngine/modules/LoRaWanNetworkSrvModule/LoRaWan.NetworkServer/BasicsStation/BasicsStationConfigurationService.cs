@@ -71,7 +71,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                     }
 
                     // A Station EUI is always also Dev EUI.
-                    using var client = this.loRaDeviceFactory.CreateDeviceClient(DevEui.Parse(info.StationEui.ToHex()), info.PrimaryKey);
+                    using var client = this.loRaDeviceFactory.CreateDeviceClient(DevEui.Parse(info.StationEui.ToString()), info.PrimaryKey);
                     var twin = await client.GetTwinAsync(cancellationToken);
                     return twin.Properties.Desired;
                 });

@@ -144,7 +144,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await this.trackValueMock.RetryVerifyAsync(me => me.Invoke(It.Is<Metric>(m => m.Identifier.MetricNamespace == MetricRegistry.Namespace
                                                                                     && m.Identifier.MetricId == ObservableGaugeMetric.Name),
                                                                        measurement.Value,
-                                                                       new[] { stationEui.ToHex() }),
+                                                                       new[] { stationEui.ToString() }),
                                                        Times.Once);
         }
 
@@ -194,7 +194,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             counter.Add(value);
 
             // assert
-            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), value, new[] { stationEui.ToHex() }), Times.Once);
+            this.trackValueMock.Verify(me => me.Invoke(It.IsAny<Metric>(), value, new[] { stationEui.ToString() }), Times.Once);
         }
 
         public void Dispose()
