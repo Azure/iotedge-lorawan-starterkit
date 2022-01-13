@@ -161,7 +161,7 @@ namespace LoraKeysManagerFacade
 
                 try
                 {
-                    await this.serviceClient.SendAsync(devEUI.AsIotHubDeviceId(), message);
+                    await this.serviceClient.SendAsync(devEUI.ToString(), message);
                 }
                 catch (IotHubException ex)
                 {

@@ -5,7 +5,6 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Threading.Tasks;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -49,7 +48,7 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult("DevEUI missing or invalid.");
             }
 
-            var device = await this.registryManager.GetDeviceAsync(parsedDevEui.AsIotHubDeviceId());
+            var device = await this.registryManager.GetDeviceAsync(parsedDevEui.ToString());
             if (device != null)
             {
                 log.LogDebug($"Search for {devEui} found 1 device");

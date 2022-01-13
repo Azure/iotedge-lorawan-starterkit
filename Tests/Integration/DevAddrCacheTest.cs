@@ -10,7 +10,6 @@ namespace LoRaWan.Tests.Integration
     using System.Text;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
-    using LoRaTools.Utils;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -81,7 +80,7 @@ namespace LoRaWan.Tests.Integration
                     {
                         var deviceTwin = new Twin
                         {
-                            DeviceId = devaddrItem.DevEUI.Value.AsIotHubDeviceId(),
+                            DeviceId = devaddrItem.DevEUI.Value.ToString(),
                             Properties = new TwinProperties()
                             {
                                 Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),

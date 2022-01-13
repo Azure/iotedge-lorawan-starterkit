@@ -10,7 +10,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools.CommonAPI;
-    using global::LoRaTools.Utils;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -456,7 +455,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 Payload = "hello",
             };
 
-            this.serviceClient.Setup(x => x.SendAsync(devEui.AsIotHubDeviceId(), It.IsNotNull<Message>()))
+            this.serviceClient.Setup(x => x.SendAsync(devEui.ToString(), It.IsNotNull<Message>()))
                 .Callback((string d, Message m) =>
                 {
                     Assert.Empty(m.Properties);
@@ -511,7 +510,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 Payload = "hello",
             };
 
-            this.serviceClient.Setup(x => x.SendAsync(devEui.AsIotHubDeviceId(), It.IsNotNull<Message>()))
+            this.serviceClient.Setup(x => x.SendAsync(devEui.ToString(), It.IsNotNull<Message>()))
                 .ThrowsAsync(new IotHubCommunicationException(string.Empty));
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(

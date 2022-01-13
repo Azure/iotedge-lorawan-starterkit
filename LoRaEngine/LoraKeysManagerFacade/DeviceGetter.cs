@@ -7,7 +7,6 @@ namespace LoraKeysManagerFacade
     using System.Collections.Generic;
     using System.Globalization;
     using System.Threading.Tasks;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -221,7 +220,7 @@ namespace LoraKeysManagerFacade
 
         private async Task<string> LoadPrimaryKeyAsync(DevEui devEUI)
         {
-            var device = await this.registryManager.GetDeviceAsync(devEUI.AsIotHubDeviceId());
+            var device = await this.registryManager.GetDeviceAsync(devEUI.ToString());
             if (device == null)
             {
                 return null;
@@ -245,11 +244,11 @@ namespace LoraKeysManagerFacade
                     {
                         joinInfo = new JoinInfo();
 
-                        var device = await this.registryManager.GetDeviceAsync(devEUI.AsIotHubDeviceId());
+                        var device = await this.registryManager.GetDeviceAsync(devEUI.ToString());
                         if (device != null)
                         {
                             joinInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
-                            var twin = await this.registryManager.GetTwinAsync(devEUI.AsIotHubDeviceId());
+                            var twin = await this.registryManager.GetTwinAsync(devEUI.ToString());
                             var deviceGatewayId = twin.GetGatewayID();
                             if (!string.IsNullOrEmpty(deviceGatewayId))
                             {

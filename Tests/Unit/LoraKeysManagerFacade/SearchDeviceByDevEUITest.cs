@@ -8,7 +8,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools.CommonAPI;
-    using global::LoRaTools.Utils;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -69,7 +68,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             ctx.Request.QueryString = new QueryString($"?devEUI={devEUI.ToString(format, null)}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
-            registryManager.Setup(x => x.GetDeviceAsync(devEUI.AsIotHubDeviceId()))
+            registryManager.Setup(x => x.GetDeviceAsync(devEUI.ToString()))
                 .ReturnsAsync((Device)null);
 
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
