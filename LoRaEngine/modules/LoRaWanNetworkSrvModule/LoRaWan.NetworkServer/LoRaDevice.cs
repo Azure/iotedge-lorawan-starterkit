@@ -886,13 +886,13 @@ namespace LoRaWan.NetworkServer
         {
             var payloadData = payload as LoRaPayloadData;
 
-            var adjusted32bit = payloadData != null ? Get32BitAjustedFcntIfSupported(payloadData) : null;
+            var adjusted32bit = payloadData != null ? Get32BitAdjustedFcntIfSupported(payloadData) : null;
             var ret = payload.CheckMic(NwkSKey.Value, adjusted32bit);
             if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.Fcnt))
             {
                 payloadData.Reset32BitBlockInfo();
                 // if the upper 16bits changed on the client, it can be that we can't decrypt
-                ret = payloadData.CheckMic(NwkSKey.Value, Get32BitAjustedFcntIfSupported(payloadData, true));
+                ret = payloadData.CheckMic(NwkSKey.Value, Get32BitAdjustedFcntIfSupported(payloadData, true));
                 if (ret)
                 {
                     // this is an indication that the lower 16 bits rolled over on the client
@@ -904,7 +904,7 @@ namespace LoRaWan.NetworkServer
             return ret;
         }
 
-        internal uint? Get32BitAjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false)
+        internal uint? Get32BitAdjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false)
         {
             if (!Supports32BitFCnt || payload == null)
                 return null;
