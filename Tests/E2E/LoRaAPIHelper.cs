@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.E2E
             return new HttpClient(httpHandler);
         }
 
-        public static async Task<bool> ResetADRCache(string devEUI)
+        public static async Task<bool> ResetADRCache(DevEui devEUI)
         {
             var path = $"FunctionBundler/{devEUI}";
             // the gateway id is only used to identify who is taking the lock when
@@ -42,7 +42,7 @@ namespace LoRaWan.Tests.E2E
             return await PostFunctionEndpointAsync(path, payload);
         }
 
-        public static async Task<bool> SendCloudToDeviceMessage(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        public static async Task<bool> SendCloudToDeviceMessage(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
             var path = $"cloudtodevicemessage/{devEUI}";
             var json = JsonConvert.SerializeObject(c2dMessage);
@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.E2E
 
         private static async Task<bool> PostFunctionEndpointAsync(string path, string contentJson, CancellationToken cancellationToken = default)
         {
-            var url = new Uri($"{baseUrl}" + path + $"?code={authCode}"); 
+            var url = new Uri($"{baseUrl}" + path + $"?code={authCode}");
             using var content = PreparePostContent(contentJson);
             using var response = await httpClient.Value.PostAsync(url, content, cancellationToken);
             return response.IsSuccessStatusCode;

@@ -59,6 +59,11 @@ namespace LoRaWan
         }
 
         public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
+
+        public string ToHex() => ToHex(null);
+        public string ToHex(LetterCase letterCase) => ToHex(null, letterCase);
+        public string ToHex(char? separator) => ToHex(separator, LetterCase.Upper);
+        public string ToHex(char? separator, LetterCase letterCase) => Eui.ToHex(this.value, separator, letterCase);
     }
 
     readonly partial record struct JoinEui : IFormattable
@@ -107,6 +112,11 @@ namespace LoRaWan
         }
 
         public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
+
+        public string ToHex() => ToHex(null);
+        public string ToHex(LetterCase letterCase) => ToHex(null, letterCase);
+        public string ToHex(char? separator) => ToHex(separator, LetterCase.Upper);
+        public string ToHex(char? separator, LetterCase letterCase) => Eui.ToHex(this.value, separator, letterCase);
     }
 
     readonly partial record struct StationEui : IFormattable
@@ -155,5 +165,10 @@ namespace LoRaWan
         }
 
         public string ToString(string? format, IFormatProvider? formatProvider) => Eui.Format(this.value, format);
+
+        public string ToHex() => ToHex(null);
+        public string ToHex(LetterCase letterCase) => ToHex(null, letterCase);
+        public string ToHex(char? separator) => ToHex(separator, LetterCase.Upper);
+        public string ToHex(char? separator, LetterCase letterCase) => Eui.ToHex(this.value, separator, letterCase);
     }
 }

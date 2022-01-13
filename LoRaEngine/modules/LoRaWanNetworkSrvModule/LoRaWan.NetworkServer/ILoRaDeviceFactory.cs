@@ -22,10 +22,10 @@ namespace LoRaWan.NetworkServer
         Task<LoRaDevice> CreateAndRegisterAsync(IoTHubDeviceInfo deviceInfo, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Creates a device client based on the devEUI and primary key.
+        /// Creates a device client based on the device ID and primary key.
         /// </summary>
-        /// <param name="eui">Dev EUI of the device.</param>
+        /// <param name="deviceId">ID of the device.</param>
         /// <param name="primaryKey">Primary key of the device.</param>
-        ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey);
+        ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey);
     }
 }

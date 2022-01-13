@@ -221,7 +221,7 @@ namespace LoRaWan.NetworkServer
                 rx2Datr,
                 freqRx1,
                 freqRx2,
-                DevEui.Parse(loRaDevice.DevEUI),
+                loRaDevice.DevEUI,
                 lnsRxDelay,
                 stationEUI,
                 antennaPreference

@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Unit
 
         [Theory]
         [ClassData(typeof(ADRTestData))]
-        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, IList<LoRaADRTableEntry> tableEntries, RadioMetadata radioMetadata, bool expectDefaultAnswer, LoRaADRResult expectedResult)
+        public async System.Threading.Tasks.Task TestADRAsync(string testName, DevEui devEUI, IList<LoRaADRTableEntry> tableEntries, RadioMetadata radioMetadata, bool expectDefaultAnswer, LoRaADRResult expectedResult)
         {
             this.output.WriteLine($"Starting test {testName}");
             var region = TestUtils.TestRegion;
@@ -37,7 +37,7 @@ namespace LoRaWan.Tests.Unit
             {
                 CallBase = true
             };
-            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
+            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<DevEui>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // If the test does not expect a default answer we trigger default reset before
             if (!expectDefaultAnswer)
@@ -64,14 +64,14 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(expectedResult.TxPower, adrResult.TxPower);
             Assert.Equal(expectedResult.FCntDown, adrResult.FCntDown);
 
-            loRaADRManager.Verify(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>()), Times.AtLeastOnce, "NextFCntDown");
+            loRaADRManager.Verify(x => x.NextFCntDown(It.IsAny<DevEui>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>()), Times.AtLeastOnce, "NextFCntDown");
             this.output.WriteLine($"Test {testName} finished");
         }
 
         [Fact]
         public async System.Threading.Tasks.Task CheckADRReturnsDefaultValueIfCacheCrash()
         {
-            var devEUI = "myloratest";
+            var devEUI = TestEui.GenerateDevEui();
             var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider(NullLoggerFactory.Instance);
             var datarate = DataRateIndex.DR5;
@@ -80,7 +80,7 @@ namespace LoRaWan.Tests.Unit
             {
                 CallBase = true
             };
-            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
+            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<DevEui>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // setup table with default value
             _ = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)region.RequiredSnr(datarate), region.GetDownstreamDataRate(datarate), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
@@ -127,7 +127,7 @@ namespace LoRaWan.Tests.Unit
             Assert.Equal(0, adrResult.TxPower);
             Assert.Equal(1, adrResult.NbRepetition);
 
-            loRaADRManager.Verify(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>()), Times.AtLeastOnce, "NextFCntDown");
+            loRaADRManager.Verify(x => x.NextFCntDown(It.IsAny<DevEui>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>()), Times.AtLeastOnce, "NextFCntDown");
         }
     }
 }
