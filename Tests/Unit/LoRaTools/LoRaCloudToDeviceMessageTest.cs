@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
 {
+    using System;
     using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
@@ -156,6 +157,46 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
             var c2d = new LoRaCloudToDeviceMessage();
             Assert.False(c2d.IsValid(out var errorMessage));
             Assert.Equal("invalid MAC command fport usage in cloud to device message ''", errorMessage);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData((ulong)1)]
+        public void Can_Deserialize_DevEui_SystemTextJson(ulong? devEui) =>
+            Can_Deserialize_DevEui(s => System.Text.Json.JsonSerializer.Deserialize<LoRaCloudToDeviceMessage>(s), devEui is { } someDevEui ? new DevEui(someDevEui) : null);
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData((ulong)1)]
+        public void Can_Deserialize_DevEui_NewtonsoftJson(ulong? devEui) =>
+            Can_Deserialize_DevEui(s => Newtonsoft.Json.JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(s), devEui is { } someDevEui ? new DevEui(someDevEui) : null);
+
+        private static void Can_Deserialize_DevEui(Func<string, LoRaCloudToDeviceMessage> deserialize, DevEui? devEui)
+        {
+            // arrange
+            var c2dMessage = new LoRaCloudToDeviceMessage { DevEUI = devEui };
+            var serialized = System.Text.Json.JsonSerializer.Serialize(c2dMessage);
+
+            // act
+            var result = deserialize(serialized);
+
+            // assert
+            Assert.Equal(devEui, result.DevEUI);
+        }
+
+        [Fact]
+        public void Can_Serialize_DevEui_SystemTextJson() =>
+            Can_Serialize_DevEui(m => System.Text.Json.JsonSerializer.Serialize(m));
+
+        [Fact]
+        public void Can_Serialize_DevEui_NewtonsoftJson() =>
+            Can_Serialize_DevEui(m => Newtonsoft.Json.JsonConvert.SerializeObject(m));
+
+        private static void Can_Serialize_DevEui(Func<LoRaCloudToDeviceMessage, string> serialize)
+        {
+            var c2dMessage = new LoRaCloudToDeviceMessage { DevEUI = new DevEui(1) };
+            var result = serialize(c2dMessage);
+            Assert.Contains(@"""DevEUI"":""0000000000000001""", result, StringComparison.Ordinal);
         }
     }
 }

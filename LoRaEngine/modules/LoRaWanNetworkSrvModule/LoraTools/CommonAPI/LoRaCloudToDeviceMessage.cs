@@ -5,17 +5,20 @@ namespace LoRaTools.CommonAPI
 {
     using System.Collections.Generic;
     using LoRaWan;
-    using Newtonsoft.Json;
 
     /// <summary>
     /// Defines the contract for a LoRa cloud to device message.
     /// </summary>
     public class LoRaCloudToDeviceMessage : ILoRaCloudToDeviceMessage
     {
-        [JsonIgnore]
+        private const string DevEuiPropertyName = "DevEUI";
+
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public DevEui? DevEUI { get; set; }
 
-        [JsonProperty("DevEUI")]
+        [Newtonsoft.Json.JsonProperty(DevEuiPropertyName)]
+        [System.Text.Json.Serialization.JsonPropertyName(DevEuiPropertyName)]
         public string DevEuiString
         {
             get => DevEUI?.ToHex();
