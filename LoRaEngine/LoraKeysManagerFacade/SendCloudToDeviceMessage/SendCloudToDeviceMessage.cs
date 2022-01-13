@@ -47,10 +47,15 @@ namespace LoraKeysManagerFacade
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "cloudtodevicemessage/{devEUI}")] HttpRequest req,
             string devEUI)
         {
+            DevEui parsedDevEui;
+
             try
             {
                 VersionValidator.Validate(req);
-                EUIValidator.ValidateDevEUI(devEUI);
+                if (!DevEui.TryParse(devEUI, EuiParseOptions.ForbidInvalid, out parsedDevEui))
+                {
+                    return new BadRequestObjectResult("Dev EUI is invalid.");
+                }
             }
             catch (IncompatibleVersionException ex)
             {
@@ -68,18 +73,13 @@ namespace LoraKeysManagerFacade
             }
 
             var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(requestBody);
-            c2dMessage.DevEUI = devEUI;
+            c2dMessage.DevEUI = parsedDevEui;
 
-            return await SendCloudToDeviceMessageImplementationAsync(devEUI, c2dMessage);
+            return await SendCloudToDeviceMessageImplementationAsync(parsedDevEui, c2dMessage);
         }
 
-        public async Task<IActionResult> SendCloudToDeviceMessageImplementationAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        public async Task<IActionResult> SendCloudToDeviceMessageImplementationAsync(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
-            if (string.IsNullOrEmpty(devEUI))
-            {
-                return new BadRequestObjectResult($"Missing {nameof(devEUI)} value");
-            }
-
             if (c2dMessage == null)
             {
                 return new BadRequestObjectResult("Missing cloud to device message");
@@ -152,7 +152,7 @@ namespace LoraKeysManagerFacade
             return new NotFoundObjectResult($"Device '{devEUI}' was not found");
         }
 
-        private async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        private async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
             try
             {
@@ -161,7 +161,7 @@ namespace LoraKeysManagerFacade
 
                 try
                 {
-                    await this.serviceClient.SendAsync(devEUI, message);
+                    await this.serviceClient.SendAsync(devEUI.ToString(), message);
                 }
                 catch (IotHubException ex)
                 {
@@ -173,7 +173,7 @@ namespace LoraKeysManagerFacade
 
                 return new OkObjectResult(new SendCloudToDeviceMessageResult()
                 {
-                    DevEUI = devEUI,
+                    DevEui = devEUI,
                     MessageID = message.MessageId,
                     ClassType = "A",
                 });
@@ -187,7 +187,7 @@ namespace LoraKeysManagerFacade
 
         private async Task<IActionResult> SendMessageViaDirectMethodAsync(
             string preferredGatewayID,
-            string devEUI,
+            DevEui devEUI,
             LoRaCloudToDeviceMessage c2dMessage)
         {
             try
@@ -202,7 +202,7 @@ namespace LoraKeysManagerFacade
 
                     return new OkObjectResult(new SendCloudToDeviceMessageResult()
                     {
-                        DevEUI = devEUI,
+                        DevEui = devEUI,
                         MessageID = c2dMessage.MessageId,
                         ClassType = "C",
                     });

@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         {
             var gateway1Id = NewUniqueEUI64();
             var gateway2Id = NewUniqueEUI64();
-            var dev1EUI = NewUniqueEUI64();
+            var dev1EUI = TestEui.GenerateDevEui();
 
             var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
@@ -37,7 +37,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         public async Task MessageDeduplication_Resubmit_Allowed()
         {
             var gateway1Id = NewUniqueEUI64();
-            var dev1EUI = NewUniqueEUI64();
+            var dev1EUI = TestEui.GenerateDevEui();
 
             var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
@@ -53,8 +53,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         {
             var gateway1Id = NewUniqueEUI64();
             var gateway2Id = NewUniqueEUI64();
-            var dev1EUI = NewUniqueEUI64();
-            var dev2EUI = NewUniqueEUI64();
+            var dev1EUI = TestEui.GenerateDevEui();
+            var dev2EUI = TestEui.GenerateDevEui();
 
             var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
