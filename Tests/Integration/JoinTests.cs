@@ -120,7 +120,7 @@ namespace LoRaWan.Tests.Integration
                 CreateWaitableRequest(joinRequestPayload, constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
-            Assert.True(joinRequest.ProcessingSucceeded);
+            Assert.True(joinRequest.ProcessingSucceeded, $"Failed due to '{joinRequest.ProcessingFailedReason}'.");
             Assert.NotNull(joinRequest.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkJoinAcceptMessage = PacketForwarder.DownlinkMessages[0];
