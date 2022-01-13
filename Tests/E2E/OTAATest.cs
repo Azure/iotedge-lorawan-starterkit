@@ -109,11 +109,11 @@ namespace LoRaWan.Tests.E2E
                 if (device.IsMultiGw)
                 {
                     // multi gw, make sure one ignored the message
-                    var searchTokenSending = $"{device.DeviceID}: sending message to station with EUI TYPO1";
+                    var searchTokenSending = $"{device.DeviceID}: sending message to station with EUI";
                     var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenSending));
                     Assert.NotNull(sending.MatchedEvent);
 
-                    var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg TYPO2";
+                    var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
                     var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenAlreadySent));
                     Assert.NotNull(ignored.MatchedEvent);
 
@@ -133,7 +133,7 @@ namespace LoRaWan.Tests.E2E
                 if (ArduinoDevice.SerialLogs.Any(x => x.StartsWith("+CMSG: RXWIN1", StringComparison.Ordinal)))
                 {
                     // Expect that the response is done on DR4 as the RX1 offset is 1 on this device.
-                    const string logMessage = "\"DataRateRx1\":4 TYPO3";
+                    const string logMessage = "\"DataRateRx1\":4";
                     await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains(logMessage, StringComparison.Ordinal), new SearchLogOptions(logMessage));
                 }
 
