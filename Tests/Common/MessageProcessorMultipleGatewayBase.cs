@@ -10,14 +10,15 @@ namespace LoRaWan.Tests.Common
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
+    using Xunit.Abstractions;
 
     public class MessageProcessorMultipleGatewayBase : MessageProcessorTestBase
     {
         private const string SecondServerGatewayID = "second-gateway";
 
         private readonly MemoryCache cache;
+        private readonly TestOutputLoggerFactory testOutputLoggerFactory;
 
         public NetworkServerConfiguration SecondServerConfiguration { get; }
 
@@ -37,7 +38,7 @@ namespace LoRaWan.Tests.Common
 
         protected TestLoRaDeviceFactory SecondLoRaDeviceFactory { get; }
 
-        public MessageProcessorMultipleGatewayBase()
+        public MessageProcessorMultipleGatewayBase(ITestOutputHelper testOutputHelper)
         {
             SecondServerConfiguration = new NetworkServerConfiguration
             {
@@ -51,19 +52,38 @@ namespace LoRaWan.Tests.Common
             SecondFrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(SecondServerConfiguration, SecondLoRaDeviceApi.Object);
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
 
-            var deduplicationStrategyFactory = new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
-            var loRaAdrManagerFactory = new LoRAADRManagerFactory(SecondLoRaDeviceApi.Object, NullLoggerFactory.Instance);
-            var adrStrategyProvider = new LoRaADRStrategyProvider(NullLoggerFactory.Instance);
-            var functionBundlerProvider = new FunctionBundlerProvider(SecondLoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance);
-            SecondConcentratorDeduplication = new ConcentratorDeduplication(this.cache, NullLogger<IConcentratorDeduplication>.Instance);
+            this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
+            var deduplicationStrategyFactory = new DeduplicationStrategyFactory(this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<DeduplicationStrategyFactory>());
+            var loRaAdrManagerFactory = new LoRAADRManagerFactory(SecondLoRaDeviceApi.Object, this.testOutputLoggerFactory);
+            var adrStrategyProvider = new LoRaADRStrategyProvider(this.testOutputLoggerFactory);
+            var functionBundlerProvider = new FunctionBundlerProvider(SecondLoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>());
+            SecondConcentratorDeduplication = new ConcentratorDeduplication(this.cache, this.testOutputLoggerFactory.CreateLogger<IConcentratorDeduplication>());
 
-            SecondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, SecondConcentratorDeduplication, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance, null);
+            SecondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(SecondServerConfiguration,
+                                                                                   SecondFrameCounterUpdateStrategyProvider,
+                                                                                   SecondConcentratorDeduplication,
+                                                                                   new LoRaPayloadDecoder(this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()),
+                                                                                   deduplicationStrategyFactory,
+                                                                                   adrStrategyProvider,
+                                                                                   loRaAdrManagerFactory,
+                                                                                   functionBundlerProvider,
+                                                                                   this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
+                                                                                   null);
             SecondLoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
 
-            var defaultRequestHandler = new DefaultLoRaDataRequestHandler(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, SecondConcentratorDeduplication, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance, meter: null);
+            var defaultRequestHandler = new DefaultLoRaDataRequestHandler(SecondServerConfiguration,
+                                                                          SecondFrameCounterUpdateStrategyProvider,
+                                                                          SecondConcentratorDeduplication,
+                                                                          new LoRaPayloadDecoder(this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()),
+                                                                          deduplicationStrategyFactory,
+                                                                          adrStrategyProvider,
+                                                                          loRaAdrManagerFactory,
+                                                                          functionBundlerProvider,
+                                                                          this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
+                                                                          meter: null);
 
-            SecondConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
+            SecondConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, this.testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
             SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(SecondServerConfiguration, SecondLoRaDeviceClient.Object, SecondConnectionManager, DeviceCache, defaultRequestHandler);
         }
 
@@ -74,6 +94,7 @@ namespace LoRaWan.Tests.Common
             if (disposing)
             {
                 this.cache.Dispose();
+                this.testOutputLoggerFactory.Dispose();
             }
         }
     }

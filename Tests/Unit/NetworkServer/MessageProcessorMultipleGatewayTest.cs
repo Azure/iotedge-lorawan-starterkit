@@ -10,10 +10,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class MessageProcessorMultipleGatewayTest : MessageProcessorMultipleGatewayBase
     {
-        public MessageProcessorMultipleGatewayTest() : base()
+        public MessageProcessorMultipleGatewayTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         { }
 
         [Fact]

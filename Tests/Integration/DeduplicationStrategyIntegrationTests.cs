@@ -12,9 +12,12 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class DeduplicationStrategyIntegrationTests : MessageProcessorMultipleGatewayBase
     {
+        public DeduplicationStrategyIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        { }
 
         [Theory]
         [InlineData(DeduplicationMode.Mark)]
