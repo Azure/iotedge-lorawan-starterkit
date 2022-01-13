@@ -88,9 +88,8 @@ namespace LoraKeysManagerFacade
                 this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui);
                 try
                 {
-                    const string cupsKey = "cups";
-                    if (!twin.Properties.Desired.TryReadJsonBlock(cupsKey, out var cupsProperty))
-                        throw new ArgumentOutOfRangeException(cupsKey, "failed to read cups config");
+                    if (!twin.Properties.Desired.TryReadJsonBlock(CupsPropertyName, out var cupsProperty))
+                        throw new ArgumentOutOfRangeException(CupsPropertyName, "failed to read cups config");
 
                     var parsedJson = JObject.Parse(cupsProperty);
                     var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()
@@ -116,7 +115,11 @@ namespace LoraKeysManagerFacade
 
         internal virtual async Task<string> GetBase64EncodedBlobAsync(string blobUrl, CancellationToken cancellationToken)
         {
-            using var blobStream = await GetBlobStreamAsync(blobUrl, cancellationToken);
+            var blobServiceClient = this.azureClientFactory.CreateClient(FacadeStartup.WebJobsStorageClientName);
+            var blobUri = new BlobUriBuilder(new Uri(blobUrl));
+            using var blobStream = await blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
+                                                          .GetBlobClient(blobUri.BlobName)
+                                                          .OpenReadAsync(new BlobOpenReadOptions(false), cancellationToken);
             using var base64transform = new ToBase64Transform();
             using var base64Stream = new CryptoStream(blobStream, base64transform, CryptoStreamMode.Read);
             using var memoryStream = new MemoryStream();
@@ -124,15 +127,6 @@ namespace LoraKeysManagerFacade
             await base64Stream.CopyToAsync(memoryStream, cancellationToken);
             _ = memoryStream.Seek(0, SeekOrigin.Begin);
             return await reader.ReadToEndAsync();
-        }
-
-        internal async Task<Stream> GetBlobStreamAsync(string blobUrl, CancellationToken cancellationToken)
-        {
-            var blobServiceClient = this.azureClientFactory.CreateClient(FacadeStartup.WebJobsStorageClientName);
-            var blobUri = new BlobUriBuilder(new Uri(blobUrl));
-            return await blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
-                                                          .GetBlobClient(blobUri.BlobName)
-                                                          .OpenReadAsync(new BlobOpenReadOptions(false), cancellationToken);
         }
     }
 }
