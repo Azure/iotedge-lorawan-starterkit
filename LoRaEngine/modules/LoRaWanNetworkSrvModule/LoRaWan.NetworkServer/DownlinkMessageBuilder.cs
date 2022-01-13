@@ -198,6 +198,9 @@ namespace LoRaWan.NetworkServer
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
+            // following calculation is making sure that ReportedRXDelay is chosen if not default,
+            // otherwise for class C devices a LnsRxDelay of 0 is chosen, for class A devices a value of 1 is chosen
+            var lnsRxDelay = Math.Max(loRaDevice.ClassType is LoRaDeviceClassType.C ? (ushort)0 : (ushort)1, loRaDevice.ReportedRXDelay);
             // todo: check the device twin preference if using confirmed or unconfirmed down
             var downlinkMessage = BuildDownstreamMessage(loRaDevice,
                                                          request.StationEui,
@@ -207,7 +210,7 @@ namespace LoRaWan.NetworkServer
                                                          loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo),
                                                          receiveWindow == Constants.ReceiveWindow2 ? default : freq,
                                                          loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo),
-                                                         loRaDevice.ReportedRXDelay,
+                                                         lnsRxDelay,
                                                          ackLoRaMessage,
                                                          radioMetadata.UpInfo.AntennaPreference);
 
@@ -334,7 +337,7 @@ namespace LoRaWan.NetworkServer
                                                              rx2Datr: datr,
                                                              freqRx1: default,
                                                              freqRx2: freq,
-                                                             lnsRxDelay: 0,
+                                                             lnsRxDelay: 0, //this identifies a class c device, do not change
                                                              loRaMessage: ackLoRaMessage);
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(loraDownLinkMessage)}");
