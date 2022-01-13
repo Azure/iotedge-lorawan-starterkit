@@ -190,7 +190,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice1, connectionManager.Object);
 
             var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID));
-            simulatedDevice2.LoRaDevice.DeviceID = "0000000000000002";
+            simulatedDevice2.LoRaDevice.DeviceID = new DevEui(2).ToString();
             simulatedDevice2.LoRaDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF);
             using var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, connectionManager.Object);
 
@@ -244,7 +244,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loraDevice1.SetRequestHandler(reqHandler1.Object);
 
             var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            simulatedDevice2.LoRaDevice.DeviceID = "0000000000000002";
+            simulatedDevice2.LoRaDevice.DeviceID = new DevEui(2).ToString();
             simulatedDevice2.LoRaDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF);
             var loRaDeviceClient2 = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             loRaDeviceClient2.Setup(x => x.GetTwinAsync(CancellationToken.None))
