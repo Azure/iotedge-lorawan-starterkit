@@ -22,17 +22,17 @@ namespace LoraKeysManagerFacade
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
-    public class ConcentratorFwUpgradeFunction
+    public class ConcentratorFirmwareFunction
     {
         internal const string CupsPropertyName = "cups";
         internal const string CupsFwUrlPropertyName = "fwUrl";
         private readonly RegistryManager registryManager;
         private readonly IAzureClientFactory<BlobServiceClient> azureClientFactory;
-        private readonly ILogger<ConcentratorFwUpgradeFunction> logger;
+        private readonly ILogger<ConcentratorFirmwareFunction> logger;
 
-        public ConcentratorFwUpgradeFunction(RegistryManager registryManager,
+        public ConcentratorFirmwareFunction(RegistryManager registryManager,
                                              IAzureClientFactory<BlobServiceClient> azureClientFactory,
-                                             ILogger<ConcentratorFwUpgradeFunction> logger)
+                                             ILogger<ConcentratorFirmwareFunction> logger)
         {
             this.registryManager = registryManager;
             this.azureClientFactory = azureClientFactory;
