@@ -100,6 +100,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("null", null)]
         [InlineData(@"""""", null)]
         [InlineData(@"{""primaryKey"":""1234""}", "1234")]
+        [InlineData(@"{""PrimaryKey"":""1234""}", "1234")]
         [InlineData(@"{""primaryKey"":""""}", "")]
         [InlineData("{}", null)]
         [InlineData("", null)]
