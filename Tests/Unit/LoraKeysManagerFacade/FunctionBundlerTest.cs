@@ -68,7 +68,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         public async Task FunctionBundler_All_Functions()
         {
             var gatewayId1 = NewUniqueEUI64();
-            var devEUI = NewUniqueEUI64();
+            var devEUI = TestEui.GenerateDevEui();
 
             var req = CreateStandardBundlerRequest(gatewayId1);
 
@@ -89,7 +89,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         public async Task FunctionBundler_FCntDown_Only()
         {
             var gatewayId1 = NewUniqueEUI64();
-            var devEUI = NewUniqueEUI64();
+            var devEUI = TestEui.GenerateDevEui();
 
             var req = CreateStandardBundlerRequest(gatewayId1);
             req.AdrRequest = null;
@@ -108,7 +108,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         public async Task FunctionBundler_DeDup_Only()
         {
             var gatewayId1 = NewUniqueEUI64();
-            var devEUI = NewUniqueEUI64();
+            var devEUI = TestEui.GenerateDevEui();
 
             var req = CreateStandardBundlerRequest(gatewayId1);
             req.AdrRequest = null;
@@ -129,7 +129,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         public async Task FunctionBundler_Adr_Only()
         {
             var gatewayId1 = NewUniqueEUI64();
-            var devEUI = NewUniqueEUI64();
+            var devEUI = TestEui.GenerateDevEui();
 
             var req = CreateStandardBundlerRequest(gatewayId1);
 
@@ -152,7 +152,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         {
             var gatewayId1 = NewUniqueEUI64();
             var gatewayId2 = NewUniqueEUI64();
-            var devEUI = NewUniqueEUI64();
+            var devEUI = TestEui.GenerateDevEui();
 
             var req = CreateStandardBundlerRequest(gatewayId1);
             var req2 = CreateStandardBundlerRequest(gatewayId2);
@@ -220,7 +220,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             var gatewayId2 = NewUniqueEUI64();
             var gatewayId3 = NewUniqueEUI64();
             var gatewayId4 = NewUniqueEUI64();
-            var devEUI = NewUniqueEUI64();
+            var devEUI = TestEui.GenerateDevEui();
 
             var requests = new FunctionBundlerRequest[]
             {
@@ -266,7 +266,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             Assert.Equal(functionBundlerResults.Length - 1, dups);
         }
 
-        private async Task<FunctionBundlerResult> ExecuteRequest(string devEUI, FunctionBundlerRequest req)
+        private async Task<FunctionBundlerResult> ExecuteRequest(DevEui devEUI, FunctionBundlerRequest req)
         {
             var result = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
             lock (req)
@@ -303,12 +303,12 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             };
         }
 
-        private async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, LoRaADRRequest req)
+        private async Task PrepareADRFrames(DevEui deviceEUI, int numberOfFrames, LoRaADRRequest req)
         {
             await PrepareADRFrames(deviceEUI, numberOfFrames, new List<LoRaADRRequest>() { req });
         }
 
-        private async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, List<LoRaADRRequest> requests)
+        private async Task PrepareADRFrames(DevEui deviceEUI, int numberOfFrames, List<LoRaADRRequest> requests)
         {
             // add just 1 under the limit to the table
             for (var i = 0; i < numberOfFrames; i++)

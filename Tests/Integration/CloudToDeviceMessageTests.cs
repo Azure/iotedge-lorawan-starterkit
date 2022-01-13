@@ -40,7 +40,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(true);
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                     .ReturnsAsync(true);
             }
 
@@ -79,7 +79,7 @@ namespace LoRaWan.Tests.Integration
         {
             const int payloadFcnt = 10;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEUI = simulatedDevice.LoRaDevice.DevEui;
 
             // message will be sent
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
@@ -846,7 +846,7 @@ namespace LoRaWan.Tests.Integration
                     Fport = TestPort,
                     MessageId = "123",
                     Payload = "12",
-                    DevEUI = c2dDevEUI
+                    DevEUI = c2dDevEUI is { } someDevEui ? DevEui.Parse(someDevEui) : null
                 },
             };
 

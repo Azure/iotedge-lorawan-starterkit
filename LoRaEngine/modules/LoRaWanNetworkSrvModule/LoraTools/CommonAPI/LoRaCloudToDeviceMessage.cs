@@ -11,7 +11,19 @@ namespace LoRaTools.CommonAPI
     /// </summary>
     public class LoRaCloudToDeviceMessage : ILoRaCloudToDeviceMessage
     {
-        public string DevEUI { get; set; }
+        private const string DevEuiPropertyName = "DevEUI";
+
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
+        public DevEui? DevEUI { get; set; }
+
+        [Newtonsoft.Json.JsonProperty(DevEuiPropertyName)]
+        [System.Text.Json.Serialization.JsonPropertyName(DevEuiPropertyName)]
+        public string DevEuiString
+        {
+            get => DevEUI?.ToString();
+            set => DevEUI = value is null ? null : DevEui.Parse(value);
+        }
 
         public FramePort Fport { get; set; }
 

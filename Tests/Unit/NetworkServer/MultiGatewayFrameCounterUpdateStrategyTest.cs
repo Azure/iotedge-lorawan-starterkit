@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.gatewayID = "test-gateway";
             this.connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
-            this.device = new LoRaDevice(new DevAddr(1), "2", connectionManager);
+            this.device = new LoRaDevice(new DevAddr(1), new DevEui(2), connectionManager);
         }
 
         public void Dispose()
@@ -83,10 +83,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.device.AcceptFrameCountChanges();
 
             this.deviceApi.Setup(x => x.NextFCntDownAsync(this.device.DevEUI, It.IsAny<uint>(), It.IsAny<uint>(), this.gatewayID))
-                .Returns<string, uint, uint, string>((devEUI, fcntDown, payloadFcnt, gatewayID) =>
-                {
-                    return Task.FromResult(fcntDown + 1);
-                });
+                .Returns((DevEui _, uint fcntDown, uint payloadFcnt, string gatewayID) => Task.FromResult(fcntDown + 1));
 
             for (var i = 1; i <= 9; ++i)
             {
@@ -143,10 +140,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.device.AcceptFrameCountChanges();
 
             this.deviceApi.Setup(x => x.NextFCntDownAsync(this.device.DevEUI, It.IsAny<uint>(), It.IsAny<uint>(), this.gatewayID))
-                .Returns<string, uint, uint, string>((devEUI, fcntDown, payloadFcnt, gatewayID) =>
-                {
-                    return Task.FromResult(fcntDown + 1);
-                });
+                .Returns((DevEui _, uint fcntDown, uint payloadFcnt, string gatewayID) => Task.FromResult(fcntDown + 1));
 
             for (var i = 1; i <= 15; i++)
             {

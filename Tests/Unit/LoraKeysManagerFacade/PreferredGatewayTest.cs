@@ -3,10 +3,10 @@
 
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 {
-    using System;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.FunctionBundler;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
 
@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         [Fact]
         public async Task When_Called_By_Multiple_Gateways_Should_Return_Closest()
         {
-            var devEUI = Guid.NewGuid().ToString();
+            var devEUI = TestEui.GenerateDevEui();
             const uint fcntUp = 1;
 
             var req1 = new FunctionBundlerRequest() { GatewayId = "gateway1", ClientFCntUp = fcntUp, Rssi = -180 };
@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         [Fact]
         public async Task When_Calling_Outdated_Fcnt_Should_Return_Conflict()
         {
-            var devEUI = Guid.NewGuid().ToString();
+            var devEUI = TestEui.GenerateDevEui();
             const uint fcntUp = 1;
 
             var req1 = new FunctionBundlerRequest() { GatewayId = "gateway1", ClientFCntUp = fcntUp + 1, Rssi = -180 };
@@ -81,7 +81,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         [Fact]
         public async Task When_Calling_After_Delay_Should_Return_First_Gateway()
         {
-            var devEUI = Guid.NewGuid().ToString();
+            var devEUI = TestEui.GenerateDevEui();
             const uint staleFcntUp = 1;
             const uint currentFcntUp = 2;
 

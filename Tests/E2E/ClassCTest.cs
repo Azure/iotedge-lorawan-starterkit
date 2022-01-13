@@ -49,7 +49,7 @@ namespace LoRaWan.Tests.E2E
             // Now sending a c2d
             var c2d = new LoRaCloudToDeviceMessage()
             {
-                DevEUI = device.DeviceID,
+                DevEUI = DevEui.Parse(device.DeviceID),
                 MessageId = Guid.NewGuid().ToString(),
                 Fport = FramePorts.App23,
                 RawPayload = Convert.ToBase64String(new byte[] { 0xFF, 0x00 }),
@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.E2E
             TestLogger.Log($"[INFO] {JsonConvert.SerializeObject(c2d, Formatting.None)}");
 
             // send message using the SendCloudToDeviceMessage API endpoint
-            Assert.True(await LoRaAPIHelper.SendCloudToDeviceMessage(device.DeviceID, c2d));
+            Assert.True(await LoRaAPIHelper.SendCloudToDeviceMessage(device.DevEui, c2d));
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 

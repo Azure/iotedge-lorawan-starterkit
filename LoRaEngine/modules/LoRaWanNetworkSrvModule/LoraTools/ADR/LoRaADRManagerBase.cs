@@ -32,16 +32,15 @@ namespace LoRaTools.ADR
                 return;
             }
 
-            if (string.IsNullOrEmpty(newEntry.DevEUI) ||
-               string.IsNullOrEmpty(newEntry.GatewayId))
+            if (!newEntry.DevEUI.IsValid || string.IsNullOrEmpty(newEntry.GatewayId))
             {
-                throw new ArgumentException("Missing DevEUI or GatewayId");
+                throw new ArgumentException("Missing Gateway ID or invalid DevEUI");
             }
 
             _ = await this.store.AddTableEntry(newEntry);
         }
 
-        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, DataRateIndex dataRate, int minTxPower, DataRateIndex maxDr, LoRaADRTableEntry newEntry = null)
+        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(DevEui devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, DataRateIndex dataRate, int minTxPower, DataRateIndex maxDr, LoRaADRTableEntry newEntry = null)
         {
             var table = newEntry != null
                         ? await this.store.AddTableEntry(newEntry)
@@ -93,12 +92,12 @@ namespace LoRaTools.ADR
             return result;
         }
 
-        public virtual Task<uint> NextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
+        public virtual Task<uint> NextFCntDown(DevEui devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
             return Task.FromResult<uint>(0);
         }
 
-        public virtual async Task<LoRaADRResult> GetLastResultAsync(string devEUI)
+        public virtual async Task<LoRaADRResult> GetLastResultAsync(DevEui devEUI)
         {
             var table = await this.store.GetADRTable(devEUI);
 
@@ -112,13 +111,13 @@ namespace LoRaTools.ADR
                 : null;
         }
 
-        public virtual async Task<LoRaADRTableEntry> GetLastEntryAsync(string devEUI)
+        public virtual async Task<LoRaADRTableEntry> GetLastEntryAsync(DevEui devEUI)
         {
             var table = await this.store.GetADRTable(devEUI);
             return table != null && table.Entries.Count > 0 ? table.Entries[table.Entries.Count - 1] : null;
         }
 
-        public virtual async Task<bool> ResetAsync(string devEUI)
+        public virtual async Task<bool> ResetAsync(DevEui devEUI)
         {
             return await this.store.Reset(devEUI);
         }

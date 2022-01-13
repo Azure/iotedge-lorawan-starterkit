@@ -3,6 +3,7 @@
 
 namespace LoraKeysManagerFacade
 {
+    using LoRaWan;
     using Newtonsoft.Json;
     using System;
 
@@ -11,7 +12,7 @@ namespace LoraKeysManagerFacade
     /// </summary>
     public class PreferredGatewayResult
     {
-        public string DevEUI { get; }
+        public DevEui DevEUI { get; }
 
         public uint RequestFcntUp { get; }
 
@@ -37,7 +38,7 @@ namespace LoraKeysManagerFacade
         {
         }
 
-        public PreferredGatewayResult(string devEUI, uint fcntUp, LoRaDevicePreferredGateway preferredGateway)
+        public PreferredGatewayResult(DevEui devEUI, uint fcntUp, LoRaDevicePreferredGateway preferredGateway)
         {
             if (preferredGateway is null) throw new ArgumentNullException(nameof(preferredGateway));
 
@@ -48,7 +49,7 @@ namespace LoraKeysManagerFacade
             Conflict = fcntUp != preferredGateway.FcntUp;
         }
 
-        public PreferredGatewayResult(string devEUI, uint fcntUp, string errorMessage)
+        public PreferredGatewayResult(DevEui devEUI, uint fcntUp, string errorMessage)
         {
             DevEUI = devEUI;
             RequestFcntUp = fcntUp;

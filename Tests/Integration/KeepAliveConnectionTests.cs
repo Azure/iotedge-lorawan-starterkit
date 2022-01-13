@@ -326,7 +326,7 @@ namespace LoRaWan.Tests.Integration
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1,
                                                                                      gatewayID: ServerConfiguration.GatewayID,
                                                                                      deviceClassType: 'c'));
-            var devEUI = simulatedDevice.DevEUI;
+            var devEui = simulatedDevice.DevEUI;
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
@@ -348,7 +348,7 @@ namespace LoRaWan.Tests.Integration
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "hello",
-                DevEUI = devEUI,
+                DevEUI = devEui,
                 Fport = FramePorts.App10,
                 MessageId = Guid.NewGuid().ToString(),
             };

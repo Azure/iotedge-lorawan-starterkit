@@ -101,9 +101,9 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private static string GetConnectionCacheKey(string devEUI) => string.Concat("connection:", devEUI);
+        private static string GetConnectionCacheKey(DevEui devEui) => string.Concat("connection:", devEui);
 
-        private static string GetScheduleCacheKey(string devEUI) => string.Concat("connection:schedule:", devEUI);
+        private static string GetScheduleCacheKey(DevEui devEui) => string.Concat("connection:schedule:", devEui);
 
         public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice)
         {
@@ -111,14 +111,12 @@ namespace LoRaWan.NetworkServer
             return GetClient(loRaDevice.DevEUI);
         }
 
-        public ILoRaDeviceClient GetClient(string devEUI)
+        public ILoRaDeviceClient GetClient(DevEui devEui)
         {
-            if (devEUI is null) throw new ArgumentNullException(nameof(devEUI));
-
-            if (this.managedConnections.TryGetValue(GetConnectionCacheKey(devEUI), out var managedConnection))
+            if (this.managedConnections.TryGetValue(GetConnectionCacheKey(devEui), out var managedConnection))
                 return managedConnection.DeviceClient;
 
-            throw new ManagedConnectionException($"Connection for device {devEUI} was not found");
+            throw new ManagedConnectionException($"Connection for device {devEui} was not found");
         }
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
@@ -143,11 +141,9 @@ namespace LoRaWan.NetworkServer
             Release(loRaDevice.DevEUI);
         }
 
-        public void Release(string devEUI)
+        public void Release(DevEui devEui)
         {
-            _ = devEUI ?? throw new ArgumentNullException(nameof(devEUI));
-
-            if (this.managedConnections.TryRemove(GetConnectionCacheKey(devEUI), out var removedItem))
+            if (this.managedConnections.TryRemove(GetConnectionCacheKey(devEui), out var removedItem))
             {
                 removedItem.Dispose();
             }
