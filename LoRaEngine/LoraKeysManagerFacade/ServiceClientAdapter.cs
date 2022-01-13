@@ -4,8 +4,6 @@
 namespace LoraKeysManagerFacade
 {
     using System.Threading.Tasks;
-    using LoRaTools.Utils;
-    using LoRaWan;
     using Microsoft.Azure.Devices;
 
     public class ServiceClientAdapter : IServiceClient
@@ -19,6 +17,6 @@ namespace LoraKeysManagerFacade
 
         public Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod) => this.serviceClient.InvokeDeviceMethodAsync(deviceId, moduleId, cloudToDeviceMethod);
 
-        public Task SendAsync(DevEui deviceId, Message message) => this.serviceClient.SendAsync(deviceId.AsIotHubDeviceId(), message);
+        public Task SendAsync(string deviceId, Message message) => this.serviceClient.SendAsync(deviceId, message);
     }
 }
