@@ -24,67 +24,52 @@ namespace LoRaWan.Tests.Common
     {
         private readonly StationEui stationEUI;
         private ClientWebSocket clientWebSocket = new ClientWebSocket();
-        private Uri LnsUri { get; set; }
+        private readonly Uri lnsUri;
+        private CancellationTokenSource cancellationTokenSource;
+        private bool started;
 
         private readonly HashSet<Func<string, bool>> subscribers = new HashSet<Func<string, bool>>();
 
-        internal void SubscribeOnce(Func<string, bool> value)
-        {
+        internal void SubscribeOnce(Func<string, bool> value) =>
             this.subscribers.Add(value);
-        }
-
 
         public SimulatedBasicsStation(StationEui stationEUI, Uri lnsUri)
         {
             this.stationEUI = stationEUI;
-            LnsUri = lnsUri;
+            this.lnsUri = lnsUri;
         }
 
-        public async Task<IDisposable> StartAsync(CancellationToken cancellationToken = default)
+        public async Task StartAsync(CancellationToken cancellationToken = default)
         {
-            var routerReceivedMessage = new List<string>();
-            await this.clientWebSocket.ConnectAsync(new Uri(LnsUri, "router-info"), cancellationToken);
+            if (this.started) return;
+            this.started = true;
 
-            await SendMessageAsync(JsonSerializer.Serialize(new
-            {
-                router = this.stationEUI.AsUInt64
-            }), cancellationToken);
-
+            // Handle router-info calls
+            await this.clientWebSocket.ConnectAsync(new Uri(this.lnsUri, "router-info"), cancellationToken);
+            await SerializeAndSendMessageAsync(new { router = this.stationEUI.AsUInt64 }, cancellationToken);
             var enumerator = this.clientWebSocket.ReadTextMessages(cancellationToken);
             if (!await enumerator.MoveNextAsync())
-            {
                 throw new InvalidOperationException("Router info endpoint should return a response.");
-            }
-
             await StopAsync(cancellationToken);
-
-            // we want to ensure we received a uri message
             Debug.Assert(enumerator.Current.Contains("uri", StringComparison.OrdinalIgnoreCase));
 
-            // CONNECT ON ROUTER-DATA ENDPOINT
-            await this.clientWebSocket.ConnectAsync(new Uri(LnsUri, $"router-data/{stationEUI}"), cancellationToken);
+            // Handle router-data calls
+            await this.clientWebSocket.ConnectAsync(new Uri(this.lnsUri, $"router-data/{this.stationEUI}"), cancellationToken);
 
             // Send version request
-            var versionMessage = new LnsVersionRequest(this.stationEUI, "2", "1", "test", 2, "");
-            await SendMessageAsync(JsonSerializer.Serialize(versionMessage), cancellationToken);
-
-            // Listen on messages and keep connection alive
+            await SerializeAndSendMessageAsync(new LnsVersionRequest(this.stationEUI, "2", "1", "test", 2, ""), cancellationToken);
             enumerator = this.clientWebSocket.ReadTextMessages(cancellationToken);
             if (!await enumerator.MoveNextAsync())
-            {
                 throw new InvalidOperationException("Version request should return a response.");
-            }
-
-            // move by one and ensure that the response was the router_config message
             Debug.Assert(enumerator.Current.Contains("router_config", StringComparison.OrdinalIgnoreCase));
 
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            // Listen to incoming messages
+            this.cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _ = Task.Run(async () =>
             {
                 while (await enumerator.MoveNextAsync())
                 {
                     var msg = enumerator.Current;
-                    routerReceivedMessage.Add(msg);
                     if (this.subscribers.Count > 0)
                     {
                         var subscriberToRemove = this.subscribers.FirstOrDefault(predicate => predicate(msg));
@@ -96,18 +81,7 @@ namespace LoRaWan.Tests.Common
 
                     Console.WriteLine("Message received: " + msg);
                 }
-            }, cts.Token);
-
-            return cts;
-        }
-
-        private sealed class CancelOperation : IDisposable
-        {
-            private readonly CancellationTokenSource cts;
-
-            public CancelOperation(CancellationTokenSource cts) => this.cts = cts;
-
-            public void Dispose() => this.cts.Cancel();
+            }, this.cancellationTokenSource.Token);
         }
 
         //// Sends unconfirmed message
@@ -115,7 +89,7 @@ namespace LoRaWan.Tests.Common
         {
             var payload = (LoRaPayloadData)loRaRequest.Payload;
 
-            var msg = JsonSerializer.Serialize(new
+            await SerializeAndSendMessageAsync(new
             {
                 MHdr = uint.Parse(loRaRequest.Payload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 msgtype = "updf",
@@ -136,16 +110,17 @@ namespace LoRaWan.Tests.Common
                     xtime = loRaRequest.RadioMetadata.UpInfo.Xtime,
                     snr = loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio
                 }
-            });
-
-            await SendMessageAsync(msg, cancellationToken);
+            }, cancellationToken);
 
             TestLogger.Log($"[{payload.DevAddr}] Sending data: {payload.Frmpayload}");
         }
 
-        internal async Task SendMessageAsync(string message, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Serializes and sends a message.
+        /// </summary>
+        internal async Task SerializeAndSendMessageAsync(object obj, CancellationToken cancellationToken = default)
         {
-            var bytes = Encoding.UTF8.GetBytes(message);
+            var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj));
             await this.clientWebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
         }
 
@@ -160,11 +135,14 @@ namespace LoRaWan.Tests.Common
                 this.clientWebSocket.Dispose();
             }
 
+            // The ClientWebSocket needs to be disposed and recreated in order to be used again
             this.clientWebSocket = new ClientWebSocket();
         }
 
         public void Dispose()
         {
+            this.cancellationTokenSource?.Cancel();
+            this.cancellationTokenSource?.Dispose();
             this.clientWebSocket?.Dispose();
         }
     }

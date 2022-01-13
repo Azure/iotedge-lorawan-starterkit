@@ -257,7 +257,7 @@ namespace LoRaWan.Tests.Common
                 return false;
             });
 
-            await basicsStation.SendMessageAsync(JsonSerializer.Serialize(new
+            await basicsStation.SerializeAndSendMessageAsync(new
             {
                 JoinEui = joinRequestPayload.AppEui.ToString("G", null),
                 msgtype = "jreq",
@@ -275,7 +275,7 @@ namespace LoRaWan.Tests.Common
                     xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
                     snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
                 }
-            }));
+            });
 
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
