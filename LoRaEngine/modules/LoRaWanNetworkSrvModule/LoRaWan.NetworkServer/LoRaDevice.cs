@@ -903,32 +903,15 @@ namespace LoRaWan.NetworkServer
 
             return ret;
 
-            uint? Get32BitAdjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false)
-            {
-                if (!Supports32BitFCnt || payload == null)
-                    return null;
+            uint? Get32BitAdjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false) =>
+                Supports32BitFCnt && payload is { Fcnt: var fcnt }
+                ? LoRaPayload.InferUpper32BitsForClientFcnt(fcnt, rollHi ? IncrementUpper16bit(FCntUp) : FCntUp)
+                : null;
 
-                var serverValue = rollHi ? IncrementUpper16bit(FCntUp) : FCntUp;
-                return LoRaPayload.InferUpper32BitsForClientFcnt(payload.Fcnt, serverValue);
-            }
+            bool CanRolloverToNext16Bits(ushort payloadFcntUp) =>
+                Supports32BitFCnt && payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp) <= Constants.MaxFcntGap;
 
-            bool CanRolloverToNext16Bits(ushort payloadFcntUp)
-            {
-                if (!Supports32BitFCnt)
-                {
-                    // rollovers are only supported on 32bit devices
-                    return false;
-                }
-
-                var delta = payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp);
-                return delta <= Constants.MaxFcntGap;
-            }
-
-            static uint IncrementUpper16bit(uint val)
-            {
-                val |= 0x0000FFFF;
-                return ++val;
-            }
+            static uint IncrementUpper16bit(uint val) => (val | 0x0000ffff) + 1;
         }
 
 
