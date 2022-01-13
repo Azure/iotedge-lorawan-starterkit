@@ -279,7 +279,7 @@ namespace LoRaWan.Tests.Common
             SearchLogResult log;
             if (isUpstream)
             {
-                log = await SearchIoTHubLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchIoTHubLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter, Description = message });
             }
             else
             {
@@ -355,16 +355,16 @@ namespace LoRaWan.Tests.Common
             return await SearchTcpLogs(evt => predicate(evt.Message), options);
         }
 
-        private async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options)
         {
-            var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
+            var maxAttempts = options.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
             for (var i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(options?.Description))
+                    if (!string.IsNullOrEmpty(options.Description))
                     {
                         TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
@@ -400,7 +400,7 @@ namespace LoRaWan.Tests.Common
         }
 
         // Searches IoT Hub for messages
-        private async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options)
         {
             return await SearchIoTHubLogs(evt => predicate(evt.Message), options);
         }
