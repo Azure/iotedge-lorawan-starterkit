@@ -6,6 +6,18 @@ namespace LoRaWan
     using System;
     using System.Buffers.Binary;
 
+    [Flags]
+    public enum EuiParseOptions
+    {
+        None = 0,
+
+        /// <summary>
+        /// Forbids a syntactically correct DevEUI from being parsed for which validation like
+        /// <see cref="DevEui.IsValid"/> will return <c>false</c>.
+        /// </summary>
+        ForbidInvalid = 1,
+    }
+
     /// <summary>
     /// Global end-device ID in IEEE EUI-64 (64-bit Extended Unique Identifier) address space
     /// that uniquely identifies the end-device.
@@ -21,6 +33,19 @@ namespace LoRaWan
     public partial record struct DevEui
     {
         public bool IsValid => Eui.IsValid(this.value);
+
+        public static bool TryParse(ReadOnlySpan<char> input, EuiParseOptions options, out DevEui result)
+        {
+            if (TryParse(input, out var candidate)
+                && ((options & EuiParseOptions.ForbidInvalid) == EuiParseOptions.None || candidate.IsValid))
+            {
+                result = candidate;
+                return true;
+            }
+
+            result = default;
+            return false;
+        }
     }
 
     /// <summary>

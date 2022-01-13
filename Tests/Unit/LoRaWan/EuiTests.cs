@@ -214,6 +214,20 @@ namespace LoRaWan.Tests.Unit
         protected override string ToHex(DevEui eui, char? separator) => eui.ToHex(separator);
         protected override string ToHex(DevEui eui, LetterCase letterCase) => eui.ToHex(letterCase);
         protected override string ToHex(DevEui eui, char? separator, LetterCase letterCase) => eui.ToHex(separator, letterCase);
+
+        [Theory]
+        [InlineData(true, 0UL, "::", EuiParseOptions.None)]
+        [InlineData(false, 0UL, "::", EuiParseOptions.ForbidInvalid)]
+        [InlineData(true, ulong.MaxValue, "ffff:ffff:ffff:ffff", EuiParseOptions.None)]
+        [InlineData(false, 0UL, "ffff:ffff:ffff:ffff", EuiParseOptions.ForbidInvalid)]
+        [InlineData(true, 1UL, "::1", EuiParseOptions.None)]
+        public void TryParse_With_Options(bool succeeds, ulong eui, string input, EuiParseOptions options)
+        {
+            var succeeded = DevEui.TryParse(input, options, out var result);
+
+            Assert.Equal(succeeds, succeeded);
+            Assert.Equal(eui, result.AsUInt64);
+        }
     }
 
     public class JoinEuiTests : EuiTests<JoinEui>

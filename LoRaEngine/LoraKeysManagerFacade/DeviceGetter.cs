@@ -57,7 +57,7 @@ namespace LoraKeysManagerFacade
             DevEui? devEui = null;
             if (!string.IsNullOrEmpty(rawDevEui))
             {
-                if (EuiValidator.TryParseAndValidate(rawDevEui, out var parsedDevEui))
+                if (DevEui.TryParse(rawDevEui, EuiParseOptions.ForbidInvalid, out var parsedDevEui))
                 {
                     devEui = parsedDevEui;
                 }

@@ -38,7 +38,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            if (!EuiValidator.TryParseAndValidate(devEUI, out var parsedDevEui))
+            if (!DevEui.TryParse(devEUI, EuiParseOptions.ForbidInvalid, out var parsedDevEui))
             {
                 return new BadRequestObjectResult("Dev EUI is invalid.");
             }

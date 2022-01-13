@@ -44,7 +44,7 @@ namespace LoraKeysManagerFacade
             var gatewayId = req.Query["GatewayId"];
             var abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
 
-            if (!EuiValidator.TryParseAndValidate(rawDevEui, out var devEui))
+            if (!DevEui.TryParse(rawDevEui, EuiParseOptions.ForbidInvalid, out var devEui))
             {
                 return new BadRequestObjectResult("Dev EUI is invalid.");
             }

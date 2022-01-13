@@ -52,7 +52,7 @@ namespace LoraKeysManagerFacade
             try
             {
                 VersionValidator.Validate(req);
-                if (!EuiValidator.TryParseAndValidate(devEUI, out parsedDevEui))
+                if (!DevEui.TryParse(devEUI, EuiParseOptions.ForbidInvalid, out parsedDevEui))
                 {
                     return new BadRequestObjectResult("Dev EUI is invalid.");
                 }
