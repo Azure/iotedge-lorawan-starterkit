@@ -4,9 +4,18 @@
 namespace LoRaTools.ADR
 {
     using LoRaWan;
+    using Newtonsoft.Json;
 
     public class LoRaADRTableEntry
     {
+        [JsonProperty("DevEUI")]
+        public string DevEuiString
+        {
+            get => DevEUI.ToString();
+            set => DevEUI = DevEui.Parse(value);
+        }
+
+        [JsonIgnore]
         public DevEui DevEUI { get; set; }
 
         public uint FCnt { get; set; }
