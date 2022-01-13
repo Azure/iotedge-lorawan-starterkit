@@ -20,6 +20,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceAPIService : LoRaDeviceAPIServiceBase
     {
+        private const string PrimaryKeyPropertyName = "primaryKey";
         private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
         private readonly ILogger<LoRaDeviceAPIService> logger;
         private readonly Counter<int> deviceLoadRequests;
@@ -189,7 +190,7 @@ namespace LoRaWan.NetworkServer
 
             return result is { Length: > 0 } json
                    && JsonDocument.Parse(json).RootElement is { ValueKind: JsonValueKind.Object } root
-                   && root.TryGetProperty("PrimaryKey", out var property)
+                   && root.TryGetProperty(PrimaryKeyPropertyName, out var property)
                    && property is { ValueKind: JsonValueKind.String }
                  ? property.GetString()
                  : null;

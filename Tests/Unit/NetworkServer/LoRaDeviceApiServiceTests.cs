@@ -99,8 +99,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData("null", null)]
         [InlineData(@"""""", null)]
-        [InlineData(@"{""PrimaryKey"":""1234""}", "1234")]
-        [InlineData(@"{""PrimaryKey"":""""}", "")]
+        [InlineData(@"{""primaryKey"":""1234""}", "1234")]
+        [InlineData(@"{""primaryKey"":""""}", "")]
         [InlineData("{}", null)]
         [InlineData("", null)]
         public async Task SearchByEuiAsync_DevEui_Parses_Json(string json, string expected)
