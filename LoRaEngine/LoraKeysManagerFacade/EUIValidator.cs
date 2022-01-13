@@ -3,7 +3,6 @@
 
 namespace LoraKeysManagerFacade
 {
-    using System;
     using LoRaWan;
 
     internal static class EuiValidator
