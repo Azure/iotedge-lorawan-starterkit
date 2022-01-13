@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         }
 
         [Fact]
-        public async Task RunFetchConcentratorFirmware_Throws_ForInvalidTwinProperty()
+        public async Task RunFetchConcentratorFirmware_Throws_ForTwinMissingCups()
         {
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
@@ -139,6 +139,30 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'a': 'b'}"));
+            this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                                .Returns(Task.FromResult(twin));
+
+            var result = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
+
+            Assert.IsType<UnprocessableEntityResult>(result);
+        }
+
+        [Fact]
+        public async Task RunFetchConcentratorFirmware_Throws_ForTwinMissingFwUrl()
+        {
+            var httpRequest = new Mock<HttpRequest>();
+            var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
+            {
+                { "StationEui", new StringValues(this.TestStationEui.ToString()) }
+            });
+            httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
+
+            var twin = new Twin();
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
+                'package': '1.0.1',
+                'fwKeyChecksum': 123456,
+                'fwSignature': '123'
+            }}"));
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 

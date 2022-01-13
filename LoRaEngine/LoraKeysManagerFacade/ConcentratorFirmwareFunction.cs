@@ -80,7 +80,7 @@ namespace LoraKeysManagerFacade
                     using var content = new StreamContent(stream);
                     return new OkObjectResult(content);
                 }
-                catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException)
+                catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException or NullReferenceException)
                 {
                     this.logger.LogError(ex, "Failed to parse firmware upgrade url from the '{PropertyName}' desired property.", CupsPropertyName);
                     return new UnprocessableEntityResult();
