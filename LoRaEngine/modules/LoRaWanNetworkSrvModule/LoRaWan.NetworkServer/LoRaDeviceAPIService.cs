@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Text;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
@@ -153,14 +154,14 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public override Task<IoTHubDeviceInfo> SearchByEuiAsync(DevEui eui) =>
-            SearchByEuiAsync<IoTHubDeviceInfo>(eui.ToString());
+        public override Task<string> GetPrimaryKeyByEuiAsync(DevEui eui) =>
+            GetPrimaryKeyByEuiAsync(eui.ToString());
 
         /// <inheritdoc />
-        public override Task<IotHubStationInfo> SearchByEuiAsync(StationEui eui) =>
-            SearchByEuiAsync<IotHubStationInfo>(eui.ToString());
+        public override Task<string> GetPrimaryKeyByEuiAsync(StationEui eui) =>
+            GetPrimaryKeyByEuiAsync(eui.ToString());
 
-        private async Task<T> SearchByEuiAsync<T>(string eui)
+        private async Task<string> GetPrimaryKeyByEuiAsync(string eui)
         {
             this.deviceLoadRequests?.Add(1);
 
@@ -185,7 +186,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var result = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(result);
+            return JsonDocument.Parse(result).RootElement.GetProperty("PrimaryKey").GetString();
         }
 
         internal Uri GetFullUri(string relativePath)

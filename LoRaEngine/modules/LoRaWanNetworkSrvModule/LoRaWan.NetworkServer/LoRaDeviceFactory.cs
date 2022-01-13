@@ -61,7 +61,7 @@ namespace LoRaWan.NetworkServer
                 // even though, we don't own it, to detect ownership
                 // changes.
                 // Ownership is transferred to connection manager.
-                this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
+                this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI.ToString(), deviceInfo.PrimaryKey));
 
                 loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
@@ -120,12 +120,12 @@ namespace LoRaWan.NetworkServer
             return connectionString;
         }
 
-        public virtual ILoRaDeviceClient CreateDeviceClient(DevEui eui, string primaryKey)
+        public virtual ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey)
         {
             try
             {
                 var partConnection = CreateIoTHubConnectionString();
-                var deviceConnectionStr = FormattableString.Invariant($"{partConnection}DeviceId={eui};SharedAccessKey={primaryKey}");
+                var deviceConnectionStr = FormattableString.Invariant($"{partConnection}DeviceId={deviceId};SharedAccessKey={primaryKey}");
 
                 // Enabling AMQP multiplexing
                 var transportSettings = new ITransportSettings[]

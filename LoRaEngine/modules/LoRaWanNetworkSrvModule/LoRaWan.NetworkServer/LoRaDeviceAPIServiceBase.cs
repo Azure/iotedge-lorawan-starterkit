@@ -41,10 +41,10 @@ namespace LoRaWan.NetworkServer
         public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, DevEui devEUI, DevNonce devNonce);
 
         /// <summary>
-        /// Searches station devices in IoT Hub.
+        /// Searches the primary key for a station device in IoT Hub.
         /// </summary>
         /// <param name="eui">EUI of the station.</param>
-        public abstract Task<IotHubStationInfo> SearchByEuiAsync(StationEui eui);
+        public abstract Task<string> GetPrimaryKeyByEuiAsync(StationEui eui);
 
         /// <summary>
         /// Fetch station credentials in IoT Hub.
@@ -53,10 +53,10 @@ namespace LoRaWan.NetworkServer
         public abstract Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype, CancellationToken token);
 
         /// <summary>
-        /// Searches LoRa devices in IoT Hub.
+        /// Searches the primary key for a LoRa device in IoT Hub.
         /// </summary>
         /// <param name="eui">EUI of the LoRa device.</param>
-        public abstract Task<IoTHubDeviceInfo> SearchByEuiAsync(DevEui eui);
+        public abstract Task<string> GetPrimaryKeyByEuiAsync(DevEui eui);
 
         /// <summary>
         /// Sets the authorization code for the URL.

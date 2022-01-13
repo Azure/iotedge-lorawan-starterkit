@@ -154,11 +154,11 @@ namespace LoRaWan.NetworkServer
                 return cachedDevice;
             }
 
-            var device = await this.loRaDeviceAPIService.SearchByEuiAsync(devEUI);
-            if (device == null)
+            var key = await this.loRaDeviceAPIService.GetPrimaryKeyByEuiAsync(devEUI);
+            if (string.IsNullOrEmpty(key))
                 return null;
 
-            var loRaDevice = await this.deviceFactory.CreateAndRegisterAsync(device, CancellationToken.None);
+            var loRaDevice = await this.deviceFactory.CreateAndRegisterAsync(new IoTHubDeviceInfo { DevEUI = devEUI, PrimaryKey = key }, CancellationToken.None);
 
             if (this.initializers != null)
             {

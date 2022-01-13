@@ -69,11 +69,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var subject = Setup(facadeMock.Object);
 
             // act
-            var result = await subject.SearchByEuiAsync(new StationEui(1));
+            var result = await subject.GetPrimaryKeyByEuiAsync(new StationEui(1));
 
             // assert
-            Assert.Equal(StationEui.Parse(SearchByDevEuiContract.Eui), result.StationEui);
-            Assert.Equal(Convert.ToBase64String(Encoding.UTF8.GetBytes(SearchByDevEuiContract.PrimaryKey)), result.PrimaryKey);
+            Assert.Equal(Convert.ToBase64String(Encoding.UTF8.GetBytes(SearchByDevEuiContract.PrimaryKey)), result);
         }
 
         [Fact]
@@ -91,11 +90,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var subject = Setup(facadeMock.Object);
 
             // act
-            var result = await subject.SearchByEuiAsync(new DevEui(1));
+            var result = await subject.GetPrimaryKeyByEuiAsync(new DevEui(1));
 
             // assert
-            Assert.Equal(DevEui.Parse(SearchByDevEuiContract.Eui), result.DevEUI);
-            Assert.Equal(Convert.ToBase64String(Encoding.UTF8.GetBytes(SearchByDevEuiContract.PrimaryKey)), result.PrimaryKey);
+            Assert.Equal(Convert.ToBase64String(Encoding.UTF8.GetBytes(SearchByDevEuiContract.PrimaryKey)), result);
         }
 
         private static LoRaDeviceAPIService Setup(string basePath) =>

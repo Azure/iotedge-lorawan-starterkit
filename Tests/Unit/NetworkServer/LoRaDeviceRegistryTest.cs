@@ -474,8 +474,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
 
             var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            deviceApi.Setup(x => x.SearchByEuiAsync(simDevice.DevEUI))
-                .ReturnsAsync(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123"));
+            deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(simDevice.DevEUI))
+                .ReturnsAsync("123");
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
@@ -514,8 +514,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task GetDeviceByDevEUIAsync_When_Api_Returns_Null_Should_Return_Null()
         {
             var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            deviceApi.Setup(x => x.SearchByEuiAsync(It.IsNotNull<DevEui>()))
-                .ReturnsAsync((IoTHubDeviceInfo)null);
+            deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(It.IsNotNull<DevEui>()))
+                .ReturnsAsync((string)null);
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
 
@@ -539,8 +539,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task GetDeviceByDevEUIAsync_When_Api_Returns_Empty_Should_Return_Null()
         {
             var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            deviceApi.Setup(x => x.SearchByEuiAsync(It.IsNotNull<DevEui>()))
-                .ReturnsAsync((IoTHubDeviceInfo)null);
+            deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(It.IsNotNull<DevEui>()))
+                .ReturnsAsync((string)null);
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
 
