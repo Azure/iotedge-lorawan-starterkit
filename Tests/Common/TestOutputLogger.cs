@@ -6,6 +6,7 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Collections.Concurrent;
     using LoRaWan.NetworkServer;
     using Microsoft.Extensions.Logging;
     using Xunit.Abstractions;
@@ -14,7 +15,7 @@ namespace LoRaWan.Tests.Common
     /// Logger class that offers integration with XUnit's <see cref="ITestOutputHelper"/>.
     /// It forwards log statements directly to <see cref="ITestOutputHelper"/> without taking into account scope information.
     /// </summary>
-    public sealed class TestOutputLogger<T> : ILogger<T>
+    public sealed class TestOutputLogger : ILogger
     {
         private const LogLevel TestLogLevel = LogLevel.Debug;
 
@@ -32,6 +33,38 @@ namespace LoRaWan.Tests.Common
             if (!IsEnabled(logLevel)) return;
             var message = formatter(state, exception);
             this.testOutputHelper.WriteLine(message);
+        }
+    }
+
+    public sealed class TestOutputLoggerFactory : ILoggerFactory
+    {
+        private readonly TestOutputLoggerProvider testOutputLoggerProvider;
+
+        public TestOutputLoggerFactory(ITestOutputHelper testOutputHelper) =>
+            this.testOutputLoggerProvider = new TestOutputLoggerProvider(testOutputHelper);
+
+        public void AddProvider(ILoggerProvider provider)
+        {
+            // Only (and always) supports the TestOutputLoggerProvider.
+        }
+
+        public ILogger CreateLogger(string categoryName) =>
+            this.testOutputLoggerProvider.CreateLogger(categoryName);
+
+        public void Dispose() => this.testOutputLoggerProvider.Dispose();
+
+        private sealed class TestOutputLoggerProvider : ILoggerProvider
+        {
+            private readonly ITestOutputHelper testOutputHelper;
+            private readonly ConcurrentDictionary<string, TestOutputLogger> loggers = new();
+
+            public TestOutputLoggerProvider(ITestOutputHelper testOutputHelper) =>
+                this.testOutputHelper = testOutputHelper;
+
+            public ILogger CreateLogger(string categoryName) =>
+                this.loggers.GetOrAdd(categoryName, _ => new TestOutputLogger(this.testOutputHelper));
+
+            public void Dispose() => this.loggers.Clear();
         }
     }
 }
