@@ -5,9 +5,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System.Collections.Generic;
     using System.IO;
+    using System.Net.Http;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Web.Http;
     using Azure;
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
@@ -67,7 +69,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
             {
-                { "StationEui", new StringValues(TestStationEui.ToString()) }
+                { "StationEui", new StringValues(this.TestStationEui.ToString()) }
             });
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
@@ -81,10 +83,38 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            var result = await this.concentratorFirmware.RunFetchConcentratorFwUpgrade(httpRequest.Object, CancellationToken.None);
+            var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
+
+            Assert.NotNull(actual);
+            Assert.IsType<OkObjectResult>(actual);
+        }
+
+        [Fact]
+        public async Task RunFetchConcentratorFirmware_Returns_NotFound_ForMissingTwin()
+        {
+            // http request
+            var httpRequest = new Mock<HttpRequest>();
+            var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
+            {
+                { "StationEui", new StringValues(this.TestStationEui.ToString()) }
+            });
+            httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
+
+            // twin mock
+            var twin = new Twin();
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
+                'package': '1.0.1',
+                'fwUrl': 'https://storage.blob.core.windows.net/container/blob',
+                'fwKeyChecksum': 123456,
+                'fwSignature': '123'
+            }}"));
+            this.registryManager.Setup(m => m.GetTwinAsync("AnotherTwin", It.IsAny<CancellationToken>()))
+                                .Returns(Task.FromResult(twin));
+
+            var result = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
             Assert.NotNull(result);
-            Assert.IsType<OkObjectResult>(result);
+            Assert.IsType<NotFoundResult>(result);
         }
     }
 }

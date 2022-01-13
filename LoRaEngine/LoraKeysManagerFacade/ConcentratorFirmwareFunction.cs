@@ -6,10 +6,11 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Globalization;
     using System.IO;
+    using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Web.Http;
     using Azure.Storage.Blobs;
-    using Azure.Storage.Blobs.Models;
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
@@ -55,10 +56,10 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            return await RunFetchConcentratorFwUpgrade(req, cancellationToken);
+            return await RunFetchConcentratorFirmware(req, cancellationToken);
         }
 
-        internal async Task<IActionResult> RunFetchConcentratorFwUpgrade(HttpRequest req, CancellationToken cancellationToken)
+        internal async Task<IActionResult> RunFetchConcentratorFirmware(HttpRequest req, CancellationToken cancellationToken)
         {
             if (!StationEui.TryParse((string)req.Query["StationEui"], out var stationEui))
             {
@@ -76,8 +77,9 @@ namespace LoraKeysManagerFacade
                         throw new ArgumentOutOfRangeException(CupsPropertyName, "Failed to read cups config");
 
                     var fwUrl = JObject.Parse(cupsProperty)[CupsFwUrlPropertyName].ToString();
-                    var result = await GetBlobStreamAsync(fwUrl, cancellationToken);
-                    return new OkObjectResult(result);
+                    using var stream = await GetBlobStreamAsync(fwUrl, cancellationToken);
+                    using var content = new StreamContent(stream);
+                    return new OkObjectResult(content);
                 }
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException)
                 {
@@ -92,13 +94,16 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        internal async Task<Stream> GetBlobStreamAsync(string blobUrl, CancellationToken cancellationToken)
+        internal async Task<MemoryStream> GetBlobStreamAsync(string blobUrl, CancellationToken cancellationToken)
         {
             var blobServiceClient = this.azureClientFactory.CreateClient(FacadeStartup.WebJobsStorageClientName);
             var blobUri = new BlobUriBuilder(new Uri(blobUrl));
-            return await blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
-                                          .GetBlobClient(blobUri.BlobName)
-                                          .OpenReadAsync(new BlobOpenReadOptions(false), cancellationToken);
+            var stream = new MemoryStream();
+            _ = await blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
+                                       .GetBlobClient(blobUri.BlobName)
+                                       .DownloadToAsync(stream, cancellationToken);
+
+            return stream;
         }
     }
 }
