@@ -30,7 +30,7 @@ namespace LoraKeysManagerFacade
         public string DevEuiString
         {
             get => DevEUI?.ToString();
-            set => DevEUI = string.IsNullOrEmpty(value) ? null : DevEui.Parse(value);
+            set => DevEUI = value is null ? null : DevEui.Parse(value);
         }
 
         public string PrimaryKey { get; set; }
