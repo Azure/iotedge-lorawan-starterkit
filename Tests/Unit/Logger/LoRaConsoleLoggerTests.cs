@@ -71,13 +71,13 @@ namespace LoRaWan.Tests.Unit.Logger
         }
 
         [Theory]
-        [InlineData(0x0123_4567_89ab_cdefU, null, null, "0123456789ABCDEF foo")]
+        [InlineData("0123456789ABCDEF", null, null, "0123456789ABCDEF foo")]
         [InlineData(null, "ADDR", null, "ADDR foo")]
         [InlineData(null, null, 1, "0000000000000001 foo")]
-        [InlineData(0x0123_4567_89ab_cdefU, null, 1, "0123456789ABCDEF foo")]
-        [InlineData(0x0123_4567_89ab_cdefU, "ADDR", null, "0123456789ABCDEF foo")]
+        [InlineData("0123456789ABCDEF", null, 1, "0123456789ABCDEF foo")]
+        [InlineData("0123456789ABCDEF", "ADDR", null, "0123456789ABCDEF foo")]
         [InlineData(null, "ADDR", 1, "ADDR foo")]
-        public void When_Multiple_Scopes_Set_DevEUI_Preferred_Over_DevAddr_Preferred_Over_StationEUI(ulong? devEuiScope, string devAddrScope, int? stationEuiScope, string expected)
+        public void When_Multiple_Scopes_Set_DevEUI_Preferred_Over_DevAddr_Preferred_Over_StationEUI(string devEuiScope, string devAddrScope, int? stationEuiScope, string expected)
         {
             // arrange
             var options = CreateLoggerConfigMonitor();
@@ -86,7 +86,7 @@ namespace LoRaWan.Tests.Unit.Logger
             var logger = new TestLoRaConsoleLogger(moqInfo.Object, null, provider.Object);
 
             // act
-            using var euiScope = devEuiScope is { } someDevEuiScope ? logger.BeginDeviceScope(new DevEui(someDevEuiScope)) : default;
+            using var euiScope = devEuiScope is { } someDevEuiScope ? logger.BeginDeviceScope(DevEui.Parse(someDevEuiScope)) : default;
             using var addrScope = devAddrScope is null ? default : logger.BeginDeviceAddressScope(devAddrScope);
             using var statScope = stationEuiScope is { } s ? logger.BeginEuiScope(new StationEui((ulong)s)) : default;
             logger.LogInformation("foo");
