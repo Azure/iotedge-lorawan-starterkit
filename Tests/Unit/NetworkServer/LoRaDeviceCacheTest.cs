@@ -176,7 +176,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_Removing_Device_Is_Disposed_On_Request(bool dispose)
         {
             using var cache = CreateNoRefreshCache();
-            var deviceMock = new Mock<LoRaDevice>(new DevAddr(200), new DevEui(100).ToString(), Mock.Of<ILoRaDeviceClientConnectionManager>());
+            var deviceMock = new Mock<LoRaDevice>(new DevAddr(200), new DevEui(100), Mock.Of<ILoRaDeviceClientConnectionManager>());
             var device = deviceMock.Object;
             cache.Register(device);
             Assert.True(cache.Remove(device, dispose));
