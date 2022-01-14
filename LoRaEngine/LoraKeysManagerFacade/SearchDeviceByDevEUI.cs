@@ -4,15 +4,14 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Primitives;
 
     public class SearchDeviceByDevEUI
     {
@@ -43,30 +42,26 @@ namespace LoraKeysManagerFacade
 
         private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log)
         {
-            var devEUI = req.Query["DevEUI"];
-            if (StringValues.IsNullOrEmpty(devEUI))
+            string devEui = req.Query["DevEUI"];
+            if (!DevEui.TryParse(devEui, out var parsedDevEui))
             {
-                log.LogError("DevEUI missing in request");
-                return new BadRequestObjectResult("DevEUI missing in request");
+                return new BadRequestObjectResult("DevEUI missing or invalid.");
             }
 
-            var result = new List<IoTHubDeviceInfo>();
-            var device = await this.registryManager.GetDeviceAsync(devEUI);
+            var device = await this.registryManager.GetDeviceAsync(parsedDevEui.ToString());
             if (device != null)
             {
-                result.Add(new IoTHubDeviceInfo()
+                log.LogDebug($"Search for {devEui} found 1 device");
+                return new OkObjectResult(new
                 {
-                    DevEUI = devEUI,
-                    PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
+                    DevEUI = devEui,
+                    device.Authentication.SymmetricKey.PrimaryKey
                 });
-
-                log.LogDebug($"Search for {devEUI} found 1 device");
-                return new OkObjectResult(result);
             }
             else
             {
-                log.LogInformation($"Search for {devEUI} found 0 devices");
-                return new NotFoundObjectResult(result);
+                log.LogInformation($"Search for {devEui} found 0 devices");
+                return new NotFoundResult();
             }
         }
     }

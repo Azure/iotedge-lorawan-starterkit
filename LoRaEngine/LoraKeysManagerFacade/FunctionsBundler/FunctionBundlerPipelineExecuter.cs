@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
 
@@ -12,7 +13,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
     {
         private readonly IFunctionBundlerExecutionItem[] registeredHandlers;
 
-        public string DevEUI { get; private set; }
+        public DevEui DevEUI { get; private set; }
 
         public FunctionBundlerRequest Request { get; private set; }
 
@@ -20,9 +21,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public ILogger Logger { get; private set; }
 
-        public FunctionBundlerPipelineExecuter(
-                                               IFunctionBundlerExecutionItem[] registeredHandlers,
-                                               string devEUI,
+        public FunctionBundlerPipelineExecuter(IFunctionBundlerExecutionItem[] registeredHandlers,
+                                               DevEui devEUI,
                                                FunctionBundlerRequest request,
                                                ILogger logger = null)
         {

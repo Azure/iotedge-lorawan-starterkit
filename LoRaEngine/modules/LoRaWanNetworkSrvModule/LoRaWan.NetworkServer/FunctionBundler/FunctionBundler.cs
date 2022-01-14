@@ -12,12 +12,12 @@ namespace LoRaWan.NetworkServer
     {
         private readonly LoRaDeviceAPIServiceBase deviceApi;
         private readonly FunctionBundlerRequest request;
-        private readonly string devEui;
+        private readonly DevEui devEui;
         private readonly IList<IFunctionBundlerExecutionItem> executionItems;
         private readonly FunctionBundlerExecutionContext executionContext;
         private readonly ILogger<FunctionBundler> logger;
 
-        internal FunctionBundler(string devEui,
+        internal FunctionBundler(DevEui devEui,
                                  LoRaDeviceAPIServiceBase deviceApi,
                                  FunctionBundlerRequest request,
                                  IList<IFunctionBundlerExecutionItem> executionItems,

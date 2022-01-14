@@ -23,7 +23,15 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public string DevEUI { get; set; }
+        [JsonIgnore]
+        public DevEui? DevEUI { get; set; }
+
+        [JsonProperty("DevEUI")]
+        public string DevEuiString
+        {
+            get => DevEUI?.ToString();
+            set => DevEUI = value is null ? null : DevEui.Parse(value);
+        }
 
         public string PrimaryKey { get; set; }
     }

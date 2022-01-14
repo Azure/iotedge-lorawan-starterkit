@@ -16,8 +16,7 @@ namespace LoRaTools.LoRaMessage
             MHdr = macHeader;
             AppEui = joinEui;
 
-            DevEUI = new byte[DevEui.Size];
-            _ = devEui.Write(DevEUI.Span);
+            DevEUI = devEui;
 
             DevNonce = devNonce;
 

@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Common
             set => LoRaDevice.DevAddr = value;
         }
 
-        public string DevEUI => LoRaDevice.DeviceID;
+        public DevEui DevEUI => LoRaDevice.DevEui;
 
         public bool Supports32BitFCnt
         {
@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.Common
             }
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
-            return new LoRaPayloadJoinRequest(LoRaDevice.AppEui.Value, LoRaDevice.DeviceID, DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
+            return new LoRaPayloadJoinRequest(LoRaDevice.AppEui.Value, DevEui.Parse(LoRaDevice.DeviceID), DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
         }
 
 
@@ -320,9 +320,9 @@ namespace LoRaWan.Tests.Common
             }
             await SendMessageToBasicsStationsAsync(JsonSerializer.Serialize(new
             {
-                JoinEui = joinRequestPayload.AppEui.ToString("G", null),
+                JoinEui = joinRequestPayload.AppEui.ToString(),
                 msgtype = "jreq",
-                DevEui = DevEui.Read(joinRequestPayload.DevEUI.Span).ToString("G", null),
+                DevEui = joinRequestPayload.DevEUI.ToString(),
                 DevNonce = joinRequestPayload.DevNonce.AsUInt16,
                 MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 MIC = joinRequestPayload.Mic.Value.AsInt32,
