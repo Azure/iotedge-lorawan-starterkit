@@ -27,6 +27,7 @@ namespace LoRaWan.Tests.Common
         private readonly Uri lnsUri;
         private CancellationTokenSource cancellationTokenSource;
         private bool started;
+        private Task processMessagesAsync;
 
         private readonly HashSet<Func<string, bool>> subscribers = new HashSet<Func<string, bool>>();
 
@@ -58,14 +59,14 @@ namespace LoRaWan.Tests.Common
 
             // Send version request
             await SerializeAndSendMessageAsync(new LnsVersionRequest(this.stationEUI, "2", "1", "test", 2, ""), cancellationToken);
-            enumerator = this.clientWebSocket.ReadTextMessages(cancellationToken);
+            this.cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            enumerator = this.clientWebSocket.ReadTextMessages(this.cancellationTokenSource.Token);
             if (!await enumerator.MoveNextAsync())
                 throw new InvalidOperationException("Version request should return a response.");
             Debug.Assert(enumerator.Current.Contains("router_config", StringComparison.OrdinalIgnoreCase));
 
             // Listen to incoming messages
-            this.cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            _ = Task.Run(async () =>
+            this.processMessagesAsync = Task.Run(async () =>
             {
                 while (await enumerator.MoveNextAsync())
                 {
@@ -81,6 +82,8 @@ namespace LoRaWan.Tests.Common
 
                     Console.WriteLine("Message received: " + msg);
                 }
+
+                Console.WriteLine($"Stopping message processing in station {this.stationEUI}");
             }, this.cancellationTokenSource.Token);
         }
 
@@ -124,11 +127,15 @@ namespace LoRaWan.Tests.Common
             await this.clientWebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken = default)
+        private async Task StopAsync(CancellationToken cancellationToken)
         {
+            if (!this.started)
+                throw new InvalidOperationException("Start the simulated Basics Station first.");
+
             try
             {
                 await this.clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing WS", cancellationToken);
+                this.cancellationTokenSource?.Cancel();
             }
             finally
             {
@@ -137,6 +144,12 @@ namespace LoRaWan.Tests.Common
 
             // The ClientWebSocket needs to be disposed and recreated in order to be used again
             this.clientWebSocket = new ClientWebSocket();
+        }
+
+        public async Task StopAndValidateAsync(CancellationToken cancellationToken = default)
+        {
+            await StopAsync(cancellationToken);
+            await this.processMessagesAsync;
         }
 
         public void Dispose()
