@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System.Diagnostics.Metrics;
     using System.Linq;
     using System.Text;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
@@ -19,6 +20,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceAPIService : LoRaDeviceAPIServiceBase
     {
+        private const string PrimaryKeyPropertyName = "PrimaryKey";
         private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
         private readonly ILogger<LoRaDeviceAPIService> logger;
         private readonly Counter<int> deviceLoadRequests;
@@ -36,7 +38,7 @@ namespace LoRaWan.NetworkServer
             this.deviceLoadRequests = meter.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
         }
 
-        public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
+        public override async Task<uint> NextFCntDownAsync(DevEui devEUI, uint fcntDown, uint fcntUp, string gatewayId)
         {
             this.logger.LogDebug("syncing FCntDown for multigateway");
 
@@ -57,7 +59,7 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
+        public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(DevEui devEUI, FunctionBundlerRequest request)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"FunctionBundler/{devEUI}?code={AuthCode}");
@@ -76,7 +78,7 @@ namespace LoRaWan.NetworkServer
             return JsonConvert.DeserializeObject<FunctionBundlerResult>(payload);
         }
 
-        public override async Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId)
+        public override async Task<bool> ABPFcntCacheResetAsync(DevEui devEUI, uint fcntUp, string gatewayId)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}");
@@ -91,8 +93,8 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, DevNonce devNonce)
-            => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, devNonce: devNonce);
+        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, DevEui devEUI, DevNonce devNonce)
+            => SearchDevicesAsync(gatewayID: gatewayID, devEui: devEUI, devNonce: devNonce);
 
         /// <inheritdoc />
         public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(DevAddr devAddr)
@@ -101,7 +103,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Helper method that calls the API GetDevice method.
         /// </summary>
-        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, DevAddr? devAddr = null, string devEUI = null, string appEUI = null, DevNonce? devNonce = null)
+        private async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, DevAddr? devAddr = null, DevEui? devEui = null, string appEUI = null, DevNonce? devNonce = null)
         {
             this.deviceLoadRequests?.Add(1);
 
@@ -112,7 +114,7 @@ namespace LoRaWan.NetworkServer
                 ["code"] = AuthCode,
                 ["GateWayId"] = gatewayID,
                 ["DevAddr"] = devAddr?.ToString(),
-                ["DevEUI"] = devEUI,
+                ["DevEUI"] = devEui?.ToString(),
                 ["AppEUI"] = appEUI,
                 ["DevNonce"] = devNonce?.ToString()
             });
@@ -153,14 +155,14 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public override Task<SearchDevicesResult> SearchByEuiAsync(DevEui eui) =>
-            SearchByEuiAsync(eui.ToString("N", null));
+        public override Task<string> GetPrimaryKeyByEuiAsync(DevEui eui) =>
+            GetPrimaryKeyByEuiAsync(eui.ToString());
 
         /// <inheritdoc />
-        public override Task<SearchDevicesResult> SearchByEuiAsync(StationEui eui) =>
-            SearchByEuiAsync(eui.ToString("N", null));
+        public override Task<string> GetPrimaryKeyByEuiAsync(StationEui eui) =>
+            GetPrimaryKeyByEuiAsync(eui.ToString());
 
-        private async Task<SearchDevicesResult> SearchByEuiAsync(string eui)
+        private async Task<string> GetPrimaryKeyByEuiAsync(string eui)
         {
             this.deviceLoadRequests?.Add(1);
 
@@ -176,17 +178,20 @@ namespace LoRaWan.NetworkServer
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    return new SearchDevicesResult();
+                    return default;
                 }
 
                 this.logger.LogError($"error calling get device/station by EUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
 
-                return new SearchDevicesResult();
+                return default;
             }
 
-            var result = await response.Content.ReadAsStringAsync();
-            var devices = (List<IoTHubDeviceInfo>)JsonConvert.DeserializeObject(result, typeof(List<IoTHubDeviceInfo>));
-            return new SearchDevicesResult(devices);
+            return await response.Content.ReadAsStringAsync() is { Length: > 0 } json
+                   && JsonDocument.Parse(json).RootElement is { ValueKind: JsonValueKind.Object } root
+                   && root.EnumerateObject()
+                          .FirstOrDefault(p => PrimaryKeyPropertyName.Equals(p.Name, StringComparison.OrdinalIgnoreCase)) is { Value.ValueKind: JsonValueKind.String } property
+                   ? property.Value.GetString()
+                   : null;
         }
 
         internal Uri GetFullUri(string relativePath)
@@ -216,7 +221,7 @@ namespace LoRaWan.NetworkServer
             var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
-                ["StationEui"] = eui.ToString("N", null),
+                ["StationEui"] = eui.ToString(),
                 ["CredentialType"] = credentialtype.ToString()
             });
 

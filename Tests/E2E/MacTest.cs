@@ -100,7 +100,7 @@ namespace LoRaWan.Tests.E2E
 
             if (device.IsMultiGw)
             {
-                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DeviceID);
+                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);
             }
 
             await Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_CommandsImplAsync(device, "test");

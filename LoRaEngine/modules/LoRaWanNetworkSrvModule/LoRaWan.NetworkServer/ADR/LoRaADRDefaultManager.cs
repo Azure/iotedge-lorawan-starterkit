@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer.ADR
             }
         }
 
-        public override Task<uint> NextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
+        public override Task<uint> NextFCntDown(DevEui devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
             return this.frameCounterStrategy.NextFcntDown(LoRaDevice, clientFCntUp).AsTask();
             // update twins

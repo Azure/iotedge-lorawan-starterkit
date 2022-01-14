@@ -4,7 +4,6 @@
 namespace LoRaTools.LoRaMessage
 {
     using System;
-    using LoRaTools.Utils;
     using LoRaWan;
 
     /// <summary>
@@ -17,14 +16,9 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public JoinEui AppEui { get; set; }
 
-        public Memory<byte> DevEUI { get; set; }
+        public DevEui DevEUI { get; set; }
 
         public DevNonce DevNonce { get; set; }
-
-        /// <summary>
-        /// Gets the value of DevEUI as <see cref="string"/>.
-        /// </summary>
-        public string GetDevEUIAsString() => ConversionHelper.ReverseByteArrayToString(DevEUI);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadJoinRequest"/> class.
@@ -37,19 +31,13 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Constructor used for test code only.
         /// </summary>
-        internal LoRaPayloadJoinRequest(JoinEui joinEui, string devEUI, DevNonce devNonce, AppKey key)
+        internal LoRaPayloadJoinRequest(JoinEui joinEui, DevEui devEui, DevNonce devNonce, AppKey key)
         {
             // Mhdr is always 0 in case of a join request
             MHdr = new MacHeader(MacMessageType.JoinRequest);
 
-            var devEUIBytes = ConversionHelper.StringToByteArray(devEUI);
-
-            // Store as reversed value
-            // When coming from real device is is reversed
-            // message processor reverses both values before getting it
-            Array.Reverse(devEUIBytes);
             AppEui = joinEui;
-            DevEUI = new Memory<byte>(devEUIBytes);
+            DevEUI = devEui;
             DevNonce = devNonce;
             Mic = PerformMic(key);
         }
@@ -59,24 +47,20 @@ namespace LoRaTools.LoRaMessage
 
         public override bool CheckMic(AppKey key) => Mic == PerformMic(key);
 
-        private Mic PerformMic(AppKey key)
-        {
-            var devEui = DevEui.Read(DevEUI.Span);
-            return LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, AppEui, devEui, DevNonce);
-        }
+        private Mic PerformMic(AppKey key) => LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, AppEui, DevEUI, DevNonce);
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
 
         public override byte[] GetByteMessage()
         {
-            var messageArray = new byte[MacHeader.Size + JoinEui.Size + DevEUI.Length + DevNonce.Size + LoRaWan.Mic.Size];
+            var messageArray = new byte[MacHeader.Size + JoinEui.Size + DevEui.Size + DevNonce.Size + LoRaWan.Mic.Size];
             var start = 0;
             _ = MHdr.Write(messageArray.AsSpan(start));
             start += MacHeader.Size;
             _ = AppEui.Write(messageArray.AsSpan(start));
             start += JoinEui.Size;
-            DevEUI.Span.CopyTo(messageArray.AsSpan(start));
-            start += DevEUI.Length;
+            _ = DevEUI.Write(messageArray.AsSpan(start));
+            start += DevEui.Size;
             _ = DevNonce.Write(messageArray.AsSpan(start));
             start += DevNonce.Size;
 

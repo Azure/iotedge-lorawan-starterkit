@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         [Fact]
         public async Task ADR_First_Entry_Device_Reset()
         {
-            var deviceEUI = NewUniqueEUI64();
+            var deviceEUI = TestEui.GenerateDevEui();
             var gatewayId = NewUniqueEUI64();
 
             var req = CreateStandardADRRequest(gatewayId);
@@ -70,7 +70,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         [Fact]
         public async Task ADR_MultiGateway_Entry_Update()
         {
-            var deviceEUI = NewUniqueEUI64();
+            var deviceEUI = TestEui.GenerateDevEui();
 
             var gateway1Id = NewUniqueEUI64();
             var gateway2Id = NewUniqueEUI64();
@@ -108,7 +108,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         [Fact]
         public async Task ADR_MultiGateway_Full_Frame()
         {
-            var deviceEUI = NewUniqueEUI64();
+            var deviceEUI = TestEui.GenerateDevEui();
 
             var gateway1Id = NewUniqueEUI64();
             var gateway2Id = NewUniqueEUI64();

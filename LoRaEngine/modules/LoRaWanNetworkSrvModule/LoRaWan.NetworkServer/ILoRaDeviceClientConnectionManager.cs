@@ -10,10 +10,10 @@ namespace LoRaWan.NetworkServer
         bool EnsureConnected(LoRaDevice loRaDevice);
 
         ILoRaDeviceClient GetClient(LoRaDevice loRaDevice);
-        ILoRaDeviceClient GetClient(string devEUI);
+        ILoRaDeviceClient GetClient(DevEui devEui);
 
         void Release(LoRaDevice loRaDevice);
-        void Release(string devEUI);
+        void Release(DevEui devEui);
 
         void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient);
 
