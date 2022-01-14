@@ -20,7 +20,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task FrameCounter_Down_Initial()
         {
-            var deviceEUI = NewUniqueEUI64();
+            var deviceEUI = TestEui.GenerateDevEui();
             var gatewayId = NewUniqueEUI64();
 
             var next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 1, 1);
@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task FrameCounter_Down_Update_Server()
         {
-            var deviceEUI = NewUniqueEUI64();
+            var deviceEUI = TestEui.GenerateDevEui();
             var gatewayId = NewUniqueEUI64();
 
             var next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 1, 1);
@@ -43,7 +43,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task FrameCounter_Down_Update_Device()
         {
-            var deviceEUI = NewUniqueEUI64();
+            var deviceEUI = TestEui.GenerateDevEui();
             var gatewayId = NewUniqueEUI64();
 
             var next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 1, 1);
@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task FrameCounter_Down_Retry_Increment()
         {
-            var deviceEUI = NewUniqueEUI64();
+            var deviceEUI = TestEui.GenerateDevEui();
             var gatewayId = NewUniqueEUI64();
 
             var next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 1, 1);

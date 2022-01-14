@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = deviceInfo ?? throw new ArgumentNullException(nameof(deviceInfo));
 
-            if (string.IsNullOrEmpty(deviceInfo.PrimaryKey) || string.IsNullOrEmpty(deviceInfo.DevEUI))
+            if (string.IsNullOrEmpty(deviceInfo.PrimaryKey) || !deviceInfo.DevEUI.IsValid)
                 throw new ArgumentException($"Incomplete {nameof(IoTHubDeviceInfo)}", nameof(deviceInfo));
 
             if (this.loRaDeviceCache.TryGetByDevEui(deviceInfo.DevEUI, out _))
@@ -61,7 +61,7 @@ namespace LoRaWan.NetworkServer
                 // even though, we don't own it, to detect ownership
                 // changes.
                 // Ownership is transferred to connection manager.
-                this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
+                this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI.ToString(), deviceInfo.PrimaryKey));
 
                 loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
@@ -120,12 +120,12 @@ namespace LoRaWan.NetworkServer
             return connectionString;
         }
 
-        public virtual ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey)
+        public virtual ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey)
         {
             try
             {
                 var partConnection = CreateIoTHubConnectionString();
-                var deviceConnectionStr = $"{partConnection}DeviceId={eui};SharedAccessKey={primaryKey}";
+                var deviceConnectionStr = FormattableString.Invariant($"{partConnection}DeviceId={deviceId};SharedAccessKey={primaryKey}");
 
                 // Enabling AMQP multiplexing
                 var transportSettings = new ITransportSettings[]
@@ -142,7 +142,7 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(eui, deviceConnectionStr, transportSettings, primaryKey, this.loggerFactory.CreateLogger<LoRaDeviceClient>());
+                return new LoRaDeviceClient(deviceConnectionStr, transportSettings, primaryKey, this.loggerFactory.CreateLogger<LoRaDeviceClient>());
             }
             catch (Exception ex)
             {

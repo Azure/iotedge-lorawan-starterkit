@@ -22,15 +22,16 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [InlineData("   ")]
         [InlineData("1A88d")]
         [InlineData(".")]
-        [InlineData("0000000000000000")]
+        [InlineData("0000:0000:0000:0000")]
+        [InlineData("FFFF:FFFF:FFFF:FFFF")]
         public async Task DevEUI_Validation(string devEUI)
         {
             var dummyExecContext = new ExecutionContext();
             var apiCalls = new Func<HttpRequest, Task<IActionResult>>[]
             {
-                (req) => new DeviceGetter(null, null).GetDevice(req, NullLogger.Instance),
                 (req) => Task.Run(() => new FCntCacheCheck(null).NextFCntDownInvoke(req, NullLogger.Instance)),
-                (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>()).FunctionBundler(req, NullLogger.Instance, string.Empty))
+                (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>()).FunctionBundler(req, NullLogger.Instance, string.Empty)),
+                (req) => new DeviceGetter(null, null).GetDevice(req, NullLogger.Instance)
             };
 
             foreach (var apiCall in apiCalls)
@@ -42,7 +43,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                         { "DevEUI", devEUI }
                     });
 
-                await Assert.ThrowsAsync<ArgumentException>(async () => await apiCall(request));
+                _ = Assert.IsType<BadRequestObjectResult>(await apiCall(request));
             }
         }
     }

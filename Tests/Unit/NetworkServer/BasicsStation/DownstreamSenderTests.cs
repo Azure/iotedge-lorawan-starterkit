@@ -71,7 +71,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // assert
             Assert.NotEmpty(actualMessage);
             Assert.Contains(@"""msgtype"":""dnmsg""", actualMessage, StringComparison.InvariantCulture);
-            Assert.Contains(@"""DevEui"":""FF-FF-FF-FF-FF-FF-FF-FF"",", actualMessage, StringComparison.InvariantCulture);
+            Assert.Contains(@"""DevEui"":""FFFFFFFFFFFFFFFF"",", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""dC"":0", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""pdu"":""5245465551513D3D"",", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""RxDelay"":1,", actualMessage, StringComparison.InvariantCulture);
@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // assert
             Assert.NotEmpty(actualMessage);
             Assert.Contains(@"""msgtype"":""dnmsg"",", actualMessage, StringComparison.InvariantCulture);
-            Assert.Contains(@"""DevEui"":""FF-FF-FF-FF-FF-FF-FF-FF"",", actualMessage, StringComparison.InvariantCulture);
+            Assert.Contains(@"""DevEui"":""FFFFFFFFFFFFFFFF"",", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""dC"":2,", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""pdu"":""5245465551513D3D"",", actualMessage, StringComparison.InvariantCulture);
             // Will select DR0 as it is the second DR.

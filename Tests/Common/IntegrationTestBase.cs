@@ -32,7 +32,7 @@ namespace LoRaWan.Tests.Common
         }
 
         // Logs starts of a test method call
-        protected static void LogTestStart(TestDeviceInfo device, string concentratorEui, [CallerMemberName] string memberName = "")
+        protected static void LogTestStart(TestDeviceInfo device, StationEui concentratorEui, [CallerMemberName] string memberName = "")
         {
             Log($"[INFO] ** Starting {memberName} using device {device.DeviceID} and concentrator {concentratorEui} **");
         }
