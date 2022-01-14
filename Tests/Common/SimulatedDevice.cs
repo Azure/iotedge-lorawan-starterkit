@@ -75,7 +75,7 @@ namespace LoRaWan.Tests.Common
             {
                 var message = JsonSerializer.Deserialize<JsonElement>(response);
                 var devEui = message.GetProperty("DevEui");
-                if (devEui.GetString() == DevEui.Parse(DevEUI).ToString())
+                if (devEui.GetString() == DevEUI.ToString())
                 {
                     this.receivedMessages.Add(response);
                 }

@@ -35,8 +35,18 @@ namespace LoRaWan.Tests.Common
 
         public async Task StartAsync()
         {
+            var factory = new Func<ClientWebSocket>(() => new ClientWebSocket
+            {
+                Options =
+                    {
+#pragma warning disable CA5359 // Do Not Disable Certificate Validation
+                    RemoteCertificateValidationCallback = (_, _, _, _) => true,
+#pragma warning restore CA5359 // Do Not Disable Certificate Validation
+        }
+            });
             var routerReceivedMessage = new List<string>();
-            using var routerWebsocketClient = new WebsocketClient(new Uri(LnsUri, "router-info"));
+            using var routerWebsocketClient = new WebsocketClient(new Uri(LnsUri, "router-info"), factory);
+
             routerWebsocketClient.ReconnectionHappened.Subscribe(info =>
             {
                 Console.WriteLine("Reconnection happened, type: " + info.Type);
@@ -63,7 +73,6 @@ namespace LoRaWan.Tests.Common
             await AssertUtils.ContainsWithRetriesAsync(x => x.Contains("uri", StringComparison.OrdinalIgnoreCase), routerReceivedMessage, interval: TimeSpan.FromSeconds(5d));
 
             await routerWebsocketClient.Stop(WebSocketCloseStatus.NormalClosure, "closing WS");
-            var factory = new Func<ClientWebSocket>(() => new ClientWebSocket());
 
             DataWebsocketClient = new WebsocketClient(new Uri(LnsUri, $"router-data/{ stationEUI }"), factory);
             DataWebsocketClient.ReconnectionHappened.Subscribe(info =>

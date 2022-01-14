@@ -138,7 +138,7 @@ namespace LoRaWan.Tests.Simulation
                         DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
                         AppEui = JoinEui.Parse(deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture)),
                         AppKey = GetAppKey(deviceID),
-                        GatewayID = gatewayID,
+                        // GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
                     });
