@@ -223,7 +223,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                            });
 
             var muxs = Id6.Format(firstNic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
-            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B8-27-EB-FF-FE-E1-E3-9A""}}";
+            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B827EBFFFEE1E39A""}}";
 
             // act
             await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(this.httpContextMock.Object, this.socketMock.Object, CancellationToken.None);
@@ -334,8 +334,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var expectedRadioMetadata = GetExpectedRadioMetadata();
             var expectedMhdr = new MacHeader(MacMessageType.JoinRequest);
             var expectedMic = Mic.Read(new byte[] { 101, 116, 5, 193 });
-            var expectedAppEui = new byte[] { 181, 196, 210, 229, 200, 120, 98, 71 };
-            var expectedDevEui = new byte[] { 158, 22, 164, 238, 223, 193, 39, 133 };
+            var expectedJoinEui = JoinEui.Read(new byte[] { 181, 196, 210, 229, 200, 120, 98, 71 });
+            var expectedDevEui = DevEui.Read(new byte[] { 158, 22, 164, 238, 223, 193, 39, 133 });
             var expectedDevNonce = DevNonce.Read(new byte[] { 88, 212 });
             SetDataPathParameter();
             SetupSocketReceiveAsync(message);
@@ -357,8 +357,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(MacMessageType.JoinRequest, loRaRequest.Payload.MessageType);
             Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic);
-            Assert.Equal(expectedAppEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEUI.Span.ToArray());
-            Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI.Span.ToArray());
+            Assert.Equal(expectedJoinEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEui);
+            Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI);
             Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevNonce);
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
             Assert.Equal(RegionManager.EU868, loRaRequest.Region);

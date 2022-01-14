@@ -32,13 +32,13 @@ namespace LoRaWan.Tests.Integration
                 CallBase = true
             };
             this.deviceMock.Object.AppKey = this.simulatedDevice.AppKey;
-            this.deviceMock.Object.AppEUI = this.simulatedDevice.AppEUI;
+            this.deviceMock.Object.AppEui = this.simulatedDevice.AppEui;
             this.deviceMock.Object.IsOurDevice = true;
 
             this.cache = new MemoryCache(new MemoryCacheOptions());
             var concentratorDeduplication = new ConcentratorDeduplication(this.cache, NullLogger<IConcentratorDeduplication>.Instance);
             var deviceRegistryMock = new Mock<ILoRaDeviceRegistry>();
-            _ = deviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(It.IsAny<string>(), It.IsAny<DevNonce>()))
+            _ = deviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(It.IsAny<DevEui>(), It.IsAny<DevNonce>()))
                 .ReturnsAsync(this.deviceMock.Object);
 
             var clientMock = new Mock<ILoRaDeviceClient>();

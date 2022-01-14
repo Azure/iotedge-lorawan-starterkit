@@ -15,21 +15,27 @@ namespace LoRaWan
     /// </summary>
     public readonly record struct Mic
     {
-        public const int Size = sizeof(uint);
+        public const int Size = sizeof(int);
 
-        private readonly uint value;
+#pragma warning disable IDE0032 // Use auto property
+        private readonly int value;
+#pragma warning restore IDE0032 // Use auto property
 
-        public Mic(uint value) => this.value = value;
+        public Mic(int value) => this.value = value;
 
         public override string ToString() => this.value.ToString("X4", CultureInfo.InvariantCulture);
 
         public Span<byte> Write(Span<byte> buffer)
         {
-            BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer, this.value);
             return buffer[Size..];
         }
 
-        public static Mic Read(ReadOnlySpan<byte> buffer) => new(BinaryPrimitives.ReadUInt32LittleEndian(buffer));
+#pragma warning disable IDE0032 // Use auto property
+        public int AsInt32 => this.value;
+#pragma warning restore IDE0032 // Use auto property
+
+        public static Mic Read(ReadOnlySpan<byte> buffer) => new(BinaryPrimitives.ReadInt32LittleEndian(buffer));
 
         //   The Message Integrity Code (MIC) ensures the integrity and authenticity of a message.
         //   The message integrity code is calculated over all the fields in the message and then added
@@ -75,19 +81,19 @@ namespace LoRaWan
             mac.BlockUpdate(input, 0, input.Length);
             var cmac = MacUtilities.DoFinal(mac);
 
-            return new Mic(BinaryPrimitives.ReadUInt32LittleEndian(cmac));
+            return new Mic(BinaryPrimitives.ReadInt32LittleEndian(cmac));
         }
 
-        public static Mic ComputeForJoinAccept(AppKey appKey, MacHeader macHeader, Memory<byte> joinNonce, Memory<byte> netId, DevAddr devAddr, Memory<byte> dlSettings, Memory<byte> rxDelay, Memory<byte> cfList)
+        public static Mic ComputeForJoinAccept(AppKey appKey, MacHeader macHeader, AppNonce joinNonce, NetId netId, DevAddr devAddr, Memory<byte> dlSettings, Memory<byte> rxDelay, Memory<byte> cfList)
         {
-            var algoInput = new byte[MacHeader.Size + joinNonce.Length + NetId.Size + DevAddr.Size + dlSettings.Length + rxDelay.Length + cfList.Length];
+            var algoInput = new byte[MacHeader.Size + AppNonce.Size + NetId.Size + DevAddr.Size + dlSettings.Length + rxDelay.Length + cfList.Length];
             var index = 0;
             _ = macHeader.Write(algoInput.AsSpan(index));
             index += MacHeader.Size;
-            joinNonce.CopyTo(algoInput.AsMemory(index));
-            index += joinNonce.Length;
-            netId.CopyTo(algoInput.AsMemory(index));
-            index += netId.Length;
+            _ = joinNonce.Write(algoInput.AsSpan(index));
+            index += AppNonce.Size;
+            _ = netId.Write(algoInput.AsSpan(index));
+            index += NetId.Size;
             _ = devAddr.Write(algoInput.AsSpan(index));
             index += DevAddr.Size;
             dlSettings.CopyTo(algoInput.AsMemory(index));

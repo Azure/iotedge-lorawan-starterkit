@@ -215,6 +215,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void Custom_Reader_NetworkSessionKey_Nullable_Succeeds() =>
             Custom_Reader_Succeeds_For_Type((NetworkSessionKey?)TestKeys.CreateNetworkSessionKey(5));
 
+        [Fact]
+        public void Custom_Reader_JoinEui_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type(new JoinEui(5));
+
+        [Fact]
+        public void Custom_Reader_NetId_Succeeds() =>
+            Custom_Reader_Succeeds_For_Type(new NetId(5));
+
         private void Custom_Reader_Succeeds_For_Type<T>(T expected) where T : notnull
         {
             const string key = "foo";

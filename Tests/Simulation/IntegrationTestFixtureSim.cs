@@ -5,8 +5,8 @@ namespace LoRaWan.Tests.Simulation
 {
     using System;
     using System.Collections.Generic;
-    using LoRaWan.Tests.Common;
     using System.Globalization;
+    using LoRaWan.Tests.Common;
 
     public class IntegrationTestFixtureSim : IntegrationTestFixtureBase
     {
@@ -23,13 +23,13 @@ namespace LoRaWan.Tests.Simulation
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP => this.deviceRange1000_ABP;
 
-        private readonly List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
+        //private readonly List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_1000_ABP => this.deviceRange2000_1000_ABP;
+        //public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_1000_ABP => this.deviceRange2000_1000_ABP;
 
-        private readonly List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
+        //private readonly List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA => this.deviceRange3000_10_OTAA;
+        //public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA => this.deviceRange3000_10_OTAA;
 
         public override void SetupTestDevices()
         {
@@ -53,7 +53,7 @@ namespace LoRaWan.Tests.Simulation
             Device1002_Simulated_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000001002",
-                AppEUI = "0000000000001002",
+                AppEui = JoinEui.Parse("0000000000001002"),
                 AppKey = GetAppKey(1002),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -64,7 +64,7 @@ namespace LoRaWan.Tests.Simulation
             Device1003_Simulated_HttpBasedDecoder = new TestDeviceInfo
             {
                 DeviceID = "0000000000001003",
-                AppEUI = "0000000000001003",
+                AppEui = JoinEui.Parse("0000000000001003"),
                 AppKey = GetAppKey(1003),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
@@ -77,7 +77,7 @@ namespace LoRaWan.Tests.Simulation
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-                        AppEUI = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppEui = JoinEui.Parse(deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture)),
                         AppKey = GetAppKey(deviceID),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
@@ -88,6 +88,7 @@ namespace LoRaWan.Tests.Simulation
                     });
             }
 
+            /* Comment ununused device to avoid create unessecary devices.
             // Range of 1000 ABP devices from 2000 to 2999: Used for load testing
             for (var deviceID = 2000; deviceID <= 2999; deviceID++)
             {
@@ -112,19 +113,20 @@ namespace LoRaWan.Tests.Simulation
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-                        AppEUI = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppEui = GetJoinEui(deviceID),
                         AppKey = GetAppKey(deviceID),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
                     });
             }
+            */
         }
 
-        private static AppSessionKey GetAppSessionKey(int value) => AppSessionKey.Parse(GetKeyString(value));
-        private static NetworkSessionKey GetNetworkSessionKey(int value) => NetworkSessionKey.Parse(GetKeyString(value));
-        private static AppKey GetAppKey(int value) => AppKey.Parse(GetKeyString(value));
+        private AppSessionKey GetAppSessionKey(int value) => AppSessionKey.Parse(GetKeyString(value));
+        private NetworkSessionKey GetNetworkSessionKey(int value) => NetworkSessionKey.Parse(GetKeyString(value));
+        private AppKey GetAppKey(int value) => AppKey.Parse(GetKeyString(value));
 
-        private static string GetKeyString(int value) => value.ToString("X8", CultureInfo.InvariantCulture);
+        private string GetKeyString(int value) => GetKey32(value);
     }
 }

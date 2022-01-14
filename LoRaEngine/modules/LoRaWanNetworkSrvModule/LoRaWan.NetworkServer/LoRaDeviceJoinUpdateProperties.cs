@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
 
         public DevAddr DevAddr { get; set; }
 
-        public string NetID { get; set; }
+        public NetId NetId { get; set; }
 
         public DevNonce DevNonce { get; set; }
 
@@ -24,7 +24,7 @@ namespace LoRaWan.NetworkServer
 
         public string PreferredGatewayID { get; set; }
 
-        public string AppNonce { get; set; }
+        public AppNonce AppNonce { get; set; }
 
         /// <summary>
         /// Gets or sets value indicating if region should be saved in reported properties.

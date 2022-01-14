@@ -6,6 +6,7 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
+    using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using StackExchange.Redis;
@@ -26,7 +27,7 @@ namespace LoraKeysManagerFacade
             private readonly IDatabase redisCache;
             private bool ownsLock;
 
-            internal RedisLockWrapper(string devEUI, IDatabase redisCache, string owner = ":LoRaRedisStore")
+            internal RedisLockWrapper(DevEui devEUI, IDatabase redisCache, string owner = ":LoRaRedisStore")
             {
                 this.lockKey = GetEntryKey(devEUI) + LockToken;
                 this.redisCache = redisCache;
@@ -62,7 +63,7 @@ namespace LoraKeysManagerFacade
             this.logger = logger;
         }
 
-        public async Task UpdateADRTable(string devEUI, LoRaADRTable table)
+        public async Task UpdateADRTable(DevEui devEUI, LoRaADRTable table)
         {
             using var redisLock = new RedisLockWrapper(devEUI, this.redisCache);
             if (await redisLock.TakeLockAsync())
@@ -93,7 +94,7 @@ namespace LoraKeysManagerFacade
             return table;
         }
 
-        public async Task<LoRaADRTable> GetADRTable(string devEUI)
+        public async Task<LoRaADRTable> GetADRTable(DevEui devEUI)
         {
             using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
             {
@@ -107,7 +108,7 @@ namespace LoraKeysManagerFacade
             return null;
         }
 
-        public async Task<bool> Reset(string devEUI)
+        public async Task<bool> Reset(DevEui devEUI)
         {
             using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
             {
@@ -131,7 +132,7 @@ namespace LoraKeysManagerFacade
             return null;
         }
 
-        private static string GetEntryKey(string devEUI)
+        private static string GetEntryKey(DevEui devEUI)
         {
             return devEUI + CacheToken;
         }
