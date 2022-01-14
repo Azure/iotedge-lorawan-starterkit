@@ -150,9 +150,7 @@ namespace LoRaWan.Tests.Integration
 
             if (expectedMacCommandsCount > 0)
             {
-                var macCommands = MacCommand.CreateServerMacCommandFromBytes(
-                    simulatedDevice.DevEUI, payloadDataDown.Fopts);
-                Assert.Equal(expectedMacCommandsCount, macCommands.Count);
+                Assert.Equal(expectedMacCommandsCount, payloadDataDown.MacCommands.Count);
             }
             else
             {

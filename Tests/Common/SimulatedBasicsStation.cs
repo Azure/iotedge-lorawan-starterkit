@@ -117,6 +117,10 @@ namespace LoRaWan.Tests.Common
         {
             var payload = (LoRaPayloadData)loRaRequest.Payload;
 
+            var fopts = payload.MacCommands.SelectMany(mc => mc.ToBytes()).ToArray();
+            var foptsHex = new char[fopts.Length * 2];
+            Hexadecimal.Write(fopts, foptsHex);
+
             var msg = JsonSerializer.Serialize(new
             {
                 MHdr = uint.Parse(loRaRequest.Payload.MHdr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
@@ -124,7 +128,7 @@ namespace LoRaWan.Tests.Common
                 DevAddr = int.Parse(payload.DevAddr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 FCtrl = (uint)payload.FrameControlFlags,
                 FCnt = MemoryMarshal.Read<ushort>(payload.Fcnt.Span),
-                FOpts = ConversionHelper.ByteArrayToString(payload.Fopts),
+                FOpts = foptsHex,
                 FPort = (int)payload.Fport,
                 FRMPayload = ConversionHelper.ByteArrayToString(payload.Frmpayload),
                 MIC = payload.Mic.Value.AsInt32,

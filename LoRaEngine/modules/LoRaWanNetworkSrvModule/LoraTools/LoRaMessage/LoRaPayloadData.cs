@@ -67,11 +67,6 @@ namespace LoRaTools.LoRaMessage
         public Memory<byte> Fcnt { get; set; }
 
         /// <summary>
-        /// Gets or sets optional frame.
-        /// </summary>
-        public Memory<byte> Fopts { get; set; }
-
-        /// <summary>
         /// Gets or sets port field.
         /// </summary>
         public FramePort? Fport { get; set; }
@@ -127,7 +122,7 @@ namespace LoRaTools.LoRaMessage
             // Fcnt
             Fcnt = new Memory<byte>(inputMessage, 6, 2);
             // FOpts
-            Fopts = new Memory<byte>(inputMessage, 8, foptsSize);
+            var fopts = new Memory<byte>(inputMessage, 8, foptsSize);
             // in this case the message don't have a Fport as the payload is empty
             var fportLength = 1;
             if (inputMessage.Length < 13)
@@ -143,7 +138,7 @@ namespace LoRaTools.LoRaMessage
             // Populate the MacCommands present in the payload.
             if (foptsSize > 0)
             {
-                MacCommands = MacCommand.CreateMacCommandFromBytes(Fopts);
+                MacCommands = MacCommand.CreateMacCommandFromBytes(fopts);
             }
 
             Mic = LoRaWan.Mic.Read(inputMessage.AsSpan(inputMessage.Length - 4, 4));
@@ -160,9 +155,11 @@ namespace LoRaTools.LoRaMessage
             var macBytes = new List<byte>(3);
             if (macCommands != null)
             {
+                MacCommands = new List<MacCommand>(3);
                 foreach (var macCommand in macCommands)
                 {
                     macBytes.AddRange(macCommand.ToBytes());
+                    MacCommands.Add(macCommand);
                 }
             }
 
@@ -174,7 +171,7 @@ namespace LoRaTools.LoRaMessage
             var fPortLen = fPort is null ? 0 : 1;
 
             // TODO If there are mac commands to send and no payload, we need to put the mac commands in the frmpayload.
-            if (macBytes.Count > 0 && (frmPayload == null || frmPayload.Length == 0))
+            if (fOpts.Length > 0 && (frmPayload == null || frmPayload.Length == 0))
             {
                 frmPayload = fOpts;
                 fOpts = null;
@@ -195,14 +192,7 @@ namespace LoRaTools.LoRaMessage
             Fcnt = new Memory<byte>(RawMessage, 6, 2);
             Array.Copy(fcnt, 0, RawMessage, 6, 2);
             if (fOpts != null)
-            {
-                Fopts = new Memory<byte>(RawMessage, 8, fOptsLen);
                 Array.Copy(fOpts, 0, RawMessage, 8, fOptsLen);
-            }
-            else
-            {
-                Fopts = null;
-            }
 
             if (fPort is { } someFPort)
             {
@@ -398,12 +388,15 @@ namespace LoRaTools.LoRaMessage
             _ = DevAddr.Write(devAddrBytes);
             foreach (var b in devAddrBytes)
                 messageArray.Add(b);
-            messageArray.Add(FrameControl.Encode(FrameControlFlags, Fopts.Length));
-            messageArray.AddRange(Fcnt.ToArray());
-            if (!Fopts.Span.IsEmpty)
+            var fopts = new List<byte>(3);
+            if (MacCommands is { Count: > 0 } macCommands)
             {
-                messageArray.AddRange(Fopts.ToArray());
+                foreach (var macCommand in macCommands)
+                    fopts.AddRange(macCommand.ToBytes());
             }
+            messageArray.Add(FrameControl.Encode(FrameControlFlags, fopts.Count));
+            messageArray.AddRange(Fcnt.ToArray());
+            messageArray.AddRange(fopts);
 
             if (Fport is { } someFport)
             {

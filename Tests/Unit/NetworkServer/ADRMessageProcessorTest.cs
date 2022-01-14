@@ -215,7 +215,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 // In this case, no ADR adaptation is performed, so the message should be empty
                 Assert.Equal(0, payloadDataDown.Frmpayload.Span.Length);
-                Assert.Equal(0, payloadDataDown.Fopts.Span.Length);
+                Assert.Equal(0, payloadDataDown.MacCommands.Count);
             }
             else
             {

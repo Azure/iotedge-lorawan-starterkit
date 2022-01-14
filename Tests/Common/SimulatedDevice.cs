@@ -144,8 +144,8 @@ namespace LoRaWan.Tests.Common
             // THIS IS NEEDED FOR TESTS AS THIS CONSTRUCTOR IS USED THERE
             // THIS WILL BE REMOVED WHEN WE MIGRATE TO USE lORAPAYLOADDATALNS INSTEAD OF LORAPAYLOAD in #1085
             // Populate the MacCommands present in the payload
-            if (payloadData.Fopts.Length != 0)
-                payloadData.MacCommands = MacCommand.CreateMacCommandFromBytes(payloadData.Fopts);
+            //if (payloadData.Fopts.Length != 0)
+            //    payloadData.MacCommands = MacCommand.CreateMacCommandFromBytes(payloadData.Fopts);
 
             return payloadData;
         }

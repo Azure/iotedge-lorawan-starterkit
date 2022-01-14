@@ -138,9 +138,7 @@ namespace LoRaWan.Tests.Integration
 
             if (expectedMacCommandsCount > 0)
             {
-                // Possible problem: Manually casting payloadDataDown.Fopts to array and reversing it
-                var macCommands = MacCommand.CreateServerMacCommandFromBytes(simulatedDevice.DevEUI, payloadDataDown.Fopts.ToArray().Reverse().ToArray());
-                Assert.Equal(expectedMacCommandsCount, macCommands.Count);
+                Assert.Equal(expectedMacCommandsCount, payloadDataDown.MacCommands.Count);
             }
             else
             {

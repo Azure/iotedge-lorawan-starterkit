@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -305,7 +306,7 @@ namespace LoRaWan.Tests.Integration
             var data = new LoRaPayloadData(request.ResponseDownlink.Data);
             Assert.True(data.CheckMic(simulatedDevice.NwkSKey.Value));
             // FOpts are not encrypted
-            var link = new LoRaTools.LinkCheckAnswer(data.Fopts.Span);
+            var link = new LoRaTools.LinkCheckAnswer(data.MacCommands.Single().ToBytes().ToArray());
             Assert.NotNull(link);
             Assert.NotNull(eventProperties);
             Assert.Contains("LinkCheckCmd", eventProperties.Keys);

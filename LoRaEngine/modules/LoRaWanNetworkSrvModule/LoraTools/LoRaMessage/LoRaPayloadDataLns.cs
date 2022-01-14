@@ -62,13 +62,13 @@ namespace LoRaTools.LoRaMessage
             BinaryPrimitives.WriteUInt16LittleEndian(Fcnt.Span, counter);
 
             // Setting FOpts
-            Fopts = new byte[options.Length / 2];
-            _ = Hexadecimal.TryParse(options, Fopts.Span);
+            var fopts = new byte[options.Length / 2];
+            _ = Hexadecimal.TryParse(options, fopts);
 
             // Populate the MacCommands present in the payload.
             if (options.Length > 0)
             {
-                MacCommands = MacCommand.CreateMacCommandFromBytes(Fopts, logger);
+                MacCommands = MacCommand.CreateMacCommandFromBytes(fopts, logger);
             }
 
             // Setting FRMPayload
