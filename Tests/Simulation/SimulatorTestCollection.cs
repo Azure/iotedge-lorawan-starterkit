@@ -126,7 +126,8 @@ namespace LoRaWan.Tests.Simulation
                 deviceTasks.Add(Task.Run(async () =>
                 {
                     using var requestForJoin = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateJoinRequest());
-                    await simulatedDevice.JoinAsync(requestForJoin);
+                    var joined = await simulatedDevice.JoinAsync(requestForJoin);
+                    Assert.True(joined, "OTAA join failed");
 
                     for (var i = 0; i < messageCounts; i++)
                     {
@@ -140,10 +141,15 @@ namespace LoRaWan.Tests.Simulation
             await Task.WhenAll(deviceTasks);
             await Task.Delay(TimeSpan.FromSeconds(5));
 
-            var eventsByDevices = TestFixture.IoTHubMessages.Events.GroupBy(x => x.SystemProperties["iothub-connection-device-id"]);
-            // There are 11 devices in that group 0-10
-            Assert.Equal(simulatedDeviceList.Count + (simulatedDeviceList.Count * messageCounts), eventsByDevices.Count());
+            // Ensuring IoT Hub received everything it needed
+            var eventsByDevices = TestFixture.IoTHubMessages.Events.GroupBy(x => x.SystemProperties["iothub-connection-device-id"]).ToList();
+            Assert.Equal(simulatedDeviceList.Count, eventsByDevices.Count);
+            foreach(var g in eventsByDevices)
+            {
+                Assert.Equal(messageCounts * TestFixtureSim.DeviceRange5000_BasicsStationSimulators.Count, g.Count() );
+            }
 
+            // Ensured BasicsStation received everything needed
             foreach (var device in simulatedDeviceList)
             {
                 device.EnsureMessageResponsesAreReceived(messageCounts + 1);
