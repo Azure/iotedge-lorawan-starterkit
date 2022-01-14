@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System;
+    using System.Security.Cryptography;
     using System.Text;
     using global::LoraKeysManagerFacade;
     using LoRaWan.Tests.Common;
@@ -30,7 +31,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.Equal(devEui, items[0].DevEUI);
         }
 
-        private static RegistryManager InitRegistryManager(DevEui devEui)
+        private static IDeviceRegistryManager InitRegistryManager(DevEui devEui)
         {
             var mockRegistryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
@@ -67,38 +68,28 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                     return mockDevice.Object;
                 });
 
-            const int numberOfDevices = 2;
-            var deviceCount = 0;
-
             var queryMock = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Loose);
             queryMock
                 .Setup(x => x.HasMoreResults)
-                .Returns(() => deviceCount < numberOfDevices);
+                .Returns(() => true);
 
-            var deviceIds = new string[numberOfDevices] { devEui1, devEui2 };
+            var mockTwin = new Mock<IDeviceTwin>(MockBehavior.Strict);
 
-            IEnumerable<IDeviceTwin> Twins()
-            {
-                while (deviceCount < numberOfDevices)
-                {
-                    var mockDevice = new Mock<IDeviceTwin>(MockBehavior.Strict);
-
-                    mockDevice.SetupGet(t => t.DeviceId)
-                        .Returns(deviceIds[deviceCount++]);
-                    mockDevice.SetupGet(t => t.DevAddr)
-                              .Returns(CreateDevAddr());
-                    mockDevice.SetupGet(t => t.GatewayID)
-                              .Returns(string.Empty);
-                    mockDevice.SetupGet(t => t.LastUpdated)
-                              .Returns(DateTime.UtcNow);
-
-                    yield return mockDevice.Object;
-                }
-            }
+            mockTwin.SetupGet(t => t.DeviceId)
+                .Returns(devEui.ToString());
+            mockTwin.SetupGet(t => t.DevAddr)
+                      .Returns(CreateDevAddr());
+            mockTwin.SetupGet(t => t.GatewayID)
+                      .Returns(string.Empty);
+            mockTwin.SetupGet(t => t.LastUpdated)
+                      .Returns(DateTime.UtcNow);
 
             queryMock
                 .Setup(x => x.GetNextPageAsync())
-                .ReturnsAsync(Twins());
+                .ReturnsAsync(new []
+                {
+                   mockTwin.Object
+                });
 
             mockRegistryManager
                 .Setup(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()))

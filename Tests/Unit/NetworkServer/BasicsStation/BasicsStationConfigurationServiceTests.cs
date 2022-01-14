@@ -24,6 +24,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
     public class BasicsStationConfigurationServiceTests : IDisposable
     {
+        private const string IotHubHostName = "fake.azure-devices.net";
         private readonly Mock<LoRaDeviceAPIServiceBase> loRaDeviceApiServiceMock;
         private readonly Mock<ILoRaDeviceFactory> loRaDeviceFactoryMock;
         private readonly IMemoryCache memoryCache;
@@ -48,8 +49,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         private void SetupDeviceKeyLookup() => SetupDeviceKeyLookup("foo");
 
         private void SetupDeviceKeyLookup(string primaryKey) =>
-            loRaDeviceApiServiceMock.Setup(ldas => ldas.GetPrimaryKeyByEuiAsync(this.stationEui))
-                                    .ReturnsAsync(primaryKey);
+            loRaDeviceApiServiceMock.Setup(ldas => ldas.GetConnectionInfoByEui(this.stationEui))
+                                    .ReturnsAsync(new LoRaDeviceConnectionInfo
+                                    {
+                                        PrimaryKey = primaryKey,
+                                        IoTHubHostname = IotHubHostName
+                                    });
 
         private const string TcUri = "wss://tc.local:5001";
         private const string CupsUri = "https://cups.local:5002";
@@ -276,7 +281,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // assert
                 Assert.Equal(result.Length, numberOfConcurrentAccess);
                 this.loRaDeviceFactoryMock.Verify(ldf => ldf.CreateDeviceClient(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.GetPrimaryKeyByEuiAsync(It.IsAny<StationEui>()), Times.Once);
+                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.GetConnectionInfoByEui(It.IsAny<StationEui>()), Times.Once);
                 foreach (var r in result)
                     Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), r);
             }
@@ -300,9 +305,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // arrange
                 const string primaryKey = "foo";
                 SetupTwinResponse(primaryKey);
-                this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.GetPrimaryKeyByEuiAsync(It.IsAny<StationEui>()))
+                this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.GetConnectionInfoByEui(It.IsAny<StationEui>()))
                                              .Throws(new InvalidOperationException())
-                                             .ReturnsAsync(primaryKey);
+                                             .ReturnsAsync(new LoRaDeviceConnectionInfo
+                                             {
+                                                 PrimaryKey = primaryKey,
+                                                 IoTHubHostname = IotHubHostName
+                                             });
 
                 // act
                 Task<string> Act() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None);
@@ -310,7 +319,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 var result = await Act();
 
                 // assert
-                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.GetPrimaryKeyByEuiAsync(It.IsAny<StationEui>()), Times.Exactly(2));
+                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.GetConnectionInfoByEui(It.IsAny<StationEui>()), Times.Exactly(2));
                 Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
             }
 

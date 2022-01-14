@@ -20,8 +20,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     [Collection("LoraKeysManagerFacade.Test")]
     public class SearchDeviceByDevEUITest
     {
-        private const string PrimaryKey = "ABCDEFGH1234567890";
-
         [Fact]
         public async Task When_Query_String_Is_Not_Found_Should_Return_BadResult()
         {
@@ -66,7 +64,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI={devEUI.ToString(format, null)}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             registryManager.Setup(x => x.GetDeviceAsync(devEUI.ToString()))
                 .ReturnsAsync((IDevice)null);
 
@@ -83,9 +81,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             // arrange
             var devEui = new DevEui(13213123212131);
-            var assignedIoTHub = "fake.azure-devices.net";
-            var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
-            var (registryManager, request) = SetupIotHubQuery(devEui.ToString(), PrimaryKey);
+            var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(SearchByDevEuiContract.PrimaryKey));
+            var (registryManager, request) = SetupIotHubQuery(devEui.ToString(), SearchByDevEuiContract.PrimaryKey);
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
             // act
@@ -93,7 +90,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             // assert
             var okObjectResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(JsonConvert.SerializeObject(new { DevEUI = devEui.ToString(), PrimaryKey = primaryKey }), JsonConvert.SerializeObject(okObjectResult.Value));
+            Assert.Equal(JsonConvert.SerializeObject(new { DevEUI = devEui.ToString(), PrimaryKey = primaryKey, IoTHubHostname = "fake.azure-devices.net" }), JsonConvert.SerializeObject(okObjectResult.Value));
             registryManager.VerifyAll();
         }
 
@@ -115,12 +112,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             registryManager.VerifyAll();
         }
 
-        private static (Mock<RegistryManager>, HttpRequest) SetupIotHubQuery(string devEui, string primaryKey)
+        private static (Mock<IDeviceRegistryManager>, HttpRequest) SetupIotHubQuery(string devEui, string primaryKey)
         {
+            var assignedIoTHub = "fake.azure-devices.net";
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI={devEui}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
 
 
             registryManager.Setup(x => x.GetDeviceAsync(devEui))
@@ -128,9 +126,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                             {
                                 var deviceMock = new Mock<IDevice>(MockBehavior.Strict);
 
-                                deviceMock.SetupGet(c => c.DeviceId).Returns(devEUI);
-                                deviceMock.SetupGet(c => c.PrimaryKey).Returns(primaryKey);
-                                deviceMock.SetupGet(c => c.DeviceId).Returns(primaryKey);
+                                deviceMock.SetupGet(c => c.DeviceId).Returns(devEui);
+                                deviceMock.SetupGet(c => c.PrimaryKey).Returns(Convert.ToBase64String(Encoding.UTF8.GetBytes(primaryKey)));
                                 deviceMock.SetupGet(c => c.AssignedIoTHub).Returns(assignedIoTHub);
 
                                 return deviceMock.Object;

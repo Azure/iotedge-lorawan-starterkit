@@ -7,8 +7,8 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Linq;
+    using System.Net.Http.Json;
     using System.Text;
-    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
@@ -20,7 +20,6 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceAPIService : LoRaDeviceAPIServiceBase
     {
-        private const string PrimaryKeyPropertyName = "PrimaryKey";
         private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
         private readonly ILogger<LoRaDeviceAPIService> logger;
         private readonly Counter<int> deviceLoadRequests;
@@ -155,14 +154,14 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public override Task<string> GetPrimaryKeyByEuiAsync(DevEui eui) =>
+        public override Task<LoRaDeviceConnectionInfo> GetConnectionInfoByEui(DevEui eui) =>
             GetPrimaryKeyByEuiAsync(eui.ToString());
 
         /// <inheritdoc />
-        public override Task<string> GetPrimaryKeyByEuiAsync(StationEui eui) =>
+        public override Task<LoRaDeviceConnectionInfo> GetConnectionInfoByEui(StationEui eui) =>
             GetPrimaryKeyByEuiAsync(eui.ToString());
 
-        private async Task<string> GetPrimaryKeyByEuiAsync(string eui)
+        private async Task<LoRaDeviceConnectionInfo> GetPrimaryKeyByEuiAsync(string eui)
         {
             this.deviceLoadRequests?.Add(1);
 
@@ -186,12 +185,17 @@ namespace LoRaWan.NetworkServer
                 return default;
             }
 
-            return await response.Content.ReadAsStringAsync() is { Length: > 0 } json
-                   && JsonDocument.Parse(json).RootElement is { ValueKind: JsonValueKind.Object } root
-                   && root.EnumerateObject()
-                          .FirstOrDefault(p => PrimaryKeyPropertyName.Equals(p.Name, StringComparison.OrdinalIgnoreCase)) is { Value.ValueKind: JsonValueKind.String } property
-                   ? property.Value.GetString()
-                   : null;
+            try
+            {
+                return await response.Content.ReadFromJsonAsync<LoRaDeviceConnectionInfo>();
+            }
+            catch (System.Text.Json.JsonException ex)
+            {
+                this.logger.LogError($"error calling get device/station by EUI api: {response.ReasonPhrase}, status: {response.StatusCode}{Environment.NewLine}{ex}");
+
+                return default;
+            }
+
         }
 
         internal Uri GetFullUri(string relativePath)

@@ -8,7 +8,6 @@ namespace LoraKeysManagerFacade
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Extensions.Logging;
@@ -233,7 +232,7 @@ namespace LoraKeysManagerFacade
                     devAddrCacheInfos.Add(new DevAddrCacheInfo()
                     {
                         DevAddr = twin.DevAddr,
-                        DevEUI = twin.DeviceId,
+                        DevEUI = DevEui.Parse(twin.DeviceId),
                         GatewayId = twin.GatewayID,
                         NwkSKey = twin.NwkSKey,
                         LastUpdatedTwins = twin.LastUpdated

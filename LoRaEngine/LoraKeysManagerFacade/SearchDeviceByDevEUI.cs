@@ -8,7 +8,6 @@ namespace LoraKeysManagerFacade
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
@@ -55,7 +54,7 @@ namespace LoraKeysManagerFacade
                 return new OkObjectResult(new
                 {
                     DevEUI = devEui,
-                    device.Authentication.SymmetricKey.PrimaryKey,
+                    device.PrimaryKey,
                     IoTHubHostname = device.AssignedIoTHub
                 });
             }

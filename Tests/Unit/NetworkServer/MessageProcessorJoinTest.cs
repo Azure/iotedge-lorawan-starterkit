@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(It.IsNotNull<string>(), devEui, joinRequest.DevNonce))
-                         .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEui, "123") { GatewayId = ServerConfiguration.GatewayID }.AsList()));
+                         .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEui, "123", IotHubHostName) { GatewayId = ServerConfiguration.GatewayID }.AsList()));
 
             // Ensure that the device twin was updated
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.Is<TwinCollection>((t) =>

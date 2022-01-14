@@ -180,7 +180,7 @@ namespace LoraKeysManagerFacade
                                         var iotHubDeviceInfo = new DevAddrCacheInfo
                                         {
                                             DevAddr = someDevAddr,
-                                            DevEUI = twin.DeviceId,
+                                            DevEUI = DevEui.Parse(twin.DeviceId),
                                             PrimaryKey = device.PrimaryKey,
                                             GatewayId = twin.GatewayID ?? string.Empty,
                                             NwkSKey = twin.NwkSKey,
@@ -247,9 +247,9 @@ namespace LoraKeysManagerFacade
                         var device = await this.registryManager.GetDeviceAsync(devEUI.ToString());
                         if (device != null)
                         {
-                            joinInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+                            joinInfo.PrimaryKey = device.PrimaryKey;
                             joinInfo.AssignedIoTHub = device.AssignedIoTHub;
-                            var twin = await this.registryManager.GetTwinAsync(devEUI);
+                            var twin = await this.registryManager.GetTwinAsync(devEUI.ToString());
                             var deviceGatewayId = twin.GatewayID;
                             if (!string.IsNullOrEmpty(deviceGatewayId))
                             {

@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.Integration
                     foreach (var devaddrItem in devAddressesToConsider)
                     {
                         var mockDevice = new Mock<IDeviceTwin>(MockBehavior.Strict);
-                        mockDevice.SetupGet(t => t.DeviceId).Returns(devaddrItem.DevEUI);
+                        mockDevice.SetupGet(t => t.DeviceId).Returns(devaddrItem.DevEUI.ToString());
                         mockDevice.SetupGet(t => t.GatewayID).Returns(devaddrItem.GatewayId);
                         mockDevice.SetupGet(t => t.DevAddr).Returns(devaddrItem.DevAddr);
                         mockDevice.SetupGet(t => t.NwkSKey).Returns(devaddrItem.NwkSKey);
@@ -467,8 +467,8 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(query2Result);
 
             registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.Is((DevAddr x) => managerInput.Any(c => c.DevAddr == x))), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
-            registryManagerMock.Verify(x => x.GetTwinAsync(It.Is((string x) => managerInput.Any(c => c.DevEUI == x))), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
-            registryManagerMock.Verify(x => x.GetDeviceAsync(It.Is((string x) => managerInput.Any(c => c.DevEUI == x))), Times.Never);
+            registryManagerMock.Verify(x => x.GetTwinAsync(It.Is((string x) => managerInput.Any(c => c.DevEUI == DevEui.Parse(x)))), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.GetDeviceAsync(It.Is((string x) => managerInput.Any(c => c.DevEUI == DevEui.Parse(x)))), Times.Never);
         }
 
         [Fact]

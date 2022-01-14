@@ -77,8 +77,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
             var devEUI = simDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
-                .ReturnsAsync("123");
+            this.deviceApi.Setup(x => x.GetConnectionInfoByEui(devEUI))
+                .ReturnsAsync(new LoRaDeviceConnectionInfo
+                {
+                    PrimaryKey = "123",
+                    IoTHubHostname = IotHubHostName
+                });
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
@@ -134,8 +138,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
             var devEUI = simDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
-                .ReturnsAsync("123");
+            this.deviceApi.Setup(x => x.GetConnectionInfoByEui(devEUI))
+                .ReturnsAsync(new LoRaDeviceConnectionInfo
+                {
+                    PrimaryKey = "123",
+                    IoTHubHostname = IotHubHostName
+                });
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simDevice.CreateABPTwin());
@@ -194,8 +202,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
             var devEUI = simDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
-                .ReturnsAsync("123");
+            this.deviceApi.Setup(x => x.GetConnectionInfoByEui(devEUI))
+                .ReturnsAsync(new LoRaDeviceConnectionInfo
+                {
+                    PrimaryKey = "123",
+                    IoTHubHostname = IotHubHostName
+                });
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simDevice.CreateOTAATwin());
@@ -229,8 +241,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c'));
             var devEUI = simDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
-                .ReturnsAsync("123");
+            this.deviceApi.Setup(x => x.GetConnectionInfoByEui(devEUI))
+                .ReturnsAsync(new LoRaDeviceConnectionInfo
+                {
+                    PrimaryKey = "123",
+                    IoTHubHostname = IotHubHostName
+                });
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
@@ -336,8 +352,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEUI = simDevice.DevEUI;
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
-            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
-                .ReturnsAsync("123");
+            this.deviceApi.Setup(x => x.GetConnectionInfoByEui(devEUI))
+                .ReturnsAsync(new LoRaDeviceConnectionInfo
+                {
+                    PrimaryKey = "123",
+                    IoTHubHostname = IotHubHostName
+                });
 
             var twin = simDevice.CreateOTAATwin(
                 desiredProperties: new Dictionary<string, object>
@@ -402,8 +422,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEUI = simDevice.DevEUI;
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
-            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
-                .ReturnsAsync("123");
+            this.deviceApi.Setup(x => x.GetConnectionInfoByEui(devEUI))
+                .ReturnsAsync(new LoRaDeviceConnectionInfo
+                {
+                    PrimaryKey = "123",
+                    IoTHubHostname = IotHubHostName
+                });
 
             var twin = simDevice.CreateOTAATwin(
                 desiredProperties: new Dictionary<string, object>

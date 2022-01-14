@@ -63,14 +63,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 return await this.cache.GetOrCreateAsync(cacheKey, async cacheEntry =>
                 {
                     _ = cacheEntry.SetAbsoluteExpiration(CacheTimeout);
-                    var key = await this.loRaDeviceApiService.GetPrimaryKeyByEuiAsync(stationEui);
-                    if (string.IsNullOrEmpty(key))
+                    var info = await this.loRaDeviceApiService.GetConnectionInfoByEui(stationEui);
+                    if (info == null || string.IsNullOrEmpty(info.IoTHubHostname) || string.IsNullOrEmpty(info.PrimaryKey))
                     {
                         throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
                                                           LoRaProcessingErrorCode.InvalidDeviceConfiguration);
                     }
 
-                    using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key, info.IoTHubHostName);
+                    using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), info.PrimaryKey, info.IoTHubHostname);
                     var twin = await client.GetTwinAsync(cancellationToken);
                     return twin.Properties.Desired;
                 });
