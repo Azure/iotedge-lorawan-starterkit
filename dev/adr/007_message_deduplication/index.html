@@ -1612,7 +1612,7 @@ calls to external services need to be made for the detection. In scope for this 
 </ul>
 <p>For the detection, a in-memory cache is utilised with a sliding expiration of 1 minute. The value of
 the cache entry is always the concentrator from where we received the message. The key depends on
-the type of message.</p>
+the type of message (data or join message).</p>
 <h4 id="a-data-messages">a. Data messages</h4>
 <p>The relevant fields used for duplicate detection are the DevEui of the device the message came from,
 Mic and frame counter from the message.</p>
@@ -1657,7 +1657,7 @@ same concentrator. These circumstances can be:</p>
     Device--&gt;LBS--&gt;LNS;</div>
 <ul>
 <li>LNS receives message A from LBS for the first time. Message is marked as <code>NonDuplicate</code> and a
-  cache entry is created where the key is a SHA256 of the message and the value is LBS.</li>
+  cache entry is created.</li>
 <li>LNS receives again message A from the same LBS. LNS checks its local cache. If it's a cache miss,
   it's marked as a <code>NonDuplicate</code> as before. If it's a cache hit the message is marked as
   <code>DuplicateDueToResubmission</code> independently of which deduplication strategy is used.</li>
@@ -1701,9 +1701,9 @@ same concentrator. These circumstances can be:</p>
 We always want to process unique messages up and if they need to, also downstream.</p>
 <p>If message is <code>SoftDuplicate</code>: Upstream✔, Downstream❌.<br />
 We want to be aware of such messages on IoTHub but we skip sending downstream if they need confirmation because of possible collisions on the air.</p>
+<p>If message is marked as <code>DuplicateDueToResubmission</code>:</p>
 <ul>
-<li>If message is marked as <code>DuplicateDueToResubmission</code> and it requires confirmation the following
-  check happens:</li>
+<li>if it requires confirmation the following check happens:</li>
 </ul>
 <div class="mermaid">stateDiagram-v2
     direction LR
@@ -1717,8 +1717,7 @@ We want to be aware of such messages on IoTHub but we skip sending downstream if
     True --&gt; Upstream❌,Downstream✔
     False --&gt; Upstream✔,Downstream✔</div>
 <ul>
-<li>If message is marked as <code>DuplicateDueToResubmission</code> and it does not require confirmation the
-  following check happens:</li>
+<li>if it does <em>not</em> require confirmation the following check happens:</li>
 </ul>
 <div class="mermaid">stateDiagram-v2
     direction LR
@@ -1756,14 +1755,14 @@ for data messages.</p>
   information. The strategy affects the decision making as we saw before and it is stored on the device
   twin which is available later on the processing stack.</li>
 <li>The frame counter strategy does not influence the way this deduplication works but influences the
-  deduplication between network servers.</li>
+  deduplication between network servers (below).</li>
 <li>This logic is tested with a combination of unit, integration and E2E tests.</li>
 </ul>
 <h3 id="2-deduplication-between-different-network-servers">2. Deduplication between different network servers</h3>
 <p>At this deduplication we ensure that duplicate messages coming from different network servers are
 handled correctly. The categorization happens from an Azure Function where we need to send some
 metadata of the messages.</p>
-<p>If a device is not configured for a single gateway - no gateway assigned - we reach out
+<p>If a device is not configured for a single gateway (i.e. no gateway is assigned) we reach out
 to the function to determine, if a particular message from a device was already processed.</p>
 <div class="mermaid">flowchart LR;
     Device--&gt;LBS1--&gt;LNS1--&gt;Function--&gt;Redis;
@@ -1803,11 +1802,11 @@ a fcnt down.</p>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-12T17:51:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-12</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-14T16:23:18+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-14</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-12T17:51:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-12</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-14T16:23:18+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-14</span>
       
     
   </small>
