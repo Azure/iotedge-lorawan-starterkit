@@ -6,10 +6,11 @@ namespace LoRaWan.Tests.Common
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.Linq;
+    using System.Runtime.InteropServices;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
-    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
@@ -21,6 +22,10 @@ namespace LoRaWan.Tests.Common
     /// </summary>
     public sealed class SimulatedDevice
     {
+        private readonly List<SimulatedBasicsStation> SimulatedBasicsStations = new List<SimulatedBasicsStation>();
+
+        private readonly List<string> receivedMessages = new List<string>();
+
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
         public uint FrmCntUp { get; set; }
@@ -59,11 +64,26 @@ namespace LoRaWan.Tests.Common
             set => LoRaDevice.Supports32BitFCnt = value;
         }
 
-        public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0)
+        public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0, IReadOnlyCollection<SimulatedBasicsStation> simulatedBasicsStation = null)
         {
             LoRaDevice = testDeviceInfo;
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
+            SimulatedBasicsStations = simulatedBasicsStation.ToList();
+
+            bool AddToDeviceMessageQueue(string response)
+            {
+                var message = JsonSerializer.Deserialize<JsonElement>(response);
+                var devEui = message.GetProperty("DevEui");
+                if (devEui.GetString() == DevEui.Parse(DevEUI).ToString())
+                {
+                    this.receivedMessages.Add(response);
+                }
+
+                return true;
+            }
+
+            ListenForAnswer(AddToDeviceMessageQueue);
         }
 
         public LoRaPayloadJoinRequest CreateJoinRequest(AppKey? appkey = null, DevNonce? devNonce = null)
@@ -231,15 +251,59 @@ namespace LoRaWan.Tests.Common
             return true;
         }
 
+        //// Sends unconfirmed message
+        public async Task SendDataMessageAsync(LoRaRequest loRaRequest)
+        {
+            var payload = (LoRaPayloadData)loRaRequest.Payload;
+
+            var msg = JsonSerializer.Serialize(new
+            {
+                MHdr = uint.Parse(loRaRequest.Payload.MHdr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                msgtype = "updf",
+                DevAddr = int.Parse(payload.DevAddr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                FCtrl = (uint)payload.FrameControlFlags,
+                FCnt = MemoryMarshal.Read<ushort>(payload.Fcnt.Span),
+                FOpts = ConversionHelper.ByteArrayToString(payload.Fopts),
+                FPort = (int)payload.Fport,
+                FRMPayload = ConversionHelper.ByteArrayToString(payload.Frmpayload),
+                MIC = payload.Mic.Value.AsInt32,
+                DR = loRaRequest.RadioMetadata.DataRate,
+                Freq = loRaRequest.RadioMetadata.Frequency.AsUInt64,
+                upinfo = new
+                {
+                    gpstime = loRaRequest.RadioMetadata.UpInfo.GpsTime,
+                    rctx = 10,
+                    rssi = loRaRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
+                    xtime = loRaRequest.RadioMetadata.UpInfo.Xtime,
+                    snr = loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio
+                }
+            });
+
+            await SendMessageToBasicsStationsAsync(msg);
+
+            TestLogger.Log($"[{payload.DevAddr}] Sending data: {payload.Frmpayload}");
+        }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        private async Task SendMessageToBasicsStationsAsync(string message)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            Parallel.ForEach(SimulatedBasicsStations, (basicStation) => _ = basicStation.SendMessageAsync(message));
+        }
+
+        public bool EnsureMessageResponsesAreReceived(int expectedCout)
+        {
+            return this.receivedMessages.Count == expectedCout;
+        }
+
         // Performs join
-        public async Task<bool> JoinAsync(LoRaRequest joinRequest, SimulatedBasicsStation basicsStation, TimeSpan? timeout = null)
+        public async Task<bool> JoinAsync(LoRaRequest joinRequest, TimeSpan? timeout = null)
         {
             timeout ??= TimeSpan.FromSeconds(30);
-            using var joinCompleted = new SemaphoreSlim(0);
             var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
             var joinSuccessfull = false;
 
-            basicsStation.SubscribeOnce((response) =>
+            bool joinListenFunction(string response)
             {
                 // handle join
                 var joinAcceptstring = JsonSerializer.Deserialize<JoinAcceptResponse>(response);
@@ -247,17 +311,14 @@ namespace LoRaWan.Tests.Common
                 if (joinAcceptstring?.Pdu != null)
                 {
                     var joinAccept = new LoRaPayloadJoinAccept(ConversionHelper.StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
-
                     var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
-                    joinCompleted.Release();
-                    joinSuccessfull = result;
+                    joinSuccessfull |= result;
                     return result;
                 }
 
                 return false;
-            });
-
-            await basicsStation.SendMessageAsync(JsonSerializer.Serialize(new
+            }
+            await SendMessageToBasicsStationsAsync(JsonSerializer.Serialize(new
             {
                 JoinEui = joinRequestPayload.AppEui.ToString("G", null),
                 msgtype = "jreq",
@@ -284,11 +345,17 @@ namespace LoRaWan.Tests.Common
             }
 #endif
 
-            await joinCompleted.WaitAsync(timeout.Value);
-
-            return joinSuccessfull;
+            await AssertUtils.ContainsWithRetriesAsync((message) => joinListenFunction(message), this.receivedMessages);
+            return true;
         }
 
+        private void ListenForAnswer(Func<string, bool> func)
+        {
+            foreach (var basicsStation in SimulatedBasicsStations)
+            {
+                basicsStation.SubscribeOnce(func);
+            }
+        }
 
         /// <summary>
         /// Setups the join properties.

@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Collections.Generic;
     using Microsoft.Extensions.Configuration;
 
     public class TestConfiguration
@@ -100,5 +101,11 @@ namespace LoRaWan.Tests.Common
         public string ClientThumbprint { get; set; } //i.e. 4a0639c9c67221919fdb9618fa6fa0680259eaf2 (SHA1 thumbprint of cups.crt)
 
         public string ClientBundleCrc { get; set; } //i.e. 4004975634 (CRC32 of .bundle file)
+
+#pragma warning disable CA1002 // Do not expose generic lists
+#pragma warning disable CA2227 // Collection properties should be read only
+        public List<string> LNSEndpointsForSimulator { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
+#pragma warning restore CA1002 // Do not expose generic lists
     }
 }

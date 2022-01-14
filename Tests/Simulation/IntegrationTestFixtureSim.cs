@@ -6,10 +6,14 @@ namespace LoRaWan.Tests.Simulation
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO;
+    using System.Threading.Tasks;
     using LoRaWan.Tests.Common;
+    using Newtonsoft.Json.Linq;
 
     public class IntegrationTestFixtureSim : IntegrationTestFixtureBase
     {
+        private const int NumberOfConcentrators = 2;
         // Device1001_Simulated_ABP: used for ABP simulator
         public TestDeviceInfo Device1001_Simulated_ABP { get; private set; }
 
@@ -23,13 +27,38 @@ namespace LoRaWan.Tests.Simulation
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP => this.deviceRange1000_ABP;
 
-        //private readonly List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
+        private readonly List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
 
-        //public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_1000_ABP => this.deviceRange2000_1000_ABP;
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_1000_ABP => this.deviceRange2000_1000_ABP;
 
-        //private readonly List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
+        private readonly List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
 
-        //public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA => this.deviceRange3000_10_OTAA;
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA => this.deviceRange3000_10_OTAA;
+
+        private readonly List<TestDeviceInfo> deviceRange4000_500_OTAA = new List<TestDeviceInfo>();
+
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange4000_500_OTAA => this.deviceRange4000_500_OTAA;
+
+        private readonly List<TestDeviceInfo> deviceRange5000_BasicsStationSimulators = new List<TestDeviceInfo>();
+
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange5000_BasicsStationSimulators => this.deviceRange5000_BasicsStationSimulators;
+
+        private readonly List<SimulatedBasicsStation> simulatedBasicsStations = new List<SimulatedBasicsStation>();
+        public IReadOnlyCollection<SimulatedBasicsStation> SimulatedBasicsStations => this.simulatedBasicsStations;
+
+        public override async Task InitializeDevicesAsync()
+        {
+            var index = 0;
+            var startTasks = new List<Task>();
+            foreach (var basicsStationDevice in DeviceRange5000_BasicsStationSimulators)
+            {
+                var simulatedBasicsStation = new SimulatedBasicsStation(StationEui.Parse(basicsStationDevice.DeviceID), new Uri(Configuration.LNSEndpointsForSimulator[index % Configuration.LNSEndpointsForSimulator.Count]));
+                startTasks.Add(simulatedBasicsStation.StartAsync());
+                simulatedBasicsStations.Add(simulatedBasicsStation);
+            }
+
+            await Task.WhenAll(startTasks);
+        }
 
         public override void SetupTestDevices()
         {
@@ -71,6 +100,19 @@ namespace LoRaWan.Tests.Simulation
                 SensorDecoder = "http://localhost:8888/api/DecoderValueSensor",
             };
 
+            var fileName = "EU863.json";
+            var jsonString = File.ReadAllText(fileName);
+
+            for (var deviceID = 5000; deviceID <= 5000 + NumberOfConcentrators - 1 ; deviceID++)
+            {
+                this.deviceRange5000_BasicsStationSimulators.Add(new TestDeviceInfo
+                {
+                    DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                    RouterConfig = JObject.Parse(jsonString),
+                    IsIoTHubDevice = true,
+                });
+            }
+
             for (var deviceID = 1100; deviceID <= 1110; deviceID++)
             {
                 this.deviceRange1000_ABP.Add(
@@ -88,7 +130,21 @@ namespace LoRaWan.Tests.Simulation
                     });
             }
 
-            /* Comment ununused device to avoid create unessecary devices.
+            for (var deviceID = 4000; deviceID < 4500; deviceID++)
+            {
+                this.deviceRange4000_500_OTAA.Add(
+                    new TestDeviceInfo
+                    {
+                        DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppEui = JoinEui.Parse(deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture)),
+                        AppKey = GetAppKey(deviceID),
+                        GatewayID = gatewayID,
+                        IsIoTHubDevice = true,
+                        SensorDecoder = "DecoderValueSensor",
+                    });
+            }
+
+            /*
             // Range of 1000 ABP devices from 2000 to 2999: Used for load testing
             for (var deviceID = 2000; deviceID <= 2999; deviceID++)
             {
@@ -113,7 +169,7 @@ namespace LoRaWan.Tests.Simulation
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-                        AppEui = GetJoinEui(deviceID),
+                        AppEui = JoinEui.Parse(deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture)),
                         AppKey = GetAppKey(deviceID),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
@@ -128,5 +184,14 @@ namespace LoRaWan.Tests.Simulation
         private AppKey GetAppKey(int value) => AppKey.Parse(GetKeyString(value));
 
         private string GetKeyString(int value) => GetKey32(value);
+
+        public override async Task DisposeAsync()
+        {
+            foreach (var basicsStation in simulatedBasicsStations)
+            {
+                await basicsStation.StopAsync();
+                basicsStation.Dispose();
+            }
+        }
     }
 }

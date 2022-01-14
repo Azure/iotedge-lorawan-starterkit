@@ -61,6 +61,7 @@ namespace LoRaWan.Tests.Common
         }
 
         public abstract void SetupTestDevices();
+        public abstract Task InitializeDevicesAsync();
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
@@ -96,7 +97,7 @@ namespace LoRaWan.Tests.Common
             this.tcpLogListener?.ResetEvents();
         }
 
-        public Task DisposeAsync() => Task.FromResult(0);
+        public abstract Task DisposeAsync();
 
         private RegistryManager GetRegistryManager()
         {
@@ -285,6 +286,8 @@ namespace LoRaWan.Tests.Common
             {
                 this.tcpLogListener = TcpLogListener.Start(Configuration.TcpLogPort);
             }
+
+            await InitializeDevicesAsync();
         }
 
         public async Task UpdateExistingConcentratorThumbprint(StationEui stationEui, Func<string[], bool> condition, Action<List<string>> action)
@@ -360,7 +363,7 @@ namespace LoRaWan.Tests.Common
                     var desiredProperties = testDevice.GetDesiredProperties();
                     foreach (var kv in desiredProperties)
                     {
-                        if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value.ToString())
+                        if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (deviceTwin.Properties.Desired[kv.Key] as string) != kv.Value.ToString())
                         {
                             var existingValue = string.Empty;
                             if (deviceTwin.Properties.Desired.Contains(kv.Key))

@@ -63,6 +63,8 @@ namespace LoRaWan.Tests.Common
 
         public bool IsMultiGw => string.IsNullOrEmpty(GatewayID);
 
+        public object RouterConfig { get; set; }
+
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>.
         /// </summary>
@@ -89,6 +91,11 @@ namespace LoRaWan.Tests.Common
 
             if (DevAddr is { } someDevAddr)
                 desiredProperties[nameof(DevAddr)] = someDevAddr.ToString();
+
+            if (RouterConfig is { } routerConfig)
+            {
+                desiredProperties["routerConfig"] = routerConfig;
+            }
 
             desiredProperties[nameof(PreferredWindow)] = PreferredWindow;
 
@@ -146,6 +153,34 @@ namespace LoRaWan.Tests.Common
         /// </summary>
         /// <param name="deviceID">Device identifier. It will padded with 0's.</param>
         public static TestDeviceInfo CreateOTAADevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", char deviceClassType = 'A')
+        {
+            var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
+            var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);
+
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                value16 = string.Concat(prefix, value16[prefix.Length..]);
+                value32 = string.Concat(prefix, value32[prefix.Length..]);
+            }
+
+            var result = new TestDeviceInfo
+            {
+                DeviceID = value16,
+                AppEui = JoinEui.Parse(value16),
+                AppKey = LoRaWan.AppKey.Parse(value32),
+                GatewayID = gatewayID,
+                SensorDecoder = sensorDecoder,
+                ClassType = deviceClassType,
+            };
+
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="TestDeviceInfo"/> for Concentrator AUthentication.
+        /// </summary>
+        /// <param name="deviceID">Device identifier. It will padded with 0's.</param>
+        public static TestDeviceInfo CreateConcentratorDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", char deviceClassType = 'A')
         {
             var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
             var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);

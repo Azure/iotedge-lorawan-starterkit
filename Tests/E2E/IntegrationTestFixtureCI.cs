@@ -597,5 +597,15 @@ namespace LoRaWan.Tests.E2E
                 IsIoTHubDevice = true
             };
         }
+
+        public override Task InitializeDevicesAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public override Task DisposeAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 }
