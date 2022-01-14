@@ -149,7 +149,15 @@ namespace LoRaWan.Tests.Common
         public async Task StopAndValidateAsync(CancellationToken cancellationToken = default)
         {
             await StopAsync(cancellationToken);
-            await this.processMessagesAsync;
+
+            try
+            {
+                await this.processMessagesAsync;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected as websocket reading is canceled through Cancellation Token.
+            }
         }
 
         public void Dispose()
