@@ -55,7 +55,7 @@ calls to external services need to be made for the detection. In scope for this 
 
 For the detection, a in-memory cache is utilised with a sliding expiration of 1 minute. The value of
 the cache entry is always the concentrator from where we received the message. The key depends on
-the type of message.
+the type of message (data or join message).
 
 #### a. Data messages
 
@@ -115,7 +115,7 @@ flowchart LR;
 ```
 
 - LNS receives message A from LBS for the first time. Message is marked as `NonDuplicate` and a
-  cache entry is created where the key is a SHA256 of the message and the value is LBS.
+  cache entry is created.
 - LNS receives again message A from the same LBS. LNS checks its local cache. If it's a cache miss,
   it's marked as a `NonDuplicate` as before. If it's a cache hit the message is marked as
   `DuplicateDueToResubmission` independently of which deduplication strategy is used.
@@ -141,8 +141,9 @@ We always want to process unique messages up and if they need to, also downstrea
 If message is `SoftDuplicate`: Upstream✔, Downstream❌.  
 We want to be aware of such messages on IoTHub but we skip sending downstream if they need confirmation because of possible collisions on the air.
 
-- If message is marked as `DuplicateDueToResubmission` and it requires confirmation the following
-  check happens:
+If message is marked as `DuplicateDueToResubmission`:
+
+- if it requires confirmation the following check happens:
 
 ```mermaid
 stateDiagram-v2
@@ -158,8 +159,7 @@ stateDiagram-v2
     False --> Upstream✔,Downstream✔
 ```
 
-- If message is marked as `DuplicateDueToResubmission` and it does not require confirmation the
-  following check happens:
+- if it does *not* require confirmation the following check happens:
 
 ```mermaid
 stateDiagram-v2
@@ -203,7 +203,7 @@ for data messages.
   information. The strategy affects the decision making as we saw before and it is stored on the device
   twin which is available later on the processing stack.
 - The frame counter strategy does not influence the way this deduplication works but influences the
-  deduplication between network servers.
+  deduplication between network servers (below).
 - This logic is tested with a combination of unit, integration and E2E tests.
 
 ### 2. Deduplication between different network servers
@@ -212,7 +212,7 @@ At this deduplication we ensure that duplicate messages coming from different ne
 handled correctly. The categorization happens from an Azure Function where we need to send some
 metadata of the messages.
 
-If a device is not configured for a single gateway - no gateway assigned - we reach out
+If a device is not configured for a single gateway (i.e. no gateway is assigned) we reach out
 to the function to determine, if a particular message from a device was already processed.
 
 ```mermaid
