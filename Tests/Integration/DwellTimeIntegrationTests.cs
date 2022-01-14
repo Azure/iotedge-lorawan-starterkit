@@ -48,7 +48,7 @@ namespace LoRaWan.Tests.Integration
             this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             this.loRaDevice = CreateLoRaDevice(this.simulatedDevice, registerConnection: false);
 
-            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                          .ReturnsAsync(true);
         }
 
@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var region = new RegionAS923 { DesiredDwellTimeSetting = desired };
             using var request = SetupRequest(region, reported);
-            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
 
             // act
@@ -92,7 +92,7 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             using var request = SetupRequest(region, reported);
-            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
 
             // act
@@ -182,9 +182,9 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             using var request = SetupRequest(region, reportedDwellTimeSetting, createConfirmed: true, dataRateIndex: upstreamDataRate);
-            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
-            
+
             // act
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request, this.loRaDevice);
 

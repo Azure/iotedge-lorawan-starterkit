@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Integration
             messageProcessed = false;
 
             LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
-                .Returns<string, FunctionBundlerRequest>((dev, req) =>
+                .Returns((DevEui _, FunctionBundlerRequest _) =>
                 {
                     var isDup = messageProcessed;
                     messageProcessed = true;
@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Integration
                 });
 
             LoRaDeviceApi
-                .Setup(x => x.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+                .Setup(x => x.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                 .ReturnsAsync(simulatedDevice.FrmCntDown + 1)
                 .Callback(() =>
                 {
@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Integration
                     Assert.True(mode == DeduplicationMode.None);
                 });
 
-            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                 .ReturnsAsync(true);
 
             var shouldBeMarked = false;

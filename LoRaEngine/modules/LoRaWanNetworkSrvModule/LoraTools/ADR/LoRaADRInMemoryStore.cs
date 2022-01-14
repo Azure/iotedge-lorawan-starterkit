@@ -5,6 +5,7 @@ namespace LoRaTools.ADR
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.Extensions.Caching.Memory;
 
     /// <summary>
@@ -21,7 +22,7 @@ namespace LoRaTools.ADR
             this.cache = new MemoryCache(new MemoryCacheOptions());
         }
 
-        public Task<LoRaADRTable> GetADRTable(string devEUI)
+        public Task<LoRaADRTable> GetADRTable(DevEui devEUI)
         {
             lock (this.cache)
             {
@@ -29,7 +30,7 @@ namespace LoRaTools.ADR
             }
         }
 
-        public Task UpdateADRTable(string devEUI, LoRaADRTable table)
+        public Task UpdateADRTable(DevEui devEUI, LoRaADRTable table)
         {
             // void: the reference is up to date already
             return Task.CompletedTask;
@@ -47,7 +48,7 @@ namespace LoRaTools.ADR
             }
         }
 
-        public Task<bool> Reset(string devEUI)
+        public Task<bool> Reset(DevEui devEUI)
         {
             lock (this.cache)
             {

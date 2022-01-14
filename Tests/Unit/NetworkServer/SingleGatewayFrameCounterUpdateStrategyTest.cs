@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.deviceClient = new Mock<ILoRaDeviceClient>();
             this.connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
-            this.device = new LoRaDevice(new DevAddr(1), "2", connectionManager);
+            this.device = new LoRaDevice(new DevAddr(1), new DevEui(2), connectionManager);
         }
 
         public void Dispose()

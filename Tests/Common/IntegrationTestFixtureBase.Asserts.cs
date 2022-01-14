@@ -191,7 +191,7 @@ namespace LoRaWan.Tests.Common
         /// </summary>
         /// <param name="serialLog">serial log from the attached device.</param>
         /// <param name="devEUI">The device EUI of the current device.</param>
-        public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, string devEUI)
+        public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, DevEui devEUI)
         {
             var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal));
             Assert.NotNull(joinConfirmMsg);
@@ -207,7 +207,7 @@ namespace LoRaWan.Tests.Common
             {
                 await Task.Delay(DelayForJoinTwinStore);
 
-                var twins = await GetTwinAsync(devEUI);
+                var twins = await GetTwinAsync(devEUI.ToString());
                 if (twins.Properties.Reported.Contains(DevAddrProperty))
                 {
                     reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.OrdinalIgnoreCase);
