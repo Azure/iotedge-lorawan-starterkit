@@ -320,11 +320,11 @@ namespace LoRaWan.Tests.Common
             }
             await SendMessageToBasicsStationsAsync(JsonSerializer.Serialize(new
             {
-                JoinEui = joinRequestPayload.AppEui.ToString(),
+                JoinEui = joinRequestPayload.AppEui.ToString("D", null),
                 msgtype = "jreq",
-                DevEui = joinRequestPayload.DevEUI.ToString(),
+                DevEui = joinRequestPayload.DevEUI.ToString("D", null),
                 DevNonce = joinRequestPayload.DevNonce.AsUInt16,
-                MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 MIC = joinRequestPayload.Mic.Value.AsInt32,
                 DR = joinRequest.RadioMetadata.DataRate,
                 Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
