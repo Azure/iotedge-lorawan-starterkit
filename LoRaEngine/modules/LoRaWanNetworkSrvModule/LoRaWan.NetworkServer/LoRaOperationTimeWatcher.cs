@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer
         /// Gets the expected time required to package and send message back to package forwarder
         /// 300ms.
         /// </summary>
-        public static TimeSpan ExpectedTimeToPackageAndSendMessage { get; } = TimeSpan.FromMilliseconds(300);
+        public static TimeSpan ExpectedTimeToPackageAndSendMessage { get; } = TimeSpan.FromMilliseconds(400);
 
         /// <summary>
         /// Gets the minimum available time to check for cloud to device messages
@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer
         /// Gets the estimated overhead of calling receive message async (context switch, etc)
         /// 100ms.
         /// </summary>
-        public static TimeSpan CheckForCloudMessageCallEstimatedOverhead { get; } = TimeSpan.FromMilliseconds(100);
+        public static TimeSpan CheckForCloudMessageCallEstimatedOverhead { get; } = TimeSpan.FromMilliseconds(200);
 
         /// <summary>
         /// Gets the expected time required to package and send message back to package forwarder plus the checking for cloud to device message overhead
