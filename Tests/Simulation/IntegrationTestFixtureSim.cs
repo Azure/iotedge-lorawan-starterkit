@@ -130,7 +130,7 @@ namespace LoRaWan.Tests.Simulation
                     });
             }
 
-            for (var deviceID = 4000; deviceID < 4500; deviceID++)
+            for (var deviceID = 4000; deviceID < 4100; deviceID++)
             {
                 this.deviceRange4000_500_OTAA.Add(
                     new TestDeviceInfo

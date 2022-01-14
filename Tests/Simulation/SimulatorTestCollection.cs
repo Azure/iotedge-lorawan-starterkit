@@ -115,7 +115,7 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Lots_Of_Devices_OTAA_Simulated_Load_Test()
         {
-            var messageCounts = 500;
+            var messageCounts = 50;
             var deviceTasks = new List<Task>();
             var simulatedDeviceList = new List<SimulatedDevice>();
             foreach (var device in TestFixtureSim.DeviceRange4000_500_OTAA)
