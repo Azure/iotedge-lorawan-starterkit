@@ -52,7 +52,6 @@ namespace LoRaWan.NetworkServer
         internal async Task ProcessJoinRequestAsync(LoRaRequest request)
         {
             LoRaDevice loRaDevice = null;
-            string devEUI = null;
             var loraRegion = request.Region;
 
             try
@@ -63,9 +62,9 @@ namespace LoRaWan.NetworkServer
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
-                devEUI = joinReq.GetDevEUIAsString();
+                var devEui = joinReq.DevEUI;
 
-                using var scope = this.logger.BeginDeviceScope(devEUI);
+                using var scope = this.logger.BeginDeviceScope(devEui);
 
                 this.logger.LogInformation("join request received");
 
@@ -76,10 +75,10 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, joinReq.DevNonce);
+                loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEui, joinReq.DevNonce);
                 if (loRaDevice == null)
                 {
-                    request.NotifyFailed(devEUI, LoRaDeviceRequestFailedReason.UnknownDevice);
+                    request.NotifyFailed(devEui.ToString(), LoRaDeviceRequestFailedReason.UnknownDevice);
                     // we do not log here as we assume that the deviceRegistry does a more informed logging if returning null
                     return;
                 }
@@ -269,7 +268,7 @@ namespace LoRaWan.NetworkServer
                   loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, logger),
                   windowToUse == Constants.ReceiveWindow2 ? default : freq,
                   loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger),
-                  DevEui.Parse(loRaDevice.DevEUI),
+                  loRaDevice.DevEUI,
                   (ushort)loraRegion.JoinAcceptDelay1,
                   request.StationEui,
                   request.RadioMetadata.UpInfo.AntennaPreference

@@ -36,12 +36,12 @@ namespace LoRaWan.Tests.Common
 
         public void Dispose() => this.singleDeviceClient.Dispose();
 
-        public ILoRaDeviceClient GetClient(string devEUI)
+        public ILoRaDeviceClient GetClient(DevEui devEui)
         {
             return this.singleDeviceClient;
         }
 
-        public void Release(string devEUI)
+        public void Release(DevEui devEui)
         {
             this.singleDeviceClient.Dispose();
         }

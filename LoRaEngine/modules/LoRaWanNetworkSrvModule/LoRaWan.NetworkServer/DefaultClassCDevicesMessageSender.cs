@@ -39,9 +39,10 @@ namespace LoRaWan.NetworkServer
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
 
-            if (string.IsNullOrEmpty(message.DevEUI))
+            var devEui = message.DevEUI.GetValueOrDefault();
+            if (!devEui.IsValid)
             {
-                this.logger.LogError($"[class-c] devEUI missing in payload");
+                this.logger.LogError($"[class-c] devEUI missing/invalid in payload");
                 return false;
             }
 
@@ -51,10 +52,10 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(message.DevEUI);
+            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(devEui);
             if (loRaDevice == null)
             {
-                this.logger.LogError(message.DevEUI, $"[class-c] device {message.DevEUI} not found or not joined");
+                this.logger.LogError($"[class-c] device {message.DevEUI} not found or not joined");
                 return false;
             }
 
@@ -78,7 +79,7 @@ namespace LoRaWan.NetworkServer
 
             if (loRaDevice.ClassType != LoRaDeviceClassType.C)
             {
-                this.logger.LogError(loRaDevice.DevEUI, $"[class-c] sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}");
+                this.logger.LogError($"[class-c] sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}");
                 return false;
             }
 

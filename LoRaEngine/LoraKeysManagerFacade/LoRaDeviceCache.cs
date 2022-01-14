@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Newtonsoft.Json;
 
     public sealed class LoRaDeviceCache : IDisposable
@@ -14,20 +15,15 @@ namespace LoraKeysManagerFacade
 
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly string gatewayId;
-        private readonly string devEUI;
+        private readonly DevEui devEUI;
         private readonly string cacheKey;
 
         public bool IsLockOwner { get; private set; }
 
         private string lockKey;
 
-        public LoRaDeviceCache(ILoRaDeviceCacheStore cacheStore, string devEUI, string gatewayId)
+        public LoRaDeviceCache(ILoRaDeviceCacheStore cacheStore, DevEui devEUI, string gatewayId)
         {
-            if (string.IsNullOrEmpty(devEUI))
-            {
-                throw new ArgumentNullException(nameof(devEUI));
-            }
-
             if (string.IsNullOrEmpty(gatewayId))
             {
                 throw new ArgumentNullException(nameof(gatewayId));
@@ -36,7 +32,7 @@ namespace LoraKeysManagerFacade
             this.cacheStore = cacheStore;
             this.devEUI = devEUI;
             this.gatewayId = gatewayId;
-            this.cacheKey = devEUI;
+            this.cacheKey = devEUI.ToString();
         }
 
         public async Task<bool> TryToLockAsync(string lockKey = null, bool block = true)
