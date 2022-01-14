@@ -233,7 +233,6 @@ namespace LoRaWan.Tests.E2E
 
             // Checking than the communication occurs on DR 4 and RX2 as part of preferred windows RX2 and custom RX2 DR
             await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), ArduinoDevice.SerialLogs);
-            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"DataRateRx1\":3", StringComparison.Ordinal), null);
             // this test has a custom datarate for RX 2 of 3
             await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"DataRateRx2\":3", StringComparison.Ordinal), null);
 
