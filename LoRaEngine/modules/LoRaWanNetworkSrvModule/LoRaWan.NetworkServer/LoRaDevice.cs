@@ -318,13 +318,11 @@ namespace LoRaWan.NetworkServer
                 // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
                 DesiredRX2DataRate = desiredTwin.SafeRead<DataRateIndex?>(TwinProperty.RX2DataRate);
                 DesiredRX1DROffset = desiredTwin.SafeRead<ushort>(TwinProperty.RX1DROffset);
-                // FIXME validation
-                DesiredRXDelay = (RxDelay)desiredTwin.SafeRead<ushort>(TwinProperty.RXDelay);
+                DesiredRXDelay = desiredTwin.SafeRead(TwinProperty.RXDelay, DesiredRXDelay);
 
                 ReportedRX2DataRate = reportedTwin.SafeRead<DataRateIndex?>(TwinProperty.RX2DataRate);
                 ReportedRX1DROffset = reportedTwin.SafeRead<ushort>(TwinProperty.RX1DROffset);
-                // FIXME validation
-                ReportedRXDelay = (RxDelay)reportedTwin.SafeRead<ushort>(TwinProperty.RXDelay);
+                ReportedRXDelay = reportedTwin.SafeRead(TwinProperty.RXDelay, ReportedRXDelay);
             }
 
             if (reportedTwin.TryParseJson<DwellTimeSetting>(TwinProperty.TxParam, out var someSettings))
