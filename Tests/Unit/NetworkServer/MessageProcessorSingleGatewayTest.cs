@@ -17,12 +17,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     /// <summary>
     /// Single gateway message processor tests.
     /// </summary>
     public class MessageProcessorSingleGatewayTest : MessageProcessorTestBase
     {
+        public MessageProcessorSingleGatewayTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory]
         [InlineData(0)]
         [InlineData(2100)]
