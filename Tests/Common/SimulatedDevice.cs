@@ -22,6 +22,9 @@ namespace LoRaWan.Tests.Common
     /// </summary>
     public sealed class SimulatedDevice
     {
+        private static readonly IJsonReader<DevEui> DevEuiMessageReader =
+            JsonReader.Object(JsonReader.Property("DevEui", from d in JsonReader.String()
+                                                            select DevEui.Parse(d)));
         private readonly List<SimulatedBasicsStation> SimulatedBasicsStations = new List<SimulatedBasicsStation>();
 
         private readonly List<string> receivedMessages = new List<string>();
@@ -73,9 +76,7 @@ namespace LoRaWan.Tests.Common
 
             bool AddToDeviceMessageQueue(string response)
             {
-                var message = JsonSerializer.Deserialize<JsonElement>(response);
-                var devEui = message.GetProperty("DevEui");
-                if (devEui.GetString() == DevEUI.ToString())
+                if (DevEuiMessageReader.Read(response) == DevEUI)
                 {
                     this.receivedMessages.Add(response);
                 }
