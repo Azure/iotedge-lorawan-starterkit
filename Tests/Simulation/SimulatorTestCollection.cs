@@ -18,17 +18,14 @@ namespace LoRaWan.Tests.Simulation
     public sealed class SimulatorTestCollection : IntegrationTestBaseSim
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     {
-        private readonly TimeSpan intervalBetweenMessages;
-        private readonly TimeSpan intervalAfterJoin;
+        private static readonly TimeSpan IntervalBetweenMessages = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan IntervalAfterJoin = TimeSpan.FromSeconds(10);
 
         public TestConfiguration Configuration { get; } = TestConfiguration.GetConfiguration();
 
         public SimulatorTestCollection(IntegrationTestFixtureSim testFixture)
             : base(testFixture)
-        {
-            this.intervalBetweenMessages = TimeSpan.FromSeconds(5);
-            this.intervalAfterJoin = TimeSpan.FromSeconds(10);
-        }
+        { }
 
         /// <summary>
         /// This test needs to be reworked. It was commented out in the previous code, I guess this was supposed to be a mini load test.
@@ -74,7 +71,7 @@ namespace LoRaWan.Tests.Simulation
             {
                 using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(i.ToString(CultureInfo.InvariantCulture)));
                 await simulatedDevice.SendDataMessageAsync(request);
-                await Task.Delay(this.intervalBetweenMessages);
+                await Task.Delay(IntervalBetweenMessages);
             }
 
             var actualAmountOfMsgs = TestFixture.IoTHubMessages.Events.Count(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID && !x.Properties.ContainsKey("iothub-message-schema"));
@@ -88,20 +85,20 @@ namespace LoRaWan.Tests.Simulation
             const int MessageCount = 5;
 
             var device = TestFixtureSim.Device1002_Simulated_OTAA;
-            var simulatedDevice = new Common.SimulatedDevice(device, simulatedBasicsStation: TestFixtureSim.SimulatedBasicsStations);
+            var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: TestFixtureSim.SimulatedBasicsStations);
 
             using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateJoinRequest());
 
             var joined = await simulatedDevice.JoinAsync(request);
             Assert.True(joined, "OTAA join failed");
 
-            await Task.Delay(this.intervalAfterJoin);
+            await Task.Delay(IntervalAfterJoin);
 
             for (var i = 1; i <= MessageCount; i++)
             {
                 using var request2 = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(i.ToString(CultureInfo.InvariantCulture)));
                 await simulatedDevice.SendDataMessageAsync(request2);
-                await Task.Delay(this.intervalBetweenMessages);
+                await Task.Delay(IntervalBetweenMessages);
             }
 
             // wait 10 seconds before checking if iot hub content is available
@@ -133,7 +130,7 @@ namespace LoRaWan.Tests.Simulation
                     {
                         using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(device.DeviceID));
                         await simulatedDevice.SendDataMessageAsync(request);
-                        await Task.Delay(this.intervalBetweenMessages);
+                        await Task.Delay(IntervalBetweenMessages);
                     }
                 }));
             }
