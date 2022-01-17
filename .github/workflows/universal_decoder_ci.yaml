@@ -18,7 +18,7 @@ on:
         description: 'Push docker image to the repository'
         type: boolean
         required: false
-        default: 'false'
+        default: false
 
 jobs:
   Build_And_Test:
@@ -77,11 +77,11 @@ jobs:
       - name: Get the image version
         id: vars
         run: echo ::set-output name=tag::0.0.$(echo ${GITHUB_SHA})
-      - name: Login to docker
-        run: docker login -u ${{ secrets.DOCKER_LOGIN }} -p ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push the tagged Docker image
+      - name: Login to Docker, and build and push the tagged Docker image
         if: ${{ github.event.inputs.pushDockerImage == 'true' }}
-        run: docker buildx build -f "Dockerfile.${{ matrix.image }}" -t ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{steps.vars.outputs.tag}}-${{ matrix.image }} --output type=image,push=true "."
+        run: |
+          docker login -u ${{ secrets.DOCKER_LOGIN }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker buildx build -f "Dockerfile.${{ matrix.image }}" -t ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{steps.vars.outputs.tag}}-${{ matrix.image }} --output type=image,push=true "."
       - name: Build the tagged Docker image without push
         if: ${{ github.event.inputs.pushDockerImage == 'false' }}
         run: docker buildx build -f "Dockerfile.${{ matrix.image }}" -t ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{steps.vars.outputs.tag}}-${{ matrix.image }} "."
