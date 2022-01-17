@@ -80,22 +80,27 @@ namespace LoRaWan.NetworkServer.BasicsStation
 #pragma warning restore CA5394 // Do not use insecure randomness
             LogSendingMessage(this.logger, message.StationEui, diid, ConversionHelper.ByteArrayToString(message.Data), null);
 
-            if (message.DeviceClassType is LoRaDeviceClassType.A)
+            switch (message.DeviceClassType)
             {
-                writer.WriteNumber("RxDelay", message.LnsRxDelay.ToSeconds());
-                if (message.Rx1 is var (datr, freq))
-                {
-                    writer.WriteNumber("RX1DR", (int)datr);
-                    writer.WriteNumber("RX1Freq", (ulong)freq);
-                }
-                writer.WriteNumber("RX2DR", (int)message.Rx2.DataRate);
-                writer.WriteNumber("RX2Freq", (ulong)message.Rx2.Frequency);
-                writer.WriteNumber("xtime", message.Xtime);
-            }
-            else if (message.DeviceClassType is LoRaDeviceClassType.C)
-            {
-                writer.WriteNumber("RX2DR", (int)message.Rx2.DataRate);
-                writer.WriteNumber("RX2Freq", (ulong)message.Rx2.Frequency);
+                case LoRaDeviceClassType.A:
+                    writer.WriteNumber("RxDelay", message.LnsRxDelay.ToSeconds());
+                    if (message.Rx1 is var (datr, freq))
+                    {
+                        writer.WriteNumber("RX1DR", (int)datr);
+                        writer.WriteNumber("RX1Freq", (ulong)freq);
+                    }
+                    writer.WriteNumber("RX2DR", (int)message.Rx2.DataRate);
+                    writer.WriteNumber("RX2Freq", (ulong)message.Rx2.Frequency);
+                    writer.WriteNumber("xtime", message.Xtime);
+                    break;
+                case LoRaDeviceClassType.B:
+                    throw new NotSupportedException($"{nameof(DownstreamSender)} does not support class B devices yet.");
+                case LoRaDeviceClassType.C:
+                    writer.WriteNumber("RX2DR", (int)message.Rx2.DataRate);
+                    writer.WriteNumber("RX2Freq", (ulong)message.Rx2.Frequency);
+                    break;
+                default:
+                    throw new SwitchExpressionException();
             }
 
             if (message.AntennaPreference.HasValue)
