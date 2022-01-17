@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(0)]
         [InlineData(950)]
-        [InlineData(1690)]
+        [InlineData(1390)]
         public void When_In_Time_For_First_Window_But_Device_Preferes_Seconds_Should_Resolve_Window_2(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
@@ -68,7 +68,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [InlineData(0)]
-        [InlineData(690)]
+        [InlineData(490)]
         public void When_In_Time_For_First_Window_Should_Resolve_Window_1(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
@@ -80,7 +80,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(1000)]
         [InlineData(1001)]
-        [InlineData(1690)]
+        [InlineData(1490)]
         public void When_In_Time_For_Second_Window_Should_Resolve_Window_2(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
@@ -107,7 +107,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(2000)]
         [InlineData(3000)]
         [InlineData(4000)]
-        [InlineData(4690)]
+        [InlineData(4490)]
         public void When_In_Time_For_Join_Accept_First_Window_Should_Resolve_Window_1(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
@@ -119,7 +119,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(4900)]
         [InlineData(5000)]
-        [InlineData(5690)]
+        [InlineData(5490)]
         public void When_In_Time_For_Join_Accept_Second_Window_Should_Resolve_Window_2(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
@@ -143,10 +143,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(0, 400, 600)]
         [InlineData(100, 300, 500)]
-        [InlineData(400, 0, 200)]
         // RX2 results
+        [InlineData(400, 1000, 1200)]
         [InlineData(601, 800, 1400)]
-        [InlineData(800, 700, 800)]
+        [InlineData(800, 600, 700)]
         [InlineData(1000, 400, 600)]
         // No time even for RX2 results
         [InlineData(1601, 0, 0)]
