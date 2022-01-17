@@ -28,6 +28,7 @@ namespace LoraKeysManagerFacade
     {
         internal const string CupsPropertyName = "cups";
         internal const string CupsFwUrlPropertyName = "fwUrl";
+
         private readonly RegistryManager registryManager;
         private readonly IAzureClientFactory<BlobServiceClient> azureClientFactory;
         private readonly ILogger<ConcentratorFirmwareFunction> logger;

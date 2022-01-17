@@ -26,37 +26,33 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     {
         private const string BlobContent = "testcontents";
 
+        private readonly StationEui TestStationEui = StationEui.Parse("11-11-11-11-11-11-11-11");
+
         private readonly Mock<RegistryManager> registryManager;
-        private readonly Mock<IAzureClientFactory<BlobServiceClient>> azureClientFactory;
         private readonly Mock<BlobClient> blobClient;
         private readonly ConcentratorFirmwareFunction concentratorFirmware;
 
-        private readonly StationEui TestStationEui = StationEui.Parse("11-11-11-11-11-11-11-11");
-
         public ConcentratorFirmwareFunctionTests()
         {
-            this.registryManager = new Mock<RegistryManager>();
-            this.azureClientFactory = new Mock<IAzureClientFactory<BlobServiceClient>>();
             this.blobClient = new Mock<BlobClient>();
-            this.concentratorFirmware = new ConcentratorFirmwareFunction(registryManager.Object, azureClientFactory.Object, NullLogger<ConcentratorFirmwareFunction>.Instance);
 
-            var blobServiceClient = new Mock<BlobServiceClient>();
             var blobContainerClient = new Mock<BlobContainerClient>();
-            var blobContainerClientResponseMock = new Mock<Response>();
             var blobClientResponseMock = new Mock<Response>();
-
             blobContainerClient.Setup(m => m.GetBlobClient(It.IsAny<string>()))
                                .Returns(Response.FromValue(this.blobClient.Object, blobClientResponseMock.Object));
 
+            var blobServiceClient = new Mock<BlobServiceClient>();
+            var blobContainerClientResponseMock = new Mock<Response>();
             blobServiceClient.Setup(m => m.GetBlobContainerClient(It.IsAny<string>()))
                              .Returns(Response.FromValue(blobContainerClient.Object, blobContainerClientResponseMock.Object));
 
-            this.azureClientFactory.Setup(m => m.CreateClient(FacadeStartup.WebJobsStorageClientName))
-                                   .Returns(blobServiceClient.Object);
+            var azureClientFactory = new Mock<IAzureClientFactory<BlobServiceClient>>();
+            azureClientFactory.Setup(m => m.CreateClient(FacadeStartup.WebJobsStorageClientName))
+                              .Returns(blobServiceClient.Object);
 
-            var blobBytes = Encoding.UTF8.GetBytes(BlobContent);
-            this.blobClient.Setup(m => m.DownloadToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
-                           .Callback<Stream, CancellationToken>(async (st, ct) => await new MemoryStream(blobBytes).CopyToAsync(st, ct));
+            this.registryManager = new Mock<RegistryManager>();
+
+            this.concentratorFirmware = new ConcentratorFirmwareFunction(this.registryManager.Object, azureClientFactory.Object, NullLogger<ConcentratorFirmwareFunction>.Instance);
         }
 
         [Fact]
@@ -78,6 +74,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             }}"));
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
+
+            var blobBytes = Encoding.UTF8.GetBytes(BlobContent);
+            using var blobContentStream = new MemoryStream(blobBytes);
+            this.blobClient.Setup(m => m.DownloadToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+                           .Callback<Stream, CancellationToken>(async (st, ct) => await blobContentStream.CopyToAsync(st, ct));
 
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
