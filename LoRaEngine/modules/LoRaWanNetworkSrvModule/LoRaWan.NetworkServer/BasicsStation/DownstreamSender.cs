@@ -60,15 +60,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
             writer.WriteString("msgtype", LnsMessageType.DownlinkMessage.ToBasicStationString());
             writer.WriteString("DevEui", message.DevEui.ToString());
 
-            var dC = message.DeviceClassType switch
+            writer.WriteNumber("dC", message.DeviceClassType switch
             {
                 LoRaDeviceClassType.A => 0,
                 LoRaDeviceClassType.B => 1,
                 LoRaDeviceClassType.C => 2,
                 _ => throw new SwitchExpressionException(),
-            };
-
-            writer.WriteNumber("dC", dC);
+            });
 
             // Getting and writing payload bytes
             var pduBytes = message.Data;
