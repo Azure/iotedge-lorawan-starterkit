@@ -67,7 +67,7 @@ namespace LoRaWan.Tests.E2E
             await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: received cloud to device message from direct method");
 
             Assert.Contains(ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: PORT: 23; RX: \"FF00\"", StringComparison.Ordinal));
-            Assert.Contains(ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: RXWIN", StringComparison.Ordinal));
+            Assert.Contains(ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: RXWIN0, RSSI", StringComparison.Ordinal));
             await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
         }
     }
