@@ -33,6 +33,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private const string CupsUri = "https://localhost:5002";
         private const string TcUri = "wss://localhost:5001";
         private const uint CredentialsChecksum = 12345;
+        private const string Package = "1.0.0";
+        private const int KeyChecksum = 12345;
 
         public CupsProtocolMessageProcessorTests()
         {
@@ -59,6 +61,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 CredentialsChecksum,
                                                 CredentialsChecksum,
                                                 string.Empty,
+                                                string.Empty,
+                                                Package,
+                                                KeyChecksum,
                                                 string.Empty);
             _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
                                                       .Returns(Task.FromResult(cupsTwinInfo));
@@ -119,8 +124,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             tcCredCrc = CredentialsChecksum,
             station = "2.0.5(corecell/std)",
             model = "corecell",
-            package = (string)null,
-            keys = Array.Empty<int>()
+            package = Package,
+            keys = new[] { KeyChecksum }
         });
 
         private static (Mock<HttpContext>, Mock<HttpRequest>, Mock<HttpResponse>)

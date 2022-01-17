@@ -322,7 +322,10 @@ namespace LoRaWan.Tests.Common
                                                crc,
                                                crc,
                                                deserializedCupsTwinInfo.CupsCredentialUrl,
-                                               deserializedCupsTwinInfo.TcCredentialUrl);
+                                               deserializedCupsTwinInfo.TcCredentialUrl,
+                                               deserializedCupsTwinInfo.Package,
+                                               deserializedCupsTwinInfo.FwKeyChecksum,
+                                               deserializedCupsTwinInfo.FwSignature);
             deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
             await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
         }

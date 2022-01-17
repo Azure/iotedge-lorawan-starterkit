@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Buffers.Binary;
+    using System.Collections.Immutable;
     using System.Linq;
     using System.Text;
     using System.Threading;
@@ -26,7 +27,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                          new Uri("https://localhost:5002"),
                                                          new Uri("wss://localhost:5001"),
                                                          12345,
-                                                         12345);
+                                                         12345,
+                                                         "1.0.0",
+                                                         ImmutableArray<int>.Empty);
             this.credentialFetcher = (eui, type, token) => Task.FromResult(Convert.ToBase64String(this.CredentialBytes));
         }
 
@@ -39,6 +42,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 this.cupsRequest.CupsCredentialsChecksum,
                                                 this.cupsRequest.TcCredentialsChecksum,
                                                 string.Empty,
+                                                string.Empty,
+                                                this.cupsRequest.Package,
+                                                this.cupsRequest.KeyChecksums.FirstOrDefault(),
                                                 string.Empty);
 
             // Act
@@ -58,6 +64,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 this.cupsRequest.CupsCredentialsChecksum,
                                                 this.cupsRequest.TcCredentialsChecksum,
                                                 string.Empty,
+                                                string.Empty,
+                                                this.cupsRequest.Package,
+                                                this.cupsRequest.KeyChecksums.FirstOrDefault(),
                                                 string.Empty);
 
             // Act
@@ -81,6 +90,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 this.cupsRequest.CupsCredentialsChecksum,
                                                 this.cupsRequest.TcCredentialsChecksum,
                                                 string.Empty,
+                                                string.Empty,
+                                                this.cupsRequest.Package,
+                                                this.cupsRequest.KeyChecksums.FirstOrDefault(),
                                                 string.Empty);
 
             // Act
@@ -104,6 +116,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 anotherChecksum,
                                                 anotherChecksum,
                                                 string.Empty,
+                                                string.Empty,
+                                                this.cupsRequest.Package,
+                                                this.cupsRequest.KeyChecksums.FirstOrDefault(),
                                                 string.Empty);
 
             // Act
