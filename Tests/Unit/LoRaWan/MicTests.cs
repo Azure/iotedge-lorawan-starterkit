@@ -91,7 +91,7 @@ namespace LoRaWan.Tests.Unit
             var key = TestKeys.CreateNetworkSessionKey(0x0005100000000004);
             byte direction = 3;
             var devAddr = new DevAddr(0xc1c2c3c4);
-            var fcnt = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+            var fcnt = 50462976U;
             var msg = new byte[] { 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 };
             var mic = Mic.ComputeForData(key, direction, devAddr, fcnt, msg);
             Assert.Equal(new Mic(0x456CA231), mic);

@@ -39,7 +39,7 @@ namespace LoRaTools.LoRaMessage
         /// Gets the representation of the 32bit Frame counter to be used
         /// in the block if we are in 32bit mode.
         /// </summary>
-        protected byte[] Server32BitFcnt { get; private set; }
+        protected uint? Server32BitFcnt { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayload"/> class.
@@ -102,18 +102,8 @@ namespace LoRaTools.LoRaMessage
         /// <returns>the encrypted bytes.</returns>
         public abstract byte[] PerformEncryption(AppKey key);
 
-        public void Reset32BitBlockInfo()
-        {
-            Server32BitFcnt = null;
-        }
-
-        public void Ensure32BitFcntValue(uint? server32bitFcnt)
-        {
-            if (Server32BitFcnt == null && server32bitFcnt.HasValue)
-            {
-                Server32BitFcnt = BitConverter.GetBytes(server32bitFcnt.Value);
-            }
-        }
+        public void Reset32BitFcnt() => Server32BitFcnt = null;
+        public void Ensure32BitFcntValue(uint? server32bitFcnt) => Server32BitFcnt ??= server32bitFcnt;
 
         /// <summary>
         /// In 32bit mode, the server needs to infer the upper 16bits by observing
