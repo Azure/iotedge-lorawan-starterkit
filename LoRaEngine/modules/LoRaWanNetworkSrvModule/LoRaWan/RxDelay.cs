@@ -52,5 +52,14 @@ namespace LoRaWan
         /// Converts to <see cref="TimeSpan"/>, if valid.
         /// </summary>
         public static TimeSpan ToTimeSpan(this RxDelay delay) => TimeSpan.FromSeconds(ToSeconds(delay));
+
+        /// <summary>
+        /// Write the value to a bytes buffer.
+        /// </summary>
+        public static Span<byte> Write(this RxDelay delay, Span<byte> buffer)
+        {
+            buffer[0] = (byte)delay;
+            return buffer[sizeof(RxDelay)..];
+        }
     }
 }
