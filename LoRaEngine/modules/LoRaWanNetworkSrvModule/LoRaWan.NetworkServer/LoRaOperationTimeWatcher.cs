@@ -205,7 +205,7 @@ namespace LoRaWan.NetworkServer
             return TimeSpan.Zero;
         }
 
-        internal static uint CalculateRXWindowsTime(uint windowTime, RxDelay rxDelay)
+        private static uint CalculateRXWindowsTime(uint windowTime, RxDelay rxDelay)
         {
             // RxDelay follows specification of RXTimingSetupReq and the delay
             // | rXDelay | Delay |
