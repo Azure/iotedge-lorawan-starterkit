@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Threading.Tasks;
     using Azure;
     using Azure.Storage.Blobs;
+    using Azure.Storage.Blobs.Models;
     using global::LoraKeysManagerFacade;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
@@ -77,8 +78,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var blobBytes = Encoding.UTF8.GetBytes(BlobContent);
             using var blobContentStream = new MemoryStream(blobBytes);
-            this.blobClient.Setup(m => m.DownloadToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
-                           .Callback<Stream, CancellationToken>(async (st, ct) => await blobContentStream.CopyToAsync(st, ct));
+            using var streamingResult = BlobsModelFactory.BlobDownloadStreamingResult(blobContentStream);
+
+            var response = new Mock<Response>();
+            this.blobClient.Setup(m => m.DownloadStreamingAsync(default, null, false, It.IsAny<CancellationToken>()))
+                           .Returns(Task.FromResult(Response.FromValue(streamingResult, response.Object)));
 
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
@@ -195,7 +199,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            this.blobClient.Setup(m => m.DownloadToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+            this.blobClient.Setup(m => m.DownloadStreamingAsync(default, null, false, It.IsAny<CancellationToken>()))
                            .ThrowsAsync(new RequestFailedException("download failed"));
 
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);

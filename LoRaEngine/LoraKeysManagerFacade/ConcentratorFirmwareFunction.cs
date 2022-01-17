@@ -80,7 +80,7 @@ namespace LoraKeysManagerFacade
 
                     var fwUrl = JObject.Parse(cupsProperty)[CupsFwUrlPropertyName].ToString();
                     var stream = await GetBlobStreamAsync(fwUrl, cancellationToken);
-                    return new FileStreamResult(stream, MediaTypeNames.Text.Plain);
+                    return new FileStreamResult(stream, MediaTypeNames.Application.Octet);
                 }
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException or NullReferenceException)
                 {
@@ -103,16 +103,14 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        private async Task<MemoryStream> GetBlobStreamAsync(string blobUrl, CancellationToken cancellationToken)
+        private async Task<Stream> GetBlobStreamAsync(string blobUrl, CancellationToken cancellationToken)
         {
             var blobServiceClient = this.azureClientFactory.CreateClient(FacadeStartup.WebJobsStorageClientName);
             var blobUri = new BlobUriBuilder(new Uri(blobUrl));
-            var stream = new MemoryStream();
-            _ = await blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
-                                       .GetBlobClient(blobUri.BlobName)
-                                       .DownloadToAsync(stream, cancellationToken);
-
-            return stream;
+            var streamingResult = await blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
+                                                         .GetBlobClient(blobUri.BlobName)
+                                                         .DownloadStreamingAsync(cancellationToken: cancellationToken);
+            return streamingResult.Value.Content;
         }
     }
 }
