@@ -10,6 +10,9 @@ on: # rebuild any PRs and main branch changes
       RunE2ETestsOnly:
         description: 'Run E2E tests only'
         default: false
+      RunLoadTests:
+        description: 'Include Load Tests in current run'
+        default: 'true'
       TestsToRun:
         default: '[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest]'
         description: 'tests to run'
@@ -376,7 +379,77 @@ jobs:
           architecture: '${{ secrets.ARCHITECTURE }}'
           iot_edge_deployment_id: '${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}'
 
-# Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
+  load_test_job:
+    timeout-minutes: 150
+    name: Run Load Tests
+    environment:
+      name: CI_AZURE_ENVIRONMENT
+      url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
+    if: always() && github.event.inputs.RunLoadTests == 'true' && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'LoadTest')) && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success'))
+    needs:
+      - deploy_arm_gw_iot_edge
+      - deploy_eflow_gw_iot_edge
+      - deploy_facade_function
+      - deploy_eflow_concentrator_iot_edge
+      - env_var
+      - certificates_job
+    runs-on: [ self-hosted, x64 ]
+    env:
+      INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
+      INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ${{ secrets.IOTHUB_CI_CONSUMER_GROUP }}
+      INTEGRATIONTEST_IoTHubConnectionString: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
+      INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
+      INTEGRATIONTEST_DevicePrefix: '03'
+      INTEGRATIONTEST_RunningInCI: true
+      INTEGRATIONTEST_SharedLnsEndpoint: ${{ secrets.SHAREDLNSENDPOINT }}
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout current branch
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1.8.2
+      with:
+        dotnet-version: '6.0.x' # SDK Version to use.
+
+    - name: .NET SDK Information
+      run:
+        dotnet --info
+
+    - name: Configuration for load tests
+      uses: cschleiden/replace-tokens@v1
+      with:
+        files: '${{ env.TESTS_FOLDER }}/Simulation/appsettings.json'
+
+    - name: Build load tests
+      run: |
+        echo "killing process listening on TCP 6000"
+        sudo lsof -i:6000 -t | xargs -r sudo kill
+        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
+
+    - name: Runs load tests
+      shell: bash
+      run: |
+        dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
+        -r ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/ \
+        ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
+
+    - name: Add ${{ inputs.test_name }} Test Label
+      uses: buildsville/add-remove-label@v1
+      if: github.event_name == 'pull_request' && success()
+      with:
+        token: ${{ github.token }}
+        label: 'LoadTest'
+        type: add
+
+    # Upload test results as artifact
+    - uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: e2e-test-results
+        path: ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/
+
+  # Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
   e2e_tests_job:
     timeout-minutes: 150
     name: Run E2E Tests
@@ -391,6 +464,7 @@ jobs:
       - deploy_eflow_concentrator_iot_edge
       - env_var
       - certificates_job
+      - load_test_job
     runs-on: [ self-hosted, x64 ]
     env:
       E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'

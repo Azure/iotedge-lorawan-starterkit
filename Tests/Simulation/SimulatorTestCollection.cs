@@ -31,7 +31,7 @@ namespace LoRaWan.Tests.Simulation
             this.simulatedBasicsStations =
                 testFixture.DeviceRange5000_BasicsStationSimulators
                            .Select((basicsStation, i) => (BasicsStation: basicsStation, Index: i))
-                           .Select(b => new SimulatedBasicsStation(StationEui.Parse(b.BasicsStation.DeviceID), new Uri(Configuration.LnsEndpointsForSimulator[b.Index % Configuration.LnsEndpointsForSimulator.Count])))
+                           .Select(b => new SimulatedBasicsStation(StationEui.Parse(b.BasicsStation.DeviceID), Configuration.LnsEndpointsForSimulator[b.Index % Configuration.LnsEndpointsForSimulator.Count]))
                            .ToList();
         }
 

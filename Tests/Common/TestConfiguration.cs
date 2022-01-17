@@ -21,6 +21,8 @@ namespace LoRaWan.Tests.Common
                 .GetSection("testConfiguration")
                 .Bind(result);
 
+            result.LnsEndpointsForSimulator = new[] { new Uri(result.SharedLnsEndpoint) };
+
             return result;
         }
 
@@ -37,9 +39,6 @@ namespace LoRaWan.Tests.Common
         public string LeafDeviceSerialPort { get; set; } = "/dev/ttyACM";
 
         public string LeafDeviceGatewayID { get; set; }
-
-        // IP of the LoRaWanNetworkSrvModule
-        public string NetworkServerIP { get; set; }
 
         // Device prefix to be used
         public string DevicePrefix { get; set; }
@@ -102,7 +101,7 @@ namespace LoRaWan.Tests.Common
 
         public string ClientBundleCrc { get; set; } //i.e. 4004975634 (CRC32 of .bundle file)
 
-        public IReadOnlyList<string> LnsEndpointsForSimulator { get; set; }
+        public IReadOnlyList<Uri> LnsEndpointsForSimulator { get; set; }
 
         public const int NumberOfLoadTestDevices = 10;
     }
