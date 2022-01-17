@@ -26,9 +26,7 @@ namespace LoRaWan.Tests.Common
         private static readonly IJsonReader<DevEui> DevEuiMessageReader =
             JsonReader.Object(JsonReader.Property("DevEui", from d in JsonReader.String()
                                                             select DevEui.Parse(d)));
-        private readonly List<SimulatedBasicsStation> SimulatedBasicsStations = new List<SimulatedBasicsStation>();
-
-        public int ReceivedMessageCount { get; }
+        private readonly List<SimulatedBasicsStation> simulatedBasicsStations = new List<SimulatedBasicsStation>();
 
         private readonly ConcurrentBag<string> receivedMessages = new ConcurrentBag<string>();
 
@@ -75,7 +73,7 @@ namespace LoRaWan.Tests.Common
             LoRaDevice = testDeviceInfo;
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
-            SimulatedBasicsStations = simulatedBasicsStation.ToList();
+            this.simulatedBasicsStations = simulatedBasicsStation.ToList();
 
             bool AddToDeviceMessageQueue(string response)
             {
@@ -288,7 +286,7 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"[{payload.DevAddr}] Sending data: {payload.Frmpayload}");
         }
 
-        private Task SendMessageToBasicsStationsAsync(string message) => Task.WhenAll(from basicsStation in this.SimulatedBasicsStations
+        private Task SendMessageToBasicsStationsAsync(string message) => Task.WhenAll(from basicsStation in this.simulatedBasicsStations
                                                                                       select basicsStation.SendMessageAsync(message));
 
         public bool EnsureMessageResponsesAreReceived(int expectedCout)
@@ -352,7 +350,7 @@ namespace LoRaWan.Tests.Common
 
         private void ListenForAnswer(Func<string, bool> func)
         {
-            foreach (var basicsStation in SimulatedBasicsStations)
+            foreach (var basicsStation in this.simulatedBasicsStations)
             {
                 basicsStation.SubscribeOnce(func);
             }

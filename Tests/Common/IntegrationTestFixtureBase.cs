@@ -96,7 +96,7 @@ namespace LoRaWan.Tests.Common
             this.tcpLogListener?.ResetEvents();
         }
 
-        public Task DisposeAsync() => Task.CompletedTask;
+        public Task DisposeAsync() => Task.FromResult(0);
 
         private RegistryManager GetRegistryManager()
         {
