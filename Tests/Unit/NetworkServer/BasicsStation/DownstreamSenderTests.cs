@@ -14,6 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using static RxDelay;
 
     public class DownstreamSenderTests
     {
@@ -55,7 +56,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                       Hertz.Mega(868.5),
                                                       Hertz.Mega(869.5),
                                                       this.devEui,
-                                                      lnsRxDelay: RxDelay.RxDelay1,
+                                                      RxDelay1,
                                                       this.stationEui,
                                                       rfchHasValue ? 1 : null);
 
@@ -106,7 +107,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                       Hertz.Mega(868.5),
                                                       Hertz.Mega(869.5),
                                                       this.devEui,
-                                                      lnsRxDelay: RxDelay.RxDelay0,
+                                                      RxDelay0,
                                                       this.stationEui,
                                                       rfchHasValue ? 1 : null);
 
@@ -157,13 +158,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         {
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
-                                                                  0,
-                                                                  DataRateIndex.DR5,
-                                                                  DataRateIndex.DR0,
-                                                                  Hertz.Mega(868.5),
-                                                                  Hertz.Mega(868.5),
-                                                                  this.devEui,
-                                                                  lnsRxDelay: 0);
+                                                      0,
+                                                      DataRateIndex.DR5,
+                                                      DataRateIndex.DR0,
+                                                      Hertz.Mega(868.5),
+                                                      Hertz.Mega(868.5),
+                                                      this.devEui,
+                                                      RxDelay0);
 
             // act and assert
             await Assert.ThrowsAsync<ArgumentException>(() => this.downlinkSender.SendDownstreamAsync(downlinkMessage));
