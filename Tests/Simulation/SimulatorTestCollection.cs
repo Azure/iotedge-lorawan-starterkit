@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Simulation
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.EventHubs;
     using Xunit;
@@ -20,7 +21,6 @@ namespace LoRaWan.Tests.Simulation
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     {
         private static readonly TimeSpan IntervalBetweenMessages = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan IntervalAfterJoin = TimeSpan.FromSeconds(10);
         private readonly List<SimulatedBasicsStation> simulatedBasicsStations;
         /// <summary>
         /// A unique upstream message fragment is used for each uplink message to ensure
@@ -50,25 +50,19 @@ namespace LoRaWan.Tests.Simulation
         public async Task Ten_Devices_Sending_Messages_At_Same_Time()
         {
             // arrange
+            const int messageCount = 1;
             var simulatedDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange1000_ABP);
             Assert.NotEmpty(simulatedDevices);
 
             // act
             await Task.WhenAll(from device in simulatedDevices
-                               select SendMessageAsync(device));
-            async Task SendMessageAsync(SimulatedDevice device)
-            {
-                using var request = CreateConfirmedUpstreamMessage(device);
-                await device.SendDataMessageAsync(request);
-            }
-
+                               select SendConfirmedUpstreamMessages(device, messageCount));
             await WaitForResultsInIotHub();
 
             // assert
             foreach (var device in simulatedDevices)
             {
-                var iotHubEvents = TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device));
-                Assert.Equal(1, iotHubEvents);
+                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
                 device.EnsureMessageResponsesAreReceived(1);
             }
         }
@@ -76,72 +70,46 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Single_ABP_Simulated_Device()
         {
-            const int MessageCount = 5;
+            const int messageCount = 5;
+            var device = new SimulatedDevice(TestFixtureSim.Device1001_Simulated_ABP, simulatedBasicsStation: this.simulatedBasicsStations);
 
-            var simulatedDevice = new SimulatedDevice(TestFixtureSim.Device1001_Simulated_ABP, simulatedBasicsStation: this.simulatedBasicsStations);
-
-            for (var i = 1; i <= MessageCount; i++)
-            {
-                using var request = CreateConfirmedUpstreamMessage(simulatedDevice);
-                await simulatedDevice.SendDataMessageAsync(request);
-                await Task.Delay(IntervalBetweenMessages);
-            }
-
+            await SendConfirmedUpstreamMessages(device, messageCount);
             await WaitForResultsInIotHub();
 
-            var actualAmountOfMsgs = TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, simulatedDevice));
-            Assert.Equal(MessageCount * this.simulatedBasicsStations.Count, actualAmountOfMsgs);
-            Assert.True(simulatedDevice.EnsureMessageResponsesAreReceived(MessageCount));
+            Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
+            Assert.True(device.EnsureMessageResponsesAreReceived(messageCount));
         }
 
         [Fact]
         public async Task Single_OTAA_Simulated_Device()
         {
-            const int MessageCount = 5;
+            const int messageCount = 5;
+            var device = new SimulatedDevice(TestFixtureSim.Device1002_Simulated_OTAA, simulatedBasicsStation: this.simulatedBasicsStations);
 
-            var device = TestFixtureSim.Device1002_Simulated_OTAA;
-            var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: this.simulatedBasicsStations);
-
-            Assert.True(await simulatedDevice.JoinAsync(), "OTAA join failed");
-
-            await Task.Delay(IntervalAfterJoin);
-
-            for (var i = 1; i <= MessageCount; i++)
-            {
-                using var request2 = CreateConfirmedUpstreamMessage(simulatedDevice);
-                await simulatedDevice.SendDataMessageAsync(request2);
-                await Task.Delay(IntervalBetweenMessages);
-            }
-
+            Assert.True(await device.JoinAsync(), "OTAA join failed");
+            await SendConfirmedUpstreamMessages(device, messageCount);
             await WaitForResultsInIotHub();
 
-            var actualAmountOfMsgs = TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, simulatedDevice));
-            Assert.Equal(MessageCount * TestFixtureSim.DeviceRange5000_BasicsStationSimulators.Count, actualAmountOfMsgs);
-            Assert.True(simulatedDevice.EnsureMessageResponsesAreReceived(MessageCount + 1));
+            Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
+            Assert.True(device.EnsureMessageResponsesAreReceived(messageCount + 1));
         }
 
         [Fact]
         public async Task Lots_Of_Devices_OTAA_Simulated_Load_Test()
         {
             // arrange
-            const int messageCounts = 3;
+            const int messageCounts = 50;
             var simulatedDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange4000_OTAA_FullLoad);
             Assert.NotEmpty(simulatedDevices);
 
             // act
             await Task.WhenAll(from device in simulatedDevices
-                               select SendMessagesAsync(device));
+                               select ActAsync(device));
 
-            async Task SendMessagesAsync(SimulatedDevice device)
+            async Task ActAsync(SimulatedDevice device)
             {
                 Assert.True(await device.JoinAsync(), "OTAA join failed");
-
-                for (var i = 0; i < messageCounts; i++)
-                {
-                    using var request = CreateConfirmedUpstreamMessage(device);
-                    await device.SendDataMessageAsync(request);
-                    await Task.Delay(IntervalBetweenMessages);
-                }
+                await SendConfirmedUpstreamMessages(device, messageCounts);
             }
 
             await WaitForResultsInIotHub();
@@ -149,10 +117,29 @@ namespace LoRaWan.Tests.Simulation
             // assert
             foreach (var device in simulatedDevices)
             {
-                Assert.Equal(messageCounts, TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
+                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCounts), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
                 device.EnsureMessageResponsesAreReceived(messageCounts + 1);
             }
         }
+
+        private async Task SendConfirmedUpstreamMessages(SimulatedDevice device, int count)
+        {
+            for (var i = 0; i < count; ++i)
+            {
+                using var request = CreateConfirmedUpstreamMessage(device);
+                await device.SendDataMessageAsync(request);
+                await Task.Delay(IntervalBetweenMessages);
+            }
+        }
+
+        private int GetExpectedMessageCount(string deduplicationMode, int numberOfMessagesPerDevice) =>
+            deduplicationMode?.ToUpperInvariant() switch
+            {
+                null or "" or "NONE" => numberOfMessagesPerDevice * this.simulatedBasicsStations.Count,
+                "MARK" => numberOfMessagesPerDevice * this.simulatedBasicsStations.Count,
+                "DROP" => numberOfMessagesPerDevice,
+                _ => throw new NotImplementedException()
+            };
 
         private WaitableLoRaRequest CreateConfirmedUpstreamMessage(SimulatedDevice simulatedDevice) =>
             WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(this.uniqueMessageFragment));
