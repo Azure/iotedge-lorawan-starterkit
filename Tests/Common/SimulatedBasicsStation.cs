@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Common
     public sealed class SimulatedBasicsStation : IDisposable
     {
         private readonly StationEui stationEUI;
-        private ClientWebSocket clientWebSocket = new ClientWebSocket();
+        private ClientWebSocket clientWebSocket = CreateClientWebSocket();
         private readonly Uri lnsUri;
         private CancellationTokenSource cancellationTokenSource;
         private bool started;
@@ -130,7 +130,7 @@ namespace LoRaWan.Tests.Common
             }
 
             // The ClientWebSocket needs to be disposed and recreated in order to be used again
-            this.clientWebSocket = new ClientWebSocket();
+            this.clientWebSocket = CreateClientWebSocket();
         }
 
         public async Task StopAndValidateAsync(CancellationToken cancellationToken = default)
@@ -145,6 +145,15 @@ namespace LoRaWan.Tests.Common
             {
                 // Expected as websocket reading is canceled through Cancellation Token.
             }
+        }
+
+        private static ClientWebSocket CreateClientWebSocket()
+        {
+            var result = new ClientWebSocket();
+#pragma warning disable CA5359 // Do Not Disable Certificate Validation
+            result.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+#pragma warning restore CA5359 // Do Not Disable Certificate Validation
+            return result;
         }
 
         public void Dispose()

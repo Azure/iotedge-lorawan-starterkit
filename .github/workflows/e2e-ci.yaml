@@ -408,7 +408,7 @@ jobs:
       INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
       INTEGRATIONTEST_DevicePrefix: '03'
       INTEGRATIONTEST_RunningInCI: true
-      INTEGRATIONTEST_LoadTestLnsEndpoints: format('[\"wss://{0}:5001\"]', ${{ needs.env_var.outputs.itestarm1ip }})
+      INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ format('[\"wss://{0}:5001\"]', 'itestarm1') }}
 
     steps:
     - uses: actions/checkout@v2
