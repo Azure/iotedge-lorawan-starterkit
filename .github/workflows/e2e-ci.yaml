@@ -423,8 +423,6 @@ jobs:
 
     - name: Build load tests
       run: |
-        echo "killing process listening on TCP 6000"
-        sudo lsof -i:6000 -t | xargs -r sudo kill
         dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
     - name: Runs load tests
