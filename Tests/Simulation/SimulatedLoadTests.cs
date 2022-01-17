@@ -13,12 +13,8 @@ namespace LoRaWan.Tests.Simulation
     using Microsoft.Azure.EventHubs;
     using Xunit;
 
-    // Tests ABP requests
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-    // False positive, the name is accurate in the context of xUnit collections.
-    public sealed class SimulatorTestCollection : IntegrationTestBaseSim, IAsyncLifetime
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+    public sealed class SimulatedLoadTests : IntegrationTestBaseSim, IAsyncLifetime
     {
         private static readonly TimeSpan IntervalBetweenMessages = TimeSpan.FromSeconds(5);
         private readonly List<SimulatedBasicsStation> simulatedBasicsStations;
@@ -30,7 +26,7 @@ namespace LoRaWan.Tests.Simulation
 
         public TestConfiguration Configuration { get; } = TestConfiguration.GetConfiguration();
 
-        public SimulatorTestCollection(IntegrationTestFixtureSim testFixture)
+        public SimulatedLoadTests(IntegrationTestFixtureSim testFixture)
             : base(testFixture)
         {
             this.uniqueMessageFragment = Guid.NewGuid().ToString();
