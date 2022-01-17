@@ -644,11 +644,11 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(RxDelay.RxDelay1, downlinkMessage.LnsRxDelay);
             if (expectingSecondWindow)
             {
-                Assert.False(downlinkMessage.IsRx1Defined);
+                Assert.Null(downlinkMessage.Rx1);
             }
             else
             {
-                Assert.True(downlinkMessage.IsRx1Defined);
+                Assert.NotNull(downlinkMessage.Rx1);
             }
 
             LoRaDeviceClient.VerifyAll();

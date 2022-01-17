@@ -51,10 +51,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
                                                       123456,
-                                                      DataRateIndex.DR5,
-                                                      DataRateIndex.DR0,
-                                                      Hertz.Mega(868.5),
-                                                      Hertz.Mega(869.5),
+                                                      (DataRateIndex.DR5, Hertz.Mega(868.5)),
+                                                      (DataRateIndex.DR0, Hertz.Mega(869.5)),
                                                       this.devEui,
                                                       RxDelay1,
                                                       LoRaDeviceClassType.A,
@@ -82,7 +80,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             Assert.Contains(@"""RX2DR"":0,", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""RX2Freq"":869500000,", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""xtime"":123456,", actualMessage, StringComparison.InvariantCulture);
-           
+
             Assert.Contains(@"""priority"":0", actualMessage, StringComparison.InvariantCulture);
 
             if (rfchHasValue)
@@ -103,10 +101,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
                                                       0,
-                                                      DataRateIndex.DR5,
-                                                      DataRateIndex.DR0,
-                                                      Hertz.Mega(868.5),
-                                                      Hertz.Mega(869.5),
+                                                      (DataRateIndex.DR5, Hertz.Mega(868.5)),
+                                                      (DataRateIndex.DR0, Hertz.Mega(869.5)),
                                                       this.devEui,
                                                       RxDelay0,
                                                       LoRaDeviceClassType.C,
@@ -161,10 +157,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
                                                       0,
-                                                      DataRateIndex.DR5,
-                                                      DataRateIndex.DR0,
-                                                      Hertz.Mega(868.5),
-                                                      Hertz.Mega(868.5),
+                                                      (DataRateIndex.DR5, Hertz.Mega(868.5)),
+                                                      (DataRateIndex.DR0, Hertz.Mega(868.5)),
                                                       this.devEui,
                                                       RxDelay0,
                                                       LoRaDeviceClassType.C);

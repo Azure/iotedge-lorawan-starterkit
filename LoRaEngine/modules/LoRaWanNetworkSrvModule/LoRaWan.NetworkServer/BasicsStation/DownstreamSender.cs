@@ -85,19 +85,19 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (message.DeviceClassType is LoRaDeviceClassType.A)
             {
                 writer.WriteNumber("RxDelay", message.LnsRxDelay.ToSeconds());
-                if (message.IsRx1Defined)
+                if (message.Rx1 is var (datr, freq))
                 {
-                    writer.WriteNumber("RX1DR", (int)message.DataRateRx1);
-                    writer.WriteNumber("RX1Freq", (ulong)message.FrequencyRx1);
+                    writer.WriteNumber("RX1DR", (int)datr);
+                    writer.WriteNumber("RX1Freq", (ulong)freq);
                 }
-                writer.WriteNumber("RX2DR", (int)message.DataRateRx2);
-                writer.WriteNumber("RX2Freq", (ulong)message.FrequencyRx2);
+                writer.WriteNumber("RX2DR", (int)message.Rx2.DataRate);
+                writer.WriteNumber("RX2Freq", (ulong)message.Rx2.Frequency);
                 writer.WriteNumber("xtime", message.Xtime);
             }
             else if (message.DeviceClassType is LoRaDeviceClassType.C)
             {
-                writer.WriteNumber("RX2DR", (int)message.DataRateRx2);
-                writer.WriteNumber("RX2Freq", (ulong)message.FrequencyRx2);
+                writer.WriteNumber("RX2DR", (int)message.Rx2.DataRate);
+                writer.WriteNumber("RX2Freq", (ulong)message.Rx2.Frequency);
             }
 
             if (message.AntennaPreference.HasValue)

@@ -27,15 +27,8 @@ namespace LoRaTools.LoRaPhysical
 
         public uint? AntennaPreference { get; }
 
-        public DataRateIndex DataRateRx1 { get; }
-
-        public DataRateIndex DataRateRx2 { get; }
-
-        public Hertz FrequencyRx1 { get; }
-
-        public Hertz FrequencyRx2 { get; }
-
-        public bool IsRx1Defined => FrequencyRx1 != new Hertz(0);
+        public (DataRateIndex DataRate, Hertz Frequency)? Rx1 { get; }
+        public (DataRateIndex DataRate, Hertz Frequency) Rx2 { get; }
 
         public ReadOnlyMemory<byte> Data { get; }
 
@@ -48,10 +41,8 @@ namespace LoRaTools.LoRaPhysical
         /// <returns><see cref="DownlinkMessage"/> object ready to be sent.</returns>
         public DownlinkMessage(byte[] payload,
                                ulong xtime,
-                               DataRateIndex datrRx1,
-                               DataRateIndex datrRx2,
-                               Hertz freqRx1,
-                               Hertz freqRx2,
+                               (DataRateIndex, Hertz)? rx1,
+                               (DataRateIndex, Hertz) rx2,
                                DevEui devEui,
                                RxDelay lnsRxDelay,
                                LoRaDeviceClassType deviceClassType,
@@ -65,12 +56,10 @@ namespace LoRaTools.LoRaPhysical
             LnsRxDelay = lnsRxDelay;
             DeviceClassType = deviceClassType;
             AntennaPreference = antennaPreference;
+            Rx1 = rx1;
+            Rx2 = rx2;
             StationEui = stationEui;
             Xtime = xtime;
-            DataRateRx1 = datrRx1;
-            DataRateRx2 = datrRx2;
-            FrequencyRx1 = freqRx1;
-            FrequencyRx2 = freqRx2;
         }
     }
 }
