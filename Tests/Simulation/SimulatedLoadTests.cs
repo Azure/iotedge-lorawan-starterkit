@@ -73,7 +73,7 @@ namespace LoRaWan.Tests.Simulation
             await WaitForResultsInIotHub();
 
             Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
-            Assert.True(device.EnsureMessageResponsesAreReceived(messageCount));
+            device.EnsureMessageResponsesAreReceived(messageCount);
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Simulation
             await WaitForResultsInIotHub();
 
             Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
-            Assert.True(device.EnsureMessageResponsesAreReceived(messageCount + 1));
+            device.EnsureMessageResponsesAreReceived(messageCount + 1);
         }
 
         [Fact]

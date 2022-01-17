@@ -17,6 +17,7 @@ namespace LoRaWan.Tests.Common
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
+    using Xunit;
 
     /// <summary>
     /// Defines a simulated device.
@@ -287,9 +288,9 @@ namespace LoRaWan.Tests.Common
         private Task SendMessageToBasicsStationsAsync(string message) => Task.WhenAll(from basicsStation in this.simulatedBasicsStations
                                                                                       select basicsStation.SendMessageAsync(message));
 
-        public bool EnsureMessageResponsesAreReceived(int expectedCout)
+        public void EnsureMessageResponsesAreReceived(int expectedCout)
         {
-            return this.receivedMessages.Count == expectedCout;
+            Assert.Equal(expectedCout, this.receivedMessages.Count);
         }
 
         // Performs join
