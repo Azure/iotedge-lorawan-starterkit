@@ -93,6 +93,7 @@ namespace LoRaWan.NetworkServer
                     return new DownlinkMessageBuilderResponse(null, false, receiveWindow);
                 }
             }
+            var rx2 = (loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo), loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo));
 
             // get max. payload size based on data rate from LoRaRegion
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
@@ -202,15 +203,14 @@ namespace LoRaWan.NetworkServer
             // following calculation is making sure that ReportedRXDelay is chosen if not default,
             // otherwise for class C devices a LnsRxDelay of 0 is chosen, for class A devices a value of 1 is chosen
             var lnsRxDelay = Math.Max((loRaDevice.ClassType is LoRaDeviceClassType.C ? RxDelay0 : RxDelay1).ToSeconds(), loRaDevice.ReportedRXDelay.ToSeconds());
+
             // todo: check the device twin preference if using confirmed or unconfirmed down
             var downlinkMessage = BuildDownstreamMessage(loRaDevice,
                                                          request.StationEui,
                                                          logger,
                                                          radioMetadata.UpInfo.Xtime,
-                                                         receiveWindow == Constants.ReceiveWindow2 ? default : datr,
-                                                         loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo),
-                                                         receiveWindow == Constants.ReceiveWindow2 ? default : freq,
-                                                         loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo),
+                                                         receiveWindow == Constants.ReceiveWindow2 ? null : (datr, freq),
+                                                         rx2,
                                                          (RxDelay)lnsRxDelay,
                                                          ackLoRaMessage,
                                                          radioMetadata.UpInfo.AntennaPreference);
@@ -221,16 +221,24 @@ namespace LoRaWan.NetworkServer
             return new DownlinkMessageBuilderResponse(downlinkMessage, isMessageTooLong, receiveWindow);
         }
 
-        private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, RxDelay lnsRxDelay, LoRaPayloadData loRaMessage, uint? antennaPreference = null)
+        private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice,
+                                                              StationEui stationEUI,
+                                                              ILogger logger,
+                                                              ulong xTime,
+                                                              (DataRateIndex datr, Hertz freq)? rx1,
+                                                              (DataRateIndex datr, Hertz freq) rx2,
+                                                              RxDelay lnsRxDelay,
+                                                              LoRaPayloadData loRaMessage,
+                                                              uint? antennaPreference = null)
         {
             var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey.Value, loRaDevice.NwkSKey.Value);
             var downlinkMessage = new DownlinkMessage(
                 messageBytes,
                 xTime,
-                rx1Datr,
-                rx2Datr,
-                freqRx1,
-                freqRx2,
+                rx1.GetValueOrDefault().datr,
+                rx2.datr,
+                rx1.GetValueOrDefault().freq,
+                rx2.freq,
                 loRaDevice.DevEUI,
                 lnsRxDelay,
                 stationEUI,
@@ -334,11 +342,9 @@ namespace LoRaWan.NetworkServer
                                                              stationEUI: loRaDevice.LastProcessingStationEui,
                                                              logger: logger,
                                                              xTime: 0,
-                                                             rx1Datr: default,
-                                                             rx2Datr: datr,
-                                                             freqRx1: default,
-                                                             freqRx2: freq,
-                                                             lnsRxDelay: RxDelay0, //this identifies a class c device, do not change
+                                                             null,
+                                                             (datr, freq),
+                                                             lnsRxDelay: RxDelay0,
                                                              loRaMessage: ackLoRaMessage);
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(loraDownLinkMessage)}");
