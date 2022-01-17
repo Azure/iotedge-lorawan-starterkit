@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer
         public uint GetReceiveWindow1Delay(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return CalculateRXWindowsTime(this.loraRegion.ReceiveDelay1, loRaDevice.ReportedRXDelay);
+            return CalculateRXWindowsTime((ushort)this.loraRegion.ReceiveDelay1.ToSeconds(), loRaDevice.ReportedRXDelay);
         }
 
         private bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow1Delay(loRaDevice);
@@ -94,7 +94,7 @@ namespace LoRaWan.NetworkServer
         public uint GetReceiveWindow2Delay(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return CalculateRXWindowsTime(this.loraRegion.ReceiveDelay2, loRaDevice.ReportedRXDelay);
+            return CalculateRXWindowsTime((ushort)this.loraRegion.ReceiveDelay2.ToSeconds(), loRaDevice.ReportedRXDelay);
         }
 
         private bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow2Delay(loRaDevice);
@@ -104,7 +104,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public bool InTimeForJoinAccept()
         {
-            return GetElapsedTime().Add(ExpectedTimeToPackageAndSendMessage) < TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay2);
+            return GetElapsedTime().Add(ExpectedTimeToPackageAndSendMessage) < this.loraRegion.JoinAcceptDelay2.ToTimeSpan();
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public TimeSpan GetRemainingTimeToJoinAcceptFirstWindow()
         {
-            return TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay1) - GetElapsedTime();
+            return this.loraRegion.JoinAcceptDelay1.ToTimeSpan() - GetElapsedTime();
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public TimeSpan GetRemainingTimeToJoinAcceptSecondWindow()
         {
-            return TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay2) - GetElapsedTime();
+            return this.loraRegion.JoinAcceptDelay2.ToTimeSpan() - GetElapsedTime();
         }
 
         /// <summary>
@@ -168,12 +168,12 @@ namespace LoRaWan.NetworkServer
 
         private bool InTimeForJoinAcceptFirstWindow(TimeSpan elapsed)
         {
-            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay1;
+            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay1.ToSeconds();
         }
 
         private bool InTimeForJoinAcceptSecondWindow(TimeSpan elapsed)
         {
-            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay2;
+            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay2.ToSeconds();
         }
 
         /// <summary>
@@ -205,7 +205,7 @@ namespace LoRaWan.NetworkServer
             return TimeSpan.Zero;
         }
 
-        internal static uint CalculateRXWindowsTime(uint windowTime, ushort rXDelay)
+        internal static uint CalculateRXWindowsTime(uint windowTime, RxDelay rxDelay)
         {
             // RxDelay follows specification of RXTimingSetupReq and the delay
             // | rXDelay | Delay |
@@ -214,7 +214,7 @@ namespace LoRaWan.NetworkServer
             // |    1    |   1   |
             // |    2    |   2   |
             // |    3    |   3   |
-            return (rXDelay is > 1 and < 16) ? windowTime + rXDelay - 1 : windowTime;
+            return (uint)(Enum.IsDefined(rxDelay) ? windowTime + rxDelay.ToSeconds() - 1 : windowTime);
         }
     }
 }

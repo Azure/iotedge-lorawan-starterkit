@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using static RxDelay;
 
     /// <summary>
     /// Helper class to create <see cref="DownlinkMessage"/>.
@@ -200,7 +201,7 @@ namespace LoRaWan.NetworkServer
 
             // following calculation is making sure that ReportedRXDelay is chosen if not default,
             // otherwise for class C devices a LnsRxDelay of 0 is chosen, for class A devices a value of 1 is chosen
-            var lnsRxDelay = Math.Max(loRaDevice.ClassType is LoRaDeviceClassType.C ? (ushort)0 : (ushort)1, loRaDevice.ReportedRXDelay);
+            var lnsRxDelay = Math.Max((loRaDevice.ClassType is LoRaDeviceClassType.C ? RxDelay0 : RxDelay1).ToSeconds(), loRaDevice.ReportedRXDelay.ToSeconds());
             // todo: check the device twin preference if using confirmed or unconfirmed down
             var downlinkMessage = BuildDownstreamMessage(loRaDevice,
                                                          request.StationEui,
@@ -210,7 +211,7 @@ namespace LoRaWan.NetworkServer
                                                          loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo),
                                                          receiveWindow == Constants.ReceiveWindow2 ? default : freq,
                                                          loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo),
-                                                         lnsRxDelay,
+                                                         (RxDelay)lnsRxDelay,
                                                          ackLoRaMessage,
                                                          radioMetadata.UpInfo.AntennaPreference);
 
@@ -220,7 +221,7 @@ namespace LoRaWan.NetworkServer
             return new DownlinkMessageBuilderResponse(downlinkMessage, isMessageTooLong, receiveWindow);
         }
 
-        private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, ushort lnsRxDelay, LoRaPayloadData loRaMessage, uint? antennaPreference = null)
+        private static DownlinkMessage BuildDownstreamMessage(LoRaDevice loRaDevice, StationEui stationEUI, ILogger logger, ulong xTime, DataRateIndex rx1Datr, DataRateIndex rx2Datr, Hertz freqRx1, Hertz freqRx2, RxDelay lnsRxDelay, LoRaPayloadData loRaMessage, uint? antennaPreference = null)
         {
             var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey.Value, loRaDevice.NwkSKey.Value);
             var downlinkMessage = new DownlinkMessage(

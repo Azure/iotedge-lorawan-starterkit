@@ -55,7 +55,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                       Hertz.Mega(868.5),
                                                       Hertz.Mega(869.5),
                                                       this.devEui,
-                                                      lnsRxDelay: 1,
+                                                      lnsRxDelay: RxDelay.RxDelay1,
                                                       this.stationEui,
                                                       rfchHasValue ? 1 : null);
 
@@ -106,7 +106,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                       Hertz.Mega(868.5),
                                                       Hertz.Mega(869.5),
                                                       this.devEui,
-                                                      lnsRxDelay: 0,
+                                                      lnsRxDelay: RxDelay.RxDelay0,
                                                       this.stationEui,
                                                       rfchHasValue ? 1 : null);
 

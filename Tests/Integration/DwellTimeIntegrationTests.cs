@@ -20,9 +20,10 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Logging.Abstractions;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public sealed class DwellTimeIntegrationTests : MessageProcessorTestBase
     {
@@ -31,18 +32,21 @@ namespace LoRaWan.Tests.Integration
         private readonly Mock<TestDefaultLoRaRequestHandler> dataRequestHandlerMock;
         private readonly SimulatedDevice simulatedDevice;
         private readonly LoRaDevice loRaDevice;
+        private readonly TestOutputLoggerFactory testOutputLoggerFactory;
 
-        public DwellTimeIntegrationTests()
+        public DwellTimeIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
+            this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
             this.dataRequestHandlerMock = new Mock<TestDefaultLoRaRequestHandler>(MockBehavior.Default,
                 ServerConfiguration,
                 FrameCounterUpdateStrategyProvider,
                 ConcentratorDeduplication,
                 PayloadDecoder,
-                new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance),
-                new LoRaADRStrategyProvider(NullLoggerFactory.Instance),
-                new LoRAADRManagerFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance),
-                new FunctionBundlerProvider(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance))
+                new DeduplicationStrategyFactory(this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<DeduplicationStrategyFactory>()),
+                new LoRaADRStrategyProvider(this.testOutputLoggerFactory),
+                new LoRAADRManagerFactory(LoRaDeviceApi.Object, this.testOutputLoggerFactory),
+                new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()),
+                testOutputHelper)
             { CallBase = true };
 
             this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
@@ -221,6 +225,17 @@ namespace LoRaWan.Tests.Integration
             result.SetRegion(region);
             this.loRaDevice.UpdateDwellTimeSetting(reportedDwellTimeSetting, acceptChanges: true);
             return result;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.loRaDevice.Dispose();
+                this.testOutputLoggerFactory.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

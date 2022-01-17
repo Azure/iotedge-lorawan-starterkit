@@ -235,8 +235,8 @@ namespace LoRaWan.NetworkServer
                 // This one is a delay between TX and RX for any message to be processed by joining device
                 // The field accepted by Serialize method is an indication of the delay (compared to receive time of join request)
                 // of when the message Join Accept message should be sent
-                ushort loraSpecDesiredRxDelay = 0;
-                if (Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                var loraSpecDesiredRxDelay = RxDelay.RxDelay0;
+                if (Enum.IsDefined(loRaDevice.DesiredRXDelay))
                 {
                     loraSpecDesiredRxDelay = loRaDevice.DesiredRXDelay;
                 }
@@ -269,7 +269,7 @@ namespace LoRaWan.NetworkServer
                   windowToUse == Constants.ReceiveWindow2 ? default : freq,
                   loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger),
                   loRaDevice.DevEUI,
-                  (ushort)loraRegion.JoinAcceptDelay1,
+                  loraRegion.JoinAcceptDelay1,
                   request.StationEui,
                   request.RadioMetadata.UpInfo.AntennaPreference
                   );

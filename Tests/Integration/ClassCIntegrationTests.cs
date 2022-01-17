@@ -15,14 +15,21 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class C device tests
     public class ClassCIntegrationTests : MessageProcessorTestBase
     {
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public ClassCIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+            this.testOutputHelper = testOutputHelper;
+        }
+
         [Theory]
         [InlineData(null, 0U, 0U)]
         [InlineData(null, 0U, 9U)]
@@ -90,7 +97,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                new TestOutputLogger<DefaultClassCDevicesMessageSender>(this.testOutputHelper),
                 TestMeter.Instance);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
@@ -196,7 +203,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                new TestOutputLogger<DefaultClassCDevicesMessageSender>(this.testOutputHelper),
                 TestMeter.Instance);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
