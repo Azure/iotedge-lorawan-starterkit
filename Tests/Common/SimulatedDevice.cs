@@ -199,7 +199,6 @@ namespace LoRaWan.Tests.Common
 
         private bool HandleJoinAccept(LoRaPayloadJoinAccept payload)
         {
-
             // Calculate the keys
             var devNonce = DevNonce;
 
@@ -233,33 +232,32 @@ namespace LoRaWan.Tests.Common
             timeout ??= TimeSpan.FromSeconds(30);
             using var joinCompleted = new SemaphoreSlim(0);
             var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
-            var joinSuccessfull = false;
+            var joinSuccessful = false;
 
-            basicsStation.SubscribeOnce((response) =>
+            void OnMessageReceived(object sender, EventArgs<string> response)
             {
                 // handle join
-                var joinAcceptstring = JsonSerializer.Deserialize<JoinAcceptResponse>(response);
+                var joinAcceptstring = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
                 // is null in case it is another message coming from the station.
                 if (joinAcceptstring?.Pdu != null)
                 {
                     var joinAccept = new LoRaPayloadJoinAccept(ConversionHelper.StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
 
                     var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
+                    joinSuccessful = result;
                     joinCompleted.Release();
-                    joinSuccessfull = result;
-                    return result;
                 }
+            }
 
-                return false;
-            });
+            basicsStation.MessageReceived += OnMessageReceived;
 
-            await basicsStation.SendMessageAsync(JsonSerializer.Serialize(new
+            await basicsStation.SerializeAndSendMessageAsync(new
             {
-                JoinEui = joinRequestPayload.AppEui.ToString(),
+                JoinEui = joinRequestPayload.AppEui.ToString("D", null),
                 msgtype = "jreq",
-                DevEui = joinRequestPayload.DevEUI.ToString(),
+                DevEui = joinRequestPayload.DevEUI.ToString("D", null),
                 DevNonce = joinRequestPayload.DevNonce.AsUInt16,
-                MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 MIC = joinRequestPayload.Mic.Value.AsInt32,
                 DR = joinRequest.RadioMetadata.DataRate,
                 Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
@@ -271,7 +269,7 @@ namespace LoRaWan.Tests.Common
                     xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
                     snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
                 }
-            }));
+            });
 
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
@@ -282,7 +280,9 @@ namespace LoRaWan.Tests.Common
 
             await joinCompleted.WaitAsync(timeout.Value);
 
-            return joinSuccessfull;
+            basicsStation.MessageReceived -= OnMessageReceived;
+
+            return joinSuccessful;
         }
 
 
