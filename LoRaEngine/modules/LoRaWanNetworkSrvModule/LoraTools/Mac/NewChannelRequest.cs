@@ -5,8 +5,11 @@
 
 namespace LoRaTools
 {
+    using System;
+    using System.Buffers.Binary;
     using System.Collections.Generic;
-    using LoRaTools.Utils;
+    using System.Diagnostics;
+    using LoRaWan;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -55,7 +58,12 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {Cid} Answer, channel index: {ChIndex}, frequency: {ConversionHelper.ByteArrayToString(Freq)}, min DR: {MinDR}, max DR: {MaxDR}";
+            Debug.Assert(Freq.Length == 3);
+            Span<byte> bytes = stackalloc byte[Freq.Length + 1];
+            Freq.CopyTo(bytes);
+            var freq = BinaryPrimitives.ReadInt32LittleEndian(bytes);
+
+            return $"Type: {Cid} Answer, channel index: {ChIndex}, frequency: {freq:X6}, min DR: {MinDR}, max DR: {MaxDR}";
         }
     }
 }

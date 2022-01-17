@@ -13,7 +13,6 @@ namespace LoRaWan.Tests.Common
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
 
     /// <summary>

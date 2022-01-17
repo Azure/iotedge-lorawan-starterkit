@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Common
     using System.Runtime.InteropServices;
     using LoRaWan.NetworkServer;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using System.Net.WebSockets;
     using System.Globalization;
     using System.Threading;

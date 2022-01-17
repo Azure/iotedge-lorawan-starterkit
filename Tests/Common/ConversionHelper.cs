@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaTools.Utils
+namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Text;
@@ -31,20 +31,6 @@ namespace LoRaTools.Utils
             var result = new StringBuilder(bytes.Length * 2);
 
             for (var i = 0; i < bytes.Length; i++)
-            {
-                _ = result.Append(HexAlphabet[byteSpan[i] >> 4]);
-                _ = result.Append(HexAlphabet[byteSpan[i] & 0xF]);
-            }
-
-            return result.ToString();
-        }
-
-        public static string ReverseByteArrayToString(ReadOnlyMemory<byte> bytes)
-        {
-            var byteSpan = bytes.Span;
-            var result = new StringBuilder(bytes.Length * 2);
-
-            for (var i = bytes.Length - 1; i >= 0; --i)
             {
                 _ = result.Append(HexAlphabet[byteSpan[i] >> 4]);
                 _ = result.Append(HexAlphabet[byteSpan[i] & 0xF]);
