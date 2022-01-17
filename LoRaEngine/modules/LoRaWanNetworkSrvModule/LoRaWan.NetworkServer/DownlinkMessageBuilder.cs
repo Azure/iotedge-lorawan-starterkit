@@ -338,7 +338,7 @@ namespace LoRaWan.NetworkServer
                                                              rx2Datr: datr,
                                                              freqRx1: default,
                                                              freqRx2: freq,
-                                                             lnsRxDelay: 0, //this identifies a class c device, do not change
+                                                             lnsRxDelay: RxDelay0, //this identifies a class c device, do not change
                                                              loRaMessage: ackLoRaMessage);
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(loraDownLinkMessage)}");
