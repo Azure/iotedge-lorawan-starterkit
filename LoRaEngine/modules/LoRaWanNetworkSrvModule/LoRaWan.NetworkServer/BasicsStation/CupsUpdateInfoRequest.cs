@@ -6,6 +6,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Collections.Immutable;
 
     internal sealed record CupsUpdateInfoRequest
     {
@@ -13,13 +14,17 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                      Uri? cupsUri,
                                      Uri? tcUri,
                                      uint cupsCredentialsChecksum,
-                                     uint tcCredentialsChecksum)
+                                     uint tcCredentialsChecksum,
+                                     string package,
+                                     ImmutableArray<int> keyChecksums)
         {
             StationEui = stationEui;
             CupsUri = cupsUri;
             TcUri = tcUri;
             CupsCredentialsChecksum = cupsCredentialsChecksum;
             TcCredentialsChecksum = tcCredentialsChecksum;
+            Package = package;
+            KeyChecksums = keyChecksums;
         }
 
         public StationEui StationEui { get; }
@@ -27,5 +32,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public Uri? TcUri { get; }
         public uint CupsCredentialsChecksum { get; }
         public uint TcCredentialsChecksum { get; }
+        public string Package { get; }
+        public ImmutableArray<int> KeyChecksums { get; }
     }
 }
