@@ -8,6 +8,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System;
     using System.Buffers;
     using System.Buffers.Binary;
+    using System.IO;
+    using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading;
@@ -19,17 +21,21 @@ namespace LoRaWan.NetworkServer.BasicsStation
         private readonly CupsUpdateInfoRequest cupsUpdateInfoRequest;
         private readonly CupsTwinInfo cupsTwinInfo;
         private readonly Func<StationEui, ConcentratorCredentialType, CancellationToken, Task<string>> credentialFetcher;
+        private readonly Func<StationEui, CancellationToken, Task<(long?, Stream)>> fwUpgradeFetcher;
 
         public CupsResponse(CupsUpdateInfoRequest cupsUpdateInfoRequest,
                             CupsTwinInfo cupsTwinInfo,
-                            Func<StationEui, ConcentratorCredentialType, CancellationToken, Task<string>> credentialFetcher)
+                            Func<StationEui, ConcentratorCredentialType, CancellationToken, Task<string>> credentialFetcher,
+                            Func<StationEui, CancellationToken, Task<(long?, Stream)>> fwUpgradeFetcher)
         {
             this.cupsUpdateInfoRequest = cupsUpdateInfoRequest;
             this.cupsTwinInfo = cupsTwinInfo;
             this.credentialFetcher = credentialFetcher;
+            this.fwUpgradeFetcher = fwUpgradeFetcher;
         }
 
-        internal async Task<byte[]> SerializeAsync(CancellationToken token)
+
+        internal async Task<(byte[], Stream?)> SerializeAsync(CancellationToken token)
         {
             // checking for disequalities in desired and reported configuration
             using var response = MemoryPool<byte>.Shared.Rent(2048);
@@ -40,18 +46,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
             currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Cups, response.Memory, currentPosition, token);
             currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Lns, response.Memory, currentPosition, token);
 
-            /*
-             * Following fields are left empty as no firmware update feature is implemented yet
-             */
+            (currentPosition, var fwStream) = await WriteFirmwareUpgradeConditionallyAsync(response.Memory, currentPosition, token);
 
-            // Signature length (4bytes)
-            currentPosition += WriteToSpan(0U, response.Memory.Span[currentPosition..]);
-            // CRC of the Key used for the signature (4bytes)
-            currentPosition += WriteToSpan(0U, response.Memory.Span[currentPosition..]);
-            // Length of the update data (4bytes)
-            currentPosition += WriteToSpan(0U, response.Memory.Span[currentPosition..]);
-
-            return response.Memory.Span[..currentPosition].ToArray();
+            return (response.Memory.Span[..currentPosition].ToArray(), fwStream);
         }
 
         private int WriteUriConditionally(ConcentratorCredentialType endpointType, Span<byte> response, int currentPosition)
@@ -77,10 +74,44 @@ namespace LoRaWan.NetworkServer.BasicsStation
             }
             else
             {
-                currentPosition += WriteToSpan(0, response[currentPosition..]);
+                currentPosition += WriteToSpan((byte)0, response[currentPosition..]);
             }
 
             return currentPosition;
+        }
+
+        private async Task<(int, Stream?)> WriteFirmwareUpgradeConditionallyAsync(Memory<byte> response, int currentPosition, CancellationToken token)
+        {
+            var firmwareMismatch = !string.Equals(this.cupsUpdateInfoRequest.Package, this.cupsTwinInfo.Package, StringComparison.OrdinalIgnoreCase);
+
+            if (firmwareMismatch)
+            {
+                if (!this.cupsUpdateInfoRequest.KeyChecksums.Any(c => c == this.cupsTwinInfo.FwKeyChecksum))
+                {
+                    throw new InvalidOperationException("Remote firmware signature generated with a key whose checksum is not available in CUPS request.");
+                }
+
+                var signature = Convert.FromBase64String(this.cupsTwinInfo.FwSignature);
+                currentPosition += WriteToSpan(signature.Length + 4, response.Span[currentPosition..]);
+                currentPosition += WriteToSpan(this.cupsTwinInfo.FwKeyChecksum, response.Span[currentPosition..]);
+                currentPosition += WriteToSpan(signature, response.Span[currentPosition..]);
+                var (contentLength, fwStream) = await fwUpgradeFetcher(this.cupsUpdateInfoRequest.StationEui, token);
+                if (contentLength is null or <= 0 || fwStream is null)
+                    throw new InvalidOperationException("Firmware could not be properly downloaded from function. Check logs.");
+                currentPosition += WriteToSpan(unchecked((uint)contentLength), response.Span[currentPosition..]);
+                return (currentPosition, fwStream);
+            }
+            else
+            {
+                // No Firmware update
+                // Signature length (4bytes)
+                currentPosition += WriteToSpan(0U, response.Span[currentPosition..]);
+                // CRC of the Key used for the signature (4bytes)
+                currentPosition += WriteToSpan(0U, response.Span[currentPosition..]);
+                // Length of the update data (4bytes)
+                currentPosition += WriteToSpan(0U, response.Span[currentPosition..]);
+                return (currentPosition, null);
+            }
         }
 
         private async Task<int> WriteCredentialsConditionallyAsync(ConcentratorCredentialType endpointType,
@@ -134,6 +165,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
         {
             var length = sizeof(uint);
             BinaryPrimitives.WriteUInt32LittleEndian(span[..length], value);
+            return length;
+        }
+
+        private static int WriteToSpan(int value, Span<byte> span)
+        {
+            var length = sizeof(uint);
+            BinaryPrimitives.WriteInt32LittleEndian(span[..length], value);
             return length;
         }
     }
