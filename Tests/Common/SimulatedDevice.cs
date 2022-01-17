@@ -17,6 +17,7 @@ namespace LoRaWan.Tests.Common
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
+    using Microsoft.Extensions.Logging;
     using Xunit;
 
     /// <summary>
@@ -30,6 +31,7 @@ namespace LoRaWan.Tests.Common
         private readonly List<SimulatedBasicsStation> simulatedBasicsStations = new List<SimulatedBasicsStation>();
 
         private readonly ConcurrentBag<string> receivedMessages = new ConcurrentBag<string>();
+        private readonly ILogger logger;
 
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
@@ -69,11 +71,12 @@ namespace LoRaWan.Tests.Common
             set => LoRaDevice.Supports32BitFCnt = value;
         }
 
-        public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0, IReadOnlyCollection<SimulatedBasicsStation> simulatedBasicsStation = null)
+        public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0, IReadOnlyCollection<SimulatedBasicsStation> simulatedBasicsStation = null, ILogger logger = null)
         {
             LoRaDevice = testDeviceInfo;
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
+            this.logger = logger;
             this.simulatedBasicsStations = simulatedBasicsStation?.ToList() ?? new List<SimulatedBasicsStation>();
 
             void AddToDeviceMessageQueue(string response)
@@ -273,15 +276,23 @@ namespace LoRaWan.Tests.Common
 
             void OnMessageReceived(object sender, EventArgs<string> response)
             {
-                // handle join
-                var joinAcceptstring = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
-                // is null in case it is another message coming from the station.
-                if (joinAcceptstring?.Pdu != null)
+                try
                 {
-                    var joinAccept = new LoRaPayloadJoinAccept(ConversionHelper.StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
-                    var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
-                    joinSuccessful = result;
+                    var joinAcceptResponse = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
+                    // PDU is null in case it is another message coming from the station.
+                    if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && someJoinAcceptResponse.DevEui == DevEUI)
+                    {
+                        var joinAccept = new LoRaPayloadJoinAccept(ConversionHelper.StringToByteArray(somePdu), AppKey.Value);
+                        joinSuccessful = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
+                        joinCompleted.Release();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Join failed due to: '{Message}'.", ex.Message);
+                    joinSuccessful = false;
                     joinCompleted.Release();
+                    throw;
                 }
             }
 
@@ -308,14 +319,14 @@ namespace LoRaWan.Tests.Common
                         snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
                     }
                 });
+            }
 
 #if DEBUG
-                if (System.Diagnostics.Debugger.IsAttached)
-                {
-                    timeout = TimeSpan.FromSeconds(60);
-                }
-#endif
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                timeout = TimeSpan.FromSeconds(60);
             }
+#endif
 
             await joinCompleted.WaitAsync(timeout.Value);
 

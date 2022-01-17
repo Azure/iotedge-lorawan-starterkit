@@ -9,5 +9,15 @@ namespace LoRaWan.Tests.Common
     {
         [JsonPropertyName("pdu")]
         public string Pdu { get; set; }
+
+        [JsonPropertyName("DevEui")]
+        public string DevEuiString
+        {
+            get => DevEui.ToString();
+            set => DevEui = DevEui.Parse(value);
+        }
+
+        [JsonIgnore]
+        public DevEui DevEui { get; set; }
     }
 }

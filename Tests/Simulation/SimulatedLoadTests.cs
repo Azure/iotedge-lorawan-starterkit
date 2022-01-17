@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.Simulation
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.EventHubs;
     using Xunit;
+    using Xunit.Abstractions;
 
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class SimulatedLoadTests : IntegrationTestBaseSim, IAsyncLifetime
@@ -23,13 +24,15 @@ namespace LoRaWan.Tests.Simulation
         /// that there is no interference between test runs.
         /// </summary>
         private readonly string uniqueMessageFragment;
+        private readonly TestOutputLogger logger;
 
         public TestConfiguration Configuration { get; } = TestConfiguration.GetConfiguration();
 
-        public SimulatedLoadTests(IntegrationTestFixtureSim testFixture)
+        public SimulatedLoadTests(IntegrationTestFixtureSim testFixture, ITestOutputHelper testOutputHelper)
             : base(testFixture)
         {
             this.uniqueMessageFragment = Guid.NewGuid().ToString();
+            this.logger = new TestOutputLogger(testOutputHelper);
             this.simulatedBasicsStations =
                 testFixture.DeviceRange5000_BasicsStationSimulators
                            .Select((basicsStation, i) => (BasicsStation: basicsStation, Index: i))
@@ -67,7 +70,7 @@ namespace LoRaWan.Tests.Simulation
         public async Task Single_ABP_Simulated_Device()
         {
             const int messageCount = 5;
-            var device = new SimulatedDevice(TestFixtureSim.Device1001_Simulated_ABP, simulatedBasicsStation: this.simulatedBasicsStations);
+            var device = new SimulatedDevice(TestFixtureSim.Device1001_Simulated_ABP, simulatedBasicsStation: this.simulatedBasicsStations, logger: this.logger);
 
             await SendConfirmedUpstreamMessages(device, messageCount);
             await WaitForResultsInIotHubAsync();
@@ -80,7 +83,7 @@ namespace LoRaWan.Tests.Simulation
         public async Task Single_OTAA_Simulated_Device()
         {
             const int messageCount = 5;
-            var device = new SimulatedDevice(TestFixtureSim.Device1002_Simulated_OTAA, simulatedBasicsStation: this.simulatedBasicsStations);
+            var device = new SimulatedDevice(TestFixtureSim.Device1002_Simulated_OTAA, simulatedBasicsStation: this.simulatedBasicsStations, logger: this.logger);
 
             Assert.True(await device.JoinAsync(), "OTAA join failed");
             await SendConfirmedUpstreamMessages(device, messageCount);
@@ -152,7 +155,7 @@ namespace LoRaWan.Tests.Simulation
         }
 
         private List<SimulatedDevice> InitializeSimulatedDevices(IReadOnlyCollection<TestDeviceInfo> testDeviceInfos) =>
-            testDeviceInfos.Select(d => new SimulatedDevice(d, simulatedBasicsStation: this.simulatedBasicsStations)).ToList();
+            testDeviceInfos.Select(d => new SimulatedDevice(d, simulatedBasicsStation: this.simulatedBasicsStations, logger: this.logger)).ToList();
 
         public async Task InitializeAsync()
         {
