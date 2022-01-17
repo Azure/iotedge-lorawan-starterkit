@@ -68,7 +68,7 @@ namespace LoRaWan.NetworkServer
 
             DataRateIndex datr;
             Hertz freq;
-            ushort lnsRxDelay = 0;
+            ushort lnsRxDelay;
 
             var deviceJoinInfo = request.Region.LoRaRegion == LoRaRegionType.CN470RP2
                 ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
