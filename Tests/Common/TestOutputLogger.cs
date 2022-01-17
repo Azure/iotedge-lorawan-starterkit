@@ -14,6 +14,7 @@ namespace LoRaWan.Tests.Common
     /// <summary>
     /// Logger class that offers integration with XUnit's <see cref="ITestOutputHelper"/>.
     /// It forwards log statements directly to <see cref="ITestOutputHelper"/> without taking into account scope information.
+    /// It does not support category names or event IDs.
     /// </summary>
     public class TestOutputLogger : ILogger
     {
