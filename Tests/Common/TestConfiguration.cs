@@ -102,10 +102,6 @@ namespace LoRaWan.Tests.Common
 
         public string ClientBundleCrc { get; set; } //i.e. 4004975634 (CRC32 of .bundle file)
 
-#pragma warning disable CA1002 // Do not expose generic lists
-#pragma warning disable CA2227 // Collection properties should be read only
-        public List<string> LNSEndpointsForSimulator { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
-#pragma warning restore CA1002 // Do not expose generic lists
+        public IReadOnlyList<string> LnsEndpointsForSimulator { get; set; }
     }
 }

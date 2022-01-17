@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Simulation
             var startTasks = new List<Task>();
             foreach (var basicsStationDevice in DeviceRange5000_BasicsStationSimulators)
             {
-                var simulatedBasicsStation = new SimulatedBasicsStation(StationEui.Parse(basicsStationDevice.DeviceID), new Uri(Configuration.LNSEndpointsForSimulator[index % Configuration.LNSEndpointsForSimulator.Count]));
+                var simulatedBasicsStation = new SimulatedBasicsStation(StationEui.Parse(basicsStationDevice.DeviceID), new Uri(Configuration.LnsEndpointsForSimulator[index % Configuration.LnsEndpointsForSimulator.Count]));
                 startTasks.Add(simulatedBasicsStation.StartAsync());
                 simulatedBasicsStations.Add(simulatedBasicsStation);
             }
