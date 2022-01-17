@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
@@ -27,7 +28,9 @@ namespace LoRaWan.Tests.Common
                                                             select DevEui.Parse(d)));
         private readonly List<SimulatedBasicsStation> SimulatedBasicsStations = new List<SimulatedBasicsStation>();
 
-        private readonly List<string> receivedMessages = new List<string>();
+        public int ReceivedMessageCount { get; }
+
+        private readonly ConcurrentBag<string> receivedMessages = new ConcurrentBag<string>();
 
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
