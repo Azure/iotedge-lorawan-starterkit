@@ -30,7 +30,9 @@ namespace LoRaWan.Tests.Common
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
+            if (formatter is null) throw new ArgumentNullException(nameof(formatter));
             if (!IsEnabled(logLevel)) return;
+
             var message = formatter(state, exception);
             this.testOutputHelper.WriteLine(message);
         }
