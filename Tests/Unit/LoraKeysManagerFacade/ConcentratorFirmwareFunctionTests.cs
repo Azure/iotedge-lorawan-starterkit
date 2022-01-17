@@ -55,7 +55,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                                    .Returns(blobServiceClient.Object);
 
             var blobBytes = Encoding.UTF8.GetBytes(BlobContent);
-            //var blobStream = new MemoryStream(blobBytes);
             this.blobClient.Setup(m => m.DownloadToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
                            .Callback<Stream, CancellationToken>(async (st, ct) => await new MemoryStream(blobBytes).CopyToAsync(st, ct));
         }
@@ -173,6 +172,37 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var result = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
             Assert.IsType<UnprocessableEntityResult>(result);
+        }
+
+        [Fact]
+        public async Task RunFetchConcentratorFirmware_Returns_InternalServerError_WhenDownloadFails()
+        {
+            var httpRequest = new Mock<HttpRequest>();
+            var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
+            {
+                { "StationEui", new StringValues(this.TestStationEui.ToString()) }
+            });
+            httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
+
+            var twin = new Twin();
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
+                'package': '1.0.1',
+                'fwUrl': 'https://storage.blob.core.windows.net/container/blob',
+                'fwKeyChecksum': 123456,
+                'fwSignature': '123'
+            }}"));
+            this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                                .Returns(Task.FromResult(twin));
+
+            this.blobClient.Setup(m => m.DownloadToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+                           .ThrowsAsync(new RequestFailedException("download failed"));
+
+            var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
+
+            Assert.NotNull(actual);
+            var result = Assert.IsType<ObjectResult>(actual);
+            Assert.Equal(500, result.StatusCode);
+            Assert.Equal("Failed to download firmware", result.Value);
         }
     }
 }
