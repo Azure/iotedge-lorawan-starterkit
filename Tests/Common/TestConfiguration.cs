@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Collections.Generic;
+    using System.Text.Json;
     using Microsoft.Extensions.Configuration;
 
     public class TestConfiguration
@@ -20,8 +21,6 @@ namespace LoRaWan.Tests.Common
                 .Build()
                 .GetSection("testConfiguration")
                 .Bind(result);
-
-            result.LnsEndpointsForSimulator = new[] { new Uri("ws://itestarm1:5000") };
 
             return result;
         }
@@ -100,6 +99,12 @@ namespace LoRaWan.Tests.Common
         public string ClientThumbprint { get; set; } //i.e. 4a0639c9c67221919fdb9618fa6fa0680259eaf2 (SHA1 thumbprint of cups.crt)
 
         public string ClientBundleCrc { get; set; } //i.e. 4004975634 (CRC32 of .bundle file)
+
+        public string LoadTestLnsEndpointsString
+        {
+            get => JsonSerializer.Serialize(LnsEndpointsForSimulator);
+            set => LnsEndpointsForSimulator = JsonSerializer.Deserialize<List<Uri>>(value);
+        }
 
         public IReadOnlyList<Uri> LnsEndpointsForSimulator { get; set; }
 

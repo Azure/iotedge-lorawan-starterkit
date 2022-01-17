@@ -83,12 +83,19 @@ jobs:
         echo "Setting TxPower to $txPower"
         echo "::set-output name=TxPower::$txPower"
 
+    - id: get_ip_address
+      shell: bash
+      name: Get internal IP address of the itestarm1 device
+      run: |
+        echo "::set-output name=itestarm1ip::$(host itestarm1 | awk 'NF>1{print $NF}')"
+
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
       E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
       CertRemotePath: "/var/lorastarterkit/certs"
+      itestarm1ip: ${{ steps.get_ip_address.outputs.itestarm1ip }}
 
   power_on_azure_vm:
     name: Power ON EFLOW
@@ -401,7 +408,7 @@ jobs:
       INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
       INTEGRATIONTEST_DevicePrefix: '03'
       INTEGRATIONTEST_RunningInCI: true
-      INTEGRATIONTEST_SharedLnsEndpoint: ${{ secrets.SHAREDLNSENDPOINT }}
+      INTEGRATIONTEST_LoadTestLnsEndpoints: format('[\"wss://{0}:5001\"]', ${{ steps.get_ip_address.outputs.itestarm1ip }})
 
     steps:
     - uses: actions/checkout@v2
