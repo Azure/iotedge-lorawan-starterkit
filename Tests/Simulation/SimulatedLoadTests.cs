@@ -166,7 +166,7 @@ namespace LoRaWan.Tests.Simulation
             {
                 try
                 {
-                    await basicsStation.StopAsync();
+                    await basicsStation.StopAndValidateAsync();
                     basicsStation.Dispose();
                 }
                 catch (Exception)

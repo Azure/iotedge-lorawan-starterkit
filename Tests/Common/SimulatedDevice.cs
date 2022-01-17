@@ -8,10 +8,10 @@ namespace LoRaWan.Tests.Common
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-    using System.Runtime.InteropServices;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
@@ -76,17 +76,16 @@ namespace LoRaWan.Tests.Common
             FrmCntUp = frmCntUp;
             this.simulatedBasicsStations = simulatedBasicsStation?.ToList() ?? new List<SimulatedBasicsStation>();
 
-            bool AddToDeviceMessageQueue(string response)
+            void AddToDeviceMessageQueue(string response)
             {
                 if (DevEuiMessageReader.Read(response) == DevEUI)
                 {
                     this.receivedMessages.Add(response);
                 }
-
-                return true;
             }
 
-            ListenForAnswer(AddToDeviceMessageQueue);
+            foreach (var basicsStation in this.simulatedBasicsStations)
+                basicsStation.MessageReceived += (_, eventArgs) => AddToDeviceMessageQueue(eventArgs.Value);
         }
 
         public LoRaPayloadJoinRequest CreateJoinRequest(AppKey? appkey = null, DevNonce? devNonce = null)
@@ -226,7 +225,6 @@ namespace LoRaWan.Tests.Common
 
         private bool HandleJoinAccept(LoRaPayloadJoinAccept payload)
         {
-
             // Calculate the keys
             var devNonce = DevNonce;
 
@@ -255,38 +253,9 @@ namespace LoRaWan.Tests.Common
         }
 
         //// Sends unconfirmed message
-        public async Task SendDataMessageAsync(LoRaRequest loRaRequest)
-        {
-            var payload = (LoRaPayloadData)loRaRequest.Payload;
-
-            var msg = JsonSerializer.Serialize(new
-            {
-                MHdr = uint.Parse(loRaRequest.Payload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                msgtype = "updf",
-                DevAddr = int.Parse(payload.DevAddr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                FCtrl = (uint)payload.FrameControlFlags,
-                FCnt = MemoryMarshal.Read<ushort>(payload.Fcnt.Span),
-                FOpts = ConversionHelper.ByteArrayToString(payload.Fopts),
-                FPort = (int)payload.Fport,
-                FRMPayload = ConversionHelper.ByteArrayToString(payload.Frmpayload),
-                MIC = payload.Mic.Value.AsInt32,
-                DR = loRaRequest.RadioMetadata.DataRate,
-                Freq = loRaRequest.RadioMetadata.Frequency.AsUInt64,
-                upinfo = new
-                {
-                    gpstime = loRaRequest.RadioMetadata.UpInfo.GpsTime,
-                    rctx = 10,
-                    rssi = loRaRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
-                    xtime = loRaRequest.RadioMetadata.UpInfo.Xtime,
-                    snr = loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio
-                }
-            });
-
-            await SendMessageToBasicsStationsAsync(msg);
-        }
-
-        private Task SendMessageToBasicsStationsAsync(string message) => Task.WhenAll(from basicsStation in this.simulatedBasicsStations
-                                                                                      select basicsStation.SendMessageAsync(message));
+        public Task SendDataMessageAsync(LoRaRequest loRaRequest) =>
+            Task.WhenAll(from basicsStation in this.simulatedBasicsStations
+                         select basicsStation.SendDataMessageAsync(loRaRequest, CancellationToken.None));
 
         public void EnsureMessageResponsesAreReceived(int expectedCout)
         {
@@ -297,62 +266,63 @@ namespace LoRaWan.Tests.Common
         public async Task<bool> JoinAsync(TimeSpan? timeout = null)
         {
             timeout ??= TimeSpan.FromSeconds(30);
+            using var joinCompleted = new SemaphoreSlim(0);
             using var joinRequest = WaitableLoRaRequest.CreateWaitableRequest(CreateJoinRequest());
             var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
-            var joinSuccessfull = false;
+            var joinSuccessful = false;
 
-            bool joinListenFunction(string response)
+            void OnMessageReceived(object sender, EventArgs<string> response)
             {
                 // handle join
-                var joinAcceptstring = JsonSerializer.Deserialize<JoinAcceptResponse>(response);
+                var joinAcceptstring = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
                 // is null in case it is another message coming from the station.
                 if (joinAcceptstring?.Pdu != null)
                 {
                     var joinAccept = new LoRaPayloadJoinAccept(ConversionHelper.StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
                     var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
-                    joinSuccessfull |= result;
-                    return result;
+                    joinSuccessful = result;
+                    joinCompleted.Release();
                 }
-
-                return false;
             }
-            await SendMessageToBasicsStationsAsync(JsonSerializer.Serialize(new
-            {
-                JoinEui = joinRequestPayload.AppEui.ToString("D", null),
-                msgtype = "jreq",
-                DevEui = joinRequestPayload.DevEUI.ToString("D", null),
-                DevNonce = joinRequestPayload.DevNonce.AsUInt16,
-                MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                MIC = joinRequestPayload.Mic.Value.AsInt32,
-                DR = joinRequest.RadioMetadata.DataRate,
-                Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
-                upinfo = new
-                {
-                    gpstime = joinRequest.RadioMetadata.UpInfo.GpsTime,
-                    rctx = 10,
-                    rssi = joinRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
-                    xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
-                    snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
-                }
-            }));
 
-#if DEBUG
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                timeout = TimeSpan.FromSeconds(60);
-            }
-#endif
-
-            await AssertUtils.ContainsWithRetriesAsync((message) => joinListenFunction(message), this.receivedMessages);
-            return true;
-        }
-
-        private void ListenForAnswer(Func<string, bool> func)
-        {
             foreach (var basicsStation in this.simulatedBasicsStations)
             {
-                basicsStation.SubscribeOnce(func);
+                basicsStation.MessageReceived += OnMessageReceived;
+
+                await basicsStation.SerializeAndSendMessageAsync(new
+                {
+                    JoinEui = joinRequestPayload.AppEui.ToString("D", null),
+                    msgtype = "jreq",
+                    DevEui = joinRequestPayload.DevEUI.ToString("D", null),
+                    DevNonce = joinRequestPayload.DevNonce.AsUInt16,
+                    MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                    MIC = joinRequestPayload.Mic.Value.AsInt32,
+                    DR = joinRequest.RadioMetadata.DataRate,
+                    Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
+                    upinfo = new
+                    {
+                        gpstime = joinRequest.RadioMetadata.UpInfo.GpsTime,
+                        rctx = 10,
+                        rssi = joinRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
+                        xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
+                        snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
+                    }
+                });
+
+#if DEBUG
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    timeout = TimeSpan.FromSeconds(60);
+                }
+#endif
             }
+
+            await joinCompleted.WaitAsync(timeout.Value);
+
+            foreach (var basicsStation in this.simulatedBasicsStations)
+                basicsStation.MessageReceived -= OnMessageReceived;
+
+            return joinSuccessful;
         }
 
         /// <summary>
