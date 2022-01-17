@@ -12,7 +12,7 @@ on: # rebuild any PRs and main branch changes
         default: false
       RunLoadTests:
         description: 'Include Load Tests in current run'
-        default: 'true'
+        default: 'false'
       TestsToRun:
         default: '[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest]'
         description: 'tests to run'
