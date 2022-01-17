@@ -79,10 +79,10 @@ namespace LoRaWan.Tests.Unit
             var netId = new NetId(0xbcbbba);
             var devAddr = new DevAddr(0x14131211);
             var dlSettings = new byte[] { 0xca };
-            var rxDelay = new byte[] { 0xda };
+            var rxDelay = RxDelay.RxDelay10;
             var cfList = new byte[16] { 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xea, 0xeb, 0xec, 0xed, 0xef, 0xf1, 0xf2, 0xf3 };
             var mic = Mic.ComputeForJoinAccept(key, mhdr, joinNonce, netId, devAddr, dlSettings, rxDelay, cfList);
-            Assert.Equal(new Mic(0x19cf5627), mic);
+            Assert.Equal(new Mic(-1539170837), mic);
         }
 
         [Fact]

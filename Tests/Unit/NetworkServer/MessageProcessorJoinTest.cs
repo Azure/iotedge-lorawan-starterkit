@@ -19,6 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Xunit;
     using Xunit.Abstractions;
     using static LoRaWan.DataRateIndex;
+    using static LoRaWan.RxDelay;
 
     public class MessageProcessorJoinTest : MessageProcessorTestBase
     {
@@ -632,7 +633,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(afterJoinValues, joinAccept.Rx1DrOffset);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx1DROffsetValue);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx2DRValue);
-            Assert.Equal(afterJoinValues, joinAccept.RxDelay.Span[0]);
+            Assert.Equal((RxDelay)afterJoinValues, joinAccept.RxDelay);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRxDelayValue);
         }
 
@@ -753,16 +754,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(0, 1)]
-        [InlineData(1, 1)]
-        [InlineData(2, 2)]
-        [InlineData(3, 3)]
-        [InlineData(15, 15)]
-        [InlineData(16, 1)]
-        [InlineData(-2, 1)]
-        [InlineData(200, 1)]
-        [InlineData(2147483647, 1)]
-        public async Task When_Getting_RXDelay_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rxDelay, uint expectedDelay)
+        [InlineData(0, RxDelay1)]
+        [InlineData(1, RxDelay1)]
+        [InlineData(2, RxDelay2)]
+        [InlineData(3, RxDelay3)]
+        [InlineData(15, RxDelay15)]
+        [InlineData(16, RxDelay1)]
+        [InlineData(-2, RxDelay1)]
+        [InlineData(200, RxDelay1)]
+        [InlineData(2147483647, RxDelay1)]
+        public async Task When_Getting_RXDelay_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rxDelay, RxDelay expectedDelay)
         {
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
@@ -830,14 +831,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
-            joinAccept.RxDelay.Span.Reverse();
-            if (rxDelay is > 0 and < 16)
+            if (rxDelay is >= 0 and < 16)
             {
-                Assert.Equal((int)expectedDelay, joinAccept.RxDelay.Span[0]);
+                Assert.Equal(expectedDelay, joinAccept.RxDelay);
             }
             else
             {
-                Assert.Equal(0, joinAccept.RxDelay.Span[0]);
+                Assert.Equal(RxDelay0, joinAccept.RxDelay);
             }
 
             // Send a message
