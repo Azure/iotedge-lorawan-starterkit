@@ -14,13 +14,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public sealed class LoRaDeviceRegistryTest : MessageProcessorTestBase
     {
         private readonly MemoryCache cache;
         private readonly Mock<ILoRaDeviceFactory> loraDeviceFactoryMock;
 
-        public LoRaDeviceRegistryTest() : base()
+        public LoRaDeviceRegistryTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             this.loraDeviceFactoryMock = new Mock<ILoRaDeviceFactory>(MockBehavior.Strict);
             this.cache = new MemoryCache(new MemoryCacheOptions());
