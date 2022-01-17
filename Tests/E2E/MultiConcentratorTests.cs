@@ -93,7 +93,7 @@ namespace LoRaWan.Tests.E2E
 
                 // 0000000000000031: message '{"value": 101}' sent to hub
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
                 droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
                     (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(this.expectedLog));

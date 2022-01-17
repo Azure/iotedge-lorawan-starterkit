@@ -216,7 +216,7 @@ namespace LoRaWan.Tests.E2E
             // Ensure device payload is available
             // Data: {"value": 51}
             var expectedPayload = $"{{\"value\":{msg}}}";
-            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -249,7 +249,7 @@ namespace LoRaWan.Tests.E2E
             // Ensure device payload is available
             // Data: {"value": 51}
             expectedPayload = $"{{\"value\":{msg}}}";
-            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 

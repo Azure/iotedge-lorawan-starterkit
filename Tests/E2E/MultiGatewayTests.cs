@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.E2E
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
                 bothReported = await TestFixtureCi.ValidateMultiGatewaySources((log) => log.StartsWith($"{device.DeviceID}: sending message", StringComparison.OrdinalIgnoreCase));
                 if (bothReported)
@@ -122,7 +122,8 @@ namespace LoRaWan.Tests.E2E
                     switch (strategy)
                     {
                         case "Mark":
-                            await TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, "dupmsg", "true");
+                            var expectedProperty = "dupmsg";
+                            await TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedProperty, "true", new SearchLogOptions(expectedProperty));
                             break;
                         case "Drop":
                             var logMsg = $"{device.DeviceID}: duplication strategy indicated to not process message";
@@ -130,7 +131,7 @@ namespace LoRaWan.Tests.E2E
                             Assert.NotNull(droppedLog.MatchedEvent);
 
                             var expectedPayload = $"{{\"value\":{msg}}}";
-                            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
                             break;
                         default:
                             throw new SwitchExpressionException();

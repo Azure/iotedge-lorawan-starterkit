@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Common
             return false;
         }
 
-        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string targetJsonProperty, string expectedJsonValue, SearchLogOptions options = null)
+        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string targetJsonProperty, string expectedJsonValue, SearchLogOptions options)
         {
             var assertionLevel = Configuration.IoTHubAssertLevel;
             if (options != null && options.TreatAsError.HasValue)
@@ -57,9 +57,9 @@ namespace LoRaWan.Tests.Common
 
             var searchResult = await SearchIoTHubMessageAsync(
                 (eventData, eventDeviceID, eventDataMessageBody) => IsDeviceMessage(deviceID, targetJsonProperty, expectedJsonValue, eventDeviceID, eventDataMessageBody),
-                new SearchLogOptions(options?.Description ?? $"\"{targetJsonProperty}\": {expectedJsonValue}")
+                new SearchLogOptions(options.Description)
                 {
-                    TreatAsError = options?.TreatAsError,
+                    TreatAsError = options.TreatAsError,
                 });
 
             if (assertionLevel == LogValidationAssertLevel.Error)
@@ -78,7 +78,7 @@ namespace LoRaWan.Tests.Common
         }
 
         // Asserts leaf device message payload exists. It searches inside the payload "data" property. Has built-in retries
-        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options = null)
+        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options)
         {
             await AssertIoTHubDeviceMessageExistsAsync(deviceID, "data", expectedDataValue, options);
         }
@@ -236,14 +236,14 @@ namespace LoRaWan.Tests.Common
                 if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Error)
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    Assert.True(searchResult.Found, $"Searching for {options?.Description ?? "??"} failed. Current log content: [{logs}]");
+                    Assert.True(searchResult.Found, $"Searching for {options.Description} failed. Current log content: [{logs}]");
                 }
                 else if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Warning)
                 {
                     if (!searchResult.Found)
                     {
                         var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                        TestLogger.Log($"[WARN] '{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
+                        TestLogger.Log($"[WARN] '{options.Description}' found in logs? {searchResult.Found}. Logs: [{logs}]");
                     }
                 }
             }
@@ -313,14 +313,7 @@ namespace LoRaWan.Tests.Common
                 if (i > 0)
                 {
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(options.Description))
-                    {
-                        TestLogger.Log($"TCP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
-                    else
-                    {
-                        TestLogger.Log($"TCP log message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
+                    TestLogger.Log($"TCP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
 
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
@@ -363,14 +356,7 @@ namespace LoRaWan.Tests.Common
                 if (i > 0)
                 {
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(options.Description))
-                    {
-                        TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
-                    else
-                    {
-                        TestLogger.Log($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
+                    TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
 
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
@@ -405,23 +391,16 @@ namespace LoRaWan.Tests.Common
         }
 
         // Searches IoT Hub for messages
-        internal async Task<SearchLogResult> SearchIoTHubMessageAsync(Func<EventData, string, string, bool> predicate, SearchLogOptions options = null)
+        internal async Task<SearchLogResult> SearchIoTHubMessageAsync(Func<EventData, string, string, bool> predicate, SearchLogOptions options)
         {
-            var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
+            var maxAttempts = options.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
             for (var i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(options?.Description))
-                    {
-                        TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
-                    else
-                    {
-                        TestLogger.Log($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
+                    TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
 
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
