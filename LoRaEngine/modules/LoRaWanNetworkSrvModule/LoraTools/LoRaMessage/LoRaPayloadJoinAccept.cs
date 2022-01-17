@@ -33,7 +33,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets rxDelay.
         /// </summary>
-        public Memory<byte> RxDelay { get; set; }
+        public RxDelay RxDelay { get; set; }
 
         /// <summary>
         /// Gets or sets cFList / Optional.
@@ -67,7 +67,7 @@ namespace LoRaTools.LoRaMessage
             _ = devAddr.Write(RawMessage.AsSpan(7));
             DlSettings = new Memory<byte>(RawMessage, 11, 1);
             Array.Copy(dlSettings, 0, RawMessage, 11, 1);
-            RxDelay = new Memory<byte>(RawMessage, 12, 1);
+            RxDelay = rxDelay;
             RawMessage[12] = (byte)(Enum.IsDefined(rxDelay) ? rxDelay : default);
             // set payload Wrapper fields
             if (cfListLength > 0)
@@ -79,10 +79,7 @@ namespace LoRaTools.LoRaMessage
             // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
             Fcnt = BitConverter.GetBytes(0x01);
             if (BitConverter.IsLittleEndian)
-            {
                 DlSettings.Span.Reverse();
-                RxDelay.Span.Reverse();
-            }
         }
 
         public LoRaPayloadJoinAccept(ReadOnlyMemory<byte> inputMessage, AppKey appKey) : this(inputMessage.ToArray(), appKey)
@@ -132,9 +129,7 @@ namespace LoRaTools.LoRaMessage
             var dlSettings = new byte[1];
             Array.Copy(inputMessage, 11, dlSettings, 0, 1);
             DlSettings = new Memory<byte>(dlSettings);
-            var rxDelay = new byte[1];
-            Array.Copy(inputMessage, 12, rxDelay, 0, 1);
-            RxDelay = new Memory<byte>(rxDelay);
+            RxDelay = (RxDelay)(inputMessage[12] & 0b1111); // upper bits are reserved for future use
             // It's the configuration list, it can be empty or up to 15 bytes
             // - 17 = - 1 - 3 - 3 - 4 - 1 - 1 - 4
             // This is the size of all mandatory elements of the message
@@ -152,7 +147,7 @@ namespace LoRaTools.LoRaMessage
             var channelFrequencies = !CfList.Span.IsEmpty ? CfList.ToArray() : Array.Empty<byte>();
 
             var buffer = new byte[AppNonce.Size + NetId.Size + DevAddr.Size + DlSettings.Length +
-                                  RxDelay.Length + channelFrequencies.Length + LoRaWan.Mic.Size];
+                                  sizeof(RxDelay) + channelFrequencies.Length + LoRaWan.Mic.Size];
 
             static Span<byte> Copy(ReadOnlyMemory<byte> source, Span<byte> target)
             {
@@ -166,7 +161,7 @@ namespace LoRaTools.LoRaMessage
             pt = NetId.Write(pt);
             pt = DevAddr.Write(pt);
             pt = Copy(DlSettings, pt);
-            pt = Copy(RxDelay, pt);
+            pt = RxDelay.Write(pt);
             pt = Copy(channelFrequencies, pt);
             _ = mic.Write(pt);
 
