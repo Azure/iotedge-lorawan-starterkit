@@ -14,11 +14,14 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Multi gateway specifc scenarios
     public class MultiGatewayTests : MessageProcessorTestBase
     {
+        public MultiGatewayTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory]
         [InlineData(0, 0, 1)]
         public async Task When_Fcnt_Down_Fails_Should_Stop_And_Not_Update_Device_Twin(uint initialFcntDown, uint initialFcntUp, uint payloadFcnt)

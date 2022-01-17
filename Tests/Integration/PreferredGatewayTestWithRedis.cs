@@ -8,8 +8,8 @@ namespace LoRaWan.Tests.Integration
     using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaWan.Tests.Common;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
+    using Xunit.Abstractions;
 
     /// <summary>
     /// Tests to run against a real redis instance.
@@ -20,12 +20,12 @@ namespace LoRaWan.Tests.Integration
         private readonly ILoRaDeviceCacheStore cache;
         private readonly PreferredGatewayExecutionItem preferredGatewayExecutionItem;
 
-        public PreferredGatewayTestWithRedis(RedisFixture redis)
+        public PreferredGatewayTestWithRedis(RedisFixture redis, ITestOutputHelper testOutputHelper)
         {
             if (redis is null) throw new ArgumentNullException(nameof(redis));
 
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
-            this.preferredGatewayExecutionItem = new PreferredGatewayExecutionItem(this.cache, new NullLogger<PreferredGatewayExecutionItem>(), null);
+            this.preferredGatewayExecutionItem = new PreferredGatewayExecutionItem(this.cache, new TestOutputLogger<PreferredGatewayExecutionItem>(testOutputHelper), null);
         }
 
         [Fact]

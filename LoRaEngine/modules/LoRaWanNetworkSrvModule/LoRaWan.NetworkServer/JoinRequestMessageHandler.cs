@@ -202,16 +202,16 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                ushort lnsRxDelay = 0;
+                ushort lnsRxDelay;
                 if (windowToUse == Constants.ReceiveWindow1)
                 {
                     // set tmst for the normal case
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1;
+                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1.ToSeconds();
                 }
                 else
                 {
                     this.logger.LogDebug("processing of the join request took too long, using second join accept receive window");
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
+                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2.ToSeconds();
                 }
 
                 this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
@@ -247,8 +247,8 @@ namespace LoRaWan.NetworkServer
                 // This one is a delay between TX and RX for any message to be processed by joining device
                 // The field accepted by Serialize method is an indication of the delay (compared to receive time of join request)
                 // of when the message Join Accept message should be sent
-                ushort loraSpecDesiredRxDelay = 0;
-                if (Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                var loraSpecDesiredRxDelay = RxDelay.RxDelay0;
+                if (Enum.IsDefined(loRaDevice.DesiredRXDelay))
                 {
                     loraSpecDesiredRxDelay = loRaDevice.DesiredRXDelay;
                 }

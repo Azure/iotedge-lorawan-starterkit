@@ -14,9 +14,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class FcntLimitTest : MessageProcessorTestBase
     {
+        public FcntLimitTest(ITestOutputHelper testOutputHelper) :
+            base(testOutputHelper) { }
+
         [Theory]
         // rolling test: if the client reaches 0xFFFF on the lower 16 bits, it will roll over and the upper
         // 16 bits are changed. In this case, the counter drifted too far for us to recover, and hence the MIC check will fail
