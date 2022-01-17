@@ -297,9 +297,10 @@ namespace LoRaWan.Tests.Common
             }
 
             foreach (var basicsStation in this.simulatedBasicsStations)
-            {
                 basicsStation.MessageReceived += OnMessageReceived;
 
+            foreach (var basicsStation in this.simulatedBasicsStations)
+            {
                 await basicsStation.SerializeAndSendMessageAsync(new
                 {
                     JoinEui = joinRequestPayload.AppEui.ToString("D", null),
