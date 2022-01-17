@@ -101,8 +101,6 @@ namespace LoRaWan.Tests.Common
                     snr = loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio
                 }
             }, cancellationToken);
-
-            TestLogger.Log($"[{payload.DevAddr}] Sending data: {payload.Frmpayload}");
         }
 
         /// <summary>
