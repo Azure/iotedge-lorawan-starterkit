@@ -69,11 +69,7 @@ namespace LoRaWan.Tests.E2E
 
                 var expectedLog = stationEui + ": Received 'version' message for station";
                 var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(expectedLog, StringComparison.Ordinal) != -1,
-                    new SearchLogOptions(expectedLog)
-                    {
-                        MaxAttempts = 1,
-                    });
+                    (log) => log.IndexOf(expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog) { MaxAttempts = 1 });
                 Assert.True(log.Found);
 
                 //the concentrator should be ready at this point to receive messages
@@ -89,11 +85,7 @@ namespace LoRaWan.Tests.E2E
 
                 var expectedLog2 = stationEui + ": Received 'jreq' message";
                 var jreqLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(expectedLog2, StringComparison.Ordinal) != -1,
-                    new SearchLogOptions(expectedLog2)
-                    {
-                        MaxAttempts = 2,
-                    });
+                    (log) => log.IndexOf(expectedLog2, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog2) { MaxAttempts = 2 });
                 Assert.NotNull(jreqLog.MatchedEvent);
 
                 // wait 1 second after joined
@@ -106,16 +98,12 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
-                var expectedPayload = $"{{\"value\":{msg}}}";
-                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload){ MaxAttempts = 2 });
+                var expectedLog3 = $"{{\"value\":{msg}}}";
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedLog3, new SearchLogOptions(expectedLog3) { MaxAttempts = 2 });
 
-                var expectedLog3 = stationEui + ": Received 'updf' message";
+                var expectedLog4 = stationEui + ": Received 'updf' message";
                 var updfLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(expectedLog3, StringComparison.Ordinal) != -1,
-                    new SearchLogOptions(expectedLog3)
-                    {
-                        MaxAttempts = 2,
-                    });
+                    (log) => log.IndexOf(expectedLog4, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog4) { MaxAttempts = 2 });
                 Assert.True(updfLog.Found);
             }
             finally
