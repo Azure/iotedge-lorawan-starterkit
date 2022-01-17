@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.IO;
     using System.Linq;
     using System.Text;
     using System.Text.Json;
@@ -237,6 +238,24 @@ namespace LoRaWan.NetworkServer
             }
 
             return await response.Content.ReadAsStringAsync(token);
+        }
+
+        public override async Task<Stream> FetchStationFirmwareAsync(StationEui eui, CancellationToken token)
+        {
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = BuildUri("FetchConcentratorFirmware", new Dictionary<string, string>
+            {
+                ["code"] = AuthCode,
+                ["StationEui"] = eui.ToString()
+            });
+
+            var response = await client.GetStreamAsync(url, token);
+            if (response is null)
+            {
+                this.logger.LogError($"error calling fetch station firmware api. check the azure function log");
+            }
+
+            return response;
         }
     }
 }
