@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Common
                 .GetSection("testConfiguration")
                 .Bind(result);
 
-            result.LnsEndpointsForSimulator = new[] { new Uri(result.SharedLnsEndpoint) };
+            result.LnsEndpointsForSimulator = new[] { new Uri("ws://itestarm1:5000") };
 
             return result;
         }
