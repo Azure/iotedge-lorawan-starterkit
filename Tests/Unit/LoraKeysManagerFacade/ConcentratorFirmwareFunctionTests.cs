@@ -79,10 +79,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var blobBytes = Encoding.UTF8.GetBytes(BlobContent);
             using var blobContentStream = new MemoryStream(blobBytes);
             using var streamingResult = BlobsModelFactory.BlobDownloadStreamingResult(blobContentStream);
-
-            var response = new Mock<Response>();
             this.blobClient.Setup(m => m.DownloadStreamingAsync(default, null, false, It.IsAny<CancellationToken>()))
-                           .Returns(Task.FromResult(Response.FromValue(streamingResult, response.Object)));
+                           .Returns(Task.FromResult(Response.FromValue(streamingResult, new Mock<Response>().Object)));
 
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
@@ -199,7 +197,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            this.blobClient.Setup(m => m.DownloadStreamingAsync(default, null, false, It.IsAny<CancellationToken>()))
+            this.blobClient.Setup(m => m.DownloadStreamingAsync(It.IsAny<HttpRange>(), It.IsAny<BlobRequestConditions>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                            .ThrowsAsync(new RequestFailedException("download failed"));
 
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
