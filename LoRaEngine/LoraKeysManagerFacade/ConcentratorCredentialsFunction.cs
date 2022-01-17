@@ -87,9 +87,8 @@ namespace LoraKeysManagerFacade
                 this.logger.LogInformation("Retrieving '{CredentialType}' for '{StationEui}'.", credentialType.ToString(), stationEui);
                 try
                 {
-                    const string cupsKey = "cups";
-                    if (!twin.Properties.Desired.TryReadJsonBlock(cupsKey, out var cupsProperty))
-                        throw new ArgumentOutOfRangeException(cupsKey, "failed to read cups config");
+                    if (!twin.Properties.Desired.TryReadJsonBlock(CupsPropertyName, out var cupsProperty))
+                        throw new ArgumentOutOfRangeException(CupsPropertyName, "failed to read cups config");
 
                     var parsedJson = JObject.Parse(cupsProperty);
                     var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()
