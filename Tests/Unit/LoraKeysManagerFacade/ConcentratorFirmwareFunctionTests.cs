@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         }
 
         [Fact]
-        public async Task RunFetchConcentratorFirmware_Throws_ForTwinMissingCups()
+        public async Task RunFetchConcentratorFirmware_Returns_UnprocessableEntityResult_ForTwinMissingCups()
         {
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
@@ -148,7 +148,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         }
 
         [Fact]
-        public async Task RunFetchConcentratorFirmware_Throws_ForTwinMissingFwUrl()
+        public async Task RunFetchConcentratorFirmware_Returns_UnprocessableEntityResult_ForTwinMissingFwUrl()
         {
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
