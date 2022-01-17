@@ -43,25 +43,24 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Ten_Devices_Sending_Messages_At_Same_Time()
         {
-            var deviceTasks = new List<Task>();
-            var simulatedDeviceList = new List<SimulatedDevice>();
-            foreach (var device in TestFixtureSim.DeviceRange1000_ABP)
+            // arrange
+            var simulatedDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange1000_ABP);
+            Assert.NotEmpty(simulatedDevices);
+
+            // act
+            static async Task SendMessageAsync(SimulatedDevice device)
             {
-                var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: this.simulatedBasicsStations);
-                simulatedDeviceList.Add(simulatedDevice);
-                using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(device.DeviceID));
-
-                deviceTasks.Add(simulatedDevice.SendDataMessageAsync(request));
+                using var request = WaitableLoRaRequest.CreateWaitableRequest(device.CreateConfirmedDataUpMessage(device.LoRaDevice.DeviceID));
+                await device.SendDataMessageAsync(request);
             }
-
-            await Task.WhenAll(deviceTasks);
+            await Task.WhenAll(from device in simulatedDevices
+                               select SendMessageAsync(device));
             await Task.Delay(TimeSpan.FromSeconds(5));
-
+            
+            // assert
             var eventsByDevices = TestFixture.IoTHubMessages.Events.GroupBy(x => x.SystemProperties["iothub-connection-device-id"]);
-            // There are 11 devices in that group 0-10
-            Assert.Equal(11, eventsByDevices.Count());
-
-            foreach (var device in simulatedDeviceList)
+            Assert.Equal(simulatedDevices.Count, eventsByDevices.Count());
+            foreach (var device in simulatedDevices)
             {
                 device.EnsureMessageResponsesAreReceived(1);
             }
@@ -122,7 +121,8 @@ namespace LoRaWan.Tests.Simulation
         {
             const int messageCounts = 50;
             var deviceTasks = new List<Task>();
-            var simulatedDevices = TestFixtureSim.DeviceRange4000_OTAA_FullLoad.Select(d => new SimulatedDevice(d, simulatedBasicsStation: this.simulatedBasicsStations)).ToList();
+            var simulatedDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange4000_OTAA_FullLoad);
+            Assert.NotEmpty(simulatedDevices);
             await Task.WhenAll(from device in simulatedDevices
                                select SendMessagesAsync(device));
 
@@ -156,6 +156,9 @@ namespace LoRaWan.Tests.Simulation
                 device.EnsureMessageResponsesAreReceived(messageCounts + 1);
             }
         }
+
+        private List<SimulatedDevice> InitializeSimulatedDevices(IReadOnlyCollection<TestDeviceInfo> testDeviceInfos) =>
+            testDeviceInfos.Select(d => new SimulatedDevice(d, simulatedBasicsStation: this.simulatedBasicsStations)).ToList();
 
         public async Task InitializeAsync()
         {
