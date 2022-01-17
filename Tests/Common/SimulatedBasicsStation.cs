@@ -7,14 +7,12 @@ namespace LoRaWan.Tests.Common
     using System;
     using System.Text.Json;
     using LoRaWan.Tests.Simulation.Models;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using System.Runtime.InteropServices;
     using LoRaWan.NetworkServer;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using System.Net.WebSockets;
-    using System.Linq;
     using System.Globalization;
     using System.Threading;
     using System.Text;
@@ -29,10 +27,7 @@ namespace LoRaWan.Tests.Common
         private bool started;
         private Task processMessagesAsync;
 
-        private readonly HashSet<Func<string, bool>> subscribers = new HashSet<Func<string, bool>>();
-
-        internal void SubscribeOnce(Func<string, bool> value) =>
-            this.subscribers.Add(value);
+        public event EventHandler<EventArgs<string>> MessageReceived;
 
         public SimulatedBasicsStation(StationEui stationEUI, Uri lnsUri)
         {
@@ -71,15 +66,7 @@ namespace LoRaWan.Tests.Common
                 while (await enumerator.MoveNextAsync())
                 {
                     var msg = enumerator.Current;
-                    if (this.subscribers.Count > 0)
-                    {
-                        var subscriberToRemove = this.subscribers.FirstOrDefault(predicate => predicate(msg));
-                        if (subscriberToRemove != null)
-                        {
-                            this.subscribers.Remove(subscriberToRemove);
-                        }
-                    }
-
+                    MessageReceived?.Invoke(this, new EventArgs<string>(msg));
                     Console.WriteLine("Message received: " + msg);
                 }
 

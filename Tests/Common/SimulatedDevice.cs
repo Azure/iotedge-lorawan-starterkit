@@ -203,7 +203,6 @@ namespace LoRaWan.Tests.Common
 
         private bool HandleJoinAccept(LoRaPayloadJoinAccept payload)
         {
-
             // Calculate the keys
             var devNonce = DevNonce;
 
@@ -237,25 +236,24 @@ namespace LoRaWan.Tests.Common
             timeout ??= TimeSpan.FromSeconds(30);
             using var joinCompleted = new SemaphoreSlim(0);
             var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
-            var joinSuccessfull = false;
+            var joinSuccessful = false;
 
-            basicsStation.SubscribeOnce((response) =>
+            void OnMessageReceived(object sender, EventArgs<string> response)
             {
                 // handle join
-                var joinAcceptstring = JsonSerializer.Deserialize<JoinAcceptResponse>(response);
+                var joinAcceptstring = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
                 // is null in case it is another message coming from the station.
                 if (joinAcceptstring?.Pdu != null)
                 {
                     var joinAccept = new LoRaPayloadJoinAccept(ConversionHelper.StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
 
                     var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
+                    joinSuccessful = result;
                     joinCompleted.Release();
-                    joinSuccessfull = result;
-                    return result;
                 }
+            }
 
-                return false;
-            });
+            basicsStation.MessageReceived += OnMessageReceived;
 
             await basicsStation.SerializeAndSendMessageAsync(new
             {
@@ -286,7 +284,9 @@ namespace LoRaWan.Tests.Common
 
             await joinCompleted.WaitAsync(timeout.Value);
 
-            return joinSuccessfull;
+            basicsStation.MessageReceived -= OnMessageReceived;
+
+            return joinSuccessful;
         }
 
 
