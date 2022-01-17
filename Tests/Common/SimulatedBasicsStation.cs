@@ -37,12 +37,9 @@ namespace LoRaWan.Tests.Common
         {
             var factory = new Func<ClientWebSocket>(() => new ClientWebSocket
             {
-                Options =
-                    {
 #pragma warning disable CA5359 // Do Not Disable Certificate Validation
-                    RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                Options = { RemoteCertificateValidationCallback = (_, _, _, _) => true }
 #pragma warning restore CA5359 // Do Not Disable Certificate Validation
-        }
             });
             var routerReceivedMessage = new List<string>();
             using var routerWebsocketClient = new WebsocketClient(new Uri(LnsUri, "router-info"), factory);

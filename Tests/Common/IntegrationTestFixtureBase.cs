@@ -61,7 +61,6 @@ namespace LoRaWan.Tests.Common
         }
 
         public abstract void SetupTestDevices();
-        public abstract Task InitializeDevicesAsync();
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
@@ -97,7 +96,7 @@ namespace LoRaWan.Tests.Common
             this.tcpLogListener?.ResetEvents();
         }
 
-        public abstract Task DisposeAsync();
+        public Task DisposeAsync() => Task.CompletedTask;
 
         private RegistryManager GetRegistryManager()
         {
@@ -286,8 +285,6 @@ namespace LoRaWan.Tests.Common
             {
                 this.tcpLogListener = TcpLogListener.Start(Configuration.TcpLogPort);
             }
-
-            await InitializeDevicesAsync();
         }
 
         public async Task UpdateExistingConcentratorThumbprint(StationEui stationEui, Func<string[], bool> condition, Action<List<string>> action)

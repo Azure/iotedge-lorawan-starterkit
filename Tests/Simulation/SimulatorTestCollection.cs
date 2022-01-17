@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Simulation
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing.Text;
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
@@ -15,17 +16,24 @@ namespace LoRaWan.Tests.Simulation
     [Trait("Category", "SkipWhenLiveUnitTesting")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
     // False positive, the name is accurate in the context of xUnit collections.
-    public sealed class SimulatorTestCollection : IntegrationTestBaseSim
+    public sealed class SimulatorTestCollection : IntegrationTestBaseSim, IAsyncLifetime
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     {
         private static readonly TimeSpan IntervalBetweenMessages = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan IntervalAfterJoin = TimeSpan.FromSeconds(10);
+        private readonly List<SimulatedBasicsStation> simulatedBasicsStations;
 
         public TestConfiguration Configuration { get; } = TestConfiguration.GetConfiguration();
 
         public SimulatorTestCollection(IntegrationTestFixtureSim testFixture)
             : base(testFixture)
-        { }
+        {
+            this.simulatedBasicsStations =
+                testFixture.DeviceRange5000_BasicsStationSimulators
+                           .Select((basicsStation, i) => (BasicsStation: basicsStation, Index: i))
+                           .Select(b => new SimulatedBasicsStation(StationEui.Parse(b.BasicsStation.DeviceID), new Uri(Configuration.LnsEndpointsForSimulator[b.Index % Configuration.LnsEndpointsForSimulator.Count])))
+                           .ToList();
+        }
 
         /// <summary>
         /// This test needs to be reworked. It was commented out in the previous code, I guess this was supposed to be a mini load test.
@@ -39,7 +47,7 @@ namespace LoRaWan.Tests.Simulation
             var simulatedDeviceList = new List<SimulatedDevice>();
             foreach (var device in TestFixtureSim.DeviceRange1000_ABP)
             {
-                var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: TestFixtureSim.SimulatedBasicsStations);
+                var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: this.simulatedBasicsStations);
                 simulatedDeviceList.Add(simulatedDevice);
                 using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(device.DeviceID));
 
@@ -65,7 +73,7 @@ namespace LoRaWan.Tests.Simulation
             const int MessageCount = 5;
 
             var device = TestFixtureSim.Device1001_Simulated_ABP;
-            var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: TestFixtureSim.SimulatedBasicsStations);
+            var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: this.simulatedBasicsStations);
 
             for (var i = 1; i <= MessageCount; i++)
             {
@@ -75,7 +83,7 @@ namespace LoRaWan.Tests.Simulation
             }
 
             var actualAmountOfMsgs = TestFixture.IoTHubMessages.Events.Count(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID && !x.Properties.ContainsKey("iothub-message-schema"));
-            Assert.Equal(MessageCount * TestFixtureSim.SimulatedBasicsStations.Count, actualAmountOfMsgs);
+            Assert.Equal(MessageCount * this.simulatedBasicsStations.Count, actualAmountOfMsgs);
             Assert.True(simulatedDevice.EnsureMessageResponsesAreReceived(MessageCount));
         }
 
@@ -85,7 +93,7 @@ namespace LoRaWan.Tests.Simulation
             const int MessageCount = 5;
 
             var device = TestFixtureSim.Device1002_Simulated_OTAA;
-            var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: TestFixtureSim.SimulatedBasicsStations);
+            var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: this.simulatedBasicsStations);
 
             using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateJoinRequest());
 
@@ -112,44 +120,62 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Lots_Of_Devices_OTAA_Simulated_Load_Test()
         {
-            var messageCounts = 50;
+            const int messageCounts = 50;
             var deviceTasks = new List<Task>();
-            var simulatedDeviceList = new List<SimulatedDevice>();
-            foreach (var device in TestFixtureSim.DeviceRange4000_OTAA_FullLoad)
+            var simulatedDevices = TestFixtureSim.DeviceRange4000_OTAA_FullLoad.Select(d => new SimulatedDevice(d, simulatedBasicsStation: this.simulatedBasicsStations)).ToList();
+            await Task.WhenAll(from device in simulatedDevices
+                               select SendMessagesAsync(device));
+
+            static async Task SendMessagesAsync(SimulatedDevice device)
             {
-                var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: TestFixtureSim.SimulatedBasicsStations);
-                simulatedDeviceList.Add(simulatedDevice);
+                using var requestForJoin = WaitableLoRaRequest.CreateWaitableRequest(device.CreateJoinRequest());
+                var joined = await device.JoinAsync(requestForJoin);
+                Assert.True(joined, "OTAA join failed");
 
-                deviceTasks.Add(Task.Run(async () =>
+                for (var i = 0; i < messageCounts; i++)
                 {
-                    using var requestForJoin = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateJoinRequest());
-                    var joined = await simulatedDevice.JoinAsync(requestForJoin);
-                    Assert.True(joined, "OTAA join failed");
-
-                    for (var i = 0; i < messageCounts; i++)
-                    {
-                        using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(device.DeviceID));
-                        await simulatedDevice.SendDataMessageAsync(request);
-                        await Task.Delay(IntervalBetweenMessages);
-                    }
-                }));
+                    using var request = WaitableLoRaRequest.CreateWaitableRequest(device.CreateConfirmedDataUpMessage(device.LoRaDevice.DeviceID));
+                    await device.SendDataMessageAsync(request);
+                    await Task.Delay(IntervalBetweenMessages);
+                }
             }
 
-            await Task.WhenAll(deviceTasks);
             await Task.Delay(TimeSpan.FromSeconds(5));
 
             // Ensuring IoT Hub received everything it needed
             var eventsByDevices = TestFixture.IoTHubMessages.Events.GroupBy(x => x.SystemProperties["iothub-connection-device-id"]).ToList();
-            Assert.Equal(simulatedDeviceList.Count, eventsByDevices.Count);
-            foreach(var g in eventsByDevices)
+            Assert.Equal(simulatedDevices.Count, eventsByDevices.Count);
+            foreach (var g in eventsByDevices)
             {
                 Assert.Equal(messageCounts * TestFixtureSim.DeviceRange5000_BasicsStationSimulators.Count, g.Count() );
             }
 
             // Ensured BasicsStation received everything needed
-            foreach (var device in simulatedDeviceList)
+            foreach (var device in simulatedDevices)
             {
                 device.EnsureMessageResponsesAreReceived(messageCounts + 1);
+            }
+        }
+
+        public async Task InitializeAsync()
+        {
+            await Task.WhenAll(from basicsStation in this.simulatedBasicsStations
+                               select basicsStation.StartAsync());
+        }
+
+        public async Task DisposeAsync()
+        {
+            foreach (var basicsStation in this.simulatedBasicsStations)
+            {
+                try
+                {
+                    await basicsStation.StopAsync();
+                    basicsStation.Dispose();
+                }
+                catch (Exception)
+                {
+                    // Dispose all basics stations
+                }
             }
         }
 

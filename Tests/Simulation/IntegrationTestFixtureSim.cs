@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Simulation
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
-    using System.Threading.Tasks;
     using LoRaWan.Tests.Common;
     using Newtonsoft.Json.Linq;
 
@@ -42,23 +41,6 @@ namespace LoRaWan.Tests.Simulation
         private readonly List<TestDeviceInfo> deviceRange5000_BasicsStationSimulators = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange5000_BasicsStationSimulators => this.deviceRange5000_BasicsStationSimulators;
-
-        private readonly List<SimulatedBasicsStation> simulatedBasicsStations = new List<SimulatedBasicsStation>();
-        public IReadOnlyCollection<SimulatedBasicsStation> SimulatedBasicsStations => this.simulatedBasicsStations;
-
-        public override async Task InitializeDevicesAsync()
-        {
-            var index = 0;
-            var startTasks = new List<Task>();
-            foreach (var basicsStationDevice in DeviceRange5000_BasicsStationSimulators)
-            {
-                var simulatedBasicsStation = new SimulatedBasicsStation(StationEui.Parse(basicsStationDevice.DeviceID), new Uri(Configuration.LnsEndpointsForSimulator[index % Configuration.LnsEndpointsForSimulator.Count]));
-                startTasks.Add(simulatedBasicsStation.StartAsync());
-                simulatedBasicsStations.Add(simulatedBasicsStation);
-            }
-
-            await Task.WhenAll(startTasks);
-        }
 
         public override void SetupTestDevices()
         {
@@ -130,14 +112,16 @@ namespace LoRaWan.Tests.Simulation
                     });
             }
 
-            for (var deviceID = 4000; deviceID < TestConfiguration.NumberOfLoadTestDevices; deviceID++)
+            for (var i = 0; i < TestConfiguration.NumberOfLoadTestDevices; i++)
             {
+                const int offset = 4000;
+                var deviceId = offset + i;
                 this.deviceRange4000_OTAA_FullLoad.Add(
                     new TestDeviceInfo
                     {
-                        DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
-                        AppEui = JoinEui.Parse(deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture)),
-                        AppKey = GetAppKey(deviceID),
+                        DeviceID = deviceId.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppEui = JoinEui.Parse(deviceId.ToString("0000000000000000", CultureInfo.InvariantCulture)),
+                        AppKey = GetAppKey(deviceId),
                         // GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
@@ -184,14 +168,5 @@ namespace LoRaWan.Tests.Simulation
         private AppKey GetAppKey(int value) => AppKey.Parse(GetKeyString(value));
 
         private string GetKeyString(int value) => GetKey32(value);
-
-        public override async Task DisposeAsync()
-        {
-            foreach (var basicsStation in simulatedBasicsStations)
-            {
-                await basicsStation.StopAsync();
-                basicsStation.Dispose();
-            }
-        }
     }
 }

@@ -284,12 +284,8 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"[{payload.DevAddr}] Sending data: {payload.Frmpayload}");
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        private async Task SendMessageToBasicsStationsAsync(string message)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-        {
-            Parallel.ForEach(SimulatedBasicsStations, (basicStation) => _ = basicStation.SendMessageAsync(message));
-        }
+        private Task SendMessageToBasicsStationsAsync(string message) => Task.WhenAll(from basicsStation in this.SimulatedBasicsStations
+                                                                                      select basicsStation.SendMessageAsync(message));
 
         public bool EnsureMessageResponsesAreReceived(int expectedCout)
         {
