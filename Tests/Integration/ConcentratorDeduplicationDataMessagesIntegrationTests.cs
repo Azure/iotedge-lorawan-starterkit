@@ -14,9 +14,10 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging.Abstractions;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public sealed class ConcentratorDeduplicationDataMessagesIntegrationTests : MessageProcessorTestBase
     {
@@ -26,6 +27,7 @@ namespace LoRaWan.Tests.Integration
         private readonly MemoryCache cache;
         private readonly SimulatedDevice simulatedABPDevice;
         private readonly LoRaDevice loraABPDevice;
+        private readonly TestOutputLoggerFactory testOutputLoggerFactory;
 
         private sealed class DeduplicationTestDataAttribute : Xunit.Sdk.DataAttribute
         {
@@ -50,10 +52,11 @@ namespace LoRaWan.Tests.Integration
             }
         }
 
-        public ConcentratorDeduplicationDataMessagesIntegrationTests()
+        public ConcentratorDeduplicationDataMessagesIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            var concentratorDeduplication = new ConcentratorDeduplication(this.cache, NullLogger<IConcentratorDeduplication>.Instance);
+            this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
+            var concentratorDeduplication = new ConcentratorDeduplication(this.cache, this.testOutputLoggerFactory.CreateLogger<IConcentratorDeduplication>());
 
             this.frameCounterStrategyMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>();
             this.frameCounterProviderMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategyProvider>();
@@ -63,10 +66,11 @@ namespace LoRaWan.Tests.Integration
                 this.frameCounterProviderMock.Object,
                 concentratorDeduplication,
                 PayloadDecoder,
-                new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance),
-                new LoRaADRStrategyProvider(NullLoggerFactory.Instance),
-                new LoRAADRManagerFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance),
-                new FunctionBundlerProvider(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance))
+                new DeduplicationStrategyFactory(this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<DeduplicationStrategyFactory>()),
+                new LoRaADRStrategyProvider(this.testOutputLoggerFactory),
+                new LoRAADRManagerFactory(LoRaDeviceApi.Object, this.testOutputLoggerFactory),
+                new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()),
+                testOutputHelper)
             {
                 CallBase = true
             };
@@ -409,6 +413,7 @@ namespace LoRaWan.Tests.Integration
             {
                 this.cache.Dispose();
                 this.loraABPDevice.Dispose();
+                this.testOutputLoggerFactory.Dispose();
             }
         }
     }
