@@ -240,7 +240,7 @@ namespace LoRaWan.NetworkServer
             return await response.Content.ReadAsStringAsync(token);
         }
 
-        public override async Task<Stream> FetchStationFirmwareAsync(StationEui eui, CancellationToken token)
+        public override async Task<(long?, Stream)> FetchStationFirmwareAsync(StationEui eui, CancellationToken token)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = BuildUri("FetchConcentratorFirmware", new Dictionary<string, string>
@@ -249,13 +249,14 @@ namespace LoRaWan.NetworkServer
                 ["StationEui"] = eui.ToString()
             });
 
-            var response = await client.GetStreamAsync(url, token);
-            if (response is null)
+            var responseHeaders = await client.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, token);
+            if (!responseHeaders.IsSuccessStatusCode)
             {
-                this.logger.LogError($"error calling fetch station firmware api. check the azure function log");
+                this.logger.LogError($"error calling fetch station firmware api: {responseHeaders.ReasonPhrase}, status: {responseHeaders.StatusCode}, check the azure function log");
             }
+            var responseStream = await client.GetStreamAsync(url, token);
 
-            return response;
+            return (responseHeaders.Content.Headers.ContentLength, responseStream);
         }
     }
 }
