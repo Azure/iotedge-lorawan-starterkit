@@ -73,7 +73,7 @@ namespace LoRaWan.Tests.Common
             LoRaDevice = testDeviceInfo;
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
-            this.simulatedBasicsStations = simulatedBasicsStation.ToList();
+            this.simulatedBasicsStations = simulatedBasicsStation?.ToList() ?? new List<SimulatedBasicsStation>();
 
             bool AddToDeviceMessageQueue(string response)
             {
