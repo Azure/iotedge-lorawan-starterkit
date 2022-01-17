@@ -260,9 +260,9 @@ namespace LoRaWan.Tests.Common
 
             var msg = JsonSerializer.Serialize(new
             {
-                MHdr = uint.Parse(loRaRequest.Payload.MHdr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                MHdr = uint.Parse(loRaRequest.Payload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 msgtype = "updf",
-                DevAddr = int.Parse(payload.DevAddr.ToString(), System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                DevAddr = int.Parse(payload.DevAddr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 FCtrl = (uint)payload.FrameControlFlags,
                 FCnt = MemoryMarshal.Read<ushort>(payload.Fcnt.Span),
                 FOpts = ConversionHelper.ByteArrayToString(payload.Fopts),
@@ -282,8 +282,6 @@ namespace LoRaWan.Tests.Common
             });
 
             await SendMessageToBasicsStationsAsync(msg);
-
-            TestLogger.Log($"[{payload.DevAddr}] Sending data: {payload.Frmpayload}");
         }
 
         private Task SendMessageToBasicsStationsAsync(string message) => Task.WhenAll(from basicsStation in this.simulatedBasicsStations
