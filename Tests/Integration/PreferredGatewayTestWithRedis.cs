@@ -7,8 +7,9 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
-    using Microsoft.Extensions.Logging.Abstractions;
+    using LoRaWan.Tests.Common;
     using Xunit;
+    using Xunit.Abstractions;
 
     /// <summary>
     /// Tests to run against a real redis instance.
@@ -19,18 +20,18 @@ namespace LoRaWan.Tests.Integration
         private readonly ILoRaDeviceCacheStore cache;
         private readonly PreferredGatewayExecutionItem preferredGatewayExecutionItem;
 
-        public PreferredGatewayTestWithRedis(RedisFixture redis)
+        public PreferredGatewayTestWithRedis(RedisFixture redis, ITestOutputHelper testOutputHelper)
         {
             if (redis is null) throw new ArgumentNullException(nameof(redis));
 
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
-            this.preferredGatewayExecutionItem = new PreferredGatewayExecutionItem(this.cache, new NullLogger<PreferredGatewayExecutionItem>(), null);
+            this.preferredGatewayExecutionItem = new PreferredGatewayExecutionItem(this.cache, new TestOutputLogger<PreferredGatewayExecutionItem>(testOutputHelper), null);
         }
 
         [Fact]
         public async Task When_Called_By_Multiple_Gateways_Should_Return_Closest()
         {
-            var devEUI = Guid.NewGuid().ToString();
+            var devEUI = TestEui.GenerateDevEui();
             const uint fcntUp = 1;
 
             var req1 = new FunctionBundlerRequest() { GatewayId = "gateway1", ClientFCntUp = fcntUp, Rssi = -180 };
@@ -65,7 +66,7 @@ namespace LoRaWan.Tests.Integration
         [Fact]
         public async Task When_Calling_Outdated_Fcnt_Should_Return_Conflict()
         {
-            var devEUI = Guid.NewGuid().ToString();
+            var devEUI = TestEui.GenerateDevEui();
             const uint fcntUp = 1;
 
             var req1 = new FunctionBundlerRequest() { GatewayId = "gateway1", ClientFCntUp = fcntUp + 1, Rssi = -180 };
@@ -87,7 +88,7 @@ namespace LoRaWan.Tests.Integration
         [Fact]
         public async Task When_Calling_After_Delay_Should_Return_First_Gateway()
         {
-            var devEUI = Guid.NewGuid().ToString();
+            var devEUI = TestEui.GenerateDevEui();
             const uint staleFcntUp = 1;
             const uint currentFcntUp = 2;
 

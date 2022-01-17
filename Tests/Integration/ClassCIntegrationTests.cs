@@ -15,14 +15,21 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class C device tests
     public class ClassCIntegrationTests : MessageProcessorTestBase
     {
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public ClassCIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+            this.testOutputHelper = testOutputHelper;
+        }
+
         [Theory]
         [InlineData(null, 0U, 0U)]
         [InlineData(null, 0U, 9U)]
@@ -90,7 +97,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                new TestOutputLogger<DefaultClassCDevicesMessageSender>(this.testOutputHelper),
                 TestMeter.Instance);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
@@ -196,7 +203,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                new TestOutputLogger<DefaultClassCDevicesMessageSender>(this.testOutputHelper),
                 TestMeter.Instance);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
@@ -237,6 +244,7 @@ namespace LoRaWan.Tests.Integration
             const uint PayloadFcnt = 10;
             const uint InitialDeviceFcntUp = 9;
             const uint InitialDeviceFcntDown = 20;
+            var devEui = new DevEui(2);
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID),
@@ -258,7 +266,7 @@ namespace LoRaWan.Tests.Integration
                     Fport = FramePorts.App1,
                     MessageId = "123",
                     Payload = "12",
-                    DevEUI = "0000000000000002",
+                    DevEUI = devEui,
                 },
             };
 
@@ -278,7 +286,7 @@ namespace LoRaWan.Tests.Integration
                 .Callback<IReceivedLoRaCloudToDeviceMessage, CancellationToken>((m, _) =>
                 {
                     Assert.False(m.Confirmed);
-                    Assert.Equal("0000000000000002", m.DevEUI);
+                    Assert.Equal(devEui, m.DevEUI);
                     c2dMessageSent.Release();
                 });
             RequestHandlerImplementation.SetClassCMessageSender(classCMessageSender.Object);
@@ -439,7 +447,7 @@ namespace LoRaWan.Tests.Integration
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
                 LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
-                    .Callback<string, FunctionBundlerRequest>((devEUI, bundlerRequest) =>
+                    .Callback((DevEui _, FunctionBundlerRequest bundlerRequest) =>
                     {
                         Assert.Equal(PayloadFcnt, bundlerRequest.ClientFCntUp);
                         Assert.Equal(ServerGatewayID, bundlerRequest.GatewayId);
@@ -531,7 +539,7 @@ namespace LoRaWan.Tests.Integration
             };
 
             LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
-                .Callback<string, FunctionBundlerRequest>((devEUI, bundlerRequest) =>
+                .Callback((DevEui _, FunctionBundlerRequest bundlerRequest) =>
                 {
                     Assert.Equal(PayloadFcnt, bundlerRequest.ClientFCntUp);
                     Assert.Equal(ServerGatewayID, bundlerRequest.GatewayId);

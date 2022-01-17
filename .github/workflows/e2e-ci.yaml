@@ -86,7 +86,7 @@ jobs:
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
       CertRemotePath: "/var/lorastarterkit/certs"
-  
+
   power_on_azure_vm:
     name: Power ON EFLOW
     if: always()
@@ -521,7 +521,7 @@ jobs:
       with:
         name: e2e-test-results
         path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
-  
+
   power_off_azure_vm:
     name: Power OFF EFLOW
     if: always()

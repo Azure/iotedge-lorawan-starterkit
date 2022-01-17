@@ -20,9 +20,10 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Logging.Abstractions;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public sealed class DwellTimeIntegrationTests : MessageProcessorTestBase
     {
@@ -31,24 +32,27 @@ namespace LoRaWan.Tests.Integration
         private readonly Mock<TestDefaultLoRaRequestHandler> dataRequestHandlerMock;
         private readonly SimulatedDevice simulatedDevice;
         private readonly LoRaDevice loRaDevice;
+        private readonly TestOutputLoggerFactory testOutputLoggerFactory;
 
-        public DwellTimeIntegrationTests()
+        public DwellTimeIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
+            this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
             this.dataRequestHandlerMock = new Mock<TestDefaultLoRaRequestHandler>(MockBehavior.Default,
                 ServerConfiguration,
                 FrameCounterUpdateStrategyProvider,
                 ConcentratorDeduplication,
                 PayloadDecoder,
-                new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance),
-                new LoRaADRStrategyProvider(NullLoggerFactory.Instance),
-                new LoRAADRManagerFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance),
-                new FunctionBundlerProvider(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance))
+                new DeduplicationStrategyFactory(this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<DeduplicationStrategyFactory>()),
+                new LoRaADRStrategyProvider(this.testOutputLoggerFactory),
+                new LoRAADRManagerFactory(LoRaDeviceApi.Object, this.testOutputLoggerFactory),
+                new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()),
+                testOutputHelper)
             { CallBase = true };
 
             this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             this.loRaDevice = CreateLoRaDevice(this.simulatedDevice, registerConnection: false);
 
-            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                          .ReturnsAsync(true);
         }
 
@@ -66,7 +70,7 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var region = new RegionAS923 { DesiredDwellTimeSetting = desired };
             using var request = SetupRequest(region, reported);
-            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
 
             // act
@@ -92,7 +96,7 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             using var request = SetupRequest(region, reported);
-            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
 
             // act
@@ -182,9 +186,9 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             using var request = SetupRequest(region, reportedDwellTimeSetting, createConfirmed: true, dataRateIndex: upstreamDataRate);
-            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+            LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
-            
+
             // act
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(request, this.loRaDevice);
 
@@ -221,6 +225,17 @@ namespace LoRaWan.Tests.Integration
             result.SetRegion(region);
             this.loRaDevice.UpdateDwellTimeSetting(reportedDwellTimeSetting, acceptChanges: true);
             return result;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.loRaDevice.Dispose();
+                this.testOutputLoggerFactory.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

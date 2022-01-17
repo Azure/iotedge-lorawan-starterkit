@@ -15,14 +15,15 @@ namespace LoRaWan.Tests.Common
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
+    using Xunit.Abstractions;
 
     public class MessageProcessorTestBase : IDisposable
     {
         public const string ServerGatewayID = "test-gateway";
 
         private readonly MemoryCache cache;
+        private readonly TestOutputLoggerFactory testOutputLoggerFactory;
         private readonly byte[] macAddress;
         private readonly long startTime;
         private bool disposedValue;
@@ -51,9 +52,9 @@ namespace LoRaWan.Tests.Common
 
         protected ConcentratorDeduplication ConcentratorDeduplication { get; }
 
-        protected LoRaDeviceCache DeviceCache { get; } = new LoRaDeviceCache(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(int.MaxValue), ValidationInterval = TimeSpan.FromMilliseconds(int.MaxValue) }, new NetworkServerConfiguration { GatewayID = MessageProcessorTestBase.ServerGatewayID }, NullLogger<LoRaDeviceCache>.Instance, TestMeter.Instance);
+        protected LoRaDeviceCache DeviceCache { get; init; }
 
-        public MessageProcessorTestBase()
+        public MessageProcessorTestBase(ITestOutputHelper testOutputHelper)
         {
             this.startTime = DateTimeOffset.UtcNow.Ticks;
 
@@ -65,25 +66,47 @@ namespace LoRaWan.Tests.Common
                 LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
             };
 
-            PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance));
+            this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
+            PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder(this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()));
             PacketForwarder = new TestPacketForwarder();
             LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerConfiguration, LoRaDeviceApi.Object);
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
 
-            var deduplicationFactory = new DeduplicationStrategyFactory(NullLoggerFactory.Instance, NullLogger<DeduplicationStrategyFactory>.Instance);
-            var adrStrategyProvider = new LoRaADRStrategyProvider(NullLoggerFactory.Instance);
-            var adrManagerFactory = new LoRAADRManagerFactory(LoRaDeviceApi.Object, NullLoggerFactory.Instance);
-            var functionBundlerProvider = new FunctionBundlerProvider(LoRaDeviceApi.Object, NullLoggerFactory.Instance, NullLogger<FunctionBundlerProvider>.Instance);
+            var deduplicationFactory = new DeduplicationStrategyFactory(this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<DeduplicationStrategyFactory>());
+            var adrStrategyProvider = new LoRaADRStrategyProvider(this.testOutputLoggerFactory);
+            var adrManagerFactory = new LoRAADRManagerFactory(LoRaDeviceApi.Object, this.testOutputLoggerFactory);
+            var functionBundlerProvider = new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>());
 
             LoRaDeviceClient = new Mock<ILoRaDeviceClient>();
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
-            ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            ConcentratorDeduplication = new ConcentratorDeduplication(this.cache, NullLogger<IConcentratorDeduplication>.Instance);
-            RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, ConcentratorDeduplication, PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance, null);
+            ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, this.testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
+            ConcentratorDeduplication = new ConcentratorDeduplication(this.cache, this.testOutputLoggerFactory.CreateLogger<IConcentratorDeduplication>());
+            RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(ServerConfiguration,
+                                                                             FrameCounterUpdateStrategyProvider,
+                                                                             ConcentratorDeduplication,
+                                                                             PayloadDecoder,
+                                                                             deduplicationFactory,
+                                                                             adrStrategyProvider,
+                                                                             adrManagerFactory,
+                                                                             functionBundlerProvider,
+                                                                             this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
+                                                                             null);
 
-            var requestHandler = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, ConcentratorDeduplication, new LoRaPayloadDecoder(NullLogger<LoRaPayloadDecoder>.Instance), deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, NullLogger<DefaultLoRaDataRequestHandler>.Instance, meter: null);
-
+            var requestHandler = new DefaultLoRaDataRequestHandler(ServerConfiguration,
+                                                                   FrameCounterUpdateStrategyProvider,
+                                                                   ConcentratorDeduplication,
+                                                                   new LoRaPayloadDecoder(this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()),
+                                                                   deduplicationFactory,
+                                                                   adrStrategyProvider,
+                                                                   adrManagerFactory,
+                                                                   functionBundlerProvider,
+                                                                   this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
+                                                                   meter: null);
+            DeviceCache = new LoRaDeviceCache(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(int.MaxValue), ValidationInterval = TimeSpan.FromMilliseconds(int.MaxValue) },
+                                              new NetworkServerConfiguration { GatewayID = ServerGatewayID },
+                                              this.testOutputLoggerFactory.CreateLogger<LoRaDeviceCache>(),
+                                              TestMeter.Instance);
             LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, LoRaDeviceClient.Object, ConnectionManager, DeviceCache, requestHandler);
 
             // By default we pick EU868 region.
@@ -157,6 +180,7 @@ namespace LoRaWan.Tests.Common
                 {
                     this.cache.Dispose();
                     this.DeviceCache.Dispose();
+                    this.testOutputLoggerFactory.Dispose();
                 }
 
                 this.disposedValue = true;

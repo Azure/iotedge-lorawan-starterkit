@@ -10,10 +10,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class MessageProcessorMultipleGatewayTest : MessageProcessorMultipleGatewayBase
     {
-        public MessageProcessorMultipleGatewayTest() : base()
+        public MessageProcessorMultipleGatewayTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         { }
 
         [Fact]
@@ -27,9 +28,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             SecondLoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                 .ReturnsAsync(true);
-            SecondLoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            SecondLoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                 .ReturnsAsync(true);
 
             // cloud to device messages will be checked twice

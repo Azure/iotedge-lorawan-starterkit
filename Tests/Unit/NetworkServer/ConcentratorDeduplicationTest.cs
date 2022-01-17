@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             if (!isCacheEmpty)
             {
-                using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(0x1111111111111111UL).ToString(), this.connectionManager);
+                using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(0x1111111111111111UL), this.connectionManager);
                 _ = this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, testDevice);
             }
 
@@ -112,7 +112,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         internal void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(ConcentratorDeduplication.DataMessageKey expectedKey, ulong devEui, ushort mic, ushort frameCounter, string? fieldNotUsedInKey = null)
         {
             var options = fieldNotUsedInKey ?? string.Empty;
-            using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(devEui).ToString(), this.connectionManager);
+            using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(devEui), this.connectionManager);
 
             var payload = new LoRaPayloadDataLns(this.dataPayload.DevAddr, new MacHeader(MacMessageType.ConfirmedDataUp),
                                                  frameCounter, options, "payload", new Mic(mic));

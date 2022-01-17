@@ -4,6 +4,7 @@
 namespace LoRaTools.ADR
 {
     using System.Threading.Tasks;
+    using LoRaWan;
 
     /// <summary>
     /// Interface to implement to store ADR tables.
@@ -12,10 +13,10 @@ namespace LoRaTools.ADR
     {
         Task<LoRaADRTable> AddTableEntry(LoRaADRTableEntry entry);
 
-        Task UpdateADRTable(string devEUI, LoRaADRTable table);
+        Task UpdateADRTable(DevEui devEUI, LoRaADRTable table);
 
-        Task<LoRaADRTable> GetADRTable(string devEUI);
+        Task<LoRaADRTable> GetADRTable(DevEui devEUI);
 
-        Task<bool> Reset(string devEUI);
+        Task<bool> Reset(DevEui devEUI);
     }
 }
