@@ -93,7 +93,7 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        internal async Task<MemoryStream> GetBlobStreamAsync(string blobUrl, CancellationToken cancellationToken)
+        private async Task<MemoryStream> GetBlobStreamAsync(string blobUrl, CancellationToken cancellationToken)
         {
             var blobServiceClient = this.azureClientFactory.CreateClient(FacadeStartup.WebJobsStorageClientName);
             var blobUri = new BlobUriBuilder(new Uri(blobUrl));
