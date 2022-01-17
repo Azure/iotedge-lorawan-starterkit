@@ -6,9 +6,12 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Globalization;
     using System.IO;
+    using System.Net;
     using System.Net.Http;
+    using System.Net.Mime;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure;
     using Azure.Storage.Blobs;
     using LoRaTools.Utils;
     using LoRaWan;
@@ -19,6 +22,8 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Primitives;
+    using Microsoft.Net.Http.Headers;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -76,14 +81,21 @@ namespace LoraKeysManagerFacade
                         throw new ArgumentOutOfRangeException(CupsPropertyName, "Failed to read cups config");
 
                     var fwUrl = JObject.Parse(cupsProperty)[CupsFwUrlPropertyName].ToString();
-                    using var stream = await GetBlobStreamAsync(fwUrl, cancellationToken);
-                    using var content = new StreamContent(stream);
-                    return new OkObjectResult(content);
+                    var stream = await GetBlobStreamAsync(fwUrl, cancellationToken);
+                    return new FileStreamResult(stream, MediaTypeNames.Text.Plain);
                 }
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException or NullReferenceException)
                 {
                     this.logger.LogError(ex, "Failed to parse firmware upgrade url from the '{PropertyName}' desired property.", CupsPropertyName);
                     return new UnprocessableEntityResult();
+                }
+                catch (RequestFailedException ex)
+                {
+                    this.logger.LogError(ex, "Failed to download firmware from storage.");
+                    return new ObjectResult("Failed to download firmware")
+                    {
+                        StatusCode = (int)HttpStatusCode.InternalServerError
+                    };
                 }
             }
             else

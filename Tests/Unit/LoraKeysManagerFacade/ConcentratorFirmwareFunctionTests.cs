@@ -10,7 +10,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Threading.Tasks;
     using Azure;
     using Azure.Storage.Blobs;
-    using Azure.Storage.Blobs.Models;
     using global::LoraKeysManagerFacade;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
@@ -25,7 +24,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
     public class ConcentratorFirmwareFunctionTests
     {
-        private const string BlobContent = "testcontent";
+        private const string BlobContent = "testcontents";
 
         private readonly Mock<RegistryManager> registryManager;
         private readonly Mock<IAzureClientFactory<BlobServiceClient>> azureClientFactory;
@@ -56,9 +55,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                                    .Returns(blobServiceClient.Object);
 
             var blobBytes = Encoding.UTF8.GetBytes(BlobContent);
-            using var blobStream = new MemoryStream(blobBytes);
-            this.blobClient.Setup(m => m.OpenReadAsync(It.IsAny<BlobOpenReadOptions>(), It.IsAny<CancellationToken>()))
-                           .Returns(Task.FromResult(blobStream as Stream));
+            //var blobStream = new MemoryStream(blobBytes);
+            this.blobClient.Setup(m => m.DownloadToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+                           .Callback<Stream, CancellationToken>(async (st, ct) => await new MemoryStream(blobBytes).CopyToAsync(st, ct));
         }
 
         [Fact]
@@ -84,7 +83,12 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
             Assert.NotNull(actual);
-            Assert.IsType<OkObjectResult>(actual);
+            var result = Assert.IsType<FileStreamResult>(actual);
+
+            result.FileStream.Position = 0;
+            using var reader = new StreamReader(result.FileStream);
+            var fileContents = await reader.ReadToEndAsync();
+            Assert.Equal(BlobContent, fileContents);
         }
 
         [Fact]
