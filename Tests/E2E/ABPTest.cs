@@ -377,11 +377,10 @@ namespace LoRaWan.Tests.E2E
             var expectedLog2 = $"{device25.DeviceID}: device client disconnected";
             var result = await TestFixtureCi.SearchNetworkServerModuleAsync(
                         msg => msg.StartsWith(expectedLog2, StringComparison.Ordinal),
-                        new SearchLogOptions
+                        new SearchLogOptions(expectedLog2)
                         {
                             MaxAttempts = 10,
                             SourceIdFilter = device25.GatewayID,
-                            Description = expectedLog2
                         });
 
             Assert.NotNull(result.MatchedEvent);

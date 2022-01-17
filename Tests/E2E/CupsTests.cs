@@ -107,7 +107,7 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions { MaxAttempts = 2 });
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload){ MaxAttempts = 2 });
 
                 var expectedLog3 = stationEui + ": Received 'updf' message";
                 var updfLog = await TestFixtureCi.SearchNetworkServerModuleAsync(

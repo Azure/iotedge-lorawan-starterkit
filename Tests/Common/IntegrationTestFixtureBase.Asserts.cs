@@ -57,9 +57,8 @@ namespace LoRaWan.Tests.Common
 
             var searchResult = await SearchIoTHubMessageAsync(
                 (eventData, eventDeviceID, eventDataMessageBody) => IsDeviceMessage(deviceID, targetJsonProperty, expectedJsonValue, eventDeviceID, eventDataMessageBody),
-                new SearchLogOptions
+                new SearchLogOptions(options?.Description ?? $"\"{targetJsonProperty}\": {expectedJsonValue}")
                 {
-                    Description = options?.Description ?? $"\"{targetJsonProperty}\": {expectedJsonValue}",
                     TreatAsError = options?.TreatAsError,
                 });
 
@@ -279,11 +278,11 @@ namespace LoRaWan.Tests.Common
             SearchLogResult log;
             if (isUpstream)
             {
-                log = await SearchIoTHubLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter, Description = message });
+                log = await SearchIoTHubLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions(message) { SourceIdFilter = sourceIdFilter });
             }
             else
             {
-                log = await SearchTcpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter, Description = message });
+                log = await SearchTcpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions(message) { SourceIdFilter = sourceIdFilter });
             }
 
             var timeIndexStart = log.FoundLogResult.IndexOf(token, StringComparison.Ordinal) + token.Length;

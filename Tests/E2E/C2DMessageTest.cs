@@ -137,9 +137,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions(c2dLogMessage)
                     {
-                        Description = c2dLogMessage,
                         MaxAttempts = 1
                     });
 
@@ -254,9 +253,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions(c2dLogMessage)
                     {
-                        Description = c2dLogMessage,
                         MaxAttempts = 1
                     });
 
@@ -393,9 +391,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions(c2dLogMessage)
                     {
-                        Description = c2dLogMessage,
                         MaxAttempts = 1
                     });
 
@@ -531,9 +528,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(expectedTcpMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedTcpMessageV2, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions($"{expectedTcpMessageV1} or {expectedTcpMessageV2}")
                     {
-                        Description = $"{expectedTcpMessageV1} or {expectedTcpMessageV2}",
                         MaxAttempts = 1
                     });
 
@@ -648,9 +644,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(expectedTcpMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedTcpMessageV2, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions($"{expectedTcpMessageV1} or {expectedTcpMessageV2}")
                     {
-                        Description = $"{expectedTcpMessageV1} or {expectedTcpMessageV2}",
                         MaxAttempts = 1,
                     });
 
