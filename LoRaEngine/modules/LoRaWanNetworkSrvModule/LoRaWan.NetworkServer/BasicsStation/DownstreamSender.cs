@@ -85,7 +85,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (message.DeviceClassType is LoRaDeviceClassType.A)
             {
                 writer.WriteNumber("RxDelay", message.LnsRxDelay.ToSeconds());
-                if (message.FrequencyRx1 != default)
+                if (message.IsRx1Defined)
                 {
                     writer.WriteNumber("RX1DR", (int)message.DataRateRx1);
                     writer.WriteNumber("RX1Freq", (ulong)message.FrequencyRx1);
