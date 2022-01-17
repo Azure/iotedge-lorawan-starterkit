@@ -104,7 +104,7 @@ namespace LoRaWan.Tests.Common
                 }
                 else
                 {
-                    payload = ConversionHelper.StringToByteArray(data);
+                    payload = StringToByteArray(data);
                 }
 
                 Array.Reverse(payload);
@@ -165,7 +165,7 @@ namespace LoRaWan.Tests.Common
                 }
                 else
                 {
-                    payload = ConversionHelper.StringToByteArray(data);
+                    payload = StringToByteArray(data);
                 }
 
                 Array.Reverse(payload);
@@ -240,7 +240,7 @@ namespace LoRaWan.Tests.Common
                 // is null in case it is another message coming from the station.
                 if (joinAcceptstring?.Pdu != null)
                 {
-                    var joinAccept = new LoRaPayloadJoinAccept(ConversionHelper.StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
+                    var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
 
                     var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
                     joinSuccessful = result;
@@ -293,6 +293,17 @@ namespace LoRaWan.Tests.Common
             LoRaDevice.AppSKey = appSKey;
             LoRaDevice.NwkSKey = nwkSKey;
             LoRaDevice.DevAddr = devAddr;
+        }
+
+        private static byte[] StringToByteArray(string hex)
+        {
+            if (hex is null) throw new ArgumentNullException(nameof(hex));
+
+            var numberChars = hex.Length;
+            var bytes = new byte[numberChars / 2];
+            for (var i = 0; i < numberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
         }
     }
 }

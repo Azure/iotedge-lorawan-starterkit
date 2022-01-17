@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     internal static class HexadecimalExtensions
     {
         public static string ToHex(this byte[] bytes) => FormatHexadecimal(bytes);
+        public static string ToHex(this Memory<byte> bytes) => FormatHexadecimal(bytes);
         public static string ToHex(this ReadOnlyMemory<byte> bytes) => FormatHexadecimal(bytes);
 
         public static string FormatHexadecimal(ReadOnlyMemory<byte> bytes)
