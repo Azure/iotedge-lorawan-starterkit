@@ -297,9 +297,10 @@ namespace LoRaWan.Tests.Common
         }
 
         // Performs join
-        public async Task<bool> JoinAsync(LoRaRequest joinRequest, TimeSpan? timeout = null)
+        public async Task<bool> JoinAsync(TimeSpan? timeout = null)
         {
             timeout ??= TimeSpan.FromSeconds(30);
+            using var joinRequest = WaitableLoRaRequest.CreateWaitableRequest(CreateJoinRequest());
             var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
             var joinSuccessfull = false;
 

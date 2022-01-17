@@ -62,8 +62,8 @@ namespace LoRaWan.Tests.Simulation
                 await device.SendDataMessageAsync(request);
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(5));
-            
+            await WaitForResultsInIotHub();
+
             // assert
             foreach (var device in simulatedDevices)
             {
@@ -87,6 +87,8 @@ namespace LoRaWan.Tests.Simulation
                 await Task.Delay(IntervalBetweenMessages);
             }
 
+            await WaitForResultsInIotHub();
+
             var actualAmountOfMsgs = TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, simulatedDevice));
             Assert.Equal(MessageCount * this.simulatedBasicsStations.Count, actualAmountOfMsgs);
             Assert.True(simulatedDevice.EnsureMessageResponsesAreReceived(MessageCount));
@@ -100,9 +102,7 @@ namespace LoRaWan.Tests.Simulation
             var device = TestFixtureSim.Device1002_Simulated_OTAA;
             var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: this.simulatedBasicsStations);
 
-            using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateJoinRequest());
-            var joined = await simulatedDevice.JoinAsync(request);
-            Assert.True(joined, "OTAA join failed");
+            Assert.True(await simulatedDevice.JoinAsync(), "OTAA join failed");
 
             await Task.Delay(IntervalAfterJoin);
 
@@ -113,8 +113,7 @@ namespace LoRaWan.Tests.Simulation
                 await Task.Delay(IntervalBetweenMessages);
             }
 
-            // wait 10 seconds before checking if iot hub content is available
-            await Task.Delay(TimeSpan.FromSeconds(10));
+            await WaitForResultsInIotHub();
 
             var actualAmountOfMsgs = TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, simulatedDevice));
             Assert.Equal(MessageCount * TestFixtureSim.DeviceRange5000_BasicsStationSimulators.Count, actualAmountOfMsgs);
@@ -135,9 +134,7 @@ namespace LoRaWan.Tests.Simulation
 
             async Task SendMessagesAsync(SimulatedDevice device)
             {
-                using var requestForJoin = WaitableLoRaRequest.CreateWaitableRequest(device.CreateJoinRequest());
-                var joined = await device.JoinAsync(requestForJoin);
-                Assert.True(joined, "OTAA join failed");
+                Assert.True(await device.JoinAsync(), "OTAA join failed");
 
                 for (var i = 0; i < messageCounts; i++)
                 {
@@ -147,7 +144,7 @@ namespace LoRaWan.Tests.Simulation
                 }
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            await WaitForResultsInIotHub();
 
             // assert
             foreach (var device in simulatedDevices)
@@ -159,6 +156,8 @@ namespace LoRaWan.Tests.Simulation
 
         private WaitableLoRaRequest CreateConfirmedUpstreamMessage(SimulatedDevice simulatedDevice) =>
             WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(this.uniqueMessageFragment));
+
+        private static Task WaitForResultsInIotHub() => Task.Delay(TimeSpan.FromSeconds(10));
 
         private bool ContainsMessageFromDevice(EventData eventData, SimulatedDevice simulatedDevice)
         {
