@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
+    using LoRaWan;
     using Microsoft.Extensions.Logging;
 
     public class DeduplicationExecutionItem : IFunctionBundlerExecutionItem
@@ -37,7 +38,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             return Task.CompletedTask;
         }
 
-        internal async Task<DuplicateMsgResult> GetDuplicateMessageResultAsync(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown, ILogger logger = null)
+        internal async Task<DuplicateMsgResult> GetDuplicateMessageResultAsync(DevEui devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown, ILogger logger = null)
         {
             var isDuplicate = true;
             var processedDevice = gatewayId;

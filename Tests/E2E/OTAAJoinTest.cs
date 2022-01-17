@@ -189,7 +189,7 @@ namespace LoRaWan.Tests.E2E
 
             if (device.IsMultiGw)
             {
-                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DeviceID);
+                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);
             }
 
             // Sends 1x unconfirmed messages

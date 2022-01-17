@@ -52,7 +52,6 @@ namespace LoRaWan.NetworkServer
         internal async Task ProcessJoinRequestAsync(LoRaRequest request)
         {
             LoRaDevice loRaDevice = null;
-            string devEUI = null;
             var loraRegion = request.Region;
 
             try
@@ -63,9 +62,9 @@ namespace LoRaWan.NetworkServer
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
-                devEUI = joinReq.GetDevEUIAsString();
+                var devEui = joinReq.DevEUI;
 
-                using var scope = this.logger.BeginDeviceScope(devEUI);
+                using var scope = this.logger.BeginDeviceScope(devEui);
 
                 this.logger.LogInformation("join request received");
 
@@ -76,10 +75,10 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, joinReq.DevNonce);
+                loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEui, joinReq.DevNonce);
                 if (loRaDevice == null)
                 {
-                    request.NotifyFailed(devEUI, LoRaDeviceRequestFailedReason.UnknownDevice);
+                    request.NotifyFailed(devEui.ToString(), LoRaDeviceRequestFailedReason.UnknownDevice);
                     // we do not log here as we assume that the deviceRegistry does a more informed logging if returning null
                     return;
                 }
@@ -203,16 +202,16 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                ushort lnsRxDelay = 0;
+                ushort lnsRxDelay;
                 if (windowToUse == Constants.ReceiveWindow1)
                 {
                     // set tmst for the normal case
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1;
+                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1.ToSeconds();
                 }
                 else
                 {
                     this.logger.LogDebug("processing of the join request took too long, using second join accept receive window");
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
+                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2.ToSeconds();
                 }
 
                 this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
@@ -248,8 +247,8 @@ namespace LoRaWan.NetworkServer
                 // This one is a delay between TX and RX for any message to be processed by joining device
                 // The field accepted by Serialize method is an indication of the delay (compared to receive time of join request)
                 // of when the message Join Accept message should be sent
-                ushort loraSpecDesiredRxDelay = 0;
-                if (Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                var loraSpecDesiredRxDelay = RxDelay.RxDelay0;
+                if (Enum.IsDefined(loRaDevice.DesiredRXDelay))
                 {
                     loraSpecDesiredRxDelay = loRaDevice.DesiredRXDelay;
                 }
@@ -278,10 +277,10 @@ namespace LoRaWan.NetworkServer
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,
                   loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset),
-                  loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, logger),
+                  loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, this.logger),
                   freq,
-                  loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger),
-                  DevEui.Parse(loRaDevice.DevEUI),
+                  loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, this.logger),
+                  loRaDevice.DevEUI,
                   lnsRxDelay,
                   request.StationEui,
                   request.RadioMetadata.UpInfo.AntennaPreference

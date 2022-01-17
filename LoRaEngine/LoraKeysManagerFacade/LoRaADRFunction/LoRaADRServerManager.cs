@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System.Threading.Tasks;
     using LoRaTools.ADR;
+    using LoRaWan;
     using Microsoft.Extensions.Logging;
 
     public class LoRaADRServerManager : LoRaADRManagerBase
@@ -17,7 +18,7 @@ namespace LoraKeysManagerFacade
             this.deviceCacheStore = deviceCacheStore;
         }
 
-        public override async Task<uint> NextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
+        public override async Task<uint> NextFCntDown(DevEui devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
             var fcntCheck = new FCntCacheCheck(this.deviceCacheStore);
             return await fcntCheck.GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);

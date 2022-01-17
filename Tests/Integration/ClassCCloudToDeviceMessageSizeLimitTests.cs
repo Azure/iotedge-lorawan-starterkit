@@ -17,9 +17,10 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging.Abstractions;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class CCloud to device message processing max payload size tests (Join tests are handled in other class)
@@ -34,6 +35,7 @@ namespace LoRaWan.Tests.Integration
         private readonly Region loRaRegion;
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
         private readonly Mock<ILoRaDeviceClient> deviceClient;
+        private readonly TestOutputLoggerFactory testOutputLoggerFactory;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
         private readonly MemoryCache cache;
         private readonly LoRaDeviceClientConnectionManager connectionManager;
@@ -41,7 +43,7 @@ namespace LoRaWan.Tests.Integration
         private readonly LoRaDeviceCache deviceCache = LoRaDeviceCacheDefault.CreateDefault();
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
-        public ClassCCloudToDeviceMessageSizeLimitTests()
+        public ClassCCloudToDeviceMessageSizeLimitTests(ITestOutputHelper testOutputHelper)
         {
             this.serverConfiguration = new NetworkServerConfiguration()
             {
@@ -52,9 +54,10 @@ namespace LoRaWan.Tests.Integration
             PacketForwarder = new TestPacketForwarder();
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
+            this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
 
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
+            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, this.connectionManager);
 
             this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory, this.deviceCache);
@@ -85,9 +88,8 @@ namespace LoRaWan.Tests.Integration
 
             var devEUI = simulatedDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(
-                    new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
+                .ReturnsAsync("123");
 
             var twin = simulatedDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
             {
@@ -124,7 +126,7 @@ namespace LoRaWan.Tests.Integration
                 this.loRaDeviceRegistry,
                 PacketForwarder,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                this.testOutputLoggerFactory.CreateLogger<DefaultClassCDevicesMessageSender>(),
                 TestMeter.Instance);
 
             // Expectations
@@ -175,8 +177,8 @@ namespace LoRaWan.Tests.Integration
 
             var devEUI = simulatedDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(null, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
+                .ReturnsAsync("123");
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simulatedDevice.CreateABPTwin());
@@ -209,7 +211,7 @@ namespace LoRaWan.Tests.Integration
                 this.loRaDeviceRegistry,
                 PacketForwarder,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                this.testOutputLoggerFactory.CreateLogger<DefaultClassCDevicesMessageSender>(),
                 TestMeter.Instance);
 
             // Expectations
@@ -243,6 +245,7 @@ namespace LoRaWan.Tests.Integration
             this.loRaDeviceRegistry.Dispose();
             this.connectionManager.Dispose();
             this.cache.Dispose();
+            this.testOutputLoggerFactory.Dispose();
             this.deviceCache.Dispose();
         }
     }
