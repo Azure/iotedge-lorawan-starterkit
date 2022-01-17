@@ -103,5 +103,7 @@ namespace LoRaWan.Tests.Common
         public string ClientBundleCrc { get; set; } //i.e. 4004975634 (CRC32 of .bundle file)
 
         public IReadOnlyList<string> LnsEndpointsForSimulator { get; set; }
+
+        public const int NumberOfLoadTestDevices = 10;
     }
 }

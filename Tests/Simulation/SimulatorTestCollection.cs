@@ -115,7 +115,7 @@ namespace LoRaWan.Tests.Simulation
             var messageCounts = 50;
             var deviceTasks = new List<Task>();
             var simulatedDeviceList = new List<SimulatedDevice>();
-            foreach (var device in TestFixtureSim.DeviceRange4000_500_OTAA)
+            foreach (var device in TestFixtureSim.DeviceRange4000_OTAA_FullLoad)
             {
                 var simulatedDevice = new SimulatedDevice(device, simulatedBasicsStation: TestFixtureSim.SimulatedBasicsStations);
                 simulatedDeviceList.Add(simulatedDevice);

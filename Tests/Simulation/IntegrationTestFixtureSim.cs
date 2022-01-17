@@ -35,9 +35,9 @@ namespace LoRaWan.Tests.Simulation
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA => this.deviceRange3000_10_OTAA;
 
-        private readonly List<TestDeviceInfo> deviceRange4000_500_OTAA = new List<TestDeviceInfo>();
+        private readonly List<TestDeviceInfo> deviceRange4000_OTAA_FullLoad = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange4000_500_OTAA => this.deviceRange4000_500_OTAA;
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange4000_OTAA_FullLoad => this.deviceRange4000_OTAA_FullLoad;
 
         private readonly List<TestDeviceInfo> deviceRange5000_BasicsStationSimulators = new List<TestDeviceInfo>();
 
@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.Simulation
             var fileName = "EU863.json";
             var jsonString = File.ReadAllText(fileName);
 
-            for (var deviceID = 5000; deviceID <= 5000 + NumberOfConcentrators - 1 ; deviceID++)
+            for (var deviceID = 5000; deviceID <= 5000 + NumberOfConcentrators - 1; deviceID++)
             {
                 this.deviceRange5000_BasicsStationSimulators.Add(new TestDeviceInfo
                 {
@@ -130,9 +130,9 @@ namespace LoRaWan.Tests.Simulation
                     });
             }
 
-            for (var deviceID = 4000; deviceID < 4100; deviceID++)
+            for (var deviceID = 4000; deviceID < TestConfiguration.NumberOfLoadTestDevices; deviceID++)
             {
-                this.deviceRange4000_500_OTAA.Add(
+                this.deviceRange4000_OTAA_FullLoad.Add(
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
