@@ -7,6 +7,7 @@ namespace LoRaTools.LoRaPhysical
 {
     using System;
     using LoRaWan;
+    using LoRaWan.NetworkServer;
 
     /// <summary>
     /// Model class for a Downlink message for the Basic Station.
@@ -19,6 +20,8 @@ namespace LoRaTools.LoRaPhysical
         /// It is typically 0 for class C devices.
         /// It is a uint value 0 - 15 used by basic station to know when to first try to send a message.
         public RxDelay LnsRxDelay { get; }
+
+        public LoRaDeviceClassType DeviceClassType { get; }
 
         public ulong Xtime { get; }
 
@@ -41,13 +44,24 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used in case of a response to a upstream message.
         /// </summary>
         /// <returns><see cref="DownlinkMessage"/> object ready to be sent.</returns>
-        public DownlinkMessage(byte[] payload, ulong xtime, DataRateIndex datrRx1, DataRateIndex datrRx2, Hertz freqRx1, Hertz freqRx2, DevEui devEui, RxDelay lnsRxDelay, StationEui stationEui = default, uint? antennaPreference = null)
+        public DownlinkMessage(byte[] payload,
+                               ulong xtime,
+                               DataRateIndex datrRx1,
+                               DataRateIndex datrRx2,
+                               Hertz freqRx1,
+                               Hertz freqRx2,
+                               DevEui devEui,
+                               RxDelay lnsRxDelay,
+                               LoRaDeviceClassType deviceClassType,
+                               StationEui stationEui = default,
+                               uint? antennaPreference = null)
         {
             if (payload is null) throw new ArgumentNullException(nameof(payload));
             Data = payload;
 
             DevEui = devEui;
             LnsRxDelay = lnsRxDelay;
+            DeviceClassType = deviceClassType;
             AntennaPreference = antennaPreference;
             StationEui = stationEui;
             Xtime = xtime;

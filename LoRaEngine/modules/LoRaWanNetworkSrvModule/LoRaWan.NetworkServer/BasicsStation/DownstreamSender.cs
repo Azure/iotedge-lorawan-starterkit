@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
     using System.IO;
+    using System.Runtime.CompilerServices;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
@@ -59,10 +60,15 @@ namespace LoRaWan.NetworkServer.BasicsStation
             writer.WriteString("msgtype", LnsMessageType.DownlinkMessage.ToBasicStationString());
             writer.WriteString("DevEui", message.DevEui.ToString());
 
-            // 0 is for Class A devices, 2 is for Class C devices
-            // Ideally there Class C downlink frame which answers an uplink which have RxDelay set
-            var deviceClassType = message.LnsRxDelay == 0 ? LoRaDeviceClassType.C : LoRaDeviceClassType.A;
-            writer.WriteNumber("dC", (int)deviceClassType);
+            var dC = message.DeviceClassType switch
+            {
+                LoRaDeviceClassType.A => 0,
+                LoRaDeviceClassType.B => 1,
+                LoRaDeviceClassType.C => 2,
+                _ => throw new SwitchExpressionException(),
+            };
+
+            writer.WriteNumber("dC", dC);
 
             // Getting and writing payload bytes
             var pduBytes = message.Data;
@@ -76,7 +82,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 #pragma warning restore CA5394 // Do not use insecure randomness
             LogSendingMessage(this.logger, message.StationEui, diid, ConversionHelper.ByteArrayToString(message.Data), null);
 
-            if (deviceClassType is LoRaDeviceClassType.A)
+            if (message.DeviceClassType is LoRaDeviceClassType.A)
             {
                 writer.WriteNumber("RxDelay", message.LnsRxDelay.ToSeconds());
                 if (message.FrequencyRx1 != default)
@@ -88,7 +94,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 writer.WriteNumber("RX2Freq", (ulong)message.FrequencyRx2);
                 writer.WriteNumber("xtime", message.Xtime);
             }
-            else if (deviceClassType is LoRaDeviceClassType.C)
+            else if (message.DeviceClassType is LoRaDeviceClassType.C)
             {
                 writer.WriteNumber("RX2DR", (int)message.DataRateRx2);
                 writer.WriteNumber("RX2Freq", (ulong)message.FrequencyRx2);

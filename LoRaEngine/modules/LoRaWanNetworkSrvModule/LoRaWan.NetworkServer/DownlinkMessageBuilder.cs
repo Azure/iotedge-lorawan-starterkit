@@ -213,6 +213,7 @@ namespace LoRaWan.NetworkServer
                                                          rx2,
                                                          (RxDelay)lnsRxDelay,
                                                          ackLoRaMessage,
+                                                         loRaDevice.ClassType,
                                                          radioMetadata.UpInfo.AntennaPreference);
 
             if (logger.IsEnabled(LogLevel.Debug))
@@ -229,6 +230,7 @@ namespace LoRaWan.NetworkServer
                                                               (DataRateIndex datr, Hertz freq) rx2,
                                                               RxDelay lnsRxDelay,
                                                               LoRaPayloadData loRaMessage,
+                                                              LoRaDeviceClassType deviceClassType,
                                                               uint? antennaPreference = null)
         {
             var messageBytes = loRaMessage.Serialize(loRaDevice.AppSKey.Value, loRaDevice.NwkSKey.Value);
@@ -241,6 +243,7 @@ namespace LoRaWan.NetworkServer
                 rx2.freq,
                 loRaDevice.DevEUI,
                 lnsRxDelay,
+                deviceClassType,
                 stationEUI,
                 antennaPreference
                 );
@@ -344,8 +347,9 @@ namespace LoRaWan.NetworkServer
                                                              xTime: 0,
                                                              null,
                                                              (datr, freq),
-                                                             lnsRxDelay: RxDelay0,
-                                                             loRaMessage: ackLoRaMessage);
+                                                             RxDelay0,
+                                                             ackLoRaMessage,
+                                                             LoRaDeviceClassType.C);
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(loraDownLinkMessage)}");
 

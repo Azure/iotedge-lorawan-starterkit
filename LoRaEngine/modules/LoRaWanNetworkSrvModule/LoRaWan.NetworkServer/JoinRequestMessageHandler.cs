@@ -270,6 +270,7 @@ namespace LoRaWan.NetworkServer
                   loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, logger),
                   loRaDevice.DevEUI,
                   loraRegion.JoinAcceptDelay1,
+                  loRaDevice.ClassType,
                   request.StationEui,
                   request.RadioMetadata.UpInfo.AntennaPreference
                   );

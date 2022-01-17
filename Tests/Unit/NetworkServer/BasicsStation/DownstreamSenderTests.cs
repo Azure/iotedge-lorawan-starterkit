@@ -57,6 +57,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                       Hertz.Mega(869.5),
                                                       this.devEui,
                                                       RxDelay1,
+                                                      LoRaDeviceClassType.A,
                                                       this.stationEui,
                                                       rfchHasValue ? 1 : null);
 
@@ -108,6 +109,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                       Hertz.Mega(869.5),
                                                       this.devEui,
                                                       RxDelay0,
+                                                      LoRaDeviceClassType.C,
                                                       this.stationEui,
                                                       rfchHasValue ? 1 : null);
 
@@ -164,7 +166,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                       Hertz.Mega(868.5),
                                                       Hertz.Mega(868.5),
                                                       this.devEui,
-                                                      RxDelay0);
+                                                      RxDelay0,
+                                                      LoRaDeviceClassType.C);
 
             // act and assert
             await Assert.ThrowsAsync<ArgumentException>(() => this.downlinkSender.SendDownstreamAsync(downlinkMessage));
