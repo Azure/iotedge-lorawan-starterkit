@@ -640,7 +640,7 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(request.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
 
-            Assert.Equal(loRaDevice.ReportedRXDelay, PacketForwarder.DownlinkMessages[0].LnsRxDelay);
+            Assert.Equal(RxDelay.RxDelay1, PacketForwarder.DownlinkMessages[0].LnsRxDelay); // being a class a device, with no desired rx delay, 1 is the default value
             if (expectingSecondWindow)
             {
                 Assert.Equal(default, PacketForwarder.DownlinkMessages[0].DataRateRx1);
