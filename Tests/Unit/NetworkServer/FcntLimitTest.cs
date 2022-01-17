@@ -18,14 +18,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public class FcntLimitTest : MessageProcessorTestBase
     {
-        private readonly Mock<LoRaDeviceAPIServiceBase> loRaDeviceApi;
-        private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
-
-        public FcntLimitTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-            this.loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-        }
+        public FcntLimitTest(ITestOutputHelper testOutputHelper) :
+            base(testOutputHelper) { }
 
         [Theory]
         // rolling test: if the client reaches 0xFFFF on the lower 16 bits, it will roll over and the upper
@@ -130,7 +124,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     var downlinkMessage = PacketForwarder.DownlinkMessages[0];
                     var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
                     payloadDataDown.Serialize(simulatedDevice.AppSKey.Value);
-                    Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+                    Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
                 }
 
                 Assert.Equal(expectedFcntUp, loRaDevice.FCntUp);

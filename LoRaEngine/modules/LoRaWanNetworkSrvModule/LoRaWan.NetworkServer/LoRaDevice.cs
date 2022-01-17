@@ -882,61 +882,34 @@ namespace LoRaWan.NetworkServer
         {
             var payloadData = payload as LoRaPayloadData;
 
-            var adjusted32bit = payloadData != null ? Get32BitAjustedFcntIfSupported(payloadData) : null;
+            var adjusted32bit = payloadData != null ? Get32BitAdjustedFcntIfSupported(payloadData) : null;
             var ret = payload.CheckMic(NwkSKey.Value, adjusted32bit);
-            if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.GetFcnt()))
+            if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.Fcnt))
             {
-                payloadData.Reset32BitBlockInfo();
+                payloadData.Reset32BitFcnt();
                 // if the upper 16bits changed on the client, it can be that we can't decrypt
-                ret = payloadData.CheckMic(NwkSKey.Value, Get32BitAjustedFcntIfSupported(payloadData, true));
+                ret = payloadData.CheckMic(NwkSKey.Value, Get32BitAdjustedFcntIfSupported(payloadData, true));
                 if (ret)
                 {
                     // this is an indication that the lower 16 bits rolled over on the client
                     // we adjust the server to the new higher 16bits and keep the lower 16bits
-                    Rollover32BitFCnt();
+                    SetFcntUp(IncrementUpper16bit(this.fcntUp));
                 }
             }
 
             return ret;
+
+            uint? Get32BitAdjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false) =>
+                Supports32BitFCnt && payload is { Fcnt: var fcnt }
+                ? LoRaPayload.InferUpper32BitsForClientFcnt(fcnt, rollHi ? IncrementUpper16bit(FCntUp) : FCntUp)
+                : null;
+
+            bool CanRolloverToNext16Bits(ushort payloadFcntUp) =>
+                Supports32BitFCnt && payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp) <= Constants.MaxFcntGap;
+
+            static uint IncrementUpper16bit(uint val) => (val | 0x0000ffff) + 1;
         }
 
-        internal uint? Get32BitAjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false)
-        {
-            if (!Supports32BitFCnt || payload == null)
-                return null;
-
-            var serverValue = FCntUp;
-
-            if (rollHi)
-            {
-                serverValue = IncrementUpper16bit(serverValue);
-            }
-
-            return LoRaPayload.InferUpper32BitsForClientFcnt(payload.GetFcnt(), serverValue);
-        }
-
-        internal bool CanRolloverToNext16Bits(ushort payloadFcntUp)
-        {
-            if (!Supports32BitFCnt)
-            {
-                // rollovers are only supported on 32bit devices
-                return false;
-            }
-
-            var delta = payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp);
-            return delta <= Constants.MaxFcntGap;
-        }
-
-        internal void Rollover32BitFCnt()
-        {
-            SetFcntUp(IncrementUpper16bit(this.fcntUp));
-        }
-
-        private static uint IncrementUpper16bit(uint val)
-        {
-            val |= 0x0000FFFF;
-            return ++val;
-        }
 
         private Task RunAndQueueNext(LoRaRequest request)
         {
