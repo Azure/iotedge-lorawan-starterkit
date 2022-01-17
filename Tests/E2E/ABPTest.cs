@@ -42,7 +42,7 @@ namespace LoRaWan.Tests.E2E
         {
             if (device.IsMultiGw)
             {
-                Assert.True(await LoRaAPIHelper.ResetADRCache(device.DeviceID));
+                Assert.True(await LoRaAPIHelper.ResetADRCache(device.DevEui));
             }
 
             await ArduinoDevice.setDeviceDefaultAsync();

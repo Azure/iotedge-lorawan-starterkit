@@ -4,16 +4,17 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System;
-    using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools.CommonAPI;
+    using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
+    using Newtonsoft.Json;
     using Xunit;
 
     // Ensure tests don't run in parallel since LoRaRegistryManager is shared
@@ -57,21 +58,23 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
-        [Fact]
-        public async Task When_Device_Is_Not_Found_Should_Returns_NotFound()
+        [Theory]
+        [InlineData("N")]
+        [InlineData("G")]
+        public async Task When_Device_Is_Not_Found_Should_Returns_NotFound(string format)
         {
-            const string devEUI = "13213123212131";
+            var devEUI = new DevEui(13213123212131);
             var ctx = new DefaultHttpContext();
-            ctx.Request.QueryString = new QueryString($"?devEUI={devEUI}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
+            ctx.Request.QueryString = new QueryString($"?devEUI={devEUI.ToString(format, null)}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
-            registryManager.Setup(x => x.GetDeviceAsync(devEUI))
+            registryManager.Setup(x => x.GetDeviceAsync(devEUI.ToString()))
                 .ReturnsAsync((Device)null);
 
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
             var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
-            Assert.IsType<NotFoundObjectResult>(result);
+            Assert.IsType<NotFoundResult>(result);
 
             registryManager.VerifyAll();
         }
@@ -79,31 +82,54 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Device_Is_Found_Should_Returns_Device_Information()
         {
-            const string devEUI = "13213123212131";
+            // arrange
+            var devEui = new DevEui(13213123212131);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
-            var ctx = new DefaultHttpContext();
-            ctx.Request.QueryString = new QueryString($"?devEUI={devEUI}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
-
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
-            var deviceInfo = new Device(devEUI)
-            {
-                Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } },
-            };
-
-            registryManager.Setup(x => x.GetDeviceAsync(devEUI))
-                .ReturnsAsync(deviceInfo);
-
+            var (registryManager, request) = SetupIotHubQuery(devEui.ToString(), PrimaryKey);
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
-            Assert.IsType<OkObjectResult>(result);
-            Assert.IsType<List<IoTHubDeviceInfo>>(((OkObjectResult)result).Value);
-            var devices = (List<IoTHubDeviceInfo>)((OkObjectResult)result).Value;
-            Assert.Single(devices);
-            Assert.Equal(devEUI, devices[0].DevEUI);
-            Assert.Equal(primaryKey, devices[0].PrimaryKey);
+            // act
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(request, NullLogger.Instance);
 
+            // assert
+            var okObjectResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(JsonConvert.SerializeObject(new { DevEUI = devEui.ToString(), PrimaryKey = primaryKey }), JsonConvert.SerializeObject(okObjectResult.Value));
             registryManager.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Complies_With_Contract()
+        {
+            // arrange
+            var devEui = SearchByDevEuiContract.Eui;
+            var primaryKey = SearchByDevEuiContract.PrimaryKey;
+            var (registryManager, request) = SetupIotHubQuery(devEui, primaryKey);
+            var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
+
+            // act
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(request, NullLogger.Instance);
+
+            // assert
+            var okObjectResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(SearchByDevEuiContract.Response, JsonConvert.SerializeObject(okObjectResult.Value));
+            registryManager.VerifyAll();
+        }
+
+        private static (Mock<RegistryManager>, HttpRequest) SetupIotHubQuery(string devEui, string primaryKey)
+        {
+            var ctx = new DefaultHttpContext();
+            ctx.Request.QueryString = new QueryString($"?devEUI={devEui}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
+
+            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var deviceInfo = new Device(devEui)
+            {
+                Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(primaryKey)) } },
+            };
+
+            registryManager.Setup(x => x.GetDeviceAsync(devEui))
+                           .ReturnsAsync(deviceInfo);
+
+            return (registryManager, ctx.Request);
         }
     }
 }

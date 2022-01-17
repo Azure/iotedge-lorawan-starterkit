@@ -15,12 +15,10 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadJoinAccept : LoRaPayload
     {
-        private const ushort MaxRxDelayValue = 16;
-
         /// <summary>
         /// Gets or sets server Nonce aka JoinNonce.
         /// </summary>
-        public Memory<byte> AppNonce { get; set; }
+        public AppNonce AppNonce { get; set; }
 
         /// <summary>
         /// Gets or sets device home network aka Home_NetId.
@@ -55,20 +53,14 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept()
         { }
 
-        public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
+        public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, RxDelay rxDelay, byte[] cfList)
         {
-            var rxDelay = new byte[1];
-            if (rxDelayValue is >= 0 and < MaxRxDelayValue)
-            {
-                rxDelay[0] = (byte)rxDelayValue;
-            }
-
             var cfListLength = cfList == null ? 0 : cfList.Length;
             RawMessage = new byte[1 + 12 + cfListLength];
             MHdr = new MacHeader(MacMessageType.JoinAccept);
             RawMessage[0] = (byte)MHdr;
-            AppNonce = new Memory<byte>(RawMessage, 1, 3);
-            Array.Copy(appNonce, 0, RawMessage, 1, 3);
+            AppNonce = appNonce;
+            _ = appNonce.Write(RawMessage.AsSpan(1));
             NetId = netId;
             _ = NetId.Write(RawMessage.AsSpan(4, 3));
             DevAddr = devAddr;
@@ -76,7 +68,7 @@ namespace LoRaTools.LoRaMessage
             DlSettings = new Memory<byte>(RawMessage, 11, 1);
             Array.Copy(dlSettings, 0, RawMessage, 11, 1);
             RxDelay = new Memory<byte>(RawMessage, 12, 1);
-            Array.Copy(rxDelay, 0, RawMessage, 12, 1);
+            RawMessage[12] = (byte)(Enum.IsDefined(rxDelay) ? rxDelay : default);
             // set payload Wrapper fields
             if (cfListLength > 0)
             {
@@ -88,7 +80,6 @@ namespace LoRaTools.LoRaMessage
             Fcnt = BitConverter.GetBytes(0x01);
             if (BitConverter.IsLittleEndian)
             {
-                AppNonce.Span.Reverse();
                 DlSettings.Span.Reverse();
                 RxDelay.Span.Reverse();
             }
@@ -135,11 +126,8 @@ namespace LoRaTools.LoRaMessage
             // We will copy back in the main inputMessage the content
             Array.Copy(decryptedPayload, 0, inputMessage, 1, decryptedPayload.Length);
             // ( MACPayload = AppNonce[3] | NetID[3] | DevAddr[4] | DLSettings[1] | RxDelay[1] | CFList[0|15] )
-            var appNonce = new byte[3];
-            Array.Copy(inputMessage, 1, appNonce, 0, 3);
-            Array.Reverse(appNonce);
-            AppNonce = new Memory<byte>(appNonce);
-            NetId = NetId.Read(inputMessage.AsSpan(3));
+            AppNonce = AppNonce.Read(inputMessage.AsSpan(1));
+            NetId = NetId.Read(inputMessage.AsSpan(4));
             DevAddr = DevAddr.Read(inputMessage.AsSpan(7));
             var dlSettings = new byte[1];
             Array.Copy(inputMessage, 11, dlSettings, 0, 1);
@@ -159,20 +147,28 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] PerformEncryption(AppKey key)
         {
-            var netIdBytes = new byte[NetId.Size];
-            _ = NetId.Write(netIdBytes);
-            var micBytes = new byte[4];
-            _ = Mic is { } someMic ? someMic.Write(micBytes) : throw new InvalidOperationException("MIC must not be null.");
+            var mic = Mic ?? throw new InvalidOperationException("MIC must not be null.");
 
-            var pt =
-                AppNonce.ToArray()
-                        .Concat(netIdBytes)
-                        .Concat(GetDevAddrBytes())
-                        .Concat(DlSettings.ToArray())
-                        .Concat(RxDelay.ToArray())
-                        .Concat(!CfList.Span.IsEmpty ? CfList.ToArray() : Array.Empty<byte>())
-                        .Concat(micBytes)
-                        .ToArray();
+            var channelFrequencies = !CfList.Span.IsEmpty ? CfList.ToArray() : Array.Empty<byte>();
+
+            var buffer = new byte[AppNonce.Size + NetId.Size + DevAddr.Size + DlSettings.Length +
+                                  RxDelay.Length + channelFrequencies.Length + LoRaWan.Mic.Size];
+
+            static Span<byte> Copy(ReadOnlyMemory<byte> source, Span<byte> target)
+            {
+                source.Span.CopyTo(target);
+                target = target[source.Length..];
+                return target;
+            }
+
+            var pt = buffer.AsSpan();
+            pt = AppNonce.Write(pt);
+            pt = NetId.Write(pt);
+            pt = DevAddr.Write(pt);
+            pt = Copy(DlSettings, pt);
+            pt = Copy(RxDelay, pt);
+            pt = Copy(channelFrequencies, pt);
+            _ = mic.Write(pt);
 
             using var aes = Aes.Create("AesManaged");
             var rawKey = new byte[AppKey.Size];
@@ -188,7 +184,7 @@ namespace LoRaTools.LoRaMessage
             ICryptoTransform cipher;
 
             cipher = aes.CreateDecryptor();
-            var encryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
+            var encryptedPayload = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
             RawMessage = new byte[encryptedPayload.Length];
             Array.Copy(encryptedPayload, 0, RawMessage, 0, encryptedPayload.Length);
             return encryptedPayload;
@@ -213,13 +209,10 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException();
 
-        public override bool CheckMic(AppKey key) => throw new NotImplementedException();
-
-        private byte[] GetDevAddrBytes()
+        public override bool CheckMic(AppKey key)
         {
-            var bytes = new byte[DevAddr.Size];
-            _ = DevAddr.Write(bytes);
-            return bytes;
+            var expectedMic = LoRaWan.Mic.ComputeForJoinAccept(key, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
+            return expectedMic == Mic;
         }
     }
 }

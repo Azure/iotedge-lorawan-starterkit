@@ -3,10 +3,6 @@
 
 namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
     using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
@@ -139,16 +135,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Theory]
-        [InlineData(0, true)]
-        [InlineData(15, true)]
-        [InlineData(16, false)]
-        [InlineData(50, false)]
-        public void TestIsValidRXDelay(ushort delay, bool isValid)
-        {
-            Assert.Equal(isValid, Region.IsValidRXDelay(delay));
-        }
-
-        [Theory]
         [MemberData(nameof(RegionEU868TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionEU868TestData))]
         [MemberData(nameof(RegionUS915TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470RP1TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionCN470RP1TestData))]
@@ -167,32 +153,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             {
                 Assert.Equal(isValid, region.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(datarate));
             }
-        }
-
-        private static IList<Rxpk> GenerateRxpk(string dr, double freq)
-        {
-            var jsonUplink =
-                @"{ ""rxpk"":[
-                {
-                    ""time"":""2013-03-31T16:21:17.528002Z"",
-                    ""tmst"":3512348611,
-                    ""chan"":2,
-                    ""rfch"":0,
-                    ""freq"":" + freq + @",
-                    ""stat"":1,
-                    ""modu"":""LORA"",
-                    ""datr"":""" + dr + @""",
-                    ""codr"":""4/6"",
-                    ""rssi"":-35,
-                    ""lsnr"":5.1,
-                    ""size"":32,
-                    ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
-                }]}";
-
-            var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
-            var physicalUpstreamPyld = new byte[12];
-            physicalUpstreamPyld[0] = 2;
-            return Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
         }
     }
 }

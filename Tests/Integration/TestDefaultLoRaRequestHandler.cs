@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
+    using Xunit.Abstractions;
 
     internal class TestDefaultLoRaRequestHandler : DefaultLoRaDataRequestHandler
     {
@@ -26,7 +27,8 @@ namespace LoRaWan.Tests.Integration
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
             ILoRAADRManagerFactory loRaADRManagerFactory,
-            IFunctionBundlerProvider functionBundlerProvider) : base(
+            IFunctionBundlerProvider functionBundlerProvider,
+            ITestOutputHelper testOutputHelper) : base(
                 configuration,
                 frameCounterUpdateStrategyProvider,
                 concentratorDeduplication,
@@ -35,7 +37,7 @@ namespace LoRaWan.Tests.Integration
                 loRaADRStrategyProvider,
                 loRaADRManagerFactory,
                 functionBundlerProvider,
-                NullLogger<DefaultLoRaDataRequestHandler>.Instance,
+                new TestOutputLogger<DefaultLoRaDataRequestHandler>(testOutputHelper),
                 TestMeter.Instance)
         {
             this.configuration = configuration;

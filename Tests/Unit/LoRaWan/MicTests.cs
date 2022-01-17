@@ -55,7 +55,7 @@ namespace LoRaWan.Tests.Unit
             var key = TestKeys.CreateAppKey(0x0005100000000004);
             var mhdr = new MacHeader(0);
             var mic = Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, devNonce);
-            Assert.Equal(new Mic(0xb6dee36c), mic);
+            Assert.Equal(new Mic(unchecked((int)(0xb6dee36c))), mic);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ namespace LoRaWan.Tests.Unit
             var key = TestKeys.CreateNetworkSessionKey(0x0005100000000004);
             var mhdr = new MacHeader(0);
             var mic = Mic.ComputeForJoinRequest(key, mhdr, joinEui, devEui, devNonce);
-            Assert.Equal(new Mic(0xb6dee36c), mic);
+            Assert.Equal(new Mic(unchecked((int)(0xb6dee36c))), mic);
         }
 
         [Fact]
@@ -75,14 +75,14 @@ namespace LoRaWan.Tests.Unit
         {
             var key = TestKeys.CreateAppKey(0x0005100000000004);
             var mhdr = new MacHeader(1);
-            var joinNonce = new byte[] { 0xab, 0xcd };
+            var joinNonce = new AppNonce(0xabcdef);
             var netId = new NetId(0xbcbbba);
             var devAddr = new DevAddr(0x14131211);
             var dlSettings = new byte[] { 0xca };
             var rxDelay = new byte[] { 0xda };
             var cfList = new byte[16] { 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xea, 0xeb, 0xec, 0xed, 0xef, 0xf1, 0xf2, 0xf3 };
             var mic = Mic.ComputeForJoinAccept(key, mhdr, joinNonce, netId, devAddr, dlSettings, rxDelay, cfList);
-            Assert.Equal(new Mic(0x48148BC8), mic);
+            Assert.Equal(new Mic(0x19cf5627), mic);
         }
 
         [Fact]

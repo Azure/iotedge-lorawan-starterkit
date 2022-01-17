@@ -20,7 +20,6 @@ namespace LoRaWan.NetworkServer
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
         private static readonly TimeSpan twinUpdateTimeout = TimeSpan.FromSeconds(10);
-        private readonly string devEUI;
         private readonly string connectionString;
         private readonly ITransportSettings[] transportSettings;
         private readonly ILogger<LoRaDeviceClient> logger;
@@ -28,15 +27,12 @@ namespace LoRaWan.NetworkServer
 
         private readonly string primaryKey;
 
-        public LoRaDeviceClient(string devEUI, string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger)
+        public LoRaDeviceClient(string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger)
         {
-            if (string.IsNullOrEmpty(devEUI)) throw new ArgumentException($"'{nameof(devEUI)}' cannot be null or empty.", nameof(devEUI));
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or empty.", nameof(connectionString));
             if (string.IsNullOrEmpty(primaryKey)) throw new ArgumentException($"'{nameof(primaryKey)}' cannot be null or empty.", nameof(primaryKey));
 
             this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
-
-            this.devEUI = devEUI;
 
             this.connectionString = connectionString;
             this.primaryKey = primaryKey;
@@ -54,8 +50,6 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 60000;
-
                 this.logger.LogDebug("getting device twin");
 
                 var twins = await this.deviceClient.GetTwinAsync(cancellationToken);
@@ -115,8 +109,6 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    this.deviceClient.OperationTimeoutInMilliseconds = 120000;
-
                     var messageJson = JsonConvert.SerializeObject(telemetry, Formatting.None);
                     using var message = new Message(Encoding.UTF8.GetBytes(messageJson));
 
@@ -148,10 +140,6 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                // Set the operation timeout to accepted timeout plus one second
-                // Should not return an operation timeout since we wait less that it
-                this.deviceClient.OperationTimeoutInMilliseconds = (uint)(timeout.TotalMilliseconds + 1000);
-
                 this.logger.LogDebug($"checking cloud to device message for {timeout}");
 
                 var msg = await this.deviceClient.ReceiveAsync(timeout);
@@ -178,8 +166,6 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 30000;
-
                 this.logger.LogDebug($"completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
                 await this.deviceClient.CompleteAsync(cloudToDeviceMessage);
@@ -200,8 +186,6 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 30000;
-
                 this.logger.LogDebug($"abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
                 await this.deviceClient.AbandonAsync(cloudToDeviceMessage);
@@ -222,8 +206,6 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 30000;
-
                 this.logger.LogDebug($"rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
                 await this.deviceClient.RejectAsync(cloudToDeviceMessage);

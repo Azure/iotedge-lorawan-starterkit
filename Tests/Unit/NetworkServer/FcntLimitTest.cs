@@ -14,13 +14,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class FcntLimitTest : MessageProcessorTestBase
     {
         private readonly Mock<LoRaDeviceAPIServiceBase> loRaDeviceApi;
         private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
 
-        public FcntLimitTest()
+        public FcntLimitTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             this.loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
@@ -58,11 +59,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID, supports32BitFcnt: supports32Bit));
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null)).ReturnsAsync(true);
-            var initialTwin = SetupTwins(deviceFcntUp, deviceFcntDown, startFcntUp, startFcntDown, abpRelaxed, supports32Bit, simulatedDevice, devEUI, devAddr);
+            var initialTwin = SetupTwins(deviceFcntUp, deviceFcntDown, startFcntUp, startFcntDown, abpRelaxed, supports32Bit, simulatedDevice, devEui, devAddr);
 
             LoRaDeviceClient
                 .Setup(x => x.GetTwinAsync(CancellationToken.None)).Returns(() =>
@@ -88,11 +89,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var shouldReset = payloadFcntUp == 0 && abpRelaxed;
             if (shouldReset)
             {
-                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>())).ReturnsAsync(true);
+                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEui, It.IsAny<uint>(), It.IsNotNull<string>())).ReturnsAsync(true);
             }
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc").AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -119,7 +120,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             else
             {
                 Assert.True(req.ProcessingSucceeded);
-                Assert.True(DeviceCache.TryGetByDevEui(devEUI, out var loRaDevice));
+                Assert.True(DeviceCache.TryGetByDevEui(devEui, out var loRaDevice));
 
                 if (confirmed)
                 {
@@ -161,12 +162,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID));
 
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEui = simulatedDevice.LoRaDevice.DevEui;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null)).ReturnsAsync(true);
 
-            var initialTwin = SetupTwins((uint)fcntUp, startFcntDownDesired, startFcntUpDesired, startFcntDownDesired, true, false, simulatedDevice, devEUI, devAddr);
+            var initialTwin = SetupTwins((uint)fcntUp, startFcntDownDesired, startFcntUpDesired, startFcntDownDesired, true, false, simulatedDevice, devEui, devAddr);
 
             if (startFcntUpReported.HasValue)
                 initialTwin.Properties.Reported[TwinProperty.FCntUpStart] = startFcntUpReported.Value;
@@ -197,7 +198,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 });
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>())).ReturnsAsync((Message)null);
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr)).ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr)).ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc").AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -230,11 +231,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
         }
 
-        private static Twin SetupTwins(uint? deviceFcntUp, uint? deviceFcntDown, uint? startFcntUp, uint? startFcntDown, bool abpRelaxed, bool supports32Bit, SimulatedDevice simulatedDevice, string devEUI, DevAddr devAddr)
+        private static Twin SetupTwins(uint? deviceFcntUp, uint? deviceFcntDown, uint? startFcntUp, uint? startFcntDown, bool abpRelaxed, bool supports32Bit, SimulatedDevice simulatedDevice, DevEui devEui, DevAddr devAddr)
         {
             var initialTwin = new Twin();
-            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
-            initialTwin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
+            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
+            initialTwin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
             initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
             initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey?.ToString();

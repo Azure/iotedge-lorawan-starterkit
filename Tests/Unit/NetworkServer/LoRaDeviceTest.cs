@@ -107,11 +107,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Initialized_New_OTAA_Device_Should_Have_All_Properties()
         {
             var appKey = TestKeys.CreateAppKey(0xABC0200000000000, 0x09);
+            var joinEui = new JoinEui(0xABC0200000000009);
 
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "AppEUI", "ABC0200000000009" },
+                    { "AppEUI", joinEui.ToString() },
                     { "AppKey", appKey.ToString() },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -126,9 +127,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var loRaDevice = new LoRaDevice(null, "ABC0200000000009", connectionManager);
+            using var loRaDevice = new LoRaDevice(null, new DevEui(0xabc0200000000009), connectionManager);
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
+            Assert.Equal(joinEui, loRaDevice.AppEui);
             Assert.Equal(appKey, loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
@@ -153,11 +154,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var appKey = TestKeys.CreateAppKey(0xABC0200000000000, 0x09);
             var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
             var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
+            var joinEui = new JoinEui(0xABC0200000000009);
 
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "AppEUI", "ABC0200000000009" },
+                    { "AppEUI", joinEui.ToString() },
                     { "AppKey", appKey.ToString() },
                     { "GatewayID", "mygateway" },
                     { "SensorDecoder", "DecoderValueSensor" },
@@ -178,7 +180,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDevice = CreateDefaultDevice();
 
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
+            Assert.Equal(joinEui, loRaDevice.AppEui);
             Assert.Equal(appKey, loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
@@ -221,7 +223,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDevice = CreateDefaultDevice();
 
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Empty(loRaDevice.AppEUI ?? string.Empty);
+            Assert.Null(loRaDevice.AppEui);
             Assert.Null(loRaDevice.AppKey);
             Assert.Equal(this.configuration.GatewayID, loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
@@ -586,7 +588,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Non zero fcnt down
             using var secondConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var secondTarget = new LoRaDevice(devAddr, "12312", secondConnectionManager);
+            using var secondTarget = new LoRaDevice(devAddr, new DevEui(0x12312), secondConnectionManager);
             secondTarget.SetFcntDown(1);
             secondTarget.AcceptFrameCountChanges();
             secondTarget.ResetFcnt();
@@ -596,7 +598,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Non zero fcnt down and up
             using var thirdConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var thirdTarget = new LoRaDevice(devAddr, "12312", thirdConnectionManager);
+            using var thirdTarget = new LoRaDevice(devAddr, new DevEui(0x12312), thirdConnectionManager);
             thirdTarget.SetFcntDown(1);
             thirdTarget.SetFcntDown(2);
             thirdTarget.AcceptFrameCountChanges();
@@ -622,7 +624,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Non zero fcnt down
             using var secondConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var secondTarget = new LoRaDevice(devAddr, "12312", secondConnectionManager);
+            using var secondTarget = new LoRaDevice(devAddr, new DevEui(0x12312), secondConnectionManager);
             secondTarget.SetFcntDown(1);
             secondTarget.AcceptFrameCountChanges();
             secondTarget.ResetFcnt();
@@ -634,7 +636,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Non zero fcnt down and up
             using var thirdConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var thirdTarget = new LoRaDevice(devAddr, "12312", thirdConnectionManager);
+            using var thirdTarget = new LoRaDevice(devAddr, new DevEui(0x12312), thirdConnectionManager);
             thirdTarget.SetFcntDown(1);
             thirdTarget.SetFcntDown(2);
             thirdTarget.AcceptFrameCountChanges();
@@ -780,7 +782,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(DevAddr.Private0(0), "0123456789", manager);
+            using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
             manager.Register(device, deviceClient.Object);
 
             var activity = device.BeginDeviceClientConnectionActivity();
@@ -801,7 +803,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(DevAddr.Private0(0), "0123456789", manager);
+            using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
             device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
 
@@ -836,7 +838,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(dc => dc.Dispose());
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(DevAddr.Private0(0), "0123456789", manager);
+            using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
             device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
 
@@ -875,7 +877,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    { "AppEUI", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppEUI", new JoinEui(0xABCD1234).ToString() },
                     { "AppKey", "ABCD2000000000000000000000000009" },
                     { "ClassType", "C" },
                     { "GatewayID", "mygateway" },
@@ -983,12 +985,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static Dictionary<string, object> GetEssentialDesiredProperties() =>
             new Dictionary<string, object>
             {
-                ["AppEUI"] = "ABC02000000000000000000000000009ABC02000000000000000000000000009",
+                ["AppEUI"] = new JoinEui(0xABCD1234).ToString(),
                 ["AppKey"] = TestKeys.CreateAppKey(1).ToString()
             };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        private LoRaDevice CreateDefaultDevice() => new LoRaDevice(new DevAddr(0xffffffff), "0000000000000000", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
+        private LoRaDevice CreateDefaultDevice() => new LoRaDevice(new DevAddr(0xffffffff), new DevEui(0), new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         public class FrameCounterInitTests
@@ -1102,7 +1104,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             private static void AssertFcntUp(uint expected, LoRaDevice device)
                 => AssertEqual(expected, new[] { device.FCntUp, device.LastSavedFCntUp });
-            
+
             private static void AssertFcntDown(uint expected, LoRaDevice device)
                 => AssertEqual(expected, new[] { device.FCntDown, device.LastSavedFCntDown });
 
@@ -1118,7 +1120,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 public LoRaDeviceTest(ILoRaDeviceClient deviceClient)
 #pragma warning disable CA2000 // Dispose objects before losing scope - ownership is transferred
-                    : base (new DevAddr(0xffffffff), "0000000000000000", new SingleDeviceConnectionManager(deviceClient))
+                    : base (new DevAddr(0xffffffff), new DevEui(0), new SingleDeviceConnectionManager(deviceClient))
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 {
 

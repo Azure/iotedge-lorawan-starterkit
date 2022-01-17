@@ -28,12 +28,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         private readonly Mock<ILoRaDeviceFactory> loRaDeviceFactoryMock;
         private readonly IMemoryCache memoryCache;
         private readonly StationEui stationEui;
+        private readonly DevEui devEui;
         private readonly BasicsStationConfigurationService sut;
         private bool disposedValue;
 
         public BasicsStationConfigurationServiceTests()
         {
             this.stationEui = new StationEui(ulong.MaxValue);
+            this.devEui = DevEui.Parse(this.stationEui.ToString());
             this.loRaDeviceApiServiceMock = new Mock<LoRaDeviceAPIServiceBase>();
             this.loRaDeviceFactoryMock = new Mock<ILoRaDeviceFactory>();
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -46,11 +48,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         private void SetupDeviceKeyLookup() => SetupDeviceKeyLookup("foo");
 
         private void SetupDeviceKeyLookup(string primaryKey) =>
-            SetupDeviceKeyLookup(new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
-
-        private void SetupDeviceKeyLookup(params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
-            loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByEuiAsync(this.stationEui))
-                                    .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
+            loRaDeviceApiServiceMock.Setup(ldas => ldas.GetPrimaryKeyByEuiAsync(this.stationEui))
+                                    .ReturnsAsync(primaryKey);
 
         private const string TcUri = "wss://tc.local:5001";
         private const string CupsUri = "https://cups.local:5002";
@@ -117,7 +116,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             var deviceTwin = new Twin(new TwinProperties { Desired = new TwinCollection(json) });
             var deviceClientMock = new Mock<ILoRaDeviceClient>();
             deviceClientMock.Setup(dc => dc.GetTwinAsync(CancellationToken.None)).Returns(Task.FromResult(deviceTwin));
-            this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(this.stationEui.ToString(), primaryKey))
+            this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(this.devEui.ToString(), primaryKey))
                                       .Returns(deviceClientMock.Object);
         }
 
@@ -250,15 +249,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
             }
 
-            [Theory]
-            [InlineData(0)]
-            [InlineData(2)]
-            public async Task When_Device_Key_Lookup_Is_Non_Unique_Fails(int count)
+            [Fact]
+            public async Task When_Device_Key_Lookup_Is_Empty_Fails()
             {
                 // arrange
-                const string primaryKey = "foo";
-                SetupDeviceKeyLookup(Enumerable.Range(0, count).Select(_ => new IoTHubDeviceInfo()).ToArray());
-                SetupTwinResponse(primaryKey);
+                SetupDeviceKeyLookup(null);
 
                 // act + assert
                 var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
@@ -281,7 +276,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // assert
                 Assert.Equal(result.Length, numberOfConcurrentAccess);
                 this.loRaDeviceFactoryMock.Verify(ldf => ldf.CreateDeviceClient(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByEuiAsync(It.IsAny<StationEui>()), Times.Once);
+                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.GetPrimaryKeyByEuiAsync(It.IsAny<StationEui>()), Times.Once);
                 foreach (var r in result)
                     Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), r);
             }
@@ -305,12 +300,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // arrange
                 const string primaryKey = "foo";
                 SetupTwinResponse(primaryKey);
-                this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.SearchByEuiAsync(It.IsAny<StationEui>()))
+                this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.GetPrimaryKeyByEuiAsync(It.IsAny<StationEui>()))
                                              .Throws(new InvalidOperationException())
-                                             .Returns(Task.FromResult(new SearchDevicesResult(new[]
-                                             {
-                                                 new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey }
-                                             })));
+                                             .ReturnsAsync(primaryKey);
 
                 // act
                 Task<string> Act() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None);
@@ -318,8 +310,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 var result = await Act();
 
                 // assert
-                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByEuiAsync(It.IsAny<StationEui>()), Times.Exactly(2));
+                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.GetPrimaryKeyByEuiAsync(It.IsAny<StationEui>()), Times.Exactly(2));
                 Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
+            }
+
+            /// <summary>
+            /// Since stations are also devices in IoT Hub, we use the <see cref="IoTHubDeviceInfo"/> when searching for station configuration.
+            /// This requires that we can interpret a station EUI also as a device EUI. If that property does not hold, we need to change the way we query
+            /// IoT Hub for station devices.
+            /// </summary>
+            [Fact]
+            public void StationEui_Can_Be_Interpreted_As_Dev_Eui()
+            {
+                const ulong value = 0x1a2b3c;
+                var devEui = new DevEui(value);
+                var stationEui = new StationEui(value);
+                Assert.Equal(devEui.ToString(), stationEui.ToString());
             }
         }
 

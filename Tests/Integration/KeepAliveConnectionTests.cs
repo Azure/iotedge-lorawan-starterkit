@@ -15,14 +15,21 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Devices that have keep alive set
     public class KeepAliveConnectionTests : MessageProcessorTestBase
     {
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public KeepAliveConnectionTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+            this.testOutputHelper = testOutputHelper;
+        }
+
         public static int MaxWaitForDeviceConnectionInMs
         {
             get
@@ -319,7 +326,7 @@ namespace LoRaWan.Tests.Integration
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1,
                                                                                      gatewayID: ServerConfiguration.GatewayID,
                                                                                      deviceClassType: 'c'));
-            var devEUI = simulatedDevice.DevEUI;
+            var devEui = simulatedDevice.DevEUI;
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
@@ -341,7 +348,7 @@ namespace LoRaWan.Tests.Integration
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "hello",
-                DevEUI = devEUI,
+                DevEUI = devEui,
                 Fport = FramePorts.App10,
                 MessageId = Guid.NewGuid().ToString(),
             };
@@ -362,7 +369,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 PacketForwarder,
                 FrameCounterUpdateStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                new TestOutputLogger<DefaultClassCDevicesMessageSender>(testOutputHelper),
                 TestMeter.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));

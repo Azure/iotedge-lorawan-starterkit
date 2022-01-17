@@ -16,11 +16,14 @@ namespace LoRaWan.Tests.Integration
     using Moq;
     using Newtonsoft.Json;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Decoder tests tests
     public class DecoderTests : MessageProcessorTestBase
     {
+        public DecoderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         /// <summary>
         /// SensorDecoder: none
         /// Payload: multiple
@@ -75,7 +78,7 @@ namespace LoRaWan.Tests.Integration
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
                 // multi GW will reset
-                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                     .ReturnsAsync(true);
             }
 

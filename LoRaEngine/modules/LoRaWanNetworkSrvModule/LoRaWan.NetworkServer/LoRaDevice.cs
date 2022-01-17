@@ -25,9 +25,11 @@ namespace LoRaWan.NetworkServer
         internal const int MaxConfirmationResubmitCount = 3;
 
         /// <summary>
-        /// The default values for RX1DROffset, RX2DR, RXDelay.
+        /// The default values for RX1DROffset, RX2DR.
         /// </summary>
         internal const ushort DefaultJoinValues = 0;
+
+        private const RxDelay DefaultJoinRxDelay = RxDelay.RxDelay0;
 
         /// <summary>
         /// Last time this device connected to the network server
@@ -44,17 +46,17 @@ namespace LoRaWan.NetworkServer
         // Gets if a device is activated by personalization
         public bool IsABP => AppKey == null;
 
-        public string DevEUI { get; set; }
+        public DevEui DevEUI { get; set; }
 
         public AppKey? AppKey { get; set; }
 
-        public string AppEUI { get; set; }
+        public JoinEui? AppEui { get; set; }
 
         public NetworkSessionKey? NwkSKey { get; set; }
 
         public AppSessionKey? AppSKey { get; set; }
 
-        public string AppNonce { get; set; }
+        public AppNonce AppNonce { get; set; }
 
         public DevNonce? DevNonce { get; set; }
 
@@ -185,9 +187,9 @@ namespace LoRaWan.NetworkServer
         private volatile uint lastSavedFcntDown;
         private volatile LoRaRequest runningRequest;
 
-        public ushort ReportedRXDelay { get; set; }
+        public RxDelay ReportedRXDelay { get; set; }
 
-        public ushort DesiredRXDelay { get; set; }
+        public RxDelay DesiredRXDelay { get; set; }
 
         private ILoRaDataRequestHandler dataRequestHandler;
 
@@ -211,13 +213,13 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
-        public LoRaDevice(DevAddr? devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
+        public LoRaDevice(DevAddr? devAddr, DevEui devEui, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
         {
             this.connectionManager = connectionManager;
             this.queuedRequests = new Queue<LoRaRequest>();
             this.logger = logger;
             DevAddr = devAddr;
-            DevEUI = devEUI;
+            DevEUI = devEui;
             DownlinkEnabled = true;
             IsABPRelaxedFrameCounter = true;
             PreferredWindow = 1;
@@ -228,8 +230,8 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Use constructor for test code only.
         /// </summary>
-        internal LoRaDevice(DevAddr? devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
-            : this(devAddr, devEUI, connectionManager, NullLogger<LoRaDevice>.Instance, null)
+        internal LoRaDevice(DevAddr? devAddr, DevEui devEui, ILoRaDeviceClientConnectionManager connectionManager)
+            : this(devAddr, devEui, connectionManager, NullLogger<LoRaDevice>.Instance, null)
         { }
 
         /// <summary>
@@ -291,7 +293,7 @@ namespace LoRaWan.NetworkServer
                 try
                 {
                     AppKey = desiredTwin.ReadRequired<AppKey>(TwinProperty.AppKey);
-                    AppEUI = desiredTwin.ReadRequiredString(TwinProperty.AppEUI);
+                    AppEui = desiredTwin.ReadRequired<JoinEui>(TwinProperty.AppEui);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -316,11 +318,11 @@ namespace LoRaWan.NetworkServer
                 // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
                 DesiredRX2DataRate = desiredTwin.SafeRead<DataRateIndex?>(TwinProperty.RX2DataRate);
                 DesiredRX1DROffset = desiredTwin.SafeRead<ushort>(TwinProperty.RX1DROffset);
-                DesiredRXDelay = desiredTwin.SafeRead<ushort>(TwinProperty.RXDelay);
+                DesiredRXDelay = desiredTwin.SafeRead(TwinProperty.RXDelay, DesiredRXDelay);
 
                 ReportedRX2DataRate = reportedTwin.SafeRead<DataRateIndex?>(TwinProperty.RX2DataRate);
                 ReportedRX1DROffset = reportedTwin.SafeRead<ushort>(TwinProperty.RX1DROffset);
-                ReportedRXDelay = reportedTwin.SafeRead<ushort>(TwinProperty.RXDelay);
+                ReportedRXDelay = reportedTwin.SafeRead(TwinProperty.RXDelay, ReportedRXDelay);
             }
 
             if (reportedTwin.TryParseJson<DwellTimeSetting>(TwinProperty.TxParam, out var someSettings))
@@ -706,7 +708,7 @@ namespace LoRaWan.NetworkServer
             reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr.ToString();
             reportedProperties[TwinProperty.FCntDown] = 0;
             reportedProperties[TwinProperty.FCntUp] = 0;
-            reportedProperties[TwinProperty.DevEUI] = DevEUI;
+            reportedProperties[TwinProperty.DevEUI] = DevEUI.ToString();
             reportedProperties[TwinProperty.NetId] = updateProperties.NetId.ToString();
             reportedProperties[TwinProperty.DevNonce] = updateProperties.DevNonce.AsUInt16;
 
@@ -751,14 +753,8 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.RX2DataRate] = null;
                 }
 
-                if (DesiredRXDelay != DefaultJoinValues && Region.IsValidRXDelay(DesiredRXDelay))
-                {
-                    reportedProperties[TwinProperty.RXDelay] = DesiredRXDelay;
-                }
-                else
-                {
-                    reportedProperties[TwinProperty.RXDelay] = null;
-                }
+                reportedProperties[TwinProperty.RXDelay] = DesiredRXDelay is var rxd and not DefaultJoinRxDelay
+                                                           && Enum.IsDefined(rxd) ? rxd : null;
             }
             else
             {
@@ -822,7 +818,7 @@ namespace LoRaWan.NetworkServer
                     this.logger.LogError("the provided RX2DataRate is not valid");
                 }
 
-                if (Region.IsValidRXDelay(DesiredRXDelay))
+                if (Enum.IsDefined(DesiredRXDelay))
                 {
                     ReportedRXDelay = DesiredRXDelay;
                 }

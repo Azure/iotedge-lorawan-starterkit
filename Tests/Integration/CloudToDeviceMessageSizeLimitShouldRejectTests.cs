@@ -12,10 +12,13 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.Tests.Common;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public class CloudToDeviceMessageSizeLimitShouldRejectTests : CloudToDeviceMessageSizeLimitBaseTests
     {
+        public CloudToDeviceMessageSizeLimitShouldRejectTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory]
         [CombinatorialData]
         public async Task Should_Reject(
