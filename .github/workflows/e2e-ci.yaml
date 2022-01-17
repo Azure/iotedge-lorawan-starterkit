@@ -385,7 +385,7 @@ jobs:
     environment:
       name: CI_AZURE_ENVIRONMENT
       url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
-    if: always() && github.event.inputs.RunLoadTests == 'true' && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'LoadTest')) && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success'))
+    if: always() && (github.event_name == 'schedule' || github.event.inputs.RunLoadTests == 'true')
     needs:
       - deploy_arm_gw_iot_edge
       - deploy_eflow_gw_iot_edge
@@ -431,14 +431,6 @@ jobs:
         dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
         -r ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/ \
         ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
-
-    - name: Add ${{ inputs.test_name }} Test Label
-      uses: buildsville/add-remove-label@v1
-      if: github.event_name == 'pull_request' && success()
-      with:
-        token: ${{ github.token }}
-        label: 'LoadTest'
-        type: add
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
