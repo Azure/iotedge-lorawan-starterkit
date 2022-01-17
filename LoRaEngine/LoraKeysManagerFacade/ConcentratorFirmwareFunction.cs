@@ -7,7 +7,6 @@ namespace LoraKeysManagerFacade
     using System.Globalization;
     using System.IO;
     using System.Net;
-    using System.Net.Http;
     using System.Net.Mime;
     using System.Threading;
     using System.Threading.Tasks;
@@ -22,8 +21,6 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Primitives;
-    using Microsoft.Net.Http.Headers;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -44,9 +41,9 @@ namespace LoraKeysManagerFacade
             this.logger = logger;
         }
 
-        [FunctionName(nameof(FetchConcentratorFwUpgrade))]
-        public async Task<IActionResult> FetchConcentratorFwUpgrade([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
-                                                                     CancellationToken cancellationToken)
+        [FunctionName(nameof(FetchConcentratorFirmware))]
+        public async Task<IActionResult> FetchConcentratorFirmware([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+                                                                   CancellationToken cancellationToken)
         {
             if (req is null) throw new ArgumentNullException(nameof(req));
 
@@ -74,11 +71,11 @@ namespace LoraKeysManagerFacade
             var twin = await this.registryManager.GetTwinAsync(stationEui.ToString("N", CultureInfo.InvariantCulture), cancellationToken);
             if (twin != null)
             {
-                this.logger.LogDebug("Retrieving firmware upgrade URL for '{StationEui}'.", stationEui);
+                this.logger.LogDebug("Retrieving firmware url for '{StationEui}'.", stationEui);
                 try
                 {
                     if (!twin.Properties.Desired.TryReadJsonBlock(CupsPropertyName, out var cupsProperty))
-                        throw new ArgumentOutOfRangeException(CupsPropertyName, "Failed to read cups config");
+                        throw new ArgumentOutOfRangeException(CupsPropertyName, "Failed to read CUPS config");
 
                     var fwUrl = JObject.Parse(cupsProperty)[CupsFwUrlPropertyName].ToString();
                     var stream = await GetBlobStreamAsync(fwUrl, cancellationToken);
