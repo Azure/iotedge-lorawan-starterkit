@@ -754,7 +754,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(0, RxDelay1)]
+        [InlineData(0, RxDelay0)]
         [InlineData(1, RxDelay1)]
         [InlineData(2, RxDelay2)]
         [InlineData(3, RxDelay3)]

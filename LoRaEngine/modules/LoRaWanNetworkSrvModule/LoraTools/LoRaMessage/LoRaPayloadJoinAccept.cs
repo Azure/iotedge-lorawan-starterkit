@@ -129,7 +129,7 @@ namespace LoRaTools.LoRaMessage
             var dlSettings = new byte[1];
             Array.Copy(inputMessage, 11, dlSettings, 0, 1);
             DlSettings = new Memory<byte>(dlSettings);
-            RxDelay = (RxDelay)(inputMessage[12] & 0b111); // upper bits are reserved for future use
+            RxDelay = (RxDelay)(inputMessage[12] & 0b1111); // upper bits are reserved for future use
             // It's the configuration list, it can be empty or up to 15 bytes
             // - 17 = - 1 - 3 - 3 - 4 - 1 - 1 - 4
             // This is the size of all mandatory elements of the message
