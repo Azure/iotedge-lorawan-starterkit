@@ -322,7 +322,7 @@ namespace LoRaWan.Tests.Common
             // If we want to send to force to rx 2, we will set rx1 to default and rx2 settings to proper values.
             // Ensure RX DR
             if (sendToRx2)
-                Assert.Equal(default, downlinkMessage.DataRateRx1);
+                Assert.False(downlinkMessage.IsRx1Defined);
             else
                 Assert.Equal(euRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate), downlinkMessage.DataRateRx1);
 
@@ -332,7 +332,7 @@ namespace LoRaWan.Tests.Common
             Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, out var channelFrequency));
 
             if (sendToRx2)
-                Assert.Equal(default, downlinkMessage.FrequencyRx1);
+                Assert.False(downlinkMessage.IsRx1Defined);
             else
                 Assert.Equal(channelFrequency, downlinkMessage.FrequencyRx1);
 

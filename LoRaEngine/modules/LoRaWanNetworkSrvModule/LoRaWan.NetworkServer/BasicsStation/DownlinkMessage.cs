@@ -35,6 +35,8 @@ namespace LoRaTools.LoRaPhysical
 
         public Hertz FrequencyRx2 { get; }
 
+        public bool IsRx1Defined => FrequencyRx1 != new Hertz(0);
+
         public ReadOnlyMemory<byte> Data { get; }
 
         public StationEui StationEui { get; }

@@ -638,25 +638,21 @@ namespace LoRaWan.Tests.Integration
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
+            var downlinkMessage = Assert.Single(PacketForwarder.DownlinkMessages);
 
-            Assert.Equal(RxDelay.RxDelay1, PacketForwarder.DownlinkMessages[0].LnsRxDelay); // being a class a device, with no desired rx delay, 1 is the default value
+            Assert.Equal(LoRaDeviceClassType.A, downlinkMessage.DeviceClassType);
+            Assert.Equal(RxDelay.RxDelay1, downlinkMessage.LnsRxDelay);
             if (expectingSecondWindow)
             {
-                Assert.Equal(default, PacketForwarder.DownlinkMessages[0].DataRateRx1);
-                Assert.Equal(default, PacketForwarder.DownlinkMessages[0].FrequencyRx1);
-            } else
+                Assert.False(downlinkMessage.IsRx1Defined);
+            }
+            else
             {
-                Assert.NotEqual(default, PacketForwarder.DownlinkMessages[0].DataRateRx1);
-                Assert.NotEqual(default, PacketForwarder.DownlinkMessages[0].FrequencyRx1);
+                Assert.True(downlinkMessage.IsRx1Defined);
             }
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
-
-            Assert.NotNull(PacketForwarder.DownlinkMessages);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-
         }
 
         [Theory]
