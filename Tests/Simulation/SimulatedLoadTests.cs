@@ -53,7 +53,7 @@ namespace LoRaWan.Tests.Simulation
             // act
             await Task.WhenAll(from device in simulatedDevices
                                select SendConfirmedUpstreamMessages(device, messageCount));
-            await WaitForResultsInIotHub();
+            await WaitForResultsInIotHubAsync();
 
             // assert
             foreach (var device in simulatedDevices)
@@ -70,7 +70,7 @@ namespace LoRaWan.Tests.Simulation
             var device = new SimulatedDevice(TestFixtureSim.Device1001_Simulated_ABP, simulatedBasicsStation: this.simulatedBasicsStations);
 
             await SendConfirmedUpstreamMessages(device, messageCount);
-            await WaitForResultsInIotHub();
+            await WaitForResultsInIotHubAsync();
 
             Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
             device.EnsureMessageResponsesAreReceived(messageCount);
@@ -84,7 +84,7 @@ namespace LoRaWan.Tests.Simulation
 
             Assert.True(await device.JoinAsync(), "OTAA join failed");
             await SendConfirmedUpstreamMessages(device, messageCount);
-            await WaitForResultsInIotHub();
+            await WaitForResultsInIotHubAsync();
 
             Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
             device.EnsureMessageResponsesAreReceived(messageCount + 1);
@@ -99,16 +99,18 @@ namespace LoRaWan.Tests.Simulation
             Assert.NotEmpty(simulatedDevices);
 
             // act
-            await Task.WhenAll(from device in simulatedDevices
-                               select ActAsync(device));
+            var offsetInterval = IntervalBetweenMessages / simulatedDevices.Count;
+            await Task.WhenAll(from deviceWithOffset in simulatedDevices.Select((device, i) => (Device: device, Offset: i * offsetInterval))
+                               select ActAsync(deviceWithOffset.Device, deviceWithOffset.Offset));
 
-            async Task ActAsync(SimulatedDevice device)
+            async Task ActAsync(SimulatedDevice device, TimeSpan startOffset)
             {
+                await Task.Delay(startOffset);
                 Assert.True(await device.JoinAsync(), "OTAA join failed");
                 await SendConfirmedUpstreamMessages(device, messageCounts);
             }
 
-            await WaitForResultsInIotHub();
+            await WaitForResultsInIotHubAsync();
 
             // assert
             foreach (var device in simulatedDevices)
@@ -140,7 +142,7 @@ namespace LoRaWan.Tests.Simulation
         private WaitableLoRaRequest CreateConfirmedUpstreamMessage(SimulatedDevice simulatedDevice) =>
             WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(this.uniqueMessageFragment));
 
-        private static Task WaitForResultsInIotHub() => Task.Delay(TimeSpan.FromSeconds(10));
+        private static Task WaitForResultsInIotHubAsync() => Task.Delay(TimeSpan.FromSeconds(10));
 
         private bool ContainsMessageFromDevice(EventData eventData, SimulatedDevice simulatedDevice)
         {
