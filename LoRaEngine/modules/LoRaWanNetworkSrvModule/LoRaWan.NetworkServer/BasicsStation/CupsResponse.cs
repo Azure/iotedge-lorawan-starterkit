@@ -6,7 +6,6 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
-    using System.Buffers;
     using System.Buffers.Binary;
     using System.IO;
     using System.Linq;
