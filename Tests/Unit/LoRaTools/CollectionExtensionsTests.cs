@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Utils
 {
     using System;
     using System.Linq;
-    using global::LoRaTools.Utils;
+    using Common;
     using Xunit;
 
     public class CollectionExtensionsTests
