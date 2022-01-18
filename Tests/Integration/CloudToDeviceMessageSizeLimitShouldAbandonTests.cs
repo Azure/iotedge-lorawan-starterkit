@@ -9,7 +9,6 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -72,7 +71,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2dMessage.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2dMessage.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();

@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.Integration
 
             var downstreamPayloadBytes = downstreamMsg.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
-            Assert.Equal(expectedFcntDown, downstreamPayload.GetFcnt());
+            Assert.Equal(expectedFcntDown, downstreamPayload.Fcnt);
             Assert.Equal(c2d.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr, simDevice.DevAddr);
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey.Value);
@@ -228,7 +228,7 @@ namespace LoRaWan.Tests.Integration
 
             var downstreamPayloadBytes = downstreamMsg.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
-            Assert.Equal(1, downstreamPayload.GetFcnt());
+            Assert.Equal(1, downstreamPayload.Fcnt);
             Assert.Equal(c2d.Fport, downstreamPayload.Fport);
             Assert.Equal(downstreamPayload.DevAddr, DevAddr.Parse(savedDevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey.Value);
