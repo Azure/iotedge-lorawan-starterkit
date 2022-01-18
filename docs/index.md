@@ -27,7 +27,7 @@ Alternatively, it allows sending commands from the cloud to the end
 nodes. The goal of the the project is to provide guidance and a reference for
 Azure IoT Edge users to experiment with LoRaWAN technology.
 
-![Architecture](images/EdgeArchitecture-updated.png)
+![Architecture](images/EdgeArchitecture.png)
 
 ## Key Challenges
 
@@ -37,14 +37,14 @@ Azure IoT Edge users to experiment with LoRaWAN technology.
   - Routing to local storage from the Edge gateway
   - Offline capabilities of the gateway
 - Homogenous management of devices and concentrators independent of connectivity technology through Azure IoT.
-- Off-the-shelf integration with Azure IoT ecosystem, e.g., Azure IoT Central, Azure Digital Twins, Time Series Insights, etc...
+- Off-the-shelf integration with Azure IoT ecosystem, e.g., Azure IoT Hub, Azure Digital Twins, Time Series Insights, etc...
 
 ## Features
 
 - LoRaWAN 1.0.2 implementation
 (see [LoRaWAN Specification Support](#LoRaWAN-1.0.2-Specification-Support)
 for more details)
-- Device and Concentrator management done completely through Azure IoT Hub.
+- Device and Concentrator management done through Azure IoT Hub.
 - Bi-directional communication between LoRa end devices and Azure cloud.
 - Custom packet decoding framework.
 - Identity Translation for LoRa devices with caching support.
