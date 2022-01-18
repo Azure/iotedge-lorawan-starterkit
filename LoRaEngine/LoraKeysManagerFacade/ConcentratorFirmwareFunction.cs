@@ -79,8 +79,8 @@ namespace LoraKeysManagerFacade
                         throw new ArgumentOutOfRangeException(CupsPropertyName, "Failed to read CUPS config");
 
                     var fwUrl = JObject.Parse(cupsProperty)[CupsFwUrlPropertyName].ToString();
-                    var stream = await GetBlobStreamAsync(fwUrl, cancellationToken);
-                    return new FileStreamResult(stream, MediaTypeNames.Application.Octet);
+                    var (fwLength, stream) = await GetBlobStreamAsync(fwUrl, cancellationToken);
+                    return new FileStreamWithContentLengthResult(stream, "application/octet-stream", fwLength);
                 }
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException or NullReferenceException)
                 {
@@ -103,14 +103,15 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        private async Task<Stream> GetBlobStreamAsync(string blobUrl, CancellationToken cancellationToken)
+        private async Task<(long, Stream)> GetBlobStreamAsync(string blobUrl, CancellationToken cancellationToken)
         {
             var blobServiceClient = this.azureClientFactory.CreateClient(FacadeStartup.WebJobsStorageClientName);
             var blobUri = new BlobUriBuilder(new Uri(blobUrl));
-            var streamingResult = await blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
-                                                         .GetBlobClient(blobUri.BlobName)
-                                                         .DownloadStreamingAsync(cancellationToken: cancellationToken);
-            return streamingResult.Value.Content;
+            var blobClient = blobServiceClient.GetBlobContainerClient(blobUri.BlobContainerName)
+                                              .GetBlobClient(blobUri.BlobName);
+            var blobProperties = await blobClient.GetPropertiesAsync(null, cancellationToken);
+            var streamingResult = await blobClient.DownloadStreamingAsync(cancellationToken: cancellationToken);
+            return (blobProperties.Value.ContentLength, streamingResult.Value.Content);
         }
     }
 }
