@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System.Collections.Generic;
     using System.Globalization;
+    using LoRaWan.NetworkServer;
     using static ReceiveWindowNumber;
 
     public class TestDeviceInfo
@@ -73,42 +74,42 @@ namespace LoRaWan.Tests.Common
         {
             var desiredProperties = new Dictionary<string, object>();
             if (AppEui is { } someAppEui)
-                desiredProperties[nameof(AppEui)] = someAppEui.ToString();
+                desiredProperties[TwinProperty.AppEui] = someAppEui.ToString();
 
             if (AppKey is { } someAppKey)
-                desiredProperties[nameof(AppKey)] = someAppKey.ToString();
+                desiredProperties[TwinProperty.AppKey] = someAppKey.ToString();
 
             if (!string.IsNullOrEmpty(GatewayID))
-                desiredProperties[nameof(GatewayID)] = GatewayID;
+                desiredProperties[TwinProperty.GatewayID] = GatewayID;
 
             if (!string.IsNullOrEmpty(SensorDecoder))
-                desiredProperties[nameof(SensorDecoder)] = SensorDecoder;
+                desiredProperties[TwinProperty.SensorDecoder] = SensorDecoder;
 
             if (AppSKey is { } someAppSessionKey)
-                desiredProperties[nameof(AppSKey)] = someAppSessionKey.ToString();
+                desiredProperties[TwinProperty.AppSKey] = someAppSessionKey.ToString();
 
             if (NwkSKey is { } someNetworkSessionKey)
-                desiredProperties[nameof(NwkSKey)] = someNetworkSessionKey.ToString();
+                desiredProperties[TwinProperty.NwkSKey] = someNetworkSessionKey.ToString();
 
             if (DevAddr is { } someDevAddr)
-                desiredProperties[nameof(DevAddr)] = someDevAddr.ToString();
+                desiredProperties[TwinProperty.DevAddr] = someDevAddr.ToString();
 
-            desiredProperties[nameof(PreferredWindow)] = (int)PreferredWindow;
+            desiredProperties[TwinProperty.PreferredWindow] = (int)PreferredWindow;
 
             if (char.ToLower(ClassType, CultureInfo.InvariantCulture) != 'a')
-                desiredProperties[nameof(ClassType)] = ClassType.ToString();
+                desiredProperties[TwinProperty.ClassType] = ClassType.ToString();
 
-            desiredProperties[nameof(RX1DROffset)] = RX1DROffset;
+            desiredProperties[TwinProperty.RX1DROffset] = RX1DROffset;
 
-            desiredProperties[nameof(RX2DataRate)] = RX2DataRate;
+            desiredProperties[TwinProperty.RX2DataRate] = RX2DataRate;
 
-            desiredProperties[nameof(RXDelay)] = RXDelay;
+            desiredProperties[TwinProperty.RXDelay] = RXDelay;
 
             // if (KeepAliveTimeout > 0)
-            desiredProperties[nameof(KeepAliveTimeout)] = KeepAliveTimeout;
+            desiredProperties[TwinProperty.KeepAliveTimeout] = KeepAliveTimeout;
 
             if (!string.IsNullOrEmpty(Deduplication))
-                desiredProperties[nameof(Deduplication)] = Deduplication;
+                desiredProperties[TwinProperty.Deduplication] = Deduplication;
 
             return desiredProperties;
         }
