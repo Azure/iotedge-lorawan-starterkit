@@ -5,17 +5,16 @@ namespace LoRaWan.Tests.Common
 {
 
     using System;
-    using System.Text.Json;
-    using LoRaWan.Tests.Simulation.Models;
-    using System.Threading.Tasks;
-    using System.Net.WebSockets;
-    using System.Globalization;
-    using System.Threading;
-    using System.Text;
     using System.Diagnostics;
+    using System.Globalization;
+    using System.Net.WebSockets;
+    using System.Text;
+    using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaTools.LoRaMessage;
-    using System.Runtime.InteropServices;
+    using LoRaWan.Tests.Simulation.Models;
     using LoRaTools.Utils;
 
     public sealed class SimulatedBasicsStation : IDisposable
