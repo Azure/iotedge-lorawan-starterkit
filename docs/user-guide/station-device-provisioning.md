@@ -161,7 +161,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
         ```
 
         === "CN470RP1 Example Configuration"
-
+        This Configuration is using channels 1-4 (470.3, 470.5, 470.7, 470.9) and 40-43 (478.1, 478.3, 478.5, 478.7) to avoid colliding with reserved China Electric frequencies
         ``` json
         "routerConfig": {
           "NetID": [ 1 ],
@@ -207,7 +207,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
         ```
 
         === "CN470RP2 Example Configuration"
-
+        Frequencies used are 498.3, 498.7, 498.9, 499.1, 499.3, 499.5, 499.7, 499.9 to avoid colliding with reserved China Electric frequencies
         ``` json
         {
           "NetID": [ 1 ],
