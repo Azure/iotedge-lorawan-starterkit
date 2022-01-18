@@ -37,8 +37,6 @@ namespace LoRaWan
             return buffer[Size..];
         }
 
-        public static AppNonce Read(ReadOnlySpan<byte> buffer) =>
-            buffer.Length >= 3 ? new AppNonce(buffer[0] | (buffer[1] << 8) | (buffer[2] << 16))
-                               : throw new ArgumentException("Insufficient buffer length.");
+        public static AppNonce Read(ReadOnlySpan<byte> buffer) => new(unchecked((int)LittleEndianReader.ReadUInt24(buffer)));
     }
 }

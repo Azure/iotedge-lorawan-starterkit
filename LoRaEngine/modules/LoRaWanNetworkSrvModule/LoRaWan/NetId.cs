@@ -62,7 +62,6 @@ namespace LoRaWan
             return buffer[Size..];
         }
 
-        public static NetId Read(ReadOnlySpan<byte> buffer) =>
-            new(buffer[0] | (buffer[1] << 8) | (buffer[2] << 16));
+        public static NetId Read(ReadOnlySpan<byte> buffer) => new(unchecked((int)LittleEndianReader.ReadUInt24(buffer)));
     }
 }
