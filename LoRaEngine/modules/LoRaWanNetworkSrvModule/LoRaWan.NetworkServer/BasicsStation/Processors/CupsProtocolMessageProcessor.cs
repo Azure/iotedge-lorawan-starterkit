@@ -6,7 +6,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
-    using System.Buffers.Binary;
+    using System.Buffers;
     using System.Diagnostics.Metrics;
     using System.Text;
     using System.Text.Json;
@@ -96,20 +96,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 var remoteCupsConfig = await this.basicsStationConfigurationService.GetCupsConfigAsync(updateRequest.StationEui, token);
 
                 var cupsResponse = new CupsResponse(updateRequest, remoteCupsConfig, this.deviceAPIServiceBase.FetchStationCredentialsAsync, this.deviceAPIServiceBase.FetchStationFirmwareAsync);
-                var (responseBytes, fwStream) = await cupsResponse.SerializeAsync(token);
-
-                var responseLength = responseBytes.Length;
-                httpContext.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
-                httpContext.Response.ContentType = "application/octet-stream";
-                if (fwStream is { })
-                    responseLength += BinaryPrimitives.ReadInt32LittleEndian(responseBytes.AsSpan()[^4..]);
-                httpContext.Response.ContentLength = responseLength;
-
-                _ = await httpContext.Response.BodyWriter.WriteAsync(responseBytes, token);
-
-                if (fwStream is { })
+                using var response = MemoryPool<byte>.Shared.Rent(2048);
+                var (responseBytes, fwLength, fwStream) = await cupsResponse.SerializeAsync(response.Memory, token);
+                using (fwStream)
                 {
-                    await fwStream.CopyToAsync(httpContext.Response.BodyWriter.AsStream(), token);
+                    var contentLength = responseBytes.Length + fwLength;
+                    httpContext.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                    httpContext.Response.ContentType = "application/octet-stream";
+                    httpContext.Response.ContentLength = contentLength;
+
+                    _ = await httpContext.Response.BodyWriter.WriteAsync(responseBytes, token);
+
+                    if (fwStream is { })
+                    {
+                        await fwStream.CopyToAsync(httpContext.Response.BodyWriter.AsStream(), token);
+                    }
                 }
             }
             catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex),

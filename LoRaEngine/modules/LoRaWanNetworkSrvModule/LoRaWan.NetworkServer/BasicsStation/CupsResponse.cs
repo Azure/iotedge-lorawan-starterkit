@@ -35,20 +35,19 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
 
-        internal async Task<(byte[], Stream?)> SerializeAsync(CancellationToken token)
+        internal async Task<(Memory<byte> ResponseBytes, int FwLength, Stream? FwStream)> SerializeAsync(Memory<byte> response, CancellationToken token)
         {
             // checking for disequalities in desired and reported configuration
-            using var response = MemoryPool<byte>.Shared.Rent(2048);
             var currentPosition = 0;
 
-            currentPosition = WriteUriConditionally(ConcentratorCredentialType.Cups, response.Memory.Span, currentPosition);
-            currentPosition = WriteUriConditionally(ConcentratorCredentialType.Lns, response.Memory.Span, currentPosition);
-            currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Cups, response.Memory, currentPosition, token);
-            currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Lns, response.Memory, currentPosition, token);
+            currentPosition = WriteUriConditionally(ConcentratorCredentialType.Cups, response.Span, currentPosition);
+            currentPosition = WriteUriConditionally(ConcentratorCredentialType.Lns, response.Span, currentPosition);
+            currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Cups, response, currentPosition, token);
+            currentPosition = await WriteCredentialsConditionallyAsync(ConcentratorCredentialType.Lns, response, currentPosition, token);
 
-            (currentPosition, var fwStream) = await WriteFirmwareUpgradeConditionallyAsync(response.Memory, currentPosition, token);
+            (currentPosition, var fwLength, var fwStream) = await WriteFirmwareUpgradeConditionallyAsync(response, currentPosition, token);
 
-            return (response.Memory.Span[..currentPosition].ToArray(), fwStream);
+            return (response[..currentPosition], fwLength, fwStream);
         }
 
         private int WriteUriConditionally(ConcentratorCredentialType endpointType, Span<byte> response, int currentPosition)
@@ -80,7 +79,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             return currentPosition;
         }
 
-        private async Task<(int, Stream?)> WriteFirmwareUpgradeConditionallyAsync(Memory<byte> response, int currentPosition, CancellationToken token)
+        private async Task<(int, int, Stream?)> WriteFirmwareUpgradeConditionallyAsync(Memory<byte> response, int currentPosition, CancellationToken token)
         {
             var firmwareMismatch = !string.Equals(this.cupsUpdateInfoRequest.Package, this.cupsTwinInfo.Package, StringComparison.OrdinalIgnoreCase);
 
@@ -95,11 +94,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 currentPosition += WriteToSpan(signature.Length + 4, response.Span[currentPosition..]);
                 currentPosition += WriteToSpan(this.cupsTwinInfo.FwKeyChecksum, response.Span[currentPosition..]);
                 currentPosition += WriteToSpan(signature, response.Span[currentPosition..]);
-                var (contentLength, fwStream) = await fwUpgradeFetcher(this.cupsUpdateInfoRequest.StationEui, token);
+                var (contentLength, fwStream) = await this.fwUpgradeFetcher(this.cupsUpdateInfoRequest.StationEui, token);
                 if (contentLength is null or <= 0 || fwStream is null)
                     throw new InvalidOperationException("Firmware could not be properly downloaded from function. Check logs.");
-                currentPosition += WriteToSpan(unchecked((uint)contentLength), response.Span[currentPosition..]);
-                return (currentPosition, fwStream);
+                if (contentLength is >= int.MaxValue)
+                    throw new InvalidOperationException($"Firmware size can't be greater than {int.MaxValue}");
+                currentPosition += WriteToSpan(unchecked((int)contentLength), response.Span[currentPosition..]);
+                return (currentPosition, unchecked((int)contentLength), fwStream);
             }
             else
             {
@@ -110,7 +111,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 currentPosition += WriteToSpan(0U, response.Span[currentPosition..]);
                 // Length of the update data (4bytes)
                 currentPosition += WriteToSpan(0U, response.Span[currentPosition..]);
-                return (currentPosition, null);
+                return (currentPosition, 0, null);
             }
         }
 
