@@ -6,7 +6,7 @@
 namespace LoRaTools
 {
     using System.Collections.Generic;
-    using LoRaTools.Utils;
+    using LoRaWan;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -49,7 +49,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {Cid} Answer, rx1 datarate offset: {RX1DROffset}, rx2 datarate: {RX2DataRate}, frequency plan: {ConversionHelper.ByteArrayToString(Frequency)}";
+            return $"Type: {Cid} Answer, rx1 datarate offset: {RX1DROffset}, rx2 datarate: {RX2DataRate}, frequency plan: {LittleEndianReader.ReadUInt24(Frequency):X6}";
         }
     }
 }

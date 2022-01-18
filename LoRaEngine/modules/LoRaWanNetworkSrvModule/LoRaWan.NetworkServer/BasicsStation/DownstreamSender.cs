@@ -10,7 +10,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
 
     internal class DownstreamSender : IPacketForwarder
@@ -45,7 +44,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             }
             else
             {
-                this.logger.LogWarning("Could not retrieve an active connection for Station with EUI '{StationEui}'. The payload '{Payload}' will be dropped.", message.StationEui, ConversionHelper.ByteArrayToString(message.Data));
+                this.logger.LogWarning("Could not retrieve an active connection for Station with EUI '{StationEui}'. The payload '{Payload}' will be dropped.", message.StationEui, message.Data.ToHex());
             }
         }
 
@@ -74,7 +73,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             var diid = this.random.Next(int.MinValue, int.MaxValue);
             writer.WriteNumber("diid", diid);
 #pragma warning restore CA5394 // Do not use insecure randomness
-            LogSendingMessage(this.logger, message.StationEui, diid, ConversionHelper.ByteArrayToString(message.Data), null);
+            LogSendingMessage(this.logger, message.StationEui, diid, message.Data.ToHex(), null);
 
             if (deviceClassType is LoRaDeviceClassType.A)
             {
