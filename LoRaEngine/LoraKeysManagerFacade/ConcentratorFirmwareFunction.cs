@@ -82,11 +82,8 @@ namespace LoraKeysManagerFacade
 
                     var fwUrl = JObject.Parse(cupsProperty)[CupsFwUrlPropertyName].ToString();
                     var (fwLength, stream) = await GetBlobStreamAsync(fwUrl, cancellationToken);
-                    this.httpContextAccessor.HttpContext.Response.ContentType = "application/octet-stream";
-                    this.httpContextAccessor.HttpContext.Response.Headers.Append("Content-Length", fwLength.ToString(CultureInfo.InvariantCulture));
-                    await stream.CopyToAsync(this.httpContextAccessor.HttpContext.Response.Body, cancellationToken);
 
-                    return new OkResult();
+                    return new FileStreamWithContentLengthResult(stream, "application/octet-stream", fwLength);
                 }
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException or NullReferenceException)
                 {
