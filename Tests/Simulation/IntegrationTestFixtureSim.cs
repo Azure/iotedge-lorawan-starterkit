@@ -84,10 +84,10 @@ namespace LoRaWan.Tests.Simulation
             for (var deviceId = 1100; deviceId <= 1110; deviceId++)
                 this.deviceRange1000_ABP.Add(CreateAbpDevice(deviceId));
 
-            for (var deviceId = 2000; deviceId <= 2000 + Configuration.NumberOfLoadTestDevices; deviceId++)
+            for (var deviceId = 2000; deviceId < 2000 + Configuration.NumberOfLoadTestDevices; deviceId++)
                 this.deviceRange2000_ABP_FullLoad.Add(CreateAbpDevice(deviceId));
 
-            for (var deviceId = 3000; deviceId <= 3000 + Configuration.NumberOfLoadTestDevices; deviceId++)
+            for (var deviceId = 3000; deviceId < 3000 + Configuration.NumberOfLoadTestDevices; deviceId++)
                 this.deviceRange3000_OTAA_FullLoad.Add(CreateOtaaDevice(deviceId));
 
             for (var deviceId = 4000; deviceId < 4000 + Configuration.NumberOfLoadTestDevices; deviceId++)

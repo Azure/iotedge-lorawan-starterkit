@@ -138,7 +138,7 @@ namespace LoRaWan.Tests.Simulation
             const int scenarioMessagesPerDevice = 10;
 
             // amount of devices to send data in parallel
-            const int scenarioDeviceStepSize = 20;
+            const int scenarioDeviceStepSize = 15;
 
             // amount of devices to send data in parallel for the warm-up phase
             const int warmUpDeviceStepSize = 2;
