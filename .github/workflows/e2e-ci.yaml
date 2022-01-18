@@ -436,7 +436,7 @@ jobs:
     - uses: actions/upload-artifact@v1
       if: always()
       with:
-        name: e2e-test-results
+        name: load-test-results
         path: ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/
 
   # Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
