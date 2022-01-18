@@ -216,7 +216,7 @@ namespace LoRaWan.Tests.E2E
             // Ensure device payload is available
             // Data: {"value": 51}
             var expectedPayload = $"{{\"value\":{msg}}}";
-            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -234,7 +234,8 @@ namespace LoRaWan.Tests.E2E
             // Checking than the communication occurs on DR 4 and RX2 as part of preferred windows RX2 and custom RX2 DR
             await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), ArduinoDevice.SerialLogs);
             // this test has a custom datarate for RX 2 of 3
-            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"Rx2\":{{\"Item1\":3", StringComparison.Ordinal), null);
+            const string logMessage2 = "\"Rx2\":{{\"Item1\":3";
+            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains(logMessage2, StringComparison.Ordinal), new SearchLogOptions(logMessage2));
 
 
             // 0000000000000004: decoding with: DecoderValueSensor port: 8
@@ -246,7 +247,7 @@ namespace LoRaWan.Tests.E2E
             // Ensure device payload is available
             // Data: {"value": 51}
             expectedPayload = $"{{\"value\":{msg}}}";
-            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
