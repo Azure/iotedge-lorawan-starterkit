@@ -108,6 +108,6 @@ namespace LoRaWan.Tests.Common
 
         public IReadOnlyList<Uri> LnsEndpointsForSimulator { get; set; }
 
-        public const int NumberOfLoadTestDevices = 10;
+        public int NumberOfLoadTestDevices { get; set; } = 10;
     }
 }

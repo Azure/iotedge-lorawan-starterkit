@@ -112,7 +112,7 @@ namespace LoRaWan.Tests.Simulation
                     });
             }
 
-            for (var i = 0; i < TestConfiguration.NumberOfLoadTestDevices; i++)
+            for (var i = 0; i < Configuration.NumberOfLoadTestDevices; i++)
             {
                 const int offset = 4000;
                 var deviceId = offset + i;
