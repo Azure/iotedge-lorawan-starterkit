@@ -108,7 +108,7 @@ namespace LoRaWan.Tests.Integration
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
 
-            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.DataRateRx2);
+            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Rx2.DataRate);
 
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
