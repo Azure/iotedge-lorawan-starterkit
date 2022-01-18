@@ -82,7 +82,7 @@ namespace LoRaWan.NetworkServer
             var datr = request.Region.GetDatarateFromIndex(request.RadioMetadata.DataRate);
             Data = payloadData;
             Rawdata = decryptedPayloadData?.Length > 0 ? Convert.ToBase64String(decryptedPayloadData) : string.Empty;
-            Fcnt = upstreamPayload.GetFcnt();
+            Fcnt = upstreamPayload.Fcnt;
             Port = upstreamPayload.Fport.Value;
             Freq = radioMetadata.Frequency.InMega;
             Datr = datr.ToString();

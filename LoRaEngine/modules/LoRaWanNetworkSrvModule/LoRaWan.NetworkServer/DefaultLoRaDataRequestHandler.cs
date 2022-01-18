@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer
             var loraPayload = (LoRaPayloadData)request.Payload;
             this.d2cPayloadSizeHistogram?.Record(loraPayload.Frmpayload.Length);
 
-            var payloadFcnt = loraPayload.GetFcnt();
+            var payloadFcnt = loraPayload.Fcnt;
 
             var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
             this.logger.LogDebug($"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}");
