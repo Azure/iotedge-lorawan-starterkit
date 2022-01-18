@@ -249,14 +249,14 @@ namespace LoRaWan.NetworkServer
                 ["StationEui"] = eui.ToString()
             });
 
-            var responseHeaders = await client.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, token);
-            if (!responseHeaders.IsSuccessStatusCode)
+            var response = await client.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, token);
+            if (!response.IsSuccessStatusCode)
             {
-                this.logger.LogError($"error calling fetch station firmware api: {responseHeaders.ReasonPhrase}, status: {responseHeaders.StatusCode}, check the azure function log");
+                this.logger.LogError($"error calling fetch station firmware api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
             }
-            var responseStream = await client.GetStreamAsync(url, token);
+            var responseStream = await response.Content.ReadAsStreamAsync(token);
 
-            return (responseHeaders.Content.Headers.ContentLength, responseStream);
+            return (response.Content.Headers.ContentLength, responseStream);
         }
     }
 }
