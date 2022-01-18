@@ -96,6 +96,17 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 case LoRaDeviceClassType.B:
                     throw new NotSupportedException($"{nameof(DownstreamSender)} does not support class B devices yet.");
                 case LoRaDeviceClassType.C:
+                    // if Xtime is not zero, it means that we are answering to a previous message
+                    if (message.Xtime != 0)
+                    {
+                        writer.WriteNumber("RxDelay", message.LnsRxDelay.ToSeconds());
+                        writer.WriteNumber("xtime", message.Xtime);
+                        if (message.Rx1 is var (datrC, freqC))
+                        {
+                            writer.WriteNumber("RX1DR", (int)datrC);
+                            writer.WriteNumber("RX1Freq", (ulong)freqC);
+                        }
+                    }
                     writer.WriteNumber("RX2DR", (int)message.Rx2.DataRate);
                     writer.WriteNumber("RX2Freq", (ulong)message.Rx2.Frequency);
                     break;
