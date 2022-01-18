@@ -39,17 +39,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [MemberData(nameof(TestData))]
-        public void ToHex_With_Byte_Memory_Returns_Hexadecimal_String(string expected, Memory<byte> bytes)
+        public void ToHex_With_Byte_Memory_Returns_Hexadecimal_String(string expected, byte[] bytes)
         {
-            var actual = bytes.ToHex();
+            Memory<byte> memory = bytes;
+            var actual = memory.ToHex();
             Assert.Equal(expected, actual);
         }
 
         [Theory]
         [MemberData(nameof(TestData))]
-        public void ToHex_With_Byte_ReadOnlyMemory_Returns_Hexadecimal_String(string expected, ReadOnlyMemory<byte> bytes)
+        public void ToHex_With_Byte_ReadOnlyMemory_Returns_Hexadecimal_String(string expected, byte[] bytes)
         {
-            var actual = bytes.ToHex();
+            ReadOnlyMemory<byte> memory = bytes;
+            var actual = memory.ToHex();
             Assert.Equal(expected, actual);
         }
     }
