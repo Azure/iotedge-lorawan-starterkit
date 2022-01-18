@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer
         public static string ToHex(this Memory<byte> bytes) => FormatHexadecimal(bytes);
         public static string ToHex(this ReadOnlyMemory<byte> bytes) => FormatHexadecimal(bytes);
 
-        public static string FormatHexadecimal(ReadOnlyMemory<byte> bytes)
+        private static string FormatHexadecimal(ReadOnlyMemory<byte> bytes)
         {
             var charLength = bytes.Length * 2;
             var chars = charLength <= 64 ? stackalloc char[charLength] : new char[charLength];
