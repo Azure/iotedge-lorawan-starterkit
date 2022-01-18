@@ -297,13 +297,8 @@ namespace LoRaWan.Tests.Common
 
         private static byte[] StringToByteArray(string hex)
         {
-            if (hex is null) throw new ArgumentNullException(nameof(hex));
-
-            var numberChars = hex.Length;
-            var bytes = new byte[numberChars / 2];
-            for (var i = 0; i < numberChars; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            return bytes;
+            var bytes = new byte[hex.Length / 2];
+            return Hexadecimal.TryParse(hex, bytes) ? bytes : throw new FormatException("Invalid hexadecimal string: " + hex);
         }
     }
 }
