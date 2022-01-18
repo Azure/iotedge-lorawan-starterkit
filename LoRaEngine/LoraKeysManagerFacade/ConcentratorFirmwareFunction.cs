@@ -30,17 +30,14 @@ namespace LoraKeysManagerFacade
 
         private readonly RegistryManager registryManager;
         private readonly IAzureClientFactory<BlobServiceClient> azureClientFactory;
-        private readonly IHttpContextAccessor httpContextAccessor;
         private readonly ILogger<ConcentratorFirmwareFunction> logger;
 
         public ConcentratorFirmwareFunction(RegistryManager registryManager,
                                              IAzureClientFactory<BlobServiceClient> azureClientFactory,
-                                             IHttpContextAccessor httpContextAccessor,
                                              ILogger<ConcentratorFirmwareFunction> logger)
         {
             this.registryManager = registryManager;
             this.azureClientFactory = azureClientFactory;
-            this.httpContextAccessor = httpContextAccessor;
             this.logger = logger;
         }
 

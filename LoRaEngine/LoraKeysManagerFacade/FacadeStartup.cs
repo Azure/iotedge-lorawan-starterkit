@@ -66,8 +66,7 @@ namespace LoraKeysManagerFacade
                     .AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>()
                     .AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>()
                     .AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>()
-                    .AddSingleton<LoRaDevAddrCache>()
-                    .AddHttpContextAccessor();
+                    .AddSingleton<LoRaDevAddrCache>();
         }
 
         private abstract class ConfigHandler
