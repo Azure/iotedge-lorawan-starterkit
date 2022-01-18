@@ -19,7 +19,7 @@ title: Release Notes
 
 ### Breaking Changes
 
-- Deprecated support for Packetforwarder (upgrade instructions)
+- Deprecated support for Packetforwarder (upgrade instructions coming soon [#1271](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1271))
 - Upgrade to RaspberryPi OS based on Debian 11.0 Bullseye ([upgrade instructions](https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/upgrade/#upgrading-to-raspberry-pi-os-bullseye))
 
 ### Bugfixes
