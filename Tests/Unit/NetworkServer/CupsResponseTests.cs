@@ -4,8 +4,10 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Buffers;
     using System.Buffers.Binary;
     using System.Collections.Immutable;
+    using System.IO;
     using System.Linq;
     using System.Text;
     using System.Threading;
@@ -19,6 +21,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     {
         private readonly CupsUpdateInfoRequest cupsRequest;
         private readonly Func<StationEui, ConcentratorCredentialType, CancellationToken, Task<string>> credentialFetcher;
+        private readonly Func<StationEui, CancellationToken, Task<(long?, Stream)>> fwUpgradeFetcher;
+        private readonly byte[] FwUpgradeBytes = new byte[] { 1, 2, 3, 4, 5 };
         private readonly byte[] CredentialBytes = new byte[] { 10, 11, 12, 13, 14 };
 
         public CupsResponseTests()
@@ -29,8 +33,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                          12345,
                                                          12345,
                                                          "1.0.0",
-                                                         ImmutableArray<int>.Empty);
+                                                         new[] { 6789 }.ToImmutableArray());
             this.credentialFetcher = (eui, type, token) => Task.FromResult(Convert.ToBase64String(this.CredentialBytes));
+            this.fwUpgradeFetcher = (eui, token) => Task.FromResult(((long?)FwUpgradeBytes.Length, (Stream)new MemoryStream(this.FwUpgradeBytes)));
         }
 
         [Fact]
@@ -47,11 +52,48 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 this.cupsRequest.KeyChecksums.FirstOrDefault(),
                                                 string.Empty);
 
+            using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
+
             // Act
-            var responseBytes = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher).SerializeAsync(CancellationToken.None);
+            var (r, fwl, fwb) = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher, this.fwUpgradeFetcher).SerializeAsync(memoryPool.Memory, CancellationToken.None);
 
             // Assert
-            Assert.True(responseBytes.All(b => b == 0));
+            Assert.True(r.ToArray().All(b => b == 0));
+        }
+
+        [Fact]
+        public async Task Serialize_WithFirmwareUpdates()
+        {
+            // setting up the twin in such a way that there are only firmware updates
+            var signature = "ABCD";
+            var signatureBytes = Convert.FromBase64String(signature);
+            var cupsTwinInfo = new CupsTwinInfo(this.cupsRequest.CupsUri,
+                                                this.cupsRequest.TcUri,
+                                                this.cupsRequest.CupsCredentialsChecksum,
+                                                this.cupsRequest.TcCredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty,
+                                                "another",
+                                                this.cupsRequest.KeyChecksums.FirstOrDefault(),
+                                                signature);
+
+            using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
+
+            // Act
+            var (r, fwl, fwb) = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher, this.fwUpgradeFetcher).SerializeAsync(memoryPool.Memory, CancellationToken.None);
+
+            var responseBytes = r.ToArray();
+            // Assert
+            Assert.Equal(signatureBytes.Length + 4, BinaryPrimitives.ReadInt32LittleEndian(responseBytes.AsSpan()[6..10]));
+            using var tempPool = MemoryPool<byte>.Shared.Rent(100);
+            BinaryPrimitives.WriteInt32LittleEndian(tempPool.Memory.Span, this.cupsRequest.KeyChecksums.FirstOrDefault());
+            Assert.Equal(tempPool.Memory.Span[..3].ToArray(), responseBytes[10..13]);
+            Assert.Equal(signatureBytes, responseBytes[14..(14 + signatureBytes.Length)]);
+            var fwLengthFieldStart = 14 + signatureBytes.Length;
+            Assert.Equal(this.FwUpgradeBytes.Length, BinaryPrimitives.ReadInt32LittleEndian(responseBytes.AsSpan()[fwLengthFieldStart..(fwLengthFieldStart+4)]));
+            var fwBytes = new byte[this.FwUpgradeBytes.Length];
+            await fwb.WriteAsync(fwBytes);
+            Assert.Equal(this.FwUpgradeBytes, fwBytes);
         }
 
         [Fact]
@@ -68,9 +110,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 this.cupsRequest.Package,
                                                 this.cupsRequest.KeyChecksums.FirstOrDefault(),
                                                 string.Empty);
+            using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
 
             // Act
-            var responseBytes = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher).SerializeAsync(CancellationToken.None);
+            var (r, fwl, fwb) = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher, this.fwUpgradeFetcher).SerializeAsync(memoryPool.Memory, CancellationToken.None);
+
+            var responseBytes = r.ToArray();
 
             // Assert
             Assert.Equal(anotherCupsUri.Length, responseBytes[0]);
@@ -94,9 +139,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 this.cupsRequest.Package,
                                                 this.cupsRequest.KeyChecksums.FirstOrDefault(),
                                                 string.Empty);
+            using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
 
             // Act
-            var responseBytes = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher).SerializeAsync(CancellationToken.None);
+            var (r, fwl, fwb) = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher, this.fwUpgradeFetcher).SerializeAsync(memoryPool.Memory, CancellationToken.None);
+            var responseBytes = r.ToArray();
 
             // Assert
             Assert.Equal(anotherTcUri.Length, responseBytes[1]);
@@ -121,8 +168,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 this.cupsRequest.KeyChecksums.FirstOrDefault(),
                                                 string.Empty);
 
+            using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
+
             // Act
-            var responseBytes = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher).SerializeAsync(CancellationToken.None);
+            var (r, fwl, fwb) = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher, this.fwUpgradeFetcher).SerializeAsync(memoryPool.Memory, CancellationToken.None);
+            var responseBytes = r.ToArray();
 
             // Assert
             // Cups Credentials
