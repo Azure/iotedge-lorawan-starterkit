@@ -299,35 +299,5 @@ namespace LoRaWan.Tests.Simulation
                 }
             }
         }
-
-        //[Fact(Skip = "simulated")]
-        //public async Task Simulated_Http_Based_Decoder_Scenario()
-        //{
-        //    var device = TestFixtureSim.Device1003_Simulated_HttpBasedDecoder;
-        //    var simulatedDevice = new Common.SimulatedDevice(device);
-        //    var networkServerIPEndpoint = CreateNetworkServerEndpoint();
-
-        //    using (var simulatedPacketForwarder = new SimulatedBasicsStation(device.DeviceID, networkServerIPEndpoint))
-        //    {
-        //        await simulatedPacketForwarder.StartAsync();
-
-        //        var joined = await simulatedDevice.JoinAsync(simulatedPacketForwarder);
-        //        Assert.True(joined, "OTAA join failed");
-
-        //        await Task.Delay(this.intervalAfterJoin);
-
-        //        for (var i = 1; i <= 3; i++)
-        //        {
-        //            using var request = WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(i.ToString(CultureInfo.InvariantCulture)));
-        //            await simulatedPacketForwarder.SendDataMessageAsync(request);
-        //            await Task.Delay(this.intervalBetweenMessages);
-        //        }
-
-        //        await simulatedPacketForwarder.StopAsync();
-        //    }
-
-        //    // wait 10 seconds before checking if iot hub content is available
-        //    await Task.Delay(TimeSpan.FromSeconds(10));
-        //}
     }
 }

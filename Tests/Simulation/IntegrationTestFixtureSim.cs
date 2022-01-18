@@ -19,9 +19,6 @@ namespace LoRaWan.Tests.Simulation
         // Device1002_Simulated_OTAA: used for simulator
         public TestDeviceInfo Device1002_Simulated_OTAA { get; private set; }
 
-        // Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
-        public TestDeviceInfo Device1003_Simulated_HttpBasedDecoder { get; private set; }
-
         private readonly List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP => this.deviceRange1000_ABP;
@@ -69,17 +66,6 @@ namespace LoRaWan.Tests.Simulation
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
-            };
-
-            // Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
-            Device1003_Simulated_HttpBasedDecoder = new TestDeviceInfo
-            {
-                DeviceID = "0000000000001003",
-                AppEui = JoinEui.Parse("0000000000001003"),
-                AppKey = GetAppKey(1003),
-                GatewayID = gatewayID,
-                IsIoTHubDevice = true,
-                SensorDecoder = "http://localhost:8888/api/DecoderValueSensor",
             };
 
             var fileName = "EU863.json";
