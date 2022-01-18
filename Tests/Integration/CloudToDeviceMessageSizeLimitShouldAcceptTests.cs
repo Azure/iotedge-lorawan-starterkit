@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2dMessage.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2dMessage.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
