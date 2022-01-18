@@ -13,7 +13,6 @@ namespace LoRaWan.Tests.Common
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
 
     /// <summary>
@@ -105,7 +104,7 @@ namespace LoRaWan.Tests.Common
                 }
                 else
                 {
-                    payload = ConversionHelper.StringToByteArray(data);
+                    payload = StringToByteArray(data);
                 }
 
                 Array.Reverse(payload);
@@ -166,7 +165,7 @@ namespace LoRaWan.Tests.Common
                 }
                 else
                 {
-                    payload = ConversionHelper.StringToByteArray(data);
+                    payload = StringToByteArray(data);
                 }
 
                 Array.Reverse(payload);
@@ -241,7 +240,7 @@ namespace LoRaWan.Tests.Common
                 // is null in case it is another message coming from the station.
                 if (joinAcceptstring?.Pdu != null)
                 {
-                    var joinAccept = new LoRaPayloadJoinAccept(ConversionHelper.StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
+                    var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
 
                     var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
                     joinSuccessful = result;
@@ -294,6 +293,12 @@ namespace LoRaWan.Tests.Common
             LoRaDevice.AppSKey = appSKey;
             LoRaDevice.NwkSKey = nwkSKey;
             LoRaDevice.DevAddr = devAddr;
+        }
+
+        private static byte[] StringToByteArray(string hex)
+        {
+            var bytes = new byte[hex.Length / 2];
+            return Hexadecimal.TryParse(hex, bytes) ? bytes : throw new FormatException("Invalid hexadecimal string: " + hex);
         }
     }
 }
