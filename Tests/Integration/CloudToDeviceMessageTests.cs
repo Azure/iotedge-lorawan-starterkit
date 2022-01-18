@@ -641,7 +641,7 @@ namespace LoRaWan.Tests.Integration
             var downlinkMessage = Assert.Single(PacketForwarder.DownlinkMessages);
 
             Assert.Equal(LoRaDeviceClassType.A, downlinkMessage.DeviceClassType);
-            Assert.Equal(RxDelay.RxDelay1, downlinkMessage.LnsRxDelay);
+            Assert.Equal(loRaDevice.ReportedRXDelay, downlinkMessage.LnsRxDelay);
             if (expectingSecondWindow)
             {
                 Assert.Null(downlinkMessage.Rx1);
