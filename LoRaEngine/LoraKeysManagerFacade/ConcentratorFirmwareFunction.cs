@@ -7,6 +7,7 @@ namespace LoraKeysManagerFacade
     using System.Globalization;
     using System.IO;
     using System.Net;
+    using System.Net.Mime;
     using System.Threading;
     using System.Threading.Tasks;
     using Azure;
@@ -79,7 +80,6 @@ namespace LoraKeysManagerFacade
 
                     var fwUrl = JObject.Parse(cupsProperty)[CupsFwUrlPropertyName].ToString();
                     var (fwLength, stream) = await GetBlobStreamAsync(fwUrl, cancellationToken);
-
                     return new FileStreamWithContentLengthResult(stream, "application/octet-stream", fwLength);
                 }
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException or NullReferenceException)
