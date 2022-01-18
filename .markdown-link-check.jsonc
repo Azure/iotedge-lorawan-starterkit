@@ -23,5 +23,12 @@
         "replacement": "{{BASEURL}}/"
       }
     ],
-    "aliveStatusCodes": [200, 206]
+    "aliveStatusCodes": [200, 206],
+
+    //enable retry on 429, this seems to be happening with GitHub links sometimes.
+    //The `fallbackRetryDelay` is only used when the `retry-after` header of the response has an invalid value.
+    //see https://github.com/tcort/markdown-link-check#config-file-format for more info.
+    "retryOn429": true,
+    "retryCount": 2,
+    "fallbackRetryDelay": "60s"
   }
