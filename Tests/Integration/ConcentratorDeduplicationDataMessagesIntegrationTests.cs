@@ -194,7 +194,7 @@ namespace LoRaWan.Tests.Integration
           int expectedMessagesDown,
           int expectedTwinSaves)
         {
-            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", 10);
+            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fcnt: 10);
 
             await ArrangeActAndAssert(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
@@ -257,7 +257,7 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown)
         {
             // arrange
-            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", 10);
+            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fcnt: 10);
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
             var gwId = "foo";
@@ -280,8 +280,7 @@ namespace LoRaWan.Tests.Integration
             int expectedNumberOfADRCalls)
         {
             // arrange
-            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
-            dataPayload.FrameControlFlags = FrameControlFlags.Adr; // adr enabled
+            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fctrlFlags: FrameControlFlags.Adr);
             var (request1, request2) = SetupRequests(dataPayload, station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.Mark; // or None

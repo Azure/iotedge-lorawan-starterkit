@@ -151,7 +151,7 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = FramePorts.App1, bool isHexPayload = false, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
+        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, FrameControlFlags fctrlFlags = FrameControlFlags.Adr, uint? fcnt = null, FramePort fport = FramePorts.App1, bool isHexPayload = false, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
         {
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
@@ -176,7 +176,7 @@ namespace LoRaWan.Tests.Common
             var direction = 0;
             var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp,
                                                   LoRaDevice.DevAddr.Value,
-                                                  FrameControlFlags.Adr,
+                                                  fctrlFlags,
                                                   unchecked((ushort)fcnt.Value),
                                                   null,
                                                   fport,
