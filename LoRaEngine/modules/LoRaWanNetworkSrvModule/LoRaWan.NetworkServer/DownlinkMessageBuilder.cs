@@ -201,8 +201,6 @@ namespace LoRaWan.NetworkServer
                 loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
             // following calculation is making sure that ReportedRXDelay is chosen if not default,
-            // otherwise for class C devices a LnsRxDelay of 0 is chosen, for class A devices a value of 1 is chosen
-            var lnsRxDelay = (RxDelay)Math.Max((loRaDevice.ClassType is LoRaDeviceClassType.C ? RxDelay0 : RxDelay1).ToSeconds(), loRaDevice.ReportedRXDelay.ToSeconds());
             // todo: check the device twin preference if using confirmed or unconfirmed down
             var downlinkMessage = BuildDownstreamMessage(loRaDevice,
                                                          request.StationEui,
@@ -210,7 +208,7 @@ namespace LoRaWan.NetworkServer
                                                          radioMetadata.UpInfo.Xtime,
                                                          receiveWindow == Constants.ReceiveWindow2 ? null : (datr, freq),
                                                          rx2,
-                                                         lnsRxDelay,
+                                                         loRaDevice.ReportedRXDelay,
                                                          ackLoRaMessage,
                                                          loRaDevice.ClassType,
                                                          radioMetadata.UpInfo.AntennaPreference);
