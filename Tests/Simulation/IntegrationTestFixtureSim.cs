@@ -112,17 +112,14 @@ namespace LoRaWan.Tests.Simulation
                     });
             }
 
-            for (var i = 0; i < Configuration.NumberOfLoadTestDevices; i++)
+            for (var deviceId = 4000; deviceId < 4000 + Configuration.NumberOfLoadTestDevices; deviceId++)
             {
-                const int offset = 4000;
-                var deviceId = offset + i;
                 this.deviceRange4000_OTAA_FullLoad.Add(
                     new TestDeviceInfo
                     {
                         DeviceID = deviceId.ToString("0000000000000000", CultureInfo.InvariantCulture),
                         AppEui = JoinEui.Parse(deviceId.ToString("0000000000000000", CultureInfo.InvariantCulture)),
                         AppKey = GetAppKey(deviceId),
-                        // GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
                     });
