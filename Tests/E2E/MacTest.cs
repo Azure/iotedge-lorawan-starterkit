@@ -162,9 +162,8 @@ namespace LoRaWan.Tests.E2E
                         {
                             return messageBody.StartsWith(macCommandReceivedMsg, StringComparison.Ordinal);
                         },
-                        new SearchLogOptions
+                        new SearchLogOptions(macCommandReceivedMsg)
                         {
-                            Description = macCommandReceivedMsg,
                             MaxAttempts = 1
                         });
 
@@ -183,9 +182,8 @@ namespace LoRaWan.Tests.E2E
                         {
                             return messageBody.Contains(deviceMacCommandResponseMsg, StringComparison.InvariantCultureIgnoreCase);
                         },
-                        new SearchLogOptions
+                        new SearchLogOptions(deviceMacCommandResponseMsg)
                         {
-                            Description = deviceMacCommandResponseMsg,
                             MaxAttempts = 1
                         });
 
@@ -285,9 +283,8 @@ namespace LoRaWan.Tests.E2E
                 {
                     var searchResult =
                         await TestFixtureCi.SearchNetworkServerModuleAsync(messageBody => messageBody.Contains(message, StringComparison.OrdinalIgnoreCase),
-                                                                           new SearchLogOptions
+                                                                           new SearchLogOptions(message)
                                                                            {
-                                                                               Description = message,
                                                                                MaxAttempts = 1
                                                                            });
 

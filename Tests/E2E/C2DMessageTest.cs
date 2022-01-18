@@ -67,7 +67,8 @@ namespace LoRaWan.Tests.E2E
             Assert.True(joinSucceeded, "Join failed");
 
             // find the gateway that accepted the join
-            var joinAccept = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("JoinAccept", StringComparison.OrdinalIgnoreCase) != -1);
+            const string expectedLog = "JoinAccept";
+            var joinAccept = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(expectedLog, StringComparison.OrdinalIgnoreCase) != -1, new SearchLogOptions(expectedLog));
             Assert.NotNull(joinAccept);
             Assert.NotNull(joinAccept.MatchedEvent);
 
@@ -136,9 +137,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions(c2dLogMessage)
                     {
-                        Description = c2dLogMessage,
                         MaxAttempts = 1
                     });
 
@@ -253,9 +253,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions(c2dLogMessage)
                     {
-                        Description = c2dLogMessage,
                         MaxAttempts = 1
                     });
 
@@ -392,9 +391,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions(c2dLogMessage)
                     {
-                        Description = c2dLogMessage,
                         MaxAttempts = 1
                     });
 
@@ -530,9 +528,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(expectedTcpMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedTcpMessageV2, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions($"{expectedTcpMessageV1} or {expectedTcpMessageV2}")
                     {
-                        Description = $"{expectedTcpMessageV1} or {expectedTcpMessageV2}",
                         MaxAttempts = 1
                     });
 
@@ -647,9 +644,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(expectedTcpMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedTcpMessageV2, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions($"{expectedTcpMessageV1} or {expectedTcpMessageV2}")
                     {
-                        Description = $"{expectedTcpMessageV1} or {expectedTcpMessageV2}",
                         MaxAttempts = 1,
                     });
 
