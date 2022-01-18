@@ -408,6 +408,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#key-challenges" class="md-nav__link">
+    Key Challenges
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#features" class="md-nav__link">
     Features
   </a>
@@ -1300,6 +1307,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#key-challenges" class="md-nav__link">
+    Key Challenges
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#features" class="md-nav__link">
     Features
   </a>
@@ -1358,25 +1372,39 @@
 <a href="https://codecov.io/gh/Azure/iotedge-lorawan-starterkit"><img alt="codecov" src="https://codecov.io/gh/Azure/iotedge-lorawan-starterkit/branch/dev/graph/badge.svg" /></a></p>
 <!-- markdown-link-check-enable -->
 
+<div class="admonition info">
+<p>Built for Low Power Wide Area Network Connectivity to Azure IoT Hub</p>
+</div>
 <p>The LoRaWAN starter kit is an <abbr title="Open Source Software">OSS</abbr> cross platform private network implementation
 of the <a href="https://lora-alliance.org/resource_hub/lorawan-specification-v1-0-2/">LoRaWAN specification</a>
 built for connectivity to Azure IoT Hub. It enables users to setup their own
 LoRaWAN network that can connect to LoRa based nodes (sensors) and send decoded
 message packets to Azure IoT Hub for cloud based processing, analytics and other
-workloads. Alternatively, it allows sending commands from the cloud to the end
+workloads.</p>
+<p>Alternatively, it allows sending commands from the cloud to the end
 nodes. The goal of the the project is to provide guidance and a reference for
 Azure IoT Edge users to experiment with LoRaWAN technology.</p>
 <p><img alt="Architecture" src="images/EdgeArchitecture.png" /></p>
+<h2 id="key-challenges">Key Challenges</h2>
+<ul>
+<li>Allows LoRa-enabled field gateways to connect directly to Azure without the need for a network operator as intermediary.</li>
+<li>Enables Azure IoT Edge capabilities for the LoRaWAN network, e.g.:<ul>
+<li>Local processing on the Edge gateway</li>
+<li>Routing to local storage from the Edge gateway</li>
+<li>Offline capabilities of the gateway</li>
+</ul>
+</li>
+<li>Homogenous management of devices and concentrators independent of connectivity technology through Azure IoT.</li>
+<li>Off-the-shelf integration with Azure IoT ecosystem, e.g., Azure IoT Hub, Azure Digital Twins, Time Series Insights, etc...</li>
+</ul>
 <h2 id="features">Features</h2>
 <ul>
 <li>LoRaWAN 1.0.2 implementation
 (see <a href="#LoRaWAN-1.0.2-Specification-Support">LoRaWAN Specification Support</a>
 for more details)</li>
-<li>Multiple concentrator support</li>
-<li>Device and Gateway management done completely through Azure IoT Hub.</li>
+<li>Device and Concentrator management done through Azure IoT Hub.</li>
 <li>Bi-directional communication between LoRa end devices and Azure cloud.</li>
 <li>Custom packet decoding framework.</li>
-<li>Device Agnostic.</li>
 <li>Identity Translation for LoRa devices with caching support.</li>
 <li>Partial Offline and Casually connected Gateways scenarios.*</li>
 <li>Easy deployment and setup using Azure <abbr title="Azure Resource Manager">ARM</abbr> templates.</li>
@@ -1449,11 +1477,11 @@ with <a href="http://www.embeddedpi.com/iocards">RAK833-SPI mPCIe-LoRa-Concentra
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-14T16:23:18+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-14</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-18T14:37:44+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-18</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-14T16:23:18+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-14</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-18T14:37:44+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-18</span>
       
     
   </small>
