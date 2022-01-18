@@ -21,6 +21,7 @@ namespace LoRaWan.Tests.Simulation
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class SimulatedLoadTests : IntegrationTestBaseSim, IAsyncLifetime
     {
+        private const double DownstreamDroppedMessagesTolerance = 0.02;
         private static readonly TimeSpan IntervalBetweenMessages = TimeSpan.FromSeconds(5);
         private readonly List<SimulatedBasicsStation> simulatedBasicsStations;
         /// <summary>
@@ -66,7 +67,7 @@ namespace LoRaWan.Tests.Simulation
             foreach (var device in simulatedDevices)
             {
                 Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
-                device.EnsureMessageResponsesAreReceived(1);
+                EnsureMessageResponsesAreReceived(device, 1);
             }
         }
 
@@ -80,7 +81,7 @@ namespace LoRaWan.Tests.Simulation
             await WaitForResultsInIotHubAsync();
 
             Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
-            device.EnsureMessageResponsesAreReceived(messageCount);
+            EnsureMessageResponsesAreReceived(device, messageCount);
         }
 
         [Fact]
@@ -94,7 +95,7 @@ namespace LoRaWan.Tests.Simulation
             await WaitForResultsInIotHubAsync();
 
             Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
-            device.EnsureMessageResponsesAreReceived(messageCount + 1);
+            EnsureMessageResponsesAreReceived(device, messageCount + 1);
         }
 
         [Fact]
@@ -123,7 +124,7 @@ namespace LoRaWan.Tests.Simulation
             foreach (var device in simulatedDevices)
             {
                 Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCounts), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
-                device.EnsureMessageResponsesAreReceived(messageCounts + 1);
+                EnsureMessageResponsesAreReceived(device, messageCounts + 1);
             }
         }
 
@@ -220,15 +221,22 @@ namespace LoRaWan.Tests.Simulation
             foreach (var device in simulatedAbpDevices)
             {
                 Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, scenarioMessagesPerDevice), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
-                device.EnsureMessageResponsesAreReceived(scenarioMessagesPerDevice - messagesBeforeConfirmed);
+                EnsureMessageResponsesAreReceived(device, scenarioMessagesPerDevice - messagesBeforeConfirmed);
             }
             foreach (var device in simulatedOtaaDevices)
             {
                 // number of total data messages is number of messages per device minus the join message minus the number of messages sent before the join happens.
                 const int numberOfOtaaDataMessages = scenarioMessagesPerDevice - messagesBeforeJoin - 1;
                 Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfOtaaDataMessages), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
-                device.EnsureMessageResponsesAreReceived(numberOfOtaaDataMessages + 1);
+                EnsureMessageResponsesAreReceived(device, numberOfOtaaDataMessages + 1);
             }
+        }
+
+        private static void EnsureMessageResponsesAreReceived(SimulatedDevice device, int expectedCount)
+        {
+            if (expectedCount == 0) throw new ArgumentException(null, nameof(expectedCount));
+            var minimumMessagesReceived = Math.Max((int)(expectedCount * (1 - DownstreamDroppedMessagesTolerance)), 1);
+            Assert.True(minimumMessagesReceived <= device.ReceivedMessages.Count, $"Too many downlink messages were dropped. Received {device.ReceivedMessages.Count} messages but expected at least {minimumMessagesReceived}.");
         }
 
         private async Task SendConfirmedUpstreamMessages(SimulatedDevice device, int count)
