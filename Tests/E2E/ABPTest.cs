@@ -103,11 +103,11 @@ namespace LoRaWan.Tests.E2E
                 if (device.IsMultiGw)
                 {
                     var searchTokenSending = $"{device.DeviceID}: sending message to station with EUI";
-                    var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase));
+                    var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenSending));
                     Assert.NotNull(sending.MatchedEvent);
 
                     var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
-                    var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase));
+                    var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenAlreadySent));
                     Assert.NotNull(ignored.MatchedEvent);
 
                     Assert.NotEqual(sending.MatchedEvent.SourceId, ignored.MatchedEvent.SourceId);
@@ -157,13 +157,13 @@ namespace LoRaWan.Tests.E2E
             await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: ADR ack request received");
 
             var searchTokenADRRateAdaptation = $"{device.DeviceID}: performing a rate adaptation: DR";
-            var received = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRRateAdaptation, StringComparison.OrdinalIgnoreCase));
+            var received = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRRateAdaptation, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenADRRateAdaptation));
             Assert.NotNull(received.MatchedEvent);
 
             if (device.IsMultiGw)
             {
                 var searchTokenADRAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
-                var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRAlreadySent, StringComparison.OrdinalIgnoreCase));
+                var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRAlreadySent, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenADRAlreadySent));
 
                 Assert.NotNull(ignored.MatchedEvent);
                 Assert.NotEqual(received.MatchedEvent.SourceId, ignored.MatchedEvent.SourceId);
@@ -357,7 +357,8 @@ namespace LoRaWan.Tests.E2E
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
             await ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
-            await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith($"{device25.DeviceID}: processing time", StringComparison.Ordinal));
+            var expectedLog = $"{device25.DeviceID}: processing time";
+            await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(expectedLog, StringComparison.Ordinal), new SearchLogOptions(expectedLog));
 
             // wait 61 seconds
             await Task.Delay(TimeSpan.FromSeconds(120));
@@ -373,12 +374,13 @@ namespace LoRaWan.Tests.E2E
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
+            var expectedLog2 = $"{device25.DeviceID}: device client disconnected";
             var result = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                        msg => msg.StartsWith($"{device25.DeviceID}: device client disconnected", StringComparison.Ordinal),
-                        new SearchLogOptions
+                        msg => msg.StartsWith(expectedLog2, StringComparison.Ordinal),
+                        new SearchLogOptions(expectedLog2)
                         {
                             MaxAttempts = 10,
-                            SourceIdFilter = device25.GatewayID
+                            SourceIdFilter = device25.GatewayID,
                         });
 
             Assert.NotNull(result.MatchedEvent);
