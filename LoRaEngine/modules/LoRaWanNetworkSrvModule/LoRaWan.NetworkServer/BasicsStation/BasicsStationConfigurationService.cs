@@ -30,6 +30,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                               (downlinkDwellLimit, uplinkDwellLimit, eirp) => new DwellTimeSetting(downlinkDwellLimit, uplinkDwellLimit, eirp));
 
         private static readonly TimeSpan CacheTimeout = TimeSpan.FromHours(2);
+        private static readonly TimeSpan CacheLBSRateLimitingTimeout = TimeSpan.FromSeconds(15); // dummy cache entries are used in order to "rate limit" LBS so that we don't contact IoTHub too often
+
         private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiService;
         private readonly ILoRaDeviceFactory loRaDeviceFactory;
@@ -60,20 +62,40 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             try
             {
-                return await this.cache.GetOrCreateAsync(cacheKey, async cacheEntry =>
+                LoRaProcessingException exception = null;
+                var cacheValue = await this.cache.GetOrCreateAsync(cacheKey, async cacheEntry =>
                 {
-                    _ = cacheEntry.SetAbsoluteExpiration(CacheTimeout);
-                    var key = await this.loRaDeviceApiService.GetPrimaryKeyByEuiAsync(stationEui);
-                    if (string.IsNullOrEmpty(key))
+                    try
                     {
-                        throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
-                                                          LoRaProcessingErrorCode.InvalidDeviceConfiguration);
-                    }
+                        _ = cacheEntry.SetAbsoluteExpiration(CacheTimeout);
 
-                    using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
-                    var twin = await client.GetTwinAsync(cancellationToken);
-                    return twin.Properties.Desired;
+                        var key = await this.loRaDeviceApiService.GetPrimaryKeyByEuiAsync(stationEui);
+                        if (string.IsNullOrEmpty(key))
+                        {
+                            throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
+                                                                LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+                        }
+
+                        using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
+                        var twin = await client.GetTwinAsync(cancellationToken);
+                        return twin.Properties.Desired;
+                    }
+                    catch (LoRaProcessingException ex)
+                    {
+                        exception = ex; // keeps the exception to re-throw after creating the cache entry
+
+                        _ = cacheEntry.SetAbsoluteExpiration(CacheLBSRateLimitingTimeout);
+                        return new TwinCollection();
+                    }
                 });
+
+#pragma warning disable CA1508 // Avoid dead conditional code
+                // false positive, variable is conditionally not null when an exception is thrown
+                if (exception != null)
+#pragma warning restore CA1508 // Avoid dead conditional code
+                    throw exception;
+
+                return cacheValue;
             }
             finally
             {
