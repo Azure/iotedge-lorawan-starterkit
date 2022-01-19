@@ -97,7 +97,7 @@ namespace LoRaWan.Tests.Simulation
         public async Task Lots_Of_Devices_OTAA_Simulated_Load_Test()
         {
             // arrange
-            const int messageCounts = 50;
+            const int messageCounts = 20;
             var simulatedDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange4000_OTAA_FullLoad);
             Assert.NotEmpty(simulatedDevices);
 
