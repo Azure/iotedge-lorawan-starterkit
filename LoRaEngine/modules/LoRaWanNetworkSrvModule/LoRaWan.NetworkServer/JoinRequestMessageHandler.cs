@@ -203,18 +203,6 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                ushort lnsRxDelay;
-                if (windowToUse is ReceiveWindow1)
-                {
-                    // set tmst for the normal case
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1.ToSeconds();
-                }
-                else
-                {
-                    this.logger.LogDebug("processing of the join request took too long, using second join accept receive window");
-                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2.ToSeconds();
-                }
-
                 this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                 // Build join accept downlink message
@@ -277,12 +265,11 @@ namespace LoRaWan.NetworkServer
                 var downlinkMessage = new DownlinkMessage(
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,
-                  loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset),
-                  loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, this.logger),
-                  freq,
-                  loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, this.logger),
+                  windowToUse is not ReceiveWindow2 ? (loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset), freq) : null,
+                  (loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, this.logger), loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, this.logger)),
                   loRaDevice.DevEUI,
-                  lnsRxDelay,
+                  loraRegion.JoinAcceptDelay1,
+                  loRaDevice.ClassType,
                   request.StationEui,
                   request.RadioMetadata.UpInfo.AntennaPreference
                   );

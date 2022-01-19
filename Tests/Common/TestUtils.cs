@@ -319,24 +319,24 @@ namespace LoRaWan.Tests.Common
         {
             var euRegion = RegionManager.EU868;
 
-            // If we want to send to force to rx 2, we will set both the rx1 and rx2 settings to the rx2 parameters.
+            // If we want to send to force to rx 2, we will set rx1 to default and rx2 settings to proper values.
             // Ensure RX DR
             if (sendToRx2)
-                Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, NullLogger.Instance), downlinkMessage.DataRateRx2);
+                Assert.Null(downlinkMessage.Rx1);
             else
-                Assert.Equal(euRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate), downlinkMessage.DataRateRx1);
+                Assert.Equal(euRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate), downlinkMessage.Rx1.Value.DataRate);
 
-            Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, NullLogger.Instance), downlinkMessage.DataRateRx2);
+            Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, NullLogger.Instance), downlinkMessage.Rx2.DataRate);
 
             // Ensure RX freq
             Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, out var channelFrequency));
 
             if (sendToRx2)
-                Assert.Equal(euRegion.GetDownstreamRX2Freq(null, NullLogger.Instance), downlinkMessage.FrequencyRx1);
+                Assert.Null(downlinkMessage.Rx1);
             else
-                Assert.Equal(channelFrequency, downlinkMessage.FrequencyRx1);
+                Assert.Equal(channelFrequency, downlinkMessage.Rx1.Value.Frequency);
 
-            Assert.Equal(euRegion.GetDownstreamRX2Freq(null, NullLogger.Instance), downlinkMessage.FrequencyRx2);
+            Assert.Equal(euRegion.GetDownstreamRX2Freq(null, NullLogger.Instance), downlinkMessage.Rx2.Frequency);
         }
     }
 }
