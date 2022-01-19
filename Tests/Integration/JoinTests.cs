@@ -14,6 +14,7 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
     using Xunit.Abstractions;
@@ -218,6 +219,12 @@ namespace LoRaWan.Tests.Integration
             }
             Assert.True(region.TryGetDownstreamChannelFrequency(confirmedRequest.RadioMetadata.Frequency, confirmedRequest.RadioMetadata.DataRate, deviceJoinInfo, downstreamFrequency: out var frequency));
             Assert.Equal(frequency, downstreamMessage.Rx1?.Frequency);
+
+            var rx2Freq = region.GetDownstreamRX2Freq(null, deviceJoinInfo, NullLogger.Instance);
+            Assert.Equal(rx2Freq, downstreamMessage.Rx2.Frequency);
+
+            var rx2DataRate = region.GetDownstreamRX2DataRate(null, null, deviceJoinInfo, NullLogger.Instance);
+            Assert.Equal(rx2DataRate, downstreamMessage.Rx2.DataRate);
 
             // fcnt up was updated
             Assert.Equal(startingPayloadFcnt + 1, loRaDevice.FCntUp);
