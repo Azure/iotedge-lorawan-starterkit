@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Mac;
     using LoRaTools.Regions;
+    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using static RxDelay;
@@ -92,7 +93,9 @@ namespace LoRaWan.NetworkServer
                     return new DownlinkMessageBuilderResponse(null, false, receiveWindow);
                 }
             }
-            var rx2 = (loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo), loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo));
+
+            var rx2 = new ReceiveWindow(loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo),
+                                        loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo));
 
             // get max. payload size based on data rate from LoRaRegion
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
@@ -205,7 +208,7 @@ namespace LoRaWan.NetworkServer
                                                          request.StationEui,
                                                          logger,
                                                          radioMetadata.UpInfo.Xtime,
-                                                         receiveWindow == Constants.ReceiveWindow2 ? null : (datr, freq),
+                                                         receiveWindow == Constants.ReceiveWindow2 ? null : new ReceiveWindow(datr, freq),
                                                          rx2,
                                                          loRaDevice.ReportedRXDelay,
                                                          ackLoRaMessage,
@@ -222,8 +225,8 @@ namespace LoRaWan.NetworkServer
                                                               StationEui stationEUI,
                                                               ILogger logger,
                                                               ulong xTime,
-                                                              (DataRateIndex, Hertz)? rx1,
-                                                              (DataRateIndex, Hertz) rx2,
+                                                              ReceiveWindow? rx1,
+                                                              ReceiveWindow rx2,
                                                               RxDelay lnsRxDelay,
                                                               LoRaPayloadData loRaMessage,
                                                               LoRaDeviceClassType deviceClassType,
@@ -339,7 +342,7 @@ namespace LoRaWan.NetworkServer
                                                              logger: logger,
                                                              xTime: 0,
                                                              null,
-                                                             (datr, freq),
+                                                             new ReceiveWindow(datr, freq),
                                                              RxDelay0,
                                                              ackLoRaMessage,
                                                              LoRaDeviceClassType.C);
