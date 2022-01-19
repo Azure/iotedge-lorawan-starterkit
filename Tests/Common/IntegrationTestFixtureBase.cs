@@ -316,16 +316,11 @@ namespace LoRaWan.Tests.Common
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
             var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
-            var deserializedCupsTwinInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson);
-            var newCupsInfo = new CupsTwinInfo(deserializedCupsTwinInfo.CupsUri,
-                                               deserializedCupsTwinInfo.TcUri,
-                                               crc,
-                                               crc,
-                                               deserializedCupsTwinInfo.CupsCredentialUrl,
-                                               deserializedCupsTwinInfo.TcCredentialUrl,
-                                               deserializedCupsTwinInfo.Package,
-                                               deserializedCupsTwinInfo.FwKeyChecksum,
-                                               deserializedCupsTwinInfo.FwSignatureInBase64);
+            var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
+            {
+                TcCredCrc = crc,
+                CupsCredCrc = crc,
+            };
             deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
             await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
         }

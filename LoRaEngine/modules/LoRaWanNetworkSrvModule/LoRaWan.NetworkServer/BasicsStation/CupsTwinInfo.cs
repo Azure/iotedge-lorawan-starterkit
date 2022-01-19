@@ -44,11 +44,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         [JsonPropertyName("cupsCredCrc")]
         [JsonProperty("cupsCredCrc")]
-        public uint CupsCredCrc { get; }
+        public uint CupsCredCrc { get; init; }
 
         [JsonPropertyName("tcCredCrc")]
         [JsonProperty("tcCredCrc")]
-        public uint TcCredCrc { get; }
+        public uint TcCredCrc { get; init; }
 
         [JsonPropertyName("cupsCredentialUrl")]
         [JsonProperty("cupsCredentialUrl")]
