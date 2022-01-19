@@ -4,9 +4,11 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Net.Http;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -122,6 +124,39 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public async Task FetchStationFirmwareAsync_Returns_Stream_And_Content_Length()
+        {
+            var contentBytes = Encoding.UTF8.GetBytes("Test");
+            using var memorystream = new MemoryStream(contentBytes.Length);
+            await memorystream.WriteAsync(contentBytes);
+            memorystream.Seek(0, SeekOrigin.Begin);
+            // arrange
+            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
+            using var httpHandlerMock = new HttpMessageHandlerMock();
+            httpHandlerMock.SetupHandler(r =>
+            {
+                var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(memorystream),
+
+                };
+                return response;
+            } );
+            using var httpClient = new HttpClient(httpHandlerMock);
+            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
+            var subject = Setup(facadeMock.Object);
+
+            // act
+            var (length, stream) = await subject.FetchStationFirmwareAsync(new StationEui(ulong.MaxValue), CancellationToken.None);
+
+            // assert
+            var expectedBytes = new byte[contentBytes.Length];
+            await stream.ReadAsync(expectedBytes, CancellationToken.None);
+            Assert.Equal(length, contentBytes.Length);
+            Assert.Equal(expectedBytes, contentBytes);
         }
 
         private static LoRaDeviceAPIService Setup(string basePath) =>
