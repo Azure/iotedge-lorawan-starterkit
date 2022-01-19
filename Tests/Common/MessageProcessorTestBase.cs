@@ -151,13 +151,13 @@ namespace LoRaWan.Tests.Common
                                                             Region region = null)
         {
             var effectiveRegion = region ?? DefaultRegion;
-            var upstreamFrequency = effectiveRegion switch
+            var radioMetadata = effectiveRegion switch
             {
-                RegionCN470RP2 r => r.UpstreamJoinFrequenciesToDownstreamAndChannelIndex.Keys.First(),
-                _ => effectiveRegion.RegionLimits.FrequencyRange.Min
+                RegionCN470RP2 r => TestUtils.GenerateTestRadioMetadata(frequency: r.UpstreamJoinFrequenciesToDownstreamAndChannelIndex.Keys.First()),
+                RegionEU868 => TestUtils.GenerateTestRadioMetadata(),
+                _ => TestUtils.GenerateTestRadioMetadata(frequency: effectiveRegion.RegionLimits.FrequencyRange.Min)
             };
-            // var upstreamFrequency = new Hertz((((ulong)(effectiveRegion.RegionLimits.FrequencyRange.Max - effectiveRegion.RegionLimits.FrequencyRange.Min)) / 2) + effectiveRegion.RegionLimits.FrequencyRange.Min.AsUInt64);
-            return CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(frequency: upstreamFrequency),
+            return CreateWaitableRequest(radioMetadata,
                                          loRaPayload,
                                          packetForwarder,
                                          startTimeOffset,
