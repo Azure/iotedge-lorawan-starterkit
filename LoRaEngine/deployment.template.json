@@ -143,16 +143,6 @@
             "version": "1.0",
             "status": "running",
             "restartPolicy": "always"
-          },
-          "sensordecodermodule": {
-            "type": "docker",
-            "settings": {
-              "image": "$CONTAINER_REGISTRY_ADDRESS/decodersample:2.0",
-              "createOptions": {}
-            },
-            "status": "running",
-            "restartPolicy": "always",
-            "version": "1.0"
           }
         }
       }
