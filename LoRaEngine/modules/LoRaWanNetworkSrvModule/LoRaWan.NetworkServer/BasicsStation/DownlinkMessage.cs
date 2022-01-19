@@ -8,6 +8,7 @@ namespace LoRaTools.LoRaPhysical
     using System;
     using LoRaWan;
     using LoRaWan.NetworkServer;
+    using Utils;
 
     /// <summary>
     /// Model class for a Downlink message for the Basic Station.
@@ -27,8 +28,8 @@ namespace LoRaTools.LoRaPhysical
 
         public uint? AntennaPreference { get; }
 
-        public (DataRateIndex DataRate, Hertz Frequency)? Rx1 { get; }
-        public (DataRateIndex DataRate, Hertz Frequency) Rx2 { get; }
+        public ReceiveWindow? Rx1 { get; }
+        public ReceiveWindow Rx2 { get; }
 
         public ReadOnlyMemory<byte> Data { get; }
 
@@ -41,8 +42,8 @@ namespace LoRaTools.LoRaPhysical
         /// <returns><see cref="DownlinkMessage"/> object ready to be sent.</returns>
         public DownlinkMessage(byte[] payload,
                                ulong xtime,
-                               (DataRateIndex, Hertz)? rx1,
-                               (DataRateIndex, Hertz) rx2,
+                               ReceiveWindow? rx1,
+                               ReceiveWindow rx2,
                                DevEui devEui,
                                RxDelay lnsRxDelay,
                                LoRaDeviceClassType deviceClassType,
