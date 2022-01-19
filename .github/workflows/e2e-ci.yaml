@@ -401,7 +401,8 @@ jobs:
       INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
       INTEGRATIONTEST_DevicePrefix: '03'
       INTEGRATIONTEST_RunningInCI: true
-      INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ '[\"wss://itestarm1:5001\"]' }}
+      INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ secrets.LOAD_TEST_LNS_ENDPOINTS }}
+      INTEGRATIONTEST_NumberOfLoadTestDevices: 20
 
     steps:
     - uses: actions/checkout@v2
