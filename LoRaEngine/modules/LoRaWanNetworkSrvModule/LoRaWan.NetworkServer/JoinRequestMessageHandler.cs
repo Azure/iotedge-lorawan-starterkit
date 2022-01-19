@@ -273,7 +273,8 @@ namespace LoRaWan.NetworkServer
 
                 var downlinkMessage = new DownlinkMessage(joinAcceptBytes,
                                                           request.RadioMetadata.UpInfo.Xtime,
-                                                          rx1, rx2,
+                                                          rx1,
+                                                          rx2,
                                                           loRaDevice.DevEUI,
                                                           loraRegion.JoinAcceptDelay1,
                                                           loRaDevice.ClassType,
