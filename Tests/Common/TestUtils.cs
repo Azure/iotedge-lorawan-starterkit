@@ -326,17 +326,17 @@ namespace LoRaWan.Tests.Common
             else
                 Assert.Equal(euRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate), downlinkMessage.Rx1.Value.DataRate);
 
-            Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, default, NullLogger.Instance), downlinkMessage.Rx2.DataRate);
+            Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, null, NullLogger.Instance), downlinkMessage.Rx2.DataRate);
 
             // Ensure RX freq
-            Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, out var channelFrequency, default));
+            Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, request.RadioMetadata.DataRate, null, out var channelFrequency));
 
             if (sendToRx2)
                 Assert.Null(downlinkMessage.Rx1);
             else
                 Assert.Equal(channelFrequency, downlinkMessage.Rx1.Value.Frequency);
 
-            Assert.Equal(euRegion.GetDownstreamRX2Freq(null, default, NullLogger.Instance), downlinkMessage.Rx2.Frequency);
+            Assert.Equal(euRegion.GetDownstreamRX2Freq(null, null, logger: NullLogger.Instance), downlinkMessage.Rx2.Frequency);
         }
     }
 }

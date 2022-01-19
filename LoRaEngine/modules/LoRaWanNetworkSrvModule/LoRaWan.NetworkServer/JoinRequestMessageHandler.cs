@@ -254,7 +254,7 @@ namespace LoRaWan.NetworkServer
                     loraSpecDesiredRxDelay,
                     null);
 
-                if (!loraRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, out var freq, deviceJoinInfo: deviceJoinInfo))
+                if (!loraRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, upstreamDataRate: request.RadioMetadata.DataRate, deviceJoinInfo: deviceJoinInfo, downstreamFrequency: out var freq))
                 {
                     this.logger.LogError("could not resolve DR and/or frequency for downstream");
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidUpstreamMessage);
