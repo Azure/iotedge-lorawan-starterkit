@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Common
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
+    using System.Text.Json.Serialization;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -271,7 +272,7 @@ namespace LoRaWan.Tests.Common
                 {
                     var joinAcceptResponse = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
                     // PDU is null in case it is another message coming from the station.
-                    if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && someJoinAcceptResponse.DevEui == DevEUI)
+                    if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && DevEui.Parse(someJoinAcceptResponse.DevEuiString) == DevEUI)
                     {
                         var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(somePdu), AppKey.Value);
                         joinSuccessful = HandleJoinAccept(joinAccept);
@@ -343,5 +344,8 @@ namespace LoRaWan.Tests.Common
             var bytes = new byte[hex.Length / 2];
             return Hexadecimal.TryParse(hex, bytes) ? bytes : throw new FormatException("Invalid hexadecimal string: " + hex);
         }
+
+        private sealed record JoinAcceptResponse([property: JsonPropertyName("pdu")] string Pdu,
+                                                 [property: JsonPropertyName("DevEui")] string DevEuiString);
     }
 }
