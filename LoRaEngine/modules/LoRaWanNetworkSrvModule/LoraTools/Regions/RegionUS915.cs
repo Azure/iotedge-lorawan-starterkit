@@ -111,7 +111,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
         /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, out Hertz downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, DeviceJoinInfo deviceJoinInfo, out Hertz downstreamFrequency)
         {
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);

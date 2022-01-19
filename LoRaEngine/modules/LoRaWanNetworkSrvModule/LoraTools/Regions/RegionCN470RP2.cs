@@ -163,7 +163,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         /// </summary>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, out Hertz downstreamFrequency, DeviceJoinInfo deviceJoinInfo = default)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, DeviceJoinInfo deviceJoinInfo, out Hertz downstreamFrequency)
         {
             if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
 

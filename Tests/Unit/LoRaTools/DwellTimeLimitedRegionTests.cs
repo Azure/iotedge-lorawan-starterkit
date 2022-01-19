@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo? deviceJoinInfo = null) =>
                 throw new NotImplementedException();
 
-            public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, out Hertz downstreamFrequency, DeviceJoinInfo? deviceJoinInfo = null) =>
+            public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, DeviceJoinInfo deviceJoinInfo, out Hertz downstreamFrequency) =>
                 throw new NotImplementedException();
 
             public override void UseDwellTimeSetting(DwellTimeSetting dwellTimeSetting) =>
