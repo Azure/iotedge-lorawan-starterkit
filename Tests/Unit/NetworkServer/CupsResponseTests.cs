@@ -17,9 +17,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.NetworkServer.BasicsStation;
     using Xunit;
 
-    public class CupsResponseTests
+    public class CupsResponseTests : IAsyncDisposable
     {
         private readonly CupsUpdateInfoRequest cupsRequest;
+        private readonly Stream fwUpgradeStream;
         private readonly Func<StationEui, ConcentratorCredentialType, CancellationToken, Task<string>> credentialFetcher;
         private readonly Func<StationEui, CancellationToken, Task<(long?, Stream)>> fwUpgradeFetcher;
         private readonly byte[] FwUpgradeBytes = new byte[] { 1, 2, 3, 4, 5 };
@@ -34,8 +35,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                          12345,
                                                          "1.0.0",
                                                          new[] { 6789 }.ToImmutableArray());
+            this.fwUpgradeStream = new MemoryStream(this.FwUpgradeBytes);
             this.credentialFetcher = (eui, type, token) => Task.FromResult(Convert.ToBase64String(this.CredentialBytes));
-            this.fwUpgradeFetcher = (eui, token) => Task.FromResult(((long?)FwUpgradeBytes.Length, (Stream)new MemoryStream(this.FwUpgradeBytes)));
+            this.fwUpgradeFetcher = (eui, token) => Task.FromResult(((long?)FwUpgradeBytes.Length, this.fwUpgradeStream));
         }
 
         [Fact]
@@ -102,7 +104,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // setting up the twin in such a way that there are only firmware updates
             var signature = "ABCD";
-            var signatureBytes = Convert.FromBase64String(signature);
             var cupsTwinInfo = new CupsTwinInfo(this.cupsRequest.CupsUri,
                                                 this.cupsRequest.TcUri,
                                                 this.cupsRequest.CupsCredentialsChecksum,
@@ -129,7 +130,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // setting up the twin in such a way that there are only firmware updates
             var signature = "ABCD";
-            var signatureBytes = Convert.FromBase64String(signature);
             var cupsTwinInfo = new CupsTwinInfo(this.cupsRequest.CupsUri,
                                                 this.cupsRequest.TcUri,
                                                 this.cupsRequest.CupsCredentialsChecksum,
@@ -141,9 +141,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 signature);
 
             using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
+            using var resp = (Stream)new MemoryStream(this.FwUpgradeBytes);
             Task<(long?, Stream)> InvalidLengthFirmwareUpdate(StationEui eui, CancellationToken token)
             {
-                return Task.FromResult(((long?)length, invalidStream ? null : (Stream)new MemoryStream(this.FwUpgradeBytes)));
+                return Task.FromResult((length, invalidStream ? null : resp));
             }
 
             // Act
@@ -252,6 +253,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(responseBytes[((2 * this.CredentialBytes.Length) + 6)..].All(b => b == 0));
             Assert.Equal(0, fwl);
             Assert.Null(fwb);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await fwUpgradeStream.DisposeAsync();
+
+            GC.SuppressFinalize(this);
         }
     }
 }
