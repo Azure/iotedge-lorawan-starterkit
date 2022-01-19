@@ -195,7 +195,7 @@ namespace LoRaWan.Tests.Integration
             // assert
             this.dataRequestHandlerMock.Verify(x =>
                 x.SendMessageDownstreamAsyncAssert(
-                    It.Is<DownlinkMessageBuilderResponse>(res => res.DownlinkMessage.DataRateRx1 == expectedDataRate)),
+                    It.Is<DownlinkMessageBuilderResponse>(res => res.DownlinkMessage.Rx1.GetValueOrDefault().DataRate == expectedDataRate)),
                     Times.Once);
         }
 

@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Common
     using System.Runtime.InteropServices;
     using LoRaWan.NetworkServer;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using System.Net.WebSockets;
     using System.Globalization;
     using System.Threading;
@@ -86,9 +85,9 @@ namespace LoRaWan.Tests.Common
                 DevAddr = int.Parse(payload.DevAddr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 FCtrl = (uint)payload.FrameControlFlags,
                 FCnt = payload.Fcnt,
-                FOpts = ConversionHelper.ByteArrayToString(payload.Fopts),
+                FOpts = payload.Fopts.ToHex(),
                 FPort = (int)payload.Fport,
-                FRMPayload = ConversionHelper.ByteArrayToString(payload.Frmpayload),
+                FRMPayload = payload.Frmpayload.ToHex(),
                 MIC = payload.Mic.Value.AsInt32,
                 DR = loRaRequest.RadioMetadata.DataRate,
                 Freq = loRaRequest.RadioMetadata.Frequency.AsUInt64,

@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: System.CLSCompliant(false)]
 
+[assembly: InternalsVisibleTo("LoRaTools")]
 [assembly: InternalsVisibleTo("LoRaWan.Tests.Unit")]
 [assembly: InternalsVisibleTo("LoRaWan.Tests.Common")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

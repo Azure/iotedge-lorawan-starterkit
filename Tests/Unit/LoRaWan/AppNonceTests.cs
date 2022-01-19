@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Unit
         public void Read_Throws_When_Buffer_Is_Too_Small(int size)
         {
             var ex = Assert.Throws<ArgumentException>(() => AppNonce.Read(new byte[size]));
-            Assert.Equal("Insufficient buffer length.", ex.Message);
+            Assert.Equal("Insufficient buffer length. (Parameter 'buffer')", ex.Message);
         }
 
         [Theory]
