@@ -13,8 +13,6 @@ namespace LoRaTools.Regions
 
     public abstract class Region
     {
-        protected const double EPSILON = 0.00001;
-
         public LoRaRegionType LoRaRegion { get; set; }
 
         /// <summary>
