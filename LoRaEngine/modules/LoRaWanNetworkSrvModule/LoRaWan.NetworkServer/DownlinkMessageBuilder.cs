@@ -280,7 +280,7 @@ namespace LoRaWan.NetworkServer
             Hertz freq;
 
             // Class C always use RX2
-            // TODO: create bug for CN RP2 as we don't pass the device join info here.
+            // TODO:Fix bug https://github.com/Azure/iotedge-lorawan-starterkit/issues/1319.
             freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, null, logger: logger);
             datr = loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, null, logger);
 
