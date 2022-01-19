@@ -55,7 +55,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
 
             // Act
-            var (r, fwl, fwb) = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher, this.fwUpgradeFetcher).SerializeAsync(memoryPool.Memory, CancellationToken.None);
+            var (r, _, _) = await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher, this.fwUpgradeFetcher).SerializeAsync(memoryPool.Memory, CancellationToken.None);
 
             // Assert
             Assert.True(r.ToArray().All(b => b == 0));
@@ -91,6 +91,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(signatureBytes, responseBytes[14..(14 + signatureBytes.Length)]);
             var fwLengthFieldStart = 14 + signatureBytes.Length;
             Assert.Equal(this.FwUpgradeBytes.Length, BinaryPrimitives.ReadInt32LittleEndian(responseBytes.AsSpan()[fwLengthFieldStart..(fwLengthFieldStart+4)]));
+            Assert.Equal(this.FwUpgradeBytes.Length, fwl);
             var fwBytes = new byte[this.FwUpgradeBytes.Length];
             await fwb.WriteAsync(fwBytes);
             Assert.Equal(this.FwUpgradeBytes, fwBytes);
@@ -175,6 +176,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(anotherCupsUri, Encoding.UTF8.GetString(responseBytes.Slice(1, anotherCupsUri.Length)));
             // asserting all other bytes are 0 as there are no further updates
             Assert.True(responseBytes[(anotherCupsUri.Length + 1)..].All(b => b == 0));
+            Assert.Equal(0, fwl);
+            Assert.Null(fwb);
         }
 
 
@@ -204,6 +207,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // asserting other bytes are 0 as there are no further updates
             Assert.True(responseBytes[0] == 0);
             Assert.True(responseBytes[(anotherTcUri.Length + 2)..].All(b => b == 0));
+            Assert.Equal(0, fwl);
+            Assert.Null(fwb);
         }
 
         [Fact]
@@ -245,6 +250,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(responseBytes[0] == 0);
             Assert.True(responseBytes[1] == 0);
             Assert.True(responseBytes[((2 * this.CredentialBytes.Length) + 6)..].All(b => b == 0));
+            Assert.Equal(0, fwl);
+            Assert.Null(fwb);
         }
     }
 }
