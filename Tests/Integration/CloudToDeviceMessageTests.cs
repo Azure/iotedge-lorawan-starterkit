@@ -219,7 +219,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has pending changes?
             if (needsToSaveFcnt)
@@ -298,7 +298,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has pending changes?
             if (needsToSaveFcnt)
@@ -387,7 +387,7 @@ namespace LoRaWan.Tests.Integration
             // 5. Frame counter down is updated
             var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
 
             // 6. Frame count has no pending changes
             Assert.False(loRaDevice.HasFrameCountChanges);
@@ -472,7 +472,7 @@ namespace LoRaWan.Tests.Integration
             // 5. Frame counter down is updated
             var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
 
             // 6. Frame count has no pending changes
             Assert.False(loRaDevice.HasFrameCountChanges);
@@ -563,7 +563,7 @@ namespace LoRaWan.Tests.Integration
             // 5. Frame counter down is updated
             var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta - 1 + 1; // adding 9 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
             Assert.Equal(0U, loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown);
 
             // 6. Frame count has no pending changes
@@ -573,22 +573,23 @@ namespace LoRaWan.Tests.Integration
         [Theory]
         // Preferred Window: 1
         // - Aiming for RX1
-        [InlineData(1, 0, 400, 610)] // 1000 - (400 - noise)
-        [InlineData(1, 100, 300, 510)]
-        [InlineData(1, 200, 200, 410)]
+        [InlineData(1, 0, 400, 610, false)] // 1000 - (400 - noise)
+        [InlineData(1, 100, 300, 510, false)]
+        [InlineData(1, 200, 200, 410, false)]
         // - Aiming for RX2
-        [InlineData(1, 750, 690, 999)]
-        [InlineData(1, 1000, 250, 610)]
+        [InlineData(1, 750, 690, 999, true)]
+        [InlineData(1, 1000, 250, 610, true)]
 
         // Preferred Window: 2
         // - Aiming for RX2
-        [InlineData(2, 0, 1400, 1610)]
-        [InlineData(2, 100, 1300, 1510)]
+        [InlineData(2, 0, 1400, 1610, true)]
+        [InlineData(2, 100, 1300, 1510, true)]
         public async Task When_Device_Checks_For_C2D_Message_Uses_Available_Time(
             int preferredWindow,
             int sendEventDurationInMs,
             int checkMinDuration,
-            int checkMaxDuration)
+            int checkMaxDuration,
+            bool expectingSecondWindow)
         {
             const int PayloadFcnt = 10;
             const int InitialDeviceFcntUp = 9;
@@ -637,17 +638,21 @@ namespace LoRaWan.Tests.Integration
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            // This is commented out as it breaks the current logic. Will be fixed in #1139
-            // also add checks to verify that the RX1 options are missing when RX2 is preferred.
-            // Assert.Equal(1u, PacketForwarder.DownlinkMessages[0].LnsRxDelay);
+            var downlinkMessage = Assert.Single(PacketForwarder.DownlinkMessages);
+
+            Assert.Equal(LoRaDeviceClassType.A, downlinkMessage.DeviceClassType);
+            Assert.Equal(loRaDevice.ReportedRXDelay, downlinkMessage.LnsRxDelay);
+            if (expectingSecondWindow)
+            {
+                Assert.Null(downlinkMessage.Rx1);
+            }
+            else
+            {
+                Assert.NotNull(downlinkMessage.Rx1);
+            }
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
-
-            Assert.NotNull(PacketForwarder.DownlinkMessages);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-
         }
 
         [Theory]
@@ -738,7 +743,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has no pending changes
             Assert.False(loraDevice.HasFrameCountChanges);
@@ -891,7 +896,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has pending changes
             Assert.True(loraDevice.HasFrameCountChanges);

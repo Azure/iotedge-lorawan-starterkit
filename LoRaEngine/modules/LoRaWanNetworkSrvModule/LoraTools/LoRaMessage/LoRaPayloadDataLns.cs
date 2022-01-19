@@ -58,8 +58,7 @@ namespace LoRaTools.LoRaMessage
             FrameControlFlags = fctrlFlags;
 
             // Setting Fcnt
-            Fcnt = new byte[sizeof(ushort)];
-            BinaryPrimitives.WriteUInt16LittleEndian(Fcnt.Span, counter);
+            Fcnt = counter;
 
             // Setting FOpts
             Fopts = new byte[options.Length / 2];
