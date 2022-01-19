@@ -146,7 +146,7 @@ namespace LoRaWan.Tests.Common
         private static ClientWebSocket CreateClientWebSocket()
         {
             var result = new ClientWebSocket();
-#pragma warning disable CA5359 // Do Not Disable Certificate Validation
+#pragma warning disable CA5359 // Do Not Disable Certificate Validation (using self-signed certificates on the LNS, instead of trusting the certificate we disable the validation).
             result.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
 #pragma warning restore CA5359 // Do Not Disable Certificate Validation
             return result;
