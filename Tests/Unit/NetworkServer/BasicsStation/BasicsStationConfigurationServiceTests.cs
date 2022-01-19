@@ -141,17 +141,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             public async Task When_Fetching_Twin_Fails_Does_Not_Swallow_Exception_And_Creates_Dummy_Cache_Entry()
             {
                 // arrange
-                const string primaryKey = "foo";
                 const string exceptionMessage = "an exception";
-                SetupTwinResponse(primaryKey);
-                this.loRaDeviceApiServiceMock.Setup(ldas => ldas.GetPrimaryKeyByEuiAsync(this.stationEui))
+                _ = this.loRaDeviceApiServiceMock.Setup(ldas => ldas.GetPrimaryKeyByEuiAsync(this.stationEui))
                     .ThrowsAsync(new LoRaProcessingException(exceptionMessage));
 
                 // act and assert
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetRegionAsync(this.stationEui, CancellationToken.None));
                 Assert.Equal(exception.Message, exception.Message);
 
-                _ = this.memoryCache.TryGetValue($"concentratorTwin:{stationEui}", out var value);
+                _ = this.memoryCache.TryGetValue($"concentratorTwin:{this.stationEui}", out var value);
                 Assert.Equal(new TwinCollection(), value);
             }
 

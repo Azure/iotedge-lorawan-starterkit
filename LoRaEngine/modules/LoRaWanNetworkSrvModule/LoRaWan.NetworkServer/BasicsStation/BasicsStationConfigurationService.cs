@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                               (downlinkDwellLimit, uplinkDwellLimit, eirp) => new DwellTimeSetting(downlinkDwellLimit, uplinkDwellLimit, eirp));
 
         private static readonly TimeSpan CacheTimeout = TimeSpan.FromHours(2);
-        private static readonly TimeSpan CacheLBSRateLimitingTimeout = TimeSpan.FromSeconds(15); // dummy cache entries are used in order to "rate limit" LBS so that we don't contact IoTHub too often
+        private static readonly TimeSpan CacheLbsRateLimitingTimeout = TimeSpan.FromSeconds(15);
 
         private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiService;
@@ -84,8 +84,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                     {
                         exception = ex; // keeps the exception to re-throw after creating the cache entry
 
-                        _ = cacheEntry.SetAbsoluteExpiration(CacheLBSRateLimitingTimeout);
-                        return new TwinCollection();
+                        _ = cacheEntry.SetAbsoluteExpiration(CacheLbsRateLimitingTimeout);
+                        return new TwinCollection(); // dummy cache entries are used in order to "rate limit" LBS so that we don't contact IoTHub too often 
                     }
                 });
 
