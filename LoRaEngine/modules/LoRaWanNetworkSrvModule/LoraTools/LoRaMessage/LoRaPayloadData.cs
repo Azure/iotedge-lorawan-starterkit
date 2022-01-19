@@ -8,6 +8,7 @@ namespace LoRaTools.LoRaMessage
     using System.Collections.Generic;
     using System.Linq;
     using LoRaWan;
+    using Microsoft.Extensions.Logging;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
 
@@ -34,7 +35,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public bool IsMacAnswerRequired => MacCommands?.FirstOrDefault(x => x.Cid == Cid.LinkCheckCmd) != null;
 
-        public FrameControlFlags FrameControlFlags { get; set; }
+        public FrameControlFlags FrameControlFlags { get; }
 
         /// <summary>
         /// Indicates if the payload is an confirmation message acknowledgement.
@@ -59,34 +60,88 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets frame Counter.
         /// </summary>
-        public ushort Fcnt { get; set; }
+        public ushort Fcnt { get; }
 
         /// <summary>
         /// Gets or sets optional frame.
         /// </summary>
-        public Memory<byte> Fopts { get; set; }
+        public Memory<byte> Fopts { get; }
 
         /// <summary>
         /// Gets or sets port field.
         /// </summary>
-        public FramePort? Fport { get; set; }
+        public FramePort? Fport { get; }
 
         /// <summary>
         /// Gets or sets mAC Frame Payload Encryption.
         /// </summary>
-        public Memory<byte> Frmpayload { get; set; }
+        public Memory<byte> Frmpayload { get; }
 
         /// <summary>
         /// Gets or sets get message direction.
         /// </summary>
-        public int Direction { get; set; }
+        public int Direction { get; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
-        /// Constructor used by the simulator.
-        /// </summary>
-        public LoRaPayloadData()
+        public LoRaPayloadData(DevAddr devAddress,
+                               MacHeader macHeader,
+                               FrameControlFlags fctrlFlags,
+                               ushort counter,
+                               string options,
+                               string payload,
+                               FramePort port,
+                               Mic? mic,
+                               ILogger logger)
         {
+            if (options is null) throw new ArgumentNullException(nameof(options));
+            if (string.IsNullOrEmpty(payload)) throw new ArgumentNullException(nameof(payload));
+
+            // Writing the DevAddr
+            DevAddr = devAddress;
+
+            // Parsing LoRaMessageType in legacy format
+            var messageType = macHeader.MessageType;
+            if (messageType is not MacMessageType.JoinRequest and
+                               not MacMessageType.JoinAccept and
+                               not MacMessageType.UnconfirmedDataUp and
+                               not MacMessageType.UnconfirmedDataDown and
+                               not MacMessageType.ConfirmedDataUp and
+                               not MacMessageType.ConfirmedDataDown)
+            {
+                throw new NotImplementedException();
+            };
+
+            // in this case the payload is not downlink of our type
+            Direction = messageType is MacMessageType.ConfirmedDataDown or
+                                       MacMessageType.JoinAccept or
+                                       MacMessageType.UnconfirmedDataDown ? 1 : 0;
+
+            // Setting MHdr value
+            MHdr = macHeader;
+
+            // Setting Fctrl
+            FrameControlFlags = fctrlFlags;
+
+            // Setting Fcnt
+            Fcnt = counter;
+
+            // Setting FOpts
+            Fopts = new byte[options.Length / 2];
+            _ = Hexadecimal.TryParse(options, Fopts.Span);
+
+            // Populate the MacCommands present in the payload.
+            if (options.Length > 0)
+            {
+                MacCommands = MacCommand.CreateMacCommandFromBytes(Fopts, logger);
+            }
+
+            // Setting FRMPayload
+            Frmpayload = new byte[payload.Length / 2];
+            _ = Hexadecimal.TryParse(payload, Frmpayload.Span);
+
+            // Fport can be empty if no commands
+            Fport = port;
+
+            Mic = mic;
         }
 
         public LoRaPayloadData(ReadOnlyMemory<byte> inputMessage) : this(inputMessage.ToArray())
@@ -420,22 +475,7 @@ namespace LoRaTools.LoRaMessage
             return messageArray.ToArray();
         }
 
-        /// <summary>
-        /// Add Mac Command to a LoRa Payload
-        /// Warning, do not use this method if your LoRaPayload was created from bytes.
-        /// </summary>
-        public void AddMacCommand(MacCommand mac)
-        {
-            if (MacCommands == null)
-            {
-                MacCommands = new List<MacCommand>();
-            }
-
-            MacCommands.Add(mac);
-        }
-
-        public override bool RequiresConfirmation
-            => IsConfirmed || IsMacAnswerRequired;
+        public override bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
 
         public override bool CheckMic(AppKey key) => throw new NotImplementedException();
 

@@ -114,8 +114,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var options = fieldNotUsedInKey ?? string.Empty;
             using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(devEui), this.connectionManager);
 
-            var payload = new LoRaPayloadDataLns(this.dataPayload.DevAddr, new MacHeader(MacMessageType.ConfirmedDataUp),
-                                                 frameCounter, options, "payload", new Mic(mic));
+            var payload = new LoRaPayloadData(this.dataPayload.DevAddr, new MacHeader(MacMessageType.ConfirmedDataUp),
+                                              FrameControlFlags.None, frameCounter, options, "payload", FramePort.AppMin, new Mic(mic),
+                                              NullLogger.Instance);
 
             Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(payload, testDevice));
         }

@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Common
     using System.Globalization;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
+    using static ReceiveWindowNumber;
 
     public class TestDeviceInfo
     {
@@ -49,7 +50,7 @@ namespace LoRaWan.Tests.Common
         // Project supports following values: DecoderGpsSensor, DecoderTemperatureSensor, DecoderValueSensor
         public string SensorDecoder { get; set; } = "DecoderValueSensor";
 
-        public int PreferredWindow { get; set; } = 1;
+        public ReceiveWindowNumber PreferredWindow { get; set; } = ReceiveWindow1;
 
         public char ClassType { get; set; } = 'A';
 
@@ -99,7 +100,7 @@ namespace LoRaWan.Tests.Common
             if (RouterConfig is { } routerConfig)
                 desiredProperties[BasicsStationConfigurationService.RouterConfigPropertyName] = routerConfig;
 
-            desiredProperties[TwinProperty.PreferredWindow] = PreferredWindow;
+            desiredProperties[TwinProperty.PreferredWindow] = (int)PreferredWindow;
 
             if (char.ToLower(ClassType, CultureInfo.InvariantCulture) != 'a')
                 desiredProperties[TwinProperty.ClassType] = ClassType.ToString();

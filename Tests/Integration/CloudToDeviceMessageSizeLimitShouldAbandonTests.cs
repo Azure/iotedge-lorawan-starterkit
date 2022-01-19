@@ -9,7 +9,6 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -72,7 +71,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2dMessage.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2dMessage.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
@@ -109,7 +108,7 @@ namespace LoRaWan.Tests.Integration
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
 
-            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.DataRateRx2);
+            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Rx2.DataRate);
 
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
