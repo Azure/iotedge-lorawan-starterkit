@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Common
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaTools.LoRaMessage;
-    using LoRaWan.Tests.Simulation.Models;
+    using System.Text.Json.Serialization;
 
     public sealed class SimulatedBasicsStation : IDisposable
     {
@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Common
             await this.clientWebSocket.ConnectAsync(new Uri(this.lnsUri, $"router-data/{this.stationEUI}"), cancellationToken);
 
             // Send version request
-            await SerializeAndSendMessageAsync(new LnsVersionRequest(this.stationEUI, "2", "1", "test", 2, ""), cancellationToken);
+            await SerializeAndSendMessageAsync(new LnsVersionRequest(this.stationEUI.ToString(), "2", "1", "test", 2, ""), cancellationToken);
             this.cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             enumerator = this.clientWebSocket.ReadTextMessages(this.cancellationTokenSource.Token);
             if (!await enumerator.MoveNextAsync())
@@ -77,28 +77,22 @@ namespace LoRaWan.Tests.Common
         {
             var payload = (LoRaPayloadData)loRaRequest.Payload;
 
-            await SerializeAndSendMessageAsync(new
-            {
-                MHdr = uint.Parse(loRaRequest.Payload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                msgtype = "updf",
-                DevAddr = int.Parse(payload.DevAddr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                FCtrl = (uint)payload.FrameControlFlags,
-                FCnt = payload.Fcnt,
-                FOpts = payload.Fopts.ToHex(),
-                FPort = (int)payload.Fport,
-                FRMPayload = payload.Frmpayload.ToHex(),
-                MIC = payload.Mic.Value.AsInt32,
-                DR = loRaRequest.RadioMetadata.DataRate,
-                Freq = loRaRequest.RadioMetadata.Frequency.AsUInt64,
-                upinfo = new
-                {
-                    gpstime = loRaRequest.RadioMetadata.UpInfo.GpsTime,
-                    rctx = 10,
-                    rssi = loRaRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
-                    xtime = loRaRequest.RadioMetadata.UpInfo.Xtime,
-                    snr = loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio
-                }
-            }, cancellationToken);
+            await SerializeAndSendMessageAsync(
+                new UpstreamDataRequest(MHdr: uint.Parse(loRaRequest.Payload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                                        DevAddr: int.Parse(payload.DevAddr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                                        FCtrl: (uint)payload.FrameControlFlags,
+                                        FCnt: payload.Fcnt,
+                                        FOpts: payload.Fopts.ToHex(),
+                                        FPort: (int)payload.Fport,
+                                        FrmPayload: payload.Frmpayload.ToHex(),
+                                        Mic: payload.Mic.Value.AsInt32,
+                                        Dr: loRaRequest.RadioMetadata.DataRate,
+                                        Freq: loRaRequest.RadioMetadata.Frequency.AsUInt64,
+                                        UpInfo: new UpInfo(GpsTime: loRaRequest.RadioMetadata.UpInfo.GpsTime,
+                                                           Rctx: 10,
+                                                           Rssi: loRaRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
+                                                           Xtime: loRaRequest.RadioMetadata.UpInfo.Xtime,
+                                                           Snr: loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio)), cancellationToken);
         }
 
         /// <summary>
@@ -158,5 +152,38 @@ namespace LoRaWan.Tests.Common
             this.cancellationTokenSource?.Dispose();
             this.clientWebSocket?.Dispose();
         }
+
+        private sealed record LnsVersionRequest([property: JsonPropertyName("station")] string Station,
+                                                [property: JsonPropertyName("firmware")] string Firmware,
+                                                [property: JsonPropertyName("package")] string Package,
+                                                [property: JsonPropertyName("model")] string Model,
+                                                [property: JsonPropertyName("protocol")] int Protocol,
+                                                [property: JsonPropertyName("features")] string Features)
+        {
+            [JsonPropertyName("msgtype")]
+            public string MessageType { get; } = "version";
+        }
+
+        private sealed record UpstreamDataRequest([property: JsonPropertyName("MHdr")] uint MHdr,
+                                                  [property: JsonPropertyName("DevAddr")] int DevAddr,
+                                                  [property: JsonPropertyName("FCtrl")] uint FCtrl,
+                                                  [property: JsonPropertyName("FCnt")] ushort FCnt,
+                                                  [property: JsonPropertyName("FOpts")] string FOpts,
+                                                  [property: JsonPropertyName("FPort")] int FPort,
+                                                  [property: JsonPropertyName("FRMPayload")] string FrmPayload,
+                                                  [property: JsonPropertyName("MIC")] int Mic,
+                                                  [property: JsonPropertyName("DR")] DataRateIndex Dr,
+                                                  [property: JsonPropertyName("Freq")] ulong Freq,
+                                                  [property: JsonPropertyName("upinfo")] UpInfo UpInfo)
+        {
+            [JsonPropertyName("msgtype")]
+            public string MsgType { get; } = "updf";
+        };
+
+        private sealed record UpInfo([property: JsonPropertyName("gpstime")] uint GpsTime,
+                                     [property: JsonPropertyName("rctx")] int Rctx,
+                                     [property: JsonPropertyName("rssi")] double Rssi,
+                                     [property: JsonPropertyName("xtime")] ulong Xtime,
+                                     [property: JsonPropertyName("snr")] float Snr);
     }
 }
