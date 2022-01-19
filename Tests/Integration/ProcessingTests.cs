@@ -632,8 +632,8 @@ namespace LoRaWan.Tests.Integration
             var confirmedMessageResult = PacketForwarder.DownlinkMessages[0];
 
             // validates transmission for EU868
-            Assert.Equal(radio.Frequency, confirmedMessageResult.FrequencyRx1);
-            Assert.Equal(radio.DataRate, confirmedMessageResult.DataRateRx1);
+            Assert.Equal(radio.Frequency, confirmedMessageResult.Rx1?.Frequency);
+            Assert.Equal(radio.DataRate, confirmedMessageResult.Rx1?.DataRate);
             Assert.Equal(radio.UpInfo.Xtime, confirmedMessageResult.Xtime);
             Assert.Equal(radio.UpInfo.AntennaPreference, confirmedMessageResult.AntennaPreference);
 
@@ -805,8 +805,8 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(request.ResponseDownlink);
             Assert.Single(PacketForwarder.DownlinkMessages);
             var confirmedMessageResult = PacketForwarder.DownlinkMessages[0];
-            Assert.Equal(radio.Frequency, confirmedMessageResult.FrequencyRx1);
-            Assert.Equal(radio.DataRate, confirmedMessageResult.DataRateRx1);
+            Assert.Equal(radio.Frequency, confirmedMessageResult.Rx1?.Frequency);
+            Assert.Equal(radio.DataRate, confirmedMessageResult.Rx1?.DataRate);
             Assert.Equal(radio.UpInfo.Xtime, confirmedMessageResult.Xtime);
             Assert.Equal(radio.UpInfo.AntennaPreference, confirmedMessageResult.AntennaPreference);
 
