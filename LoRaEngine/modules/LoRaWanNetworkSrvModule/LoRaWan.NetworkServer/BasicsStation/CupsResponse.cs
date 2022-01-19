@@ -89,7 +89,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                     throw new InvalidOperationException("Remote firmware signature generated with a key whose checksum is not available in CUPS request.");
                 }
 
-                var signature = Convert.FromBase64String(this.cupsTwinInfo.FwSignature);
+                var signature = Convert.FromBase64String(this.cupsTwinInfo.FwSignatureInBase64);
                 currentPosition += WriteToSpan(signature.Length + 4, response.Span[currentPosition..]);
                 currentPosition += WriteToSpan(this.cupsTwinInfo.FwKeyChecksum, response.Span[currentPosition..]);
                 currentPosition += WriteToSpan(signature, response.Span[currentPosition..]);

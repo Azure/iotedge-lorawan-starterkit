@@ -31,7 +31,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             TcCredentialUrl = tcCredentialUrl;
             Package = package;
             FwKeyChecksum = fwKeyChecksum;
-            FwSignature = fwSignature;
+            FwSignatureInBase64 = fwSignature;
         }
 
         [JsonPropertyName("cupsUri")]
@@ -68,6 +68,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         [JsonPropertyName("fwSignature")]
         [JsonProperty("fwSignature")]
-        public string FwSignature { get; }
+        public string FwSignatureInBase64 { get; }
     }
 }
