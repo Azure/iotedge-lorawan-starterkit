@@ -38,6 +38,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         public CupsProtocolMessageProcessorTests()
         {
+            this.basicsStationConfigurationService = new Mock<IBasicsStationConfigurationService>();
             this.deviceAPIServiceBase = new Mock<LoRaDeviceAPIServiceBase>();
             this.logger = new Mock<ILogger<CupsProtocolMessageProcessor>>();
             this.processor = new CupsProtocolMessageProcessor(this.basicsStationConfigurationService.Object,
