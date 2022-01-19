@@ -97,6 +97,59 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
+        public async Task Serialize_WithFirmwareUpdates_Fails_If_Missing_Checksum()
+        {
+            // setting up the twin in such a way that there are only firmware updates
+            var signature = "ABCD";
+            var signatureBytes = Convert.FromBase64String(signature);
+            var cupsTwinInfo = new CupsTwinInfo(this.cupsRequest.CupsUri,
+                                                this.cupsRequest.TcUri,
+                                                this.cupsRequest.CupsCredentialsChecksum,
+                                                this.cupsRequest.TcCredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty,
+                                                "another",
+                                                0,
+                                                signature);
+
+            using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
+
+            // Act
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher, this.fwUpgradeFetcher).SerializeAsync(memoryPool.Memory, CancellationToken.None));
+        }
+
+
+        [Theory]
+        [InlineData(0, false)]
+        [InlineData(null, false)]
+        [InlineData(long.MaxValue, false)]
+        [InlineData(5, true)]
+        public async Task Serialize_WithFirmwareUpdates_Fails_If_Invalid_Firmware(long? length, bool invalidStream)
+        {
+            // setting up the twin in such a way that there are only firmware updates
+            var signature = "ABCD";
+            var signatureBytes = Convert.FromBase64String(signature);
+            var cupsTwinInfo = new CupsTwinInfo(this.cupsRequest.CupsUri,
+                                                this.cupsRequest.TcUri,
+                                                this.cupsRequest.CupsCredentialsChecksum,
+                                                this.cupsRequest.TcCredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty,
+                                                "another",
+                                                this.cupsRequest.KeyChecksums.FirstOrDefault(),
+                                                signature);
+
+            using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
+            Task<(long?, Stream)> InvalidLengthFirmwareUpdate(StationEui eui, CancellationToken token)
+            {
+                return Task.FromResult(((long?)length, invalidStream ? null : (Stream)new MemoryStream(this.FwUpgradeBytes)));
+            }
+
+            // Act
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await new CupsResponse(this.cupsRequest, cupsTwinInfo, this.credentialFetcher, InvalidLengthFirmwareUpdate).SerializeAsync(memoryPool.Memory, CancellationToken.None));
+        }
+
+        [Fact]
         public async Task Serialize_WithCupsUriUpdates()
         {
             // setting up the twin in such a way that there are cups uri updates
