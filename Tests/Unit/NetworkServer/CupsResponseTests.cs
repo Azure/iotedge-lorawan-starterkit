@@ -34,7 +34,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                          12345,
                                                          12345,
                                                          "1.0.0",
-                                                         new[] { 6789 }.ToImmutableArray());
+                                                         new[] { 6789U }.ToImmutableArray());
             this.fwUpgradeStream = new MemoryStream(this.FwUpgradeBytes);
             this.credentialFetcher = (eui, type, token) => Task.FromResult(Convert.ToBase64String(this.CredentialBytes));
             this.fwUpgradeFetcher = (eui, token) => Task.FromResult(((long?)FwUpgradeBytes.Length, this.fwUpgradeStream));
@@ -88,7 +88,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Assert
             Assert.Equal(signatureBytes.Length + 4, BinaryPrimitives.ReadInt32LittleEndian(responseBytes.AsSpan()[6..10]));
             using var tempPool = MemoryPool<byte>.Shared.Rent(100);
-            BinaryPrimitives.WriteInt32LittleEndian(tempPool.Memory.Span, this.cupsRequest.KeyChecksums.FirstOrDefault());
+            BinaryPrimitives.WriteUInt32LittleEndian(tempPool.Memory.Span, this.cupsRequest.KeyChecksums.FirstOrDefault());
             Assert.Equal(tempPool.Memory.Span[..3].ToArray(), responseBytes[10..13]);
             Assert.Equal(signatureBytes, responseBytes[14..(14 + signatureBytes.Length)]);
             var fwLengthFieldStart = 14 + signatureBytes.Length;

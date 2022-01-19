@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                             string cupsCredentialUrl,
                             string tcCredentialUrl,
                             string package,
-                            int fwKeyChecksum,
+                            uint fwKeyChecksum,
                             string fwSignature)
         {
             CupsUri = cupsUri ?? throw new ArgumentNullException(nameof(cupsUri));
@@ -64,7 +64,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         [JsonPropertyName("fwKeyChecksum")]
         [JsonProperty("fwKeyChecksum")]
-        public int FwKeyChecksum { get; }
+        public uint FwKeyChecksum { get; }
 
         [JsonPropertyName("fwSignature")]
         [JsonProperty("fwSignature")]

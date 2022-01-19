@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                      uint cupsCredentialsChecksum,
                                      uint tcCredentialsChecksum,
                                      string package,
-                                     ImmutableArray<int> keyChecksums)
+                                     ImmutableArray<uint> keyChecksums)
         {
             StationEui = stationEui;
             CupsUri = cupsUri;
@@ -33,6 +33,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public uint CupsCredentialsChecksum { get; }
         public uint TcCredentialsChecksum { get; }
         public string Package { get; }
-        public ImmutableArray<int> KeyChecksums { get; }
+        public ImmutableArray<uint> KeyChecksums { get; }
     }
 }

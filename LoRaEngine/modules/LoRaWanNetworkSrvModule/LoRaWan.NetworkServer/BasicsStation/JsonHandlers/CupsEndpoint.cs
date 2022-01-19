@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("tcCredCrc", JsonReader.UInt32()),
                               JsonReader.Property("package", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
                                                              select string.IsNullOrEmpty(s) ? null : s),
-                              JsonReader.Property("keys", JsonReader.Array(JsonReader.Int32())),
+                              JsonReader.Property("keys", JsonReader.Array(JsonReader.UInt32())),
                               (r, c, t, cc, tc, p, k) => new CupsUpdateInfoRequest(r, c, t, cc, tc, p, k.ToImmutableArray()));
     }
 }
