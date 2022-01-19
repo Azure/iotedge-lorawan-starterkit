@@ -266,7 +266,7 @@ namespace LoRaWan.NetworkServer
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,
                   windowToUse is not ReceiveWindow2 ? (loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset), freq) : null,
-                  (loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, this.logger), loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, this.logger)),
+                  (loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, deviceJoinInfo, this.logger), loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, deviceJoinInfo, this.logger)),
                   loRaDevice.DevEUI,
                   loraRegion.JoinAcceptDelay1,
                   loRaDevice.ClassType,

@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestDownstreamFrequency(Region region, Hertz inputFrequency, DataRateIndex inputDataRate, Hertz outputFreq, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
-            Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, out var frequency, inputDataRate, deviceJoinInfo));
+            Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, out var frequency, deviceJoinInfo, inputDataRate));
             Assert.Equal(frequency, outputFreq);
         }
 
@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestRegionLimit(Region region, Hertz inputFrequency, DataRateIndex datarate, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
-            var ex = Assert.Throws<LoRaProcessingException>(() => region.TryGetDownstreamChannelFrequency(inputFrequency, out _, datarate, deviceJoinInfo));
+            var ex = Assert.Throws<LoRaProcessingException>(() => region.TryGetDownstreamChannelFrequency(inputFrequency, out _, deviceJoinInfo, datarate));
             Assert.Equal(LoRaProcessingErrorCode.InvalidFrequency, ex.ErrorCode);
              ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(datarate));
             Assert.Equal(LoRaProcessingErrorCode.InvalidDataRate, ex.ErrorCode);
@@ -82,7 +82,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestDownstreamRX2Frequency(Region region, Hertz? nwksrvrx2freq, Hertz expectedFreq, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            var freq = region.GetDownstreamRX2Freq(nwksrvrx2freq, NullLogger.Instance, deviceJoinInfo);
+            var freq = region.GetDownstreamRX2Freq(nwksrvrx2freq, deviceJoinInfo, NullLogger.Instance);
             Assert.Equal(expectedFreq, freq);
         }
 
@@ -95,7 +95,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestDownstreamRX2DataRate(Region region, DataRateIndex? nwksrvrx2dr, DataRateIndex? rx2drfromtwins, DataRateIndex expectedDr, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            var datr = region.GetDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, NullLogger.Instance, deviceJoinInfo);
+            var datr = region.GetDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo, NullLogger.Instance);
             Assert.Equal(expectedDr, datr);
         }
 
