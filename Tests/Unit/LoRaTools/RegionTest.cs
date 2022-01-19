@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestDownstreamFrequency(Region region, Hertz inputFrequency, DataRateIndex inputDataRate, Hertz outputFreq, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
-            Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, out var frequency, inputDataRate, deviceJoinInfo));
+            Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, inputDataRate, out var frequency, deviceJoinInfo));
             Assert.Equal(frequency, outputFreq);
         }
 
@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestRegionLimit(Region region, Hertz inputFrequency, DataRateIndex datarate, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
-            var ex = Assert.Throws<LoRaProcessingException>(() => region.TryGetDownstreamChannelFrequency(inputFrequency, out _, datarate, deviceJoinInfo));
+            var ex = Assert.Throws<LoRaProcessingException>(() => region.TryGetDownstreamChannelFrequency(inputFrequency, datarate, out _, deviceJoinInfo));
             Assert.Equal(LoRaProcessingErrorCode.InvalidFrequency, ex.ErrorCode);
              ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(datarate));
             Assert.Equal(LoRaProcessingErrorCode.InvalidDataRate, ex.ErrorCode);

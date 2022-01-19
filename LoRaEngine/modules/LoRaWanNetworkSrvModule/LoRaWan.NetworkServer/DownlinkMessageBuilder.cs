@@ -86,7 +86,7 @@ namespace LoRaWan.NetworkServer
                 datr = loRaRegion.GetDownstreamDataRate(radioMetadata.DataRate, loRaDevice.ReportedRX1DROffset);
 
                 // The logic for passing CN470 join channel will change as part of #561
-                if (!loRaRegion.TryGetDownstreamChannelFrequency(radioMetadata.Frequency, out freq, deviceJoinInfo: deviceJoinInfo))
+                if (!loRaRegion.TryGetDownstreamChannelFrequency(radioMetadata.Frequency, upstreamDataRate: radioMetadata.DataRate, downstreamFrequency: out freq, deviceJoinInfo: deviceJoinInfo))
                 {
                     logger.LogError("there was a problem in setting the frequency in the downstream message packet forwarder settings");
                     return new DownlinkMessageBuilderResponse(null, false, receiveWindow);

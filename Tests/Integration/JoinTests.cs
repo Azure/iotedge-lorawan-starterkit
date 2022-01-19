@@ -211,7 +211,7 @@ namespace LoRaWan.Tests.Integration
             var downstreamMessage = PacketForwarder.DownlinkMessages[1];
 
             // validates txpk according to region
-            Assert.True(region.TryGetDownstreamChannelFrequency(confirmedRequest.RadioMetadata.Frequency, out var frequency));
+            Assert.True(region.TryGetDownstreamChannelFrequency(confirmedRequest.RadioMetadata.Frequency, confirmedRequest.RadioMetadata.DataRate, out var frequency));
             Assert.Equal(frequency, downstreamMessage.Rx1?.Frequency);
 
             // fcnt up was updated
@@ -474,7 +474,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkJoinAcceptMessage = PacketForwarder.DownlinkMessages[0];
             // validates txpk according to eu region
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radio.Frequency, out var receivedFrequency));
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radio.Frequency, joinRequest.RadioMetadata.DataRate, out var receivedFrequency));
             Assert.Equal(receivedFrequency, downlinkJoinAcceptMessage.Rx1?.Frequency);
 
             LoRaDeviceClient.VerifyAll();
