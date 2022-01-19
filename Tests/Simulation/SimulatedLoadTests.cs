@@ -45,16 +45,11 @@ namespace LoRaWan.Tests.Simulation
                            .ToList();
         }
 
-        /// <summary>
-        /// This test needs to be reworked. It was commented out in the previous code, I guess this was supposed to be a mini load test.
-        /// However all the method calls where non existing
-        /// </summary>
-        /// <returns></returns>
         [Fact]
         public async Task Ten_Devices_Sending_Messages_At_Same_Time()
         {
             // arrange
-            const int messageCount = 1;
+            const int messageCount = 2;
             var simulatedDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange1000_ABP);
             Assert.NotEmpty(simulatedDevices);
 
@@ -67,7 +62,7 @@ namespace LoRaWan.Tests.Simulation
             foreach (var device in simulatedDevices)
             {
                 Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCount), TestFixture.IoTHubMessages.Events.Count(eventData => ContainsMessageFromDevice(eventData, device)));
-                EnsureMessageResponsesAreReceived(device, 1);
+                EnsureMessageResponsesAreReceived(device, messageCount);
             }
         }
 
