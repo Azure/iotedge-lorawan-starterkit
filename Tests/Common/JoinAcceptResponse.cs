@@ -8,16 +8,19 @@ namespace LoRaWan.Tests.Common
     internal sealed record JoinAcceptResponse
     {
         [JsonPropertyName("pdu")]
-        public string Pdu { get; set; }
+        public string Pdu { get; }
 
         [JsonPropertyName("DevEui")]
-        public string DevEuiString
-        {
-            get => DevEui.ToString();
-            set => DevEui = DevEui.Parse(value);
-        }
+        public string DevEuiString => DevEui.ToString();
 
         [JsonIgnore]
-        public DevEui DevEui { get; set; }
+        public DevEui DevEui { get; }
+
+        [JsonConstructor]
+        public JoinAcceptResponse(string pdu, string devEuiString)
+        {
+            Pdu = pdu;
+            DevEui = DevEui.Parse(devEuiString);
+        }
     }
 }

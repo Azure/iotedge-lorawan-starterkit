@@ -8,25 +8,25 @@ namespace LoRaWan.Tests.Simulation.Models
     public sealed record LnsVersionRequest
     {
         [JsonPropertyName("msgtype")]
-        public string Msgtype { get; set; } = "version";
+        public string Msgtype { get; } = "version";
 
         [JsonPropertyName("station")]
-        public string Station { get; set; }
+        public string Station { get; }
 
         [JsonPropertyName("firmware")]
-        public string Firmware { get; set; }
+        public string Firmware { get; }
 
         [JsonPropertyName("package")]
-        public string Package { get; set; }
+        public string Package { get; }
 
         [JsonPropertyName("model")]
-        public string Model { get; set; }
+        public string Model { get; }
 
         [JsonPropertyName("protocol")]
-        public int Protocol { get; set; }
+        public int Protocol { get; }
 
         [JsonPropertyName("features")]
-        public string Features { get; set; }
+        public string Features { get; }
 
         public LnsVersionRequest(StationEui station, string firmware, string package, string model, int protocol, string features)
         {
