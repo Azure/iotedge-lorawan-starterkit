@@ -82,10 +82,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.blobClient.Setup(m => m.DownloadStreamingAsync(default, null, false, It.IsAny<CancellationToken>()))
                            .Returns(Task.FromResult(Response.FromValue(streamingResult, new Mock<Response>().Object)));
 
+            this.blobClient.Setup(m => m.GetPropertiesAsync(null, It.IsAny<CancellationToken>()))
+                           .Returns(Task.FromResult(Response.FromValue(new BlobProperties(), new Mock<Response>().Object)));
+
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
             Assert.NotNull(actual);
-            var result = Assert.IsType<FileStreamResult>(actual);
+            var result = Assert.IsType<FileStreamWithContentLengthResult>(actual);
 
             result.FileStream.Position = 0;
             using var reader = new StreamReader(result.FileStream);

@@ -6,7 +6,7 @@
 namespace LoRaTools
 {
     using System.Collections.Generic;
-    using LoRaTools.Utils;
+    using LoRaWan;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -55,7 +55,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {Cid} Answer, channel index: {ChIndex}, frequency: {ConversionHelper.ByteArrayToString(Freq)}, min DR: {MinDR}, max DR: {MaxDR}";
+            return $"Type: {Cid} Answer, channel index: {ChIndex}, frequency: {LittleEndianReader.ReadUInt24(Freq):X6}, min DR: {MinDR}, max DR: {MaxDR}";
         }
     }
 }
