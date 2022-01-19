@@ -624,7 +624,7 @@ namespace LoRaWan.NetworkServer
             uint maxPayload;
 
             // If preferred Window is RX2, this is the max. payload
-            if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
+            if (loRaDevice.PreferredWindow == ReceiveWindowNumber.ReceiveWindow2)
             {
                 // Get max. payload size for RX2, considering possible user provided Rx2DataRate
                 if (this.configuration.Rx2DataRate is null)

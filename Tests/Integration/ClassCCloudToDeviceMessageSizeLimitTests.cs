@@ -13,7 +13,6 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
@@ -116,7 +115,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2d.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -201,7 +200,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2d.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();

@@ -420,22 +420,7 @@ namespace LoRaTools.LoRaMessage
             return messageArray.ToArray();
         }
 
-        /// <summary>
-        /// Add Mac Command to a LoRa Payload
-        /// Warning, do not use this method if your LoRaPayload was created from bytes.
-        /// </summary>
-        public void AddMacCommand(MacCommand mac)
-        {
-            if (MacCommands == null)
-            {
-                MacCommands = new List<MacCommand>();
-            }
-
-            MacCommands.Add(mac);
-        }
-
-        public override bool RequiresConfirmation
-            => IsConfirmed || IsMacAnswerRequired;
+        public override bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
 
         public override bool CheckMic(AppKey key) => throw new NotImplementedException();
 

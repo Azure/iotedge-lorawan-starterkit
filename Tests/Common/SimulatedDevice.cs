@@ -15,7 +15,6 @@ namespace LoRaWan.Tests.Common
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using Microsoft.Extensions.Logging;
     using Xunit;
@@ -130,7 +129,7 @@ namespace LoRaWan.Tests.Common
                 }
                 else
                 {
-                    payload = ConversionHelper.StringToByteArray(data);
+                    payload = StringToByteArray(data);
                 }
 
                 Array.Reverse(payload);
@@ -191,7 +190,7 @@ namespace LoRaWan.Tests.Common
                 }
                 else
                 {
-                    payload = ConversionHelper.StringToByteArray(data);
+                    payload = StringToByteArray(data);
                 }
 
                 Array.Reverse(payload);
@@ -278,7 +277,7 @@ namespace LoRaWan.Tests.Common
                     // PDU is null in case it is another message coming from the station.
                     if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && someJoinAcceptResponse.DevEui == DevEUI)
                     {
-                        var joinAccept = new LoRaPayloadJoinAccept(ConversionHelper.StringToByteArray(somePdu), AppKey.Value);
+                        var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(somePdu), AppKey.Value);
                         joinSuccessful = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
                         joinCompleted.Release();
                     }
@@ -341,6 +340,12 @@ namespace LoRaWan.Tests.Common
             LoRaDevice.AppSKey = appSKey;
             LoRaDevice.NwkSKey = nwkSKey;
             LoRaDevice.DevAddr = devAddr;
+        }
+
+        private static byte[] StringToByteArray(string hex)
+        {
+            var bytes = new byte[hex.Length / 2];
+            return Hexadecimal.TryParse(hex, bytes) ? bytes : throw new FormatException("Invalid hexadecimal string: " + hex);
         }
     }
 }

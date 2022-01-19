@@ -370,8 +370,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .Callback<DownlinkMessage>(d =>
                 {
                     EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
-                    Assert.Equal(DataRateIndex.DR10, d.DataRateRx2);
-                    Assert.Equal(Hertz.Mega(923.3), d.FrequencyRx2);
+                    Assert.Equal(DataRateIndex.DR10, d.Rx2.DataRate);
+                    Assert.Equal(Hertz.Mega(923.3), d.Rx2.Frequency);
                 });
 
             var target = new DefaultClassCDevicesMessageSender(

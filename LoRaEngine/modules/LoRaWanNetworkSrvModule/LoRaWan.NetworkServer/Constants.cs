@@ -11,15 +11,6 @@ namespace LoRaWan.NetworkServer
         // Name of the upstream message property reporint a confirmed message
         internal const string C2D_MSG_PROPERTY_VALUE_NAME = "C2DMsgConfirmed";
 
-        // Receive window 1 (RX1)
-        public const int ReceiveWindow2 = 2;
-
-        // Receive window 2 (RX2)
-        public const int ReceiveWindow1 = 1;
-
-        // Invalid receive window (when trying to resolve the window to use)
-        public const int InvalidReceiveWindow = 0;
-
         /// <summary>
         /// Defines the maximum difference between saved frame counts before we require a change.
         /// </summary>
