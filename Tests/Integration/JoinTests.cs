@@ -33,7 +33,27 @@ namespace LoRaWan.Tests.Integration
         [InlineData(null, 200, 50, 37, 28)]
         [InlineData(null, 0, 0, 0, 23)]
         [InlineData(null, 0, 0, 47, 10000)]
-        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, uint initialFcntUp, uint initialFcntDown, uint startingPayloadFcnt, int netId)
+        public Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, uint initialFcntUp, uint initialFcntDown, uint startingPayloadFcnt, int netId) =>
+            Join_With_Subsequent_Unconfirmed_And_Confirmed_Messages(deviceGatewayID, initialFcntUp, initialFcntDown, startingPayloadFcnt, netId, DefaultRegion);
+
+        public static TheoryData<Region> Join_Succeeds_For_All_Regions_TheoryData() => TheoryDataFactory.From(Join_Succeeds_For_All_Regions_InternalTheoryData());
+
+        private static IEnumerable<Region> Join_Succeeds_For_All_Regions_InternalTheoryData()
+        {
+            yield return RegionManager.CN470RP1;
+            yield return RegionManager.CN470RP2;
+            yield return RegionManager.US915;
+            var as923 = (RegionAS923)RegionManager.AS923;
+            as923.DesiredDwellTimeSetting = new DwellTimeSetting(true, true, 5);
+            yield return as923;
+        }
+
+        [Theory]
+        [MemberData(nameof(Join_Succeeds_For_All_Regions_TheoryData))]
+        public Task Join_Succeeds_For_All_Regions(Region region) =>
+            Join_With_Subsequent_Unconfirmed_And_Confirmed_Messages(ServerGatewayID, 200, 50, 0, 0, region);
+
+        private async Task Join_With_Subsequent_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, uint initialFcntUp, uint initialFcntDown, uint startingPayloadFcnt, int netId, Region region)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequestPayload = simulatedDevice.CreateJoinRequest();
@@ -120,7 +140,7 @@ namespace LoRaWan.Tests.Integration
 
             // Create a join request and join with the device.
             using var joinRequest =
-                CreateWaitableRequest(joinRequestPayload, constantElapsedTime: TimeSpan.FromMilliseconds(300));
+                CreateWaitableRequest(joinRequestPayload, constantElapsedTime: TimeSpan.FromMilliseconds(300), region: region);
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded, $"Failed due to '{joinRequest.ProcessingFailedReason}'.");
@@ -181,7 +201,7 @@ namespace LoRaWan.Tests.Integration
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
-            using var confirmedRequest = CreateWaitableRequest(confirmedMessagePayload, constantElapsedTime: TimeSpan.FromMilliseconds(300));
+            using var confirmedRequest = CreateWaitableRequest(confirmedMessagePayload, constantElapsedTime: TimeSpan.FromMilliseconds(300), region: region);
             messageProcessor.DispatchRequest(confirmedRequest);
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
@@ -190,8 +210,8 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(2, sentTelemetry.Count);
             var downstreamMessage = PacketForwarder.DownlinkMessages[1];
 
-            // validates txpk according to eu region
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radioMetadata.Frequency, out var frequency));
+            // validates txpk according to region
+            Assert.True(region.TryGetDownstreamChannelFrequency(confirmedRequest.RadioMetadata.Frequency, out var frequency));
             Assert.Equal(frequency, downstreamMessage.Rx1?.Frequency);
 
             // fcnt up was updated

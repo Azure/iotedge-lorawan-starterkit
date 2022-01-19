@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Globalization;
+    using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
@@ -30,7 +31,7 @@ namespace LoRaWan.Tests.Common
 
         public TestPacketForwarder PacketForwarder { get; }
 
-        protected Region Region { get; }
+        protected Region DefaultRegion { get; }
 
         protected Mock<LoRaDeviceAPIServiceBase> LoRaDeviceApi { get; }
 
@@ -110,7 +111,7 @@ namespace LoRaWan.Tests.Common
             LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, LoRaDeviceClient.Object, ConnectionManager, DeviceCache, requestHandler);
 
             // By default we pick EU868 region.
-            Region = Enum.TryParse<LoRaRegionType>(Environment.GetEnvironmentVariable("REGION"), out var loraRegionType) ?
+            DefaultRegion = Enum.TryParse<LoRaRegionType>(Environment.GetEnvironmentVariable("REGION"), out var loraRegionType) ?
                         (RegionManager.TryTranslateToRegion(loraRegionType, out var resolvedRegion) ? resolvedRegion : RegionManager.EU868) : RegionManager.EU868;
         }
 
@@ -146,29 +147,44 @@ namespace LoRaWan.Tests.Common
                                                             IPacketForwarder packetForwarder = null,
                                                             TimeSpan? startTimeOffset = null,
                                                             TimeSpan? constantElapsedTime = null,
-                                                            bool useRealTimer = false) =>
-            CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(),
-                                  loRaPayload,
-                                  packetForwarder,
-                                  startTimeOffset,
-                                  constantElapsedTime,
-                                  useRealTimer);
+                                                            bool useRealTimer = false,
+                                                            Region region = null)
+        {
+            var effectiveRegion = region ?? DefaultRegion;
+            var upstreamFrequency = effectiveRegion switch
+            {
+                RegionCN470RP2 r => r.UpstreamJoinFrequenciesToDownstreamAndChannelIndex.Keys.First(),
+                _ => effectiveRegion.RegionLimits.FrequencyRange.Min
+            };
+            // var upstreamFrequency = new Hertz((((ulong)(effectiveRegion.RegionLimits.FrequencyRange.Max - effectiveRegion.RegionLimits.FrequencyRange.Min)) / 2) + effectiveRegion.RegionLimits.FrequencyRange.Min.AsUInt64);
+            return CreateWaitableRequest(TestUtils.GenerateTestRadioMetadata(frequency: upstreamFrequency),
+                                         loRaPayload,
+                                         packetForwarder,
+                                         startTimeOffset,
+                                         constantElapsedTime,
+                                         useRealTimer,
+                                         effectiveRegion);
+        }
+            
 
         protected WaitableLoRaRequest CreateWaitableRequest(RadioMetadata metadata,
                                                             LoRaPayload loRaPayload,
                                                             IPacketForwarder packetForwarder = null,
                                                             TimeSpan? startTimeOffset = null,
                                                             TimeSpan? constantElapsedTime = null,
-                                                            bool useRealTimer = false)
+                                                            bool useRealTimer = false,
+                                                            Region region = null)
         {
+            var effectiveRegion = region ?? DefaultRegion;
             var request = WaitableLoRaRequest.Create(metadata,
-                                       loRaPayload,
-                                       packetForwarder ?? PacketForwarder,
-                                       startTimeOffset,
-                                       constantElapsedTime,
-                                       useRealTimer);
+                                                     loRaPayload,
+                                                     packetForwarder ?? PacketForwarder,
+                                                     startTimeOffset,
+                                                     constantElapsedTime,
+                                                     useRealTimer,
+                                                     effectiveRegion);
 
-            request.SetRegion(Region);
+            request.SetRegion(effectiveRegion);
             return request;
         }
 
