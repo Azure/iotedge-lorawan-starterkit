@@ -15,6 +15,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Regions;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using static LoRaWan.ReceiveWindowNumber;
 
     public class JoinRequestMessageHandler : IJoinRequestMessageHandler
     {
@@ -194,7 +195,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse();
-                if (windowToUse == Constants.InvalidReceiveWindow)
+                if (windowToUse is null)
                 {
                     this.receiveWindowMisses?.Add(1);
                     this.logger.LogInformation("join refused: processing of the join request took too long, sending no message");
@@ -264,7 +265,7 @@ namespace LoRaWan.NetworkServer
                 var downlinkMessage = new DownlinkMessage(
                   joinAcceptBytes,
                   request.RadioMetadata.UpInfo.Xtime,
-                  windowToUse != Constants.ReceiveWindow2 ? (loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset), freq) : null,
+                  windowToUse is not ReceiveWindow2 ? (loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset), freq) : null,
                   (loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, this.logger), loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, this.logger)),
                   loRaDevice.DevEUI,
                   loraRegion.JoinAcceptDelay1,

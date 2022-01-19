@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
+    using static ReceiveWindowNumber;
 
     public class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
     {
@@ -105,22 +106,17 @@ namespace LoRaWan.NetworkServer
 
         public DeduplicationMode Deduplication { get; set; }
 
-        private int preferredWindow;
+        private ReceiveWindowNumber preferredWindow;
 
         /// <summary>
         /// Gets or sets value indicating the preferred receive window for the device.
         /// </summary>
-        public int PreferredWindow
+        public ReceiveWindowNumber PreferredWindow
         {
             get => this.preferredWindow;
-
-            set
-            {
-                if (value is not Constants.ReceiveWindow1 and not Constants.ReceiveWindow2)
-                    throw new ArgumentOutOfRangeException(nameof(PreferredWindow), value, $"{nameof(PreferredWindow)} must bet 1 or 2");
-
-                this.preferredWindow = value;
-            }
+            set => this.preferredWindow = Enum.IsDefined(value)
+                                        ? value
+                                        : throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(PreferredWindow)} must be 1 or 2.");
         }
 
         /// <summary>
@@ -222,7 +218,7 @@ namespace LoRaWan.NetworkServer
             DevEUI = devEui;
             DownlinkEnabled = true;
             IsABPRelaxedFrameCounter = true;
-            PreferredWindow = 1;
+            PreferredWindow = ReceiveWindow1;
             ClassType = LoRaDeviceClassType.A;
             this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
@@ -337,7 +333,7 @@ namespace LoRaWan.NetworkServer
             SensorDecoder = desiredTwin.SafeRead(TwinProperty.SensorDecoder, SensorDecoder);
 
             DownlinkEnabled = desiredTwin.SafeRead(TwinProperty.DownlinkEnabled, DownlinkEnabled);
-            PreferredWindow = Math.Max(desiredTwin.SafeRead(TwinProperty.PreferredWindow, Constants.ReceiveWindow1), Constants.ReceiveWindow1);
+            PreferredWindow = desiredTwin.SafeRead(TwinProperty.PreferredWindow, 1) is 2 ? ReceiveWindow2 : ReceiveWindow1;
             Deduplication = desiredTwin.SafeRead(TwinProperty.Deduplication, DeduplicationMode.None);
             ClassType = desiredTwin.SafeRead(TwinProperty.ClassType, LoRaDeviceClassType.A);
 

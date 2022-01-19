@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.E2E
     using System.Globalization;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Common;
+    using static ReceiveWindowNumber;
 
     public class IntegrationTestFixtureCi : IntegrationTestFixtureBase
     {
@@ -446,7 +447,7 @@ namespace LoRaWan.Tests.E2E
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 RX2DataRate = 3,
-                PreferredWindow = 2
+                PreferredWindow = ReceiveWindow2
             };
 
             Device20_OTAA_MultiGw = new TestDeviceInfo()
@@ -456,7 +457,7 @@ namespace LoRaWan.Tests.E2E
                 AppKey = GetAppKey(20, true),
                 IsIoTHubDevice = true,
                 RX2DataRate = 3,
-                PreferredWindow = 2
+                PreferredWindow = ReceiveWindow2
             };
 
             // Device21_ABP: Preferred 2nd window
@@ -468,7 +469,7 @@ namespace LoRaWan.Tests.E2E
                 DevAddr = new DevAddr(0x00000021),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                PreferredWindow = 2
+                PreferredWindow = ReceiveWindow2
             };
 
             // Device22_ABP: used for mac Command testing
