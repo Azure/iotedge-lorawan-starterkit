@@ -226,8 +226,9 @@ namespace LoRaWan.Tests.Integration
             // Frame change flag will be set, only saving every 10 messages
             Assert.True(loRaDevice.HasFrameCountChanges);
 
-            // C2D message will be checked twice
-            LoRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()), Times.Exactly(2));
+            // C2D message will be checked twice (for AS923 only once, since we use the first C2D message to send the dwell time MAC command)
+            var numberOfC2DMessageChecks = region is RegionAS923 ? 1 : 2;
+            LoRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()), Times.Exactly(numberOfC2DMessageChecks));
 
             // has telemetry with both fcnt
             Assert.Single(sentTelemetry, (t) => t.Fcnt == startingPayloadFcnt);
