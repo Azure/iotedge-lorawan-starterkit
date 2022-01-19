@@ -5,5 +5,5 @@ namespace LoRaTools.Utils
 {
     using LoRaWan;
 
-    public record struct RX2ReceiveWindow(Hertz Frequency, DataRateIndex DataRate);
+    public record struct ReceiveWindow(DataRateIndex DataRate, Hertz Frequency);
 }

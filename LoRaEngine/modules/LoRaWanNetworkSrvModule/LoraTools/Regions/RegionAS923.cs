@@ -167,8 +167,8 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
-        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
-            new RX2ReceiveWindow(Hertz.Mega(923.2) + FrequencyOffset, DR2);
+        public override ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
+            new ReceiveWindow(DR2, Hertz.Mega(923.2) + FrequencyOffset);
 
         /// <inheritdoc/>
         public override void UseDwellTimeSetting(DwellTimeSetting dwellTimeSetting)

@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
+    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using static LoRaWan.ReceiveWindowNumber;
@@ -262,18 +263,23 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var joinAcceptBytes = loRaPayloadJoinAccept.Serialize(appKey);
-                var downlinkMessage = new DownlinkMessage(
-                  joinAcceptBytes,
-                  request.RadioMetadata.UpInfo.Xtime,
-                  windowToUse is not ReceiveWindow2 ? (loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset), freq) : null,
-                  (loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, deviceJoinInfo, this.logger), loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, deviceJoinInfo, this.logger)),
-                  loRaDevice.DevEUI,
-                  loraRegion.JoinAcceptDelay1,
-                  loRaDevice.ClassType,
-                  request.StationEui,
-                  request.RadioMetadata.UpInfo.AntennaPreference
-                  );
 
+                var rx1 = windowToUse is not ReceiveWindow2
+                        ? new ReceiveWindow(loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset), freq)
+                        : (ReceiveWindow?)null;
+
+                var rx2 = new ReceiveWindow(loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, deviceJoinInfo, this.logger),
+                                            loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, deviceJoinInfo, this.logger));
+
+                var downlinkMessage = new DownlinkMessage(joinAcceptBytes,
+                                                          request.RadioMetadata.UpInfo.Xtime,
+                                                          rx1,
+                                                          rx2,
+                                                          loRaDevice.DevEUI,
+                                                          loraRegion.JoinAcceptDelay1,
+                                                          loRaDevice.ClassType,
+                                                          request.StationEui,
+                                                          request.RadioMetadata.UpInfo.AntennaPreference);
 
                 this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
                 _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessage);
