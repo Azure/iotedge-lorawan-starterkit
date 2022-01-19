@@ -278,7 +278,7 @@ namespace LoRaWan.Tests.Common
                     if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && someJoinAcceptResponse.DevEui == DevEUI)
                     {
                         var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(somePdu), AppKey.Value);
-                        joinSuccessful = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
+                        joinSuccessful = HandleJoinAccept(joinAccept);
                         joinCompleted.Release();
                     }
                 }
