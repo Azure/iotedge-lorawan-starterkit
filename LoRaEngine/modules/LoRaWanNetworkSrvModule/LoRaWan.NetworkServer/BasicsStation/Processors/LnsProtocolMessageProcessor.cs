@@ -231,15 +231,15 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
                         var loraRequest = new LoRaRequest(updf.RadioMetadata, this.downstreamSender, DateTime.UtcNow);
-                        loraRequest.SetPayload(new LoRaPayloadDataLns(updf.DevAddr,
-                                                                      updf.MacHeader,
-                                                                      updf.FrameControlFlags,
-                                                                      updf.Counter,
-                                                                      updf.Options,
-                                                                      updf.Payload,
-                                                                      updf.Port,
-                                                                      updf.Mic,
-                                                                      this.logger));
+                        loraRequest.SetPayload(new LoRaPayloadData(updf.DevAddr,
+                                                                   updf.MacHeader,
+                                                                   updf.FrameControlFlags,
+                                                                   updf.Counter,
+                                                                   updf.Options,
+                                                                   updf.Payload,
+                                                                   updf.Port,
+                                                                   updf.Mic,
+                                                                   this.logger));
                         loraRequest.SetRegion(routerRegion);
                         loraRequest.SetStationEui(stationEui);
                         this.messageDispatcher.DispatchRequest(loraRequest);

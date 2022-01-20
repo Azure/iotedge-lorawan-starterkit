@@ -13,8 +13,6 @@ namespace LoRaTools.Regions
 
     public abstract class Region
     {
-        protected const double EPSILON = 0.00001;
-
         public LoRaRegionType LoRaRegion { get; set; }
 
         /// <summary>
@@ -149,7 +147,7 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null);
+        public abstract ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>
         /// Get the downstream RX2 frequency.
@@ -169,7 +167,7 @@ namespace LoRaTools.Regions
             else
             {
                 // default frequency
-                (var defaultFrequency, _) = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                var (_, defaultFrequency) = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
                 logger.LogDebug($"using standard region RX2 frequency {defaultFrequency}");
                 return defaultFrequency;
             }

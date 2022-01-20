@@ -222,10 +222,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             cache.Register(device);
 
-            var payload = new LoRaPayloadData
-            {
-                DevAddr = device.DevAddr.Value
-            };
+            var payload = new LoRaPayloadData(device.DevAddr.Value, new MacHeader(MacMessageType.UnconfirmedDataUp),
+                                              FrameControlFlags.None, 1, string.Empty, "payload", FramePort.AppMin,
+                                              mic: null, NullLogger.Instance);
 
             Assert.Equal(isValid, cache.TryGetForPayload(payload, out _));
 
@@ -256,10 +255,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             cache.Register(device);
 
-            var payload = new LoRaPayloadData
-            {
-                DevAddr = device.DevAddr.Value
-            };
+            var payload = new LoRaPayloadData(device.DevAddr.Value, new MacHeader(MacMessageType.UnconfirmedDataUp),
+                                              FrameControlFlags.None, 1, string.Empty, "payload", FramePort.AppMin,
+                                              mic: null, NullLogger.Instance);
 
             var lastSeen = device.LastSeen;
             cache.TryGetForPayload(payload, out _);

@@ -4,22 +4,35 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
+    using System.Text.Json.Serialization;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
+    using Microsoft.Extensions.Logging;
+    using Xunit;
 
     /// <summary>
     /// Defines a simulated device.
     /// </summary>
     public sealed class SimulatedDevice
     {
+        private static readonly IJsonReader<DevEui> DevEuiMessageReader =
+            JsonReader.Object(JsonReader.Property("DevEui", from d in JsonReader.String()
+                                                            select DevEui.Parse(d)));
+        private readonly List<SimulatedBasicsStation> simulatedBasicsStations = new List<SimulatedBasicsStation>();
+
+        private readonly ConcurrentBag<string> receivedMessages = new ConcurrentBag<string>();
+        private readonly ILogger logger;
+
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
         public uint FrmCntUp { get; set; }
@@ -58,11 +71,24 @@ namespace LoRaWan.Tests.Common
             set => LoRaDevice.Supports32BitFCnt = value;
         }
 
-        public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0)
+        public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0, IReadOnlyCollection<SimulatedBasicsStation> simulatedBasicsStation = null, ILogger logger = null)
         {
             LoRaDevice = testDeviceInfo;
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
+            this.logger = logger;
+            this.simulatedBasicsStations = simulatedBasicsStation?.ToList() ?? new List<SimulatedBasicsStation>();
+
+            void AddToDeviceMessageQueue(string response)
+            {
+                if (DevEuiMessageReader.Read(response) == DevEUI)
+                {
+                    this.receivedMessages.Add(response);
+                }
+            }
+
+            foreach (var basicsStation in this.simulatedBasicsStations)
+                basicsStation.MessageReceived += (_, eventArgs) => AddToDeviceMessageQueue(eventArgs.Value);
         }
 
         public LoRaPayloadJoinRequest CreateJoinRequest(AppKey? appkey = null, DevNonce? devNonce = null)
@@ -150,7 +176,7 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = FramePorts.App1, bool isHexPayload = false, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
+        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, FrameControlFlags fctrlFlags = FrameControlFlags.Adr, uint? fcnt = null, FramePort fport = FramePorts.App1, bool isHexPayload = false, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
         {
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
@@ -175,7 +201,7 @@ namespace LoRaWan.Tests.Common
             var direction = 0;
             var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp,
                                                   LoRaDevice.DevAddr.Value,
-                                                  FrameControlFlags.Adr,
+                                                  fctrlFlags,
                                                   unchecked((ushort)fcnt.Value),
                                                   null,
                                                   fport,
@@ -225,50 +251,72 @@ namespace LoRaWan.Tests.Common
             return true;
         }
 
+        //// Sends unconfirmed message
+        public Task SendDataMessageAsync(LoRaRequest loRaRequest) =>
+            Task.WhenAll(from basicsStation in this.simulatedBasicsStations
+                         select basicsStation.SendDataMessageAsync(loRaRequest, CancellationToken.None));
+
+        public void EnsureMessageResponsesAreReceived(int expectedCout)
+        {
+            Assert.Equal(expectedCout, this.receivedMessages.Count);
+        }
+
         // Performs join
-        public async Task<bool> JoinAsync(LoRaRequest joinRequest, SimulatedBasicsStation basicsStation, TimeSpan? timeout = null)
+        public async Task<bool> JoinAsync(TimeSpan? timeout = null)
         {
             timeout ??= TimeSpan.FromSeconds(30);
             using var joinCompleted = new SemaphoreSlim(0);
+            using var joinRequest = WaitableLoRaRequest.CreateWaitableRequest(CreateJoinRequest());
             var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
             var joinSuccessful = false;
 
             void OnMessageReceived(object sender, EventArgs<string> response)
             {
-                // handle join
-                var joinAcceptstring = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
-                // is null in case it is another message coming from the station.
-                if (joinAcceptstring?.Pdu != null)
+                try
                 {
-                    var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(joinAcceptstring.Pdu), AppKey.Value);
-
-                    var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
-                    joinSuccessful = result;
+                    var joinAcceptResponse = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
+                    // PDU is null in case it is another message coming from the station.
+                    if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && DevEui.Parse(someJoinAcceptResponse.DevEuiString) == DevEUI)
+                    {
+                        var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(somePdu), AppKey.Value);
+                        joinSuccessful = HandleJoinAccept(joinAccept);
+                        joinCompleted.Release();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Join failed due to: '{Message}'.", ex.Message);
+                    joinSuccessful = false;
                     joinCompleted.Release();
+                    throw;
                 }
             }
 
-            basicsStation.MessageReceived += OnMessageReceived;
+            foreach (var basicsStation in this.simulatedBasicsStations)
+                basicsStation.MessageReceived += OnMessageReceived;
 
-            await basicsStation.SerializeAndSendMessageAsync(new
+            foreach (var basicsStation in this.simulatedBasicsStations)
             {
-                JoinEui = joinRequestPayload.AppEui.ToString("D", null),
-                msgtype = "jreq",
-                DevEui = joinRequestPayload.DevEUI.ToString("D", null),
-                DevNonce = joinRequestPayload.DevNonce.AsUInt16,
-                MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                MIC = joinRequestPayload.Mic.Value.AsInt32,
-                DR = joinRequest.RadioMetadata.DataRate,
-                Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
-                upinfo = new
+                await basicsStation.SerializeAndSendMessageAsync(new
                 {
-                    gpstime = joinRequest.RadioMetadata.UpInfo.GpsTime,
-                    rctx = 10,
-                    rssi = joinRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
-                    xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
-                    snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
-                }
-            });
+                    JoinEui = joinRequestPayload.AppEui.ToString("D", null),
+                    msgtype = "jreq",
+                    DevEui = joinRequestPayload.DevEUI.ToString("D", null),
+                    DevNonce = joinRequestPayload.DevNonce.AsUInt16,
+                    MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                    MIC = joinRequestPayload.Mic.Value.AsInt32,
+                    DR = joinRequest.RadioMetadata.DataRate,
+                    Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
+                    upinfo = new
+                    {
+                        gpstime = joinRequest.RadioMetadata.UpInfo.GpsTime,
+                        rctx = 10,
+                        rssi = joinRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
+                        xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
+                        snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
+                    }
+                });
+            }
 
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
@@ -279,11 +327,11 @@ namespace LoRaWan.Tests.Common
 
             await joinCompleted.WaitAsync(timeout.Value);
 
-            basicsStation.MessageReceived -= OnMessageReceived;
+            foreach (var basicsStation in this.simulatedBasicsStations)
+                basicsStation.MessageReceived -= OnMessageReceived;
 
             return joinSuccessful;
         }
-
 
         /// <summary>
         /// Setups the join properties.
@@ -300,5 +348,8 @@ namespace LoRaWan.Tests.Common
             var bytes = new byte[hex.Length / 2];
             return Hexadecimal.TryParse(hex, bytes) ? bytes : throw new FormatException("Invalid hexadecimal string: " + hex);
         }
+
+        private sealed record JoinAcceptResponse([property: JsonPropertyName("pdu")] string Pdu,
+                                                 [property: JsonPropertyName("DevEui")] string DevEuiString);
     }
 }

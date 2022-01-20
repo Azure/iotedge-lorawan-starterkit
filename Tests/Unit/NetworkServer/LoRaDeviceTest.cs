@@ -21,6 +21,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using MoreLinq;
     using Xunit;
     using static LoRaWan.DataRateIndex;
+    using static LoRaWan.ReceiveWindowNumber;
 
     /// <summary>
     /// Tests the <see cref="LoRaDevice"/>.
@@ -383,7 +384,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal(1, loRaDevice.PreferredWindow);
+            Assert.Equal(ReceiveWindow1, loRaDevice.PreferredWindow);
         }
 
         [Theory]
@@ -419,7 +420,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal(2, loRaDevice.PreferredWindow);
+            Assert.Equal(ReceiveWindow2, loRaDevice.PreferredWindow);
         }
 
         [Fact]
@@ -451,7 +452,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal(1, loRaDevice.PreferredWindow);
+            Assert.Equal(ReceiveWindow1, loRaDevice.PreferredWindow);
         }
 
         [Fact]
@@ -495,7 +496,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void New_LoRaDevice_Should_Have_PreferredWindow_As_1()
         {
             using var loRaDevice = CreateDefaultDevice();
-            Assert.Equal(1, loRaDevice.PreferredWindow);
+            Assert.Equal(ReceiveWindow1, loRaDevice.PreferredWindow);
         }
 
         [Fact]

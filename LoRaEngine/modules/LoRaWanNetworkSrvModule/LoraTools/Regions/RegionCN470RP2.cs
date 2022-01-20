@@ -211,14 +211,14 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
-        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo)
+        public override ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo)
         {
             if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
 
             // Default data rate is always 1 for CN470
-            var dataRate = DR1;
+            const DataRateIndex dataRate = DR1;
 
-            var rx2Window = new RX2ReceiveWindow(default, dataRate);
+            var rx2Window = new ReceiveWindow(dataRate, default);
 
             // OTAA device
             if (deviceJoinInfo.ReportedCN470JoinChannel != null)
@@ -226,17 +226,17 @@ namespace LoRaTools.Regions
                 // 20 MHz plan A or B
                 if (deviceJoinInfo.ReportedCN470JoinChannel < this.rx2OTAADefaultFrequencies.Count)
                 {
-                    return new RX2ReceiveWindow(this.rx2OTAADefaultFrequencies[(int)deviceJoinInfo.ReportedCN470JoinChannel], dataRate);
+                    return new ReceiveWindow(dataRate, this.rx2OTAADefaultFrequencies[(int)deviceJoinInfo.ReportedCN470JoinChannel]);
                 }
                 // 26 MHz plan A
                 else if (deviceJoinInfo.ReportedCN470JoinChannel <= 14)
                 {
-                    return new RX2ReceiveWindow(Mega(492.5), dataRate);
+                    return new ReceiveWindow(dataRate, Mega(492.5));
                 }
                 // 26 MHz plan B
                 else if (deviceJoinInfo.ReportedCN470JoinChannel <= 19)
                 {
-                    return new RX2ReceiveWindow(Mega(502.5), dataRate);
+                    return new ReceiveWindow(dataRate, Mega(502.5));
                 }
             }
 
@@ -246,22 +246,22 @@ namespace LoRaTools.Regions
                 // 20 MHz plan A
                 if (deviceJoinInfo.DesiredCN470JoinChannel <= 7)
                 {
-                    return new RX2ReceiveWindow(Mega(486.9), dataRate);
+                    return new ReceiveWindow(dataRate, Mega(486.9));
                 }
                 // 20 MHz plan B
                 else if (deviceJoinInfo.DesiredCN470JoinChannel <= 9)
                 {
-                    return new RX2ReceiveWindow(Mega(498.3), dataRate);
+                    return new ReceiveWindow(dataRate, Mega(498.3));
                 }
                 // 26 MHz plan A
                 else if (deviceJoinInfo.DesiredCN470JoinChannel <= 14)
                 {
-                    return new RX2ReceiveWindow(Mega(492.5), dataRate);
+                    return new ReceiveWindow(dataRate, Mega(492.5));
                 }
                 // 26 MHz plan B
                 else if (deviceJoinInfo.DesiredCN470JoinChannel <= 19)
                 {
-                    return new RX2ReceiveWindow(Mega(502.5), dataRate);
+                    return new ReceiveWindow(dataRate, Mega(502.5));
                 }
             }
 
