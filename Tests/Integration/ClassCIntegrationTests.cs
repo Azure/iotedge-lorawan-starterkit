@@ -46,8 +46,6 @@ namespace LoRaWan.Tests.Integration
                 (ServerGatewayID, 5U, 24U)
             };
 
-            var as923 = (RegionAS923)RegionManager.AS923;
-            as923.DesiredDwellTimeSetting = new DwellTimeSetting(true, true, 5);
             foreach (var regionType in new[] { LoRaRegionType.CN470RP1, LoRaRegionType.CN470RP2, LoRaRegionType.US915, LoRaRegionType.AS923 })
             {
                 foreach (var (deviceGatewayId, fcntDownFromTwin, fcntDelta) in testData)
