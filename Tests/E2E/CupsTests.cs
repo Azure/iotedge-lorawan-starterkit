@@ -56,11 +56,6 @@ namespace LoRaWan.Tests.E2E
                     await TestFixture.UpdateExistingConcentratorCrcValues(stationEui, crc);
                 }
 
-                // Debug only
-                Log(sigCrcParseResult.ToString());
-                Log(sigCrc.ToString(CultureInfo.InvariantCulture));
-                Log(TestFixture.Configuration.CupsFwDigest);
-
                 if (sigCrcParseResult && !string.IsNullOrEmpty(TestFixture.Configuration.CupsFwDigest))
                 {
                     //if a test re-run, the fields will be empty, therefore there's no update to achieve
