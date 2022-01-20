@@ -412,16 +412,8 @@ namespace LoRaWan.Tools.CLI
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = File.ReadAllText(opts.ChecksumLocation, Encoding.UTF8);
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = File.ReadAllText(opts.DigestLocation, Encoding.UTF8);
 
-                var twinUpdated = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
-
-                if (!twinUpdated)
-                    StatusConsole.WriteLogLine(MessageType.Error, "Failed to update device twin in IoT Hub.");
-
-                return twinUpdated;
+                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
             });
-
-            if (!success)
-                StatusConsole.WriteLogLine(MessageType.Error, "Failed to execute firmware upgrade.");
 
             return success;
         }
