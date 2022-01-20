@@ -273,6 +273,7 @@ namespace LoRaWan.Tests.Common
 
             while (!await TryJoinAsync(effectiveTimeout) && retryCount < MaxJoinRetryCount)
             {
+                await Task.Delay(TimeSpan.FromSeconds(10));
                 ++retryCount;
             }
 

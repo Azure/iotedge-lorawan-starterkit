@@ -135,6 +135,7 @@ namespace LoRaWan.Tests.Simulation
         public async Task Connected_Factory_Load_Test_Scenario()
         {
             const int numberOfFactories = 2;
+            const double joinsPerSecond = 1;
             const double messagesPerSecond = 5;
             const int numberOfLoops = 1;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
@@ -171,7 +172,7 @@ namespace LoRaWan.Tests.Simulation
             var stopwatch = Stopwatch.StartNew();
 
             // Join OTAA devices
-            await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices)
+            await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices, joinsPerSecond)
                                select JoinAsync(taskAndOffset.Element, taskAndOffset.Offset));
 
             static async Task JoinAsync(SimulatedDevice simulatedDevice, TimeSpan offset)
@@ -183,7 +184,7 @@ namespace LoRaWan.Tests.Simulation
             // Send messages
             for (var i = 0; i < numberOfLoops; ++i)
             {
-                await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices)
+                await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices, messagesPerSecond)
                                    select SendUpstreamAsync(taskAndOffset.Element, taskAndOffset.Offset));
             }
 
@@ -209,9 +210,9 @@ namespace LoRaWan.Tests.Simulation
                 EnsureMessageResponsesAreReceived(device, numberOfLoops + 1);
             }
 
-            static IEnumerable<(T Element, TimeSpan Offset)> DistributeEvenly<T>(ICollection<T> input)
+            static IEnumerable<(T Element, TimeSpan Offset)> DistributeEvenly<T>(ICollection<T> input, double rate)
             {
-                var stepTime = TimeSpan.FromSeconds(1) / messagesPerSecond;
+                var stepTime = TimeSpan.FromSeconds(1) / rate;
                 return input.Index().Select(el => (el.Value, el.Key * stepTime));
             }
         }
