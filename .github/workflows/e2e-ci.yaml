@@ -245,11 +245,11 @@ jobs:
         echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')"
         # -- Firmware upgrade generation section --
         chmod +x ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh
-        ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $CUPS_STATION_EUI ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh
+        ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $CUPS_STATION_EUI "$(realpath ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh)"
         cp ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
         echo "::set-output name=clientsigkeycrc::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.crc)"
         echo "::set-output name=clientfwdigest::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/fwUpdate.digest)"
-        curl -X PUT -T ./.github/scripts/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_FIRMWARE_BLOB_URL"
+        curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_FIRMWARE_BLOB_URL"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
