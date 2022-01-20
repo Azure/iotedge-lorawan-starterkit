@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Integration
                 (ServerGatewayID, 5U, 24U)
             };
 
-            foreach (var regionType in new[] { LoRaRegionType.CN470RP1, LoRaRegionType.CN470RP2, LoRaRegionType.US915, LoRaRegionType.AS923 })
+            foreach (var regionType in new[] { LoRaRegionType.EU868, LoRaRegionType.US915, LoRaRegionType.CN470RP1, LoRaRegionType.CN470RP2, LoRaRegionType.AS923 })
             {
                 foreach (var (deviceGatewayId, fcntDownFromTwin, fcntDelta) in testData)
                     yield return (deviceGatewayId, fcntDownFromTwin, fcntDelta, regionType);
