@@ -54,9 +54,9 @@ namespace LoRaWan.Tests.Integration
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
             DataRateIndex expectedDownlinkDatr;
 
-            expectedDownlinkDatr = euRegion.GetDataRateIndex(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate);
+            expectedDownlinkDatr = euRegion.GetDataRateIndex(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow(default).DataRate].DataRate);
 
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(euRegion.GetDefaultRX2ReceiveWindow().DataRate)
+            var c2dPayloadSize = euRegion.GetMaxPayloadSize(euRegion.GetDefaultRX2ReceiveWindow(default).DataRate)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;

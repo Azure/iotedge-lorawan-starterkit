@@ -153,7 +153,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
         /// <param name="upstreamDataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, DeviceJoinInfo deviceJoinInfo, out Hertz downstreamFrequency)
         {
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
@@ -167,8 +167,8 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
-        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
-            new RX2ReceiveWindow(Hertz.Mega(923.2) + FrequencyOffset, DR2);
+        public override ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
+            new ReceiveWindow(DR2, Hertz.Mega(923.2) + FrequencyOffset);
 
         /// <inheritdoc/>
         public override void UseDwellTimeSetting(DwellTimeSetting dwellTimeSetting)
