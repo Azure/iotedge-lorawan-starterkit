@@ -281,7 +281,6 @@ namespace LoRaWan.NetworkServer
                                                           request.StationEui,
                                                           request.RadioMetadata.UpInfo.AntennaPreference);
 
-
                 this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
                 _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessage);
                 request.NotifySucceeded(loRaDevice, downlinkMessage);

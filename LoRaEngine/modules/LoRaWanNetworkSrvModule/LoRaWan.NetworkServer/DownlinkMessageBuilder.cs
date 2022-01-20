@@ -278,14 +278,17 @@ namespace LoRaWan.NetworkServer
 
             var isMessageTooLong = false;
 
+            var deviceJoinInfo = loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2
+                ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
+                : null;
+
             // Class C always uses RX2
             DataRateIndex datr;
             Hertz freq;
 
             // Class C always use RX2
-            // TODO:Fix bug https://github.com/Azure/iotedge-lorawan-starterkit/issues/1319.
-            freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, null, logger: logger);
-            datr = loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, null, logger);
+            freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, deviceJoinInfo, logger);
+            datr = loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo, logger);
 
             // get max. payload size based on data rate from LoRaRegion
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
