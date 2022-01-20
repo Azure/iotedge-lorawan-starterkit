@@ -42,9 +42,8 @@ namespace LoRaWan.Tests.Simulation
             this.uniqueMessageFragment = Guid.NewGuid().ToString();
             this.logger = new TestOutputLogger(testOutputHelper);
             this.simulatedBasicsStations =
-                testFixture.DeviceRange5000_BasicsStationSimulators
-                           .Select((basicsStation, i) => (BasicsStation: basicsStation, Index: i))
-                           .Select(b => new SimulatedBasicsStation(StationEui.Parse(b.BasicsStation.DeviceID), Configuration.LnsEndpointsForSimulator[b.Index % Configuration.LnsEndpointsForSimulator.Count]))
+                testFixture.DeviceRange5000_BasicsStationSimulators.Index()
+                           .Select(b => new SimulatedBasicsStation(StationEui.Parse(b.Value.DeviceID), Configuration.LnsEndpointsForSimulator[b.Key % Configuration.LnsEndpointsForSimulator.Count]))
                            .ToList();
 
             Assert.True(this.simulatedBasicsStations.Count % Configuration.LnsEndpointsForSimulator.Count == 0, "Since Basics Stations are round-robin distributed to LNS, we must have the same number of stations per LNS for well-defined test assertions.");
@@ -137,13 +136,22 @@ namespace LoRaWan.Tests.Simulation
         {
             const int numberOfFactories = 2;
             const double messagesPerSecond = 5;
-            const int numberOfLoops = 5;
+            const int numberOfLoops = 1;
+            var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
+
             // The total number of concentratos can be configured via the test configuration. It will de distributed evenly among factories;
             // The total number of devices can be configured via the test configuration. It will de distributed evenly among factories.
+
+            // Devices are distributed across different LNS within the same factory to "increase resiliency". In the case of two LNS and one factory,
+            // this means that for two concentrators, concentrator 1 will be connected to LNS 1 while concentrator 2 will talk to LNS 2.
+            // This influences how many messages we expect in IoT Hub (due to different concentrator/LNS deduplication strategies).
+
             Assert.True(this.simulatedBasicsStations.Count >= numberOfFactories, "There needs to be at least one concentrator per factory.");
+            Assert.True(stationsPerFactory % Configuration.LnsEndpointsForSimulator.Count == 0, "LNS must be distributed evenly across factories (identical amount of indirectly connected LNS to factories).");
+
             var testDeviceInfo = TestFixtureSim.DeviceRange6000_OTAA_FullLoad;
             var devicesAndConcentratorsByFactory =
-                this.simulatedBasicsStations.Batch(this.simulatedBasicsStations.Count / numberOfFactories)
+                this.simulatedBasicsStations.Batch(stationsPerFactory)
                                             .Take(numberOfFactories)
                                             .Zip(testDeviceInfo.Batch(testDeviceInfo.Count / numberOfFactories).Take(numberOfFactories))
                                             .Select(b => (Stations: b.First.ToList(), DeviceInfo: b.Second))
@@ -193,7 +201,11 @@ namespace LoRaWan.Tests.Simulation
 
             foreach (var device in devices)
             {
-                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfLoops), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
+                // A correction needs to be applied since concentrators are distributed across LNS, even if they are in the same factory
+                // (detailed description found at the beginning of this test).
+                var expectedMessageCorrection = 1 / (double)numberOfFactories;
+                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfLoops) * expectedMessageCorrection,
+                             TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
                 EnsureMessageResponsesAreReceived(device, numberOfLoops + 1);
             }
 
