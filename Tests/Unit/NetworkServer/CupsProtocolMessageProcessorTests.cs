@@ -4,15 +4,16 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.Buffers;
     using System.IO;
     using System.IO.Pipelines;
     using System.Linq;
     using System.Net;
+    using System.Net.Http;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using global::LoRaTools.CommonAPI;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
@@ -29,7 +30,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<ILogger<CupsProtocolMessageProcessor>> logger;
         private readonly CupsProtocolMessageProcessor processor;
 
-        private const string StationEui = "aaaa:bbff:fecc:dddd";
+        private const string StationEuiString = "aaaa:bbff:fecc:dddd";
         private const string CupsUri = "https://localhost:5002";
         private const string TcUri = "wss://localhost:5001";
         private const uint CredentialsChecksum = 12345;
@@ -52,8 +53,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task HandleUpdateInfoAsync_Succeeds()
         {
             // setup valid http context
-            using var receivedResponse = MemoryPool<byte>.Shared.Rent();
-            var (httpContext, _, _) = SetupHttpContextWithRequest(CupsRequestJson, receivedResponse.Memory);
+            using var memoryStream = new MemoryStream();
+            var (httpContext, _, _) = SetupHttpContextWithRequest(CupsRequestJson, memoryStream);
 
             // setting up the twin in such a way that there are no updates
             var cupsTwinInfo = new CupsTwinInfo(new Uri(CupsUri),
@@ -117,9 +118,155 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Contains(this.logger.Invocations, i => i.Arguments.Any(a => a.GetType() == exceptionType));
         }
 
+        [Fact]
+        public async Task HandleUpdateInfoAsync_Invokes_FetchFirmware_WhenUpdateAvailable()
+        {
+            // setup
+            using var memoryStream = new MemoryStream();
+            var strictifiedInput = JsonUtil.Strictify(CupsRequestJson);
+            var (httpContext, httpRequest, _) = SetupHttpContextWithRequest(strictifiedInput, memoryStream);
+            _ = httpRequest.Setup(r => r.ContentLength).Returns(Encoding.UTF8.GetByteCount(strictifiedInput));
+
+            // setting up the twin in such a way that there is a fw update but no matching checksum
+            var cupsTwinInfo = new CupsTwinInfo(new Uri(CupsUri),
+                                                new Uri(TcUri),
+                                                CredentialsChecksum,
+                                                CredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty,
+                                                "anotherVersion",
+                                                KeyChecksum,
+                                                "ABCD");
+            _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+                                                      .Returns(Task.FromResult(cupsTwinInfo));
+
+            var firmwareBytes = new byte[] { 1, 2, 3 };
+            using var fwStream = new MemoryStream(firmwareBytes);
+            using var streamContent = new StreamContent(fwStream);
+            _ = this.deviceAPIServiceBase.Setup(m => m.FetchStationFirmwareAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+                                         .ReturnsAsync(streamContent);
+            // act
+            await this.processor.HandleUpdateInfoAsync(httpContext.Object, default);
+
+            // assert
+            this.deviceAPIServiceBase.Verify(m => m.FetchStationFirmwareAsync(StationEui.Parse(StationEuiString), It.IsAny<CancellationToken>()), Times.Once);
+            var cupsBytes = new byte[memoryStream.Position];
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            await memoryStream.ReadAsync(cupsBytes);
+            Assert.Equal(firmwareBytes, cupsBytes[^3..]);
+        }
+
+        [Fact]
+        public async Task HandleUpdateInfoAsync_Fails_WithNoMatchingKeyChecksum()
+        {
+            // setup
+            var strictifiedInput = JsonUtil.Strictify(CupsRequestJson);
+            var (httpContext, httpRequest, _) = SetupHttpContextWithRequest(strictifiedInput, null);
+            _ = httpRequest.Setup(r => r.ContentLength).Returns(Encoding.UTF8.GetByteCount(strictifiedInput));
+
+            // setting up the twin in such a way that there is a fw update but no matching checksum
+            var cupsTwinInfo = new CupsTwinInfo(new Uri(CupsUri),
+                                                new Uri(TcUri),
+                                                CredentialsChecksum,
+                                                CredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty,
+                                                "anotherVersion",
+                                                6789,
+                                                string.Empty);
+            _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+                                                      .Returns(Task.FromResult(cupsTwinInfo));
+            // act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await this.processor.HandleUpdateInfoAsync(httpContext.Object, default));
+
+            Assert.Contains("checksum is not available", exception.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(long.MaxValue)]
+        public async Task HandleUpdateInfoAsync_Fails_WithNotValidFirmwareLength(long contentLength)
+        {
+            // setup
+            var strictifiedInput = JsonUtil.Strictify(CupsRequestJson);
+            var (httpContext, httpRequest, _) = SetupHttpContextWithRequest(strictifiedInput, null);
+            _ = httpRequest.Setup(r => r.ContentLength).Returns(Encoding.UTF8.GetByteCount(strictifiedInput));
+
+            // setting up the twin in such a way that there is a fw update but no matching checksum
+            var cupsTwinInfo = new CupsTwinInfo(new Uri(CupsUri),
+                                                new Uri(TcUri),
+                                                CredentialsChecksum,
+                                                CredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty,
+                                                "anotherVersion",
+                                                6789,
+                                                string.Empty);
+
+            using var httpContent = new StringContent("firmware");
+            httpContent.Headers.ContentLength = contentLength;
+
+            _ = this.deviceAPIServiceBase.Setup(m => m.FetchStationFirmwareAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+                                         .ReturnsAsync(httpContent);
+            _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+                                                      .Returns(Task.FromResult(cupsTwinInfo));
+            // act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await this.processor.HandleUpdateInfoAsync(httpContext.Object, default));
+            Assert.Contains("firmware", exception.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task HandleUpdateInfoAsync_Should_Conditionally_Invoke_FetchCredentialsAsync(bool cupsMismatch, bool tcMismatch)
+        {
+            // setup
+            using var memoryStream = new MemoryStream();
+            var strictifiedInput = JsonUtil.Strictify(CupsRequestJson);
+            var (httpContext, httpRequest, _) = SetupHttpContextWithRequest(strictifiedInput, memoryStream);
+            _ = httpRequest.Setup(r => r.ContentLength).Returns(Encoding.UTF8.GetByteCount(strictifiedInput));
+
+            // setting up the twin in such a way that there is a fw update but no matching checksum
+            var cupsTwinInfo = new CupsTwinInfo(new Uri(CupsUri),
+                                                new Uri(TcUri),
+                                                cupsMismatch ? 0U : CredentialsChecksum,
+                                                tcMismatch ? 0U : CredentialsChecksum,
+                                                string.Empty,
+                                                string.Empty,
+                                                Package,
+                                                KeyChecksum,
+                                                string.Empty);
+
+            _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+                                                      .Returns(Task.FromResult(cupsTwinInfo));
+
+            var credentialBase64 = "ABCD";
+            _ = this.deviceAPIServiceBase.Setup(m => m.FetchStationCredentialsAsync(It.IsAny<StationEui>(), It.IsAny<ConcentratorCredentialType>(), It.IsAny<CancellationToken>()))
+                                         .ReturnsAsync(credentialBase64);
+
+            // act
+            await this.processor.HandleUpdateInfoAsync(httpContext.Object, default);
+
+            // assert
+            if (cupsMismatch)
+            {
+                this.deviceAPIServiceBase.Verify(m => m.FetchStationCredentialsAsync(StationEui.Parse(StationEuiString), ConcentratorCredentialType.Cups, It.IsAny<CancellationToken>()), Times.Once);
+            }
+            if (tcMismatch)
+            {
+                this.deviceAPIServiceBase.Verify(m => m.FetchStationCredentialsAsync(StationEui.Parse(StationEuiString), ConcentratorCredentialType.Lns, It.IsAny<CancellationToken>()), Times.Once);
+            }
+            if (!cupsMismatch && !tcMismatch)
+            {
+                this.deviceAPIServiceBase.Verify(m => m.FetchStationCredentialsAsync(StationEui.Parse(StationEuiString), It.IsAny<ConcentratorCredentialType>(), It.IsAny<CancellationToken>()), Times.Never);
+            }
+        }
+
         private static readonly string CupsRequestJson = JsonSerializer.Serialize(new
         {
-            router = StationEui,
+            router = StationEuiString,
             cupsUri = CupsUri,
             tcUri = TcUri,
             cupsCredCrc = CredentialsChecksum,
@@ -131,7 +278,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         });
 
         private static (Mock<HttpContext>, Mock<HttpRequest>, Mock<HttpResponse>)
-            SetupHttpContextWithRequest(string request, Memory<byte> receivedResponse)
+            SetupHttpContextWithRequest(string request, Stream receivedResponse)
         {
             var httpContext = new Mock<HttpContext>();
             var httpRequest = new Mock<HttpRequest>();
@@ -141,16 +288,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             _ = httpRequest.Setup(r => r.BodyReader).Returns(PipeReader.Create(requestStream));
             _ = httpContext.Setup(m => m.Request).Returns(httpRequest.Object);
             var httpResponse = new Mock<HttpResponse>();
-            var bodyWriter = new Mock<PipeWriter>();
-            _ = bodyWriter.Setup(m => m.WriteAsync(It.IsAny<ReadOnlyMemory<byte>>(), It.IsAny<CancellationToken>()))
-                      .Callback<ReadOnlyMemory<byte>, CancellationToken>((memoryPortion, _) =>
-                      {
-                          memoryPortion.CopyTo(receivedResponse);
-                      });
+            var bodyWriter = receivedResponse is null ? Mock.Of<PipeWriter>() : PipeWriter.Create(receivedResponse);
             _ = httpResponse.SetupProperty(m => m.StatusCode);
             _ = httpResponse.SetupProperty(m => m.ContentType);
             _ = httpResponse.SetupProperty(m => m.ContentLength);
-            _ = httpResponse.Setup(m => m.BodyWriter).Returns(bodyWriter.Object);
+            _ = httpResponse.Setup(m => m.BodyWriter).Returns(bodyWriter);
             _ = httpContext.Setup(m => m.Response).Returns(httpResponse.Object);
             return (httpContext, httpRequest, httpResponse);
         }

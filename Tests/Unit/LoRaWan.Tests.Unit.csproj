@@ -1,14 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(TargetFramework)</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-  <!-- FIXME: Remove the following ItemGroup when CUPS update test have been adjusted -->
-  <ItemGroup>
-    <Compile Remove="NetworkServer\CupsResponseTests.cs" />
-    <None Include="NetworkServer\CupsResponseTests.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="$(BogusVersion)" />
