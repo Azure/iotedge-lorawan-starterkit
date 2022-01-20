@@ -44,6 +44,7 @@ namespace LoRaWan.Tools.CLI
                         (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
                         (RotateCertificateOptions opts) => RunRotateCertificateAndReturnExitCodeAsync(opts),
                         (RevokeOptions opts) => RunRevokeAndReturnExitCodeAsync(opts),
+                        (UpgradeFirmwareOptions opts) => RunUpgradeFirmwareAndReturnExitCodeAsync(opts),
                         errs => Task.FromResult(false));
 
                 if (success)
@@ -381,6 +382,18 @@ namespace LoRaWan.Tools.CLI
                 return false;
             }
 
+            if (!File.Exists(opts.DigestLocation))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Digest of the firmware upgrade does not exist at the specified location.");
+                return false;
+            }
+
+            if (!File.Exists(opts.ChecksumLocation))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "CRC32 checksum of the signature key does not exist at the specified location.");
+                return false;
+            }
+
             var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
 
             if (twin is null)
@@ -389,17 +402,17 @@ namespace LoRaWan.Tools.CLI
                 return false;
             }
 
-            var twinJObject = JsonConvert.DeserializeObject<JObject>(twin.Properties.Desired.ToJson());
-            var cupsProperties = twinJObject[TwinProperty.Cups];
-
             // Upload firmware file to storage account
             var success = await UploadFirmwareAsync(opts.FirmwareLocation, opts.StationEui, opts.Package, async (firmwareBlobUri) =>
             {
+                var checksumContent = File.ReadAllText(opts.ChecksumLocation);
+                var digestContent = File.ReadAllText(opts.DigestLocation);
+
                 // Update station device twin
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareVersion] = opts.Package;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareUrl] = firmwareBlobUri;
-                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = opts.Checksum;
-                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = opts.Digest;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = checksumContent;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = digestContent;
 
                 var twinUpdated = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
 
@@ -415,9 +428,9 @@ namespace LoRaWan.Tools.CLI
             return success;
         }
 
-        private static async Task<bool> UploadFirmwareAsync(string firmwareLocation, string stationEui, string version, Func<Uri, Task<bool>> uploadSuccessActionAsync)
+        private static async Task<bool> UploadFirmwareAsync(string firmwareLocation, string stationEui, string package, Func<Uri, Task<bool>> uploadSuccessActionAsync)
         {
-            var firmwareBlobName = $"{stationEui}-{version}";
+            var firmwareBlobName = $"{stationEui}-{package}";
             var blobClient = configurationHelper.FirmwareStorageContainerClient.GetBlobClient(firmwareBlobName);
             var fileContent = File.ReadAllBytes(firmwareLocation);
 

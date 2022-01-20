@@ -8,23 +8,23 @@ namespace LoRaWan.Tools.CLI.CommandLineOptions
     [Verb("upgrade-firmware", HelpText = "Triggers a firmware upgrade for a station.")]
     public class UpgradeFirmwareOptions
     {
-        public UpgradeFirmwareOptions(string stationEui, string package, string firmwareLocation, string digest, string checksum)
+        public UpgradeFirmwareOptions(string stationEui, string package, string firmwareLocation, string digestLocation, string checksumLocation)
         {
             StationEui = stationEui;
             Package = package;
             FirmwareLocation = firmwareLocation;
-            Digest = digest;
-            Checksum = checksum;
+            DigestLocation = digestLocation;
+            ChecksumLocation = checksumLocation;
         }
 
         [Option("stationeui",
                 Required = true,
-                HelpText = "Station EUI: A 16 bit hex string ('AABBCCDDEEFFGGHH').")]
+                HelpText = "Station EUI: A 16 bit hex string (e.g. 'AABBCCDDEEFFGGHH').")]
         public string StationEui { get; }
 
         [Option("package",
                 Required = true,
-                HelpText = "Package: New package version to be installed on the station ('1.0.0').")]
+                HelpText = "Package: New package version to be installed on the station (e.g. '1.0.0').")]
         public string Package { get; }
 
         [Option("firmware-location",
@@ -32,14 +32,14 @@ namespace LoRaWan.Tools.CLI.CommandLineOptions
                 HelpText = "Firmware location: Local path of the firmware upgrade executable.")]
         public string FirmwareLocation { get; }
 
-        [Option("digest",
+        [Option("digest-location",
                 Required = true,
-                HelpText = "Digest: digest of the firmware upgrade file, generated with a signature key installed on the station.")]
-        public string Digest { get; }
+                HelpText = "Digest location: Local path of the file containing a digest of the firmware upgrade, generated with a signature key installed on the station.")]
+        public string DigestLocation { get; }
 
-        [Option("checksum",
+        [Option("checksum-location",
                 Required = true,
-                HelpText = "Checksum: CRC32 checksum of the signature key used to generate the digest.")]
-        public string Checksum { get; }
+                HelpText = "Checksum location: Local path of the file containing a CRC32 checksum of the signature key used to generate the digest.")]
+        public string ChecksumLocation { get; }
     }
 }
