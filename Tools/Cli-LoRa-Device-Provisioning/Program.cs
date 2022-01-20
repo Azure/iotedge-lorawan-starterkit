@@ -33,7 +33,7 @@ namespace LoRaWan.Tools.CLI
                 Console.ResetColor();
                 Console.WriteLine();
 
-                var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions>(args)
+                var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions, UpgradeFirmwareOptions>(args)
                     .MapResult(
                         (ListOptions opts) => RunListAndReturnExitCode(opts),
                         (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
@@ -359,6 +359,86 @@ namespace LoRaWan.Tools.CLI
                 var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(fileContent));
                 if (!await uploadSuccessActionAsync(crcHash, blobClient.Uri))
                     await CleanupAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await CleanupAsync();
+                throw;
+            }
+
+            Task CleanupAsync() => blobClient.DeleteIfExistsAsync();
+        }
+
+        private static async Task<bool> RunUpgradeFirmwareAndReturnExitCodeAsync(UpgradeFirmwareOptions opts)
+        {
+            if (!configurationHelper.ReadConfig())
+                return false;
+
+            if (!File.Exists(opts.FirmwareLocation))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Firmware upgrade file does not exist at the specified location.");
+                return false;
+            }
+
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
+
+            if (twin is null)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Device was not found in IoT Hub. Please create it first.");
+                return false;
+            }
+
+            var twinJObject = JsonConvert.DeserializeObject<JObject>(twin.Properties.Desired.ToJson());
+            var cupsProperties = twinJObject[TwinProperty.Cups];
+
+            // Upload firmware file to storage account
+            var success = await UploadFirmwareAsync(opts.FirmwareLocation, opts.StationEui, opts.Version, async (firmwareBlobUri) =>
+            {
+                // Update station device twin
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareVersion] = opts.Version;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareUrl] = firmwareBlobUri;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = opts.Checksum;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = opts.Digest;
+
+                var twinUpdated = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
+
+                if (!twinUpdated)
+                    StatusConsole.WriteLogLine(MessageType.Error, "Failed to update device twin in IoT Hub.");
+
+                return twinUpdated;
+            });
+
+            if (!success)
+                StatusConsole.WriteLogLine(MessageType.Error, "Failed to execute firmware upgrade.");
+
+            return success;
+        }
+
+        private static async Task<bool> UploadFirmwareAsync(string firmwareLocation, string stationEui, string version, Func<Uri, Task<bool>> uploadSuccessActionAsync)
+        {
+            var firmwareBlobName = $"{stationEui}-{version}";
+            var blobClient = configurationHelper.FirmwareStorageContainerClient.GetBlobClient(firmwareBlobName);
+            var fileContent = File.ReadAllBytes(firmwareLocation);
+
+            try
+            {
+                _ = await blobClient.UploadAsync(new BinaryData(fileContent), overwrite: false);
+            }
+            catch (RequestFailedException ex)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, $"Uploading firmware failed with error: '{ex.Message}'.");
+                return false;
+            }
+
+            try
+            {
+                if (!await uploadSuccessActionAsync(blobClient.Uri))
+                {
+                    await CleanupAsync();
+                    return false;
+                }
+
                 return true;
             }
             catch (Exception)

@@ -6,9 +6,9 @@ namespace LoRaWan.Tools.CLI.CommandLineOptions
     using CommandLine;
 
     [Verb("upgrade-firmware", HelpText = "Triggers a firmware upgrade for a station.")]
-    public class FirmwareUpgradeOptions
+    public class UpgradeFirmwareOptions
     {
-        public FirmwareUpgradeOptions(string stationEui, string version, string firmwareLocation, string digest, string checksum)
+        public UpgradeFirmwareOptions(string stationEui, string version, string firmwareLocation, string digest, string checksum)
         {
             StationEui = stationEui;
             Version = version;
