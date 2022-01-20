@@ -30,16 +30,34 @@ namespace LoRaWan.Tests.Integration
             this.testOutputHelper = testOutputHelper;
         }
 
+        public static TheoryData<string, uint, uint, LoRaRegionType> Upstream_And_Downstream_Succeeds_For_All_Regions_TheoryData() => TheoryDataFactory.From(Upstream_And_Downstream_Succeeds_For_All_Regions_InternalTheoryData());
+
+        private static IEnumerable<(string, uint, uint, LoRaRegionType)> Upstream_And_Downstream_Succeeds_For_All_Regions_InternalTheoryData()
+        {
+            var testData = new List<(string, uint, uint)>
+            {
+                (null, 0U, 0U),
+                (null, 0U, 9U),
+                (null, 5U, 5U),
+                (null, 5U, 14U),
+                (ServerGatewayID, 0U, 0U),
+                (ServerGatewayID, 0U, 19U),
+                (ServerGatewayID, 5U, 5U),
+                (ServerGatewayID, 5U, 24U)
+            };
+
+            var as923 = (RegionAS923)RegionManager.AS923;
+            as923.DesiredDwellTimeSetting = new DwellTimeSetting(true, true, 5);
+            foreach (var regionType in new[] { LoRaRegionType.CN470RP1, LoRaRegionType.CN470RP2, LoRaRegionType.US915, LoRaRegionType.AS923 })
+            {
+                foreach (var (deviceGatewayId, fcntDownFromTwin, fcntDelta) in testData)
+                    yield return (deviceGatewayId, fcntDownFromTwin, fcntDelta, regionType);
+            }
+        }
+
         [Theory]
-        [InlineData(null, 0U, 0U)]
-        [InlineData(null, 0U, 9U)]
-        [InlineData(null, 5U, 5U)]
-        [InlineData(null, 5U, 14U)]
-        [InlineData(ServerGatewayID, 0U, 0U)]
-        [InlineData(ServerGatewayID, 0U, 19U)]
-        [InlineData(ServerGatewayID, 5U, 5U)]
-        [InlineData(ServerGatewayID, 5U, 24U)]
-        public async Task When_ABP_Sends_Upstream_Followed_By_DirectMethod_Should_Send_Upstream_And_Downstream(string deviceGatewayID, uint fcntDownFromTwin, uint fcntDelta)
+        [MemberData(nameof(Upstream_And_Downstream_Succeeds_For_All_Regions_TheoryData))]
+        public async Task When_ABP_Sends_Upstream_Followed_By_DirectMethod_Should_Send_Upstream_And_Downstream(string deviceGatewayID, uint fcntDownFromTwin, uint fcntDelta, LoRaRegionType regionType)
         {
             const uint payloadFcnt = 2; // to avoid relax mode reset
 
@@ -50,7 +68,7 @@ namespace LoRaWan.Tests.Integration
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
+                    { TwinProperty.Region, regionType.ToString() }
                 });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
