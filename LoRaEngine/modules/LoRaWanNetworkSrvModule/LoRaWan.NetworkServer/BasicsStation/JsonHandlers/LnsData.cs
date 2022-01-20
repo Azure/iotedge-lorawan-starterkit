@@ -33,7 +33,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
         internal static readonly IJsonReader<(string Station, string Package)> VersionMessageReader =
             JsonReader.Object(JsonReader.Property("station", JsonReader.String()),
-                              JsonReader.Property("package", JsonReader.String()),
+                              JsonReader.Property("package", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                                                             select string.IsNullOrEmpty(s) ? string.Empty : s),
                               (s, p) => (s, p));
 
 
