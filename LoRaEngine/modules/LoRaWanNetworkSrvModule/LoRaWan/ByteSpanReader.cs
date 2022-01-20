@@ -22,6 +22,7 @@ namespace LoRaWan
 
         private T Read<T>(T result) where T : unmanaged => Read(Marshal.SizeOf<T>(), result);
 
+        public byte[] Read(int size) => Read(size, this.span[..size].ToArray());
         public byte Read() => Read(this.span[0]);
         public string ReadUtf8String(int size) => ReadString(size, Encoding.UTF8);
         public string ReadString(int size, Encoding encoding) => Read(size, encoding.GetString(this.span[..size]));
