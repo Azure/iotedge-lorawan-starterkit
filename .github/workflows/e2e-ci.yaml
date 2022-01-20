@@ -248,7 +248,7 @@ jobs:
         ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $CUPS_STATION_EUI ./.github/scripts/fwUpdateSample.sh
         cp ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
         echo "::set-output name=clientsigkeycrc::$(cat /Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.crc)"
-        echo "::set-output name=clientfwdigestcrc::$(cat /Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/fwUpdate.digest)"
+        echo "::set-output name=clientfwdigest::$(cat /Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/fwUpdate.digest)"
         curl -X PUT -T ./.github/scripts/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_FIRMWARE_BLOB_URL"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
@@ -267,6 +267,8 @@ jobs:
       itestupip: ${{ steps.get_self_hosted_runner_ip_address.outputs.itestupip }}
       clientthumbprint: ${{ steps.generate_step.outputs.clientthumbprint }}
       clientbundlecrc: ${{ steps.generate_step.outputs.clientbundlecrc }}
+      clientsigkeycrc: ${{ steps.generate_step.outputs.clientsigkeycrc }}
+      clientfwdigest: ${{ steps.generate_step.outputs.clientfwdigest }}
 
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
@@ -489,7 +491,7 @@ jobs:
       E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
       E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
       E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}
-      E2ETESTS_CupsFwDigestChecksum: ${{ needs.certificates_job.outputs.clientfwdigestcrc }}
+      E2ETESTS_CupsFwDigest: ${{ needs.certificates_job.outputs.clientfwdigest }}
       E2ETESTS_CupsBasicStationVersion: "2.0.5(rak833x64/std)"
       E2ETESTS_CupsBasicStationPackage: "1.0.1-e2e" # this is the version file in .github\scripts\fwUpdateSample.sh
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
