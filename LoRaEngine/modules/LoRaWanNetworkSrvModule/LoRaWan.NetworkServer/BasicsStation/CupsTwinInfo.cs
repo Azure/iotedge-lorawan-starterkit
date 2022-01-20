@@ -64,10 +64,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         [JsonPropertyName("fwKeyChecksum")]
         [JsonProperty("fwKeyChecksum")]
-        public uint FwKeyChecksum { get; }
+        public uint FwKeyChecksum { get; init; }
 
         [JsonPropertyName("fwSignature")]
         [JsonProperty("fwSignature")]
-        public string FwSignatureInBase64 { get; }
+        public string FwSignatureInBase64 { get; init; }
     }
 }
