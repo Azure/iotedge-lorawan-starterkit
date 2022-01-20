@@ -30,9 +30,9 @@ namespace LoRaWan.Tests.Integration
             this.testOutputHelper = testOutputHelper;
         }
 
-        public static TheoryData<string, uint, uint, LoRaRegionType> Upstream_And_Downstream_Succeeds_For_All_Regions_TheoryData() => TheoryDataFactory.From(Upstream_And_Downstream_Succeeds_For_All_Regions_InternalTheoryData());
+        public static TheoryData<string, uint, uint, Region> Upstream_And_Downstream_Succeeds_For_All_Regions_TheoryData() => TheoryDataFactory.From(Upstream_And_Downstream_Succeeds_For_All_Regions_InternalTheoryData());
 
-        private static IEnumerable<(string, uint, uint, LoRaRegionType)> Upstream_And_Downstream_Succeeds_For_All_Regions_InternalTheoryData()
+        private static IEnumerable<(string, uint, uint, Region)> Upstream_And_Downstream_Succeeds_For_All_Regions_InternalTheoryData()
         {
             var testData = new List<(string, uint, uint)>
             {
@@ -46,7 +46,8 @@ namespace LoRaWan.Tests.Integration
                 (ServerGatewayID, 5U, 24U)
             };
 
-            foreach (var regionType in new[] { LoRaRegionType.EU868, LoRaRegionType.US915, LoRaRegionType.CN470RP1, LoRaRegionType.CN470RP2, LoRaRegionType.AS923 })
+            foreach (var regionType in new[] {
+                RegionManager.EU868, RegionManager.US915, RegionManager.CN470RP1, RegionManager.CN470RP2 })
             {
                 foreach (var (deviceGatewayId, fcntDownFromTwin, fcntDelta) in testData)
                     yield return (deviceGatewayId, fcntDownFromTwin, fcntDelta, regionType);
@@ -55,7 +56,7 @@ namespace LoRaWan.Tests.Integration
 
         [Theory]
         [MemberData(nameof(Upstream_And_Downstream_Succeeds_For_All_Regions_TheoryData))]
-        public async Task When_ABP_Sends_Upstream_Followed_By_DirectMethod_Should_Send_Upstream_And_Downstream(string deviceGatewayID, uint fcntDownFromTwin, uint fcntDelta, LoRaRegionType regionType)
+        public async Task When_ABP_Sends_Upstream_Followed_By_DirectMethod_Should_Send_Upstream_And_Downstream(string deviceGatewayID, uint fcntDownFromTwin, uint fcntDelta, Region region)
         {
             const uint payloadFcnt = 2; // to avoid relax mode reset
 
@@ -66,7 +67,7 @@ namespace LoRaWan.Tests.Integration
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, regionType.ToString() }
+                    { TwinProperty.Region, region.LoRaRegion.ToString() }
                 });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
@@ -95,7 +96,8 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
             var payloadData = simDevice.CreateUnconfirmedDataUpMessage("1", fcnt: payloadFcnt);
-            using var request = CreateWaitableRequest(payloadData);
+
+            using var request = CreateWaitableRequest(payloadData, region: region);
             request.SetStationEui(new StationEui(ulong.MaxValue));
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
