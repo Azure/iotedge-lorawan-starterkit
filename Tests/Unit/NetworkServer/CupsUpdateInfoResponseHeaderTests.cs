@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public class CupsUpdateInfoResponseHeaderTests
     {
-        private readonly string updateUriString = "https://localhost:1234";
+        private const string UpdateUriString = "https://localhost:1234";
 
         [Fact]
         public void Serialize_WithNoUpdates()
@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // setting up the twin in such a way that there are only cups uri updates
             var updateResponseHeader = new CupsUpdateInfoResponseHeader
             {
-                CupsUrl = new Uri(updateUriString)
+                CupsUrl = new Uri(UpdateUriString)
             };
 
             using var memoryRental = MemoryPool<byte>.Shared.Rent(2048);
@@ -88,8 +88,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Assert
             Assert.Equal(36, serializedResponse.Length);
-            Assert.Equal(updateUriString.Length, serializedResponseSpanReader.Read());
-            Assert.Equal(updateUriString, serializedResponseSpanReader.ReadUtf8String(updateUriString.Length));
+            Assert.Equal(UpdateUriString.Length, serializedResponseSpanReader.Read());
+            Assert.Equal(UpdateUriString, serializedResponseSpanReader.ReadUtf8String(UpdateUriString.Length));
             Assert.Equal(0, serializedResponseSpanReader.Read()); //no tcUri
             Assert.Equal(0, serializedResponseSpanReader.ReadUInt16LittleEndian()); //no cupsCred
             Assert.Equal(0, serializedResponseSpanReader.ReadUInt16LittleEndian()); //no tcCred
@@ -104,7 +104,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // setting up the twin in such a way that there are only tc uri updates
             var updateResponseHeader = new CupsUpdateInfoResponseHeader
             {
-                LnsUrl = new Uri(updateUriString)
+                LnsUrl = new Uri(UpdateUriString)
             };
 
             using var memoryRental = MemoryPool<byte>.Shared.Rent(2048);
@@ -117,8 +117,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Assert
             Assert.Equal(36, serializedResponse.Length);
             Assert.Equal(0, serializedResponseSpanReader.Read());
-            Assert.Equal(updateUriString.Length, serializedResponseSpanReader.Read());
-            Assert.Equal(updateUriString, serializedResponseSpanReader.ReadUtf8String(updateUriString.Length));
+            Assert.Equal(UpdateUriString.Length, serializedResponseSpanReader.Read());
+            Assert.Equal(UpdateUriString, serializedResponseSpanReader.ReadUtf8String(UpdateUriString.Length));
             Assert.Equal(0, serializedResponseSpanReader.ReadUInt16LittleEndian()); //no cupsCred
             Assert.Equal(0, serializedResponseSpanReader.ReadUInt16LittleEndian()); //no tcCred
             Assert.Equal(0U, serializedResponseSpanReader.ReadUInt32LittleEndian()); // no sig + keyCRC
