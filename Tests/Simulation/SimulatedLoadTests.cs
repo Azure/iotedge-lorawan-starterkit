@@ -5,6 +5,8 @@ namespace LoRaWan.Tests.Simulation
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.Design;
+    using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
     using System.Security.Cryptography;
@@ -17,6 +19,8 @@ namespace LoRaWan.Tests.Simulation
     using Xunit;
     using Xunit.Abstractions;
     using static MoreLinq.Extensions.BatchExtension;
+    using static MoreLinq.Extensions.IndexExtension;
+    using static MoreLinq.Extensions.TransposeExtension;
 
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class SimulatedLoadTests : IntegrationTestBaseSim, IAsyncLifetime
@@ -120,6 +124,74 @@ namespace LoRaWan.Tests.Simulation
             {
                 Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messageCounts), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
                 EnsureMessageResponsesAreReceived(device, messageCounts + 1);
+            }
+        }
+
+        /// <summary>
+        /// This test emulates a scenario where we have several plants with multiple concentrators and devices,
+        /// connected to several gateways (either on-premises or in the cloud).
+        /// </summary>
+        [Fact]
+        public async Task Connected_Factory_Load_Test_Scenario()
+        {
+            const int numberOfFactories = 2;
+            const double messagesPerSecond = 5;
+            const int numberOfLoops = 10;
+            // The total number of concentratos can be configured via the test configuration. It will de distributed evenly among factories;
+            // The total number of devices can be configured via the test configuration. It will de distributed evenly among factories.
+            Assert.True(this.simulatedBasicsStations.Count >= numberOfFactories, "There needs to be at least one concentrator per factory.");
+            var testDeviceInfo = TestFixtureSim.DeviceRange6000_OTAA_FullLoad;
+            var devicesAndConcentratorsByFactory =
+                this.simulatedBasicsStations.Batch(this.simulatedBasicsStations.Count / numberOfFactories)
+                                            .Take(numberOfFactories)
+                                            .Zip(testDeviceInfo.Batch(testDeviceInfo.Count / numberOfFactories).Take(numberOfFactories))
+                                            .Select(b => (Stations: b.First.ToList(), DeviceInfo: b.Second))
+                                            .Select(b => (b.Stations, Devices: b.DeviceInfo.Select(d => InitializeSimulatedDevice(d, b.Stations)).ToList()))
+                                            .Index()
+                                            .ToDictionary(el => el.Key,
+                                                          stationsAndDevices => (stationsAndDevices.Value.Stations, stationsAndDevices.Value.Devices));
+            // Cache the devices in a flat list to make distributing requests easier.
+            // Transposing the matrix makes sure that device requests are distributed evenly accross factories,
+            // instead of having all requests from the same factory executed in series.
+            var devices =
+                devicesAndConcentratorsByFactory.Select(f => f.Value.Devices)
+                                                .Transpose()
+                                                .SelectMany(ds => ds)
+                                                .ToList();
+
+            var stopwatch = Stopwatch.StartNew();
+
+            // Join OTAA devices
+            await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices)
+                               select JoinAsync(taskAndOffset.Element, taskAndOffset.Offset));
+
+            static async Task JoinAsync(SimulatedDevice simulatedDevice, TimeSpan offset)
+            {
+                await Task.Delay(offset);
+                Assert.True(await simulatedDevice.JoinAsync(), $"OTAA join for device {simulatedDevice.LoRaDevice.DeviceID} failed.");
+            }
+
+            // Send messages
+            for (var i = 0; i < numberOfLoops; ++i)
+            {
+                await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices)
+                                   select SendUpstreamAsync(taskAndOffset.Element, taskAndOffset.Offset));
+            }
+
+            async Task SendUpstreamAsync(SimulatedDevice simulatedDevice, TimeSpan offset)
+            {
+                await Task.Delay(offset);
+                using var request = CreateConfirmedUpstreamMessage(simulatedDevice);
+                await simulatedDevice.SendDataMessageAsync(request);
+            }
+
+            stopwatch.Stop();
+            this.logger.LogInformation("Sent {NumberOfMessages} messages in {Seconds} seconds.", (numberOfLoops + 1) * devices.Count, stopwatch.Elapsed.TotalSeconds);
+
+            static IEnumerable<(T Element, TimeSpan Offset)> DistributeEvenly<T>(ICollection<T> input)
+            {
+                var stepTime = TimeSpan.FromSeconds(1) / messagesPerSecond;
+                return input.Index().Select(el => (el.Value, el.Key * stepTime));
             }
         }
 
@@ -266,7 +338,10 @@ namespace LoRaWan.Tests.Simulation
         }
 
         private List<SimulatedDevice> InitializeSimulatedDevices(IReadOnlyCollection<TestDeviceInfo> testDeviceInfos) =>
-            testDeviceInfos.Select(d => new SimulatedDevice(d, simulatedBasicsStation: this.simulatedBasicsStations, logger: this.logger)).ToList();
+            testDeviceInfos.Select(d => InitializeSimulatedDevice(d, this.simulatedBasicsStations)).ToList();
+
+        private SimulatedDevice InitializeSimulatedDevice(TestDeviceInfo testDeviceInfo, IReadOnlyCollection<SimulatedBasicsStation> simulatedBasicsStations) =>
+            new SimulatedDevice(testDeviceInfo, simulatedBasicsStation: simulatedBasicsStations, logger: this.logger);
 
         public async Task InitializeAsync()
         {

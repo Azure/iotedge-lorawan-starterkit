@@ -7,12 +7,12 @@ namespace LoRaWan.Tests.Simulation
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using LoRaWan.Tests.Common;
     using Newtonsoft.Json.Linq;
 
     public class IntegrationTestFixtureSim : IntegrationTestFixtureBase
     {
-        private const int NumberOfConcentrators = 2;
         // Device1001_Simulated_ABP: used for ABP simulator
         public TestDeviceInfo Device1001_Simulated_ABP { get; private set; }
 
@@ -38,6 +38,8 @@ namespace LoRaWan.Tests.Simulation
         private readonly List<TestDeviceInfo> deviceRange5000_BasicsStationSimulators = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange5000_BasicsStationSimulators => this.deviceRange5000_BasicsStationSimulators;
+
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange6000_OTAA_FullLoad { get; private set; }
 
         public override void SetupTestDevices()
         {
@@ -71,7 +73,7 @@ namespace LoRaWan.Tests.Simulation
             var fileName = "EU863.json";
             var jsonString = File.ReadAllText(fileName);
 
-            for (var deviceID = 5000; deviceID <= 5000 + NumberOfConcentrators - 1; deviceID++)
+            for (var deviceID = 5000; deviceID < 5000 + Configuration.NumberOfLoadTestConcentrators; deviceID++)
             {
                 this.deviceRange5000_BasicsStationSimulators.Add(new TestDeviceInfo
                 {
@@ -92,6 +94,10 @@ namespace LoRaWan.Tests.Simulation
 
             for (var deviceId = 4000; deviceId < 4000 + Configuration.NumberOfLoadTestDevices; deviceId++)
                 this.deviceRange4000_OTAA_FullLoad.Add(CreateOtaaDevice(deviceId));
+
+            DeviceRange6000_OTAA_FullLoad = Enumerable.Range(6000, Configuration.NumberOfLoadTestDevices)
+                                                      .Select(deviceId => CreateOtaaDevice(deviceId))
+                                                      .ToList();
 
             TestDeviceInfo CreateAbpDevice(int deviceId) =>
                 new TestDeviceInfo
