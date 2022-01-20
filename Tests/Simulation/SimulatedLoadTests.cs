@@ -5,7 +5,6 @@ namespace LoRaWan.Tests.Simulation
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.Design;
     using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
@@ -47,6 +46,8 @@ namespace LoRaWan.Tests.Simulation
                            .Select((basicsStation, i) => (BasicsStation: basicsStation, Index: i))
                            .Select(b => new SimulatedBasicsStation(StationEui.Parse(b.BasicsStation.DeviceID), Configuration.LnsEndpointsForSimulator[b.Index % Configuration.LnsEndpointsForSimulator.Count]))
                            .ToList();
+
+            Assert.True(this.simulatedBasicsStations.Count % Configuration.LnsEndpointsForSimulator.Count == 0, "Since Basics Stations are round-robin distributed to LNS, we must have the same number of stations per LNS for well-defined test assertions.");
         }
 
         [Fact]
@@ -136,7 +137,7 @@ namespace LoRaWan.Tests.Simulation
         {
             const int numberOfFactories = 2;
             const double messagesPerSecond = 5;
-            const int numberOfLoops = 10;
+            const int numberOfLoops = 5;
             // The total number of concentratos can be configured via the test configuration. It will de distributed evenly among factories;
             // The total number of devices can be configured via the test configuration. It will de distributed evenly among factories.
             Assert.True(this.simulatedBasicsStations.Count >= numberOfFactories, "There needs to be at least one concentrator per factory.");
@@ -192,7 +193,7 @@ namespace LoRaWan.Tests.Simulation
 
             foreach (var device in devices)
             {
-                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfLoops, this.simulatedBasicsStations.Count / numberOfFactories), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
+                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfLoops), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
                 EnsureMessageResponsesAreReceived(device, numberOfLoops + 1);
             }
 
@@ -324,11 +325,14 @@ namespace LoRaWan.Tests.Simulation
             }
         }
 
-        private int GetExpectedMessageCount(string deduplicationMode, int numberOfMessagesPerDevice, int? stationsPerDevice = null) =>
+        /// <summary>
+        /// Requests between LNS are always deduplicated, while duplicate station requests are deduplicated based on the deduplication strategy.
+        /// </summary>
+        private int GetExpectedMessageCount(string deduplicationMode, int numberOfMessagesPerDevice) =>
             deduplicationMode?.ToUpperInvariant() switch
             {
-                null or "" or "NONE" => numberOfMessagesPerDevice * (stationsPerDevice ?? this.simulatedBasicsStations.Count),
-                "MARK" => numberOfMessagesPerDevice * (stationsPerDevice ?? this.simulatedBasicsStations.Count),
+                null or "" or "NONE" => numberOfMessagesPerDevice * (this.simulatedBasicsStations.Count / Configuration.LnsEndpointsForSimulator.Count),
+                "MARK" => numberOfMessagesPerDevice * (this.simulatedBasicsStations.Count / Configuration.LnsEndpointsForSimulator.Count),
                 "DROP" => numberOfMessagesPerDevice,
                 _ => throw new NotImplementedException()
             };
