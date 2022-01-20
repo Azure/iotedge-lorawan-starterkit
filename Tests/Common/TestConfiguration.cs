@@ -100,6 +100,14 @@ namespace LoRaWan.Tests.Common
 
         public string ClientBundleCrc { get; set; } //i.e. 4004975634 (CRC32 of .bundle file)
 
+        public string CupsSigKeyChecksum { get; set; } //the checksum of the key used for generating the digest of the upgrade file
+
+        public string CupsFwDigest { get; set; } //a base 64 encoded digest of the upgrade file
+
+        public string CupsBasicStationVersion { get; set; } //i.e. 2.0.5(corecell/std)
+
+        public string CupsBasicStationPackage { get; set; } //i.e. 1.0.0-e2e
+
         public string LoadTestLnsEndpointsString
         {
             get => JsonSerializer.Serialize(LnsEndpointsForSimulator);
