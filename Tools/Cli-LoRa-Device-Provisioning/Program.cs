@@ -393,10 +393,10 @@ namespace LoRaWan.Tools.CLI
             var cupsProperties = twinJObject[TwinProperty.Cups];
 
             // Upload firmware file to storage account
-            var success = await UploadFirmwareAsync(opts.FirmwareLocation, opts.StationEui, opts.Version, async (firmwareBlobUri) =>
+            var success = await UploadFirmwareAsync(opts.FirmwareLocation, opts.StationEui, opts.Package, async (firmwareBlobUri) =>
             {
                 // Update station device twin
-                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareVersion] = opts.Version;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareVersion] = opts.Package;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareUrl] = firmwareBlobUri;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = opts.Checksum;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = opts.Digest;

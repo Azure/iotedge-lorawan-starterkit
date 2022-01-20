@@ -8,10 +8,10 @@ namespace LoRaWan.Tools.CLI.CommandLineOptions
     [Verb("upgrade-firmware", HelpText = "Triggers a firmware upgrade for a station.")]
     public class UpgradeFirmwareOptions
     {
-        public UpgradeFirmwareOptions(string stationEui, string version, string firmwareLocation, string digest, string checksum)
+        public UpgradeFirmwareOptions(string stationEui, string package, string firmwareLocation, string digest, string checksum)
         {
             StationEui = stationEui;
-            Version = version;
+            Package = package;
             FirmwareLocation = firmwareLocation;
             Digest = digest;
             Checksum = checksum;
@@ -22,10 +22,10 @@ namespace LoRaWan.Tools.CLI.CommandLineOptions
                 HelpText = "Station EUI: A 16 bit hex string ('AABBCCDDEEFFGGHH').")]
         public string StationEui { get; }
 
-        [Option("version",
+        [Option("package",
                 Required = true,
-                HelpText = "Version: New package version to be installed on the station ('1.0.0').")]
-        public string Version { get; }
+                HelpText = "Package: New package version to be installed on the station ('1.0.0').")]
+        public string Package { get; }
 
         [Option("firmware-location",
                 Required = true,
