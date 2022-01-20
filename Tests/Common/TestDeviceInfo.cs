@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Common
     using System.Collections.Generic;
     using System.Globalization;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
     using static ReceiveWindowNumber;
 
     public class TestDeviceInfo
@@ -67,6 +68,8 @@ namespace LoRaWan.Tests.Common
 
         public bool IsMultiGw => string.IsNullOrEmpty(GatewayID);
 
+        public object RouterConfig { get; set; }
+
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>.
         /// </summary>
@@ -93,6 +96,9 @@ namespace LoRaWan.Tests.Common
 
             if (DevAddr is { } someDevAddr)
                 desiredProperties[TwinProperty.DevAddr] = someDevAddr.ToString();
+
+            if (RouterConfig is { } routerConfig)
+                desiredProperties[BasicsStationConfigurationService.RouterConfigPropertyName] = routerConfig;
 
             desiredProperties[TwinProperty.PreferredWindow] = (int)PreferredWindow;
 
