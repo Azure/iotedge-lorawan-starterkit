@@ -255,7 +255,7 @@ namespace LoRaWan.NetworkServer
                     loraSpecDesiredRxDelay,
                     null);
 
-                if (!loraRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, out var freq, deviceJoinInfo: deviceJoinInfo))
+                if (!loraRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, upstreamDataRate: request.RadioMetadata.DataRate, deviceJoinInfo: deviceJoinInfo, downstreamFrequency: out var freq))
                 {
                     this.logger.LogError("could not resolve DR and/or frequency for downstream");
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidUpstreamMessage);
@@ -268,8 +268,8 @@ namespace LoRaWan.NetworkServer
                         ? new ReceiveWindow(loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate, loRaDevice.ReportedRX1DROffset), freq)
                         : (ReceiveWindow?)null;
 
-                var rx2 = new ReceiveWindow(loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, this.logger),
-                                            loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, this.logger));
+                var rx2 = new ReceiveWindow(loraRegion.GetDownstreamRX2DataRate(this.configuration.Rx2DataRate, null, deviceJoinInfo, this.logger),
+                                            loraRegion.GetDownstreamRX2Freq(this.configuration.Rx2Frequency, deviceJoinInfo, this.logger));
 
                 var downlinkMessage = new DownlinkMessage(joinAcceptBytes,
                                                           request.RadioMetadata.UpInfo.Xtime,
