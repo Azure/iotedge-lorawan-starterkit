@@ -75,7 +75,7 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(30_000);
 
                 // If package log does not match, firmware upgrade process failed
-                var expectedLog = stationEui + $": Received 'version' message for station '{TestFixture.Configuration.CupsBasicStationVersion}' package '{TestFixture.Configuration.CupsBasicStationPackage}'";
+                var expectedLog = stationEui + $": Received 'version' message for station '{TestFixture.Configuration.CupsBasicStationVersion}' with package '{TestFixture.Configuration.CupsBasicStationPackage}'";
                 var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
                     (log) => log.IndexOf(expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog) { MaxAttempts = 1 });
                 Assert.True(log.Found);
