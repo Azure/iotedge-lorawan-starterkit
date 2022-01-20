@@ -744,13 +744,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var euRegion = RegionManager.EU868;
 
             Assert.Equal(expectedDR, downlinkMessage.Rx1?.DataRate);
-            Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, NullLogger.Instance), downlinkMessage.Rx2.DataRate);
+            Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, null, NullLogger.Instance), downlinkMessage.Rx2.DataRate);
 
             // Ensure RX freq
-            Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency,out var channelFrequency));
+            Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, request.RadioMetadata.DataRate, deviceJoinInfo: null, downstreamFrequency: out var channelFrequency));
             Assert.Equal(channelFrequency, downlinkMessage.Rx1?.Frequency);
 
-            Assert.Equal(euRegion.GetDownstreamRX2Freq(null, NullLogger.Instance), downlinkMessage.Rx2.Frequency);
+            Assert.Equal(euRegion.GetDownstreamRX2Freq(null, null, logger: NullLogger.Instance), downlinkMessage.Rx2.Frequency);
         }
 
         [Theory]
