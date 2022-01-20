@@ -8,6 +8,7 @@ namespace LoRaWan.Tools.CLI
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
     using Azure;
     using CommandLine;
@@ -394,25 +395,22 @@ namespace LoRaWan.Tools.CLI
                 return false;
             }
 
-            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
-
-            if (twin is null)
-            {
-                StatusConsole.WriteLogLine(MessageType.Error, "Device was not found in IoT Hub. Please create it first.");
-                return false;
-            }
-
             // Upload firmware file to storage account
             var success = await UploadFirmwareAsync(opts.FirmwareLocation, opts.StationEui, opts.Package, async (firmwareBlobUri) =>
             {
-                var checksumContent = File.ReadAllText(opts.ChecksumLocation);
-                var digestContent = File.ReadAllText(opts.DigestLocation);
+                var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
+
+                if (twin is null)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, "Device was not found in IoT Hub. Please create it first.");
+                    return false;
+                }
 
                 // Update station device twin
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareVersion] = opts.Package;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareUrl] = firmwareBlobUri;
-                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = checksumContent;
-                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = digestContent;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = File.ReadAllText(opts.ChecksumLocation, Encoding.UTF8);
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = File.ReadAllText(opts.DigestLocation, Encoding.UTF8);
 
                 var twinUpdated = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
 
@@ -433,6 +431,8 @@ namespace LoRaWan.Tools.CLI
             var firmwareBlobName = $"{stationEui}-{package}";
             var blobClient = configurationHelper.FirmwareStorageContainerClient.GetBlobClient(firmwareBlobName);
             var fileContent = File.ReadAllBytes(firmwareLocation);
+
+            StatusConsole.WriteLogLine(MessageType.Info, $"Uploading firmware {firmwareBlobName} to storage account...");
 
             try
             {
