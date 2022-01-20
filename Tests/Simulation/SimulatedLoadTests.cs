@@ -188,6 +188,8 @@ namespace LoRaWan.Tests.Simulation
             stopwatch.Stop();
             this.logger.LogInformation("Sent {NumberOfMessages} messages in {Seconds} seconds.", (numberOfLoops + 1) * devices.Count, stopwatch.Elapsed.TotalSeconds);
 
+            await WaitForResultsInIotHubAsync();
+
             foreach (var device in devices)
             {
                 Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfLoops, this.simulatedBasicsStations.Count / numberOfFactories), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
