@@ -245,7 +245,7 @@ jobs:
         echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')"
         # -- Firmware upgrade generation section --
         chmod +x ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh
-        ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $CUPS_STATION_EUI ./.github/scripts/fwUpdateSample.sh
+        ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $CUPS_STATION_EUI ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh
         cp ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
         echo "::set-output name=clientsigkeycrc::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.crc)"
         echo "::set-output name=clientfwdigest::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/fwUpdate.digest)"
