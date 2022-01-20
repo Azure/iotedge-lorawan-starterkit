@@ -874,13 +874,11 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        internal bool ValidateMic(LoRaPayload payload)
+        internal bool ValidateMic(LoRaPayloadData payloadData)
         {
-            var payloadData = payload as LoRaPayloadData;
-
-            var adjusted32bit = payloadData != null ? Get32BitAdjustedFcntIfSupported(payloadData) : null;
-            var ret = payload.CheckMic(NwkSKey.Value, adjusted32bit);
-            if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.Fcnt))
+            var adjusted32bit = Get32BitAdjustedFcntIfSupported(payloadData);
+            var ret = payloadData.CheckMic(NwkSKey.Value, adjusted32bit);
+            if (!ret && CanRolloverToNext16Bits(payloadData.Fcnt))
             {
                 payloadData.Reset32BitFcnt();
                 // if the upper 16bits changed on the client, it can be that we can't decrypt
