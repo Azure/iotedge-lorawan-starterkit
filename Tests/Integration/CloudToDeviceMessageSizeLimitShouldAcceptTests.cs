@@ -67,7 +67,7 @@ namespace LoRaWan.Tests.Integration
 
 
             expectedDownlinkDatr = isSendingInRx2
-                ? euRegion.GetDefaultRX2ReceiveWindow().DataRate
+                ? euRegion.GetDefaultRX2ReceiveWindow(default).DataRate
                 : euRegion.GetDataRateIndex(LoRaDataRate.Parse(datr));
 
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
