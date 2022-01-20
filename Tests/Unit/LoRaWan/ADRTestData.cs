@@ -34,7 +34,7 @@ namespace LoRaWan.Tests.Unit
                 });
             }
 
-            var radioMetadata = new RadioMetadata(DataRateIndex.DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
+            var radioMetadata = new RadioMetadata(DataRateIndex.DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow(default).Frequency, null);
             AddRow("Not enough entries to calculate ADR", deviceEuiNotEnoughEntries, tableentries, radioMetadata, true, new LoRaADRResult()
             {
                 DataRate = DR5,
@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.Unit
                 });
             }
 
-            var notenoughentries = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
+            var notenoughentries = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow(default).Frequency, null);
             var loRaADRResult = new LoRaADRResult()
             {
                 DataRate = 0,
@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Unit
                 });
             }
 
-            var increaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
+            var increaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow(default).Frequency, null);
             var increaseNbReploRaADRResult = new LoRaADRResult()
             {
                 DataRate = DR5,
@@ -130,7 +130,7 @@ namespace LoRaWan.Tests.Unit
                     });
             }
 
-            var decreaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
+            var decreaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow(default).Frequency, null);
             var decreaseNbReploRaADRResult = new LoRaADRResult()
             {
                 DataRate = DR5,

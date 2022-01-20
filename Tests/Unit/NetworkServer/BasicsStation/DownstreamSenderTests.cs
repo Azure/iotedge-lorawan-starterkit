@@ -9,11 +9,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using System.Threading.Tasks;
     using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
+    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using static RxDelay;
 
     public class DownstreamSenderTests
     {
@@ -50,12 +52,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
                                                       123456,
-                                                      DataRateIndex.DR5,
-                                                      DataRateIndex.DR0,
-                                                      Hertz.Mega(868.5),
-                                                      Hertz.Mega(869.5),
+                                                      new ReceiveWindow(DataRateIndex.DR5, Hertz.Mega(868.5)),
+                                                      new ReceiveWindow(DataRateIndex.DR0, Hertz.Mega(869.5)),
                                                       this.devEui,
-                                                      lnsRxDelay: 1,
+                                                      RxDelay1,
+                                                      LoRaDeviceClassType.A,
                                                       this.stationEui,
                                                       rfchHasValue ? 1 : null);
 
@@ -80,7 +81,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             Assert.Contains(@"""RX2DR"":0,", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""RX2Freq"":869500000,", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""xtime"":123456,", actualMessage, StringComparison.InvariantCulture);
-           
+
             Assert.Contains(@"""priority"":0", actualMessage, StringComparison.InvariantCulture);
 
             if (rfchHasValue)
@@ -101,12 +102,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
                                                       0,
-                                                      DataRateIndex.DR5,
-                                                      DataRateIndex.DR0,
-                                                      Hertz.Mega(868.5),
-                                                      Hertz.Mega(869.5),
+                                                      new ReceiveWindow(DataRateIndex.DR5, Hertz.Mega(868.5)),
+                                                      new ReceiveWindow(DataRateIndex.DR0, Hertz.Mega(869.5)),
                                                       this.devEui,
-                                                      lnsRxDelay: 0,
+                                                      RxDelay0,
+                                                      LoRaDeviceClassType.C,
                                                       this.stationEui,
                                                       rfchHasValue ? 1 : null);
 
@@ -157,13 +157,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         {
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
-                                                                  0,
-                                                                  DataRateIndex.DR5,
-                                                                  DataRateIndex.DR0,
-                                                                  Hertz.Mega(868.5),
-                                                                  Hertz.Mega(868.5),
-                                                                  this.devEui,
-                                                                  lnsRxDelay: 0);
+                                                      0,
+                                                      new ReceiveWindow(DataRateIndex.DR5, Hertz.Mega(868.5)),
+                                                      new ReceiveWindow(DataRateIndex.DR0, Hertz.Mega(868.5)),
+                                                      this.devEui,
+                                                      RxDelay0,
+                                                      LoRaDeviceClassType.C);
 
             // act and assert
             await Assert.ThrowsAsync<ArgumentException>(() => this.downlinkSender.SendDownstreamAsync(downlinkMessage));
