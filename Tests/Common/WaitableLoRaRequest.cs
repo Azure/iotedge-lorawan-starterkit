@@ -52,8 +52,9 @@ namespace LoRaWan.Tests.Common
                                                  IPacketForwarder packetForwarder = null,
                                                  TimeSpan? startTimeOffset = null,
                                                  TimeSpan? constantElapsedTime = null,
-                                                 bool useRealTimer = false) =>
-            Create(radioMetadata, LoRaEnumerable.RepeatInfinite(constantElapsedTime ?? TimeSpan.Zero), packetForwarder, startTimeOffset, useRealTimer, loRaPayload);
+                                                 bool useRealTimer = false,
+                                                 Region region = null) =>
+            Create(radioMetadata, LoRaEnumerable.RepeatInfinite(constantElapsedTime ?? TimeSpan.Zero), packetForwarder, startTimeOffset, useRealTimer, loRaPayload, region: region);
 
         /// <summary>
         /// Creates a WwaitableLoRaRequest that is configured to miss certain receive windows.
@@ -85,18 +86,19 @@ namespace LoRaWan.Tests.Common
                                                   IPacketForwarder packetForwarder = null,
                                                   TimeSpan? startTimeOffset = null,
                                                   bool useRealTimer = false,
-                                                  LoRaPayload loRaPayload = null)
+                                                  LoRaPayload loRaPayload = null,
+                                                  Region region = null)
         {
             var request = new WaitableLoRaRequest(radioMetadata,
                                                   packetForwarder ?? new TestPacketForwarder(),
                                                   DateTime.UtcNow.Subtract(startTimeOffset ?? TimeSpan.Zero));
-
-            request.SetRegion(TestUtils.TestRegion);
+            var effectiveRegion = region ?? TestUtils.TestRegion;
+            request.SetRegion(effectiveRegion);
             if (loRaPayload is not null)
                 request.SetPayload(loRaPayload);
             if (!useRealTimer)
             {
-                var timeWatcher = new TestLoRaOperationTimeWatcher(RegionManager.EU868, elapsedTimes);
+                var timeWatcher = new TestLoRaOperationTimeWatcher(effectiveRegion, elapsedTimes);
                 request.UseTimeWatcher(timeWatcher);
             }
 

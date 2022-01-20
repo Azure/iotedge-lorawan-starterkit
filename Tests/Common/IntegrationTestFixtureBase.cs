@@ -10,9 +10,11 @@ namespace LoRaWan.Tests.Common
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
+    using LoRaTools.Utils;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Xunit;
@@ -355,10 +357,17 @@ namespace LoRaWan.Tests.Common
                 {
                     // compare device twin and make changes if needed
                     var deviceTwin = await registryManager.GetTwinAsync(testDevice.DeviceID);
+                    var twinCollectionReader = new TwinCollectionReader(deviceTwin.Properties.Desired, NullLogger.Instance);
                     var desiredProperties = testDevice.GetDesiredProperties();
                     foreach (var kv in desiredProperties)
                     {
-                        if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value.ToString())
+                        if (kv.Key == BasicsStationConfigurationService.RouterConfigPropertyName && deviceTwin.Properties.Desired.Contains(kv.Key))
+                        {
+                            // The router config property cannot be updated automatically. If it is present, we assume that it is correct.
+                            continue;
+                        }
+
+                        if (twinCollectionReader.SafeRead<string>(kv.Key) != kv.Value.ToString())
                         {
                             var existingValue = string.Empty;
                             if (deviceTwin.Properties.Desired.Contains(kv.Key))

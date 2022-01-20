@@ -13,8 +13,6 @@ namespace LoRaTools.Regions
 
     public abstract class Region
     {
-        protected const double EPSILON = 0.00001;
-
         public LoRaRegionType LoRaRegion { get; set; }
 
         /// <summary>
@@ -119,7 +117,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency of the upstream message.</param>
         /// <param name="upstreamDataRate">Ustream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null);
+        public abstract bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, DeviceJoinInfo deviceJoinInfo, out Hertz downstreamFrequency);
 
         /// <summary>
         /// Returns downstream data rate based on the upstream data rate and RX1 DR offset.
@@ -149,7 +147,7 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null);
+        public abstract ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo);
 
         /// <summary>
         /// Get the downstream RX2 frequency.
@@ -158,7 +156,7 @@ namespace LoRaTools.Regions
         /// <param name="nwkSrvRx2Freq">the value of the rx2freq env var on the nwk srv.</param>
         /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
         /// <returns>rx2 freq.</returns>
-        public Hertz GetDownstreamRX2Freq(Hertz? nwkSrvRx2Freq, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
+        public Hertz GetDownstreamRX2Freq(Hertz? nwkSrvRx2Freq, DeviceJoinInfo deviceJoinInfo, ILogger logger)
         {
             // resolve frequency to gateway if set to region's default
             if (nwkSrvRx2Freq is { } someNwkSrvRx2Freq)
@@ -169,7 +167,7 @@ namespace LoRaTools.Regions
             else
             {
                 // default frequency
-                (var defaultFrequency, _) = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                var (_, defaultFrequency) = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
                 logger.LogDebug($"using standard region RX2 frequency {defaultFrequency}");
                 return defaultFrequency;
             }
@@ -181,7 +179,7 @@ namespace LoRaTools.Regions
         /// <param name="nwkSrvRx2Dr">The network server rx2 datarate.</param>
         /// <param name="rx2DrFromTwins">RX2 datarate value from twins.</param>
         /// <returns>The RX2 data rate.</returns>
-        public DataRateIndex GetDownstreamRX2DataRate(DataRateIndex? nwkSrvRx2Dr, DataRateIndex? rx2DrFromTwins, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
+        public DataRateIndex GetDownstreamRX2DataRate(DataRateIndex? nwkSrvRx2Dr, DataRateIndex? rx2DrFromTwins, DeviceJoinInfo deviceJoinInfo, ILogger logger)
         {
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)

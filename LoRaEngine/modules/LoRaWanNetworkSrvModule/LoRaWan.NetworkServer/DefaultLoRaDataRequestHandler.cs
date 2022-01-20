@@ -624,21 +624,17 @@ namespace LoRaWan.NetworkServer
             uint maxPayload;
 
             // If preferred Window is RX2, this is the max. payload
-            if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
+            if (loRaDevice.PreferredWindow == ReceiveWindowNumber.ReceiveWindow2)
             {
                 // Get max. payload size for RX2, considering possible user provided Rx2DataRate
                 if (this.configuration.Rx2DataRate is null)
                 {
-                    if (loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2)
-                    {
-                        var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel));
-                        (_, maxPayload) = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate];
+                    var deviceJoinInfo = loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2
+                        ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
+                        : null;
 
-                    }
-                    else
-                    {
-                        (_, maxPayload) = loRaRegion.DRtoConfiguration[loRaRegion.GetDefaultRX2ReceiveWindow().DataRate];
-                    }
+                    var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                    (_, maxPayload) = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate];
                 }
                 else
                 {
