@@ -28,6 +28,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var serializedResponse = updateResponseHeader.Serialize(memoryPool.Memory.Span);
 
             // Assert
+            Assert.Equal(14, serializedResponse.Length);
             Assert.True(serializedResponse.ToArray().All(b => b == 0));
         }
 
@@ -48,17 +49,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
 
             // Act
-            var serializedResponse = updateResponseHeader.Serialize(memoryPool.Memory.Span).GetReader();
+            var serializedResponse = updateResponseHeader.Serialize(memoryPool.Memory.Span);
+            var serializedResponseSpan = serializedResponse.GetReader();
 
             // Assert
-            Assert.Equal(0, serializedResponse.Read()); // no cupsUri
-            Assert.Equal(0, serializedResponse.Read()); // no tcUri
-            Assert.Equal(0, serializedResponse.ReadUInt16LittleEndian()); // no cupsCred
-            Assert.Equal(0, serializedResponse.ReadUInt16LittleEndian()); // no tcCred
-            Assert.Equal((uint)signatureBytes.Length + 4, serializedResponse.ReadUInt32LittleEndian());
-            Assert.Equal(keyCRC, serializedResponse.ReadUInt32LittleEndian());
-            Assert.Equal(signatureBytes, serializedResponse.Read(signatureBytes.Length));
-            Assert.Equal(updateDataLength, serializedResponse.ReadUInt32LittleEndian());
+            Assert.Equal(21, serializedResponse.Length);
+            Assert.Equal(0, serializedResponseSpan.Read()); // no cupsUri
+            Assert.Equal(0, serializedResponseSpan.Read()); // no tcUri
+            Assert.Equal(0, serializedResponseSpan.ReadUInt16LittleEndian()); // no cupsCred
+            Assert.Equal(0, serializedResponseSpan.ReadUInt16LittleEndian()); // no tcCred
+            Assert.Equal((uint)signatureBytes.Length + 4, serializedResponseSpan.ReadUInt32LittleEndian());
+            Assert.Equal(keyCRC, serializedResponseSpan.ReadUInt32LittleEndian());
+            Assert.Equal(signatureBytes, serializedResponseSpan.Read(signatureBytes.Length));
+            Assert.Equal(updateDataLength, serializedResponseSpan.ReadUInt32LittleEndian());
         }
 
         [Fact]
@@ -73,16 +76,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
 
             // Act
-            var serializedResponse = updateResponseHeader.Serialize(memoryPool.Memory.Span).GetReader();
+            var serializedResponse = updateResponseHeader.Serialize(memoryPool.Memory.Span);
+            var serializedResponseSpan = serializedResponse.GetReader();
 
             // Assert
-            Assert.Equal(updateUriString.Length, serializedResponse.Read());
-            Assert.Equal(updateUriString, serializedResponse.ReadUtf8String(updateUriString.Length));
-            Assert.Equal(0, serializedResponse.Read()); //no tcUri
-            Assert.Equal(0, serializedResponse.ReadUInt16LittleEndian()); //no cupsCred
-            Assert.Equal(0, serializedResponse.ReadUInt16LittleEndian()); //no tcCred
-            Assert.Equal(0U, serializedResponse.ReadUInt32LittleEndian()); // no sig + keyCRC
-            Assert.Equal(0U, serializedResponse.ReadUInt32LittleEndian()); // no updData
+            Assert.Equal(36, serializedResponse.Length);
+            Assert.Equal(updateUriString.Length, serializedResponseSpan.Read());
+            Assert.Equal(updateUriString, serializedResponseSpan.ReadUtf8String(updateUriString.Length));
+            Assert.Equal(0, serializedResponseSpan.Read()); //no tcUri
+            Assert.Equal(0, serializedResponseSpan.ReadUInt16LittleEndian()); //no cupsCred
+            Assert.Equal(0, serializedResponseSpan.ReadUInt16LittleEndian()); //no tcCred
+            Assert.Equal(0U, serializedResponseSpan.ReadUInt32LittleEndian()); // no sig + keyCRC
+            Assert.Equal(0U, serializedResponseSpan.ReadUInt32LittleEndian()); // no updData
         }
 
         [Fact]
@@ -97,15 +102,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
 
             // Act
-            var serializedResponse = updateResponseHeader.Serialize(memoryPool.Memory.Span).GetReader();
+            var serializedResponse = updateResponseHeader.Serialize(memoryPool.Memory.Span);
+            var serializedResponseSpan = serializedResponse.GetReader();
 
             // Assert
-            Assert.Equal(0, serializedResponse.Read());
-            Assert.Equal(updateUriString.Length, serializedResponse.Read());
-            Assert.Equal(0, serializedResponse.ReadUInt16LittleEndian()); //no cupsCred
-            Assert.Equal(0, serializedResponse.ReadUInt16LittleEndian()); //no tcCred
-            Assert.Equal(0U, serializedResponse.ReadUInt32LittleEndian()); // no sig + keyCRC
-            Assert.Equal(0U, serializedResponse.ReadUInt32LittleEndian()); // no updData
+            Assert.Equal(36, serializedResponse.Length);
+            Assert.Equal(0, serializedResponseSpan.Read());
+            Assert.Equal(updateUriString.Length, serializedResponseSpan.Read());
+            Assert.Equal(updateUriString, serializedResponseSpan.ReadUtf8String(updateUriString.Length));
+            Assert.Equal(0, serializedResponseSpan.ReadUInt16LittleEndian()); //no cupsCred
+            Assert.Equal(0, serializedResponseSpan.ReadUInt16LittleEndian()); //no tcCred
+            Assert.Equal(0U, serializedResponseSpan.ReadUInt32LittleEndian()); // no sig + keyCRC
+            Assert.Equal(0U, serializedResponseSpan.ReadUInt32LittleEndian()); // no updData
         }
 
         [Fact]
@@ -122,17 +130,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var memoryPool = MemoryPool<byte>.Shared.Rent(2048);
 
             // Act
-            var serializedResponse = updateResponseHeader.Serialize(memoryPool.Memory.Span).GetReader();
+            var serializedResponse = updateResponseHeader.Serialize(memoryPool.Memory.Span);
+            var serializedResponseSpan = serializedResponse.GetReader();
 
             // Assert
-            Assert.Equal(0, serializedResponse.Read()); //no cupsUri
-            Assert.Equal(0, serializedResponse.Read()); //no tcUri
-            Assert.Equal(credentialBytes.Length, serializedResponse.ReadUInt16LittleEndian()); //cups cred length
-            Assert.Equal(credentialBytes, serializedResponse.Read(credentialBytes.Length)); //cups cred
-            Assert.Equal(credentialBytes.Length, serializedResponse.ReadUInt16LittleEndian()); //tc cred length
-            Assert.Equal(credentialBytes, serializedResponse.Read(credentialBytes.Length)); //tc cred
-            Assert.Equal(0U, serializedResponse.ReadUInt32LittleEndian()); // no sig + keyCRC
-            Assert.Equal(0U, serializedResponse.ReadUInt32LittleEndian()); // no updData
+            Assert.Equal(20, serializedResponse.Length);
+            Assert.Equal(0, serializedResponseSpan.Read()); //no cupsUri
+            Assert.Equal(0, serializedResponseSpan.Read()); //no tcUri
+            Assert.Equal(credentialBytes.Length, serializedResponseSpan.ReadUInt16LittleEndian()); //cups cred length
+            Assert.Equal(credentialBytes, serializedResponseSpan.Read(credentialBytes.Length)); //cups cred
+            Assert.Equal(credentialBytes.Length, serializedResponseSpan.ReadUInt16LittleEndian()); //tc cred length
+            Assert.Equal(credentialBytes, serializedResponseSpan.Read(credentialBytes.Length)); //tc cred
+            Assert.Equal(0U, serializedResponseSpan.ReadUInt32LittleEndian()); // no sig + keyCRC
+            Assert.Equal(0U, serializedResponseSpan.ReadUInt32LittleEndian()); // no updData
         }
     }
 }
