@@ -130,21 +130,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task FetchStationFirmwareAsync_Returns_Stream_And_Content_Length()
         {
             var contentBytes = Encoding.UTF8.GetBytes("Test");
-            using var memorystream = new MemoryStream(contentBytes.Length);
-            await memorystream.WriteAsync(contentBytes);
-            memorystream.Seek(0, SeekOrigin.Begin);
             // arrange
             var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
             using var httpHandlerMock = new HttpMessageHandlerMock();
-            httpHandlerMock.SetupHandler(r =>
+            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
-                var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-                {
-                    Content = new StreamContent(memorystream),
-
-                };
-                return response;
-            } );
+                Content = new ByteArrayContent(contentBytes)
+            });
             using var httpClient = new HttpClient(httpHandlerMock);
             facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
             var subject = Setup(facadeMock.Object);
