@@ -57,7 +57,7 @@ namespace LoRaWan.NetworkServer
         /// Fetch station firmware file.
         /// </summary>
         /// <param name="eui">EUI of the station.</param>
-        /// <returns>A tuple containing content-length and stream.</returns>
+        /// <returns>An instance of <see cref="HttpContent"/> with the firmware content.</returns>
         public abstract Task<HttpContent> FetchStationFirmwareAsync(StationEui eui, CancellationToken token);
 
         /// <summary>
