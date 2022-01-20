@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
     using System.Runtime.Serialization;
-    using System.Text;
 
     /// <summary>
     /// Represents the HTTP POST response (binary) entity of the CUPS Protocol.
@@ -53,32 +52,32 @@ namespace LoRaWan.NetworkServer.BasicsStation
             | udn   | updData     | Generic update data blob              |
             \*-----------------------------------------------------------*/
 
-            var writer = buffer.GetWriter();
-            writer = WriteUrl(writer, CupsUrl, nameof(CupsUrl));
-            writer = WriteUrl(writer, LnsUrl, nameof(LnsUrl));
-            writer = WriteShort(writer, CupsCredential.Span, nameof(CupsCredential));
-            writer = WriteShort(writer, LnsCredential.Span, nameof(LnsCredential));
+            var rest = buffer;
+            rest = WriteUrl(rest, CupsUrl, nameof(CupsUrl));
+            rest = WriteUrl(rest, LnsUrl, nameof(LnsUrl));
+            rest = WriteShort(rest, CupsCredential.Span, nameof(CupsCredential));
+            rest = WriteShort(rest, LnsCredential.Span, nameof(LnsCredential));
             const int signatureKeyCrcSize = 4;
-            writer = UpdateSignature is { Length: var signatureLength and > 0 } signature
-                   ? writer.WriteUInt32LittleEndian(unchecked((uint)signatureLength) + signatureKeyCrcSize)
-                           .WriteUInt32LittleEndian(SignatureKeyCrc)
-                           .Write(signature.Span)
-                   : writer.WriteUInt32LittleEndian(0);
-            writer = writer.WriteUInt32LittleEndian(UpdateDataLength);
-            return buffer[..writer.Length];
+            rest = UpdateSignature is { Length: var signatureLength and > 0 } signature
+                   ? rest.WriteUInt32LittleEndian(unchecked((uint)signatureLength) + signatureKeyCrcSize)
+                         .WriteUInt32LittleEndian(SignatureKeyCrc)
+                         .Write(signature.Span)
+                   : rest.WriteUInt32LittleEndian(0);
+            rest = rest.WriteUInt32LittleEndian(UpdateDataLength);
+            return buffer[..^rest.Length];
 
-            static SpanWriter<byte> WriteUrl(SpanWriter<byte> writer, Uri? url, string name) =>
+            static Span<byte> WriteUrl(Span<byte> buffer, Uri? url, string name) =>
 #pragma warning disable IDE0072 // Add missing cases (false positive)
                 url?.GetLeftPart(UriPartial.Authority) switch
 #pragma warning restore IDE0072 // Add missing cases
                 {
-                    null => writer.Write(0),
+                    null => buffer.Write((byte)0),
                     { Length: > byte.MaxValue } => throw new SerializationException($"Length of {name} is too long."),
-                    { } someUrl => writer.Write((byte)someUrl.Length).Write(Encoding.UTF8.GetBytes(someUrl)),
+                    { } someUrl => buffer.Write((byte)someUrl.Length).WriteUtf8(someUrl),
                 };
 
-            static SpanWriter<byte> WriteShort(SpanWriter<byte> writer, ReadOnlySpan<byte> bytes, string name) =>
-                bytes.Length <= ushort.MaxValue ? writer.WriteUInt16LittleEndian(unchecked((ushort)bytes.Length)).Write(bytes)
+            static Span<byte> WriteShort(Span<byte> buffer, ReadOnlySpan<byte> bytes, string name) =>
+                bytes.Length <= ushort.MaxValue ? buffer.WriteUInt16LittleEndian(unchecked((ushort)bytes.Length)).Write(bytes)
                                                 : throw new SerializationException($"Length of {name} is too long.");
         }
     }
