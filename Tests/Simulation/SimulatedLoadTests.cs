@@ -190,23 +190,23 @@ namespace LoRaWan.Tests.Simulation
                     await Task.WhenAll(abpTasks.Concat(otaaTasks));
                     await Task.Delay(IntervalBetweenMessages);
                 }
+            }
 
-                static async Task SendUpstreamMessage(SimulatedDevice device, string payload, int messageId)
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(10, 250)));
+            static async Task SendUpstreamMessage(SimulatedDevice device, string payload, int messageId)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(10, 250)));
 
-                    using var waitableLoRaRequest = messageId <= initialMessageId + messagesBeforeConfirmed
-                        ? WaitableLoRaRequest.CreateWaitableRequest(device.CreateUnconfirmedDataUpMessage(payload))
-                        : WaitableLoRaRequest.CreateWaitableRequest(device.CreateConfirmedDataUpMessage(payload));
+                using var waitableLoRaRequest = messageId <= initialMessageId + messagesBeforeConfirmed
+                    ? WaitableLoRaRequest.CreateWaitableRequest(device.CreateUnconfirmedDataUpMessage(payload))
+                    : WaitableLoRaRequest.CreateWaitableRequest(device.CreateConfirmedDataUpMessage(payload));
 
-                    await device.SendDataMessageAsync(waitableLoRaRequest);
-                }
+                await device.SendDataMessageAsync(waitableLoRaRequest);
+            }
 
-                static async Task JoinAsync(SimulatedDevice device)
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(10, 5000)));
-                    Assert.True(await device.JoinAsync(), "OTAA join failed");
-                }
+            static async Task JoinAsync(SimulatedDevice device)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(10, 5000)));
+                Assert.True(await device.JoinAsync(), "OTAA join failed");
             }
 
             await WaitForResultsInIotHubAsync();
