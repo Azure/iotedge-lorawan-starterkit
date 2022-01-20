@@ -150,12 +150,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var subject = Setup(facadeMock.Object);
 
             // act
-            var (length, stream) = await subject.FetchStationFirmwareAsync(new StationEui(ulong.MaxValue), CancellationToken.None);
+            var content = await subject.FetchStationFirmwareAsync(new StationEui(ulong.MaxValue), CancellationToken.None);
 
             // assert
             var expectedBytes = new byte[contentBytes.Length];
-            await stream.ReadAsync(expectedBytes, CancellationToken.None);
-            Assert.Equal(length, contentBytes.Length);
+            await (await content.ReadAsStreamAsync()).ReadAsync(expectedBytes, CancellationToken.None);
+            Assert.Equal(content.Headers.ContentLength, contentBytes.Length);
             Assert.Equal(expectedBytes, contentBytes);
         }
 

@@ -58,7 +58,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         /// <param name="eui">EUI of the station.</param>
         /// <returns>A tuple containing content-length and stream.</returns>
-        public abstract Task<(long?, Stream)> FetchStationFirmwareAsync(StationEui eui, CancellationToken token);
+        public abstract Task<HttpContent> FetchStationFirmwareAsync(StationEui eui, CancellationToken token);
 
         /// <summary>
         /// Searches the primary key for a LoRa device in IoT Hub.
