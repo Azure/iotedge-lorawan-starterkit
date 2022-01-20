@@ -29,6 +29,10 @@ At least one resource deployment operation failed
 - [#310](https://github.com/Azure/iotedge-lorawan-starterkit/issues/310)
 Incorrect data type for the tmms property
 
+## v2.0.0-beta
+
+- certificate validation
+
 ## Previous Releases
 
 Release notes of all previous release can be found on the Release page on the repository:
