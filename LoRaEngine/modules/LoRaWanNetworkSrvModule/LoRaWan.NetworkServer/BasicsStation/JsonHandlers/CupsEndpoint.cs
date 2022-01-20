@@ -6,6 +6,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
+    using System.Collections.Immutable;
 
     public static class CupsEndpoint
     {
@@ -18,6 +19,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                            select string.IsNullOrEmpty(s) ? null : new Uri(s)),
                               JsonReader.Property("cupsCredCrc", JsonReader.UInt32()),
                               JsonReader.Property("tcCredCrc", JsonReader.UInt32()),
-                              (r, c, t, cc, tc) => new CupsUpdateInfoRequest(r, c, t, cc, tc));
+                              JsonReader.Property("package", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                                                             select string.IsNullOrEmpty(s) ? null : s),
+                              JsonReader.Property("keys", JsonReader.Array(JsonReader.UInt32())),
+                              (r, c, t, cc, tc, p, k) => new CupsUpdateInfoRequest(r, c, t, cc, tc, p, k.ToImmutableArray()));
     }
 }
