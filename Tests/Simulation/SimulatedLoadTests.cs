@@ -135,7 +135,7 @@ namespace LoRaWan.Tests.Simulation
         public async Task Connected_Factory_Load_Test_Scenario()
         {
             const int numberOfFactories = 2;
-            const double joinsPerSecond = 1;
+            const double joinsPerSecond = 1.5;
             const double messagesPerSecond = 5;
             const int numberOfLoops = 1;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
