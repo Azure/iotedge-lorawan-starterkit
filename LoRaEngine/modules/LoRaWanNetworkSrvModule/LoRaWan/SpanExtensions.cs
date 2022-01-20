@@ -11,6 +11,8 @@ namespace LoRaWan
     internal static class SpanExtensions
     {
         public static ByteSpanReader GetReader(this byte[] source) => new(source);
+        public static ByteSpanReader GetReader(this Span<byte> source) => new(source);
+        public static ByteSpanReader GetReader(this ReadOnlySpan<byte> source) => new(source);
 
         public static Span<T> Write<T>(this Span<T> span, T value)
         {
