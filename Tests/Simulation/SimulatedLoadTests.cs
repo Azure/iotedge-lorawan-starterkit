@@ -188,6 +188,12 @@ namespace LoRaWan.Tests.Simulation
             stopwatch.Stop();
             this.logger.LogInformation("Sent {NumberOfMessages} messages in {Seconds} seconds.", (numberOfLoops + 1) * devices.Count, stopwatch.Elapsed.TotalSeconds);
 
+            foreach (var device in devices)
+            {
+                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfLoops, this.simulatedBasicsStations.Count / numberOfFactories), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
+                EnsureMessageResponsesAreReceived(device, numberOfLoops + 1);
+            }
+
             static IEnumerable<(T Element, TimeSpan Offset)> DistributeEvenly<T>(ICollection<T> input)
             {
                 var stepTime = TimeSpan.FromSeconds(1) / messagesPerSecond;
@@ -316,11 +322,11 @@ namespace LoRaWan.Tests.Simulation
             }
         }
 
-        private int GetExpectedMessageCount(string deduplicationMode, int numberOfMessagesPerDevice) =>
+        private int GetExpectedMessageCount(string deduplicationMode, int numberOfMessagesPerDevice, int? stationsPerDevice = null) =>
             deduplicationMode?.ToUpperInvariant() switch
             {
-                null or "" or "NONE" => numberOfMessagesPerDevice * this.simulatedBasicsStations.Count,
-                "MARK" => numberOfMessagesPerDevice * this.simulatedBasicsStations.Count,
+                null or "" or "NONE" => numberOfMessagesPerDevice * (stationsPerDevice ?? this.simulatedBasicsStations.Count),
+                "MARK" => numberOfMessagesPerDevice * (stationsPerDevice ?? this.simulatedBasicsStations.Count),
                 "DROP" => numberOfMessagesPerDevice,
                 _ => throw new NotImplementedException()
             };
