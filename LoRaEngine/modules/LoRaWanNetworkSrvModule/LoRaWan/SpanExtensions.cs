@@ -7,8 +7,11 @@ namespace LoRaWan
     using System.Buffers.Binary;
     using System.Text;
 
+
     internal static class SpanExtensions
     {
+        public static ByteSpanReader GetReader(this byte[] source) => new(source);
+
         public static Span<T> Write<T>(this Span<T> span, T value)
         {
             span[0] = value;
