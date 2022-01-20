@@ -135,8 +135,8 @@ namespace LoRaWan.NetworkServer
                         AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
                         {
                             Pooling = true,
-                            // pool size 1 => 995 devices.
-                            MaxPoolSize = 1
+                            // pool size 10 => 9950 devices.
+                            MaxPoolSize = 10
                         },
                         OperationTimeout = TimeSpan.FromSeconds(10)
                     }
