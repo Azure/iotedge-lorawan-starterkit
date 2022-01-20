@@ -56,10 +56,15 @@ namespace LoRaWan.Tests.E2E
                     await TestFixture.UpdateExistingConcentratorCrcValues(stationEui, crc);
                 }
 
-                if (sigCrcParseResult && TestFixture.Configuration.CupsFwDigest is { } digest && !string.IsNullOrEmpty(digest))
+                // Debug only
+                Log(sigCrcParseResult.ToString());
+                Log(sigCrc.ToString(CultureInfo.InvariantCulture));
+                Log(TestFixture.Configuration.CupsFwDigest);
+
+                if (sigCrcParseResult && !string.IsNullOrEmpty(TestFixture.Configuration.CupsFwDigest))
                 {
                     //if a test re-run, the fields will be empty, therefore there's no update to achieve
-                    await TestFixture.UpdateExistingFirmwareUpgradeValues(stationEui, sigCrc, digest);
+                    await TestFixture.UpdateExistingFirmwareUpgradeValues(stationEui, sigCrc, TestFixture.Configuration.CupsFwDigest);
                 }
 
                 //setup the concentrator with CUPS_URI only (certificates are retrieved from default location)
