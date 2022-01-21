@@ -897,7 +897,7 @@ namespace LoRaWan.NetworkServer
 
             uint? Get32BitAdjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false) =>
                 Supports32BitFCnt && payload is { Fcnt: var fcnt }
-                ? LoRaPayload.InferUpper32BitsForClientFcnt(fcnt, rollHi ? IncrementUpper16bit(FCntUp) : FCntUp)
+                ? LoRaPayloadData.InferUpper32BitsForClientFcnt(fcnt, rollHi ? IncrementUpper16bit(FCntUp) : FCntUp)
                 : null;
 
             bool CanRolloverToNext16Bits(ushort payloadFcntUp) =>
