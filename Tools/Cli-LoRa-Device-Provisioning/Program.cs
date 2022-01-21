@@ -15,6 +15,7 @@ namespace LoRaWan.Tools.CLI
     using LoRaWan.Tools.CLI.CommandLineOptions;
     using LoRaWan.Tools.CLI.Helpers;
     using LoRaWan.Tools.CLI.Options;
+    using Microsoft.Azure.Devices.Common;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -406,10 +407,16 @@ namespace LoRaWan.Tools.CLI
                     return false;
                 }
 
+                if (!uint.TryParse(File.ReadAllText(opts.ChecksumLocation, Encoding.UTF8), out var checksum))
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"Could not parse the key checksum from file {opts.ChecksumLocation}.");
+                    return false;
+                }
+
                 // Update station device twin
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareVersion] = opts.Package;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareUrl] = firmwareBlobUri;
-                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = File.ReadAllText(opts.ChecksumLocation, Encoding.UTF8);
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = checksum;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = File.ReadAllText(opts.DigestLocation, Encoding.UTF8);
 
                 return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
