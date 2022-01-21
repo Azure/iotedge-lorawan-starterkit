@@ -435,7 +435,7 @@ namespace LoRaTools.LoRaMessage
             }
         }
 
-        public override byte[] GetByteMessage()
+        private byte[] GetByteMessage()
         {
             var messageArray = new List<byte>
             {
