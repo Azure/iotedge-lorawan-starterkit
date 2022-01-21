@@ -318,13 +318,32 @@ namespace LoRaWan.Tests.Common
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
             var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
-            var deserializedCupsTwinInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson);
-            var newCupsInfo = new CupsTwinInfo(deserializedCupsTwinInfo.CupsUri,
-                                               deserializedCupsTwinInfo.TcUri,
-                                               crc,
-                                               crc,
-                                               deserializedCupsTwinInfo.CupsCredentialUrl,
-                                               deserializedCupsTwinInfo.TcCredentialUrl);
+            var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
+            {
+                TcCredCrc = crc,
+                CupsCredCrc = crc,
+            };
+            deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
+            await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
+        }
+
+        public async Task UpdateExistingFirmwareUpgradeValues(StationEui stationEui, uint crc, string digestBase64String, string package, Uri fwUrl)
+        {
+            TestLogger.Log($"Updating IoT Hub twin for fw upgrades of concentrator {stationEui}...");
+            var registryManager = GetRegistryManager();
+            var stationDeviceId = GetDeviceId(stationEui);
+            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
+            if (getDeviceResult == null)
+                throw new InvalidOperationException("Concentrator should exist in IoT Hub");
+            var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
+            var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
+            var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
+            {
+                FwKeyChecksum = crc,
+                FwSignatureInBase64 = digestBase64String,
+                Package = package,
+                FwUrl = new Uri(fwUrl.GetLeftPart(UriPartial.Path)) // the GetLeftPart is useful to exclude any potential SAS token stored in the original variable
+            };
             deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
             await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
         }

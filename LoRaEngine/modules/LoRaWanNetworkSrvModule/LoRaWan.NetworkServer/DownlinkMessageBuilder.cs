@@ -80,23 +80,23 @@ namespace LoRaWan.NetworkServer
 
             if (receiveWindow is ReceiveWindow2)
             {
-                freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo);
-                datr = loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo);
+                freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, deviceJoinInfo, logger);
+                datr = loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo, logger);
             }
             else
             {
                 datr = loRaRegion.GetDownstreamDataRate(radioMetadata.DataRate, loRaDevice.ReportedRX1DROffset);
 
                 // The logic for passing CN470 join channel will change as part of #561
-                if (!loRaRegion.TryGetDownstreamChannelFrequency(radioMetadata.Frequency, out freq, deviceJoinInfo: deviceJoinInfo))
+                if (!loRaRegion.TryGetDownstreamChannelFrequency(radioMetadata.Frequency, upstreamDataRate: radioMetadata.DataRate, deviceJoinInfo: deviceJoinInfo, downstreamFrequency: out freq))
                 {
                     logger.LogError("there was a problem in setting the frequency in the downstream message packet forwarder settings");
                     return new DownlinkMessageBuilderResponse(null, false, receiveWindow);
                 }
             }
 
-            var rx2 = new ReceiveWindow(loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger, deviceJoinInfo),
-                                        loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger, deviceJoinInfo));
+            var rx2 = new ReceiveWindow(loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo, logger),
+                                        loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, deviceJoinInfo, logger));
 
             // get max. payload size based on data rate from LoRaRegion
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
@@ -278,13 +278,17 @@ namespace LoRaWan.NetworkServer
 
             var isMessageTooLong = false;
 
+            var deviceJoinInfo = loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2
+                ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
+                : null;
+
             // Class C always uses RX2
             DataRateIndex datr;
             Hertz freq;
 
             // Class C always use RX2
-            freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, logger);
-            datr = loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, logger);
+            freq = loRaRegion.GetDownstreamRX2Freq(configuration.Rx2Frequency, deviceJoinInfo, logger);
+            datr = loRaRegion.GetDownstreamRX2DataRate(configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo, logger);
 
             // get max. payload size based on data rate from LoRaRegion
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);

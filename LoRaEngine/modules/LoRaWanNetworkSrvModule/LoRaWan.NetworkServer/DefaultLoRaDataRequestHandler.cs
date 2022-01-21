@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer
 
             var payloadFcnt = loraPayload.Fcnt;
 
-            var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
+            var payloadFcntAdjusted = LoRaPayloadData.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
             this.logger.LogDebug($"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}");
 
             var requiresConfirmation = request.Payload.RequiresConfirmation;
@@ -629,16 +629,12 @@ namespace LoRaWan.NetworkServer
                 // Get max. payload size for RX2, considering possible user provided Rx2DataRate
                 if (this.configuration.Rx2DataRate is null)
                 {
-                    if (loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2)
-                    {
-                        var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel));
-                        (_, maxPayload) = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate];
+                    var deviceJoinInfo = loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2
+                        ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
+                        : null;
 
-                    }
-                    else
-                    {
-                        (_, maxPayload) = loRaRegion.DRtoConfiguration[loRaRegion.GetDefaultRX2ReceiveWindow().DataRate];
-                    }
+                    var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                    (_, maxPayload) = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate];
                 }
                 else
                 {

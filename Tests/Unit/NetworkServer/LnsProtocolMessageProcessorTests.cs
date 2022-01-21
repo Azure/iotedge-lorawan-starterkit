@@ -240,7 +240,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             InitializeConfigurationServiceMock();
             SetDataPathParameter();
 
-            SetupSocketReceiveAsync(@"{ msgtype: 'version', station: 'stationName' }");
+            SetupSocketReceiveAsync(@"{ msgtype: 'version', station: 'stationName', package: '1.0.0' }");
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
@@ -353,13 +353,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // assert
             Assert.NotNull(loRaRequest);
             Assert.Equal(loRaRequest.RadioMetadata, expectedRadioMetadata);
-            Assert.IsType<LoRaPayloadJoinRequestLns>(loRaRequest.Payload);
+            Assert.IsType<LoRaPayloadJoinRequest>(loRaRequest.Payload);
             Assert.Equal(MacMessageType.JoinRequest, loRaRequest.Payload.MessageType);
             Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic);
-            Assert.Equal(expectedJoinEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEui);
-            Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI);
-            Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevNonce);
+            Assert.Equal(expectedJoinEui, ((LoRaPayloadJoinRequest)loRaRequest.Payload).AppEui);
+            Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequest)loRaRequest.Payload).DevEUI);
+            Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequest)loRaRequest.Payload).DevNonce);
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
             Assert.Equal(RegionManager.EU868, loRaRequest.Region);
         }

@@ -14,7 +14,7 @@ workloads. Alternatively, it allows sending commands from the cloud to the end
 nodes. The goal of the the project is to provide guidance and a reference for
 Azure IoT Edge users to experiment with LoRaWAN technology.
 
-![Architecture](/Docs/Images/EdgeArchitecture.png)
+![Architecture](https://azure.github.io/iotedge-lorawan-starterkit/dev/images/EdgeArchitecture.png)
 
 - [Features](#features)
 - [Prerequisites](#prerequisites)

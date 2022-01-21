@@ -18,7 +18,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
                             uint cupsCredCrc,
                             uint tcCredCrc,
                             string cupsCredentialUrl,
-                            string tcCredentialUrl)
+                            string tcCredentialUrl,
+                            string package,
+                            uint fwKeyChecksum,
+                            string fwSignatureInBase64,
+                            Uri fwUrl)
         {
             CupsUri = cupsUri ?? throw new ArgumentNullException(nameof(cupsUri));
             TcUri = tcUri ?? throw new ArgumentNullException(nameof(tcUri));
@@ -26,6 +30,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
             TcCredCrc = tcCredCrc;
             CupsCredentialUrl = cupsCredentialUrl;
             TcCredentialUrl = tcCredentialUrl;
+            Package = package;
+            FwKeyChecksum = fwKeyChecksum;
+            FwSignatureInBase64 = fwSignatureInBase64;
+            FwUrl = fwUrl;
         }
 
         [JsonPropertyName("cupsUri")]
@@ -38,11 +46,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         [JsonPropertyName("cupsCredCrc")]
         [JsonProperty("cupsCredCrc")]
-        public uint CupsCredCrc { get; }
+        public uint CupsCredCrc { get; init; }
 
         [JsonPropertyName("tcCredCrc")]
         [JsonProperty("tcCredCrc")]
-        public uint TcCredCrc { get; }
+        public uint TcCredCrc { get; init; }
 
         [JsonPropertyName("cupsCredentialUrl")]
         [JsonProperty("cupsCredentialUrl")]
@@ -51,5 +59,21 @@ namespace LoRaWan.NetworkServer.BasicsStation
         [JsonPropertyName("tcCredentialUrl")]
         [JsonProperty("tcCredentialUrl")]
         public string TcCredentialUrl { get; }
+
+        [JsonPropertyName("package")]
+        [JsonProperty("package")]
+        public string Package { get; init; }
+
+        [JsonPropertyName("fwKeyChecksum")]
+        [JsonProperty("fwKeyChecksum")]
+        public uint FwKeyChecksum { get; init; }
+
+        [JsonPropertyName("fwSignature")]
+        [JsonProperty("fwSignature")]
+        public string FwSignatureInBase64 { get; init; }
+
+        [JsonPropertyName("fwUrl")]
+        [JsonProperty("fwUrl")]
+        public Uri FwUrl { get; init; }
     }
 }
