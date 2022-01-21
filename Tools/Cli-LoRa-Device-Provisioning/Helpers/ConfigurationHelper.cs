@@ -13,14 +13,16 @@ namespace LoRaWan.Tools.CLI.Helpers
     internal class ConfigurationHelper
     {
         private const string CredentialsStorageContainerName = "stationcredentials";
+        private const string FirmwareStorageContainerName = "fwupgrades";
         public string NetId { get; set; }
 
         public RegistryManager RegistryManager { get; set; }
         public BlobContainerClient CertificateStorageContainerClient { get; set; }
+        public BlobContainerClient FirmwareStorageContainerClient { get; set; }
 
         public bool ReadConfig()
         {
-            string connectionString, netId, credentialStorageConnectionString;
+            string connectionString, netId, storageConnectionString;
 
             Console.WriteLine("Reading configuration file \"appsettings.json\"...");
 
@@ -34,10 +36,10 @@ namespace LoRaWan.Tools.CLI.Helpers
                     .Build();
 
                 connectionString = configurationBuilder["IoTHubConnectionString"];
-                credentialStorageConnectionString = configurationBuilder["CredentialStorageConnectionString"];
+                storageConnectionString = configurationBuilder["StorageConnectionString"];
                 netId = configurationBuilder["NetId"];
 
-                if (connectionString is null || credentialStorageConnectionString is null || netId is null)
+                if (connectionString is null || storageConnectionString is null || netId is null)
                 {
                     StatusConsole.WriteLogLine(MessageType.Info, "The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
                     return false;
@@ -111,11 +113,12 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             try
             {
-                CertificateStorageContainerClient = new BlobContainerClient(credentialStorageConnectionString, CredentialsStorageContainerName);
+                CertificateStorageContainerClient = new BlobContainerClient(storageConnectionString, CredentialsStorageContainerName);
+                FirmwareStorageContainerClient = new BlobContainerClient(storageConnectionString, FirmwareStorageContainerName);
             }
             catch (FormatException)
             {
-                StatusConsole.WriteLogLine(MessageType.Info, "Credentials storage account is incorrectly configured.");
+                StatusConsole.WriteLogLine(MessageType.Info, "Storage account is incorrectly configured.");
             }
 
             Console.WriteLine("done.");
