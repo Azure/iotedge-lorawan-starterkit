@@ -44,10 +44,6 @@ namespace LoRaTools.LoRaMessage
 
         public DataRateIndex Rx2Dr => (DataRateIndex)(DlSettings.Span[0] & 0b00001111);
 
-        /// Constructor needed for mocking
-        public LoRaPayloadJoinAccept()
-        { }
-
         public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, RxDelay rxDelay, byte[] cfList)
         {
             var cfListLength = cfList == null ? 0 : cfList.Length;
