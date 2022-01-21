@@ -179,7 +179,7 @@ namespace LoRaTools.LoRaMessage
             return encryptedPayload;
         }
 
-        public override byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
+        private byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
