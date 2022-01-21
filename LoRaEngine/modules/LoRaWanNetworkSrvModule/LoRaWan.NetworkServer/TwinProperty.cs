@@ -52,5 +52,8 @@ namespace LoRaWan.NetworkServer
         /// Defines the join channel index; applicable to CN470 region.
         /// </summary>
         public const string CN470JoinChannel = "CN470JoinChannel";
+
+        // Concentrator-only properties
+        public const string Package = "Package";
     }
 }
