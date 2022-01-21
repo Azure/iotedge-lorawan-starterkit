@@ -188,11 +188,5 @@ namespace LoRaTools.LoRaMessage
         public override byte[] Serialize(NetworkSessionKey key) => throw new NotImplementedException();
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException();
-
-        public override bool CheckMic(AppKey key)
-        {
-            var expectedMic = LoRaWan.Mic.ComputeForJoinAccept(key, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
-            return expectedMic == Mic;
-        }
     }
 }

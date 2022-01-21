@@ -63,12 +63,6 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Method to check a Mic.
-        /// </summary>
-        /// <param name="key">The App Key.</param>
-        public abstract bool CheckMic(AppKey key);
-
-        /// <summary>
         /// Method to calculate the encrypted version of the payload.
         /// </summary>
         /// <param name="key">the Application Secret Key.</param>

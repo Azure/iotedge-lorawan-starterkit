@@ -29,7 +29,7 @@ namespace LoRaTools.LoRaMessage
             Mic = mic;
         }
 
-        public override bool CheckMic(AppKey key) =>
+        public bool CheckMic(AppKey key) =>
             Mic == LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, AppEui, DevEUI, DevNonce);
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");

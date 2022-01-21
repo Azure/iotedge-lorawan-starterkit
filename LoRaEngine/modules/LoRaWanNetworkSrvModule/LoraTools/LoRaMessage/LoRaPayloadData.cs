@@ -477,6 +477,5 @@ namespace LoRaTools.LoRaMessage
 
         public override bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
 
-        public override bool CheckMic(AppKey key) => throw new NotImplementedException();
     }
 }
