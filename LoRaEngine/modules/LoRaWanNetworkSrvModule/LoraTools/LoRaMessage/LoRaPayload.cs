@@ -89,13 +89,6 @@ namespace LoRaTools.LoRaMessage
         /// <returns>the encrypted bytes.</returns>
         public abstract byte[] Serialize(NetworkSessionKey key);
 
-        /// <summary>
-        /// Method to calculate the encrypted version of the payload.
-        /// </summary>
-        /// <param name="key">The App Key.</param>
-        /// <returns>the encrypted bytes.</returns>
-        public abstract byte[] PerformEncryption(AppKey key);
-
         public void Reset32BitFcnt() => Server32BitFcnt = null;
         public void Ensure32BitFcntValue(uint? server32bitFcnt) => Server32BitFcnt ??= server32bitFcnt;
 
