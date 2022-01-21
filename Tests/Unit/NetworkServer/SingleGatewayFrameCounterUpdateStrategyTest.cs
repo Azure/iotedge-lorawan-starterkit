@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
@@ -95,17 +96,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var target = new SingleGatewayFrameCounterUpdateStrategy();
 
+            TwinCollection savedTwinCollection = null;
             this.deviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true)
-                .Callback<TwinCollection, CancellationToken>((t, _) =>
-                {
-                    Assert.Equal(fcntUp, (uint)t[TwinProperty.FCntUp]);
-                    Assert.Equal(0U, (uint)t[TwinProperty.FCntDown]);
-                });
+                .Callback<TwinCollection, CancellationToken>((t, _) => savedTwinCollection = t);
 
             this.device.SetFcntUp(fcntUp);
             await target.SaveChangesAsync(this.device);
 
+            Assert.Equal(fcntUp, (uint)savedTwinCollection[TwinProperty.FCntUp]);
+            Assert.Equal(0U, (uint)savedTwinCollection[TwinProperty.FCntDown]);
             this.deviceClient.VerifyAll();
         }
 
@@ -118,13 +118,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var target = new SingleGatewayFrameCounterUpdateStrategy();
 
+            var savedTwinCollections = new List<TwinCollection>();
             this.deviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true)
-                .Callback<TwinCollection, CancellationToken>((t, _) =>
-                {
-                    Assert.Equal(startingFcntDown + 10, (uint)t[TwinProperty.FCntDown]);
-                    Assert.Equal(startingFcntUp, (uint)t[TwinProperty.FCntUp]);
-                });
+                .Callback<TwinCollection, CancellationToken>((t, _) => savedTwinCollections.Add(t));
 
             this.device.SetFcntUp(startingFcntUp);
             this.device.SetFcntDown(startingFcntDown);
@@ -136,6 +133,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 await target.SaveChangesAsync(this.device);
             }
 
+            var savedTwinCollection = Assert.Single(savedTwinCollections);
+            Assert.Equal(startingFcntDown + 10, (uint)savedTwinCollection[TwinProperty.FCntDown]);
+            Assert.Equal(startingFcntUp, (uint)savedTwinCollection[TwinProperty.FCntUp]);
             this.deviceClient.VerifyAll();
         }
 
