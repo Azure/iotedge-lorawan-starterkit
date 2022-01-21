@@ -562,6 +562,20 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-firmware-upgrade/" class="md-nav__link">
+        Firmware upgrade
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1517,7 +1531,7 @@
 <p><strong>Feature</strong>:
 <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1189">#1189</a>  </p>
 <p><strong>Authors</strong>: Daniele Antonio Maggio, Maggie Salak</p>
-<p><strong>Status</strong>: Proposed</p>
+<p><strong>Status</strong>: Accepted</p>
 <blockquote>
 <p>This ADR is an extension of <a href="https://azure.github.io/iotedge-lorawan-starterkit/dev/adr/006_cups/">006. CUPS Protocol Implementation - Credential
 management</a> and focuses of firmware upgrades. For details about the
@@ -1674,10 +1688,11 @@ upgrade.</p>
 <p>A new command will be added to the Device Provisioning CLI which will allow the
 user to trigger a firmware upgrade. The command will accept the follwing inputs:</p>
 <ul>
+<li>Station EUI</li>
+<li>new package version (e.g. <code>1.0.1</code>)</li>
 <li>firmware upgrade file</li>
 <li>signature (digest of the file)</li>
 <li>CRC32 checksum of the key used for the signature</li>
-<li>new package version (e.g. <code>1.0.1</code>)</li>
 </ul>
 <p>The CLI tool will:</p>
 <ol>
@@ -1707,11 +1722,11 @@ generated signature key with the command:</p>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-18T16:09:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-18</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-21T14:15:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-21</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-18T16:09:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-18</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-21T14:15:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-21</span>
       
     
   </small>
