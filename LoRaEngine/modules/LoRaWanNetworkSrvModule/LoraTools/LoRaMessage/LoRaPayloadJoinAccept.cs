@@ -49,24 +49,24 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, RxDelay rxDelay, byte[] cfList)
         {
             var cfListLength = cfList == null ? 0 : cfList.Length;
-            this.rawMessage = new byte[1 + 12 + cfListLength];
+            var rawMessage = this.rawMessage = new byte[1 + 12 + cfListLength];
             MHdr = new MacHeader(MacMessageType.JoinAccept);
-            this.rawMessage[0] = (byte)MHdr;
+            rawMessage[0] = (byte)MHdr;
             AppNonce = appNonce;
-            _ = appNonce.Write(this.rawMessage.AsSpan(1));
+            _ = appNonce.Write(rawMessage.AsSpan(1));
             NetId = netId;
-            _ = NetId.Write(this.rawMessage.AsSpan(4, 3));
+            _ = NetId.Write(rawMessage.AsSpan(4, 3));
             DevAddr = devAddr;
-            _ = devAddr.Write(this.rawMessage.AsSpan(7));
-            DlSettings = new Memory<byte>(this.rawMessage, 11, 1);
-            Array.Copy(dlSettings, 0, this.rawMessage, 11, 1);
+            _ = devAddr.Write(rawMessage.AsSpan(7));
+            DlSettings = new Memory<byte>(rawMessage, 11, 1);
+            Array.Copy(dlSettings, 0, rawMessage, 11, 1);
             RxDelay = rxDelay;
-            this.rawMessage[12] = (byte)(Enum.IsDefined(rxDelay) ? rxDelay : default);
+            rawMessage[12] = (byte)(Enum.IsDefined(rxDelay) ? rxDelay : default);
             // set payload Wrapper fields
             if (cfListLength > 0)
             {
-                CfList = new Memory<byte>(this.rawMessage, 13, cfListLength);
-                Array.Copy(cfList, 0, this.rawMessage, 13, cfListLength);
+                CfList = new Memory<byte>(rawMessage, 13, cfListLength);
+                Array.Copy(cfList, 0, rawMessage, 13, cfListLength);
             }
 
             // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
