@@ -49,6 +49,10 @@ namespace LoRaWan.Tools.CLI
         public const string TcCredentialCrc = "tcCredCrc";
         public const string TcCredentialUrl = "tcCredentialUrl";
         public const string CupsCredentialUrl = "cupsCredentialUrl";
+        public const string FirmwareVersion = "package";
+        public const string FirmwareUrl = "fwUrl";
+        public const string FirmwareKeyChecksum = "fwKeyChecksum";
+        public const string FirmwareSignature = "fwSignature";
 
         /// <summary>
         /// Defines the connection keep alive timeout
