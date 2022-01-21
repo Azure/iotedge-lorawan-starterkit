@@ -187,9 +187,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         internal void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(ConcentratorDeduplication.JoinMessageKey expectedKey, ulong joinEui, ulong devEui, ushort devNonce, int? fieldNotUsedInKey = null)
         {
             var micValue = fieldNotUsedInKey ?? 0;
-            var payload = new LoRaPayloadJoinRequestLns(new MacHeader(MacMessageType.JoinRequest),
-                                                        new JoinEui(joinEui), new DevEui(devEui),
-                                                        new DevNonce(devNonce), new Mic(micValue));
+            var payload = new LoRaPayloadJoinRequest(new JoinEui(joinEui), new DevEui(devEui),
+                                                     new DevNonce(devNonce), new Mic(micValue));
 
             Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(payload));
         }

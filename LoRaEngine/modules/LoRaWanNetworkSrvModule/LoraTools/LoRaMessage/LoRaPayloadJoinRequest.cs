@@ -20,34 +20,20 @@ namespace LoRaTools.LoRaMessage
 
         public DevNonce DevNonce { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LoRaPayloadJoinRequest"/> class.
-        /// Constructor used for the simulator.
-        /// </summary>
-        public LoRaPayloadJoinRequest()
+        public LoRaPayloadJoinRequest(JoinEui joinEui, DevEui devEui, DevNonce devNonce, Mic mic)
         {
-        }
-
-        /// <summary>
-        /// Constructor used for test code only.
-        /// </summary>
-        internal LoRaPayloadJoinRequest(JoinEui joinEui, DevEui devEui, DevNonce devNonce, AppKey key)
-        {
-            // Mhdr is always 0 in case of a join request
             MHdr = new MacHeader(MacMessageType.JoinRequest);
-
             AppEui = joinEui;
             DevEUI = devEui;
             DevNonce = devNonce;
-            Mic = PerformMic(key);
+            Mic = mic;
         }
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null) =>
             throw new NotImplementedException();
 
-        public override bool CheckMic(AppKey key) => Mic == PerformMic(key);
-
-        private Mic PerformMic(AppKey key) => LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, AppEui, DevEUI, DevNonce);
+        public override bool CheckMic(AppKey key) =>
+            Mic == LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, AppEui, DevEUI, DevNonce);
 
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
 
