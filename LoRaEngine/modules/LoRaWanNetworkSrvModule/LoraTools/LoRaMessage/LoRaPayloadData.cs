@@ -443,13 +443,13 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         ///  Replaces the <see cref="Frmpayload"/>, encrypting the values.
         /// </summary>
-        public override byte[] Serialize(NetworkSessionKey key) =>
+        public byte[] Serialize(NetworkSessionKey key) =>
             Serialize(GetDecryptedPayload(key));
 
         /// <summary>
         ///  Replaces the <see cref="Frmpayload"/>, encrypting the values.
         /// </summary>
-        public override byte[] Serialize(AppSessionKey key) =>
+        public byte[] Serialize(AppSessionKey key) =>
             Serialize(GetDecryptedPayload(key));
 
         private byte[] Serialize(byte[] rawDecryptedPayload)

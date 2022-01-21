@@ -9,6 +9,8 @@ namespace LoRaWan.Tests.E2E
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using LoRaTools.Utils;
+    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Xunit;
 
@@ -116,6 +118,11 @@ namespace LoRaWan.Tests.E2E
                 var updfLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
                     (log) => log.IndexOf(expectedLog4, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog4) { MaxAttempts = 2 });
                 Assert.True(updfLog.Found);
+
+                var twin = await TestFixture.GetTwinAsync(stationEui.ToString());
+                var twinReader = new TwinCollectionReader(twin.Properties.Reported, null);
+                Assert.True(twinReader.TryRead<string>(TwinProperty.Package, out var reportedPackage)
+                            && string.Equals(fwPackage, reportedPackage, StringComparison.OrdinalIgnoreCase));
             }
             finally
             {

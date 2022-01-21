@@ -184,9 +184,5 @@ namespace LoRaTools.LoRaMessage
         }
 
         private byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
-
-        public override byte[] Serialize(NetworkSessionKey key) => throw new NotImplementedException();
-
-        public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException();
     }
 }

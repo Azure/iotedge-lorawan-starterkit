@@ -56,21 +56,6 @@ namespace LoRaTools.LoRaMessage
         {
         }
 
-        /// <summary>
-        /// Method to calculate the encrypted version of the payload.
-        /// </summary>
-        /// <param name="key">the Application Secret Key.</param>
-        /// <returns>the encrypted bytes.</returns>
-        public abstract byte[] Serialize(AppSessionKey key);
-
-        /// <summary>
-        /// Method to calculate the encrypted version of the payload.
-        /// </summary>
-        /// <param name="key">The Network Session Key.</param>
-        /// <returns>the encrypted bytes.</returns>
-        public abstract byte[] Serialize(NetworkSessionKey key);
-
-        public virtual bool RequiresConfirmation
-            => false;
+        public virtual bool RequiresConfirmation => false;
     }
 }

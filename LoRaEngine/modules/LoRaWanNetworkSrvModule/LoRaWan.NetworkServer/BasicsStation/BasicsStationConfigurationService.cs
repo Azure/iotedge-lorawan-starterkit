@@ -125,5 +125,26 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 ? json
                 : throw new LoRaProcessingException($"Property '{propertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
         }
+
+        public async Task SetReportedPackageVersionAsync(StationEui stationEui, string package, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(package))
+            {
+                this.logger.LogDebug($"Station did not report any 'package' field. Skipping reported property update.");
+                return;
+            }
+
+            var key = await this.loRaDeviceApiService.GetPrimaryKeyByEuiAsync(stationEui);
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
+                                                  LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+            }
+
+            using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
+            var twinCollection = new TwinCollection();
+            twinCollection[TwinProperty.Package] = package;
+            _ = await client.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);
+        }
     }
 }
