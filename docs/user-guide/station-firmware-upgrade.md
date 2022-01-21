@@ -8,14 +8,14 @@ an upgrade.
    upgrades, you will need to generate a signature key and store it on the
    device and in a centralized repository of your choice. You will also need to
    generate a CRC32 checksum of the key and a digest of your firmware upgrade
-   executable. [CUPS Protocol - Firmware Upgrade
-   Preparation][cups-firmware-upgrade] tool contains a script which generates
-   these values, given a Station EUI and a firmware upgrade file.
+   executable. You can use the [CUPS Protocol - Firmware Upgrade
+   Preparation][cups-firmware-upgrade] tool which generates all these values,
+   given a Station EUI and a firmware upgrade file.
 
 1. Use LoRa Device Provisioning CLI tool to trigger the upgrade.
 
    ```powershell
-   dotnet run -- upgrade-firmware --stationeui <station_eui> --package <package_version> --firmware-location <firmware_file_path> --digest-location <digest_file_path> --checksum-location <checksum_file_path>
+   dotnet .\Tools\Cli-LoRa-Device-Provisioning\bin\Release\netcoreapp3.1\loradeviceprovisioning.dll upgrade-firmware --stationeui <station_eui> --package <package_version> --firmware-location <firmware_file_path> --digest-location <digest_file_path> --checksum-location <checksum_file_path>
    ```
 
    Parameters:
@@ -31,6 +31,10 @@ an upgrade.
    The LoRa Device Provisioning CLI tool will trigger the upgrade by uploading
    the firmware to a storage account and updating the device twin of the
    concentrator with required data.
+
+   For more information about using the LoRa Device Provisioning CLI tool please
+   refer to the [LoRa Device Provisioning](../tools/device-provisioning.md#upgrade-firmware) tool
+   documentation.
 
 1. During the next startup of the system, the Station will execute the upgrade
    after receiving the updated information from the Network Server. A system
