@@ -38,7 +38,5 @@ namespace LoRaTools.LoRaMessage
         public override byte[] Serialize(AppSessionKey key) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
 
         public override byte[] Serialize(NetworkSessionKey key) => throw new NotImplementedException();
-
-        public override byte[] PerformEncryption(AppKey key) => throw new NotImplementedException();
     }
 }
