@@ -134,7 +134,15 @@ namespace LoRaTools.LoRaMessage
             Mic = LoRaWan.Mic.Read(inputMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
-        public override byte[] PerformEncryption(AppKey key)
+        public byte[] Serialize(AppKey appKey)
+        {
+            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
+            _ = PerformEncryption(appKey);
+
+            return GetByteMessage();
+        }
+
+        private byte[] PerformEncryption(AppKey key)
         {
             var mic = Mic ?? throw new InvalidOperationException("MIC must not be null.");
 
@@ -184,14 +192,6 @@ namespace LoRaTools.LoRaMessage
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             throw new NotImplementedException();
-        }
-
-        public byte[] Serialize(AppKey appKey)
-        {
-            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
-            _ = PerformEncryption(appKey);
-
-            return GetByteMessage();
         }
 
         public override byte[] Serialize(NetworkSessionKey key) => throw new NotImplementedException();

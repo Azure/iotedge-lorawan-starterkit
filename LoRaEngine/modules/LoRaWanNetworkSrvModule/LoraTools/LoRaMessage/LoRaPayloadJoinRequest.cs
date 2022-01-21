@@ -59,7 +59,5 @@ namespace LoRaTools.LoRaMessage
         }
 
         public override byte[] Serialize(NetworkSessionKey key) => throw new NotImplementedException();
-
-        public override byte[] PerformEncryption(AppKey key) => throw new NotImplementedException();
     }
 }
