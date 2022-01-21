@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.Buffers.Binary;
     using System.IO;
     using System.IO.Pipelines;
     using System.Linq;
@@ -150,15 +149,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await this.processor.HandleUpdateInfoAsync(httpContext.Object, default);
 
             // assert
+
             this.deviceAPIServiceBase.Verify(m => m.FetchStationFirmwareAsync(StationEui.Parse(StationEuiString), It.IsAny<CancellationToken>()), Times.Once);
-            var responseBytes = memoryStream.ToArray();
-            Assert.True(responseBytes.Take(6).All(b => b == 0)); // asserting no tc/cups uri and tc/cups cred are there
-            var signatureBytes = Convert.FromBase64String(signatureBase64);
-            Assert.Equal((uint)(signatureBytes.Length + 4), BinaryPrimitives.ReadUInt32LittleEndian(responseBytes.AsSpan()[6..10]));
-            Assert.Equal(KeyChecksum, BinaryPrimitives.ReadUInt32LittleEndian(responseBytes.AsSpan()[10..14]));
-            Assert.Equal(signatureBytes, responseBytes[14..(14 + signatureBytes.Length)]);
-            Assert.Equal((uint)firmwareBytes.Length, BinaryPrimitives.ReadUInt32LittleEndian(responseBytes.AsSpan()[(14 + signatureBytes.Length)..(18 + signatureBytes.Length)]));
-            Assert.Equal(firmwareBytes, responseBytes.TakeLast(firmwareBytes.Length));
+
+            var expectedHeader = new CupsUpdateInfoResponseHeader
+            {
+                UpdateSignature = Convert.FromBase64String(signatureBase64),
+                SignatureKeyCrc = KeyChecksum,
+                UpdateDataLength = (uint)firmwareBytes.Length,
+            };
+            var expectedHeaderBytes = expectedHeader.Serialize(new byte[256].AsMemory()).ToArray();
+
+            var response = memoryStream.ToArray();
+            Assert.Equal(expectedHeaderBytes, response[..expectedHeaderBytes.Length]);
+            Assert.Equal(firmwareBytes, response[expectedHeaderBytes.Length..]);
         }
 
         [Fact]

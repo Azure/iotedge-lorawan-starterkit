@@ -204,11 +204,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
                         var loraRequest = new LoRaRequest(jreq.RadioMetadata, this.downstreamSender, DateTime.UtcNow);
-                        loraRequest.SetPayload(new LoRaPayloadJoinRequestLns(jreq.MacHeader,
-                                                                             jreq.JoinEui,
-                                                                             jreq.DevEui,
-                                                                             jreq.DevNonce,
-                                                                             jreq.Mic));
+                        loraRequest.SetPayload(new LoRaPayloadJoinRequest(jreq.JoinEui,
+                                                                          jreq.DevEui,
+                                                                          jreq.DevNonce,
+                                                                          jreq.Mic));
                         loraRequest.SetRegion(routerRegion);
                         loraRequest.SetStationEui(stationEui);
                         this.messageDispatcher.DispatchRequest(loraRequest);
