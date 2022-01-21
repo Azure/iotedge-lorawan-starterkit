@@ -34,7 +34,7 @@ namespace LoRaWan.Tools.CLI.CommandLineOptions
 
         [Option("digest-location",
                 Required = true,
-                HelpText = "Digest location: Local path of the file containing a base 64 encoded digest of the upgrade file, generated with a signature key installed on the station.")]
+                HelpText = "Digest location: Local path of the file containing a base 64 encoded digest of the upgrade file.")]
         public string DigestLocation { get; }
 
         [Option("checksum-location",
