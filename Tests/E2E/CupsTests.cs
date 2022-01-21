@@ -30,6 +30,7 @@ namespace LoRaWan.Tests.E2E
             var stationEui = StationEui.Parse(TestFixture.Configuration.CupsBasicStationEui);
             var clientThumbprint = TestFixture.Configuration.ClientThumbprint;
             var crcParseResult = uint.TryParse(TestFixture.Configuration.ClientBundleCrc, out var crc);
+            var sigCrcParseResult = uint.TryParse(TestFixture.Configuration.CupsSigKeyChecksum, out var sigCrc);
             try
             {
                 var device = TestFixtureCi.GetDeviceByPropertyName(nameof(TestFixtureCi.Device33_OTAA));
@@ -55,6 +56,15 @@ namespace LoRaWan.Tests.E2E
                     await TestFixture.UpdateExistingConcentratorCrcValues(stationEui, crc);
                 }
 
+                var fwDigest = TestFixture.Configuration.CupsFwDigest;
+                var fwPackage = TestFixture.Configuration.CupsBasicStationPackage;
+                var fwUrl = TestFixture.Configuration.CupsFwUrl;
+                if (sigCrcParseResult && !string.IsNullOrEmpty(fwDigest) && !string.IsNullOrEmpty(fwPackage) && fwUrl is not null)
+                {
+                    //if a test re-run, the fields will be empty, therefore there's no update to achieve
+                    await TestFixture.UpdateExistingFirmwareUpgradeValues(stationEui, sigCrc, fwDigest, fwPackage, fwUrl);
+                }
+
                 //setup the concentrator with CUPS_URI only (certificates are retrieved from default location)
                 TestUtils.StartBasicsStation(TestFixture.Configuration, new Dictionary<string, string>()
                 {
@@ -67,7 +77,8 @@ namespace LoRaWan.Tests.E2E
                 // Waiting 30s for being sure that BasicStation actually started up
                 await Task.Delay(30_000);
 
-                var expectedLog = stationEui + ": Received 'version' message for station";
+                // If package log does not match, firmware upgrade process failed
+                var expectedLog = stationEui + $": Received 'version' message for station '{TestFixture.Configuration.CupsBasicStationVersion}' with package '{fwPackage}'";
                 var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
                     (log) => log.IndexOf(expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog) { MaxAttempts = 1 });
                 Assert.True(log.Found);
