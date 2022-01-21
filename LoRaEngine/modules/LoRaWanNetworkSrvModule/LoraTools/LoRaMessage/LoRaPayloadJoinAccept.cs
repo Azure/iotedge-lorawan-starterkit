@@ -136,8 +136,7 @@ namespace LoRaTools.LoRaMessage
         {
             Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
             _ = PerformEncryption(appKey);
-
-            return GetByteMessage();
+            return this.rawMessage.Prepend((byte)MHdr).ToArray();
         }
 
         private byte[] PerformEncryption(AppKey key)
@@ -184,8 +183,6 @@ namespace LoRaTools.LoRaMessage
             Array.Copy(encryptedPayload, 0, this.rawMessage, 0, encryptedPayload.Length);
             return encryptedPayload;
         }
-
-        private byte[] GetByteMessage() => this.rawMessage.Prepend((byte)MHdr).ToArray();
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
