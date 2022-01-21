@@ -44,10 +44,6 @@ namespace LoRaTools.LoRaMessage
 
         public DataRateIndex Rx2Dr => (DataRateIndex)(DlSettings.Span[0] & 0b00001111);
 
-        /// Constructor needed for mocking
-        public LoRaPayloadJoinAccept()
-        { }
-
         public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, RxDelay rxDelay, byte[] cfList)
         {
             var cfListLength = cfList == null ? 0 : cfList.Length;
@@ -134,7 +130,15 @@ namespace LoRaTools.LoRaMessage
             Mic = LoRaWan.Mic.Read(inputMessage.AsSpan(inputMessage.Length - 4, 4));
         }
 
-        public override byte[] PerformEncryption(AppKey key)
+        public byte[] Serialize(AppKey appKey)
+        {
+            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
+            _ = PerformEncryption(appKey);
+
+            return GetByteMessage();
+        }
+
+        private byte[] PerformEncryption(AppKey key)
         {
             var mic = Mic ?? throw new InvalidOperationException("MIC must not be null.");
 
@@ -179,19 +183,11 @@ namespace LoRaTools.LoRaMessage
             return encryptedPayload;
         }
 
-        public override byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
+        private byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             throw new NotImplementedException();
-        }
-
-        public byte[] Serialize(AppKey appKey)
-        {
-            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
-            _ = PerformEncryption(appKey);
-
-            return GetByteMessage();
         }
 
         public override byte[] Serialize(NetworkSessionKey key) => throw new NotImplementedException();

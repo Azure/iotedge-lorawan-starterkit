@@ -63,12 +63,6 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Method to take the different fields and assemble them in the message bytes.
-        /// </summary>
-        /// <returns>the message bytes.</returns>
-        public abstract byte[] GetByteMessage();
-
-        /// <summary>
         /// Method to check a Mic.
         /// </summary>
         /// <param name="key">The Network Secret Key.</param>
@@ -94,13 +88,6 @@ namespace LoRaTools.LoRaMessage
         /// <param name="key">The Network Session Key.</param>
         /// <returns>the encrypted bytes.</returns>
         public abstract byte[] Serialize(NetworkSessionKey key);
-
-        /// <summary>
-        /// Method to calculate the encrypted version of the payload.
-        /// </summary>
-        /// <param name="key">The App Key.</param>
-        /// <returns>the encrypted bytes.</returns>
-        public abstract byte[] PerformEncryption(AppKey key);
 
         public void Reset32BitFcnt() => Server32BitFcnt = null;
         public void Ensure32BitFcntValue(uint? server32bitFcnt) => Server32BitFcnt ??= server32bitFcnt;

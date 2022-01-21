@@ -435,7 +435,7 @@ namespace LoRaTools.LoRaMessage
             }
         }
 
-        public override byte[] GetByteMessage()
+        private byte[] GetByteMessage()
         {
             var messageArray = new List<byte>
             {
@@ -478,7 +478,5 @@ namespace LoRaTools.LoRaMessage
         public override bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
 
         public override bool CheckMic(AppKey key) => throw new NotImplementedException();
-
-        public override byte[] PerformEncryption(AppKey key) => throw new NotImplementedException();
     }
 }
