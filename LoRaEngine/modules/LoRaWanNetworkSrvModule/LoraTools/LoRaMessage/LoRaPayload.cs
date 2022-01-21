@@ -63,12 +63,6 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Method to take the different fields and assemble them in the message bytes.
-        /// </summary>
-        /// <returns>the message bytes.</returns>
-        public abstract byte[] GetByteMessage();
-
-        /// <summary>
         /// Method to check a Mic.
         /// </summary>
         /// <param name="key">The Network Secret Key.</param>
