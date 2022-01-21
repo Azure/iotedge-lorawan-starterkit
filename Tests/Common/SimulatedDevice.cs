@@ -18,7 +18,6 @@ namespace LoRaWan.Tests.Common
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using Microsoft.Extensions.Logging;
-    using Xunit;
 
     /// <summary>
     /// Defines a simulated device.
@@ -32,6 +31,8 @@ namespace LoRaWan.Tests.Common
 
         private readonly ConcurrentBag<string> receivedMessages = new ConcurrentBag<string>();
         private readonly ILogger logger;
+
+        public IReadOnlyCollection<string> ReceivedMessages => this.receivedMessages;
 
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
@@ -259,11 +260,6 @@ namespace LoRaWan.Tests.Common
         public Task SendDataMessageAsync(LoRaRequest loRaRequest) =>
             Task.WhenAll(from basicsStation in this.simulatedBasicsStations
                          select basicsStation.SendDataMessageAsync(loRaRequest, CancellationToken.None));
-
-        public void EnsureMessageResponsesAreReceived(int expectedCout)
-        {
-            Assert.Equal(expectedCout, this.receivedMessages.Count);
-        }
 
         // Performs join
         public async Task<bool> JoinAsync(TimeSpan? timeout = null)
