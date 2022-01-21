@@ -7,6 +7,7 @@ DEFAULT_TC_KEY_PATH="$DEFAULT_CERTS_PATH/tc.key"
 DEFAULT_CUPS_TRUST_PATH="$DEFAULT_CERTS_PATH/cups.trust"
 DEFAULT_CUPS_CRT_PATH="$DEFAULT_CERTS_PATH/cups.crt"
 DEFAULT_CUPS_KEY_PATH="$DEFAULT_CERTS_PATH/cups.key"
+DEFAULT_SIG0_KEY_PATH="$DEFAULT_CERTS_PATH/sig-0.key"
 
 conditionalCopy() {
     if [[ -z "$1" ]]; then
@@ -37,6 +38,7 @@ cupsCertCopy() {
         conditionalCopy "$CUPS_TRUST_PATH" "$DEFAULT_CUPS_TRUST_PATH"
         conditionalCopy "$CUPS_CRT_PATH" "$DEFAULT_CUPS_CRT_PATH"
         conditionalCopy "$CUPS_KEY_PATH" "$DEFAULT_CUPS_KEY_PATH"
+        conditionalCopy "$SIG0_KEY_PATH" "$DEFAULT_SIG0_KEY_PATH"
     fi
 }
 
