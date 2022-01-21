@@ -15,6 +15,8 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadJoinAccept : LoRaPayload
     {
+        private byte[] rawMessage;
+
         /// <summary>
         /// Gets or sets server Nonce aka JoinNonce.
         /// </summary>
@@ -47,24 +49,24 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, RxDelay rxDelay, byte[] cfList)
         {
             var cfListLength = cfList == null ? 0 : cfList.Length;
-            RawMessage = new byte[1 + 12 + cfListLength];
+            this.rawMessage = new byte[1 + 12 + cfListLength];
             MHdr = new MacHeader(MacMessageType.JoinAccept);
-            RawMessage[0] = (byte)MHdr;
+            this.rawMessage[0] = (byte)MHdr;
             AppNonce = appNonce;
-            _ = appNonce.Write(RawMessage.AsSpan(1));
+            _ = appNonce.Write(this.rawMessage.AsSpan(1));
             NetId = netId;
-            _ = NetId.Write(RawMessage.AsSpan(4, 3));
+            _ = NetId.Write(this.rawMessage.AsSpan(4, 3));
             DevAddr = devAddr;
-            _ = devAddr.Write(RawMessage.AsSpan(7));
-            DlSettings = new Memory<byte>(RawMessage, 11, 1);
-            Array.Copy(dlSettings, 0, RawMessage, 11, 1);
+            _ = devAddr.Write(this.rawMessage.AsSpan(7));
+            DlSettings = new Memory<byte>(this.rawMessage, 11, 1);
+            Array.Copy(dlSettings, 0, this.rawMessage, 11, 1);
             RxDelay = rxDelay;
-            RawMessage[12] = (byte)(Enum.IsDefined(rxDelay) ? rxDelay : default);
+            this.rawMessage[12] = (byte)(Enum.IsDefined(rxDelay) ? rxDelay : default);
             // set payload Wrapper fields
             if (cfListLength > 0)
             {
-                CfList = new Memory<byte>(RawMessage, 13, cfListLength);
-                Array.Copy(cfList, 0, RawMessage, 13, cfListLength);
+                CfList = new Memory<byte>(this.rawMessage, 13, cfListLength);
+                Array.Copy(cfList, 0, this.rawMessage, 13, cfListLength);
             }
 
             // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
@@ -178,12 +180,12 @@ namespace LoRaTools.LoRaMessage
 
             cipher = aes.CreateDecryptor();
             var encryptedPayload = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
-            RawMessage = new byte[encryptedPayload.Length];
-            Array.Copy(encryptedPayload, 0, RawMessage, 0, encryptedPayload.Length);
+            this.rawMessage = new byte[encryptedPayload.Length];
+            Array.Copy(encryptedPayload, 0, this.rawMessage, 0, encryptedPayload.Length);
             return encryptedPayload;
         }
 
-        private byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
+        private byte[] GetByteMessage() => this.rawMessage.Prepend((byte)MHdr).ToArray();
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
