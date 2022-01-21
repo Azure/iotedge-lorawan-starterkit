@@ -493,7 +493,8 @@ jobs:
       E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}
       E2ETESTS_CupsFwDigest: ${{ needs.certificates_job.outputs.clientfwdigest }}
       E2ETESTS_CupsBasicStationVersion: "2.0.5(rak833x64/std)"
-      E2ETESTS_CupsBasicStationPackage: "1.0.1-e2e" # this is the version file in .github\scripts\fwUpdateSample.sh
+      E2ETESTS_CupsBasicStationPackage: "1.0.1-e2e" # this is the version file in Tools\Cups-Firmware-Upgrade\fwUpdateSample.sh
+      E2ETESTS_CupsFwUrl: ${{ secrets.CUPSFIRMWAREBLOBURL }}
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
       E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 

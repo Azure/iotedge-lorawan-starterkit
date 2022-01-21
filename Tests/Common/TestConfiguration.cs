@@ -108,6 +108,8 @@ namespace LoRaWan.Tests.Common
 
         public string CupsBasicStationPackage { get; set; } //i.e. 1.0.0-e2e
 
+        public Uri CupsFwUrl { get; set; } //url of the blob containing the desired fw update for cups test
+
         public string LoadTestLnsEndpointsString
         {
             get => JsonSerializer.Serialize(LnsEndpointsForSimulator);

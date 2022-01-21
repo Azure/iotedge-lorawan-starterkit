@@ -56,10 +56,13 @@ namespace LoRaWan.Tests.E2E
                     await TestFixture.UpdateExistingConcentratorCrcValues(stationEui, crc);
                 }
 
-                if (sigCrcParseResult && !string.IsNullOrEmpty(TestFixture.Configuration.CupsFwDigest))
+                var fwDigest = TestFixture.Configuration.CupsFwDigest;
+                var fwPackage = TestFixture.Configuration.CupsBasicStationPackage;
+                var fwUrl = TestFixture.Configuration.CupsFwUrl;
+                if (sigCrcParseResult && !string.IsNullOrEmpty(fwDigest) && !string.IsNullOrEmpty(fwPackage) && fwUrl is not null)
                 {
                     //if a test re-run, the fields will be empty, therefore there's no update to achieve
-                    await TestFixture.UpdateExistingFirmwareUpgradeValues(stationEui, sigCrc, TestFixture.Configuration.CupsFwDigest);
+                    await TestFixture.UpdateExistingFirmwareUpgradeValues(stationEui, sigCrc, fwDigest, fwPackage, fwUrl);
                 }
 
                 //setup the concentrator with CUPS_URI only (certificates are retrieved from default location)
@@ -75,7 +78,7 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(30_000);
 
                 // If package log does not match, firmware upgrade process failed
-                var expectedLog = stationEui + $": Received 'version' message for station '{TestFixture.Configuration.CupsBasicStationVersion}' with package '{TestFixture.Configuration.CupsBasicStationPackage}'";
+                var expectedLog = stationEui + $": Received 'version' message for station '{TestFixture.Configuration.CupsBasicStationVersion}' with package '{fwPackage}'";
                 var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
                     (log) => log.IndexOf(expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog) { MaxAttempts = 1 });
                 Assert.True(log.Found);

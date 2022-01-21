@@ -60,7 +60,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         [JsonPropertyName("package")]
         [JsonProperty("package")]
-        public string Package { get; }
+        public string Package { get; init; }
 
         [JsonPropertyName("fwKeyChecksum")]
         [JsonProperty("fwKeyChecksum")]
@@ -69,5 +69,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
         [JsonPropertyName("fwSignature")]
         [JsonProperty("fwSignature")]
         public string FwSignatureInBase64 { get; init; }
+
+        [JsonPropertyName("fwUrl")]
+        [JsonProperty("fwUrl")]
+        public Uri FwUrl { get; init; }
     }
 }

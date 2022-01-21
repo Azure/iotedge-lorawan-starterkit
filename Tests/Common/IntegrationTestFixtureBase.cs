@@ -327,7 +327,7 @@ namespace LoRaWan.Tests.Common
             await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
         }
 
-        public async Task UpdateExistingFirmwareUpgradeValues(StationEui stationEui, uint crc, string digestBase64String)
+        public async Task UpdateExistingFirmwareUpgradeValues(StationEui stationEui, uint crc, string digestBase64String, string package, Uri fwUrl)
         {
             TestLogger.Log($"Updating IoT Hub twin for fw upgrades of concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
@@ -340,7 +340,9 @@ namespace LoRaWan.Tests.Common
             var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
             {
                 FwKeyChecksum = crc,
-                FwSignatureInBase64 = digestBase64String
+                FwSignatureInBase64 = digestBase64String,
+                Package = package,
+                FwUrl = new Uri(fwUrl.GetLeftPart(UriPartial.Path)) // the GetLeftPart is useful to exclude any potential SAS token stored in the original variable
             };
             deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
             await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
