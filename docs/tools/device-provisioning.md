@@ -38,7 +38,7 @@ dotnet .\bin\Release\netcoreapp3.1\loradeviceprovisioning.dll -- (add verbs and 
 ```json
 {
   "IoTHubConnectionString": "HostName=youriothub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=AeVMLayazGTS9QRMJtFGSSNwdhUdYR5VwCjaafc3DL0=",
-  "CredentialStorageConnectionString": "DefaultEndpointsProtocol=https;AccountName=yourstorageaccountname;AccountKey=thekey;EndpointSuffix=core.windows.net."
+  "StorageConnectionString": "DefaultEndpointsProtocol=https;AccountName=yourstorageaccountname;AccountKey=thekey;EndpointSuffix=core.windows.net."
 }
 ```
 
@@ -69,6 +69,7 @@ The following verbs/commands are supported:
 |add|Add a new device to IoT Hub.|
 |update|Update an existing device in IoT Hub.|
 |remove|Remove an existing device from IoT Hub.|
+|upgrade-firmware|Trigger a firmware upgrade of a Basics Station.|
 |help|Display more information on a specific command.|
 |version|Display version information.|
 
@@ -255,3 +256,28 @@ The query verb supports the following parameters:
 |--deveui|yes|DevEUI / Device Id.|
 |--help|no|Display this help screen.|
 |--version|no|Display version information.|
+
+### upgrade-firmware
+
+Triggers a firmware upgrade of a Basics Station.
+
+To learn more about executing firmware upgrades, please refer to the [Firmware
+upgrade](../user-guide/station-firmware-upgrade.md) user guide.
+
+Example:
+
+ ```powershell
+   dotnet run -- upgrade-firmware --stationeui <station_eui> --package <package_version> --firmware-location <firmware_file_path> --digest-location <digest_file_path> --checksum-location <checksum_file_path>
+```
+
+The upgrade-firmware verb accepts the following parameters:
+
+|parameter|required|description|
+|-|-|-|
+|--stationeui|yes|Station EUI|
+|--package|yes|New package version (e.g. `1.0.1`)|
+|--firmware-location|yes|Local file path of the firmware upgrade executable|
+|--digest-location|yes|Local file path of the file containing a digest of the firmware upgrade|
+|--checksum-location|yes|Local file path of the file containing a CRC32 checksum of the key used to generate the digest|
+|--help|no|Display this help screen|
+|--version|no|Display version information|
