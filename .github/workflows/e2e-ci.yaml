@@ -245,10 +245,13 @@ jobs:
         echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')"
         # -- Firmware upgrade generation section --
         chmod +x ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh
+        NEW_FW_VERSION=$(date -u +%s)
+        sed -i "s/1.0.1-e2e/$NEW_FW_VERSION/g" ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh
         ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $CUPS_STATION_EUI "$(realpath ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh)"
         cp ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
         echo "::set-output name=clientsigkeycrc::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.crc)"
         echo "::set-output name=clientfwdigest::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/fwUpdate.digest)"
+        echo "::set-output name=clientfwversion::$NEW_FW_VERSION"
         curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_FIRMWARE_BLOB_URL"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
@@ -269,6 +272,7 @@ jobs:
       clientbundlecrc: ${{ steps.generate_step.outputs.clientbundlecrc }}
       clientsigkeycrc: ${{ steps.generate_step.outputs.clientsigkeycrc }}
       clientfwdigest: ${{ steps.generate_step.outputs.clientfwdigest }}
+      clientfwversion: ${{ steps.generate_step.outputs.clientfwversion }}
 
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
@@ -493,7 +497,7 @@ jobs:
       E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}
       E2ETESTS_CupsFwDigest: ${{ needs.certificates_job.outputs.clientfwdigest }}
       E2ETESTS_CupsBasicStationVersion: "2.0.5(rak833x64/std)"
-      E2ETESTS_CupsBasicStationPackage: "1.0.1-e2e" # this is the version file in Tools\Cups-Firmware-Upgrade\fwUpdateSample.sh
+      E2ETESTS_CupsBasicStationPackage: ${{ needs.certificates_job.outputs.clientfwversion }}
       E2ETESTS_CupsFwUrl: ${{ secrets.CUPSFIRMWAREBLOBURL }}
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
       E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
