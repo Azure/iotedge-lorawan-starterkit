@@ -33,6 +33,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private const string StationEuiString = "aaaa:bbff:fecc:dddd";
         private const string CupsUri = "https://localhost:5002";
         private const string TcUri = "wss://localhost:5001";
+        private const string FwUrl = "https://storage.blob.core.windows.net/fwupgrades/station-version?queryString=a";
         private const uint CredentialsChecksum = 12345;
         private const string Package = "1.0.0";
         private const uint KeyChecksum = 12345;
@@ -65,7 +66,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 string.Empty,
                                                 Package,
                                                 KeyChecksum,
-                                                string.Empty);
+                                                string.Empty,
+                                                new Uri(FwUrl));
             _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
                                                       .Returns(Task.FromResult(cupsTwinInfo));
 
@@ -137,7 +139,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 string.Empty,
                                                 "anotherVersion",
                                                 KeyChecksum,
-                                                signatureBase64);
+                                                signatureBase64,
+                                                new Uri(FwUrl));
             _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
                                                       .Returns(Task.FromResult(cupsTwinInfo));
 
@@ -182,7 +185,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 string.Empty,
                                                 "anotherVersion",
                                                 6789,
-                                                string.Empty);
+                                                string.Empty,
+                                                new Uri(FwUrl));
             _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
                                                       .Returns(Task.FromResult(cupsTwinInfo));
             // act
@@ -208,7 +212,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 string.Empty,
                                                 "anotherVersion",
                                                 KeyChecksum,
-                                                string.Empty);
+                                                string.Empty,
+                                                new Uri(FwUrl));
 
             using var httpContent = new StringContent("firmware");
             httpContent.Headers.ContentLength = 0;
@@ -239,7 +244,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 string.Empty,
                                                 "anotherVersion",
                                                 KeyChecksum,
-                                                string.Empty);
+                                                string.Empty,
+                                                new Uri(FwUrl));
 
             using var httpContent = new StringContent("firmware");
             httpContent.Headers.ContentLength = long.MaxValue;
@@ -275,7 +281,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 string.Empty,
                                                 Package,
                                                 KeyChecksum,
-                                                string.Empty);
+                                                string.Empty,
+                                                new Uri(FwUrl));
 
             _ = this.basicsStationConfigurationService.Setup(m => m.GetCupsConfigAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
                                                       .Returns(Task.FromResult(cupsTwinInfo));
