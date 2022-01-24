@@ -12,9 +12,9 @@ The code is organized into three sections:
 - **Template** - Contain code useful for the "deploy to Azure button"
 - **Tools** - Contains tools that support the LoRaWan Gateway project
   - **BasicStation-Certificates-Generation** - Bash scripts for generating self-signed certificates for LoRa Basics Station to LoRaWan Network Server
-  interactions. Read more in ["Basics Station configuration - Authentication Modes"](./station-authentication-modes.md)
+  interactions. Read more in ["Basics Station configuration - Authentication Modes"](station-authentication-modes.md)
   - **Cli-LoRa-Device-Provisioning** - .NET 6 Command Line tool that allows to list, query, verify, insert, edit, update and delete LoRa leaf device configurations into IoT Hub
-  - **Cups-Firmware-Upgrade** - Bash scripts helping Starter Kit users to generate the files needed for executing a Basics Station firmware upgrade. Read more in ["Basics Station configuration - Firmware upgrade"](./station-firmware-upgrade.md)
+  - **Cups-Firmware-Upgrade** - Bash scripts helping Starter Kit users to generate the files needed for executing a Basics Station firmware upgrade. Read more in ["Basics Station configuration - Firmware upgrade"](station-firmware-upgrade.md)
   - **Eflow** - Includes a PowerShell script to install Edge For Linux On Windows (EFLOW) on a new Windows Server VM. The script is not intended to be run as-is, but should be seen as a collection of manual steps to be run to get eflow up and running. In case of doubts, read more in ["Create and provision an IoT Edge for Linux on Windows device using symmetric keys"](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-provision-single-device-linux-on-windows-symmetric) official documentation
 - **Samples** - Contains sample decoders
 - **Docs** - Additional modules, pictures and documentations
