@@ -13,7 +13,7 @@
     
     
       
-        <title>006. CUPS Protocol Implementation - Credential management - IoTEdge LoRaWAN StarterKit - documentation</title>
+        <title>Migrate from Packet Forwarder to LoRa Basics Station - IoTEdge LoRaWAN StarterKit - documentation</title>
       
     
     
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#006-cups-protocol-implementation-credential-management" class="md-skip">
+        <a href="#migrate-from-packet-forwarder-to-lora-basics-station" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              006. CUPS Protocol Implementation - Credential management
+              Migrate from Packet Forwarder to LoRa Basics Station
             
           </span>
         </div>
@@ -225,13 +225,15 @@
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../../user-guide/devguide/" class="md-tabs__link">
+      <a href="../devguide/" class="md-tabs__link md-tabs__link--active">
         User Guide
       </a>
     </li>
@@ -247,7 +249,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../user-guide/architecture/" class="md-tabs__link">
+      <a href="../architecture/" class="md-tabs__link">
         Reference
       </a>
     </li>
@@ -289,15 +291,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../001_region_cn470_implementation/" class="md-tabs__link md-tabs__link--active">
+      <a href="../../adr/001_region_cn470_implementation/" class="md-tabs__link">
         Decision Log
       </a>
     </li>
@@ -400,12 +400,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
       
       
       
@@ -428,7 +430,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/devguide/" class="md-nav__link">
+      <a href="../devguide/" class="md-nav__link">
         Developer Guidance
       </a>
     </li>
@@ -442,7 +444,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/partner/" class="md-nav__link">
+      <a href="../partner/" class="md-nav__link">
         Device Manufacturer Guidance
       </a>
     </li>
@@ -456,7 +458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/upgrade/" class="md-nav__link">
+      <a href="../upgrade/" class="md-nav__link">
         Upgrade to a new version
       </a>
     </li>
@@ -470,7 +472,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/documentation/" class="md-nav__link">
+      <a href="../documentation/" class="md-nav__link">
         Working with the documentation
       </a>
     </li>
@@ -484,7 +486,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/observability/" class="md-nav__link">
+      <a href="../observability/" class="md-nav__link">
         Observability
       </a>
     </li>
@@ -496,14 +498,16 @@
               
   
   
+    
+  
   
     
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_6" type="checkbox" id="__nav_3_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_6" type="checkbox" id="__nav_3_6" checked>
       
       
       
@@ -524,11 +528,86 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../user-guide/pkt-fwd-to-station/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Migrate from Packet Forwarder to LoRa Basics Station
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Migrate from Packet Forwarder to LoRa Basics Station
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-creation-of-a-concentrator-device" class="md-nav__link">
+    1. Creation of a concentrator device
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-connection-of-the-concentrator-to-the-lorawan-network-server" class="md-nav__link">
+    2. Connection of the concentrator to the LoRaWan Network Server
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Connection of the concentrator to the LoRaWan Network Server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-built-docker-module-migration" class="md-nav__link">
+    Pre-built docker module migration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-built-docker-module" class="md-nav__link">
+    Custom built docker module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#industrial-device" class="md-nav__link">
+    Industrial device
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -540,7 +619,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/station-device-provisioning/" class="md-nav__link">
+      <a href="../station-device-provisioning/" class="md-nav__link">
         Concentrator provisioning
       </a>
     </li>
@@ -554,7 +633,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/station-authentication-modes/" class="md-nav__link">
+      <a href="../station-authentication-modes/" class="md-nav__link">
         Authentication modes
       </a>
     </li>
@@ -568,7 +647,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/station-module-configuration/" class="md-nav__link">
+      <a href="../station-module-configuration/" class="md-nav__link">
         LBS IoT Edge Module configuration
       </a>
     </li>
@@ -582,7 +661,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/station-firmware-upgrade/" class="md-nav__link">
+      <a href="../station-firmware-upgrade/" class="md-nav__link">
         Firmware upgrade with CUPS
       </a>
     </li>
@@ -631,7 +710,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/as923/" class="md-nav__link">
+      <a href="../as923/" class="md-nav__link">
         Region AS923
       </a>
     </li>
@@ -680,7 +759,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/testing/e2e_tests/" class="md-nav__link">
+      <a href="../testing/e2e_tests/" class="md-nav__link">
         E2E Tests
       </a>
     </li>
@@ -694,7 +773,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/testing/integration_tests/" class="md-nav__link">
+      <a href="../testing/integration_tests/" class="md-nav__link">
         Integration Tests
       </a>
     </li>
@@ -749,7 +828,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/architecture/" class="md-nav__link">
+      <a href="../architecture/" class="md-nav__link">
         Architecture and Concepts
       </a>
     </li>
@@ -763,7 +842,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/message-flows/" class="md-nav__link">
+      <a href="../message-flows/" class="md-nav__link">
         Message Flows
       </a>
     </li>
@@ -777,7 +856,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/deployment-scenarios.md" class="md-nav__link">
+      <a href="../deployment-scenarios.md" class="md-nav__link">
         None
       </a>
     </li>
@@ -791,7 +870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/caching/" class="md-nav__link">
+      <a href="../caching/" class="md-nav__link">
         Caching
       </a>
     </li>
@@ -805,7 +884,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/ci-setup/" class="md-nav__link">
+      <a href="../ci-setup/" class="md-nav__link">
         Continuous Integration Setup
       </a>
     </li>
@@ -1040,14 +1119,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
       
       
       
@@ -1070,7 +1147,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../001_region_cn470_implementation/" class="md-nav__link">
+      <a href="../../adr/001_region_cn470_implementation/" class="md-nav__link">
         001. Region CN470 implementation
       </a>
     </li>
@@ -1084,7 +1161,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../002_lbs_configuration/" class="md-nav__link">
+      <a href="../../adr/002_lbs_configuration/" class="md-nav__link">
         002. LoRa Basic Station configuration endpoint implementation
       </a>
     </li>
@@ -1098,7 +1175,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../003_documentation/" class="md-nav__link">
+      <a href="../../adr/003_documentation/" class="md-nav__link">
         003. Documentation
       </a>
     </li>
@@ -1112,7 +1189,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../004_region_as923_implementation/" class="md-nav__link">
+      <a href="../../adr/004_region_as923_implementation/" class="md-nav__link">
         004. Region AS923 implementation
       </a>
     </li>
@@ -1126,7 +1203,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../005_observability/" class="md-nav__link">
+      <a href="../../adr/005_observability/" class="md-nav__link">
         005. Observability
       </a>
     </li>
@@ -1138,249 +1215,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          006. CUPS Protocol Implementation - Credential management
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../adr/006_cups/" class="md-nav__link">
         006. CUPS Protocol Implementation - Credential management
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    Overview
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#in-scope" class="md-nav__link">
-    In-scope
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
-    Out-of-scope
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#authentication-mechanisms-with-lora-basicstm-station" class="md-nav__link">
-    Authentication mechanisms with LoRa Basics™ Station
-  </a>
-  
-    <nav class="md-nav" aria-label="Authentication mechanisms with LoRa Basics™ Station">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
-    Context
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#decisions" class="md-nav__link">
-    Decision(s)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#authentication-to-cups-endpoint" class="md-nav__link">
-    Authentication to CUPS endpoint
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#authentication-to-lns-endpoint" class="md-nav__link">
-    Authentication to LNS endpoint
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#where-to-store-certificates" class="md-nav__link">
-    Where to store certificates
-  </a>
-  
-    <nav class="md-nav" aria-label="Where to store certificates">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#a-azure-storage-account" class="md-nav__link">
-    a. Azure Storage Account
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#b-azure-key-vault-secret" class="md-nav__link">
-    b. Azure Key Vault secret
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#c-external-https-repository" class="md-nav__link">
-    c. External HTTPS repository
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cups-protocol-implementation" class="md-nav__link">
-    CUPS Protocol Implementation
-  </a>
-  
-    <nav class="md-nav" aria-label="CUPS Protocol Implementation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#flow-diagram-for-credential-management-scenarios" class="md-nav__link">
-    Flow diagram for credential management scenarios
-  </a>
-  
-    <nav class="md-nav" aria-label="Flow diagram for credential management scenarios">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#flow" class="md-nav__link">
-    Flow
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#iot-hub-related-changes" class="md-nav__link">
-    IoT Hub related changes
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#facade-azure-function-related-changes" class="md-nav__link">
-    Facade Azure Function related changes
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lorawan-network-server-changes" class="md-nav__link">
-    LoRaWan Network Server changes
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lora-device-provisioning-cli-changes" class="md-nav__link">
-    LoRa Device Provisioning CLI changes
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#appendix" class="md-nav__link">
-    Appendix
-  </a>
-  
-    <nav class="md-nav" aria-label="Appendix">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#generating-the-certificates" class="md-nav__link">
-    Generating the certificates
-  </a>
-  
-    <nav class="md-nav" aria-label="Generating the certificates">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#a-with-an-external-pki" class="md-nav__link">
-    a) With an external PKI
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#b-without-an-external-pki" class="md-nav__link">
-    b) Without an external PKI
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1392,7 +1231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../007_message_deduplication/" class="md-nav__link">
+      <a href="../../adr/007_message_deduplication/" class="md-nav__link">
         007. Deduplication of messages
       </a>
     </li>
@@ -1406,7 +1245,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../008_cups_firmware_upgrade/" class="md-nav__link">
+      <a href="../../adr/008_cups_firmware_upgrade/" class="md-nav__link">
         008. CUPS Protocol Implementation - Firmware Upgrade
       </a>
     </li>
@@ -1537,201 +1376,38 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    Overview
+  <a href="#1-creation-of-a-concentrator-device" class="md-nav__link">
+    1. Creation of a concentrator device
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#in-scope" class="md-nav__link">
-    In-scope
+  <a href="#2-connection-of-the-concentrator-to-the-lorawan-network-server" class="md-nav__link">
+    2. Connection of the concentrator to the LoRaWan Network Server
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
-    Out-of-scope
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#authentication-mechanisms-with-lora-basicstm-station" class="md-nav__link">
-    Authentication mechanisms with LoRa Basics™ Station
-  </a>
-  
-    <nav class="md-nav" aria-label="Authentication mechanisms with LoRa Basics™ Station">
+    <nav class="md-nav" aria-label="2. Connection of the concentrator to the LoRaWan Network Server">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
-    Context
+  <a href="#pre-built-docker-module-migration" class="md-nav__link">
+    Pre-built docker module migration
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#decisions" class="md-nav__link">
-    Decision(s)
+  <a href="#custom-built-docker-module" class="md-nav__link">
+    Custom built docker module
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#authentication-to-cups-endpoint" class="md-nav__link">
-    Authentication to CUPS endpoint
+  <a href="#industrial-device" class="md-nav__link">
+    Industrial device
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#authentication-to-lns-endpoint" class="md-nav__link">
-    Authentication to LNS endpoint
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#where-to-store-certificates" class="md-nav__link">
-    Where to store certificates
-  </a>
-  
-    <nav class="md-nav" aria-label="Where to store certificates">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#a-azure-storage-account" class="md-nav__link">
-    a. Azure Storage Account
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#b-azure-key-vault-secret" class="md-nav__link">
-    b. Azure Key Vault secret
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#c-external-https-repository" class="md-nav__link">
-    c. External HTTPS repository
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cups-protocol-implementation" class="md-nav__link">
-    CUPS Protocol Implementation
-  </a>
-  
-    <nav class="md-nav" aria-label="CUPS Protocol Implementation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#flow-diagram-for-credential-management-scenarios" class="md-nav__link">
-    Flow diagram for credential management scenarios
-  </a>
-  
-    <nav class="md-nav" aria-label="Flow diagram for credential management scenarios">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#flow" class="md-nav__link">
-    Flow
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#iot-hub-related-changes" class="md-nav__link">
-    IoT Hub related changes
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#facade-azure-function-related-changes" class="md-nav__link">
-    Facade Azure Function related changes
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lorawan-network-server-changes" class="md-nav__link">
-    LoRaWan Network Server changes
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lora-device-provisioning-cli-changes" class="md-nav__link">
-    LoRa Device Provisioning CLI changes
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#appendix" class="md-nav__link">
-    Appendix
-  </a>
-  
-    <nav class="md-nav" aria-label="Appendix">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#generating-the-certificates" class="md-nav__link">
-    Generating the certificates
-  </a>
-  
-    <nav class="md-nav" aria-label="Generating the certificates">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#a-with-an-external-pki" class="md-nav__link">
-    a) With an external PKI
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#b-without-an-external-pki" class="md-nav__link">
-    b) Without an external PKI
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -1752,254 +1428,70 @@
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/adr/006_cups.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/user-guide/pkt-fwd-to-station.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
-<h1 id="006-cups-protocol-implementation-credential-management">006. CUPS Protocol Implementation - Credential management</h1>
-<p><strong>Feature</strong>: <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/391">#391</a><br />
-<strong>Author</strong>: Daniele Antonio Maggio<br />
-<strong>Status</strong>: Accepted</p>
-<h2 id="overview">Overview</h2>
-<p>LoRa Basics™ Station defines a CUPS protocol for providing updated LNS/CUPS credentials and generic update data binary to any Client connecting to a CUPS Server.</p>
-<p>More information on the protocol can be found <a href="https://doc.sm.tc/station/cupsproto.html">here</a>.</p>
-<h2 id="in-scope">In-scope</h2>
-<p>This document focuses on:</p>
-<ul>
-<li>Defining a flow diagram for common credential management scenarios:<ul>
-<li>First connection</li>
-<li>Certificate rotation process</li>
-</ul>
-</li>
-<li>Defining the changes needed in IoT Hub for handling Basics Station specific information</li>
-<li>Defining the changes needed in 'Facade' Azure Function for handling updated credential retrieval</li>
-<li>Defining the changes needed in LoRaWan Network Server for handling above mentioned flows</li>
-<li>Defining the changes needed in LoRa Device Provisioning CLI for handling creation/update of concentrators with certificate support</li>
-</ul>
-<h2 id="out-of-scope">Out-of-scope</h2>
-<p>Out of scope for this document is:</p>
-<ul>
-<li>Defining a flow diagram for firmware update process</li>
-<li>Defining any change needed in IoT Hub / Azure Function / Network Server for handling firmware updates</li>
-</ul>
-<h2 id="authentication-mechanisms-with-lora-basicstm-station">Authentication mechanisms with LoRa Basics™ Station</h2>
-<h3 id="context">Context</h3>
-<p>To better understand how the CUPS Protocol should be implemented, it is needed to understand how Basics Station is handling authentication.</p>
-<p>LoRa Basics™ Station supports four different authentication modes:</p>
-<ul>
-<li>No Authentication</li>
-<li>TLS Server Authentication</li>
-<li>TLS Server and Client Authentication</li>
-<li>TLS Server Authentication and Client Token</li>
-</ul>
-<p>An authentication mode can be set by configuring some files in the device where Basics Station is going to be executed. More documentation <a href="https://doc.sm.tc/station/credentials.html">here</a></p>
-<p>Basics Station can either use two different sets of credentials for achieving client authentication to the CUPS endpoint and to the LNS endpoint or re-use the same set of credentials for both.</p>
-<p>The aim of this document section is to take and record a decision for:</p>
-<ul>
-<li>Which authentication mode needs to be used for connecting to CUPS endpoint</li>
-<li>Which authentication mode needs to be used for connecting to LNS endpoint</li>
-<li>Where are the certificates stored and how to retrieve those?</li>
-</ul>
-<h3 id="decisions">Decision(s)</h3>
-<p>Out of the four authentication modes we should aim for "TLS Server and Client Authentication" for both CUPS and LNS endpoints.</p>
-<p>Driving this decision is the willing of increasing the overall security of the system.</p>
-<p>In order to keep the starter kit simple, the same set of server and client credentials are to be used for both CUPS and LNS protocol endpoints.</p>
-<p>For the same simplicity reason, credential bundles are going to be stored in an Azure Storage Account.</p>
-<h3 id="authentication-to-cups-endpoint">Authentication to CUPS endpoint</h3>
-<p>The CUPS endpoint should support mutual TLS authentication between client (basic station) and server (network server IoT Edge module).</p>
-<p>If not manually disabled via flags, for increased security, the server has to "require" client authentication and verify the provided credentials.</p>
-<p>Therefore, in order for Basic Station to connect to the CUPS HTTPS endpoint the following files should be provided to the station:</p>
-<ul>
-<li>cups.uri</li>
-<li>cups.crt (including the certificate in PEM format)</li>
-<li>cups.key (including the EC Private Key for the child certificate)</li>
-<li>cups.trust (including the chain of trust certificate for the server-side certificate)</li>
-</ul>
-<p>You may find an example on how to generate all the needed certificates in <a href="https://github.com/lorabasics/basicstation/blob/master/examples/cups/prep.sh">this script</a> from the Basic Station official GitHub repository.</p>
-<h3 id="authentication-to-lns-endpoint">Authentication to LNS endpoint</h3>
-<p>As for CUPS, the LNS endpoint should support mutual TLS authentication between client (basic station) and server (network server IoT Edge module).</p>
-<p>For increased security the server should "require" client authentication and verify the provided credentials.</p>
-<p>Therefore, in order for Basic Station to connect to the LNS WSS endpoint the following files should be provided to the station:</p>
-<ul>
-<li>tc.uri (i.e.: "wss://LoRaWanNetworkSrvModule:5001")</li>
-<li>tc.crt (including the certificate in PEM format)</li>
-<li>tc.key (including the EC Private Key for the child certificate)</li>
-<li>tc.trust (including the chain of trust certificate for the server-side certificate)</li>
-</ul>
-<p>As stated in the decision section above, same certificate files as CUPS certificates above are expected to be used for the Starter Kit.</p>
-<p>There is no need to copy/paste manually these files in the Basic Station; the CUPS Protocol Implementation later described in this document will retrieve the needed credentials from a centralized repository and update the Basic Station configuration when it starts. This option is also providing an option to rotate certificates when these are near the expiration.</p>
-<h3 id="where-to-store-certificates">Where to store certificates</h3>
-<p>There are multiple options of where to store the <code>cups.{trust,cert,key}</code> and <code>tc.{trust,cert,key}</code> bundle files.</p>
-<p>As stated above, for the same simplicity reason, credential bundles are going to be stored in an Azure Storage Account.</p>
-<h4 id="a-azure-storage-account">a. Azure Storage Account</h4>
-<p>This is the easiest option for a new user of the Starter Kit, even though it's not the safest one.</p>
-<p>When deploying the Starter Kit, an Azure Storage Account is provisioned for Azure Functions.</p>
-<p>LoRa Device Provisioning tool should be capable of uploading the CLI provided bundle files and properly update the twin for the concentrator device being created in IoT Hub.</p>
-<p>When using this option, the 'Facade' Azure Function will retrieve certificate files from such storage account.</p>
-<h4 id="b-azure-key-vault-secret">b. Azure Key Vault secret</h4>
-<p>This option requires more manual intervention, as the LoRa Device Provisioning tool is not adapted for uploading the credential bundle files to an Azure Key Vault instance.</p>
-<p>Following the documentation on <a href="https://docs.microsoft.com/en-us/azure/key-vault/secrets/quick-create-portal">how to set a secret in Azure Key Vault</a>, you can just create two secrets and retrieve their URLs.</p>
-<p>When setting a Key Vault secret in the concentrator twin "cups" section, the 'Facade' Azure Function will retrieve it using a Managed Identity.</p>
-<h4 id="c-external-https-repository">c. External HTTPS repository</h4>
-<p>This option requires most manual intervention.</p>
-<p>LoRa Device Provisioning tool is not uploading the credential bundle files to the repository.</p>
-<p>'Facade' Azure Function can handle a HTTPS endpoint from where the bundles will be downloaded, even though there is no security check or additional AuthN/AuthZ option provided here.</p>
-<h2 id="cups-protocol-implementation">CUPS Protocol Implementation</h2>
-<h3 id="flow-diagram-for-credential-management-scenarios">Flow diagram for credential management scenarios</h3>
-<h4 id="prerequisites">Prerequisites</h4>
-<ul>
-<li>LoRa Basics™ Station is configured with a cups.uri, a cups.trust and mandatory cups.cert/key</li>
-<li>The concentrator device twin should include changes as described in following section</li>
-</ul>
-<h4 id="flow">Flow</h4>
-<div class="mermaid">  sequenceDiagram
-    autonumber
-    Concentrator-&gt;&gt;CUPS Server: POST /update-info
-    CUPS Server-&gt;&gt;IoT Hub: Retrieve 'Concentrator' twin
-    CUPS Server-&gt;&gt;CUPS Server: Verifies 'Concentrator' client certificate
-    Note right of CUPS Server: Logic for client certificate validation to be defined. First version including a 'cupsClientThumbprint' to verify against. The client certificate thumbprint should be reported as a property.
-    alt client certificate not valid
-        CUPS Server-&gt;&gt;Concentrator: Return forbidden
-    else client certificate valid
-        alt no cups config available
-            CUPS Server-&gt;&gt;CUPS Server: Throw as this is an indication of misconfiguration
-        else cups config available
-            alt different cupsUri
-                alt different cupsCredCrc
-                    CUPS Server-&gt;&gt;Facade Function: Retrieve CUPS Credential Blob
-                    Facade Function-&gt;&gt;CUPS Server: CUPS Credential Blob
-                    CUPS Server-&gt;&gt;Concentrator: Updated cupsUri and cupsCred
-                else equal cupsCredCrc
-                    CUPS Server-&gt;&gt;Concentrator: Updated cupsUri
-                end
-            else equal cupsUri
-                alt different cupsCredCrc
-                    CUPS Server-&gt;&gt;Facade Function: Retrieve CUPS Credential Blob
-                    Note right of CUPS Server: Different CRC is an indication of a credential rotation, therefore retrieval is needed.
-                    Facade Function-&gt;&gt;CUPS Server: CUPS Credential Blob
-                    CUPS Server-&gt;&gt;Concentrator: Updated cupsCred
-                else equal cupsCredCrc
-                    CUPS Server-&gt;&gt;CUPS Server: Checks tcUri and tcCredCrc as per above flow and properly return an update
-                end
-            end
-        end
-    end</div>
-<h3 id="iot-hub-related-changes">IoT Hub related changes</h3>
-<p>Only change is related to the concentrator device twin.</p>
-<p>The following "desired" properties should be properly set:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&quot;cups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;cupsUri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://IP_or_DNS:PORT&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;tcUri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wss://IP_or_DNS:PORT&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;cupsCredCrc&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">INT</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;tcCredCrc&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">INT</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;cupsCredentialUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://...&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;tcCredentialUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://...&quot;</span><span class="w"></span>
-<span class="p">},</span><span class="w"></span>
-<span class="err">//</span><span class="w"> </span><span class="err">Followi</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="kc">f</span><span class="err">ield</span><span class="w"> </span><span class="kc">t</span><span class="err">o</span><span class="w"> </span><span class="err">be</span><span class="w"> </span><span class="err">used</span><span class="w"> </span><span class="kc">f</span><span class="err">or</span><span class="w"> </span><span class="kc">f</span><span class="err">irs</span><span class="kc">t</span><span class="w"> </span><span class="err">versio</span><span class="kc">n</span><span class="w"> </span><span class="err">clie</span><span class="kc">nt</span><span class="w"> </span><span class="err">cer</span><span class="kc">t</span><span class="err">i</span><span class="kc">f</span><span class="err">ica</span><span class="kc">te</span><span class="w"> </span><span class="err">valida</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="w"></span>
-<span class="nt">&quot;clientThumbprint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;Client certificate thumbprint&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"></span>
-</code></pre></div>
-<ul>
-<li><strong>'cupsCredCrc'</strong>: should be computed as CRC32 checksum calculated over the concatenated credentials files <code>cups.{trust,cert,key}</code></li>
-<li><strong>'tcCredCrc'</strong>: should be computed as CRC32 checksum calculated over the concatenated credentials files <code>tc.{trust,cert,key}</code></li>
-<li><strong>'cupsCredentialUrl'</strong>: should point to the blob/secret containing the concatenated credentials <code>cups.{trust,cert,key}</code></li>
-<li><strong>'tcCredentialUrl'</strong>: should point to the blob/secret containing the concatenated credentials <code>tc.{trust,cert,key}</code></li>
-<li><strong>'clientThumbprint'</strong>: should include the thumbprint of the client certificate used for authenticating against the CUPS server. It is an array for allowing an old thumbprint to be accepted until the rotation mechanism completes</li>
-</ul>
-<h3 id="facade-azure-function-related-changes">Facade Azure Function related changes</h3>
-<p>The Azure Function should implement a new endpoint 'FetchConcentratorCredentials' which executes the following flow:</p>
-<div class="mermaid">sequenceDiagram
-LoRaWanNetworkSrvModule-&gt;&gt;Function: GET /fetchConcentratorCredentials
-Note right of LoRaWanNetworkSrvModule: Request includes 'stationEui' and 'credentialsType' (cups/tc) as query params
-Function-&gt;&gt;IoT Hub: Retrieve Concentrator device Twin
-Function-&gt;&gt;Function: Parse *CredentialUrl string to understand credentials location
-alt *CredentialUrl is a KeyVault Secret
-    Function-&gt;&gt;Azure KeyVault: Get KeyVault secret using Azure Function Managed Identity
-else *CredentialUrl is from Azure Blob Storage and no SAS is in Url
-    Function-&gt;&gt;Azure Blob Storage: Get Blob using MSI
-else *CredentialUrl is plain Url
-    Function-&gt;&gt;HTTPS Endpoint: Get Blob with HTTP GET Request
-end
-Function-&gt;&gt;LoRaWanNetworkSrvModule: Return credential blob
-Note right of LoRaWanNetworkSrvModule: Response should be a base64 encoded credential sent as plaintext
-</div>
-<p>In addition to this, the Azure Function must be able to properly authenticate to target sink via Managed Identity (when using Azure Blob Storage or KeyVault).</p>
-<p>For the very first version of the implementation, only Azure Storage Account should be implemented and only connection string authentication is going to be supported.</p>
-<p>Considering that the default sink for the starter kit should be an Azure Storage Account, the template for the starter kit should be changed in such a way that a new Blob Container is created for uploading credential blob files.</p>
-<p>If using KeyVault secrets instead of Blob Storage, instructions on how to create a role assignment should be provided.  </p>
-<h3 id="lorawan-network-server-changes">LoRaWan Network Server changes</h3>
-<ul>
-<li>LoRaDeviceAPIServiceBase and its implementation (LoRaDeviceAPIService) should include a method for calling the 'FetchConcentratorCredentials' endpoint</li>
-<li>IBasicsStationConfigurationService and its implementation (BasicsStationConfigurationService) should include a method for retrieving and parsing "cups" desired property in concentrator device twin</li>
-<li>BasicsStationNetworkServerStartup should include a new endpoint for handling CUPS '/update-info' POST requests</li>
-<li>BasicsStationNetworkServer should implement a basic client certificate validation when configuring kestrel</li>
-<li>A new CupsProtocolMessageProcessor class is implemented for achieving purposes of above drawn sequence diagram.</li>
-</ul>
-<h3 id="lora-device-provisioning-cli-changes">LoRa Device Provisioning CLI changes</h3>
-<p>The CLI should be changed in order to:</p>
-<ul>
-<li>Specify if the device being created is making use of CUPS or not</li>
-<li>In case a device being created is making use of CUPS, the tool should:<ul>
-<li>accept as input a cupsCredentials file (being the concatenation of <code>cups.{trust,cert,key}</code>)</li>
-<li>accept as input a tcCredentials file (being the concatenation of <code>tc.{trust,cert,key}</code>)</li>
-<li>accept as input a clientThumbprint string (for client certificate validation)</li>
-<li>compute the CRC32 of above mentioned files</li>
-<li>create a device for the concentrator</li>
-<li>upload, via Azure Blob Storage C# SDK, the credential files to the Blob Storage</li>
-<li>update the Twin for the concentrator device accordingly</li>
-</ul>
-</li>
-<li>In case a device being created is not making use of CUPS, tool should provide a <code>--no-cups</code> option, allowing to just specify a <code>clientThumbprint</code> (for client certificate validation on LNS endpoint)</li>
-<li>In case a device is already created and a credential rotation is required, the tool should:<ul>
-<li>provide a "update" mechanism that:<ul>
-<li>accept as input a cupsCredentials file (being the concatenation of <code>cups.{trust,cert,key}</code>)</li>
-<li>accept as input a tcCredentials file (being the concatenation of <code>tc.{trust,cert,key}</code>)</li>
-<li>accept as input a clientThumbprint string (for client certificate validation). New thumbprint is appended to the existing one.</li>
-<li>compute the CRC32 of above mentioned files</li>
-<li>create a device for the concentrator</li>
-<li>upload, via Azure Blob Storage C# SDK, the credential files to the Blob Storage</li>
-<li>update the Twin for the concentrator device accordingly</li>
-</ul>
-</li>
-<li>provide a "revoke" mechanism that:<ul>
-<li>accept as input an old clientThumbprint to be removed from the twin</li>
-<li>check that reported thumbprint property is not equal to the thumbprint that we want to remove (this means that the basic station has not rotated certificate yet)</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="appendix">Appendix</h2>
-<h3 id="generating-the-certificates">Generating the certificates</h3>
-<p>For generating both server and client certificates there are two options.</p>
-<h4 id="a-with-an-external-pki">a) With an external PKI</h4>
-<p>In this starter kit, we are assuming that the same server certificate is used for both CUPS and LNS endpoints.</p>
-<p>Using instructions at <a href="../../user-guide/station-authentication-modes/">'Basics Station authentication modes'</a> page, copy the certificate so that the LoRaWan Network Server can retrieve it at its startup and use it within Kestrel.</p>
-<p>For concentrator configuration, it is important to retrieve the chain of trust which is used for signing the CUPS/LNS server certificate.</p>
-<p>This trust file needs to be:</p>
-<ul>
-<li>placed as <code>cups.trust</code> in the Concentrator BasicStation configuration folder</li>
-<li>stored in KeyVault/Blob Storage, using the provisioning tool, to be later retrieved from CUPS Server and transferred to BasicStation running on concentrator device (as <code>tc.trust</code>)</li>
-</ul>
-<p>Regarding client authentication instead, to generate a concentrator specific certificate, you have two options:</p>
-<ul>
-<li>If your device is powerful enough to run OpenSSL:<ul>
-<li>Generate a key and a certificate sign request</li>
-<li>Sign the request by using the PKI</li>
-<li>'Install' the cups.cert/key and tc.cert/key on the concentrator</li>
-<li>Populate cupsCredCrc and tcCredCrc of the concentrator twin:<ul>
-<li>either by manually calculating the CRC32 checksum of the concatenation of <code>cups.{trust,cert,key}</code> and <code>tc.{trust,cert,key}</code> (same file is expected for both cups and tc in the starter kit)</li>
-<li>by using the device provisioning tool</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li>If the device is not powerful enough and it's only providing you the ability to upload the .crt/.key bundle, you will have to execute the steps from previous option while generating the key and the certificate sign request on a different device</li>
-</ul>
-<h4 id="b-without-an-external-pki">b) Without an external PKI</h4>
-<p>In this starter kit, we are providing some bash scripts to generate a self-signed root certificate and certificates for server/client authentication.</p>
+<h1 id="migrate-from-packet-forwarder-to-lora-basics-station">Migrate from Packet Forwarder to LoRa Basics Station</h1>
+<p>Before upgrading to v2.0.0, please take some time to review this document on how to migrate from Packet Forwarder to LoRa Basics Station.</p>
+<h2 id="1-creation-of-a-concentrator-device">1. Creation of a concentrator device</h2>
+<p>Azure IoT Edge LoRaWAN Starter Kit v2.0.0 support the ability to de-couple the "concentrator" devices from the LoRaWan Network Server, ideally allowing the same LNS to handle concentrators with different antenna configuration or from completely different regions.</p>
+<p>Because of this, any specific configuration of the concentrator is now pushed from a new IoT Hub Device representing the "concentrator" device.</p>
+<p>Due to the decoupling, more secure authentication modes are also supported for the connection between the concentrator and the LNS.</p>
+<p>The concept of provisioning a IoT Hub Device representing the concentrator is explained in the <a href="../station-device-provisioning/">concentrator provisioning</a> documentation page.</p>
+<p>The supported authentication modes are explained in the <a href="../station-authentication-modes/">authentication modes</a> documentation page.</p>
+<h2 id="2-connection-of-the-concentrator-to-the-lorawan-network-server">2. Connection of the concentrator to the LoRaWan Network Server</h2>
+<p>After the creation of the concentrator device twin in IoT Hub, it will be possible to connect it to the LoRaWan Network Server.</p>
+<h3 id="pre-built-docker-module-migration">Pre-built docker module migration</h3>
+<p>In case you were using the pre-built <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/116e353bd61133acde13dd9ed6f96ca7156544d1/LoRaEngine/modules/LoRaWanPktFwdModule/start_pktfwd.sh">Packet Forwarder module</a>, have a look at the following table for migrating the environment variables to the new <a href="../station-module-configuration/">Basic Station module configuration</a> ones:</p>
+<table>
+<thead>
+<tr>
+<th>Packet Forwarder variable name</th>
+<th>Basics Station variable name</th>
+<th>Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>REGION</td>
+<td><em>N/A</em></td>
+<td>No region variable is needed in Basics Station as the antenna configuration is pushed from IoT Hub Device Twin via LNS Protocol Implementation</td>
+</tr>
+<tr>
+<td>NETWORK_SERVER</td>
+<td>CUPS_URI and TC_URI</td>
+<td>The Network Server address is now mapped to the CUPS_URI and/or TC_URI fields.<br/>More info in <a href="../station-module-configuration/">Basic Station module configuration</a></td>
+</tr>
+<tr>
+<td>RESET_PIN</td>
+<td>RESET_PIN</td>
+<td>Name and functionality are not changing</td>
+</tr>
+<tr>
+<td>SPI_DEV</td>
+<td>SPI_DEV</td>
+<td>Name is not changing.<br/>In Basics Station module, it is a number identifying the SPI location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)<br/>Field defaults to 0</td>
+</tr>
+<tr>
+<td>SPI_SPEED</td>
+<td>SPI_SPEED</td>
+<td>Name and functionality are not changing.<br/>In Basics Station module, default to 8, unique alternative provided is 2</td>
+</tr>
+</tbody>
+</table>
+<p>A more comprehensive list of allowed variables can be found in the <a href="../station-module-configuration/">Basic Station module configuration</a> page</p>
+<p>As previous Packet Forwarder module, the LoRaBasicsStationModule is currently built only for SX1301 based devices using SPI communication.</p>
+<h3 id="custom-built-docker-module">Custom built docker module</h3>
+<p>In case you are not using the pre-built Packet Forwarder module, because of hardware incompatibilities, you can try build your own docker module by starting from the <a href="https://github.com/lorabasics/basicstation">official Basics Station source code</a>.</p>
+<p>If you own a USB-FTDI mPCIe RAK833 board, an unofficial and not supported fork of the Basics Station can be found <a href="https://github.com/danigian/basicstation">here</a></p>
+<p>If you own a SX1302 USB based device, an unofficial and not supported fork of the Basics Station can be found <a href="https://github.com/danigian/basicstation/tree/corecell">here</a></p>
+<h3 id="industrial-device">Industrial device</h3>
+<p>In case you are using an industrial device, please make sure that it supports the Basics Station protocols.</p>
+<p>The vast majority of recent industrial devices should support the connection to the CUPS/LNS Protocols.</p>
+<p>Depending on the desired authentication mode, setting up an industrial device might be as easy as just pointing to the proper websocket endpoint exposed by the LoRaWan Network Server.</p>
+<p>If you think there is an issue with our codebase, feel free to open an issue in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues">GitHub repository</a></p>
 
   <hr>
 <div class="md-source-file">
@@ -2033,7 +1525,7 @@ Note right of LoRaWanNetworkSrvModule: Response should be a base64 encoded crede
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../005_observability/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 005. Observability" rel="prev">
+        <a href="../observability/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Observability" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -2042,20 +1534,20 @@ Note right of LoRaWanNetworkSrvModule: Response should be a base64 encoded crede
               <span class="md-footer__direction">
                 Previous
               </span>
-              005. Observability
+              Observability
             </div>
           </div>
         </a>
       
       
         
-        <a href="../007_message_deduplication/" class="md-footer__link md-footer__link--next" aria-label="Next: 007. Deduplication of messages" rel="next">
+        <a href="../station-device-provisioning/" class="md-footer__link md-footer__link--next" aria-label="Next: Concentrator provisioning" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              007. Deduplication of messages
+              Concentrator provisioning
             </div>
           </div>
           <div class="md-footer__button md-icon">
