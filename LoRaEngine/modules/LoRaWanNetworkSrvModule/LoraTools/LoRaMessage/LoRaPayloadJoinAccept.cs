@@ -46,30 +46,14 @@ namespace LoRaTools.LoRaMessage
 
         public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, RxDelay rxDelay, byte[] cfList)
         {
-            var cfListLength = cfList == null ? 0 : cfList.Length;
-            var rawMessage = new byte[1 + 12 + cfListLength];
             MHdr = new MacHeader(MacMessageType.JoinAccept);
-            rawMessage[0] = (byte)MHdr;
             AppNonce = appNonce;
-            _ = appNonce.Write(rawMessage.AsSpan(1));
             NetId = netId;
-            _ = NetId.Write(rawMessage.AsSpan(4, 3));
             DevAddr = devAddr;
-            _ = devAddr.Write(rawMessage.AsSpan(7));
-            DlSettings = new Memory<byte>(rawMessage, 11, 1);
-            Array.Copy(dlSettings, 0, rawMessage, 11, 1);
+            DlSettings = dlSettings.AsMemory();
             RxDelay = rxDelay;
-            rawMessage[12] = (byte)(Enum.IsDefined(rxDelay) ? rxDelay : default);
-            // set payload Wrapper fields
-            if (cfListLength > 0)
-            {
-                CfList = new Memory<byte>(rawMessage, 13, cfListLength);
-                Array.Copy(cfList, 0, rawMessage, 13, cfListLength);
-            }
-
-            // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
-            if (BitConverter.IsLittleEndian)
-                DlSettings.Span.Reverse();
+            if (cfList is { Length: > 0 } someCfList)
+                CfList = new Memory<byte>(someCfList);
         }
 
         public LoRaPayloadJoinAccept(ReadOnlyMemory<byte> inputMessage, AppKey appKey) : this(inputMessage.ToArray(), appKey)
