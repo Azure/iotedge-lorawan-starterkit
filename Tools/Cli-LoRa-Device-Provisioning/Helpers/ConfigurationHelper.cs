@@ -42,7 +42,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 if (iotHubConnectionString is null || netId is null)
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, "IoT Hub connection string and NetId are required.");
+                    StatusConsole.WriteLogLine(MessageType.Error, "IoT Hub connection string and NetId are required.");
                     return false;
                 }
             }
