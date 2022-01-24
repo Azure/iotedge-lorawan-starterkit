@@ -62,6 +62,8 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("gatewayid")]
         public string GatewayID { get; set; }
 
+        [JsonProperty("stationeui")]
+        public string StationEui { get; set; }
 
         [JsonProperty("dupmsg", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool? DupMsg { get; set; }
@@ -89,10 +91,11 @@ namespace LoRaWan.NetworkServer
             Rssi = radioMetadata.UpInfo.ReceivedSignalStrengthIndication;
             Rfch = radioMetadata.UpInfo.AntennaPreference;
             Lsnr = radioMetadata.UpInfo.SignalNoiseRatio;
-            Time = unchecked(radioMetadata.UpInfo.Xtime); // This is used by former computation only. 
+            Time = unchecked(radioMetadata.UpInfo.Xtime); // This is used by former computation only.
             Chan = (uint)radioMetadata.DataRate; // This is not used in any computation. It is only reported in the device telemetry.
             GpsTime = radioMetadata.UpInfo.GpsTime; // This is not used in any computation. It is only reported in the device telemetry.
             Modu = datr.ModulationKind.ToString(); // This is only used in test path by legacy PacketForwarder code. Safe to eventually remove. Could be also "FSK"
+            StationEui = request.StationEui.ToString();
         }
     }
 }
