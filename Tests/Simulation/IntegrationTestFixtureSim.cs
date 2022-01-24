@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Simulation
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Newtonsoft.Json.Linq;
 
@@ -40,6 +41,7 @@ namespace LoRaWan.Tests.Simulation
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange5000_BasicsStationSimulators => this.deviceRange5000_BasicsStationSimulators;
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange6000_OTAA_FullLoad { get; private set; }
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange9000_OTAA_FullLoad_DuplicationDrop { get; private set; }
 
         public override void SetupTestDevices()
         {
@@ -99,6 +101,11 @@ namespace LoRaWan.Tests.Simulation
                                                       .Select(deviceId => CreateOtaaDevice(deviceId))
                                                       .ToList();
 
+            DeviceRange9000_OTAA_FullLoad_DuplicationDrop =
+                Enumerable.Range(9000, Configuration.NumberOfLoadTestDevices)
+                          .Select(deviceId => CreateOtaaDevice(deviceId, deduplicationMode: DeduplicationMode.Drop))
+                          .ToList();
+
             TestDeviceInfo CreateAbpDevice(int deviceId) =>
                 new TestDeviceInfo
                 {
@@ -113,7 +120,7 @@ namespace LoRaWan.Tests.Simulation
                     DevAddr = DevAddr.Parse(deviceId.ToString("00000000", CultureInfo.InvariantCulture)),
                 };
 
-            TestDeviceInfo CreateOtaaDevice(int deviceId) =>
+            TestDeviceInfo CreateOtaaDevice(int deviceId, DeduplicationMode? deduplicationMode = null) =>
                 new TestDeviceInfo
                 {
                     DeviceID = deviceId.ToString("0000000000000000", CultureInfo.InvariantCulture),
@@ -121,6 +128,7 @@ namespace LoRaWan.Tests.Simulation
                     AppKey = GetAppKey(deviceId),
                     IsIoTHubDevice = true,
                     SensorDecoder = "DecoderValueSensor",
+                    Deduplication = deduplicationMode is { } someDeduplicationMode ? someDeduplicationMode.ToString() : null
                 };
         }
 
