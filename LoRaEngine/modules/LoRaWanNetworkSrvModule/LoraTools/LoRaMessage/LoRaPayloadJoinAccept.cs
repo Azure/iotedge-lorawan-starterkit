@@ -46,30 +46,14 @@ namespace LoRaTools.LoRaMessage
 
         public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, RxDelay rxDelay, byte[] cfList)
         {
-            var cfListLength = cfList == null ? 0 : cfList.Length;
-            RawMessage = new byte[1 + 12 + cfListLength];
             MHdr = new MacHeader(MacMessageType.JoinAccept);
-            RawMessage[0] = (byte)MHdr;
             AppNonce = appNonce;
-            _ = appNonce.Write(RawMessage.AsSpan(1));
             NetId = netId;
-            _ = NetId.Write(RawMessage.AsSpan(4, 3));
             DevAddr = devAddr;
-            _ = devAddr.Write(RawMessage.AsSpan(7));
-            DlSettings = new Memory<byte>(RawMessage, 11, 1);
-            Array.Copy(dlSettings, 0, RawMessage, 11, 1);
+            DlSettings = dlSettings.AsMemory();
             RxDelay = rxDelay;
-            RawMessage[12] = (byte)(Enum.IsDefined(rxDelay) ? rxDelay : default);
-            // set payload Wrapper fields
-            if (cfListLength > 0)
-            {
-                CfList = new Memory<byte>(RawMessage, 13, cfListLength);
-                Array.Copy(cfList, 0, RawMessage, 13, cfListLength);
-            }
-
-            // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
-            if (BitConverter.IsLittleEndian)
-                DlSettings.Span.Reverse();
+            if (cfList is { Length: > 0 } someCfList)
+                CfList = new Memory<byte>(someCfList);
         }
 
         public LoRaPayloadJoinAccept(ReadOnlyMemory<byte> inputMessage, AppKey appKey) : this(inputMessage.ToArray(), appKey)
@@ -132,40 +116,26 @@ namespace LoRaTools.LoRaMessage
 
         public byte[] Serialize(AppKey appKey)
         {
-            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
-            _ = PerformEncryption(appKey);
-
-            return GetByteMessage();
-        }
-
-        private byte[] PerformEncryption(AppKey key)
-        {
-            var mic = Mic ?? throw new InvalidOperationException("MIC must not be null.");
+            Mic mic;
+            Mic = mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
 
             var channelFrequencies = !CfList.Span.IsEmpty ? CfList.ToArray() : Array.Empty<byte>();
 
             var buffer = new byte[AppNonce.Size + NetId.Size + DevAddr.Size + DlSettings.Length +
                                   sizeof(RxDelay) + channelFrequencies.Length + LoRaWan.Mic.Size];
 
-            static Span<byte> Copy(ReadOnlyMemory<byte> source, Span<byte> target)
-            {
-                source.Span.CopyTo(target);
-                target = target[source.Length..];
-                return target;
-            }
-
             var pt = buffer.AsSpan();
             pt = AppNonce.Write(pt);
             pt = NetId.Write(pt);
             pt = DevAddr.Write(pt);
-            pt = Copy(DlSettings, pt);
+            pt = pt.Write(DlSettings.Span);
             pt = RxDelay.Write(pt);
-            pt = Copy(channelFrequencies, pt);
+            pt = pt.Write(channelFrequencies);
             _ = mic.Write(pt);
 
             using var aes = Aes.Create("AesManaged");
             var rawKey = new byte[AppKey.Size];
-            _ = key.Write(rawKey);
+            _ = appKey.Write(rawKey);
             aes.Key = rawKey;
             aes.IV = new byte[16];
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
@@ -174,15 +144,10 @@ namespace LoRaTools.LoRaMessage
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
             aes.Padding = PaddingMode.None;
 
-            ICryptoTransform cipher;
-
-            cipher = aes.CreateDecryptor();
-            var encryptedPayload = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
-            RawMessage = new byte[encryptedPayload.Length];
-            Array.Copy(encryptedPayload, 0, RawMessage, 0, encryptedPayload.Length);
-            return encryptedPayload;
+            return aes.CreateDecryptor()
+                      .TransformFinalBlock(buffer, 0, buffer.Length)
+                      .Prepend((byte)MHdr)
+                      .ToArray();
         }
-
-        private byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
     }
 }
