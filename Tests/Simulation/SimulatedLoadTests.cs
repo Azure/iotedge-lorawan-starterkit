@@ -334,8 +334,8 @@ namespace LoRaWan.Tests.Simulation
         private int GetExpectedMessageCount(string deduplicationMode, int numberOfMessagesPerDevice) =>
             deduplicationMode?.ToUpperInvariant() switch
             {
-                null or "" or "NONE" => numberOfMessagesPerDevice * (this.simulatedBasicsStations.Count / Configuration.LnsEndpointsForSimulator.Count),
-                "MARK" => numberOfMessagesPerDevice * (this.simulatedBasicsStations.Count / Configuration.LnsEndpointsForSimulator.Count),
+                null or "" or "NONE" => numberOfMessagesPerDevice * this.simulatedBasicsStations.Count,
+                "MARK" => numberOfMessagesPerDevice * this.simulatedBasicsStations.Count,
                 "DROP" => numberOfMessagesPerDevice,
                 _ => throw new NotImplementedException()
             };
