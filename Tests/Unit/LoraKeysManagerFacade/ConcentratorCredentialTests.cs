@@ -146,6 +146,35 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
+        [Fact]
+        public async Task RunFetchConcentratorCredentials_Returns_InternalServerError_ForMissingCupsProperty()
+        {
+            var blobBytes = Encoding.UTF8.GetBytes(RawStringContent);
+            using var blobStream = new MemoryStream(blobBytes);
+            SetupBlobMock(blobStream);
+
+            // http request
+            var httpRequest = new Mock<HttpRequest>();
+            var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
+            {
+                { "StationEui", new StringValues("001122FFFEAABBCC") },
+                { "CredentialType", ConcentratorCredentialType.Cups.ToString() }
+            });
+            httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
+
+            // twin mock
+            var twin = new Twin();
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'key': 'value'}"));
+            this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                                .Returns(Task.FromResult(twin));
+
+            var actual = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, CancellationToken.None);
+
+            var result = Assert.IsType<ObjectResult>(actual);
+            Assert.Equal(500, result.StatusCode);
+            Assert.Equal("Failed to fetch 'cups' property from device twin", result.Value);
+        }
+
         private void SetupBlobMock(MemoryStream blobStream)
         {
             var blobServiceClient = new Mock<BlobServiceClient>();

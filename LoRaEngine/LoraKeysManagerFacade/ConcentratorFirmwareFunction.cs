@@ -85,7 +85,10 @@ namespace LoraKeysManagerFacade
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException or NullReferenceException)
                 {
                     this.logger.LogError(ex, "Failed to parse firmware upgrade url from the '{PropertyName}' desired property.", CupsPropertyName);
-                    return new UnprocessableEntityResult();
+                    return new ObjectResult("Failed to fetch firmware upgrade url from device twin")
+                    {
+                        StatusCode = (int)HttpStatusCode.InternalServerError,
+                    };
                 }
                 catch (RequestFailedException ex)
                 {

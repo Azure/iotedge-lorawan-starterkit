@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.IO;
+    using System.Net;
     using System.Security.Cryptography;
     using System.Threading;
     using System.Threading.Tasks;
@@ -102,7 +103,10 @@ namespace LoraKeysManagerFacade
                                               or InvalidOperationException)
                 {
                     this.logger.LogError(ex, "'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
-                    return new UnprocessableEntityResult();
+                    return new ObjectResult($"Failed to fetch '{CupsPropertyName}' property from device twin")
+                    {
+                        StatusCode = (int)HttpStatusCode.InternalServerError,
+                    };
                 }
             }
             else
