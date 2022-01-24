@@ -189,10 +189,13 @@ namespace LoRaWan.NetworkServer
                     fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                     // Failed to update the fcnt down
-                    // In multi gateway scenarios it means another gateway has won the race to handle this message, can stop now
+                    // In multi gateway scenarios it means another gateway has won the race to handle this message
                     if (fcntDown <= 0)
                     {
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                        if (loRaDevice.Deduplication == DeduplicationMode.Drop) // we should neither send upstream nor downstream
+                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                        else // we should still send message upstream
+                            skipDownstreamToAvoidCollisions = true;
                     }
                 }
                 #endregion
