@@ -13,7 +13,7 @@
     
     
       
-        <title>Firmware upgrade - IoTEdge LoRaWAN StarterKit - documentation</title>
+        <title>Firmware upgrade with CUPS - IoTEdge LoRaWAN StarterKit - documentation</title>
       
     
     
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#firmware-upgrade" class="md-skip">
+        <a href="#firmware-upgrade-with-cups" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Firmware upgrade
+              Firmware upgrade with CUPS
             
           </span>
         </div>
@@ -582,7 +582,7 @@
       
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Firmware upgrade
+        Firmware upgrade with CUPS
       </a>
       
     </li>
@@ -1000,6 +1000,34 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/certificate-generation/" class="md-nav__link">
+        Basic Station Certificates Generation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/cups-firmware-file-preparation/" class="md-nav__link">
+        CUPS - Firmware update file preparation
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1277,22 +1305,24 @@
 </a>
 
 
-<h1 id="firmware-upgrade">Firmware upgrade</h1>
-<p>The Starterkit offers the functionality of performing a firmware upgrade of the
-Basics Station. This document explains which steps are required to execute such
-an upgrade.</p>
+<h1 id="firmware-upgrade-with-cups">Firmware upgrade with CUPS</h1>
+<p>The Azure IoT Edge LoRaWAN Starter Kit offers the functionality of performing a
+firmware upgrade of the Basics Station. This document explains which steps are
+required to execute such upgrade.</p>
 <ol>
 <li>
 <p>When provisioning a concentrator device that will require future firmware
-   upgrades, you will need to generate a signature key and store it on the
-   device and in a centralized repository of your choice. You will also need to
-   generate a CRC32 checksum of the key and a digest of your firmware upgrade
-   executable. You can use the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Tools/Cups-Firmware-Upgrade">CUPS Protocol - Firmware Upgrade
-   Preparation</a> tool which generates all these values,
-   given a Station EUI and a firmware upgrade file.</p>
+   upgrades, you will need to generate a <em>signature key</em> and store it on the
+   device and in a centralized repository of your choice.<br />
+   During the update process, CUPS Protocol is using the CRC32 checksum of
+   the signature key on the device to compare the digest of the firmware
+   upgrade executable generated with such key.<br />
+   You can use the
+   <a href="../../tools/cups-firmware-file-preparation/">CUPS Protocol - Firmware Upgrade Preparation</a>
+   tool to generate all needed files.</p>
 </li>
 <li>
-<p>Use LoRa Device Provisioning CLI tool to trigger the upgrade.</p>
+<p>Use LoRa Device Provisioning CLI tool to upload the upgrade files in the cloud.</p>
 <div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="p">.\</span><span class="n">Tools</span><span class="p">\</span><span class="n">Cli-LoRa-Device-Provisioning</span><span class="p">\</span><span class="n">bin</span><span class="p">\</span><span class="n">Release</span><span class="p">\</span><span class="n">net6</span><span class="p">.</span><span class="n">0</span><span class="p">\</span><span class="n">loradeviceprovisioning</span><span class="p">.</span><span class="n">dll</span> <span class="n">upgrade-firmware</span> <span class="p">-</span><span class="n">-stationeui</span> <span class="p">&lt;</span><span class="n">station_eui</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-package</span> <span class="p">&lt;</span><span class="n">package_version</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-firmware-location</span> <span class="p">&lt;</span><span class="n">firmware_file_path</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-digest-location</span> <span class="p">&lt;</span><span class="n">digest_file_path</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-checksum-location</span> <span class="p">&lt;</span><span class="n">checksum_file_path</span><span class="p">&gt;</span>
 </code></pre></div>
 <p>Parameters:</p>
@@ -1305,7 +1335,7 @@ an upgrade.</p>
 <li><code>checksum-location</code> - local path of the file containing the CRC32 checksum
    of the key used to generate the digest</li>
 </ul>
-<p>The LoRa Device Provisioning CLI tool will trigger the upgrade by uploading
+<p>The LoRa Device Provisioning CLI tool will save the upgrade data by uploading
  the firmware to a storage account and updating the device twin of the
  concentrator with required data.</p>
 <p>For more information about using the LoRa Device Provisioning CLI tool please
@@ -1313,11 +1343,13 @@ an upgrade.</p>
  documentation.</p>
 </li>
 <li>
-<p>During the next startup of the system, the Station will execute the upgrade
-   after receiving the updated information from the Network Server. A system
-   downtime is to be expected in order for the upgrade to complete. After the
-   upgrade is finished, the current version of the Basics Station can be found
-   in the desired reported properties of the concentrator twin in IoT Hub.</p>
+<p>During the next reconnection of the Basics Station to the CUPS endpoint,
+   it will execute the upgrade after receiving the updated information from the
+   Network Server.<br />
+   A system downtime is to be expected in order for the upgrade to complete.<br />
+   After the upgrade is finished, and the Basics Station is reconnecting to the
+   LNS Data endpoint, the updated version of the Basics Station will be reported
+   in the properties of the concentrator twin in IoT Hub.</p>
 </li>
 </ol>
 
@@ -1326,11 +1358,11 @@ an upgrade.</p>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
     
   </small>

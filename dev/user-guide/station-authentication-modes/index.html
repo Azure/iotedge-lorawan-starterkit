@@ -650,26 +650,6 @@
     Self-signed certificates generator (for tests only)
   </a>
   
-    <nav class="md-nav" aria-label="Self-signed certificates generator (for tests only)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#generate-a-server-certificate" class="md-nav__link">
-    Generate a server certificate
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-a-client-certificate" class="md-nav__link">
-    Generate a client certificate
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -702,7 +682,7 @@
   
     <li class="md-nav__item">
       <a href="../station-firmware-upgrade/" class="md-nav__link">
-        Firmware upgrade
+        Firmware upgrade with CUPS
       </a>
     </li>
   
@@ -1119,6 +1099,34 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/certificate-generation/" class="md-nav__link">
+        Basic Station Certificates Generation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/cups-firmware-file-preparation/" class="md-nav__link">
+        CUPS - Firmware update file preparation
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1460,26 +1468,6 @@
     Self-signed certificates generator (for tests only)
   </a>
   
-    <nav class="md-nav" aria-label="Self-signed certificates generator (for tests only)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#generate-a-server-certificate" class="md-nav__link">
-    Generate a server certificate
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-a-client-certificate" class="md-nav__link">
-    Generate a client certificate
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -1500,16 +1488,16 @@
 
 
 <h1 id="authentication-modes">Authentication modes</h1>
-<p>Starting with 'Azure IoT Edge LoRaWAN Starter Kit' v2.0.0, the LoRaWan Network Server runs a WebSocket endpoint compatible with <a href="https://doc.sm.tc/station/tcproto.html">The <abbr title="LoRaWAN Network Server">LNS</abbr> Protocol</a> and the <a href="https://doc.sm.tc/station/cupsproto.html"><abbr title="Configuration and Update Server">CUPS</abbr> Protocol</a> from LoRa Basics™ Station.</p>
-<p>As described in the official LoRa Basics™ Station documentation - <a href="https://doc.sm.tc/station/credentials.html">Credentials</a>, a Basics™ Station client needs some credentials to establish a secure connection to <abbr title="LoRaWAN Network Server">LNS</abbr>/<abbr title="Configuration and Update Server">CUPS</abbr> compatible endpoints.</p>
+<p>Starting with 'Azure IoT Edge LoRaWAN Starter Kit' v2.0.0, the LoRaWan Network Server runs a WebSocket endpoint compatible with <a href="https://doc.sm.tc/station/tcproto.html">The LNS Protocol</a> and the <a href="https://doc.sm.tc/station/cupsproto.html">CUPS Protocol</a> from LoRa Basics™ Station.</p>
+<p>As described in the official LoRa Basics™ Station documentation - <a href="https://doc.sm.tc/station/credentials.html">Credentials</a>, a Basics™ Station client needs some credentials to establish a secure connection to LNS/CUPS compatible endpoints.</p>
 <h2 id="supported-authentication-modes">Supported authentication modes</h2>
 <p>The following table describes the supported authentication modes with the LoRaWan Network Server provided in Azure IoT Edge LoRaWAN Starter Kit</p>
 <table>
 <thead>
 <tr>
 <th></th>
-<th align="center"><abbr title="LoRaWAN Network Server">LNS</abbr> Endpoint</th>
-<th align="center"><abbr title="Configuration and Update Server">CUPS</abbr> Endpoint</th>
+<th align="center">LNS Endpoint</th>
+<th align="center">CUPS Endpoint</th>
 </tr>
 </thead>
 <tbody>
@@ -1532,7 +1520,7 @@
 </table>
 <h2 id="server-authentication">Server Authentication</h2>
 <h3 id="importing-certificate-for-server-authentication-in-lorawan-network-server-module">Importing certificate for server authentication in LoRaWan Network Server module</h3>
-<p>LoRaWan Network Server IoT Edge module allows to import a certificate in 'pkcs12' format (.pfx) to be used for server authentication for both <abbr title="LoRaWAN Network Server">LNS</abbr> and <abbr title="Configuration and Update Server">CUPS</abbr> endpoints.</p>
+<p>LoRaWan Network Server IoT Edge module allows to import a certificate in 'pkcs12' format (.pfx) to be used for server authentication for both LNS and CUPS endpoints.</p>
 <p>Two environment variables need to be set in the deployment manifest for making this happen:</p>
 <ul>
 <li><strong>LNS_SERVER_PFX_PATH</strong>: It's the absolute path to the .pfx certificate in the IoT Edge module filesystem (i.e.: <code>/var/lorastarterkit/certs/lns.pfx</code>)</li>
@@ -1566,7 +1554,7 @@
 <h3 id="changing-client-certificate-mode-in-lorawan-network-server-module-and-trusting-certificate-chain">Changing 'Client Certificate Mode' in 'LoRaWan Network Server module' and trusting certificate chain</h3>
 <p>By default, the 'LoRaWanNetworkSrvModule' is not accepting/requiring any client certificate for its exposed endpoints.</p>
 <p>It is possible to modify the behavior of the module to actually either allow or require a client certificate for accessing to its endpoints.</p>
-<p>For example, to always require a client certificate for reaching <abbr title="LoRaWAN Network Server">LNS</abbr>/<abbr title="Configuration and Update Server">CUPS</abbr> endpoints, you should set the <strong>'CLIENT_CERTIFICATE_MODE'</strong> environment variable in 'LoRaWanNetworkSrvModule' to a value of '2' or 'RequireCertificate'.</p>
+<p>For example, to always require a client certificate for reaching LNS/CUPS endpoints, you should set the <strong>'CLIENT_CERTIFICATE_MODE'</strong> environment variable in 'LoRaWanNetworkSrvModule' to a value of '2' or 'RequireCertificate'.</p>
 <p>Supported values for 'CLIENT_CERTIFICATE_MODE' environment variables are:</p>
 <ul>
 <li><code>0</code> or <code>NoCertificate</code>: client certificate is not required and will not be requested from clients</li>
@@ -1592,49 +1580,19 @@ Exempli gratia, if you need to trust one root certificate located at module path
 <p>When using the provided <strong>Cli-LoRa-Device-Provisioning</strong> tool to provision a concentrator device to IoT Hub, you can pass the <strong>'--client-certificate-thumbprint'</strong> option to specify the thumbprint of an allowed certificate.</p>
 <p>If you can't use the tool, when creating the Concentrator device in IoT Hub, all you need to do is to add a desired property named '<strong>clientThumbprint</strong>' (being an array of allowed certificate thumbprints) and specify the thumbprint in this array.</p>
 <h2 id="self-signed-certificates-generator-for-tests-only">Self-signed certificates generator (for tests only)</h2>
-<p>This starter kit is providing a <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Tools/BasicStation-Certificates-Generation">BasicStation Certificates Generation</a> tool for helping its users to generate LoRaWAN Network Server certificates and Basics Station certificates for <strong>testing</strong> secure communication between a Basics Station client and the <abbr title="Configuration and Update Server">CUPS</abbr>/<abbr title="LoRaWAN Network Server">LNS</abbr> Protocol Endpoint in Network Server.</p>
-<p>The starter kit, and, therefore also this tool, are expecting the same certificate sets for both <abbr title="Configuration and Update Server">CUPS</abbr> and <abbr title="LoRaWAN Network Server">LNS</abbr> endpoints.</p>
-<div class="admonition danger">
-<p class="admonition-title">Only for testing</p>
-<p>In a production environment, you should not use certificates provided by this tool, but generate and sign certificates with a trusted root authority.</p>
-</div>
-<h3 id="generate-a-server-certificate">Generate a server certificate</h3>
-<p>As an example, if you want to generate a server certificate for a LoRaWAN Network Server hosted at <code>mytest.endpoint.com</code> and secure the output .PFX with a passphrase, you will need to issue the following script in the <code>Tools\BasicStation-Certificates-Generation</code> folder of the StarterKit:</p>
-<div class="highlight"><pre><span></span><code>./certificate-generate.sh server mytest.endpoint.com chosenPfxPassword
-</code></pre></div>
-<div class="admonition warning">
-<p class="admonition-title">IMPORTANT</p>
-<p>when running the Basic Station client with Server Authentication enabled, the common name of the Server Certificate should exactly match the hostname specified in cups.uri/tc.uri. Even though this is decreasing security, it is possible to disable <a href="https://en.wikipedia.org/wiki/Server_Name_Indication">SNI</a> by setting the '<strong>TLS_SNI</strong>' environment variable to false when executing the Basic Station client (or provided LoRaBasicsStationModule)</p>
-</div>
-<p>The previous command will both generate a self-signed certificate authority (located in the 'ca' folder) and a mytest.endpoint.com.pfx (located in 'server' folder)</p>
-<p>You can now follow previous sections instructions on how to import this certificate in the provided LoRaWanNetworkSrvModule.</p>
-<h3 id="generate-a-client-certificate">Generate a client certificate</h3>
-<p>As an example, if you want to generate a client certificate for a Basic Station with DevEUI 'AABBCCFFFE001122', you will need to issue the following command</p>
-<div class="highlight"><pre><span></span><code>./certificate-generate.sh client AABBCCFFFE001122
-</code></pre></div>
-<div class="admonition warning">
-<p class="admonition-title">IMPORTANT</p>
-<p>for client authentication to successfully work, the Common Name of the certificate should exactly match the DevEUI of the Basic Station.</p>
-</div>
-<p>The previous command will generate the following files in the 'client' subfolder:</p>
-<ul>
-<li>AABBCCFFFE001122.crt (the client certificate in DER format)</li>
-<li>AABBCCFFFE001122.key (the client certificate key in DER format)</li>
-<li>AABBCCFFFE001122.trust (the root certificate in DER format)</li>
-<li>AABBCCFFFE001122.bundle (the concatenation of the three above mentioned files, useful if you want to use <abbr title="Configuration and Update Server">CUPS</abbr>)</li>
-</ul>
-<p>As soon as certificates are generated, you can now follow previous sections instructions on how to import this certificate in the provided LoRaBasicsStationModule or you can just copy the needed files to your Basic Station compatible concentrator.</p>
+<p>This starter kit is providing a <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Tools/BasicStation-Certificates-Generation">BasicStation Certificates Generation</a> tool for helping its users to generate LoRaWAN Network Server certificates and Basics Station certificates for <strong>testing</strong> secure communication between a Basics Station client and the CUPS/LNS Protocol Endpoint in Network Server.</p>
+<p>Please refer to <a href="../../tools/certificate-generation/">tool documentation</a> for instructions on how to use it.</p>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
     
   </small>

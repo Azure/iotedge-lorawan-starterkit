@@ -555,8 +555,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#use-a-proxy-server-to-connect-your-concentrator-to-azure" class="md-nav__link">
-    Use a Proxy server to connect your Concentrator to Azure
+  <a href="#use-a-proxy-server-to-connect-your-edge-gateway-to-azure" class="md-nav__link">
+    Use a Proxy server to connect your edge gateway to Azure
   </a>
   
 </li>
@@ -743,7 +743,7 @@
   
     <li class="md-nav__item">
       <a href="../station-firmware-upgrade/" class="md-nav__link">
-        Firmware upgrade
+        Firmware upgrade with CUPS
       </a>
     </li>
   
@@ -1160,6 +1160,34 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/certificate-generation/" class="md-nav__link">
+        Basic Station Certificates Generation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/cups-firmware-file-preparation/" class="md-nav__link">
+        CUPS - Firmware update file preparation
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1520,8 +1548,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#use-a-proxy-server-to-connect-your-concentrator-to-azure" class="md-nav__link">
-    Use a Proxy server to connect your Concentrator to Azure
+  <a href="#use-a-proxy-server-to-connect-your-edge-gateway-to-azure" class="md-nav__link">
+    Use a Proxy server to connect your edge gateway to Azure
   </a>
   
 </li>
@@ -1591,15 +1619,16 @@
 <li><strong>modules</strong> - Azure IoT Edge modules.</li>
 <li><strong>LoraKeysManagerFacade</strong> - An Azure function handling device provisioning
 (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.</li>
-<li><strong>LoRaDevTools</strong> - library for dev tools (git submodule)</li>
 </ul>
 </li>
 <li><strong>Arduino</strong> - Examples and references for LoRa Arduino based devices.</li>
 <li><strong>Template</strong> - Contain code useful for the "deploy to Azure button"</li>
 <li><strong>Tools</strong> - Contains tools that support the LoRaWan Gateway project<ul>
-<li><strong>Cli-LoRa-Device-Provisioning</strong> - .NET 6 Command Line tool that
-allows to list, query, verify, insert, edit, update and delete LoRa leaf
-device configurations into IoT Hub</li>
+<li><strong>BasicStation-Certificates-Generation</strong> - Bash scripts for generating self-signed certificates for LoRa Basics Station to LoRaWan Network Server
+interactions. Read more in <a href="../station-authentication-modes/">"Basics Station configuration - Authentication Modes"</a></li>
+<li><strong>Cli-LoRa-Device-Provisioning</strong> - .NET 6 Command Line tool that allows to list, query, verify, insert, edit, update and delete LoRa leaf device configurations into IoT Hub</li>
+<li><strong>Cups-Firmware-Upgrade</strong> - Bash scripts helping Starter Kit users to generate the files needed for executing a Basics Station firmware upgrade. Read more in <a href="../station-firmware-upgrade/">"Basics Station configuration - Firmware upgrade"</a></li>
+<li><strong>Eflow</strong> - Includes a PowerShell script to install Edge For Linux On Windows (EFLOW) on a new Windows Server VM. The script is not intended to be run as-is, but should be seen as a collection of manual steps to be run to get eflow up and running. In case of doubts, read more in <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-provision-single-device-linux-on-windows-symmetric">"Create and provision an IoT Edge for Linux on Windows device using symmetric keys"</a> official documentation</li>
 </ul>
 </li>
 <li><strong>Samples</strong> - Contains sample decoders</li>
@@ -1609,12 +1638,11 @@ device configurations into IoT Hub</li>
 <p>A <strong>.NET 6</strong> solution with the following projects:</p>
 <ul>
 <li><strong>modules</strong> - Azure IoT Edge modules.<ul>
-<li><strong>LoRaBasicsStationModule</strong> packages the Basics Station into an IoT Edge compatible docker container. See <a href="https://github.com/lorabasics/basicstation">https://github.com/lorabasics/basicstation</a>. If you are using a RAK833-USB you need to build your own Basics Station docker image starting from the fork <a href="https://github.com/danigian/basicstation">at this link</a></li>
+<li><strong>LoRaBasicsStationModule</strong> packages the Basics Station into an IoT Edge compatible docker container (See <a href="https://github.com/lorabasics/basicstation">https://github.com/lorabasics/basicstation</a>). If you are using a RAK833-USB, you need to build your own Basics Station docker image starting from the fork <a href="https://github.com/danigian/basicstation">at this link</a>. At the time of writing, SX1302 boards are supported only through SPI. If you are using a SX1302 board via USB you need to build your own Basics Station docker image starting from the fork <a href="https://github.com/danigian/basicstation/tree/corecell">at this link</a></li>
 <li><strong>LoRaWanNetworkSrvModule</strong> - is the LoRaWAN network server implementation.</li>
 </ul>
 </li>
 <li><strong>LoraKeysManagerFacade</strong> - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.</li>
-<li><strong>LoRaDevTools</strong> - library for dev tools (git submodule)</li>
 </ul>
 <h2 id="the-overall-architecture">The overall architecture</h2>
 <p>This schema represent the various components and how they interact to have a better understand of the various solution elements.</p>
@@ -1693,7 +1721,7 @@ device configurations into IoT Hub</li>
 <tbody>
 <tr>
 <td>WEBSITE_RUN_FROM_ZIP</td>
-<td><a href="https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.4/function-1.0.4.zip">https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.4/function-1.0.4.zip</a></td>
+<td>The url of the .zip file containing the Function code</td>
 </tr>
 </tbody>
 </table>
@@ -1727,9 +1755,9 @@ FACADE_SERVER_URL=https://yourfunction.azurewebsites.net/api/
 FACADE_AUTH_CODE=yourfunctionpassword
 ...
 </code></pre></div>
-<h3 id="use-a-proxy-server-to-connect-your-concentrator-to-azure">Use a Proxy server to connect your Concentrator to Azure</h3>
+<h3 id="use-a-proxy-server-to-connect-your-edge-gateway-to-azure">Use a Proxy server to connect your edge gateway to Azure</h3>
 <blockquote>
-<p><strong>This step is optional and should only be executed if your concentrator needs to use a proxy server to communicate with Azure</strong></p>
+<p><strong>This step is optional and should only be executed if your edge gateway needs to use a proxy server to communicate with Azure</strong></p>
 </blockquote>
 <p>Follow the guide on <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-configure-proxy-support">configuring an IoT Edge device to communicate through a proxy server</a> to:</p>
 <ol>
@@ -1847,29 +1875,26 @@ TX ACK RECEIVED
 <h3 id="observability">Observability</h3>
 <p>Refer to the <a href="../observability/">Observability</a> guide if you want to learn about how to use the starter kit observability features.</p>
 <h2 id="debugging-in-visual-studio-outside-of-iot-edge-and-docker">Debugging in Visual Studio, outside of IoT Edge and Docker</h2>
-<!-- markdown-link-check-disable -->
-
 <p>It is possible to run the LoRaEngine locally from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to follow in order to enable this feature:</p>
 <ol>
 <li>
-<p>Either change the value <em>server_adress</em> in the file <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/modules/LoRaWanPktFwdModule/local_conf.json">local_conf.json</a> (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.</p>
+<p>You need to point the <code>cups.uri</code> and/or the <code>tc.uri</code> Basics Station files to the endpoints exposed by your machine <!-- markdown-link-check-disable --> (i.e. <code>https://IP_ADDRESS:5002</code> and <code>wss://IP_ADDRESS:5001</code> when using a server PFX certificate or <code>ws://IP_ADDRESS:5000</code>) <!-- markdown-link-check-enable --></p>
 </li>
 <li>
-<p><strong>Alternatively</strong>, configure your unmodified LoRaWanPktFwdModule Docker container / Edge module with the environment variable <code>NETWORK_SERVER=&lt;ip of your computer&gt;</code></p>
+<p>If you are using a Wireless network in Windows, make sure it is configured as a private network in your Windows settings. Otherwise, the Windows Firewall could bock the incoming packets.</p>
 </li>
 <li>
-<p>If you are using a Wireless network in Windows, make sure it is configured as a private network in your Windows settings. Otherwise, the Windows Firewall will bock the incoming UDP packets.</p>
+<p>Open the properties of the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule">LoRaWanNetworkServerModule</a> and set the following Environment Variables under the Debug tab: <!-- markdown-link-check-disable --></p>
+<div class="highlight"><pre><span></span><code>&#39;IOTEDGE_IOTHUBHOSTNAME&#39;: &lt;your iot hub hostname&gt;.azure-devices.net
+&#39;ENABLE_GATEWAY&#39;: false
+&#39;FACADE_SERVER_URL&#39;: &lt;http://localhost:7071/api/&gt; (when debugging locally or any other URL of the Azure function you want to use)
+&#39;IOTEDGE_DEVICEID&#39;: The name of your PC
+&#39;FACADE_AUTH_CODE&#39;: (only needed for deployed Azure Function) the code for authenticating and authorizing requests
+&#39;LOG_LEVEL&#39;: 1 or Debug (optional, to activate most verbose logging level)
+</code></pre></div>
 </li>
 <li>
-<p>Open the properties of the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule">LoRaWanNetworkServerModule</a> and set the following Environment Variables under the Debug tab:</p>
-<p>- IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
-  - ENABLE_GATEWAY : false
-  - LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)
-  - FACADE_SERVER_URL : <a href="http://localhost:7071/api/">http://localhost:7071/api/</a> (when debugging locally or any other URL of the Azure function you want to use)
-  - IOTEDGE_DEVICEID : The Name of your PC</p>
-</li>
-<li>
-<p>Add a <code>local.settings.json</code> file to the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">LoRaKeysManagerFacade</a> containing:</p>
+<p><!-- markdown-link-check-enable --> Add a <code>local.settings.json</code> file to the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">LoRaKeysManagerFacade</a> containing:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;IsEncrypted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -1892,18 +1917,17 @@ TX ACK RECEIVED
 </li>
 </ol>
 <p>Happy Debugging!</p>
-<!-- markdown-link-check-enable -->
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
     
   </small>

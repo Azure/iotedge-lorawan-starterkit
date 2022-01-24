@@ -759,7 +759,7 @@
   
     <li class="md-nav__item">
       <a href="../user-guide/station-firmware-upgrade/" class="md-nav__link">
-        Firmware upgrade
+        Firmware upgrade with CUPS
       </a>
     </li>
   
@@ -1170,6 +1170,34 @@
     <li class="md-nav__item">
       <a href="../tools/arduino-samples/" class="md-nav__link">
         Arduino Samples
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/certificate-generation/" class="md-nav__link">
+        Basic Station Certificates Generation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/cups-firmware-file-preparation/" class="md-nav__link">
+        CUPS - Firmware update file preparation
       </a>
     </li>
   
@@ -1664,14 +1692,14 @@ Gateway and a LoRa end node. We have some recommendations in the
 </li>
 <li>
 <p>You will get to a page asking you to fill the following fields :</p>
-<p>- <strong>Resource Group</strong> - A logical "folder" where all the template resource would be put into, just choose a meaningful name.
-  - <strong>Location</strong> - In which DataCenter the resources should be deployed. Make sure to choose a location where <a href="https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&amp;regions=all">IoT Hub is available</a>
-  - <strong>Unique Solution Prefix</strong> - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage">naming restrictions of Storage</a> apply here.
-  - <strong>Edge gateway name</strong> - the name of your LoRa Gateway node in the IoT Hub.
-  - <strong>Deploy Device</strong> - Do you want demo end devices to be already provisioned (one using <abbr title="Over The Air Activation">OTAA</abbr> and one using <abbr title="Activation By Personalization">ABP</abbr>)? If yes set this to true, the code located in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a> would be ready to use immediately.
-  - <strong>Reset pin</strong> - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
-  - <strong>Region</strong> - In what region are you operating your device (currently only EU868 and US915 is supported)
-  - <strong>useAzureMonitorOnEdge</strong> - You can opt out of using Azure Monitor services for observability on IoT Edge.</p>
+<p>- <strong>Resource Group</strong> - A logical "folder" where all the template resource would be put into, just choose a meaningful name.<br />
+  - <strong>Location</strong> - In which DataCenter the resources should be deployed. Make sure to choose a location where <a href="https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&amp;regions=all">IoT Hub is available</a><br />
+  - <strong>Unique Solution Prefix</strong> - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage">naming restrictions of Storage</a> apply here.<br />
+  - <strong>Edge gateway name</strong> - the name of your LoRa Gateway node in the IoT Hub.<br />
+  - <strong>Deploy Device</strong> - Do you want demo end devices to be already provisioned (one using <abbr title="Over The Air Activation">OTAA</abbr> and one using <abbr title="Activation By Personalization">ABP</abbr>)? If yes set this to true, the code located in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a> would be ready to use immediately.<br />
+  - <strong>Reset pin</strong> - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)<br />
+  - <strong>Region</strong> - In what region are you operating your device (currently only EU868 and US915 is supported)<br />
+  - <strong>useAzureMonitorOnEdge</strong> - You can opt out of using Azure Monitor services for observability on IoT Edge.  </p>
 <p>The deployment would take c.a. 10 minutes to complete.</p>
 </li>
 <li>
@@ -1681,13 +1709,14 @@ Gateway and a LoRa end node. We have some recommendations in the
 <p>Once the Azure deployment is finished, connect your IoT Edge with the cloud <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm#configure-the-azure-iot-edge-security-daemon">as described in point 3</a>. You can get the connection string by clicking on the deployed IoT Hub -&gt; IoT Edge Devices -&gt; Connection string, as shown in the picture below.</p>
 </li>
 <li>
-<p>If your gateway is a Raspberry Pi, <strong>don't forget to <a href="https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/">enable SPI</a> , (You need to restart your pi)</strong>.</p>
+<p>If your gateway is a Raspberry Pi, <strong>don't forget to <a href="https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/">enable SPI</a></strong> and to <strong>restart your Pi</strong></p>
 </li>
 </ol>
 <p>By using the <code>docker ps</code> command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino">Arduino folder</a> to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.</p>
 <h3 id="what-does-the-template-do">What does the template do?</h3>
 <p>The template provision an IoT Hub with a <a href="https://github.com/lorabasics/basicstation">LoRa Basics™ Station</a> and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template">here</a>.</p>
 <p>If you are using the the RAK833-USB, you'll need to build a different LoRa Basics™ Station image. You can find a fork of the official Basic Station repository with support for RAK833-USB <a href="https://github.com/danigian/basicstation">here</a>.</p>
+<p>If you are using a SX1302 board via USB, you'll need to build a different LoRa Basics™ Station image. You can find a fork of the official Basic Station repository with support for SX1302 USB boards <a href="https://github.com/danigian/basicstation/tree/corecell">here</a>.</p>
 <h2 id="using-a-proxy-server-to-connect-your-concentrator-to-azure">Using a Proxy Server to connect your Concentrator to Azure</h2>
 <p>This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.</p>
 <p>Follow <a href="../user-guide/devguide/#use-a-proxy-server-to-connect-your-concentrator-to-azure">this guide</a> to:</p>
@@ -1699,7 +1728,7 @@ Gateway and a LoRa end node. We have some recommendations in the
 </ol>
 <h2 id="lora-device-provisioning">LoRa Device provisioning</h2>
 <p>A LoRa device is a normal IoT Hub device with some specific device twin tags. You manage it like you would with any other IoT Hub device.
-<strong>To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did plese follow the ClearCache procedure that you find below.</strong></p>
+<strong>To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did please follow the ClearCache procedure that you find below.</strong></p>
 <h3 id="abp-personalization-and-otaa-over-the-air-provisioning"><abbr title="Activation By Personalization">ABP</abbr> (personalization) and <abbr title="Over The Air Activation">OTAA</abbr> (over the air) provisioning</h3>
 <p>You can  provision the devices manually in the Azure portal or better use the provided <a href="../tools/device-provisioning/">Command Line Interface Provisioning Tool</a> to <strong>list</strong>, <strong>query</strong>, <strong>verify</strong>, <strong>add</strong>, <strong>update</strong>, and <strong>remove</strong>  devices in IoT Hub.</p>
 <p>It is also recommended to use the <abbr title="Command Line Interface">CLI</abbr> tool to verify manually added or edited LoRa devices in IoT Hub to ensure the device twin settings are all correct and will work.</p>
@@ -2173,11 +2202,11 @@ To clear the cache and allow the device to connect follow these steps:</p>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
     
   </small>

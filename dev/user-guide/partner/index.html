@@ -645,7 +645,7 @@
   
     <li class="md-nav__item">
       <a href="../station-firmware-upgrade/" class="md-nav__link">
-        Firmware upgrade
+        Firmware upgrade with CUPS
       </a>
     </li>
   
@@ -1062,6 +1062,34 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/certificate-generation/" class="md-nav__link">
+        Basic Station Certificates Generation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/cups-firmware-file-preparation/" class="md-nav__link">
+        CUPS - Firmware update file preparation
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1388,23 +1416,23 @@
 
 
 <h1 id="device-manufacturer-guidance">Device Manufacturer Guidance</h1>
-<p>We have developed the LoRaWAN starter kit agnostic of a device manufacturer implementation and focussed on the specifics on underlying architectures (arm, x86). However, we understand that device manufacturers can have specific requirements to ensure the LoRa packets are processed and decoded correctly. In this section, we provide guidance for the following:</p>
+<p>We have developed the LoRaWAN starter kit agnostic of any device manufacturer implementation and focused on the specifics of underlying architectures (arm, x86). However, we understand that device manufacturers can have specific requirements to ensure the LoRa packets are processed and decoded correctly. In this section, we provide guidance for the following:</p>
 <ul>
 <li><strong>Gateway Manufacturers</strong>: Allow a gateway to be compatible with our kit. Gateway manufacturers will test / make our Edge Hub modules work on their gateway.</li>
 </ul>
 <ul>
-<li><strong>LoRA Sensor Manufacturers</strong>: These manufacturers will develop a custom decoder using our decoding framework for their sensors.</li>
+<li><strong>LoRa Sensor Manufacturers</strong>: These manufacturers will develop a custom decoder using our decoding framework for their sensors.</li>
 </ul>
 <p>Please choose from a section that relates to your requirements.</p>
 <h2 id="device-gateway-manufacturer-guidance">Device Gateway Manufacturer Guidance</h2>
-<p>The LoRaWAN starter kit currently is tested on many popular gateways, we run some of those as part of daily CI/CD pipeline to test integrity and performance of our codebase. However, we cannot test each and every gateway out there and hence we have created a process for device manufacturer to support their gateways and get them highlighted in this repo.</p>
+<p>The LoRaWAN starter kit currently is tested on many popular gateways, we run some of those as part of daily CI/CD pipeline to test integrity and performance of our codebase. Ideally any Basics Station compatible gateway should be compatible, however, we cannot test each and every gateway out there and hence we have created a process for device manufacturer to support their gateways and get them highlighted in this repo.</p>
 <h3 id="instructions">Instructions</h3>
 <p>If you would like to test gateway compatibility with out starter kit and also get it highlighted on our GitHub page. To test gateway compatibility, please follow these steps:</p>
 <ul>
 <li>Go through the <a href="../devguide/">Developer Guidance</a> to clone the repo and make sure everything works in your local dev environment.</li>
 <li>Make sure everything works with an Azure subscription with Standard Pricing SKU's, for example we do not support the Free Azure IoT Hub SKU.</li>
 <li>Ensure that the gateway specification meet the minimal hardware configuration required for Azure IoT Edge and a container framework like Docker, Moby to run. We recommend at the minimum of 1 GB RAM, rPi based boards and similar configuration devices will be a good candidate for our starter kit.</li>
-<li>If the gateway requires a specific LoRa Basics™ Station not provided by our kit (we leverage an implementation of the LoRa Basics™ Station). Create the appropriate code for the LoRa Basics™ Station and link to our repo.</li>
+<li>If the gateway requires a specific LoRa Basics™ Station not provided by our kit (we leverage an implementation of the LoRa Basics™ Station), create the appropriate code for building the LoRa Basics™ Station binary.</li>
 <li>Run the tests on the Gateway (must be a real device) to connect to a LoRa end node and receive and send packets.</li>
 <li>Once you have tested the framework and have all things running, open an issue on the repo and we will invite you to add a page for your gateway on our repo. The page can include details about your gateway and any specific instructions to make your gateway running with LoRaWAN starter kit.</li>
 </ul>
@@ -1418,7 +1446,7 @@
 <li>Make sure everything works with an Azure subscription with Standard Pricing SKU's, for example we do not support the Free Azure IoT Hub SKU.</li>
 <li>We have provided a <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Samples/DecoderSample">sample reference implementation</a> of a decoder, please refer to this as a template and leverage the <a href="../../samples/decoders/decoder/">instructions</a> to create implementation of your customer decoder.</li>
 <li>The Sample code can also contain device model specific tests that when run allows for testing of the gateway.</li>
-<li>Since we are .NET Core and C# based, the sample is based on the .NET technology stack, however you can create your decoders in your preferred languages by implementing similar interfaces. If you have a specific language or platform to be supported, submit an issue to let us know.</li>
+<li>Since we are .NET and C# based, the sample is based on the .NET technology stack, however you can create your decoders in your preferred languages by implementing similar interfaces. If you have a specific language or platform to be supported, submit an issue to let us know.</li>
 </ul>
 
   <hr>
@@ -1426,11 +1454,11 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:15:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T13:45:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
     
   </small>
