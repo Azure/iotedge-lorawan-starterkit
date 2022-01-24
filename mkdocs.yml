@@ -78,7 +78,7 @@ nav:
       - user-guide/as923.md
     - Testing:
       - user-guide/testing/e2e_tests.md
-      - user-guide/testing/integration_tests.md
+      - user-guide/testing/load_tests.md
   - 'Reference':
     - user-guide/architecture.md
     - user-guide/message-flows.md
