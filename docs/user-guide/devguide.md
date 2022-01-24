@@ -4,7 +4,7 @@
 
 The code is organized into three sections:
 
-- **LoRaEngine** - a .NET core 3.1 solution with the following folders:
+- **LoRaEngine** - a .NET 6 solution with the following folders:
   - **modules** - Azure IoT Edge modules.
   - **LoraKeysManagerFacade** - An Azure function handling device provisioning
   (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
@@ -12,7 +12,7 @@ The code is organized into three sections:
 - **Arduino** - Examples and references for LoRa Arduino based devices.
 - **Template** - Contain code useful for the "deploy to Azure button"
 - **Tools** - Contains tools that support the LoRaWan Gateway project
-  - **Cli-LoRa-Device-Provisioning** - .NET Core 2.1 Command Line tool that
+  - **Cli-LoRa-Device-Provisioning** - .NET 6 Command Line tool that
   allows to list, query, verify, insert, edit, update and delete LoRa leaf
   device configurations into IoT Hub
 - **Samples** - Contains sample decoders
@@ -20,7 +20,7 @@ The code is organized into three sections:
 
 ## LoRaEngine
 
-A **.NET Core 3.1** solution with the following projects:
+A **.NET 6** solution with the following projects:
 
 - **modules** - Azure IoT Edge modules.
   - **LoRaBasicsStationModule** packages the Basics Station into an IoT Edge compatible docker container. See <https://github.com/lorabasics/basicstation>. If you are using a RAK833-USB you need to build your own Basics Station docker image starting from the fork [at this link](https://github.com/danigian/basicstation)
@@ -92,7 +92,7 @@ On your Visual Studio Solution, right click on the 'LoRaKeysManagerFacade' proje
 
 - Open the [Azure function folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade) with Visual Studio Code with the [Azure Functions Plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) installed. Now run the command `Azure Functions: Deploy to function app...` and provide the name of the Azure function to deploy to. If prompted, select  environment `C#` and  version `V3`.
 
-- If you want to just deploy the function from Visual Studio Code with the root project folder `iotedge-lorawan-starterkit` open (of which the Function is a subfolder `/LoRaEngine/LoraKeysManagerFacade`), you need to run the Visual Studio Command `Azure Functions: Deploy to function app...` and then **manually** choose the folder `LoraKeysManagerFacade/bin/Release/netcoreapp3.1/publish`. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.
+- If you want to just deploy the function from Visual Studio Code with the root project folder `iotedge-lorawan-starterkit` open (of which the Function is a subfolder `/LoRaEngine/LoraKeysManagerFacade`), you need to run the Visual Studio Command `Azure Functions: Deploy to function app...` and then **manually** choose the folder `LoraKeysManagerFacade/bin/Release/net6.0/publish`. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.
 
 #### If you choose to create an empty Azure Function pointing to our Zipped code
 
