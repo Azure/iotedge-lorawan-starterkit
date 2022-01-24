@@ -73,7 +73,7 @@ namespace LoRaWan.Tests.Integration
 
             var actualCounts =
                 (NullCount: actualDeviceTelemetries.Count(t => t.DupMsg == null),
-                 TrueCount: actualDeviceTelemetries.Count(t => t.DupMsg is { } someDup),
+                 TrueCount: actualDeviceTelemetries.Count(t => t.DupMsg is { }),
                  FalseCount: actualDeviceTelemetries.Count(t => t.DupMsg is { } someDup && !someDup));
 
             var expectedCounts = mode switch
