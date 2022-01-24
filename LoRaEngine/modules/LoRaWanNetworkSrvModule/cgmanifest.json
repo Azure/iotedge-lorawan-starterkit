@@ -1,0 +1,13 @@
+{
+    "Registrations": [
+        {
+        "Component": {
+            "Type": "git",
+            "git": {
+            "RepositoryUrl": "https://github.com/jieter/python-lora",
+            "CommitHash": "00bc45c6d6ba366a0bc09ba287b58f7bc9bc27e0"
+            }
+        }
+        }
+    ]
+}

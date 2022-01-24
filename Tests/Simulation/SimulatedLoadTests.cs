@@ -226,23 +226,12 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Multiple_ABP_and_OTAA_Simulated_Devices_Confirmed()
         {
-            // amount of messages to send per device (without warm-up phase)
-            const int scenarioMessagesPerDevice = 10;
-
-            // amount of devices to send data in parallel
-            const int scenarioDeviceStepSize = 15;
-
-            // amount of devices to send data in parallel for the warm-up phase
-            const int warmUpDeviceStepSize = 2;
-
-            // amount of messages to send before device join is to occur
+            const int messagesPerDeviceExcludingWarmup = 10;
+            const int batchSizeDataMessages = 15;
+            const int batchSizeWarmupMessages = 2;
             const int messagesBeforeJoin = 5;
-
-            // amount of Unconfirmed messges to send before Confirmed message is to occur
             const int messagesBeforeConfirmed = 5;
-
-            // amount of seconds to wait between sends in warmup phase
-            var delayWarmup = TimeSpan.FromSeconds(5);
+            var warmupDelay = TimeSpan.FromSeconds(5);
 
             var simulatedAbpDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange2000_ABP_FullLoad);
             var simulatedOtaaDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange3000_OTAA_FullLoad);
@@ -251,10 +240,10 @@ namespace LoRaWan.Tests.Simulation
             Assert.True(messagesBeforeConfirmed <= messagesBeforeJoin, "OTAA devices should send all messages as confirmed messages.");
 
             // 1. picking devices send an initial message (warm device cache in LNS module)
-            foreach (var devices in simulatedAbpDevices.Batch(warmUpDeviceStepSize))
+            foreach (var devices in simulatedAbpDevices.Batch(batchSizeWarmupMessages))
             {
                 await Task.WhenAll(from device in devices select SendWarmupMessageAsync(device));
-                await Task.Delay(delayWarmup);
+                await Task.Delay(warmupDelay);
             }
 
             async Task SendWarmupMessageAsync(SimulatedDevice device)
@@ -268,10 +257,10 @@ namespace LoRaWan.Tests.Simulation
 
             // 2. ABP and OTAA devices send messages
             const int initialMessageId = 1;
-            for (var messageId = initialMessageId; messageId < initialMessageId + scenarioMessagesPerDevice; ++messageId)
+            for (var messageId = initialMessageId; messageId < initialMessageId + messagesPerDeviceExcludingWarmup; ++messageId)
             {
                 foreach (var batch in simulatedAbpDevices.Zip(simulatedOtaaDevices, (first, second) => (Abp: first, Otaa: second))
-                                                         .Batch(scenarioDeviceStepSize))
+                                                         .Batch(batchSizeDataMessages))
                 {
                     var payload = this.uniqueMessageFragment + messageId.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0');
                     var abpTasks = batch.Select(devices => SendUpstreamMessage(devices.Abp, payload, messageId));
@@ -285,23 +274,23 @@ namespace LoRaWan.Tests.Simulation
                     await Task.WhenAll(abpTasks.Concat(otaaTasks));
                     await Task.Delay(IntervalBetweenMessages);
                 }
+            }
 
-                static async Task SendUpstreamMessage(SimulatedDevice device, string payload, int messageId)
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(10, 250)));
+            static async Task SendUpstreamMessage(SimulatedDevice device, string payload, int messageId)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(10, 250)));
 
-                    using var waitableLoRaRequest = messageId <= initialMessageId + messagesBeforeConfirmed
-                        ? WaitableLoRaRequest.CreateWaitableRequest(device.CreateUnconfirmedDataUpMessage(payload))
-                        : WaitableLoRaRequest.CreateWaitableRequest(device.CreateConfirmedDataUpMessage(payload));
+                using var waitableLoRaRequest = messageId <= initialMessageId + messagesBeforeConfirmed
+                    ? WaitableLoRaRequest.CreateWaitableRequest(device.CreateUnconfirmedDataUpMessage(payload))
+                    : WaitableLoRaRequest.CreateWaitableRequest(device.CreateConfirmedDataUpMessage(payload));
 
-                    await device.SendDataMessageAsync(waitableLoRaRequest);
-                }
+                await device.SendDataMessageAsync(waitableLoRaRequest);
+            }
 
-                static async Task JoinAsync(SimulatedDevice device)
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(10, 5000)));
-                    Assert.True(await device.JoinAsync(), "OTAA join failed");
-                }
+            static async Task JoinAsync(SimulatedDevice device)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(10, 5000)));
+                Assert.True(await device.JoinAsync(), "OTAA join failed");
             }
 
             await WaitForResultsInIotHubAsync();
@@ -310,13 +299,13 @@ namespace LoRaWan.Tests.Simulation
             //    Warn only.
             foreach (var device in simulatedAbpDevices)
             {
-                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, scenarioMessagesPerDevice), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
-                EnsureMessageResponsesAreReceived(device, scenarioMessagesPerDevice - messagesBeforeConfirmed);
+                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, messagesPerDeviceExcludingWarmup), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
+                EnsureMessageResponsesAreReceived(device, messagesPerDeviceExcludingWarmup - messagesBeforeConfirmed);
             }
             foreach (var device in simulatedOtaaDevices)
             {
                 // number of total data messages is number of messages per device minus the join message minus the number of messages sent before the join happens.
-                const int numberOfOtaaDataMessages = scenarioMessagesPerDevice - messagesBeforeJoin - 1;
+                const int numberOfOtaaDataMessages = messagesPerDeviceExcludingWarmup - messagesBeforeJoin - 1;
                 Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfOtaaDataMessages), TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
                 EnsureMessageResponsesAreReceived(device, numberOfOtaaDataMessages + 1);
             }
