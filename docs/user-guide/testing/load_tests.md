@@ -34,3 +34,4 @@ In addition to the issues, for which we will not provider more details here, we 
 
 ![host-stats](..\..\images\lt-host-stats.png)
 
+**January 24th, 2022 load test of v2.0.0-beta1.** This load test was for deduplication strategy drop, the same parameters as the January 21st load test, except that we send seven messages per device, ending at 13.5 messages per second (giving a total of 12800 messages in one hour). The analysis was identical to the January 21st load test, there were no new findings and observations match everything we saw before.
