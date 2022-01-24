@@ -20,6 +20,7 @@ This load test used the default deduplication strategy for the `Connected_Factor
 - [AMQP exceptions when handling > 1000 devices · Issue #1337 · Azure/iotedge-lorawan-starterkit (github.com)](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1337)
 - [We should send messages upstream when on DeduplicationStrategy Mark or None. · Issue #1032 · Azure/iotedge-lorawan-starterkit (github.com)](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1032)
 - [Resubmit threshold does not consider deduplication strategy used · Issue #1334 · Azure/iotedge-lorawan-starterkit (github.com)](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1334)
+- [Investigate memory evolution of LNS under load · Issue #1374 · Azure/iotedge-lorawan-starterkit (github.com)](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1374)
 
 In addition to the issues, for which we will not provider more details here, we discuss several performance/health indicators.
 
@@ -29,7 +30,7 @@ In addition to the issues, for which we will not provider more details here, we 
 
 ![image-20220124131449660](..\..\images\lt-message-latency.png)
 
-**Memory and CPU usage**: Memory and CPU usage was fairly stable, staying between 100 and 130MB of memory usage for the LNS and negligible CPU usage during the entire load test.
+**Memory and CPU usage**: CPU usage was fairly stable. However, while memory was staying between 100 and 130MB for the LNS during the entire load test, it is not clear how it would have evolved over a longer time. A more thorough investigation is part of [Investigate memory evolution of LNS under load · Issue #1374 · Azure/iotedge-lorawan-starterkit (github.com)](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1374)
 
 ![host-stats](..\..\images\lt-host-stats.png)
 
