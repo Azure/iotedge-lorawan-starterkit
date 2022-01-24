@@ -28,9 +28,9 @@ In addition to the issues, for which we will not provider more details here, we 
 
 **D2CMessageDeliveryLatency**: The D2C message delivery latency was distinct for three phases: in the join phase, the average processing time was ca. 100ms, then for the first round of messages (cache pre-warming) the average delivery/response time was ca. 800ms for the gateway that won the race. As soon as the cache was warm, the response time dropped to ca. 450ms. No receive windows were missed.
 
-![image-20220124131449660](C:\Users\baburger\AppData\Roaming\Typora\typora-user-images\image-20220124131449660.png)
+![image-20220124131449660](..\..\images\lt-message-latency.png)
 
 **Memory and CPU usage**: Memory and CPU usage was fairly stable, staying between 600 and 800MB of memory usage and around 40% CPU usage during the entire load test.
 
-![image-20220124132245692](C:\Users\baburger\AppData\Roaming\Typora\typora-user-images\image-20220124132245692.png)
+![host-stats](..\..\images\lt-host-stats.png)
 
