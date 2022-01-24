@@ -6,9 +6,10 @@ namespace LoRaWan.Tools.CLI.Options
     using System;
     using System.Collections.Generic;
     using CommandLine;
+    using LoRaWan.Tools.CLI.CommandLineOptions;
 
     [Verb("add", HelpText = "Add a new device to IoT Hub.")]
-    public class AddOptions
+    public class AddOptions : OptionsBase
     {
         private const string ConcentratorSetName = "Contentrator";
         private const string LoRaDeviceSetName = "LoRaDevice";

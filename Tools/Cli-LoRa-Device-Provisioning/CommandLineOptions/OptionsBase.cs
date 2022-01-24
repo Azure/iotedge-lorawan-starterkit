@@ -7,10 +7,9 @@ namespace LoRaWan.Tools.CLI.CommandLineOptions
 
     public class OptionsBase
     {
-        [Option(
-            "iothub-connection-string",
-            Required = true,
-            HelpText = "IoT Hub connection string: Connection string (iothubowner) of the IoT Hub (HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx).")]
+        [Option("iothub-connection-string",
+                Required = true,
+                HelpText = "IoT Hub connection string: Connection string (iothubowner) of the IoT Hub (HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx).")]
         public string IoTHubConnectionString { get; set; }
     }
 }

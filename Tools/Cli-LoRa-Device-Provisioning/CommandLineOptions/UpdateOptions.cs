@@ -4,9 +4,10 @@
 namespace LoRaWan.Tools.CLI.Options
 {
     using CommandLine;
+    using LoRaWan.Tools.CLI.CommandLineOptions;
 
     [Verb("update", HelpText = "Update an existing device in IoT Hub.")]
-    public class UpdateOptions
+    public class UpdateOptions : OptionsBase
     {
         [Option(
             "deveui",

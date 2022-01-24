@@ -8,10 +8,9 @@ namespace LoRaWan.Tools.CLI.CommandLineOptions
     [Verb("upgrade-firmware", HelpText = "Triggers a firmware upgrade for a station.")]
     public class UpgradeFirmwareOptions : OptionsBase
     {
-        [Option(
-            "storage-connection-string",
-            Required = true,
-            HelpText = "Storage account connection string: Connection string of the Storage account.")]
+        [Option("storage-connection-string",
+                Required = true,
+                HelpText = "Storage account connection string: Connection string of the Storage account.")]
         public string StorageConnectionString { get; set; }
 
         [Option("stationeui",
