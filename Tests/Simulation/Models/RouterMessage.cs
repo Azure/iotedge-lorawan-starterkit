@@ -3,7 +3,6 @@
 
 namespace LoRaWan.Tests.Simulation.Models
 {
-    using System.Text.Json;
     using Newtonsoft.Json;
 
     public sealed record RouterMessage
