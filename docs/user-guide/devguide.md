@@ -8,13 +8,14 @@ The code is organized into three sections:
   - **modules** - Azure IoT Edge modules.
   - **LoraKeysManagerFacade** - An Azure function handling device provisioning
   (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
-  - **LoRaDevTools** - library for dev tools (git submodule)
 - **Arduino** - Examples and references for LoRa Arduino based devices.
 - **Template** - Contain code useful for the "deploy to Azure button"
 - **Tools** - Contains tools that support the LoRaWan Gateway project
-  - **Cli-LoRa-Device-Provisioning** - .NET 6 Command Line tool that
-  allows to list, query, verify, insert, edit, update and delete LoRa leaf
-  device configurations into IoT Hub
+  - **BasicStation-Certificates-Generation** - Bash scripts for generating self-signed certificates for LoRa Basics Station to LoRaWan Network Server
+  interactions. Read more in ["Basics Station configuration - Authentication Modes"](./station-authentication-modes.md)
+  - **Cli-LoRa-Device-Provisioning** - .NET 6 Command Line tool that allows to list, query, verify, insert, edit, update and delete LoRa leaf device configurations into IoT Hub
+  - **Cups-Firmware-Upgrade** - Bash scripts helping Starter Kit users to generate the files needed for executing a Basics Station firmware upgrade. Read more in ["Basics Station configuration - Firmware upgrade"](./station-firmware-upgrade.md)
+  - **Eflow** - Includes a PowerShell script to install Edge For Linux On Windows (EFLOW) on a new Windows Server VM. The script is not intended to be run as-is, but should be seen as a collection of manual steps to be run to get eflow up and running. In case of doubts, read more in ["Create and provision an IoT Edge for Linux on Windows device using symmetric keys"](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-provision-single-device-linux-on-windows-symmetric) official documentation
 - **Samples** - Contains sample decoders
 - **Docs** - Additional modules, pictures and documentations
 
@@ -23,10 +24,9 @@ The code is organized into three sections:
 A **.NET 6** solution with the following projects:
 
 - **modules** - Azure IoT Edge modules.
-  - **LoRaBasicsStationModule** packages the Basics Station into an IoT Edge compatible docker container. See <https://github.com/lorabasics/basicstation>. If you are using a RAK833-USB you need to build your own Basics Station docker image starting from the fork [at this link](https://github.com/danigian/basicstation)
+  - **LoRaBasicsStationModule** packages the Basics Station into an IoT Edge compatible docker container (See <https://github.com/lorabasics/basicstation>). If you are using a RAK833-USB, you need to build your own Basics Station docker image starting from the fork [at this link](https://github.com/danigian/basicstation). At the time of writing, SX1302 boards are supported only through SPI. If you are using a SX1302 board via USB you need to build your own Basics Station docker image starting from the fork [at this link](https://github.com/danigian/basicstation/tree/corecell)
   - **LoRaWanNetworkSrvModule** - is the LoRaWAN network server implementation.
 - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
-- **LoRaDevTools** - library for dev tools (git submodule)
 
 ## The overall architecture
 
@@ -102,7 +102,7 @@ On your Visual Studio Solution, right click on the 'LoRaKeysManagerFacade' proje
 
 |App Settings Name|Value|
 |-|-|
-|WEBSITE_RUN_FROM_ZIP|<https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.4/function-1.0.4.zip>|
+|WEBSITE_RUN_FROM_ZIP|The url of the .zip file containing the Function code|
 
 ![Run Azure Function from Zip file](../images/FunctionRunFromZip.png)
 
@@ -145,9 +145,9 @@ FACADE_AUTH_CODE=yourfunctionpassword
 ...
 ```
 
-### Use a Proxy server to connect your Concentrator to Azure
+### Use a Proxy server to connect your edge gateway to Azure
 
-> **This step is optional and should only be executed if your concentrator needs to use a proxy server to communicate with Azure**
+> **This step is optional and should only be executed if your edge gateway needs to use a proxy server to communicate with Azure**
 
 Follow the guide on [configuring an IoT Edge device to communicate through a proxy server](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-configure-proxy-support) to:
 
@@ -314,11 +314,12 @@ It is possible to run the LoRaEngine locally from Visual Studio in order to enab
 
 1. Open the properties of the project [LoRaWanNetworkServerModule](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule) and set the following Environment Variables under the Debug tab:
 
-    - IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
-    - ENABLE_GATEWAY : false
-    - LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)
-    - FACADE_SERVER_URL : <http://localhost:7071/api/> (when debugging locally or any other URL of the Azure function you want to use)
-    - IOTEDGE_DEVICEID : The Name of your PC
+    IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)  
+    ENABLE_GATEWAY : false  
+    LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)  
+    FACADE_SERVER_URL : <http://localhost:7071/api/> (when debugging locally or any other URL of the Azure function you want to use)  
+    IOTEDGE_DEVICEID : The Name of your PC  
+    FACADE_AUTH_CODE : needed only if pointing to a deployed Azure Function, the code for authenticating and authorizing requests to it  
 
 1. Add a `local.settings.json` file to the project [LoRaKeysManagerFacade](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade) containing:
 
