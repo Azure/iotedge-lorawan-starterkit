@@ -813,6 +813,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../deployment-scenarios.md" class="md-nav__link">
+        None
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../caching/" class="md-nav__link">
         Caching
       </a>
@@ -1325,6 +1339,7 @@
 <p>We recommend that you use Azure Monitor for observability when working with the starter kit. To observe the system, we make use of metrics and logs, but we do not support distributed tracing for the starter kit. However, you will get some limited tracing functionality between the Network Server and its dependencies, but only if you decide to use Azure Monitor.</p>
 <p>Even if you decide to not use Azure Monitor, you can always access metrics in <a href="https://prometheus.io/docs/introduction/overview/">Prometheus</a> format on the Network Server at the path <code>/metrics</code>, similarly to how you can <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-access-built-in-metrics?view=iotedge-2020-11">access built-in metrics</a> on IoT Edge. The Network Server will always expose logs via the standard output and standard error.</p>
 <h2 id="integrating-with-azure-monitor">Integrating with Azure Monitor</h2>
+<p><img alt="Observability with Azure App Insights and Log Analytics" src="../../images/observability-azure.png" width="450" /></p>
 <p>If you decide to use Azure Monitor, you will need to create an Application Insights instance and a Log Analytics workspace in your Azure subscription. Follow the steps in the <a href="../devguide/">Dev Guide</a> to learn how to deploy the engine components. To enable observability using Azure Monitor, ensure that the following settings in your <code>.env</code> file (also described in the Dev Guide) are used for the IoT Edge deployment:</p>
 <div class="highlight"><pre><span></span><code>APPINSIGHTS_INSTRUMENTATIONKEY={appinsights_key}
 IOT_HUB_RESOURCE_ID=/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Devices/IotHubs/{iot_hub_name}
@@ -1333,6 +1348,7 @@ LOG_ANALYTICS_SHARED_KEY={log_analytics_shared_key}
 </code></pre></div>
 <p>Generate a deployment manifest from <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/deployment_observability.layered.template.json"><code>deployment_observability.layered.template.json</code></a> and deploy it to the edge devices for which you want to apply the observability. The template will set up the <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-collect-and-transport-metrics?view=iotedge-2020-11&amp;tabs=iothub#metrics-collector-module">metrics collector module</a> on the edge and connect it with your Log Analytics instance. The gateway will connect directly to your Application Insights instance, if you make sure to set the <code>APPINSIGHTS_INSTRUMENTATIONKEY</code> before deploying the <code>deployment.template.lbs.json</code> solution. The Application Insights log level will always be the same as the console log level.</p>
 <h2 id="integrating-with-the-elastic-stack">Integrating with the Elastic stack</h2>
+<p><img alt="Observability with ELK" src="../../images/observability-elk.png" width="450" /></p>
 <p>In this section we describe an example setup that may help you to get started if you decide to use the <a href="https://www.elastic.co/elastic-stack/">Elastic stack</a> for the engine observability. We will assume that you have set up the Elastic stack already, and that you now want to integrate the engine components with ELK. If you do not have the Elastic stack set up yet, refer to <a href="https://www.elastic.co/guide/index.html">Elastic's documentation</a> and set it up before you continue with this example.</p>
 <p>To integrate the starter kit into your ELK stack, we rely on <a href="https://www.elastic.co/beats/metricbeat">Metricbeat</a> to scrape metrics from the Prometheus endpoints of the  IoT Edge modules (Network Server, Edge Hub and Edge Agent). Since Metricbeat requires access to the metric endpoints on IoT Edge, we will deploy it as an IoT Edge module, too.</p>
 <div class="admonition warning">
@@ -1394,11 +1410,11 @@ LOG_ANALYTICS_SHARED_KEY={log_analytics_shared_key}
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T09:38:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T12:25:43+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T09:38:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T12:25:43+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
     
   </small>
