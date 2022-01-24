@@ -331,7 +331,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         /// <param name="nwskey">the network security key.</param>
         /// <returns>if the Mic is valid or not.</returns>
-        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
+        public bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             Ensure32BitFcntValue(server32BitFcnt);
             // do not include MIC as it was already set
@@ -507,6 +507,5 @@ namespace LoRaTools.LoRaMessage
 
         public override bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
 
-        public override bool CheckMic(AppKey key) => throw new NotImplementedException();
     }
 }

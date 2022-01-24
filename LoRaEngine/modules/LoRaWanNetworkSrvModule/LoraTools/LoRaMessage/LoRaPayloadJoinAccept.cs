@@ -184,16 +184,5 @@ namespace LoRaTools.LoRaMessage
         }
 
         private byte[] GetByteMessage() => RawMessage.Prepend((byte)MHdr).ToArray();
-
-        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool CheckMic(AppKey key)
-        {
-            var expectedMic = LoRaWan.Mic.ComputeForJoinAccept(key, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
-            return expectedMic == Mic;
-        }
     }
 }
