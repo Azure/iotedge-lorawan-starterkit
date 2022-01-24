@@ -302,26 +302,24 @@ Refer to the [Observability](observability.md) guide if you want to learn about 
 
 ## Debugging in Visual Studio, outside of IoT Edge and Docker
 
-<!-- markdown-link-check-disable -->
-
 It is possible to run the LoRaEngine locally from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to follow in order to enable this feature:
 
-1. Either change the value *server_adress* in the file [local_conf.json](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/modules/LoRaWanPktFwdModule/local_conf.json) (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.
+1. You need to point the `cups.uri` and/or the `tc.uri` Basics Station files to the endpoints exposed by your machine <!-- markdown-link-check-disable --> (i.e. `https://IP_ADDRESS:5002` and `wss://IP_ADDRESS:5001` when using a server PFX certificate or `ws://IP_ADDRESS:5000`) <!-- markdown-link-check-enable -->
 
-1. **Alternatively**, configure your unmodified LoRaWanPktFwdModule Docker container / Edge module with the environment variable `NETWORK_SERVER=<ip of your computer>`
+1. If you are using a Wireless network in Windows, make sure it is configured as a private network in your Windows settings. Otherwise, the Windows Firewall could bock the incoming packets.
 
-1. If you are using a Wireless network in Windows, make sure it is configured as a private network in your Windows settings. Otherwise, the Windows Firewall will bock the incoming UDP packets.
+1. Open the properties of the project [LoRaWanNetworkServerModule](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule) and set the following Environment Variables under the Debug tab: <!-- markdown-link-check-disable -->
 
-1. Open the properties of the project [LoRaWanNetworkServerModule](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule) and set the following Environment Variables under the Debug tab:
+    ```env
+    'IOTEDGE_IOTHUBHOSTNAME': <your iot hub hostname>.azure-devices.net
+    'ENABLE_GATEWAY': false
+    'FACADE_SERVER_URL': <http://localhost:7071/api/> (when debugging locally or any other URL of the Azure function you want to use)
+    'IOTEDGE_DEVICEID': The name of your PC
+    'FACADE_AUTH_CODE': (only needed for deployed Azure Function) the code for authenticating and authorizing requests
+    'LOG_LEVEL': 1 or Debug (optional, to activate most verbose logging level)
+    ```
 
-    IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)  
-    ENABLE_GATEWAY : false  
-    LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)  
-    FACADE_SERVER_URL : <http://localhost:7071/api/> (when debugging locally or any other URL of the Azure function you want to use)  
-    IOTEDGE_DEVICEID : The Name of your PC  
-    FACADE_AUTH_CODE : needed only if pointing to a deployed Azure Function, the code for authenticating and authorizing requests to it  
-
-1. Add a `local.settings.json` file to the project [LoRaKeysManagerFacade](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade) containing:
+1. <!-- markdown-link-check-enable --> Add a `local.settings.json` file to the project [LoRaKeysManagerFacade](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade) containing:
 
     ```json
     {
@@ -343,5 +341,3 @@ It is possible to run the LoRaEngine locally from Visual Studio in order to enab
 1. If you hit start in your VS solution, you will receive messages directly from your LoRa Basics™ Station. You will be able to debug directly from your computer.
 
 Happy Debugging!
-
-<!-- markdown-link-check-enable -->
