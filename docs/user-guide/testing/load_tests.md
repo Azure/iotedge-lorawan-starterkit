@@ -30,7 +30,7 @@ In addition to the issues, for which we will not provider more details here, we 
 
 ![image-20220124131449660](..\..\images\lt-message-latency.png)
 
-**Memory and CPU usage**: Memory and CPU usage was fairly stable, staying between 600 and 800MB of memory usage and around 40% CPU usage during the entire load test.
+**Memory and CPU usage**: Memory and CPU usage was fairly stable, staying between 100 and 130MB of memory usage for the LNS and negligible CPU usage during the entire load test.
 
 ![host-stats](..\..\images\lt-host-stats.png)
 
