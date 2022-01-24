@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Simulation
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.EventHubs;
     using Microsoft.Extensions.Logging;

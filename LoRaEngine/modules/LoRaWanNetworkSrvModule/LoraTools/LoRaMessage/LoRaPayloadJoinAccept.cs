@@ -92,6 +92,7 @@ namespace LoRaTools.LoRaMessage
 #pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
             var pt = new byte[inputMessage.Length - 1];
             Array.Copy(inputMessage, 1, pt, 0, pt.Length);
+            // Array.Reverse(pt);
             var decryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
             // We will copy back in the main inputMessage the content
             Array.Copy(decryptedPayload, 0, inputMessage, 1, decryptedPayload.Length);
@@ -108,6 +109,7 @@ namespace LoRaTools.LoRaMessage
             // This is the size of all mandatory elements of the message
             var cfList = new byte[inputMessage.Length - 17];
             Array.Copy(inputMessage, 12, cfList, 0, inputMessage.Length - 17);
+            Array.Reverse(cfList);
             CfList = new Memory<byte>(cfList);
             Mic = LoRaWan.Mic.Read(inputMessage.AsSpan(inputMessage.Length - 4, 4));
         }
