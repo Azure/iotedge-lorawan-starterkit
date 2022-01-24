@@ -28,13 +28,13 @@
 							"OptimizeForPerformance": {
 								"value": "false"
 							},
-              "mqttSettings__enabled": {
-                "value": "false"
-              },
-              "AuthenticationMode": {
-                "value": "CloudAndScope"
-              }
-			},
+							"mqttSettings__enabled": {
+								"value": "false"
+							},
+							"AuthenticationMode": {
+								"value": "CloudAndScope"
+							}
+						},
 						"status": "running",
 						"restartPolicy": "always"
 					}
@@ -43,37 +43,37 @@
 					"LoRaWanNetworkSrvModule": {
 						"type": "docker",
 						"settings": {
-							"image": "loraedge/lorawannetworksrvmodule:1.0.7",
-							"createOptions": "{\"ExposedPorts\": { \"1680/udp\": {}}, \"HostConfig\": {  \"PortBindings\": {\"1680/udp\": [  { \"HostPort\": \"1680\", \"HostIp\":\"172.17.0.1\" } ]}}}"
+							"image": "loraedge/lorawannetworksrvmodule:2.0.0-beta1",
+							"createOptions": "{\"ExposedPorts\": { \"5000/tcp\": {}}, \"HostConfig\": {  \"PortBindings\": {\"5000/tcp\": [  { \"HostPort\": \"5000\", \"HostIp\":\"172.17.0.1\" } ]}}}"
 						},
 						"version": "1.0",
 						"env": {
 							"ENABLE_GATEWAY": {
-							  "value": "false"
+								"value": "false"
 							},
 							"LOG_LEVEL": {
-							  "value": "2"
+								"value": "2"
 							}
 						},
 						"status": "running",
 						"restartPolicy": "always"
 					},
-					"LoRaWanPktFwdModule": {
+					"LoRaBasicsStationModule": {
 						"type": "docker",
 						"settings": {
-							"image": "loraedge/lorawanpktfwdmodule:1.0.7",
+							"image": "loraedge/lorabasicsstationmodule:2.0.0-beta1",
 							"createOptions": "  {\"HostConfig\": {\"NetworkMode\": \"host\", \"Privileged\": true },  \"NetworkingConfig\": {\"EndpointsConfig\": {\"host\": {} }}}"
 						},
 						"env": {
 							"RESET_PIN": {
-							  "value": "[$reset_pin]"
+								"value": "[$reset_pin]"
 							},
-							"REGION": {
-							  "value": "[$region]"
+							"TC_URI":{
+							  "value": "ws://172.17.0.1:5000"
 							}
 							[$spi_dev]
 							[$spi_speed]
-						  },
+						},
 						"version": "1.0",
 						"status": "running",
 						"restartPolicy": "always"
