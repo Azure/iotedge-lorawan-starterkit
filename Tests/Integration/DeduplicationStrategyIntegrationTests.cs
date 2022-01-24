@@ -18,6 +18,7 @@ namespace LoRaWan.Tests.Integration
     public class DeduplicationStrategyIntegrationTests : MessageProcessorMultipleGatewayBase
     {
         private readonly ITestOutputHelper testOutputHelper;
+        private readonly object functionLock = new object();
 
         public DeduplicationStrategyIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
@@ -36,17 +37,17 @@ namespace LoRaWan.Tests.Integration
             foreach (var api in new[] { LoRaDeviceApi, SecondLoRaDeviceApi })
             {
                 api.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
-                   .Returns((DevEui _, FunctionBundlerRequest _) =>
+                   .ReturnsAsync((DevEui _, FunctionBundlerRequest _) =>
                    {
-                       var isDup = messageProcessed;
-                       messageProcessed = true;
-                       return Task.FromResult(new FunctionBundlerResult()
+                       lock (this.functionLock)
                        {
-                           DeduplicationResult = new DeduplicationResult
+                           var isDup = messageProcessed;
+                           messageProcessed = true;
+                           return new FunctionBundlerResult()
                            {
-                               IsDuplicate = isDup
-                           }
-                       });
+                               DeduplicationResult = new DeduplicationResult { IsDuplicate = isDup }
+                           };
+                       }
                    });
 
                 api.Setup(x => x.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
@@ -153,9 +154,10 @@ namespace LoRaWan.Tests.Integration
 #pragma warning restore CA2000 // Dispose objects before losing scope
                         {
                             cache.Dispose();
+                            connectionManager.Dispose();
+                            loRaDevice.Dispose();
                             loraDeviceCache.Dispose();
                             loRaDeviceRegistry.Dispose();
-                            connectionManager.Dispose();
                         }));
             }
         }
