@@ -94,6 +94,7 @@ nav:
   - Tools:
     - tools/device-provisioning.md
     - tools/arduino-samples.md
+    - tools/certificate-generation.md
   - 'Decision Log':
     - adr/001_region_cn470_implementation.md
     - adr/002_lbs_configuration.md
