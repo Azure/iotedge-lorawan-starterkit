@@ -244,7 +244,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             InitializeConfigurationServiceMock();
             SetDataPathParameter();
 
-            SetupSocketReceiveAsync(@"{ msgtype: 'version', station: 'stationName' }");
+            SetupSocketReceiveAsync(@"{ msgtype: 'version', station: 'stationName', package: '1.0.0' }");
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;

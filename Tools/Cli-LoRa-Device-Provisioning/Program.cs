@@ -8,12 +8,14 @@ namespace LoRaWan.Tools.CLI
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
     using Azure;
     using CommandLine;
     using LoRaWan.Tools.CLI.CommandLineOptions;
     using LoRaWan.Tools.CLI.Helpers;
     using LoRaWan.Tools.CLI.Options;
+    using Microsoft.Azure.Devices.Common;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -33,7 +35,7 @@ namespace LoRaWan.Tools.CLI
                 Console.ResetColor();
                 Console.WriteLine();
 
-                var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions>(args)
+                var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions, UpgradeFirmwareOptions>(args)
                     .MapResult(
                         (ListOptions opts) => RunListAndReturnExitCode(opts),
                         (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
@@ -44,6 +46,7 @@ namespace LoRaWan.Tools.CLI
                         (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
                         (RotateCertificateOptions opts) => RunRotateCertificateAndReturnExitCodeAsync(opts),
                         (RevokeOptions opts) => RunRevokeAndReturnExitCodeAsync(opts),
+                        (UpgradeFirmwareOptions opts) => RunUpgradeFirmwareAndReturnExitCodeAsync(opts),
                         errs => Task.FromResult(false));
 
                 if (success)
@@ -359,6 +362,95 @@ namespace LoRaWan.Tools.CLI
                 var crcHash = BinaryPrimitives.ReadUInt32BigEndian(crc.ComputeHash(fileContent));
                 if (!await uploadSuccessActionAsync(crcHash, blobClient.Uri))
                     await CleanupAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await CleanupAsync();
+                throw;
+            }
+
+            Task CleanupAsync() => blobClient.DeleteIfExistsAsync();
+        }
+
+        private static async Task<bool> RunUpgradeFirmwareAndReturnExitCodeAsync(UpgradeFirmwareOptions opts)
+        {
+            if (!configurationHelper.ReadConfig())
+                return false;
+
+            if (!File.Exists(opts.FirmwareLocation))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Firmware upgrade file does not exist at the specified location.");
+                return false;
+            }
+
+            if (!File.Exists(opts.DigestLocation))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Digest of the firmware upgrade does not exist at the specified location.");
+                return false;
+            }
+
+            if (!File.Exists(opts.ChecksumLocation))
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "CRC32 checksum of the signature key does not exist at the specified location.");
+                return false;
+            }
+
+            // Upload firmware file to storage account
+            var success = await UploadFirmwareAsync(opts.FirmwareLocation, opts.StationEui, opts.Package, async (firmwareBlobUri) =>
+            {
+                var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
+
+                if (twin is null)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, "Device was not found in IoT Hub. Please create it first.");
+                    return false;
+                }
+
+                if (!uint.TryParse(File.ReadAllText(opts.ChecksumLocation, Encoding.UTF8), out var checksum))
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, $"Could not parse the key checksum from file {opts.ChecksumLocation}.");
+                    return false;
+                }
+
+                // Update station device twin
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareVersion] = opts.Package;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareUrl] = firmwareBlobUri;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = checksum;
+                twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = File.ReadAllText(opts.DigestLocation, Encoding.UTF8);
+
+                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
+            });
+
+            return success;
+        }
+
+        private static async Task<bool> UploadFirmwareAsync(string firmwareLocation, string stationEui, string package, Func<Uri, Task<bool>> uploadSuccessActionAsync)
+        {
+            var firmwareBlobName = $"{stationEui}-{package}";
+            var blobClient = configurationHelper.FirmwareStorageContainerClient.GetBlobClient(firmwareBlobName);
+            var fileContent = File.ReadAllBytes(firmwareLocation);
+
+            StatusConsole.WriteLogLine(MessageType.Info, $"Uploading firmware {firmwareBlobName} to storage account...");
+
+            try
+            {
+                _ = await blobClient.UploadAsync(new BinaryData(fileContent), overwrite: false);
+            }
+            catch (RequestFailedException ex)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, $"Uploading firmware failed with error: '{ex.Message}'.");
+                return false;
+            }
+
+            try
+            {
+                if (!await uploadSuccessActionAsync(blobClient.Uri))
+                {
+                    await CleanupAsync();
+                    return false;
+                }
+
                 return true;
             }
             catch (Exception)

@@ -190,8 +190,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:
-                    var stationVersion = LnsData.VersionMessageReader.Read(json);
-                    this.logger.LogInformation("Received 'version' message for station '{StationVersion}'.", stationVersion);
+                    var (version, package) = LnsData.VersionMessageReader.Read(json);
+                    this.logger.LogInformation("Received 'version' message for station '{StationVersion}' with package '{StationPackage}'.", version, package);
+                    await this.basicsStationConfigurationService.SetReportedPackageVersionAsync(stationEui, package, cancellationToken);
                     var routerConfigResponse = await this.basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
                     await socket.SendAsync(routerConfigResponse, cancellationToken);
                     break;

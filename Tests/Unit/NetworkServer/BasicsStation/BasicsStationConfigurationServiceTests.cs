@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 {
     using global::LoRaTools.Regions;
+    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
@@ -120,6 +121,62 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                       .Returns(deviceClientMock.Object);
         }
 
+        public class SetReportedPackageVersionAsync : BasicsStationConfigurationServiceTests
+        {
+            [Fact]
+            public async Task Success()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                const string package = "1.0.0";
+                SetupDeviceKeyLookup(primaryKey);
+                var deviceClientMock = new Mock<ILoRaDeviceClient>();
+                this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(this.devEui.ToString(), primaryKey))
+                                          .Returns(deviceClientMock.Object);
+
+                // act
+                await this.sut.SetReportedPackageVersionAsync(this.stationEui, package, CancellationToken.None);
+
+                // assert
+                Func<TwinCollection, bool> twinCondition = (t) =>
+                {
+                    var twinReader = new TwinCollectionReader(t, null);
+                    var reported = twinReader.SafeRead(TwinProperty.Package, string.Empty);
+                    return string.Equals(package, reported, StringComparison.OrdinalIgnoreCase);
+                };
+                deviceClientMock.Verify(c => c.UpdateReportedPropertiesAsync(It.Is<TwinCollection>(t => twinCondition(t)), It.IsAny<CancellationToken>()), Times.Once());
+            }
+
+            [Fact]
+            public async Task Does_Not_Update_With_Empty_Package()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                const string package = "";
+                SetupDeviceKeyLookup(primaryKey);
+                var deviceClientMock = new Mock<ILoRaDeviceClient>();
+                this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(this.devEui.ToString(), primaryKey))
+                                          .Returns(deviceClientMock.Object);
+
+                // act
+                await this.sut.SetReportedPackageVersionAsync(this.stationEui, package, CancellationToken.None);
+
+                // assert
+                deviceClientMock.Verify(c => c.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never());
+            }
+
+            [Fact]
+            public async Task When_Device_Key_Lookup_Is_Empty_Fails()
+            {
+                // arrange
+                const string package = "1.0.0";
+                SetupDeviceKeyLookup(null);
+
+                // act + assert
+                var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.SetReportedPackageVersionAsync(this.stationEui, package, CancellationToken.None));
+                Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, ex.ErrorCode);
+            }
+        }
         public class GetRegionAsync : BasicsStationConfigurationServiceTests
         {
             [Fact]
