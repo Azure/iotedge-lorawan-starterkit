@@ -137,8 +137,6 @@ namespace LoRaWan.Tests.Common
                 {
                     payload = StringToByteArray(data);
                 }
-
-                Array.Reverse(payload);
             }
 
             // 0 = uplink, 1 = downlink

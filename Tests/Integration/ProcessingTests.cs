@@ -235,11 +235,10 @@ namespace LoRaWan.Tests.Integration
             var data = new LoRaPayloadData(request.ResponseDownlink.Data);
             Assert.True(data.CheckMic(simulatedDevice.NwkSKey.Value));
             data.Serialize(simulatedDevice.NwkSKey.Value);
-            data.Frmpayload.Span.Reverse();
             var link = new LoRaTools.LinkCheckAnswer(data.Frmpayload.Span);
             Assert.NotNull(link);
-            Assert.Equal(1, (int)link.GwCnt);
-            Assert.Equal(15, (int)link.Margin);
+            Assert.Equal(1, link.GwCnt);
+            Assert.Equal(15, link.Margin);
             // Nothing should be sent to IoT Hub
             Assert.Null(loRaDeviceTelemetry);
 
@@ -312,8 +311,8 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(link);
             Assert.NotNull(eventProperties);
             Assert.Contains("LinkCheckCmd", eventProperties.Keys);
-            Assert.Equal(1, (int)link.GwCnt);
-            Assert.Equal(15, (int)link.Margin);
+            Assert.Equal(1, link.GwCnt);
+            Assert.Equal(15, link.Margin);
             // Nothing should be sent to IoT Hub
             Assert.NotNull(loRaDeviceTelemetry);
 
