@@ -307,3 +307,7 @@ Tools/Cli-LoRa-Device-Provisioning/settings\.local\.json
 
 #codecs
 **/codecs
+
+Tools/BasicStation-Certificates-Generation/ca
+Tools/BasicStation-Certificates-Generation/client
+Tools/BasicStation-Certificates-Generation/server
