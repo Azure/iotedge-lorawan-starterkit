@@ -94,7 +94,7 @@ List the devices in IoT Hub and show their device twin.
 Example:
 
 ```powershell
-dotnet run -- list --iothub-connection-string <connection-string>
+dotnet run -- list --iothub-connection-string <connection_string>
 ```
 
 The list verb supports the following parameters:
@@ -115,7 +115,7 @@ Id.
 Example:
 
 ```powershell
-dotnet run -- query --deveui 33CCC86800430010 --iothub-connection-string <connection-string>
+dotnet run -- query --deveui 33CCC86800430010 --iothub-connection-string <connection_string>
 ```
 
 The query verb supports the following parameters:
@@ -134,7 +134,7 @@ Verify an existing device in IoT Hub by it's DevEUI / Device Id.
 Example:
 
 ```powershell
-dotnet run -- verify --deveui 33CCC86800430010 --iothub-connection-string <connection-string>
+dotnet run -- verify --deveui 33CCC86800430010 --iothub-connection-string <connection_string>
 ```
 
 The verify verb supports the following parameters:
@@ -156,7 +156,7 @@ properly  configured and how many contain errors.
 Example:
 
 ```powershell
-dotnet run -- bulkverify --page 10 --iothub-connection-string <connection-string>
+dotnet run -- bulkverify --page 10 --iothub-connection-string <connection_string>
 ```
 
 The bulkverify verb supports the following parameters:
@@ -182,7 +182,7 @@ refer to the [Quick Start Guide](../quickstart.md#optional-device-properties).
 Example:
 
 ```powershell
-dotnet run -- add --type abp --deveui 33CCC86800430010 --decoder http://decodermodule/api/customdecoder --iothub-connection-string <connection-string>
+dotnet run -- add --type abp --deveui 33CCC86800430010 --decoder http://decodermodule/api/customdecoder --iothub-connection-string <connection_string>
 ```
 
 The add verb supports the following parameters:
@@ -236,7 +236,7 @@ refer to the [Quick Start Guide](../quickstart.md#optional-device-properties).
 Example:
 
 ```powershell
-dotnet run -- update --deveui 33CCC86800430010 --decoder null --iothub-connection-string <connection-string>
+dotnet run -- update --deveui 33CCC86800430010 --decoder null --iothub-connection-string <connection_string>
 ```
 
 The update verb supports the following parameters:
@@ -276,7 +276,7 @@ Remove an existing device from IoT Hub by it's DevEUI / Device Id.
 Example:
 
 ```powershell
-dotnet run -- remove --deveui 33CCC86800430010 --iothub-connection-string <connection-string>
+dotnet run -- remove --deveui 33CCC86800430010 --iothub-connection-string <connection_string>
 ```
 
 The query verb supports the following parameters:
@@ -304,8 +304,8 @@ Example:
     --firmware-location <firmware_file_path> 
     --digest-location <digest_file_path> 
     --checksum-location <checksum_file_path> 
-    --iothub-connection-string <iothub-connection-string> 
-    --storage-connection-string <storage-connection-string>
+    --iothub-connection-string <iothub_connection_string> 
+    --storage-connection-string <storage_connection_string>
 ```
 
 The upgrade-firmware verb accepts the following parameters:
