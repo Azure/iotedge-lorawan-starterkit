@@ -73,6 +73,7 @@ nav:
     - user-guide/documentation.md
     - user-guide/observability.md
     - 'Basic Station configuration':
+      - user-guide/pkt-fwd-to-station.md
       - user-guide/station-device-provisioning.md
       - user-guide/station-authentication-modes.md
       - user-guide/station-module-configuration.md
@@ -81,6 +82,7 @@ nav:
       - user-guide/as923.md
     - Testing:
       - user-guide/testing/e2e_tests.md
+      - user-guide/testing/integration_tests.md
       - user-guide/testing/load_tests.md
   - 'Reference':
     - user-guide/architecture.md
@@ -97,6 +99,8 @@ nav:
   - Tools:
     - tools/device-provisioning.md
     - tools/arduino-samples.md
+    - tools/certificate-generation.md
+    - tools/cups-firmware-file-preparation.md
   - 'Decision Log':
     - adr/001_region_cn470_implementation.md
     - adr/002_lbs_configuration.md
