@@ -116,38 +116,26 @@ namespace LoRaTools.LoRaMessage
 
         public byte[] Serialize(AppKey appKey)
         {
-            Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
-            return PerformEncryption(appKey).Prepend((byte)MHdr).ToArray();
-        }
-
-        private byte[] PerformEncryption(AppKey key)
-        {
-            var mic = Mic ?? throw new InvalidOperationException("MIC must not be null.");
+            Mic mic;
+            Mic = mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
 
             var channelFrequencies = !CfList.Span.IsEmpty ? CfList.ToArray() : Array.Empty<byte>();
 
             var buffer = new byte[AppNonce.Size + NetId.Size + DevAddr.Size + DlSettings.Length +
                                   sizeof(RxDelay) + channelFrequencies.Length + LoRaWan.Mic.Size];
 
-            static Span<byte> Copy(ReadOnlyMemory<byte> source, Span<byte> target)
-            {
-                source.Span.CopyTo(target);
-                target = target[source.Length..];
-                return target;
-            }
-
             var pt = buffer.AsSpan();
             pt = AppNonce.Write(pt);
             pt = NetId.Write(pt);
             pt = DevAddr.Write(pt);
-            pt = Copy(DlSettings, pt);
+            pt = pt.Write(DlSettings.Span);
             pt = RxDelay.Write(pt);
-            pt = Copy(channelFrequencies, pt);
+            pt = pt.Write(channelFrequencies);
             _ = mic.Write(pt);
 
             using var aes = Aes.Create("AesManaged");
             var rawKey = new byte[AppKey.Size];
-            _ = key.Write(rawKey);
+            _ = appKey.Write(rawKey);
             aes.Key = rawKey;
             aes.IV = new byte[16];
 #pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
@@ -156,7 +144,10 @@ namespace LoRaTools.LoRaMessage
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
             aes.Padding = PaddingMode.None;
 
-            return aes.CreateDecryptor().TransformFinalBlock(buffer, 0, buffer.Length);
+            return aes.CreateDecryptor()
+                      .TransformFinalBlock(buffer, 0, buffer.Length)
+                      .Prepend((byte)MHdr)
+                      .ToArray();
         }
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
