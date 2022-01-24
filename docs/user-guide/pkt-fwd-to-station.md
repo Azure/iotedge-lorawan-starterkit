@@ -8,7 +8,7 @@ Azure IoT Edge LoRaWAN Starter Kit v2.0.0 support the ability to de-couple the "
 
 Because of this, any specific configuration of the concentrator is now pushed from a new IoT Hub Device representing the "concentrator" device.
 
-Due to the decouplement, more secure authentication modes are also supported for the connection between the concentrator and the LNS.
+Due to the decoupling, more secure authentication modes are also supported for the connection between the concentrator and the LNS.
 
 The concept of provisioning a IoT Hub Device representing the concentrator is explained in the [concentrator provisioning](station-device-provisioning) documentation page.
 
@@ -20,7 +20,7 @@ After the creation of the concentrator device twin in IoT Hub, it will be possib
 
 ### Pre-built docker module migration
 
-In case you are using the pre-built [Packet Forwarder module](https://github.com/Azure/iotedge-lorawan-starterkit/blob/116e353bd61133acde13dd9ed6f96ca7156544d1/LoRaEngine/modules/LoRaWanPktFwdModule/start_pktfwd.sh), have a look at the following table for migrating the environment variables to the new [Basic Station module configuration][module-configuration] ones:
+In case you were using the pre-built [Packet Forwarder module](https://github.com/Azure/iotedge-lorawan-starterkit/blob/116e353bd61133acde13dd9ed6f96ca7156544d1/LoRaEngine/modules/LoRaWanPktFwdModule/start_pktfwd.sh), have a look at the following table for migrating the environment variables to the new [Basic Station module configuration][module-configuration] ones:
 
 | Packet Forwarder variable name | Basics Station variable name | Comment |
 | -----------------------------  | ---------------------------- | |
