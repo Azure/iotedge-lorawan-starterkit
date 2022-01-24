@@ -242,7 +242,7 @@ namespace LoRaWan.Tests.Common
             var devAddr = payload.DevAddr;
 
             // if mic check failed, return false
-            if (!payload.CheckMic(LoRaDevice.AppKey.Value))
+            if (payload.Mic != Mic.ComputeForJoinAccept(LoRaDevice.AppKey.Value, payload.MHdr, payload.AppNonce, payload.NetId, payload.DevAddr, payload.DlSettings, payload.RxDelay, payload.CfList))
             {
                 return false;
             }

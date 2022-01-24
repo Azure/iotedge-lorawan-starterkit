@@ -29,10 +29,7 @@ namespace LoRaTools.LoRaMessage
             Mic = mic;
         }
 
-        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null) =>
-            throw new NotImplementedException();
-
-        public override bool CheckMic(AppKey key) =>
+        public bool CheckMic(AppKey key) =>
             Mic == LoRaWan.Mic.ComputeForJoinRequest(key, MHdr, AppEui, DevEUI, DevNonce);
 
     }

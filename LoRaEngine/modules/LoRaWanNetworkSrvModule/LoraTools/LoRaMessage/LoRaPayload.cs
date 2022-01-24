@@ -27,19 +27,6 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public DevAddr DevAddr { get; set; }
 
-        /// <summary>
-        /// Method to check a Mic.
-        /// </summary>
-        /// <param name="key">The Network Secret Key.</param>
-        /// <param name="server32BitFcnt">Explicit 32bit count to use for calculating the block.</param>
-        public abstract bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null);
-
-        /// <summary>
-        /// Method to check a Mic.
-        /// </summary>
-        /// <param name="key">The App Key.</param>
-        public abstract bool CheckMic(AppKey key);
-
         public virtual bool RequiresConfirmation => false;
     }
 }
