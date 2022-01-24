@@ -134,10 +134,10 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Connected_Factory_Load_Test_Scenario()
         {
-            const int numberOfFactories = 2;
+            const int numberOfFactories = 1;
             const double joinsPerSecond = 1.5;
-            const double messagesPerSecond = 5;
-            const int numberOfLoops = 1;
+            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(1.5, old => old + 2);
+            const int numberOfLoops = 5;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
 
             // The total number of concentratos can be configured via the test configuration. It will de distributed evenly among factories;
@@ -182,9 +182,10 @@ namespace LoRaWan.Tests.Simulation
             }
 
             // Send messages
-            for (var i = 0; i < numberOfLoops; ++i)
+            foreach (var (index, messageRate) in messagesPerSecond.Take(numberOfLoops).Index())
             {
-                await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices, messagesPerSecond)
+                this.logger.LogInformation("Running cycle {Cycle} of {TotalNumberOfCycles}.", index + 1, numberOfLoops);
+                await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices, messageRate)
                                    select SendUpstreamAsync(taskAndOffset.Element, taskAndOffset.Offset));
             }
 
@@ -351,7 +352,7 @@ namespace LoRaWan.Tests.Simulation
             };
 
         private WaitableLoRaRequest CreateConfirmedUpstreamMessage(SimulatedDevice simulatedDevice) =>
-            WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(this.uniqueMessageFragment));
+            WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(this.uniqueMessageFragment + Guid.NewGuid().ToString()));
 
         private static Task WaitForResultsInIotHubAsync() => Task.Delay(TimeSpan.FromSeconds(10));
 
