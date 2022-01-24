@@ -6,7 +6,6 @@ namespace LoRaWan.Tools.CLI.Options
     using System;
     using System.Collections.Generic;
     using CommandLine;
-    using LoRaWan.Tools.CLI.CommandLineOptions;
 
     [Verb("add", HelpText = "Add a new device to IoT Hub.")]
     public class AddOptions : OptionsBase

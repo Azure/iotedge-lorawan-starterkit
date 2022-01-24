@@ -4,7 +4,6 @@
 namespace LoRaWan.Tools.CLI.Options
 {
     using CommandLine;
-    using LoRaWan.Tools.CLI.CommandLineOptions;
 
     [Verb("query", HelpText = "Query a device twin.")]
     public class QueryOptions : OptionsBase

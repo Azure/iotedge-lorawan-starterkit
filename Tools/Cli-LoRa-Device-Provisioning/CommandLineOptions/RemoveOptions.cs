@@ -4,7 +4,6 @@
 namespace LoRaWan.Tools.CLI.Options
 {
     using CommandLine;
-    using LoRaWan.Tools.CLI.CommandLineOptions;
 
     [Verb("remove", HelpText = "Remove an existing device from IoT Hub.")]
     public class RemoveOptions : OptionsBase

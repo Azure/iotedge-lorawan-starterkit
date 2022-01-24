@@ -4,7 +4,6 @@
 namespace LoRaWan.Tools.CLI.Options
 {
     using CommandLine;
-    using LoRaWan.Tools.CLI.CommandLineOptions;
 
     [Verb("bulkverify", HelpText = "Verify all devices in IoT Hub.")]
     public class BulkVerifyOptions : OptionsBase

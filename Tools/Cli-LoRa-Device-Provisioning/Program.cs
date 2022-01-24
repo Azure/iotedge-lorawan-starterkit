@@ -12,7 +12,6 @@ namespace LoRaWan.Tools.CLI
     using System.Threading.Tasks;
     using Azure;
     using CommandLine;
-    using LoRaWan.Tools.CLI.CommandLineOptions;
     using LoRaWan.Tools.CLI.Helpers;
     using LoRaWan.Tools.CLI.Options;
     using Newtonsoft.Json;
