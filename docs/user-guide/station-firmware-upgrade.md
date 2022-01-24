@@ -1,18 +1,20 @@
-# Firmware upgrade
+# Firmware upgrade with CUPS
 
-The Starterkit offers the functionality of performing a firmware upgrade of the
-Basics Station. This document explains which steps are required to execute such
-an upgrade.
+The Azure IoT Edge LoRaWAN Starter Kit offers the functionality of performing a
+firmware upgrade of the Basics Station. This document explains which steps are
+required to execute such upgrade.
 
 1. When provisioning a concentrator device that will require future firmware
-   upgrades, you will need to generate a signature key and store it on the
-   device and in a centralized repository of your choice. You will also need to
-   generate a CRC32 checksum of the key and a digest of your firmware upgrade
-   executable. You can use the [CUPS Protocol - Firmware Upgrade
-   Preparation][cups-firmware-upgrade] tool which generates all these values,
-   given a Station EUI and a firmware upgrade file.
+   upgrades, you will need to generate a *signature key* and store it on the
+   device and in a centralized repository of your choice.  
+   During the update process, CUPS Protocol is using the CRC32 checksum of
+   the signature key on the device to compare the digest of the firmware
+   upgrade executable generated with such key.  
+   You can use the
+   [CUPS Protocol - Firmware Upgrade Preparation](../tools/cups-firmware-file-preparation.md)
+   tool to generate all needed files.
 
-1. Use LoRa Device Provisioning CLI tool to trigger the upgrade.
+1. Use LoRa Device Provisioning CLI tool to upload the upgrade files in the cloud.
 
    ```powershell
    dotnet .\Tools\Cli-LoRa-Device-Provisioning\bin\Release\net6.0\loradeviceprovisioning.dll upgrade-firmware --stationeui <station_eui> --package <package_version> --firmware-location <firmware_file_path> --digest-location <digest_file_path> --checksum-location <checksum_file_path>
@@ -28,7 +30,7 @@ an upgrade.
    - `checksum-location` - local path of the file containing the CRC32 checksum
      of the key used to generate the digest
 
-   The LoRa Device Provisioning CLI tool will trigger the upgrade by uploading
+   The LoRa Device Provisioning CLI tool will save the upgrade data by uploading
    the firmware to a storage account and updating the device twin of the
    concentrator with required data.
 
@@ -36,11 +38,10 @@ an upgrade.
    refer to the [LoRa Device Provisioning](../tools/device-provisioning.md#upgrade-firmware) tool
    documentation.
 
-1. During the next startup of the system, the Station will execute the upgrade
-   after receiving the updated information from the Network Server. A system
-   downtime is to be expected in order for the upgrade to complete. After the
-   upgrade is finished, the current version of the Basics Station can be found
-   in the desired reported properties of the concentrator twin in IoT Hub.
-
-[cups-firmware-upgrade]:
-    https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Tools/Cups-Firmware-Upgrade
+1. During the next reconnection of the Basics Station to the CUPS endpoint,
+   it will execute the upgrade after receiving the updated information from the
+   Network Server.  
+   A system downtime is to be expected in order for the upgrade to complete.  
+   After the upgrade is finished, and the Basics Station is reconnecting to the
+   LNS Data endpoint, the updated version of the Basics Station will be reported
+   in the properties of the concentrator twin in IoT Hub.
