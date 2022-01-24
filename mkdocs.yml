@@ -48,6 +48,8 @@ markdown_extensions:
   - meta
   - toc
   - mdx_truly_sane_lists
+  - attr_list
+  - md_in_html
 
 plugins:
   - search
@@ -83,6 +85,7 @@ nav:
   - 'Reference':
     - user-guide/architecture.md
     - user-guide/message-flows.md
+    - user-guide/deployment-scenarios.md
     - user-guide/caching.md
     - user-guide/ci-setup.md
   - 'Samples':
