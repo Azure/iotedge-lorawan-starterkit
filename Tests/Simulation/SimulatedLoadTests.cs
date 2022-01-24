@@ -341,7 +341,7 @@ namespace LoRaWan.Tests.Simulation
             };
 
         private WaitableLoRaRequest CreateConfirmedUpstreamMessage(SimulatedDevice simulatedDevice) =>
-            WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(this.uniqueMessageFragment + Guid.NewGuid().ToString()));
+            WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(this.uniqueMessageFragment + Guid.NewGuid()));
 
         private static Task WaitForResultsInIotHubAsync() => Task.Delay(TimeSpan.FromSeconds(10));
 
