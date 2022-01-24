@@ -1366,7 +1366,7 @@
 </code></pre></div>
 <p>You should see the result as JSON string.</p>
 <p><img alt="Decoder Sample - Debugging on localhost" src="../../../images/decodersample-debugging.png" /></p>
-<p>When running the solution in a container, the <a href="https://docs.microsoft.com/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-3.1">Kestrel webserver</a> from .NET Core uses the HTTP default port 80 of the container and does not need to bind it to a port on the host machine as Docker allows for container-to-container communication. IoT Edge automatically creates the required <a href="https://docs.docker.com/network/bridge/">Docker Network Bridge</a>.</p>
+<p>When running the solution in a container, the <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-6.0">Kestrel webserver</a> from .NET Core uses the HTTP default port 80 of the container and does not need to bind it to a port on the host machine as Docker allows for container-to-container communication. IoT Edge automatically creates the required <a href="https://docs.docker.com/network/bridge/">Docker Network Bridge</a>.</p>
 <h2 id="preparing-and-testing-the-docker-image">Preparing and Testing the Docker Image</h2>
 <p>Create a docker image from your finished solution based on the target architecture and host it in an <a href="https://azure.microsoft.com/services/container-registry/">Azure Container Registry</a>, on DockerHub or in any other container registry of your choice.</p>
 <p>We are using the <a href="https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge">Azure IoT Edge for Visual Studio Code</a> extension to build and push the Docker image.</p>
@@ -1412,11 +1412,11 @@ http://<decoder module name>/api/<DecoderName>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-21T14:15:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-21</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T09:38:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-21T14:15:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-21</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T09:38:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
     
   </small>

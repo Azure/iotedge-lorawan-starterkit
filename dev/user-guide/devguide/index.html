@@ -1573,7 +1573,7 @@
 <h2 id="directory-structure">Directory Structure</h2>
 <p>The code is organized into three sections:</p>
 <ul>
-<li><strong>LoRaEngine</strong> - a .NET core 3.1 solution with the following folders:<ul>
+<li><strong>LoRaEngine</strong> - a .NET 6 solution with the following folders:<ul>
 <li><strong>modules</strong> - Azure IoT Edge modules.</li>
 <li><strong>LoraKeysManagerFacade</strong> - An Azure function handling device provisioning
 (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.</li>
@@ -1583,7 +1583,7 @@
 <li><strong>Arduino</strong> - Examples and references for LoRa Arduino based devices.</li>
 <li><strong>Template</strong> - Contain code useful for the "deploy to Azure button"</li>
 <li><strong>Tools</strong> - Contains tools that support the LoRaWan Gateway project<ul>
-<li><strong>Cli-LoRa-Device-Provisioning</strong> - .NET Core 2.1 Command Line tool that
+<li><strong>Cli-LoRa-Device-Provisioning</strong> - .NET 6 Command Line tool that
 allows to list, query, verify, insert, edit, update and delete LoRa leaf
 device configurations into IoT Hub</li>
 </ul>
@@ -1592,7 +1592,7 @@ device configurations into IoT Hub</li>
 <li><strong>Docs</strong> - Additional modules, pictures and documentations</li>
 </ul>
 <h2 id="loraengine">LoRaEngine</h2>
-<p>A <strong>.NET Core 3.1</strong> solution with the following projects:</p>
+<p>A <strong>.NET 6</strong> solution with the following projects:</p>
 <ul>
 <li><strong>modules</strong> - Azure IoT Edge modules.<ul>
 <li><strong>LoRaBasicsStationModule</strong> packages the Basics Station into an IoT Edge compatible docker container. See <a href="https://github.com/lorabasics/basicstation">https://github.com/lorabasics/basicstation</a>. If you are using a RAK833-USB you need to build your own Basics Station docker image starting from the fork <a href="https://github.com/danigian/basicstation">at this link</a></li>
@@ -1661,7 +1661,7 @@ device configurations into IoT Hub</li>
 <li>Open the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">Azure function folder</a> with Visual Studio Code with the <a href="https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions">Azure Functions Plugin</a> installed. Now run the command <code>Azure Functions: Deploy to function app...</code> and provide the name of the Azure function to deploy to. If prompted, select  environment <code>C#</code> and  version <code>V3</code>.</li>
 </ul>
 <ul>
-<li>If you want to just deploy the function from Visual Studio Code with the root project folder <code>iotedge-lorawan-starterkit</code> open (of which the Function is a subfolder <code>/LoRaEngine/LoraKeysManagerFacade</code>), you need to run the Visual Studio Command <code>Azure Functions: Deploy to function app...</code> and then <strong>manually</strong> choose the folder <code>LoraKeysManagerFacade/bin/Release/netcoreapp3.1/publish</code>. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.</li>
+<li>If you want to just deploy the function from Visual Studio Code with the root project folder <code>iotedge-lorawan-starterkit</code> open (of which the Function is a subfolder <code>/LoRaEngine/LoraKeysManagerFacade</code>), you need to run the Visual Studio Command <code>Azure Functions: Deploy to function app...</code> and then <strong>manually</strong> choose the folder <code>LoraKeysManagerFacade/bin/Release/net6.0/publish</code>. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.</li>
 </ul>
 <h4 id="if-you-choose-to-create-an-empty-azure-function-pointing-to-our-zipped-code">If you choose to create an empty Azure Function pointing to our Zipped code</h4>
 <ul>
@@ -1885,11 +1885,11 @@ TX ACK RECEIVED
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-21T14:15:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-21</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T09:38:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-21T14:15:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-21</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T09:38:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
       
     
   </small>
