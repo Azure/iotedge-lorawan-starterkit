@@ -18,7 +18,6 @@ namespace LoRaWan.Tests.Common
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using Microsoft.Extensions.Logging;
-    using Xunit;
 
     /// <summary>
     /// Defines a simulated device.
@@ -32,6 +31,8 @@ namespace LoRaWan.Tests.Common
 
         private readonly ConcurrentBag<string> receivedMessages = new ConcurrentBag<string>();
         private readonly ILogger logger;
+
+        public IReadOnlyCollection<string> ReceivedMessages => this.receivedMessages;
 
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
@@ -108,7 +109,11 @@ namespace LoRaWan.Tests.Common
             }
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
-            return new LoRaPayloadJoinRequest(LoRaDevice.AppEui.Value, DevEui.Parse(LoRaDevice.DeviceID), DevNonce, (appkey ?? LoRaDevice.AppKey).Value);
+            var devEui = DevEui.Parse(LoRaDevice.DeviceID);
+            var joinEui = LoRaDevice.AppEui.Value;
+            var mic = Mic.ComputeForJoinRequest((appkey ?? LoRaDevice.AppKey).Value,
+                                                new MacHeader(MacMessageType.JoinRequest), joinEui, devEui, DevNonce);
+            return new LoRaPayloadJoinRequest(joinEui, devEui, DevNonce, mic);
         }
 
 
@@ -237,7 +242,7 @@ namespace LoRaWan.Tests.Common
             var devAddr = payload.DevAddr;
 
             // if mic check failed, return false
-            if (!payload.CheckMic(LoRaDevice.AppKey.Value))
+            if (payload.Mic != Mic.ComputeForJoinAccept(LoRaDevice.AppKey.Value, payload.MHdr, payload.AppNonce, payload.NetId, payload.DevAddr, payload.DlSettings, payload.RxDelay, payload.CfList))
             {
                 return false;
             }
@@ -255,11 +260,6 @@ namespace LoRaWan.Tests.Common
         public Task SendDataMessageAsync(LoRaRequest loRaRequest) =>
             Task.WhenAll(from basicsStation in this.simulatedBasicsStations
                          select basicsStation.SendDataMessageAsync(loRaRequest, CancellationToken.None));
-
-        public void EnsureMessageResponsesAreReceived(int expectedCout)
-        {
-            Assert.Equal(expectedCout, this.receivedMessages.Count);
-        }
 
         // Performs join
         public async Task<bool> JoinAsync(TimeSpan? timeout = null)

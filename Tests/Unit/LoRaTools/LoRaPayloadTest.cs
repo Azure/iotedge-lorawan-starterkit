@@ -3,7 +3,6 @@
 
 namespace LoRaWan.Tests.Unit.LoRaTools.LoRaMessage
 {
-    using global::LoRaTools.LoRaMessage;
     using LoRaWan.Tests.Common;
     using Xunit;
 
@@ -28,7 +27,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.LoRaMessage
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
             var payload = simulatedDevice.CreateJoinRequest();
             using var loraRequest = WaitableLoRaRequest.Create(payload);
-            loraRequest.SetPayload(new LoRaPayloadJoinRequest());
+            loraRequest.SetPayload(payload);
 
             // act/assert
             Assert.False(loraRequest.Payload.RequiresConfirmation);

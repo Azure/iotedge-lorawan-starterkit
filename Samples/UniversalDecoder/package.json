@@ -18,12 +18,12 @@
         "express-validator": "^6.14.0",
         "fs-extra": "^10.0.0",
         "glob": "^7.1.7",
-        "pino": "^7.6.3",
-        "pino-pretty": "^7.3.0"
+        "pino": "^7.6.4",
+        "pino-pretty": "^7.5.0"
     },
     "devDependencies": {
         "jest": "^27.4.7",
-        "supertest": "^6.2.1"
+        "supertest": "^6.2.2"
     },
     "jest": {
         "testEnvironment": "node",
