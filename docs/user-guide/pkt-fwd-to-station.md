@@ -10,9 +10,9 @@ Because of this, any specific configuration of the concentrator is now pushed fr
 
 Due to the decoupling, more secure authentication modes are also supported for the connection between the concentrator and the LNS.
 
-The concept of provisioning a IoT Hub Device representing the concentrator is explained in the [concentrator provisioning](station-device-provisioning) documentation page.
+The concept of provisioning a IoT Hub Device representing the concentrator is explained in the [concentrator provisioning](station-device-provisioning.md) documentation page.
 
-The supported authentication modes are explained in the [authentication modes](station-authentication-modes) documentation page.
+The supported authentication modes are explained in the [authentication modes](station-authentication-modes.md) documentation page.
 
 ## 2. Connection of the concentrator to the LoRaWan Network Server
 
