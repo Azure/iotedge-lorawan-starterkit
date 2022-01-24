@@ -15,8 +15,6 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadJoinAccept : LoRaPayload
     {
-        private byte[] rawMessage;
-
         /// <summary>
         /// Gets or sets server Nonce aka JoinNonce.
         /// </summary>
@@ -49,7 +47,7 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept(NetId netId, DevAddr devAddr, AppNonce appNonce, byte[] dlSettings, RxDelay rxDelay, byte[] cfList)
         {
             var cfListLength = cfList == null ? 0 : cfList.Length;
-            var rawMessage = this.rawMessage = new byte[1 + 12 + cfListLength];
+            var rawMessage = new byte[1 + 12 + cfListLength];
             MHdr = new MacHeader(MacMessageType.JoinAccept);
             rawMessage[0] = (byte)MHdr;
             AppNonce = appNonce;
@@ -135,8 +133,7 @@ namespace LoRaTools.LoRaMessage
         public byte[] Serialize(AppKey appKey)
         {
             Mic = LoRaWan.Mic.ComputeForJoinAccept(appKey, MHdr, AppNonce, NetId, DevAddr, DlSettings, RxDelay, CfList);
-            _ = PerformEncryption(appKey);
-            return this.rawMessage.Prepend((byte)MHdr).ToArray();
+            return PerformEncryption(appKey).Prepend((byte)MHdr).ToArray();
         }
 
         private byte[] PerformEncryption(AppKey key)
@@ -175,13 +172,7 @@ namespace LoRaTools.LoRaMessage
 #pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
             aes.Padding = PaddingMode.None;
 
-            ICryptoTransform cipher;
-
-            cipher = aes.CreateDecryptor();
-            var encryptedPayload = cipher.TransformFinalBlock(buffer, 0, buffer.Length);
-            this.rawMessage = new byte[encryptedPayload.Length];
-            Array.Copy(encryptedPayload, 0, this.rawMessage, 0, encryptedPayload.Length);
-            return encryptedPayload;
+            return aes.CreateDecryptor().TransformFinalBlock(buffer, 0, buffer.Length);
         }
 
         public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
