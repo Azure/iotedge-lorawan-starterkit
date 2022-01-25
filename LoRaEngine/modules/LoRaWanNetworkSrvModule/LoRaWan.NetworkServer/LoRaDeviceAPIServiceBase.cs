@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.IO;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
