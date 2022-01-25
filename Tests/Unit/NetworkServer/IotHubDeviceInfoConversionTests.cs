@@ -12,7 +12,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     public sealed class IotHubDeviceInfoConversionTests
     {
         [Fact]
-        public void Serialization_And_Deserialization_Preserves_Information_Using_JsonNet()
+        public void Can_Be_Json_Deserialized_As_IoTHubDeviceInfo_From_NetworkServer()
         {
             // arrange
             var original = new IoTHubDeviceInfo { DevAddr = new DevAddr(123), DevEUI = new DevEui(234), PrimaryKey = "someprimarykey" };
