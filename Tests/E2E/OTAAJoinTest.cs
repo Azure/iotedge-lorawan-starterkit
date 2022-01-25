@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.E2E
 
             var twinBeforeJoin = await TestFixtureCi.GetTwinAsync(device.DeviceID);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device2_OTAA;
             LogTestStart(device);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -117,10 +117,10 @@ namespace LoRaWan.Tests.E2E
         {
             var device = TestFixtureCi.Device3_OTAA;
             LogTestStart(device);
-            var appKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+            var appKeyToUse = AppKey.Parse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
             Assert.NotEqual(appKeyToUse, device.AppKey);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, appKeyToUse);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -142,8 +142,8 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device13_OTAA;
             LogTestStart(device);
 
-            var appEUIToUse = "FF7A00000000FCE3";
-            Assert.NotEqual(appEUIToUse, device.AppEUI);
+            var appEUIToUse = new JoinEui(0xFF7A00000000FCE3);
+            Assert.NotEqual(appEUIToUse, device.AppEui);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, appEUIToUse);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
@@ -176,7 +176,7 @@ namespace LoRaWan.Tests.E2E
         private async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(TestDeviceInfo device)
         {
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -189,7 +189,7 @@ namespace LoRaWan.Tests.E2E
 
             if (device.IsMultiGw)
             {
-                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DeviceID);
+                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);
             }
 
             // Sends 1x unconfirmed messages
@@ -216,7 +216,7 @@ namespace LoRaWan.Tests.E2E
             // Ensure device payload is available
             // Data: {"value": 51}
             var expectedPayload = $"{{\"value\":{msg}}}";
-            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -233,9 +233,9 @@ namespace LoRaWan.Tests.E2E
 
             // Checking than the communication occurs on DR 4 and RX2 as part of preferred windows RX2 and custom RX2 DR
             await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), ArduinoDevice.SerialLogs);
-            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"DataRateRx1\":3", StringComparison.Ordinal), null);
             // this test has a custom datarate for RX 2 of 3
-            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"DataRateRx2\":3", StringComparison.Ordinal), null);
+            const string logMessage2 = "\"Rx2\":{\"DataRate\":3";
+            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains(logMessage2, StringComparison.Ordinal), new SearchLogOptions(logMessage2));
 
 
             // 0000000000000004: decoding with: DecoderValueSensor port: 8
@@ -247,13 +247,13 @@ namespace LoRaWan.Tests.E2E
             // Ensure device payload is available
             // Data: {"value": 51}
             expectedPayload = $"{{\"value\":{msg}}}";
-            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             // rejoin
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
             var joinSucceeded2 = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);

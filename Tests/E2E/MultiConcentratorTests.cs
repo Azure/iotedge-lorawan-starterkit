@@ -49,7 +49,7 @@ namespace LoRaWan.Tests.E2E
                 { "RADIODEV", TestFixture.Configuration.RadioDev }
             }, out this.temporaryDirectoryName);
             var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1);
+                (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1, new SearchLogOptions(TestFixture.Configuration.DefaultBasicStationEui));
             this.initializationSucceeded = log.Found;
         }
 
@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.E2E
             LogTestStart(device);
 
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -70,7 +70,7 @@ namespace LoRaWan.Tests.E2E
             Assert.True(joinSucceeded, "Join failed");
 
             var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1);
+                (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(this.expectedLog));
             Assert.NotNull(droppedLog.MatchedEvent);
 
             // wait 1 second after joined
@@ -93,10 +93,10 @@ namespace LoRaWan.Tests.E2E
 
                 // 0000000000000031: message '{"value": 101}' sent to hub
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
                 droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1);
+                    (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(this.expectedLog));
                 Assert.NotNull(droppedLog.MatchedEvent);
 
                 TestFixtureCi.ClearLogs();

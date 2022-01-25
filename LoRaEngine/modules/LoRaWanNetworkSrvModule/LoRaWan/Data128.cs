@@ -39,8 +39,8 @@ namespace LoRaWan
 
         public static Data128 Read(ReadOnlySpan<byte> buffer)
         {
-            var lo = BinaryPrimitives.ReadUInt64BigEndian(buffer);
-            var hi = BinaryPrimitives.ReadUInt64BigEndian(buffer[8..]);
+            var hi = BinaryPrimitives.ReadUInt64BigEndian(buffer);
+            var lo = BinaryPrimitives.ReadUInt64BigEndian(buffer[8..]);
             return new Data128(hi, lo);
         }
 

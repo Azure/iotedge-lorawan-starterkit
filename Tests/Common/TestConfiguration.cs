@@ -4,6 +4,8 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Collections.Generic;
+    using System.Text.Json;
     using Microsoft.Extensions.Configuration;
 
     public class TestConfiguration
@@ -36,9 +38,6 @@ namespace LoRaWan.Tests.Common
         public string LeafDeviceSerialPort { get; set; } = "/dev/ttyACM";
 
         public string LeafDeviceGatewayID { get; set; }
-
-        // IP of the LoRaWanNetworkSrvModule
-        public string NetworkServerIP { get; set; }
 
         // Device prefix to be used
         public string DevicePrefix { get; set; }
@@ -100,5 +99,25 @@ namespace LoRaWan.Tests.Common
         public string ClientThumbprint { get; set; } //i.e. 4a0639c9c67221919fdb9618fa6fa0680259eaf2 (SHA1 thumbprint of cups.crt)
 
         public string ClientBundleCrc { get; set; } //i.e. 4004975634 (CRC32 of .bundle file)
+
+        public string CupsSigKeyChecksum { get; set; } //the checksum of the key used for generating the digest of the upgrade file
+
+        public string CupsFwDigest { get; set; } //a base 64 encoded digest of the upgrade file
+
+        public string CupsBasicStationVersion { get; set; } //i.e. 2.0.5(corecell/std)
+
+        public string CupsBasicStationPackage { get; set; } //i.e. 1.0.0-e2e
+
+        public Uri CupsFwUrl { get; set; } //url of the blob containing the desired fw update for cups test
+
+        public string LoadTestLnsEndpointsString
+        {
+            get => JsonSerializer.Serialize(LnsEndpointsForSimulator);
+            set => LnsEndpointsForSimulator = JsonSerializer.Deserialize<List<Uri>>(value);
+        }
+
+        public IReadOnlyList<Uri> LnsEndpointsForSimulator { get; set; }
+
+        public int NumberOfLoadTestDevices { get; set; } = 10;
     }
 }

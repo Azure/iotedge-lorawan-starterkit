@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.E2E
             LogTestStart(device);
 
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -67,7 +67,8 @@ namespace LoRaWan.Tests.E2E
             Assert.True(joinSucceeded, "Join failed");
 
             // find the gateway that accepted the join
-            var joinAccept = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("JoinAccept", StringComparison.OrdinalIgnoreCase) != -1);
+            const string expectedLog = "JoinAccept";
+            var joinAccept = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(expectedLog, StringComparison.OrdinalIgnoreCase) != -1, new SearchLogOptions(expectedLog));
             Assert.NotNull(joinAccept);
             Assert.NotNull(joinAccept.MatchedEvent);
 
@@ -136,9 +137,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions(c2dLogMessage)
                     {
-                        Description = c2dLogMessage,
                         MaxAttempts = 1
                     });
 
@@ -187,7 +187,7 @@ namespace LoRaWan.Tests.E2E
             var device = TestFixtureCi.Device10_OTAA;
             LogTestStart(device);
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -253,9 +253,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions(c2dLogMessage)
                     {
-                        Description = c2dLogMessage,
                         MaxAttempts = 1
                     });
 
@@ -320,7 +319,7 @@ namespace LoRaWan.Tests.E2E
             const int warmUpMessageCount = 2;
 
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -336,7 +335,7 @@ namespace LoRaWan.Tests.E2E
 
             if (device.IsMultiGw)
             {
-                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DeviceID);
+                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);
             }
 
             // Sends 2x unconfirmed messages
@@ -392,9 +391,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions(c2dLogMessage)
                     {
-                        Description = c2dLogMessage,
                         MaxAttempts = 1
                     });
 
@@ -459,7 +457,7 @@ namespace LoRaWan.Tests.E2E
             const int warmUpMessageCount = 2;
 
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -473,7 +471,7 @@ namespace LoRaWan.Tests.E2E
 
             if (device.IsMultiGw)
             {
-                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DeviceID);
+                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);
             }
 
             // Sends 2x unconfirmed messages
@@ -530,9 +528,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(expectedTcpMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedTcpMessageV2, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions($"{expectedTcpMessageV1} or {expectedTcpMessageV2}")
                     {
-                        Description = $"{expectedTcpMessageV1} or {expectedTcpMessageV2}",
                         MaxAttempts = 1
                     });
 
@@ -583,7 +580,7 @@ namespace LoRaWan.Tests.E2E
             LogTestStart(device);
             // Setup LoRa device properties
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             // Setup protocol properties
@@ -647,9 +644,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         return messageBody.StartsWith(expectedTcpMessageV1, StringComparison.OrdinalIgnoreCase) || messageBody.StartsWith(expectedTcpMessageV2, StringComparison.OrdinalIgnoreCase);
                     },
-                    new SearchLogOptions
+                    new SearchLogOptions($"{expectedTcpMessageV1} or {expectedTcpMessageV2}")
                     {
-                        Description = $"{expectedTcpMessageV1} or {expectedTcpMessageV2}",
                         MaxAttempts = 1,
                     });
 

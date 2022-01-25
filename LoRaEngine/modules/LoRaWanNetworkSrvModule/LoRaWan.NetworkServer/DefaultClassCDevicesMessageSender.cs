@@ -39,9 +39,10 @@ namespace LoRaWan.NetworkServer
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
 
-            if (string.IsNullOrEmpty(message.DevEUI))
+            var devEui = message.DevEUI.GetValueOrDefault();
+            if (!devEui.IsValid)
             {
-                this.logger.LogError($"[class-c] devEUI missing in payload");
+                this.logger.LogError($"[class-c] devEUI missing/invalid in payload");
                 return false;
             }
 
@@ -51,10 +52,10 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(message.DevEUI);
+            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(devEui);
             if (loRaDevice == null)
             {
-                this.logger.LogError(message.DevEUI, $"[class-c] device {message.DevEUI} not found or not joined");
+                this.logger.LogError($"[class-c] device {message.DevEUI} not found or not joined");
                 return false;
             }
 
@@ -70,7 +71,7 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            if (string.IsNullOrEmpty(loRaDevice.DevAddr))
+            if (loRaDevice.DevAddr is null)
             {
                 this.logger.LogError("[class-c] devAddr is empty, cannot send cloud to device message. Ensure the device has connected at least once with the network");
                 return false;
@@ -78,7 +79,7 @@ namespace LoRaWan.NetworkServer
 
             if (loRaDevice.ClassType != LoRaDeviceClassType.C)
             {
-                this.logger.LogError(loRaDevice.DevEUI, $"[class-c] sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}");
+                this.logger.LogError($"[class-c] sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}");
                 return false;
             }
 
@@ -112,19 +113,39 @@ namespace LoRaWan.NetworkServer
                 fcntDown,
                 this.logger);
 
+            var messageIdLog = message.MessageId ?? "undefined";
+
             if (downlinkMessageBuilderResp.IsMessageTooLong)
             {
                 this.c2dMessageTooLong?.Add(1);
-                this.logger.LogError($"[class-c] cloud to device message too large, rejecting. Id: {message.MessageId ?? "undefined"}");
+                this.logger.LogError($"[class-c] cloud to device message too large, rejecting. Id: {messageIdLog}");
                 if (!await message.RejectAsync())
                 {
-                    this.logger.LogError($"[class-c] failed to reject. Id: {message.MessageId ?? "undefined"}");
+                    this.logger.LogError($"[class-c] failed to reject. Id: {messageIdLog}");
                 }
                 return false;
             }
             else
             {
-                await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
+                try
+                {
+                    await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError($"[class-c] failed to send the message, abandoning. Id: {messageIdLog}, ex: {ex.Message}");
+                    if (!await message.AbandonAsync())
+                    {
+                        this.logger.LogError($"[class-c] failed to abandon the message. Id: {messageIdLog}");
+                    }
+                    throw;
+                }
+
+                if (!await message.CompleteAsync())
+                {
+                    this.logger.LogError($"[class-c] failed to complete the message. Id: {messageIdLog}");
+                }
+
                 if (!await frameCounterStrategy.SaveChangesAsync(loRaDevice))
                 {
                     this.logger.LogWarning("[class-c] failed to update framecounter.");

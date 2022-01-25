@@ -102,15 +102,17 @@ namespace LoRaTools
                             pointer += rxTimingSetup.Length;
                             macCommands.Add(rxTimingSetup);
                             break;
+                        case Cid.TxParamSetupCmd:
+                            var txParamSetupAnswer = new TxParamSetupAnswer();
+                            pointer += txParamSetupAnswer.Length;
+                            macCommands.Add(txParamSetupAnswer);
+                            break;
                         case Cid.Zero:
                         case Cid.One:
                         default:
                             logger?.LogError($"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing");
                             return null;
                     }
-
-                    var addedMacCommand = macCommands[^1];
-                    logger?.LogDebug($"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}");
                 }
             }
             catch (MacCommandException ex) when (ExceptionFilterUtility.True(() => logger?.LogError(ex.ToString())))
@@ -124,7 +126,7 @@ namespace LoRaTools
         /// <summary>
         /// Create a List of Mac commands from server based on a sequence of bytes.
         /// </summary>
-        public static IList<MacCommand> CreateServerMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input, ILogger logger = null)
+        public static IList<MacCommand> CreateServerMacCommandFromBytes(DevEui deviceId, ReadOnlyMemory<byte> input, ILogger logger = null)
         {
             var pointer = 0;
             var macCommands = new List<MacCommand>(3);
@@ -155,6 +157,7 @@ namespace LoRaTools
                         case Cid.RXParamCmd:
                         case Cid.NewChannelCmd:
                         case Cid.RXTimingCmd:
+                        case Cid.TxParamSetupCmd:
                         default:
                             logger?.LogError($"a Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing");
                             return null;

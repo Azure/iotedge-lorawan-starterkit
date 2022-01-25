@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Integration
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -15,11 +16,14 @@ namespace LoRaWan.Tests.Integration
     using Moq;
     using Newtonsoft.Json;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Decoder tests tests
     public class DecoderTests : MessageProcessorTestBase
     {
+        public DecoderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         /// <summary>
         /// SensorDecoder: none
         /// Payload: multiple
@@ -47,7 +51,8 @@ namespace LoRaWan.Tests.Integration
         ///     "rawdata": "QAEAAAKAAQABD31lQaU5Vus=",
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
-        ///     "edgets": 1550217512748
+        ///     "edgets": 1550217512748,
+        ///     "stationeui": "0000000000000000",
         /// }.
         /// </summary>
         [Theory]
@@ -74,7 +79,7 @@ namespace LoRaWan.Tests.Integration
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
                 // multi GW will reset
-                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                     .ReturnsAsync(true);
             }
 
@@ -104,7 +109,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"value\":\"{rawPayload}\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"value\":\"{rawPayload}\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"stationeui\":\"0000000000000000\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceClient.VerifyAll();
@@ -139,6 +144,7 @@ namespace LoRaWan.Tests.Integration
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
         ///     "edgets": 1550223375041
+        ///     "stationeui": "0000000000000000"
         /// }.
         /// </summary>
         [Theory]
@@ -192,7 +198,7 @@ namespace LoRaWan.Tests.Integration
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
             var expectedValueQuotes = expectedValue.GetType() == typeof(string) ? "\"" : string.Empty;
-            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"value\":{expectedValueQuotes}{msgPayload}{expectedValueQuotes}}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"value\":{expectedValueQuotes}{msgPayload}{expectedValueQuotes}}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"stationeui\":\"0000000000000000\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -223,7 +229,8 @@ namespace LoRaWan.Tests.Integration
         ///     "rawdata": "JDE=",
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
-        ///     "edgets": 1550223375041
+        ///     "edgets": 1550223375041,
+        ///     "stationeui": "0000000000000000"
         /// }.
         /// </summary>
         [Fact]
@@ -278,7 +285,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":\"decoded\",\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":\"decoded\",\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"stationeui\":\"0000000000000000\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -309,7 +316,8 @@ namespace LoRaWan.Tests.Integration
         ///     "rawdata": "JDE=",
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
-        ///     "edgets": 1550223375041
+        ///     "edgets": 1550223375041,
+        ///     "stationeui": "0000000000000000"
         /// }.
         /// </summary>
         [Fact]
@@ -364,7 +372,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":\"\",\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":\"\",\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"stationeui\":\"0000000000000000\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -397,7 +405,8 @@ namespace LoRaWan.Tests.Integration
         ///     "rawdata": "JDE=",
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
-        ///     "edgets": 1550223375041
+        ///     "edgets": 1550223375041,
+        ///     "stationeui": "0000000000000000"
         /// }.
         /// </summary>
         [Fact]
@@ -452,7 +461,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"value\":\"decoded\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"value\":\"decoded\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"stationeui\":\"0000000000000000\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -485,7 +494,8 @@ namespace LoRaWan.Tests.Integration
         ///     "rawdata": "JDE=",
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
-        ///     "edgets": 1550223375041
+        ///     "edgets": 1550223375041,
+        ///     "stationeui": "0000000000000000"
         /// }.
         /// </summary>
         [Fact]
@@ -541,7 +551,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"stationeui\":\"0000000000000000\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -573,7 +583,8 @@ namespace LoRaWan.Tests.Integration
         ///     "rawdata": "JDE=",
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
-        ///     "edgets": 1550223375041
+        ///     "edgets": 1550223375041,
+        ///     "stationeui": "0000000000000000"
         /// }.
         /// </summary>
         [Fact]
@@ -631,7 +642,7 @@ namespace LoRaWan.Tests.Integration
 
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
-            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"error\":\"SensorDecoderModule 'http://customdecoder/test1?devEUI=0000000000000001&fport=1&payload=MQ%3d%3d' returned bad request.\",\"errorDetail\":\"my error\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{ rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"error\":\"SensorDecoderModule 'http://customdecoder/test1?devEUI=0000000000000001&fport=1&payload=MQ%3d%3d' returned bad request.\",\"errorDetail\":\"my error\"}},\"port\":1,\"fcnt\":1,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{ rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"stationeui\":\"0000000000000000\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             LoRaDeviceApi.VerifyAll();
@@ -650,7 +661,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
                 .ReturnsAsync(true);
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             // C2D message will be checked
             // LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
@@ -693,7 +704,7 @@ namespace LoRaWan.Tests.Integration
             // Validate json
             var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
 
-            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":10,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\"}}";
+            var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":10,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"stationeui\":\"0000000000000000\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
             // send a second message with same fcnt to simulate

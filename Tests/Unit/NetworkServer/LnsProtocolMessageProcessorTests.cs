@@ -214,22 +214,26 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
+            WebSocketMessageType? sentType = null;
+            bool? sentEnd = null;
             this.socketMock.Setup(x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                            .Callback<ArraySegment<byte>, WebSocketMessageType, bool, CancellationToken>((message, type, end, _) =>
                            {
                                sentString = Encoding.UTF8.GetString(message);
-                               Assert.Equal(WebSocketMessageType.Text, type);
-                               Assert.True(end);
+                               sentType = type;
+                               sentEnd = end;
                            });
 
             var muxs = Id6.Format(firstNic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
-            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B8-27-EB-FF-FE-E1-E3-9A""}}";
+            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B827EBFFFEE1E39A""}}";
 
             // act
             await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(this.httpContextMock.Object, this.socketMock.Object, CancellationToken.None);
 
             // assert
             Assert.Equal(expectedString, sentString);
+            Assert.Equal(WebSocketMessageType.Text, sentType.Value);
+            Assert.True(sentEnd.Value);
         }
 
         [Fact]
@@ -240,16 +244,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             InitializeConfigurationServiceMock();
             SetDataPathParameter();
 
-            SetupSocketReceiveAsync(@"{ msgtype: 'version', station: 'stationName' }");
+            SetupSocketReceiveAsync(@"{ msgtype: 'version', station: 'stationName', package: '1.0.0' }");
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
+            WebSocketMessageType? sentType = null;
+            bool? sentEnd = null;
             this.socketMock.Setup(x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                            .Callback<ArraySegment<byte>, WebSocketMessageType, bool, CancellationToken>((message, type, end, _) =>
                            {
                                sentString = Encoding.UTF8.GetString(message);
-                               Assert.Equal(WebSocketMessageType.Text, type);
-                               Assert.True(end);
+                               sentType = type;
+                               sentEnd = end;
                            });
 
             // act
@@ -259,6 +265,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
+            Assert.Equal(WebSocketMessageType.Text, sentType.Value);
+            Assert.True(sentEnd.Value);
         }
 
 
@@ -297,9 +305,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 'MIC':45234788,'RefTime':0.000000,'DR':5,'Freq':868300000,'upinfo':{'rctx':0,'xtime':68116944405337035,
                                                 'gpstime':0,'fts':-1,'rssi':-53,'snr':8.25,'rxtime':1636131701.731686}}");
             var expectedRadioMetadata = GetExpectedRadioMetadata();
-            var expectedMhdr = new byte[] { 128 };
-            var expectedDevAddr = new byte[] { 2, 254, 171, 6 };
-            var expectedMic = new byte[] { 100, 58, 178, 2 };
+            var expectedMhdr = new MacHeader(MacMessageType.ConfirmedDataUp);
+            var expectedDevAddr = new DevAddr(50244358);
+            var expectedMic = Mic.Read(new byte[] { 100, 58, 178, 2 });
             SetDataPathParameter();
             SetupSocketReceiveAsync(message);
 
@@ -316,10 +324,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // assert
             Assert.NotNull(loRaRequest);
             Assert.Equal(loRaRequest.RadioMetadata, expectedRadioMetadata);
-            Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr.Span.ToArray());
+            Assert.Equal(expectedDevAddr, loRaRequest.Payload.DevAddr);
             Assert.Equal(MacMessageType.ConfirmedDataUp, loRaRequest.Payload.MessageType);
-            Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
-            Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
+            Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
+            Assert.Equal(expectedMic, loRaRequest.Payload.Mic);
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
             Assert.Equal(RegionManager.EU868, loRaRequest.Region);
         }
@@ -332,10 +340,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                 'DevNonce':54360,'MIC':-1056607131,'RefTime':0.000000,'DR':5,'Freq':868300000,'upinfo':{'rctx':0,
                                                 'xtime':68116944405337035,'gpstime':0,'fts':-1,'rssi':-53,'snr':8.25,'rxtime':1636131701.731686}}");
             var expectedRadioMetadata = GetExpectedRadioMetadata();
-            var expectedMhdr = new byte[] { 0 };
-            var expectedMic = new byte[] { 101, 116, 5, 193 };
-            var expectedAppEui = new byte[] { 181, 196, 210, 229, 200, 120, 98, 71 };
-            var expectedDevEui = new byte[] { 158, 22, 164, 238, 223, 193, 39, 133 };
+            var expectedMhdr = new MacHeader(MacMessageType.JoinRequest);
+            var expectedMic = Mic.Read(new byte[] { 101, 116, 5, 193 });
+            var expectedJoinEui = JoinEui.Read(new byte[] { 181, 196, 210, 229, 200, 120, 98, 71 });
+            var expectedDevEui = DevEui.Read(new byte[] { 158, 22, 164, 238, 223, 193, 39, 133 });
             var expectedDevNonce = DevNonce.Read(new byte[] { 88, 212 });
             SetDataPathParameter();
             SetupSocketReceiveAsync(message);
@@ -353,13 +361,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // assert
             Assert.NotNull(loRaRequest);
             Assert.Equal(loRaRequest.RadioMetadata, expectedRadioMetadata);
-            Assert.IsType<LoRaPayloadJoinRequestLns>(loRaRequest.Payload);
+            Assert.IsType<LoRaPayloadJoinRequest>(loRaRequest.Payload);
             Assert.Equal(MacMessageType.JoinRequest, loRaRequest.Payload.MessageType);
-            Assert.Equal(expectedMhdr, loRaRequest.Payload.Mhdr.Span.ToArray());
-            Assert.Equal(expectedMic, loRaRequest.Payload.Mic.Span.ToArray());
-            Assert.Equal(expectedAppEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).AppEUI.Span.ToArray());
-            Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevEUI.Span.ToArray());
-            Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequestLns)loRaRequest.Payload).DevNonce);
+            Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
+            Assert.Equal(expectedMic, loRaRequest.Payload.Mic);
+            Assert.Equal(expectedJoinEui, ((LoRaPayloadJoinRequest)loRaRequest.Payload).AppEui);
+            Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequest)loRaRequest.Payload).DevEUI);
+            Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequest)loRaRequest.Payload).DevNonce);
             Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
             Assert.Equal(RegionManager.EU868, loRaRequest.Region);
         }

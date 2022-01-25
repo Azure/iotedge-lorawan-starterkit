@@ -7,9 +7,11 @@ namespace LoRaWan.Tests.E2E
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan.Core;
+    using Newtonsoft.Json;
 
     public static class LoRaAPIHelper
     {
@@ -31,15 +33,27 @@ namespace LoRaWan.Tests.E2E
             return new HttpClient(httpHandler);
         }
 
-        public static async Task<bool> ResetADRCache(string devEUI)
+        public static async Task<bool> ResetADRCache(DevEui devEUI)
         {
-            var url = new Uri($"{baseUrl}FunctionBundler/{devEUI}?code={authCode}");
+            var path = $"FunctionBundler/{devEUI}";
             // the gateway id is only used to identify who is taking the lock when
             // releasing the cache. Hence we do not need a real GW id
             var payload = "{\"AdrRequest\":{\"ClearCache\": true},\"GatewayId\":\"integrationTesting\", \"FunctionItems\": " + (int)FunctionBundlerItemType.ADR + "}";
+            return await PostFunctionEndpointAsync(path, payload);
+        }
 
-            using var content = PreparePostContent(payload);
-            using var response = await httpClient.Value.PostAsync(url, content);
+        public static async Task<bool> SendCloudToDeviceMessage(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        {
+            var path = $"cloudtodevicemessage/{devEUI}";
+            var json = JsonConvert.SerializeObject(c2dMessage);
+            return await PostFunctionEndpointAsync(path, json);
+        }
+
+        private static async Task<bool> PostFunctionEndpointAsync(string path, string contentJson, CancellationToken cancellationToken = default)
+        {
+            var url = new Uri($"{baseUrl}" + path + $"?code={authCode}");
+            using var content = PreparePostContent(contentJson);
+            using var response = await httpClient.Value.PostAsync(url, content, cancellationToken);
             return response.IsSuccessStatusCode;
         }
 

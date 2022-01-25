@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.E2E
         {
 
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -100,7 +100,7 @@ namespace LoRaWan.Tests.E2E
 
             if (device.IsMultiGw)
             {
-                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DeviceID);
+                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);
             }
 
             await Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_CommandsImplAsync(device, "test");
@@ -162,9 +162,8 @@ namespace LoRaWan.Tests.E2E
                         {
                             return messageBody.StartsWith(macCommandReceivedMsg, StringComparison.Ordinal);
                         },
-                        new SearchLogOptions
+                        new SearchLogOptions(macCommandReceivedMsg)
                         {
-                            Description = macCommandReceivedMsg,
                             MaxAttempts = 1
                         });
 
@@ -183,9 +182,8 @@ namespace LoRaWan.Tests.E2E
                         {
                             return messageBody.Contains(deviceMacCommandResponseMsg, StringComparison.InvariantCultureIgnoreCase);
                         },
-                        new SearchLogOptions
+                        new SearchLogOptions(deviceMacCommandResponseMsg)
                         {
-                            Description = deviceMacCommandResponseMsg,
                             MaxAttempts = 1
                         });
 
@@ -222,7 +220,7 @@ namespace LoRaWan.Tests.E2E
 
             // Setup LoRa device properties
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             // Setup protocol properties
@@ -245,7 +243,7 @@ namespace LoRaWan.Tests.E2E
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Fport = FramePort.MacCommand,
-                Payload = string.Empty,
+                Payload = String.Empty,
                 MacCommands = { new LinkADRRequest(datarate: 3, txPower: 4, chMask: 25, chMaskCntl: 0, nbTrans: 1) } // Update data rate to DR3
             };
 
@@ -285,9 +283,8 @@ namespace LoRaWan.Tests.E2E
                 {
                     var searchResult =
                         await TestFixtureCi.SearchNetworkServerModuleAsync(messageBody => messageBody.Contains(message, StringComparison.OrdinalIgnoreCase),
-                                                                           new SearchLogOptions
+                                                                           new SearchLogOptions(message)
                                                                            {
-                                                                               Description = message,
                                                                                MaxAttempts = 1
                                                                            });
 

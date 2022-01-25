@@ -6,7 +6,6 @@
 namespace LoRaWan.NetworkServer
 {
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using System;
     using System.Collections.Concurrent;
@@ -20,8 +19,8 @@ namespace LoRaWan.NetworkServer
     public class LoRaDeviceCache : IDisposable
     {
         private readonly LoRaDeviceCacheOptions options;
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, LoRaDevice>> devAddrCache = new();
-        private readonly ConcurrentDictionary<string, LoRaDevice> euiCache = new();
+        private readonly ConcurrentDictionary<DevAddr, ConcurrentDictionary<DevEui, LoRaDevice>> devAddrCache = new();
+        private readonly ConcurrentDictionary<DevEui, LoRaDevice> euiCache = new();
         private readonly object syncLock = new object();
         private readonly NetworkServerConfiguration configuration;
         private readonly ILogger<LoRaDeviceCache> logger;
@@ -70,7 +69,6 @@ namespace LoRaWan.NetworkServer
                     foreach (var expiredDevice in itemsToRemove)
                     {
                         _ = Remove(expiredDevice);
-                        expiredDevice.Dispose();
                     }
                 }
 
@@ -113,7 +111,7 @@ namespace LoRaWan.NetworkServer
             return device.InitializeAsync(this.configuration, cancellationToken);
         }
 
-        public virtual bool Remove(LoRaDevice device)
+        public virtual bool Remove(LoRaDevice device, bool dispose = true)
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
 
@@ -123,23 +121,27 @@ namespace LoRaWan.NetworkServer
             {
                 result &= this.euiCache.Remove(device.DevEUI, out _);
 
-                if (!string.IsNullOrEmpty(device.DevAddr) &&
-                     this.devAddrCache.TryGetValue(device.DevAddr, out var devicesByDevAddr))
+                if (device.DevAddr is { } someDevAddr &&
+                     this.devAddrCache.TryGetValue(someDevAddr, out var devicesByDevAddr))
                 {
                     result &= devicesByDevAddr.Remove(device.DevEUI, out _);
                     if (devicesByDevAddr.IsEmpty)
                     {
-                        result &= this.devAddrCache.Remove(device.DevAddr, out _);
+                        result &= this.devAddrCache.Remove(someDevAddr, out _);
                     }
+                }
+
+                if (dispose)
+                {
+                    device.Dispose();
                 }
             }
             return result;
         }
 
-        public void CleanupOldDevAddrForDevice(LoRaDevice device, string oldDevAddr)
+        public void CleanupOldDevAddrForDevice(LoRaDevice device, DevAddr oldDevAddr)
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
-            _ = oldDevAddr ?? throw new ArgumentNullException(nameof(oldDevAddr));
             if (device.DevAddr == oldDevAddr) throw new InvalidOperationException($"The old devAddr '{oldDevAddr}' to be removed, is still active.");
 
             lock (this.syncLock)
@@ -165,17 +167,17 @@ namespace LoRaWan.NetworkServer
             this.logger.LogDebug($"previous device devAddr ({oldDevAddr}) removed from cache.");
         }
 
-        public virtual bool HasRegistrations(string devAddr)
+        public virtual bool HasRegistrations(DevAddr devAddr)
         {
             return RegistrationCount(devAddr) > 0;
         }
 
-        public virtual bool HasRegistrationsForOtherGateways(string devAddr)
+        public virtual bool HasRegistrationsForOtherGateways(DevAddr devAddr)
         {
             return this.devAddrCache.TryGetValue(devAddr, out var items) && items.Any(x => !x.Value.IsOurDevice);
         }
 
-        public int RegistrationCount(string devAddr)
+        public int RegistrationCount(DevAddr devAddr)
         {
             return this.devAddrCache.TryGetValue(devAddr, out var items) ? items.Count : 0;
         }
@@ -200,9 +202,9 @@ namespace LoRaWan.NetworkServer
                     this.euiCache[device.DevEUI] = device;
                 }
 
-                if (!string.IsNullOrEmpty(device.DevAddr))
+                if (device.DevAddr is { } someDevAddr)
                 {
-                    var devAddrLookup = this.devAddrCache.GetOrAdd(device.DevAddr, (_) => new ConcurrentDictionary<string, LoRaDevice>());
+                    var devAddrLookup = this.devAddrCache.GetOrAdd(someDevAddr, _ => new ConcurrentDictionary<DevEui, LoRaDevice>());
                     devAddrLookup[device.DevEUI] = device;
                 }
                 device.LastSeen = DateTimeOffset.UtcNow;
@@ -221,13 +223,11 @@ namespace LoRaWan.NetworkServer
 
             device = null;
 
-            var devAddr = ConversionHelper.ByteArrayToString(payload.DevAddr);
             lock (this.syncLock)
             {
-                if (this.devAddrCache.TryGetValue(devAddr, out var devices))
+                if (this.devAddrCache.TryGetValue(payload.DevAddr, out var devices))
                 {
-                    this.deviceCacheHits?.Add(1);
-                    device = devices.Values.FirstOrDefault(x => !string.IsNullOrEmpty(x.NwkSKey) && ValidateMic(x, payload));
+                    device = devices.Values.FirstOrDefault(x => x.NwkSKey is not null && ValidateMic(x, payload));
                 }
             }
 
@@ -239,14 +239,14 @@ namespace LoRaWan.NetworkServer
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
             _ = loRaPayload ?? throw new ArgumentNullException(nameof(loRaPayload));
-            return device.ValidateMic(loRaPayload);
+            return device.ValidateMic((LoRaPayloadData)loRaPayload);
         }
 
-        public bool TryGetByDevEui(string devEUI, [MaybeNullWhen(returnValue: false)] out LoRaDevice device)
+        public bool TryGetByDevEui(DevEui devEui, [MaybeNullWhen(returnValue: false)] out LoRaDevice device)
         {
             lock (this.syncLock)
             {
-                _ = this.euiCache.TryGetValue(devEUI, out device);
+                _ = this.euiCache.TryGetValue(devEui, out device);
             }
 
             TrackCacheStats(device);

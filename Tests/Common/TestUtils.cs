@@ -28,9 +28,9 @@ namespace LoRaWan.Tests.Common
             ILoRaDeviceClientConnectionManager connectionManager,
             DefaultLoRaDataRequestHandler requestHandler = null)
         {
-            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, connectionManager)
+            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DevEui, connectionManager)
             {
-                AppEUI = simulatedDevice.LoRaDevice.AppEUI,
+                AppEui = simulatedDevice.LoRaDevice.AppEui,
                 AppKey = simulatedDevice.LoRaDevice.AppKey,
                 SensorDecoder = simulatedDevice.LoRaDevice.SensorDecoder,
                 AppSKey = simulatedDevice.LoRaDevice.AppSKey,
@@ -79,9 +79,9 @@ namespace LoRaWan.Tests.Common
         {
             var finalDesiredProperties = new Dictionary<string, object>
                 {
-                    { TwinProperty.DevAddr, simulatedDevice.DevAddr },
-                    { TwinProperty.AppSKey, simulatedDevice.AppSKey },
-                    { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
+                    { TwinProperty.DevAddr, simulatedDevice.DevAddr.ToString() },
+                    { TwinProperty.AppSKey, simulatedDevice.AppSKey?.ToString() },
+                    { TwinProperty.NwkSKey, simulatedDevice.NwkSKey?.ToString() },
                     { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
                     { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },
                     { TwinProperty.ClassType, simulatedDevice.ClassType.ToString() },
@@ -119,8 +119,8 @@ namespace LoRaWan.Tests.Common
         {
             var finalDesiredProperties = new Dictionary<string, object>
                 {
-                    { TwinProperty.AppEUI, simulatedDevice.AppEUI },
-                    { TwinProperty.AppKey, simulatedDevice.AppKey },
+                    { TwinProperty.AppEui, simulatedDevice.AppEui?.ToString() },
+                    { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
                     { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
                     { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },
                     { TwinProperty.ClassType, simulatedDevice.ClassType.ToString() },
@@ -136,11 +136,11 @@ namespace LoRaWan.Tests.Common
 
             var finalReportedProperties = new Dictionary<string, object>
             {
-                { TwinProperty.DevAddr, simulatedDevice.DevAddr },
-                { TwinProperty.AppSKey, simulatedDevice.AppSKey },
-                { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
+                { TwinProperty.DevAddr, simulatedDevice.DevAddr?.ToString() },
+                { TwinProperty.AppSKey, simulatedDevice.AppSKey?.ToString() },
+                { TwinProperty.NwkSKey, simulatedDevice.NwkSKey?.ToString() },
                 { TwinProperty.DevNonce, simulatedDevice.DevNonce.ToString() },
-                { TwinProperty.NetID, simulatedDevice.NetId },
+                { TwinProperty.NetId, simulatedDevice.NetId?.ToString() },
                 { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
                 { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
             };
@@ -319,24 +319,24 @@ namespace LoRaWan.Tests.Common
         {
             var euRegion = RegionManager.EU868;
 
-            // If we want to send to force to rx 2, we will set both the rx1 and rx2 settings to the rx2 parameters.
+            // If we want to send to force to rx 2, we will set rx1 to default and rx2 settings to proper values.
             // Ensure RX DR
             if (sendToRx2)
-                Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, NullLogger.Instance), downlinkMessage.DataRateRx2);
+                Assert.Null(downlinkMessage.Rx1);
             else
-                Assert.Equal(euRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate), downlinkMessage.DataRateRx1);
+                Assert.Equal(euRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate), downlinkMessage.Rx1.Value.DataRate);
 
-            Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, NullLogger.Instance), downlinkMessage.DataRateRx2);
+            Assert.Equal(euRegion.GetDownstreamRX2DataRate(null, null, null, NullLogger.Instance), downlinkMessage.Rx2.DataRate);
 
             // Ensure RX freq
-            Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, out var channelFrequency));
+            Assert.True(euRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, request.RadioMetadata.DataRate, null, out var channelFrequency));
 
             if (sendToRx2)
-                Assert.Equal(euRegion.GetDownstreamRX2Freq(null, NullLogger.Instance), downlinkMessage.FrequencyRx1);
+                Assert.Null(downlinkMessage.Rx1);
             else
-                Assert.Equal(channelFrequency, downlinkMessage.FrequencyRx1);
+                Assert.Equal(channelFrequency, downlinkMessage.Rx1.Value.Frequency);
 
-            Assert.Equal(euRegion.GetDownstreamRX2Freq(null, NullLogger.Instance), downlinkMessage.FrequencyRx2);
+            Assert.Equal(euRegion.GetDownstreamRX2Freq(null, null, logger: NullLogger.Instance), downlinkMessage.Rx2.Frequency);
         }
     }
 }

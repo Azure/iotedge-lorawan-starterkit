@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Microsoft.AspNetCore.Server.Kestrel.Https;
 
     // Network server configuration
@@ -101,12 +102,12 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets the gateway netword id.
         /// </summary>
-        public uint NetId { get; set; } = 1;
+        public NetId NetId { get; set; } = new NetId(1);
 
         /// <summary>
         /// Gets list of allowed dev addresses.
         /// </summary>
-        public HashSet<string> AllowedDevAddresses { get; internal set; }
+        public HashSet<DevAddr> AllowedDevAddresses { get; internal set; }
 
         /// <summary>
         /// Path of the .pfx certificate to be used for LNS Server endpoint
@@ -152,8 +153,13 @@ namespace LoRaWan.NetworkServer
             config.LogToHub = envVars.GetEnvVar("LOG_TO_HUB", config.LogToHub);
             config.LogToTcpAddress = envVars.GetEnvVar("LOG_TO_TCP_ADDRESS", string.Empty);
             config.LogToTcpPort = envVars.GetEnvVar("LOG_TO_TCP_PORT", config.LogToTcpPort);
-            config.NetId = envVars.GetEnvVar("NETID", config.NetId);
-            config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
+            config.NetId = new NetId(envVars.GetEnvVar("NETID", config.NetId.NetworkId));
+            config.AllowedDevAddresses = envVars.GetEnvVar("AllowedDevAddresses", string.Empty)
+                                                .Split(";")
+                                                .Select(s => DevAddr.TryParse(s, out var devAddr) ? (true, Value: devAddr) : default)
+                                                .Where(a => a is (true, _))
+                                                .Select(a => a.Value)
+                                                .ToHashSet();
             config.LnsServerPfxPath = envVars.GetEnvVar("LNS_SERVER_PFX_PATH", string.Empty);
             config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
             var clientCertificateModeString = envVars.GetEnvVar("CLIENT_CERTIFICATE_MODE", "NoCertificate"); // Defaulting to NoCertificate if missing mode

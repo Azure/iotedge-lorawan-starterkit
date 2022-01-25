@@ -10,6 +10,8 @@ namespace LoraKeysManagerFacade
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
+    using LoRaTools.Utils;
+    using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
@@ -45,7 +47,24 @@ namespace LoraKeysManagerFacade
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "cloudtodevicemessage/{devEUI}")] HttpRequest req,
             string devEUI)
         {
-            EUIValidator.ValidateDevEUI(devEUI);
+            DevEui parsedDevEui;
+
+            try
+            {
+                VersionValidator.Validate(req);
+                if (!DevEui.TryParse(devEUI, EuiParseOptions.ForbidInvalid, out parsedDevEui))
+                {
+                    return new BadRequestObjectResult("Dev EUI is invalid.");
+                }
+            }
+            catch (IncompatibleVersionException ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
+            }
 
             var requestBody = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(requestBody))
@@ -54,18 +73,13 @@ namespace LoraKeysManagerFacade
             }
 
             var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(requestBody);
-            c2dMessage.DevEUI = devEUI;
+            c2dMessage.DevEUI = parsedDevEui;
 
-            return await SendCloudToDeviceMessageImplementationAsync(devEUI, c2dMessage);
+            return await SendCloudToDeviceMessageImplementationAsync(parsedDevEui, c2dMessage);
         }
 
-        public async Task<IActionResult> SendCloudToDeviceMessageImplementationAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        public async Task<IActionResult> SendCloudToDeviceMessageImplementationAsync(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
-            if (string.IsNullOrEmpty(devEUI))
-            {
-                return new BadRequestObjectResult($"Missing {nameof(devEUI)} value");
-            }
-
             if (c2dMessage == null)
             {
                 return new BadRequestObjectResult("Missing cloud to device message");
@@ -101,21 +115,20 @@ namespace LoraKeysManagerFacade
 
                 if (twin != null)
                 {
+                    var desiredReader = new TwinCollectionReader(twin.Properties.Desired, this.log);
+                    var reportedReader = new TwinCollectionReader(twin.Properties.Reported, this.log);
+
                     // the device must have a DevAddr
-                    if (twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr).Length == 0 && twin.Properties?.Reported?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr).Length == 0)
+                    if (!desiredReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out DevAddr _) && !reportedReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out DevAddr _))
                     {
                         return new BadRequestObjectResult("Device DevAddr is unknown. Ensure the device has been correctly setup as a LoRa device and that it has connected to network at least once.");
                     }
 
-                    if (string.Equals("c", twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_ClassType), StringComparison.OrdinalIgnoreCase))
+                    if (desiredReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_ClassType, out string deviceClass) && string.Equals("c", deviceClass, StringComparison.OrdinalIgnoreCase))
                     {
-                        var gatewayID = twin.Properties?.Reported?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_PreferredGatewayID);
-                        if (string.IsNullOrEmpty(gatewayID))
-                        {
-                            gatewayID = twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID);
-                        }
-
-                        if (!string.IsNullOrEmpty(gatewayID))
+                        if ((reportedReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_PreferredGatewayID, out string gatewayID)
+                            || desiredReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID, out gatewayID))
+                            && !string.IsNullOrEmpty(gatewayID))
                         {
                             // add it to cache (if it does not exist)
                             var preferredGateway = new LoRaDevicePreferredGateway(gatewayID, 0);
@@ -125,7 +138,10 @@ namespace LoraKeysManagerFacade
                         }
 
                         // class c device that did not send a single upstream message
-                        return new BadRequestObjectResult("Class C devices must sent at least one message upstream. None has been received");
+                        return new ObjectResult("Class C devices must sent at least one message upstream. None has been received")
+                        {
+                            StatusCode = (int)HttpStatusCode.InternalServerError
+                        };
                     }
 
                     // Not a class C device? Send message using sdk/queue
@@ -136,7 +152,7 @@ namespace LoraKeysManagerFacade
             return new NotFoundObjectResult($"Device '{devEUI}' was not found");
         }
 
-        private async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        private async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
             try
             {
@@ -145,7 +161,7 @@ namespace LoraKeysManagerFacade
 
                 try
                 {
-                    await this.serviceClient.SendAsync(devEUI, message);
+                    await this.serviceClient.SendAsync(devEUI.ToString(), message);
                 }
                 catch (IotHubException ex)
                 {
@@ -157,7 +173,7 @@ namespace LoraKeysManagerFacade
 
                 return new OkObjectResult(new SendCloudToDeviceMessageResult()
                 {
-                    DevEUI = devEUI,
+                    DevEui = devEUI,
                     MessageID = message.MessageId,
                     ClassType = "A",
                 });
@@ -171,7 +187,7 @@ namespace LoraKeysManagerFacade
 
         private async Task<IActionResult> SendMessageViaDirectMethodAsync(
             string preferredGatewayID,
-            string devEUI,
+            DevEui devEUI,
             LoRaCloudToDeviceMessage c2dMessage)
         {
             try
@@ -186,7 +202,7 @@ namespace LoraKeysManagerFacade
 
                     return new OkObjectResult(new SendCloudToDeviceMessageResult()
                     {
-                        DevEUI = devEUI,
+                        DevEui = devEUI,
                         MessageID = c2dMessage.MessageId,
                         ClassType = "C",
                     });
@@ -202,7 +218,7 @@ namespace LoraKeysManagerFacade
             catch (JsonSerializationException ex)
             {
 
-                this.log.LogError(ex, "Failed to serialize C2D message {c2dmessage} to {devEUI}", devEUI);
+                this.log.LogError(ex, "Failed to serialize C2D message {c2dmessage} to {devEUI}", JsonConvert.SerializeObject(c2dMessage), devEUI);
                 return new ObjectResult("Failed serialize C2D Message")
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError

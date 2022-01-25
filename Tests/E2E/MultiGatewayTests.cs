@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.E2E
             LogTestStart(device);
 
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -43,7 +43,7 @@ namespace LoRaWan.Tests.E2E
             var joinRefused = await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg, StringComparison.Ordinal) != -1, new SearchLogOptions(joinRefusedMsg));
             Assert.True(joinRefused.Found);
 
-            await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DeviceID);
+            await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);
 
             // expecting both gw to start picking up messages
             // and sending to IoT hub.
@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.E2E
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
                 bothReported = await TestFixtureCi.ValidateMultiGatewaySources((log) => log.StartsWith($"{device.DeviceID}: sending message", StringComparison.OrdinalIgnoreCase));
                 if (bothReported)
@@ -111,8 +111,8 @@ namespace LoRaWan.Tests.E2E
                     var notDuplicate = "\"IsDuplicate\":false";
                     var isDuplicate = "\"IsDuplicate\":true";
 
-                    var notDuplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(notDuplicate, StringComparison.Ordinal) != -1);
-                    var duplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(isDuplicate, StringComparison.Ordinal) != -1);
+                    var notDuplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(notDuplicate, StringComparison.Ordinal) != -1, new SearchLogOptions(notDuplicate));
+                    var duplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(isDuplicate, StringComparison.Ordinal) != -1, new SearchLogOptions(isDuplicate));
 
                     Assert.NotNull(notDuplicateResult.MatchedEvent);
                     Assert.NotNull(duplicateResult.MatchedEvent);
@@ -122,15 +122,16 @@ namespace LoRaWan.Tests.E2E
                     switch (strategy)
                     {
                         case "Mark":
-                            await TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, "dupmsg", "true");
+                            var expectedProperty = "dupmsg";
+                            await TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedProperty, "true", new SearchLogOptions(expectedProperty));
                             break;
                         case "Drop":
                             var logMsg = $"{device.DeviceID}: duplication strategy indicated to not process message";
-                            var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(logMsg, StringComparison.Ordinal), new SearchLogOptions { Description = logMsg, SourceIdFilter = duplicateResult.MatchedEvent.SourceId });
+                            var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(logMsg, StringComparison.Ordinal), new SearchLogOptions(logMsg) { SourceIdFilter = duplicateResult.MatchedEvent.SourceId });
                             Assert.NotNull(droppedLog.MatchedEvent);
 
                             var expectedPayload = $"{{\"value\":{msg}}}";
-                            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
                             break;
                         default:
                             throw new SwitchExpressionException();

@@ -26,25 +26,25 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public string AuthCode { get; private set; }
 
-        public abstract Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId);
+        public abstract Task<uint> NextFCntDownAsync(DevEui devEUI, uint fcntDown, uint fcntUp, string gatewayId);
 
-        public abstract Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId);
+        public abstract Task<bool> ABPFcntCacheResetAsync(DevEui devEUI, uint fcntUp, string gatewayId);
 
         /// <summary>
         /// Searchs devices based on devAddr.
         /// </summary>
-        public abstract Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr);
+        public abstract Task<SearchDevicesResult> SearchByDevAddrAsync(DevAddr devAddr);
 
         /// <summary>
         /// Search and locks device for join request.
         /// </summary>
-        public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, DevNonce devNonce);
+        public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, DevEui devEUI, DevNonce devNonce);
 
         /// <summary>
-        /// Searches station devices in IoT Hub.
+        /// Searches the primary key for a station device in IoT Hub.
         /// </summary>
         /// <param name="eui">EUI of the station.</param>
-        public abstract Task<SearchDevicesResult> SearchByEuiAsync(StationEui eui);
+        public abstract Task<string> GetPrimaryKeyByEuiAsync(StationEui eui);
 
         /// <summary>
         /// Fetch station credentials in IoT Hub.
@@ -53,17 +53,24 @@ namespace LoRaWan.NetworkServer
         public abstract Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype, CancellationToken token);
 
         /// <summary>
-        /// Searches LoRa devices in IoT Hub.
+        /// Fetch station firmware file.
+        /// </summary>
+        /// <param name="eui">EUI of the station.</param>
+        /// <returns>An instance of <see cref="HttpContent"/> with the firmware content.</returns>
+        public abstract Task<HttpContent> FetchStationFirmwareAsync(StationEui eui, CancellationToken token);
+
+        /// <summary>
+        /// Searches the primary key for a LoRa device in IoT Hub.
         /// </summary>
         /// <param name="eui">EUI of the LoRa device.</param>
-        public abstract Task<SearchDevicesResult> SearchByEuiAsync(DevEui eui);
+        public abstract Task<string> GetPrimaryKeyByEuiAsync(DevEui eui);
 
         /// <summary>
         /// Sets the authorization code for the URL.
         /// </summary>
         public void SetAuthCode(string value) => AuthCode = value;
 
-        public abstract Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request);
+        public abstract Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(DevEui devEUI, FunctionBundlerRequest request);
 
         protected LoRaDeviceAPIServiceBase()
         {

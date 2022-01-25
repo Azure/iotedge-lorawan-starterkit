@@ -6,10 +6,12 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.Mac;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Logging;
@@ -76,9 +78,9 @@ namespace LoRaWan.NetworkServer
             var loraPayload = (LoRaPayloadData)request.Payload;
             this.d2cPayloadSizeHistogram?.Record(loraPayload.Frmpayload.Length);
 
-            var payloadFcnt = loraPayload.GetFcnt();
+            var payloadFcnt = loraPayload.Fcnt;
 
-            var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
+            var payloadFcntAdjusted = LoRaPayloadData.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
             this.logger.LogDebug($"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}");
 
             var requiresConfirmation = request.Payload.RequiresConfirmation;
@@ -212,7 +214,9 @@ namespace LoRaWan.NetworkServer
                     {
                         try
                         {
-                            decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey);
+                            decryptedPayloadData = loraPayload.Fport == FramePort.MacCommand
+                                ? loraPayload.GetDecryptedPayload(loRaDevice.NwkSKey ?? throw new LoRaProcessingException("No NwkSKey set for the LoRaDevice.", LoRaProcessingErrorCode.PayloadDecryptionFailed))
+                                : loraPayload.GetDecryptedPayload(loRaDevice.AppSKey ?? throw new LoRaProcessingException("No AppSKey set for the LoRaDevice.", LoRaProcessingErrorCode.PayloadDecryptionFailed));
                         }
                         catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.PayloadDecryptionFailed)
                         {
@@ -221,30 +225,56 @@ namespace LoRaWan.NetworkServer
                     }
 
                     #region Handling MacCommands
-                    if (loraPayload.Fport == FramePort.MacCommand)
+                    // if FPort is 0 (i.e. MacCommand) the commands are in the payload
+                    // otherwise the commands are in FOpts field and already parsed
+                    if (loraPayload.Fport == FramePort.MacCommand && decryptedPayloadData?.Length > 0)
                     {
-                        if (!skipDownstreamToAvoidCollisions)
+                        loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
+                    }
+
+                    if (loraPayload.MacCommands is { Count: > 0 } macCommands)
+                    {
+                        foreach (var macCommand in macCommands)
                         {
-                            if (decryptedPayloadData?.Length > 0)
-                            {
-                                loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(decryptedPayloadData, this.logger);
-                            }
-
-                            if (loraPayload.IsMacAnswerRequired)
-                            {
-                                fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
-
-                                if (!fcntDown.HasValue || fcntDown <= 0)
-                                {
-                                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
-                                }
-
-                                requiresConfirmation = true;
-                            }
+                            this.logger.LogDebug($"{macCommand.Cid} mac command detected in upstream payload: {macCommand}");
                         }
                     }
+
+                    if (!skipDownstreamToAvoidCollisions && loraPayload.IsMacAnswerRequired)
+                    {
+                        fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+
+                        if (!fcntDown.HasValue || fcntDown <= 0)
+                        {
+                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                        }
+
+                        requiresConfirmation = true;
+                    }
+
+                    // Persist dwell time settings in device reported properties
+                    if (loraPayload.MacCommands is not null && loraPayload.MacCommands.Any(m => m.Cid == Cid.TxParamSetupCmd))
+                    {
+                        if (request.Region is DwellTimeLimitedRegion someRegion)
+                        {
+                            if (someRegion.DesiredDwellTimeSetting != loRaDevice.ReportedDwellTimeSetting)
+                            {
+                                loRaDevice.UpdateDwellTimeSetting(someRegion.DesiredDwellTimeSetting, acceptChanges: false);
+                                _ = await loRaDevice.SaveChangesAsync(force: true);
+                            }
+                            else
+                            {
+                                this.logger.LogDebug("Received 'TxParamSetupAns' even though reported dwell time settings match desired dwell time settings.");
+                            }
+                        }
+                        else
+                        {
+                            this.logger.LogWarning("Received 'TxParamSetupAns' in region '{Region}' which does not support dwell limitations.", request.Region.LoRaRegion);
+                        }
+                    }
+
                     #endregion
-                    else if (loraPayload.Fport is { } payloadPort)
+                    if (loraPayload.Fport is { } payloadPort and not FramePort.MacCommand)
                     {
                         if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
                         {
@@ -259,7 +289,7 @@ namespace LoRaWan.NetworkServer
 
                             if (decodePayloadResult.CloudToDeviceMessage != null)
                             {
-                                if (string.IsNullOrEmpty(decodePayloadResult.CloudToDeviceMessage.DevEUI) || string.Equals(loRaDevice.DevEUI, decodePayloadResult.CloudToDeviceMessage.DevEUI, StringComparison.OrdinalIgnoreCase))
+                                if (decodePayloadResult.CloudToDeviceMessage.DevEUI is null || loRaDevice.DevEUI == decodePayloadResult.CloudToDeviceMessage.DevEUI)
                                 {
                                     // sending c2d to same device
                                     cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
@@ -283,6 +313,17 @@ namespace LoRaWan.NetworkServer
                                 }
                             }
                         }
+                    }
+
+                    if (request.Region is DwellTimeLimitedRegion someDwellTimeLimitedRegion
+                        && loRaDevice.ReportedDwellTimeSetting != someDwellTimeLimitedRegion.DesiredDwellTimeSetting
+                        && cloudToDeviceMessage == null)
+                    {
+                        this.logger.LogDebug("Preparing 'TxParamSetupReq' MAC command downstream.");
+                        // put the MAC command into a C2D message.
+                        cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { MacCommands = { new TxParamSetupRequest(someDwellTimeLimitedRegion.DesiredDwellTimeSetting) } };
+                        fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                        requiresConfirmation = true;
                     }
 
                     var sendUpstream = concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || loRaDevice.Deduplication is not DeduplicationMode.Drop;
@@ -583,21 +624,17 @@ namespace LoRaWan.NetworkServer
             uint maxPayload;
 
             // If preferred Window is RX2, this is the max. payload
-            if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
+            if (loRaDevice.PreferredWindow == ReceiveWindowNumber.ReceiveWindow2)
             {
                 // Get max. payload size for RX2, considering possible user provided Rx2DataRate
                 if (this.configuration.Rx2DataRate is null)
                 {
-                    if (loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2)
-                    {
-                        var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel));
-                        (_, maxPayload) = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate];
+                    var deviceJoinInfo = loRaRegion.LoRaRegion == LoRaRegionType.CN470RP2
+                        ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
+                        : null;
 
-                    }
-                    else
-                    {
-                        (_, maxPayload) = loRaRegion.DRtoConfiguration[loRaRegion.GetDefaultRX2ReceiveWindow().DataRate];
-                    }
+                    var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                    (_, maxPayload) = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate];
                 }
                 else
                 {
@@ -646,7 +683,7 @@ namespace LoRaWan.NetworkServer
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
             var deviceTelemetry = new LoRaDeviceTelemetry(request, loRaPayloadData, decodedValue, decryptedPayloadData)
             {
-                DeviceEUI = loRaDevice.DevEUI,
+                DeviceEUI = loRaDevice.DevEUI.ToString(),
                 GatewayID = this.configuration.GatewayID,
                 Edgets = (long)(timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds
             };

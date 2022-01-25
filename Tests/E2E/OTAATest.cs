@@ -47,7 +47,7 @@ namespace LoRaWan.Tests.E2E
             const int MESSAGES_COUNT = 10;
 
             await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEui);
             await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await ArduinoDevice.SetupLora(TestFixtureCi.Configuration);
@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.E2E
 
             if (device.IsMultiGw)
             {
-                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DeviceID);
+                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);
             }
 
             // Sends 10x unconfirmed messages
@@ -90,7 +90,7 @@ namespace LoRaWan.Tests.E2E
                 // Ensure device payload is available
                 // Data: {"value": 51}
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -110,11 +110,11 @@ namespace LoRaWan.Tests.E2E
                 {
                     // multi gw, make sure one ignored the message
                     var searchTokenSending = $"{device.DeviceID}: sending message to station with EUI";
-                    var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase));
+                    var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenSending));
                     Assert.NotNull(sending.MatchedEvent);
 
                     var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
-                    var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase));
+                    var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenAlreadySent));
                     Assert.NotNull(ignored.MatchedEvent);
 
                     Assert.NotEqual(sending.MatchedEvent.SourceId, ignored.MatchedEvent.SourceId);
@@ -133,13 +133,14 @@ namespace LoRaWan.Tests.E2E
                 if (ArduinoDevice.SerialLogs.Any(x => x.StartsWith("+CMSG: RXWIN1", StringComparison.Ordinal)))
                 {
                     // Expect that the response is done on DR4 as the RX1 offset is 1 on this device.
-                    await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"DataRateRx1\":4", StringComparison.Ordinal), null);
+                    const string logMessage = "\"Rx1\":{\"DataRate\":4";
+                    await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains(logMessage, StringComparison.Ordinal), new SearchLogOptions(logMessage));
                 }
 
                 // Ensure device payload is available
                 // Data: {"value": 51}
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }

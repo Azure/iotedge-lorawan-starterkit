@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.ThrowsAsync<ArgumentException>(() => factory.CreateAndRegisterAsync(deviceInfo, CancellationToken.None));
 
             deviceInfo = DefaultDeviceInfo;
-            deviceInfo.DevEUI = null;
+            deviceInfo.DevEUI = new DevEui(0);
             Assert.ThrowsAsync<ArgumentException>(() => factory.CreateAndRegisterAsync(deviceInfo, this.cancellationToken));
         }
 
@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var device = await factory.CreateAndRegisterAsync(DefaultDeviceInfo, this.cancellationToken);
 
-            Assert.True(cache.TryGetByDevEui(DefaultDeviceInfo.DevEUI, out var cachedDevice));
+            Assert.True(cache.TryGetByDevEui(this.DefaultDeviceInfo.DevEUI, out var cachedDevice));
             Assert.Equal(device, cachedDevice);
 
             factory.LastDeviceMock.Verify(x => x.InitializeAsync(DefaultConfiguration, this.cancellationToken), Times.Once);
@@ -80,7 +80,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, x => x.Setup(y => y.InitializeAsync(DefaultConfiguration, this.cancellationToken)).ReturnsAsync(false));
             await Assert.ThrowsAsync<LoRaProcessingException>(() => factory.CreateAndRegisterAsync(DefaultDeviceInfo, this.cancellationToken));
 
-            Assert.False(cache.TryGetByDevEui(DefaultDeviceInfo.DevEUI, out _));
+            Assert.False(cache.TryGetByDevEui(this.DefaultDeviceInfo.DevEUI, out _));
             connectionManager.VerifyFailure(factory.LastDeviceMock.Object);
             factory.LastDeviceMock.Protected().Verify(nameof(LoRaDevice.Dispose), Times.Once(), true, true);
         }
@@ -90,7 +90,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static LoRaDeviceCache CreateDefaultCache()
             => LoRaDeviceCacheDefault.CreateDefault();
 
-        private readonly IoTHubDeviceInfo DefaultDeviceInfo = new IoTHubDeviceInfo() { DevEUI = "0000000000000000", PrimaryKey = "AAAA", DevAddr = "FFFFFFFF" };
+        private readonly IoTHubDeviceInfo DefaultDeviceInfo = new IoTHubDeviceInfo
+        {
+            DevEUI = new DevEui(1),
+            PrimaryKey = "AAAA",
+            DevAddr = new DevAddr(0xffffffff),
+        };
 
         private class TestDeviceFactory : LoRaDeviceFactory
         {

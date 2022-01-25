@@ -10,14 +10,17 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class FunctionBundlerIntegrationTests : MessageProcessorTestBase
     {
+        public FunctionBundlerIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Fact]
         public async Task Validate_Function_Bundler_Execution()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEUI = simulatedDevice.LoRaDevice.DevEui;
 
             var loRaDevice = CreateLoRaDevice(simulatedDevice);
             loRaDevice.Deduplication = DeduplicationMode.Drop;
@@ -35,7 +38,7 @@ namespace LoRaWan.Tests.Integration
                         NextFCntDown = simulatedDevice.FrmCntDown + 1
                     });
 
-            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                 .ReturnsAsync(true);
 
             LoRaDeviceClient

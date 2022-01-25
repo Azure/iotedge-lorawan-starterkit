@@ -17,8 +17,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var sut = new SearchDevicesResult(GenerateIoTHubDeviceInfo(5));
 
             // act + assert
-            foreach (var (el, i) in sut.Select((el, i) => (el, i)))
-                Assert.Equal(i.ToString(CultureInfo.InvariantCulture), el.DevEUI);
+            foreach (var (el, n) in sut.Select((el, i) => (el, checked((ulong)i + 1))))
+                Assert.Equal(new DevEui(n), el.DevEUI);
         }
 
         [Theory]
@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var sut = new SearchDevicesResult(GenerateIoTHubDeviceInfo(5));
 
             // act + assert
-            Assert.Equal("1", sut[1].DevEUI);
+            Assert.Equal(new DevEui(2), sut[1].DevEUI);
         }
 
         [Fact]
@@ -61,9 +61,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         private static IoTHubDeviceInfo[] GenerateIoTHubDeviceInfo(int number) =>
-            Enumerable.Range(0, number)
-                      .Select(i => i.ToString(CultureInfo.InvariantCulture))
-                      .Select(i => new IoTHubDeviceInfo { PrimaryKey = i, DevEUI = i, DevAddr = i })
+            Enumerable.Range(1, number)
+                      .Select(i => new IoTHubDeviceInfo
+                      {
+                          PrimaryKey = i.ToString(CultureInfo.InvariantCulture),
+                          DevEUI = new DevEui(checked((ulong)i)),
+                          DevAddr = new DevAddr(checked((uint)i)),
+                      })
                       .ToArray();
     }
 }

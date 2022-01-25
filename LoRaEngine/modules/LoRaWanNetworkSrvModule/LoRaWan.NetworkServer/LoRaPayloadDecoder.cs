@@ -11,7 +11,6 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using System.Web;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -49,21 +48,38 @@ namespace LoRaWan.NetworkServer
             this.httpClient = httpClient;
         }
 
-        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, FramePort fport, string sensorDecoder)
+        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(DevEui devEui, byte[] payload, FramePort fport, string sensorDecoder)
         {
             sensorDecoder ??= string.Empty;
 
             var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
 
             // Call local decoder (no "http://" in SensorDecoder)
-            if (!sensorDecoder.Contains("http://", StringComparison.Ordinal))
+            if (Uri.TryCreate(sensorDecoder, UriKind.Absolute, out var url) && url.Scheme is "http")
+            {
+                // Support decoders that have a parameter in the URL
+                // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
+
+                var query = HttpUtility.ParseQueryString(url.Query);
+                query["devEUI"] = devEui.ToString();
+                query["fport"] = ((int)fport).ToString(CultureInfo.InvariantCulture);
+                query["payload"] = base64Payload;
+
+                var urlBuilder = new UriBuilder(url) { Query = query.ToString() };
+
+                if (urlBuilder.Path.EndsWith('/'))
+                    urlBuilder.Path = urlBuilder.Path[..^1];
+
+                return await CallSensorDecoderModule(urlBuilder.Uri);
+            }
+            else
             {
                 var decoderType = typeof(LoRaPayloadDecoder);
                 var toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
 
                 if (toInvoke != null)
                 {
-                    return new DecodePayloadResult(toInvoke.Invoke(null, new object[] { devEUI, payload, fport }));
+                    return new DecodePayloadResult(toInvoke.Invoke(null, new object[] { devEui, payload, fport }));
                 }
                 else
                 {
@@ -72,31 +88,6 @@ namespace LoRaWan.NetworkServer
                         Error = $"'{sensorDecoder}' decoder not found",
                     };
                 }
-            }
-            else
-            {
-                // Call SensorDecoderModule hosted in seperate container ("http://" in SensorDecoder)
-                // Format: http://containername/api/decodername
-                var toCall = sensorDecoder;
-
-                if (sensorDecoder.EndsWith("/", StringComparison.Ordinal))
-                {
-                    toCall = sensorDecoder[..^1];
-                }
-
-                // Support decoders that have a parameter in the URL
-                // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
-                var queryStringParamSeparator = toCall.Contains('?', StringComparison.Ordinal) ? "&" : "?";
-
-                // use HttpUtility to UrlEncode Fport and payload
-                var payloadEncoded = HttpUtility.UrlEncode(base64Payload);
-                var devEUIEncoded = HttpUtility.UrlEncode(devEUI);
-
-                // Add Fport and Payload to URL
-                var url = new Uri($"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={(byte)fport}&payload={payloadEncoded}");
-
-                // Call SensorDecoderModule
-                return await CallSensorDecoderModule(url);
             }
         }
 
@@ -167,14 +158,14 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Value sensor decoding, from <see cref="byte[]"/> to <see cref="DecodePayloadResult"/>.
         /// </summary>
-        /// <param name="devEUI">Device identifier.</param>
+        /// <param name="devEui">Device identifier.</param>
         /// <param name="payload">The payload to decode.</param>
         /// <param name="fport">The received frame port.</param>
         /// <returns>The decoded value as a JSON string.</returns>
 #pragma warning disable CA1801 // Review unused parameters
 #pragma warning disable IDE0060 // Remove unused parameter
         // Method is invoked via reflection.
-        public static object DecoderValueSensor(string devEUI, byte[] payload, FramePort fport)
+        public static object DecoderValueSensor(DevEui devEui, byte[] payload, FramePort fport)
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore CA1801 // Review unused parameters
         {
@@ -196,18 +187,18 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Value Hex decoding, from <see cref="byte[]"/> to <see cref="DecodePayloadResult"/>.
         /// </summary>
-        /// <param name="devEUI">Device identifier.</param>
+        /// <param name="devEui">Device identifier.</param>
         /// <param name="payload">The payload to decode.</param>
         /// <param name="fport">The received frame port.</param>
         /// <returns>The decoded value as a JSON string.</returns>
 #pragma warning disable CA1801 // Review unused parameters
 #pragma warning disable IDE0060 // Remove unused parameter
         // Method is invoked via reflection and part of a public API.
-        public static object DecoderHexSensor(string devEUI, byte[] payload, FramePort fport)
+        public static object DecoderHexSensor(DevEui devEui, byte[] payload, FramePort fport)
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore CA1801 // Review unused parameters
         {
-            var payloadHex = ((payload?.Length ?? 0) == 0) ? string.Empty : ConversionHelper.ByteArrayToString(payload);
+            var payloadHex = ((payload?.Length ?? 0) == 0) ? string.Empty : payload.ToHex();
             return new DecodedPayloadValue(payloadHex);
         }
     }

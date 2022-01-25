@@ -5,6 +5,7 @@ namespace LoRaTools.Regions
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using LoRaTools.Utils;
     using LoRaWan;
     using static LoRaWan.DataRateIndex;
@@ -25,37 +26,62 @@ namespace LoRaTools.Regions
             Mega(926.3),
             Mega(926.9),
             Mega(927.5)
-       };
+        };
+
+        private static readonly ImmutableDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DrToConfigurationByDrIndex =
+            new Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)>
+            {
+                [DR0] = (LoRaDataRate.SF10BW125, MaxPayloadSize: 19),
+                [DR1] = (LoRaDataRate.SF9BW125, MaxPayloadSize: 61),
+                [DR2] = (LoRaDataRate.SF8BW125, MaxPayloadSize: 133),
+                [DR3] = (LoRaDataRate.SF7BW125, MaxPayloadSize: 250),
+                [DR4] = (LoRaDataRate.SF8BW500, MaxPayloadSize: 250),
+                [DR8] = (LoRaDataRate.SF12BW500, MaxPayloadSize: 61),
+                [DR9] = (LoRaDataRate.SF11BW500, MaxPayloadSize: 137),
+                [DR10] = (LoRaDataRate.SF10BW500, MaxPayloadSize: 250),
+                [DR11] = (LoRaDataRate.SF9BW500, MaxPayloadSize: 250),
+                [DR12] = (LoRaDataRate.SF8BW500, MaxPayloadSize: 250),
+                [DR13] = (LoRaDataRate.SF7BW500, MaxPayloadSize: 250),
+            }.ToImmutableDictionary();
+
+        public override IReadOnlyDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration => DrToConfigurationByDrIndex;
+
+        private static readonly ImmutableDictionary<uint, double> MaxEirpByTxPower =
+            new Dictionary<uint, double>
+            {
+                [0] = 30,
+                [1] = 29,
+                [2] = 28,
+                [3] = 27,
+                [4] = 26,
+                [5] = 25,
+                [6] = 24,
+                [7] = 23,
+                [8] = 22,
+                [9] = 21,
+                [10] = 20,
+                [11] = 19,
+                [12] = 18,
+                [13] = 17,
+            }.ToImmutableDictionary();
+
+        public override IReadOnlyDictionary<uint, double> TXPowertoMaxEIRP => MaxEirpByTxPower;
+
+        private static readonly ImmutableArray<IReadOnlyList<DataRateIndex>> RX1DROffsetTableInternal =
+            new IReadOnlyList<DataRateIndex>[]
+            {
+                new[] { DR10, DR9,  DR8,  DR8  }.ToImmutableArray(),
+                new[] { DR11, DR10, DR9,  DR8  }.ToImmutableArray(),
+                new[] { DR12, DR11, DR10, DR9  }.ToImmutableArray(),
+                new[] { DR13, DR12, DR11, DR10 }.ToImmutableArray(),
+                new[] { DR13, DR13, DR12, DR11 }.ToImmutableArray(),
+            }.ToImmutableArray();
+
+        public override IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable => RX1DROffsetTableInternal;
 
         public RegionUS915()
             : base(LoRaRegionType.US915)
         {
-            DRtoConfiguration.Add(DR0, (LoRaDataRate.SF10BW125, MaxPayloadSize: 19));
-            DRtoConfiguration.Add(DR1, (LoRaDataRate.SF9BW125, MaxPayloadSize: 61));
-            DRtoConfiguration.Add(DR2, (LoRaDataRate.SF8BW125, MaxPayloadSize: 133));
-            DRtoConfiguration.Add(DR3, (LoRaDataRate.SF7BW125, MaxPayloadSize: 250));
-            DRtoConfiguration.Add(DR4, (LoRaDataRate.SF8BW500, MaxPayloadSize: 250));
-            DRtoConfiguration.Add(DR8, (LoRaDataRate.SF12BW500, MaxPayloadSize: 61));
-            DRtoConfiguration.Add(DR9, (LoRaDataRate.SF11BW500, MaxPayloadSize: 137));
-            DRtoConfiguration.Add(DR10, (LoRaDataRate.SF10BW500, MaxPayloadSize: 250));
-            DRtoConfiguration.Add(DR11, (LoRaDataRate.SF9BW500, MaxPayloadSize: 250));
-            DRtoConfiguration.Add(DR12, (LoRaDataRate.SF8BW500, MaxPayloadSize: 250));
-            DRtoConfiguration.Add(DR13, (LoRaDataRate.SF7BW500, MaxPayloadSize: 250));
-
-            for (uint i = 0; i < 14; i++)
-            {
-                TXPowertoMaxEIRP.Add(i, 30 - i);
-            }
-
-            RX1DROffsetTable = new[]
-            {
-                new[] { DR10, DR9,  DR8,  DR8  },
-                new[] { DR11, DR10, DR9,  DR8  },
-                new[] { DR12, DR11, DR10, DR9  },
-                new[] { DR13, DR12, DR11, DR10 },
-                new[] { DR13, DR13, DR12, DR11 },
-            };
-
             var upstreamValidDataranges = new HashSet<DataRate>
             {
                 LoRaDataRate.SF10BW125, // 0
@@ -85,14 +111,12 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency on which the message was transmitted.</param>
         /// <param name="upstreamDataRate">Data rate at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate, DeviceJoinInfo deviceJoinInfo = null)
+        public override bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, DeviceJoinInfo deviceJoinInfo, out Hertz downstreamFrequency)
         {
-            if (upstreamDataRate is null) throw new ArgumentNullException(nameof(upstreamDataRate));
-
             if (!IsValidUpstreamFrequency(upstreamFrequency))
                 throw new LoRaProcessingException($"Invalid upstream frequency {upstreamFrequency}", LoRaProcessingErrorCode.InvalidFrequency);
 
-            if (!IsValidUpstreamDataRate(upstreamDataRate.Value))
+            if (!IsValidUpstreamDataRate(upstreamDataRate))
                 throw new LoRaProcessingException($"Invalid upstream data rate {upstreamDataRate}", LoRaProcessingErrorCode.InvalidDataRate);
 
             int upstreamChannelNumber;
@@ -106,6 +130,6 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new RX2ReceiveWindow(Mega(923.3), DR8);
+        public override ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) => new ReceiveWindow(DR8, Mega(923.3));
     }
 }

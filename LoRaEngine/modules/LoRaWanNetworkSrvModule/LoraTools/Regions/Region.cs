@@ -9,54 +9,51 @@ namespace LoRaTools.Regions
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
+    using static LoRaWan.RxDelay;
 
     public abstract class Region
     {
-        private const ushort MAX_RX_DELAY = 15;
-
-        protected const double EPSILON = 0.00001;
-
         public LoRaRegionType LoRaRegion { get; set; }
 
         /// <summary>
-        /// Gets or sets datarate to configuration and max payload size (M)
+        /// Gets datarate to configuration and max payload size (M)
         /// max application payload size N should be N= M-8 bytes.
         /// This is in case of absence of Fopts field.
         /// </summary>
-        public Dictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration { get; } = new();
+        public abstract IReadOnlyDictionary<DataRateIndex, (DataRate DataRate, uint MaxPayloadSize)> DRtoConfiguration { get; }
 
         /// <summary>
-        /// Gets or sets by default MaxEIRP is considered to be +16dBm.
+        /// Gets by default MaxEIRP is considered to be +16dBm.
         /// If the end-device cannot achieve 16dBm EIRP, the Max EIRP SHOULD be communicated to the network server using an out-of-band channel during the end-device commissioning process.
         /// </summary>
-        public Dictionary<uint, double> TXPowertoMaxEIRP { get; } = new Dictionary<uint, double>();
+        public abstract IReadOnlyDictionary<uint, double> TXPowertoMaxEIRP { get; }
 
         /// <summary>
-        /// Gets or sets table to the get receive windows Offsets.
+        /// Gets table to the get receive windows Offsets.
         /// X = RX1DROffset Upstream DR
         /// Y = Downstream DR in RX1 slot.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable { get; set; }
+        public abstract IReadOnlyList<IReadOnlyList<DataRateIndex>> RX1DROffsetTable { get; }
 
         /// <summary>
         /// Gets or sets default first receive windows. [sec].
         /// </summary>
-        public uint ReceiveDelay1 { get; set; }
+        public RxDelay ReceiveDelay1 { get; } = RxDelay1;
 
         /// <summary>
         /// Gets or sets default second receive Windows. Should be receive_delay1+1 [sec].
         /// </summary>
-        public uint ReceiveDelay2 { get; set; }
+        public RxDelay ReceiveDelay2 { get; }
 
         /// <summary>
         /// Gets or sets default Join Accept Delay for first Join Accept Windows.[sec].
         /// </summary>
-        public uint JoinAcceptDelay1 { get; set; }
+        public RxDelay JoinAcceptDelay1 { get; } = RxDelay5;
 
         /// <summary>
         /// Gets or sets default Join Accept Delay for second Join Accept Windows. [sec].
         /// </summary>
-        public uint JoinAcceptDelay2 { get; set; }
+        public RxDelay JoinAcceptDelay2 { get; }
 
         /// <summary>
         /// Gets or sets max fcnt gap between expected and received. [#frame]
@@ -96,10 +93,8 @@ namespace LoRaTools.Regions
             LoRaRegion = regionEnum;
             RetransmitTimeout = (min: 1, max: 3);
 
-            ReceiveDelay1 = 1;
-            ReceiveDelay2 = 2;
-            JoinAcceptDelay1 = 5;
-            JoinAcceptDelay2 = 6;
+            ReceiveDelay2 = ReceiveDelay1.Inc();
+            JoinAcceptDelay2 = JoinAcceptDelay1.Inc();
             MaxFcntGap = 16384;
             AdrAckLimit = 64;
             AdrAdrDelay = 32;
@@ -122,7 +117,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamFrequency">Frequency of the upstream message.</param>
         /// <param name="upstreamDataRate">Ustream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, out Hertz downstreamFrequency, DataRateIndex? upstreamDataRate = null, DeviceJoinInfo deviceJoinInfo = null);
+        public abstract bool TryGetDownstreamChannelFrequency(Hertz upstreamFrequency, DataRateIndex upstreamDataRate, DeviceJoinInfo deviceJoinInfo, out Hertz downstreamFrequency);
 
         /// <summary>
         /// Returns downstream data rate based on the upstream data rate and RX1 DR offset.
@@ -152,7 +147,7 @@ namespace LoRaTools.Regions
         /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null);
+        public abstract ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo);
 
         /// <summary>
         /// Get the downstream RX2 frequency.
@@ -161,7 +156,7 @@ namespace LoRaTools.Regions
         /// <param name="nwkSrvRx2Freq">the value of the rx2freq env var on the nwk srv.</param>
         /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
         /// <returns>rx2 freq.</returns>
-        public Hertz GetDownstreamRX2Freq(Hertz? nwkSrvRx2Freq, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
+        public Hertz GetDownstreamRX2Freq(Hertz? nwkSrvRx2Freq, DeviceJoinInfo deviceJoinInfo, ILogger logger)
         {
             // resolve frequency to gateway if set to region's default
             if (nwkSrvRx2Freq is { } someNwkSrvRx2Freq)
@@ -172,7 +167,7 @@ namespace LoRaTools.Regions
             else
             {
                 // default frequency
-                (var defaultFrequency, _) = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                var (_, defaultFrequency) = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
                 logger.LogDebug($"using standard region RX2 frequency {defaultFrequency}");
                 return defaultFrequency;
             }
@@ -184,7 +179,7 @@ namespace LoRaTools.Regions
         /// <param name="nwkSrvRx2Dr">The network server rx2 datarate.</param>
         /// <param name="rx2DrFromTwins">RX2 datarate value from twins.</param>
         /// <returns>The RX2 data rate.</returns>
-        public DataRateIndex GetDownstreamRX2DataRate(DataRateIndex? nwkSrvRx2Dr, DataRateIndex? rx2DrFromTwins, ILogger logger, DeviceJoinInfo deviceJoinInfo = null)
+        public DataRateIndex GetDownstreamRX2DataRate(DataRateIndex? nwkSrvRx2Dr, DataRateIndex? rx2DrFromTwins, DeviceJoinInfo deviceJoinInfo, ILogger logger)
         {
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
@@ -232,8 +227,6 @@ namespace LoRaTools.Regions
             DRtoConfiguration.FirstOrDefault(x => x.Value.DataRate == datr) is (var index, (not null, _)) ? index : throw new KeyNotFoundException("");
 
         public bool IsValidRX1DROffset(int rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= RX1DROffsetTable[0].Count - 1;
-
-        public static bool IsValidRXDelay(ushort desiredRXDelay) => desiredRXDelay is >= 0 and <= MAX_RX_DELAY;
 
         /// <summary>
         /// Gets required Signal-to-noise ratio to demodulate a LoRa signal given a spread Factor

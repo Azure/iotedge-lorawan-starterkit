@@ -12,7 +12,7 @@ namespace LoRaWan.Tests.Unit
 
 #pragma warning disable CA1812 // Unused class
     // Used as Theory Data
-    internal class ADRTestData : TheoryData<string, string, List<LoRaADRTableEntry>, RadioMetadata, LoRaADRResult>
+    internal class ADRTestData : TheoryData<string, DevEui, List<LoRaADRTableEntry>, RadioMetadata, LoRaADRResult>
 #pragma warning restore CA1812 // Unused class
     {
         public ADRTestData()
@@ -20,13 +20,13 @@ namespace LoRaWan.Tests.Unit
             // First test not enough entries to send back an answer
             var tableentries = new List<LoRaADRTableEntry>();
 
-            var deviceNameNotEnoughEntries = "notenoughentries";
+            var deviceEuiNotEnoughEntries = TestEui.GenerateDevEui();
 
             for (uint i = 0; i < 10; i++)
             {
                 tableentries.Add(new LoRaADRTableEntry()
                 {
-                    DevEUI = deviceNameNotEnoughEntries,
+                    DevEUI = deviceEuiNotEnoughEntries,
                     FCnt = i,
                     GatewayCount = 1,
                     GatewayId = "mygateway",
@@ -34,8 +34,8 @@ namespace LoRaWan.Tests.Unit
                 });
             }
 
-            var radioMetadata = new RadioMetadata(DataRateIndex.DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
-            AddRow("Not enough entries to calculate ADR", deviceNameNotEnoughEntries, tableentries, radioMetadata, true, new LoRaADRResult()
+            var radioMetadata = new RadioMetadata(DataRateIndex.DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow(default).Frequency, null);
+            AddRow("Not enough entries to calculate ADR", deviceEuiNotEnoughEntries, tableentries, radioMetadata, true, new LoRaADRResult()
             {
                 DataRate = DR5,
                 TxPower = 0,
@@ -47,13 +47,13 @@ namespace LoRaWan.Tests.Unit
             // Second test enough entries, as very low SNR and max txpower
             // **************************************************************
             var lowerDRTable = new List<LoRaADRTableEntry>();
-            var lowerDRDeviceName = "decreaseTxPower";
+            var lowerDRDeviceEui = TestEui.GenerateDevEui();
 
             for (uint i = 0; i < 21; i++)
             {
                 lowerDRTable.Add(new LoRaADRTableEntry()
                 {
-                    DevEUI = lowerDRDeviceName,
+                    DevEUI = lowerDRDeviceEui,
                     FCnt = i,
                     GatewayCount = 1,
                     GatewayId = "mygateway",
@@ -61,25 +61,25 @@ namespace LoRaWan.Tests.Unit
                 });
             }
 
-            var notenoughentries = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
+            var notenoughentries = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow(default).Frequency, null);
             var loRaADRResult = new LoRaADRResult()
             {
                 DataRate = 0,
                 NbRepetition = 1,
                 TxPower = 0
             };
-            AddRow("ADR setting DR to 0", lowerDRDeviceName, lowerDRTable, notenoughentries, false, loRaADRResult);
+            AddRow("ADR setting DR to 0", lowerDRDeviceEui, lowerDRTable, notenoughentries, false, loRaADRResult);
             // **************************************************************
             // Third test enough entries increase nbrep, as one message every three is received
             // **************************************************************
             var increaseNbReptableentries = new List<LoRaADRTableEntry>();
-            var increaseNbRepDeviceName = "Increase NpRep";
+            var increaseNbRepDeviceEui = TestEui.GenerateDevEui();
 
             for (uint i = 0; i < 21; i++)
             {
                 increaseNbReptableentries.Add(new LoRaADRTableEntry()
                 {
-                    DevEUI = increaseNbRepDeviceName,
+                    DevEUI = increaseNbRepDeviceEui,
                     FCnt = 3 * i,
                     GatewayCount = 1,
                     GatewayId = "mygateway",
@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Unit
                 });
             }
 
-            var increaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
+            var increaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow(default).Frequency, null);
             var increaseNbReploRaADRResult = new LoRaADRResult()
             {
                 DataRate = DR5,
@@ -96,20 +96,20 @@ namespace LoRaWan.Tests.Unit
                 FCntDown = 1
             };
 
-            AddRow("ADR increase NbRep", increaseNbRepDeviceName, increaseNbReptableentries, increaseNbRep, false, increaseNbReploRaADRResult);
+            AddRow("ADR increase NbRep", increaseNbRepDeviceEui, increaseNbReptableentries, increaseNbRep, false, increaseNbReploRaADRResult);
 
             // **************************************************************
             // Fourth test enough entries decrease nbrep messages pass through
             // ***
             var decreaseNbReptableentries = new List<LoRaADRTableEntry>();
-            var decreaseNbRepDeviceName = "Decrease NpRep";
+            var decreaseNbRepDeviceEui = TestEui.GenerateDevEui();
 
             // start by setting a high number of nbrep
             for (uint i = 0; i < 21; i++)
             {
                 decreaseNbReptableentries.Add(new LoRaADRTableEntry()
                 {
-                    DevEUI = decreaseNbRepDeviceName,
+                    DevEUI = decreaseNbRepDeviceEui,
                     FCnt = 3 * i,
                     GatewayCount = 1,
                     GatewayId = "mygateway",
@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.Unit
                 decreaseNbReptableentries.Add(
                     new LoRaADRTableEntry()
                     {
-                        DevEUI = decreaseNbRepDeviceName,
+                        DevEUI = decreaseNbRepDeviceEui,
                         FCnt = i,
                         GatewayCount = 1,
                         GatewayId = "mygateway",
@@ -130,7 +130,7 @@ namespace LoRaWan.Tests.Unit
                     });
             }
 
-            var decreaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow().Frequency, null);
+            var decreaseNbRep = new RadioMetadata(DR5, TestUtils.TestRegion.GetDefaultRX2ReceiveWindow(default).Frequency, null);
             var decreaseNbReploRaADRResult = new LoRaADRResult()
             {
                 DataRate = DR5,
@@ -138,7 +138,7 @@ namespace LoRaWan.Tests.Unit
                 TxPower = 2,
                 FCntDown = 1
             };
-            AddRow("ADR decrease NbRep", decreaseNbRepDeviceName, decreaseNbReptableentries, decreaseNbRep, false, decreaseNbReploRaADRResult);
+            AddRow("ADR decrease NbRep", decreaseNbRepDeviceEui, decreaseNbReptableentries, decreaseNbRep, false, decreaseNbReploRaADRResult);
         }
     }
 }

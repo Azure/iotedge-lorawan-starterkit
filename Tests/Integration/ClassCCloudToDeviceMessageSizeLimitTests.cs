@@ -13,13 +13,13 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging.Abstractions;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class CCloud to device message processing max payload size tests (Join tests are handled in other class)
@@ -34,6 +34,7 @@ namespace LoRaWan.Tests.Integration
         private readonly Region loRaRegion;
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
         private readonly Mock<ILoRaDeviceClient> deviceClient;
+        private readonly TestOutputLoggerFactory testOutputLoggerFactory;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
         private readonly MemoryCache cache;
         private readonly LoRaDeviceClientConnectionManager connectionManager;
@@ -41,7 +42,7 @@ namespace LoRaWan.Tests.Integration
         private readonly LoRaDeviceCache deviceCache = LoRaDeviceCacheDefault.CreateDefault();
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
-        public ClassCCloudToDeviceMessageSizeLimitTests()
+        public ClassCCloudToDeviceMessageSizeLimitTests(ITestOutputHelper testOutputHelper)
         {
             this.serverConfiguration = new NetworkServerConfiguration()
             {
@@ -52,9 +53,10 @@ namespace LoRaWan.Tests.Integration
             PacketForwarder = new TestPacketForwarder();
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
+            this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
 
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
+            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, this.connectionManager);
 
             this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory, this.deviceCache);
@@ -64,13 +66,13 @@ namespace LoRaWan.Tests.Integration
         private static void EnsureDownlinkIsCorrect(DownlinkMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
-            Assert.NotEmpty(downlink.Data);
+            Assert.False(downlink.Data.IsEmpty);
 
             var downstreamPayloadBytes = downlink.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(sentMessage.Fport, downstreamPayload.Fport);
-            Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
-            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
+            Assert.Equal(downstreamPayload.DevAddr, simDevice.DevAddr);
+            var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey.Value);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
         }
 
@@ -85,9 +87,8 @@ namespace LoRaWan.Tests.Integration
 
             var devEUI = simulatedDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(
-                    new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
+                .ReturnsAsync("123");
 
             var twin = simulatedDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
             {
@@ -100,7 +101,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
 
-            var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(this.loRaRegion.GetDefaultRX2ReceiveWindow().DataRate)
+            var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(this.loRaRegion.GetDefaultRX2ReceiveWindow(default).DataRate)
                 - c2dMessageMacCommandSize
                 - Constants.LoraProtocolOverheadSize;
 
@@ -114,7 +115,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2d.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -124,7 +125,7 @@ namespace LoRaWan.Tests.Integration
                 this.loRaDeviceRegistry,
                 PacketForwarder,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                this.testOutputLoggerFactory.CreateLogger<DefaultClassCDevicesMessageSender>(),
                 TestMeter.Instance);
 
             // Expectations
@@ -141,7 +142,7 @@ namespace LoRaWan.Tests.Integration
             // Get C2D message payload
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(simulatedDevice.AppSKey);
+            payloadDataDown.Serialize(simulatedDevice.AppSKey.Value);
 
             // Verify that expected Mac commands are present
             var expectedMacCommandsCount = 0;
@@ -175,8 +176,8 @@ namespace LoRaWan.Tests.Integration
 
             var devEUI = simulatedDevice.DevEUI;
 
-            this.deviceApi.Setup(x => x.SearchByEuiAsync(DevEui.Parse(devEUI)))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+            this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
+                .ReturnsAsync("123");
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(simulatedDevice.CreateABPTwin());
@@ -184,7 +185,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
 
-            var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(this.loRaRegion.GetDefaultRX2ReceiveWindow().DataRate)
+            var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(this.loRaRegion.GetDefaultRX2ReceiveWindow(default).DataRate)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;
@@ -199,7 +200,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2d.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -209,7 +210,7 @@ namespace LoRaWan.Tests.Integration
                 this.loRaDeviceRegistry,
                 PacketForwarder,
                 this.frameCounterStrategyProvider,
-                NullLogger<DefaultClassCDevicesMessageSender>.Instance,
+                this.testOutputLoggerFactory.CreateLogger<DefaultClassCDevicesMessageSender>(),
                 TestMeter.Instance);
 
             // Expectations
@@ -243,6 +244,7 @@ namespace LoRaWan.Tests.Integration
             this.loRaDeviceRegistry.Dispose();
             this.connectionManager.Dispose();
             this.cache.Dispose();
+            this.testOutputLoggerFactory.Dispose();
             this.deviceCache.Dispose();
         }
     }

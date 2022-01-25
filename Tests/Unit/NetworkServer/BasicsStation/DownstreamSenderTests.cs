@@ -9,11 +9,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using System.Threading.Tasks;
     using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
+    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using static RxDelay;
 
     public class DownstreamSenderTests
     {
@@ -45,24 +47,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-#pragma warning disable IDE0060 // Remove unused parameter. Will be reworked when we rework the param.
-#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public async Task SendDownstreamAsync_Succeeds_WithValidDownlinkMessage_ClassADevice(bool rfchHasValue)
-#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
-#pragma warning restore IDE0060 // Remove unused parameter
         {
-            // THIS TEST IS WRONG, rcfh
-
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
-                                                                  123456,
-                                                                  DataRateIndex.DR5,
-                                                                  DataRateIndex.DR0,
-                                                                  Hertz.Mega(868.5),
-                                                                  Hertz.Mega(869.5),
-                                                                  this.devEui,
-                                                                  lnsRxDelay: 1,
-                                                                  this.stationEui);
+                                                      123456,
+                                                      new ReceiveWindow(DataRateIndex.DR5, Hertz.Mega(868.5)),
+                                                      new ReceiveWindow(DataRateIndex.DR0, Hertz.Mega(869.5)),
+                                                      this.devEui,
+                                                      RxDelay1,
+                                                      LoRaDeviceClassType.A,
+                                                      this.stationEui,
+                                                      rfchHasValue ? 1 : null);
 
             var actualMessage = string.Empty;
             this.webSocketWriter.Setup(s => s.SendAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -76,7 +72,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // assert
             Assert.NotEmpty(actualMessage);
             Assert.Contains(@"""msgtype"":""dnmsg""", actualMessage, StringComparison.InvariantCulture);
-            Assert.Contains(@"""DevEui"":""FF-FF-FF-FF-FF-FF-FF-FF"",", actualMessage, StringComparison.InvariantCulture);
+            Assert.Contains(@"""DevEui"":""FFFFFFFFFFFFFFFF"",", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""dC"":0", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""pdu"":""5245465551513D3D"",", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""RxDelay"":1,", actualMessage, StringComparison.InvariantCulture);
@@ -85,40 +81,34 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             Assert.Contains(@"""RX2DR"":0,", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""RX2Freq"":869500000,", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""xtime"":123456,", actualMessage, StringComparison.InvariantCulture);
-           
+
             Assert.Contains(@"""priority"":0", actualMessage, StringComparison.InvariantCulture);
 
-            // THIS NEED TO BE REWORKED
-            // rctx need to be reworked
-            //if (rfchHasValue)
-            //{
-            //    Assert.Contains(@"""rctx"":1", actualMessage, StringComparison.InvariantCulture);
-            //}
-            //else
-            //{
-            //    Assert.DoesNotContain("rctx", actualMessage, StringComparison.InvariantCulture);
-            //}
+            if (rfchHasValue)
+            {
+                Assert.Contains(@"""rctx"":1", actualMessage, StringComparison.InvariantCulture);
+            }
+            else
+            {
+                Assert.DoesNotContain("rctx", actualMessage, StringComparison.InvariantCulture);
+            }
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-#pragma warning disable IDE0060 // Remove unused parameter. Will be reworked when we rework the param.
-#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public async Task SendDownstreamAsync_Succeeds_WithValidDownlinkMessage_ClassCDevice(bool rfchHasValue)
-#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
-#pragma warning restore IDE0060 // Remove unused parameter
         {
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
-                                                                  0,
-                                                                  DataRateIndex.DR5,
-                                                                  DataRateIndex.DR0,
-                                                                  Hertz.Mega(868.5),
-                                                                  Hertz.Mega(869.5),
-                                                                  this.devEui,
-                                                                  lnsRxDelay: 0,
-                                                                  this.stationEui);
+                                                      0,
+                                                      new ReceiveWindow(DataRateIndex.DR5, Hertz.Mega(868.5)),
+                                                      new ReceiveWindow(DataRateIndex.DR0, Hertz.Mega(869.5)),
+                                                      this.devEui,
+                                                      RxDelay0,
+                                                      LoRaDeviceClassType.C,
+                                                      this.stationEui,
+                                                      rfchHasValue ? 1 : null);
 
             var actualMessage = string.Empty;
             this.webSocketWriter.Setup(s => s.SendAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -132,7 +122,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // assert
             Assert.NotEmpty(actualMessage);
             Assert.Contains(@"""msgtype"":""dnmsg"",", actualMessage, StringComparison.InvariantCulture);
-            Assert.Contains(@"""DevEui"":""FF-FF-FF-FF-FF-FF-FF-FF"",", actualMessage, StringComparison.InvariantCulture);
+            Assert.Contains(@"""DevEui"":""FFFFFFFFFFFFFFFF"",", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""dC"":2,", actualMessage, StringComparison.InvariantCulture);
             Assert.Contains(@"""pdu"":""5245465551513D3D"",", actualMessage, StringComparison.InvariantCulture);
             // Will select DR0 as it is the second DR.
@@ -145,16 +135,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             Assert.DoesNotContain("RX1Freq", actualMessage, StringComparison.InvariantCulture);
             Assert.DoesNotContain(@"""xtime"":123456", actualMessage, StringComparison.InvariantCulture);
 
-            // THIS NEED TO BE REWORKED
-            // rctx need to be reworked
-            //if (rfchHasValue)
-            //{
-            //    Assert.Contains(@"""rctx"":1,", actualMessage, StringComparison.InvariantCulture);
-            //}
-            //else
-            //{
-            //    Assert.DoesNotContain("rctx", actualMessage, StringComparison.InvariantCulture);
-            //}
+            if (rfchHasValue)
+            {
+                Assert.Contains(@"""rctx"":1,", actualMessage, StringComparison.InvariantCulture);
+            }
+            else
+            {
+                Assert.DoesNotContain("rctx", actualMessage, StringComparison.InvariantCulture);
+            }
         }
 
         [Fact]
@@ -169,13 +157,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         {
             // arrange
             var downlinkMessage = new DownlinkMessage(this.loraDataByteArray,
-                                                                  0,
-                                                                  DataRateIndex.DR5,
-                                                                  DataRateIndex.DR0,
-                                                                  Hertz.Mega(868.5),
-                                                                  Hertz.Mega(868.5),
-                                                                  this.devEui,
-                                                                  lnsRxDelay: 0);
+                                                      0,
+                                                      new ReceiveWindow(DataRateIndex.DR5, Hertz.Mega(868.5)),
+                                                      new ReceiveWindow(DataRateIndex.DR0, Hertz.Mega(868.5)),
+                                                      this.devEui,
+                                                      RxDelay0,
+                                                      LoRaDeviceClassType.C);
 
             // act and assert
             await Assert.ThrowsAsync<ArgumentException>(() => this.downlinkSender.SendDownstreamAsync(downlinkMessage));

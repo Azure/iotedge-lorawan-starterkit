@@ -5,12 +5,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
     using System.IO;
+    using System.Runtime.CompilerServices;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
 
     internal class DownstreamSender : IPacketForwarder
@@ -45,7 +45,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             }
             else
             {
-                this.logger.LogWarning("Could not retrieve an active connection for Station with EUI '{StationEui}'. The payload '{Payload}' will be dropped.", message.StationEui, ConversionHelper.ByteArrayToString(message.Data));
+                this.logger.LogWarning("Could not retrieve an active connection for Station with EUI '{StationEui}'. The payload '{Payload}' will be dropped.", message.StationEui, message.Data.ToHex());
             }
         }
 
@@ -59,36 +59,58 @@ namespace LoRaWan.NetworkServer.BasicsStation
             writer.WriteString("msgtype", LnsMessageType.DownlinkMessage.ToBasicStationString());
             writer.WriteString("DevEui", message.DevEui.ToString());
 
-            // 0 is for Class A devices, 2 is for Class C devices
-            // Ideally there Class C downlink frame which answers an uplink which have RxDelay set
-            var deviceClassType = message.LnsRxDelay == 0 ? LoRaDeviceClassType.C : LoRaDeviceClassType.A;
-            writer.WriteNumber("dC", (int)deviceClassType);
+            writer.WriteNumber("dC", message.DeviceClassType switch
+            {
+                LoRaDeviceClassType.A => 0,
+                LoRaDeviceClassType.B => 1,
+                LoRaDeviceClassType.C => 2,
+                _ => throw new SwitchExpressionException(),
+            });
 
             // Getting and writing payload bytes
             var pduBytes = message.Data;
             var pduChars = new char[pduBytes.Length * 2];
-            Hexadecimal.Write(pduBytes, pduChars);
+            Hexadecimal.Write(pduBytes.Span, pduChars);
             writer.WriteString("pdu", pduChars);
 
 #pragma warning disable CA5394 // Do not use insecure randomness. This is fine as not used for any crypto operations.
             var diid = this.random.Next(int.MinValue, int.MaxValue);
             writer.WriteNumber("diid", diid);
 #pragma warning restore CA5394 // Do not use insecure randomness
-            LogSendingMessage(this.logger, message.StationEui, diid, ConversionHelper.ByteArrayToString(message.Data), null);
+            LogSendingMessage(this.logger, message.StationEui, diid, message.Data.ToHex(), null);
 
-            if (deviceClassType is LoRaDeviceClassType.A)
+            switch (message.DeviceClassType)
             {
-                writer.WriteNumber("RxDelay", message.LnsRxDelay);
-                writer.WriteNumber("RX1DR", (int)message.DataRateRx1);
-                writer.WriteNumber("RX1Freq", (ulong)message.FrequencyRx1);
-                writer.WriteNumber("RX2DR", (int)message.DataRateRx2);
-                writer.WriteNumber("RX2Freq", (ulong)message.FrequencyRx2);
-                writer.WriteNumber("xtime", message.Xtime);
-            }
-            else if (deviceClassType is LoRaDeviceClassType.C)
-            {
-                writer.WriteNumber("RX2DR", (int)message.DataRateRx2);
-                writer.WriteNumber("RX2Freq", (ulong)message.FrequencyRx2);
+                case LoRaDeviceClassType.A:
+                    writer.WriteNumber("RxDelay", message.LnsRxDelay.ToSeconds());
+                    if (message.Rx1 is var (datr, freq))
+                    {
+                        writer.WriteNumber("RX1DR", (int)datr);
+                        writer.WriteNumber("RX1Freq", (ulong)freq);
+                    }
+                    writer.WriteNumber("RX2DR", (int)message.Rx2.DataRate);
+                    writer.WriteNumber("RX2Freq", (ulong)message.Rx2.Frequency);
+                    writer.WriteNumber("xtime", message.Xtime);
+                    break;
+                case LoRaDeviceClassType.B:
+                    throw new NotSupportedException($"{nameof(DownstreamSender)} does not support class B devices yet.");
+                case LoRaDeviceClassType.C:
+                    // if Xtime is not zero, it means that we are answering to a previous message
+                    if (message.Xtime != 0)
+                    {
+                        writer.WriteNumber("RxDelay", message.LnsRxDelay.ToSeconds());
+                        writer.WriteNumber("xtime", message.Xtime);
+                        if (message.Rx1 is var (datrC, freqC))
+                        {
+                            writer.WriteNumber("RX1DR", (int)datrC);
+                            writer.WriteNumber("RX1Freq", (ulong)freqC);
+                        }
+                    }
+                    writer.WriteNumber("RX2DR", (int)message.Rx2.DataRate);
+                    writer.WriteNumber("RX2Freq", (ulong)message.Rx2.Frequency);
+                    break;
+                default:
+                    throw new SwitchExpressionException();
             }
 
             if (message.AntennaPreference.HasValue)

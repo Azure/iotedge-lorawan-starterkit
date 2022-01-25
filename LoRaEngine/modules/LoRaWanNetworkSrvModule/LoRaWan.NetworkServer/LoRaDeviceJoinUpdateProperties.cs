@@ -10,13 +10,13 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public class LoRaDeviceJoinUpdateProperties
     {
-        public string AppSKey { get; set; }
+        public AppSessionKey AppSKey { get; set; }
 
-        public string NwkSKey { get; set; }
+        public NetworkSessionKey NwkSKey { get; set; }
 
-        public string DevAddr { get; set; }
+        public DevAddr DevAddr { get; set; }
 
-        public string NetID { get; set; }
+        public NetId NetId { get; set; }
 
         public DevNonce DevNonce { get; set; }
 
@@ -24,7 +24,7 @@ namespace LoRaWan.NetworkServer
 
         public string PreferredGatewayID { get; set; }
 
-        public string AppNonce { get; set; }
+        public AppNonce AppNonce { get; set; }
 
         /// <summary>
         /// Gets or sets value indicating if region should be saved in reported properties.

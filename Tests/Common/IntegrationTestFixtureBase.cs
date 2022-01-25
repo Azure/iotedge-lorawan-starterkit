@@ -5,13 +5,16 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
+    using LoRaTools.Utils;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Xunit;
@@ -45,6 +48,18 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"[INFO] {nameof(Configuration.NetworkServerModuleLogAssertLevel)}: {Configuration.NetworkServerModuleLogAssertLevel}");
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        }
+
+        public string GetKey32(int deviceId, bool multiGw = false)
+        {
+            var target = multiGw ? Configuration.DeviceKeyFormatMultiGW : Configuration.DeviceKeyFormat;
+            var format = string.IsNullOrEmpty(target) ? "00000000000000000000000000000000" : target;
+            if (format.Length < 32)
+            {
+                format = format.PadLeft(32, '0');
+            }
+
+            return deviceId.ToString(format, CultureInfo.InvariantCulture);
         }
 
         public abstract void SetupTestDevices();
@@ -184,21 +199,6 @@ namespace LoRaWan.Tests.Common
             return this.moduleClient;
         }
 
-        public async Task InvokeModuleDirectMethodAsync(string edgeDeviceId, string moduleId, string methodName, object body)
-        {
-            try
-            {
-                var c2d = new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-                c2d.SetPayloadJson(JsonConvert.SerializeObject(body));
-                await GetServiceClient().InvokeDeviceMethodAsync(edgeDeviceId, moduleId, c2d);
-            }
-            catch (Exception ex)
-            {
-                TestLogger.Log($"[ERROR] Failed to call direct method, deviceId: {edgeDeviceId}, moduleId: {moduleId}, method: {methodName}: {ex.Message}");
-                throw;
-            }
-        }
-
         public async Task InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod method)
         {
             using var sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHubConnectionString);
@@ -230,36 +230,37 @@ namespace LoRaWan.Tests.Common
                 if (!string.IsNullOrEmpty(Configuration.DevicePrefix))
                 {
                     d.DeviceID = string.Concat(Configuration.DevicePrefix, d.DeviceID[Configuration.DevicePrefix.Length..]);
-                    if (!string.IsNullOrEmpty(d.AppEUI))
+                    if (d.AppEui is { } someJoinEui)
                     {
-                        d.AppEUI = string.Concat(Configuration.DevicePrefix, d.AppEUI[Configuration.DevicePrefix.Length..]);
+                        d.AppEui = JoinEui.Parse($"{Configuration.DevicePrefix}{someJoinEui.ToString()[Configuration.DevicePrefix.Length..]}");
                     }
 
-                    if (!string.IsNullOrEmpty(d.AppKey))
+                    if (d.AppKey is { } someAppKey)
                     {
-                        d.AppKey = string.Concat(Configuration.DevicePrefix, d.AppKey[Configuration.DevicePrefix.Length..]);
+                        d.AppKey = AppKey.Parse(string.Concat(Configuration.DevicePrefix, someAppKey.ToString()[Configuration.DevicePrefix.Length..]));
                     }
 
-                    if (!string.IsNullOrEmpty(d.AppSKey))
+                    if (d.AppSKey is { } someAppSessionKey)
                     {
-                        d.AppSKey = string.Concat(Configuration.DevicePrefix, d.AppSKey[Configuration.DevicePrefix.Length..]);
+                        d.AppSKey = AppSessionKey.Parse(string.Concat(Configuration.DevicePrefix, someAppSessionKey.ToString()[Configuration.DevicePrefix.Length..]));
                     }
 
-                    if (!string.IsNullOrEmpty(d.NwkSKey))
+                    if (d.NwkSKey is { } someNetworkSessionKey)
                     {
-                        d.NwkSKey = string.Concat(Configuration.DevicePrefix, d.NwkSKey[Configuration.DevicePrefix.Length..]);
+                        d.NwkSKey = NetworkSessionKey.Parse(string.Concat(Configuration.DevicePrefix, someNetworkSessionKey.ToString()[Configuration.DevicePrefix.Length..]));
                     }
 
-                    if (!string.IsNullOrEmpty(d.DevAddr))
+                    if (d.DevAddr is { } someDevAddr)
                     {
-                        d.DevAddr = NetIdHelper.SetNwkIdPart(string.Concat(Configuration.DevicePrefix, d.DevAddr[Configuration.DevicePrefix.Length..]), Configuration.NetId);
+                        d.DevAddr = DevAddr.Parse(Configuration.DevicePrefix + someDevAddr.ToString()[Configuration.DevicePrefix.Length..])
+                                    with { NetworkId = checked((int)Configuration.NetId) };
                     }
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(d.DevAddr))
+                    if (d.DevAddr is { } someDevAddr)
                     {
-                        d.DevAddr = NetIdHelper.SetNwkIdPart(d.DevAddr, Configuration.NetId);
+                        d.DevAddr = someDevAddr with { NetworkId = checked((int)Configuration.NetId) };
                     }
                 }
             }
@@ -288,43 +289,66 @@ namespace LoRaWan.Tests.Common
             }
         }
 
-        public async Task UpdateExistingConcentratorThumbprint(string stationEui, Func<string[], bool> condition, Action<List<string>> action)
+        public async Task UpdateExistingConcentratorThumbprint(StationEui stationEui, Func<string[], bool> condition, Action<List<string>> action)
         {
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationEui);
+            var stationDeviceId = GetDeviceId(stationEui);
+            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
-            var deviceTwin = await registryManager.GetTwinAsync(stationEui);
+            var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
             var initialClientThumbprints = ((JArray)deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName]).ToObject<string[]>();
             if (condition(initialClientThumbprints))
             {
                 var arrayToList = new List<string>(initialClientThumbprints);
                 action(arrayToList);
                 deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName] = arrayToList.ToArray();
-                await registryManager.UpdateTwinAsync(stationEui, deviceTwin, deviceTwin.ETag);
+                await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
             }
         }
 
-        public async Task UpdateExistingConcentratorCrcValues(string stationEui, uint crc)
+        public async Task UpdateExistingConcentratorCrcValues(StationEui stationEui, uint crc)
         {
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationEui);
+            var stationDeviceId = GetDeviceId(stationEui);
+            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
-            var deviceTwin = await registryManager.GetTwinAsync(stationEui);
+            var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
             var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
-            var deserializedCupsTwinInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson);
-            var newCupsInfo = new CupsTwinInfo(deserializedCupsTwinInfo.CupsUri,
-                                               deserializedCupsTwinInfo.TcUri,
-                                               crc,
-                                               crc,
-                                               deserializedCupsTwinInfo.CupsCredentialUrl,
-                                               deserializedCupsTwinInfo.TcCredentialUrl);
+            var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
+            {
+                TcCredCrc = crc,
+                CupsCredCrc = crc,
+            };
             deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
-            await registryManager.UpdateTwinAsync(stationEui, deviceTwin, deviceTwin.ETag);
+            await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
         }
+
+        public async Task UpdateExistingFirmwareUpgradeValues(StationEui stationEui, uint crc, string digestBase64String, string package, Uri fwUrl)
+        {
+            TestLogger.Log($"Updating IoT Hub twin for fw upgrades of concentrator {stationEui}...");
+            var registryManager = GetRegistryManager();
+            var stationDeviceId = GetDeviceId(stationEui);
+            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
+            if (getDeviceResult == null)
+                throw new InvalidOperationException("Concentrator should exist in IoT Hub");
+            var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
+            var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
+            var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
+            {
+                FwKeyChecksum = crc,
+                FwSignatureInBase64 = digestBase64String,
+                Package = package,
+                FwUrl = new Uri(fwUrl.GetLeftPart(UriPartial.Path)) // the GetLeftPart is useful to exclude any potential SAS token stored in the original variable
+            };
+            deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
+            await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
+        }
+
+        private static string GetDeviceId(StationEui eui) => eui.ToString();
 
         private async Task CreateOrUpdateDevicesAsync()
         {
@@ -354,10 +378,17 @@ namespace LoRaWan.Tests.Common
                 {
                     // compare device twin and make changes if needed
                     var deviceTwin = await registryManager.GetTwinAsync(testDevice.DeviceID);
+                    var twinCollectionReader = new TwinCollectionReader(deviceTwin.Properties.Desired, NullLogger.Instance);
                     var desiredProperties = testDevice.GetDesiredProperties();
                     foreach (var kv in desiredProperties)
                     {
-                        if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value.ToString())
+                        if (kv.Key == BasicsStationConfigurationService.RouterConfigPropertyName && deviceTwin.Properties.Desired.Contains(kv.Key))
+                        {
+                            // The router config property cannot be updated automatically. If it is present, we assume that it is correct.
+                            continue;
+                        }
+
+                        if (twinCollectionReader.SafeRead<string>(kv.Key) != kv.Value.ToString())
                         {
                             var existingValue = string.Empty;
                             if (deviceTwin.Properties.Desired.Contains(kv.Key))

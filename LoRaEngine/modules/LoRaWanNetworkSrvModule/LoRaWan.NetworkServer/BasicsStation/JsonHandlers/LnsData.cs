@@ -28,11 +28,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             }
          */
 
-        // We are deliberately ignoring firmware/package/model/protocol/features as these are not strictly needed at this stage of implementation
+        // We are deliberately ignoring firmware/model/protocol/features as these are not strictly needed at this stage of implementation
         // TODO Tests for this method are missing (waiting for more usefulness of it)
 
-        internal static readonly IJsonReader<string> VersionMessageReader =
-            JsonReader.Object(JsonReader.Property("station", JsonReader.String()));
+        internal static readonly IJsonReader<(string Station, string Package)> VersionMessageReader =
+            JsonReader.Object(JsonReader.Property("station", JsonReader.String()),
+                              JsonReader.Property("package", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                                                             select string.IsNullOrEmpty(s) ? string.Empty : s),
+                              (s, p) => (s, p));
 
 
         /*
@@ -70,7 +73,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
         private static readonly IJsonProperty<Mic> MicProperty =
             JsonReader.Property("MIC", from i in JsonReader.Int32()
-                                       select new Mic(unchecked((uint)i)));
+                                       select new Mic(unchecked(i)));
 
         /*
             {

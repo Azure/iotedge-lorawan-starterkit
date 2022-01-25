@@ -6,6 +6,10 @@ RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
 RUN git clone --branch v2.0.5 --single-branch --depth 1 https://github.com/lorabasics/basicstation.git
 WORKDIR /basicstation
+
+# temporary fix for https://github.com/lorabasics/basicstation/issues/142
+RUN sed -i "s|mbedtls-2.6|archive/mbedtls-2.6|g" /basicstation/deps/mbedtls/prep.sh
+
 RUN make platform=linux variant=std
 
 FROM amd64/debian:buster-slim

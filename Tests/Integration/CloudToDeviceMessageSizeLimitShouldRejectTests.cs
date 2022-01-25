@@ -7,15 +7,17 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public class CloudToDeviceMessageSizeLimitShouldRejectTests : CloudToDeviceMessageSizeLimitBaseTests
     {
+        public CloudToDeviceMessageSizeLimitShouldRejectTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory]
         [CombinatorialData]
         public async Task Should_Reject(
@@ -62,7 +64,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2dMessage.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2dMessage.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
@@ -104,9 +106,9 @@ namespace LoRaWan.Tests.Integration
 
                 var downlinkMessage = PacketForwarder.DownlinkMessages[0];
                 var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-                payloadDataDown.PerformEncryption(loraDevice.AppSKey);
+                payloadDataDown.Serialize(loraDevice.AppSKey.Value);
 
-                Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+                Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
                 Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
                 if (hasMacInUpstream)

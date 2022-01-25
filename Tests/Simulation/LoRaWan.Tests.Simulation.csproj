@@ -4,9 +4,15 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="..\..\Tools\Cli-LoRa-Device-Provisioning\DefaultRouterConfig\EU863.json" Link="EU863.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)" />
+    <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="xunit" Version="$(XUnitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudio)">
       <PrivateAssets>all</PrivateAssets>
@@ -19,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan\LoRaWan.csproj" />
     <ProjectReference Include="..\Common\LoRaWan.Tests.Common.csproj" />
   </ItemGroup>
 

@@ -3,10 +3,6 @@
 
 namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using global::LoRaTools.LoRaPhysical;
     using global::LoRaTools.Regions;
     using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
@@ -23,7 +19,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestDownstreamFrequency(Region region, Hertz inputFrequency, DataRateIndex inputDataRate, Hertz outputFreq, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
-            Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, out var frequency, inputDataRate, deviceJoinInfo));
+            Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, inputDataRate, deviceJoinInfo, out var frequency));
             Assert.Equal(frequency, outputFreq);
         }
 
@@ -60,7 +56,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestRegionLimit(Region region, Hertz inputFrequency, DataRateIndex datarate, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
-            var ex = Assert.Throws<LoRaProcessingException>(() => region.TryGetDownstreamChannelFrequency(inputFrequency, out _, datarate, deviceJoinInfo));
+            var ex = Assert.Throws<LoRaProcessingException>(() => region.TryGetDownstreamChannelFrequency(inputFrequency, datarate, deviceJoinInfo, out _));
             Assert.Equal(LoRaProcessingErrorCode.InvalidFrequency, ex.ErrorCode);
              ex = Assert.Throws<LoRaProcessingException>(() => region.GetDownstreamDataRate(datarate));
             Assert.Equal(LoRaProcessingErrorCode.InvalidDataRate, ex.ErrorCode);
@@ -86,7 +82,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestDownstreamRX2Frequency(Region region, Hertz? nwksrvrx2freq, Hertz expectedFreq, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            var freq = region.GetDownstreamRX2Freq(nwksrvrx2freq, NullLogger.Instance, deviceJoinInfo);
+            var freq = region.GetDownstreamRX2Freq(nwksrvrx2freq, deviceJoinInfo, NullLogger.Instance);
             Assert.Equal(expectedFreq, freq);
         }
 
@@ -99,7 +95,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public void TestDownstreamRX2DataRate(Region region, DataRateIndex? nwksrvrx2dr, DataRateIndex? rx2drfromtwins, DataRateIndex expectedDr, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            var datr = region.GetDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, NullLogger.Instance, deviceJoinInfo);
+            var datr = region.GetDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo, NullLogger.Instance);
             Assert.Equal(expectedDr, datr);
         }
 
@@ -139,16 +135,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         }
 
         [Theory]
-        [InlineData(0, true)]
-        [InlineData(15, true)]
-        [InlineData(16, false)]
-        [InlineData(50, false)]
-        public void TestIsValidRXDelay(ushort delay, bool isValid)
-        {
-            Assert.Equal(isValid, Region.IsValidRXDelay(delay));
-        }
-
-        [Theory]
         [MemberData(nameof(RegionEU868TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionEU868TestData))]
         [MemberData(nameof(RegionUS915TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470RP1TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionCN470RP1TestData))]
@@ -167,32 +153,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
             {
                 Assert.Equal(isValid, region.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(datarate));
             }
-        }
-
-        private static IList<Rxpk> GenerateRxpk(string dr, double freq)
-        {
-            var jsonUplink =
-                @"{ ""rxpk"":[
-                {
-                    ""time"":""2013-03-31T16:21:17.528002Z"",
-                    ""tmst"":3512348611,
-                    ""chan"":2,
-                    ""rfch"":0,
-                    ""freq"":" + freq + @",
-                    ""stat"":1,
-                    ""modu"":""LORA"",
-                    ""datr"":""" + dr + @""",
-                    ""codr"":""4/6"",
-                    ""rssi"":-35,
-                    ""lsnr"":5.1,
-                    ""size"":32,
-                    ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
-                }]}";
-
-            var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
-            var physicalUpstreamPyld = new byte[12];
-            physicalUpstreamPyld[0] = 2;
-            return Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
         }
     }
 }

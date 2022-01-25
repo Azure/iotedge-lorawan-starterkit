@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -19,12 +18,16 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
+    using static LoRaWan.ReceiveWindowNumber;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Cloud to device message processing tests (Join tests are handled in other class)
     public class CloudToDeviceMessageTests : MessageProcessorTestBase
     {
         private const FramePort TestPort = FramePorts.App1;
+
+        public CloudToDeviceMessageTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
 
         [Theory]
         [InlineData(ServerGatewayID)]
@@ -38,7 +41,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(true);
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+                LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                     .ReturnsAsync(true);
             }
 
@@ -77,13 +80,13 @@ namespace LoRaWan.Tests.Integration
         {
             const int payloadFcnt = 10;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devEUI = simulatedDevice.LoRaDevice.DevEui;
 
             // message will be sent
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             // multi gateway will ask for next fcnt down
             var isMultigateway = string.IsNullOrEmpty(deviceGatewayID);
@@ -163,7 +166,7 @@ namespace LoRaWan.Tests.Integration
 
             if (needsToSaveFcnt)
             {
-                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
             }
 
@@ -207,8 +210,8 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            payloadDataDown.Serialize(loraDevice.AppSKey.Value);
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -217,7 +220,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has pending changes?
             if (needsToSaveFcnt)
@@ -246,7 +249,7 @@ namespace LoRaWan.Tests.Integration
 
             if (needsToSaveFcnt)
             {
-                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                    .ReturnsAsync(true);
             }
 
@@ -286,8 +289,8 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            payloadDataDown.Serialize(loraDevice.AppSKey.Value);
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -296,7 +299,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has pending changes?
             if (needsToSaveFcnt)
@@ -317,7 +320,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
@@ -327,7 +330,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
@@ -374,8 +377,8 @@ namespace LoRaWan.Tests.Integration
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
 
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
+            payloadDataDown.Serialize(loRaDevice.AppSKey.Value);
+            Assert.Equal(payloadDataDown.DevAddr, loRaDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -385,7 +388,7 @@ namespace LoRaWan.Tests.Integration
             // 5. Frame counter down is updated
             var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
 
             // 6. Frame count has no pending changes
             Assert.False(loRaDevice.HasFrameCountChanges);
@@ -403,7 +406,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
@@ -416,7 +419,7 @@ namespace LoRaWan.Tests.Integration
             using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = TestPort }
                 .CreateMessage();
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -459,8 +462,8 @@ namespace LoRaWan.Tests.Integration
             // Get the device from cache
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
+            payloadDataDown.Serialize(loRaDevice.AppSKey.Value);
+            Assert.Equal(payloadDataDown.DevAddr, loRaDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -470,7 +473,7 @@ namespace LoRaWan.Tests.Integration
             // 5. Frame counter down is updated
             var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
 
             // 6. Frame count has no pending changes
             Assert.False(loRaDevice.HasFrameCountChanges);
@@ -488,7 +491,7 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
@@ -501,7 +504,7 @@ namespace LoRaWan.Tests.Integration
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(deviceTwin);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
@@ -550,8 +553,8 @@ namespace LoRaWan.Tests.Integration
             // Get the device from cache
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
+            payloadDataDown.Serialize(loRaDevice.AppSKey.Value);
+            Assert.Equal(payloadDataDown.DevAddr, loRaDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -561,7 +564,7 @@ namespace LoRaWan.Tests.Integration
             // 5. Frame counter down is updated
             var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta - 1 + 1; // adding 9 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(expectedFcntDown, payloadDataDown.Fcnt);
             Assert.Equal(0U, loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown);
 
             // 6. Frame count has no pending changes
@@ -571,22 +574,23 @@ namespace LoRaWan.Tests.Integration
         [Theory]
         // Preferred Window: 1
         // - Aiming for RX1
-        [InlineData(1, 0, 400, 610)] // 1000 - (400 - noise)
-        [InlineData(1, 100, 300, 510)]
-        [InlineData(1, 200, 200, 410)]
+        [InlineData(ReceiveWindow1, 0, 400, 610, false)] // 1000 - (400 - noise)
+        [InlineData(ReceiveWindow1, 100, 300, 510, false)]
+        [InlineData(ReceiveWindow1, 200, 200, 410, false)]
         // - Aiming for RX2
-        [InlineData(1, 750, 690, 999)]
-        [InlineData(1, 1000, 250, 610)]
+        [InlineData(ReceiveWindow1, 750, 690, 999, true)]
+        [InlineData(ReceiveWindow1, 1000, 250, 610, true)]
 
         // Preferred Window: 2
         // - Aiming for RX2
-        [InlineData(2, 0, 1400, 1610)]
-        [InlineData(2, 100, 1300, 1510)]
+        [InlineData(ReceiveWindow2, 0, 1400, 1610, true)]
+        [InlineData(ReceiveWindow2, 100, 1300, 1510, true)]
         public async Task When_Device_Checks_For_C2D_Message_Uses_Available_Time(
-            int preferredWindow,
+            ReceiveWindowNumber preferredWindow,
             int sendEventDurationInMs,
             int checkMinDuration,
-            int checkMaxDuration)
+            int checkMaxDuration,
+            bool expectingSecondWindow)
         {
             const int PayloadFcnt = 10;
             const int InitialDeviceFcntUp = 9;
@@ -635,17 +639,21 @@ namespace LoRaWan.Tests.Integration
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            // This is commented out as it breaks the current logic. Will be fixed in #1139
-            // also add checks to verify that the RX1 options are missing when RX2 is preferred.
-            // Assert.Equal(1u, PacketForwarder.DownlinkMessages[0].LnsRxDelay);
+            var downlinkMessage = Assert.Single(PacketForwarder.DownlinkMessages);
+
+            Assert.Equal(LoRaDeviceClassType.A, downlinkMessage.DeviceClassType);
+            Assert.Equal(loRaDevice.ReportedRXDelay, downlinkMessage.LnsRxDelay);
+            if (expectingSecondWindow)
+            {
+                Assert.Null(downlinkMessage.Rx1);
+            }
+            else
+            {
+                Assert.NotNull(downlinkMessage.Rx1);
+            }
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
-
-            Assert.NotNull(PacketForwarder.DownlinkMessages);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-
         }
 
         [Theory]
@@ -667,7 +675,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
@@ -718,11 +726,16 @@ namespace LoRaWan.Tests.Integration
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
 
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
-            payloadDataDown.PerformEncryption(string.IsNullOrEmpty(msg) ?
-                    loraDevice.NwkSKey :
-                    loraDevice.AppSKey);
+            if (string.IsNullOrEmpty(msg))
+            {
+                payloadDataDown.Serialize(loraDevice.NwkSKey.Value);
+            }
+            else
+            {
+                payloadDataDown.Serialize(loraDevice.AppSKey.Value);
+            }
 
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -731,7 +744,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has no pending changes
             Assert.False(loraDevice.HasFrameCountChanges);
@@ -776,7 +789,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var c2dJson = $"{{\"fport\":{fport}, \"payload\":\"asd\", \"macCommands\": [ {{ \"cid\": \"{mac}\" }}] }}";
@@ -839,7 +852,7 @@ namespace LoRaWan.Tests.Integration
                     Fport = TestPort,
                     MessageId = "123",
                     Payload = "12",
-                    DevEUI = c2dDevEUI
+                    DevEUI = c2dDevEUI is { } someDevEui ? DevEui.Parse(someDevEui) : null
                 },
             };
 
@@ -874,8 +887,8 @@ namespace LoRaWan.Tests.Integration
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            payloadDataDown.Serialize(loraDevice.AppSKey.Value);
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
@@ -884,7 +897,7 @@ namespace LoRaWan.Tests.Integration
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // 6. Frame count has pending changes
             Assert.True(loraDevice.HasFrameCountChanges);
@@ -907,13 +920,13 @@ namespace LoRaWan.Tests.Integration
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var devAddr = simulatedDevice.DevAddr;
+            var devAddr = simulatedDevice.DevAddr.Value;
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
             var deviceTwin = TestUtils.CreateABPTwin(simulatedDevice);
             this.LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(deviceTwin);
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
@@ -945,7 +958,7 @@ namespace LoRaWan.Tests.Integration
                                                            inTimeForAdditionalMessageCheck: false,
                                                            inTimeForDownlinkDelivery: false,
                                                            payload);
-            request.SetRegion(this.Region);
+            request.SetRegion(this.DefaultRegion);
 
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());

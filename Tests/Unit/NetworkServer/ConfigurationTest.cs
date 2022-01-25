@@ -4,15 +4,15 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.Collections.Generic;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class ConfigurationTest
     {
         [Theory]
         [MemberData(nameof(AllowedDevAddressesInput))]
-        public void Should_Setup_Allowed_Dev_Addresses_Correctly(string inputAllowedDevAddrValues, HashSet<string> expectedAllowedDevAddrValues)
+        public void Should_Setup_Allowed_Dev_Addresses_Correctly(string inputAllowedDevAddrValues, DevAddr[] expectedAllowedDevAddrValues)
         {
             var envVariables = new[] { ("AllowedDevAddresses", inputAllowedDevAddrValues), ("FACADE_SERVER_URL", "https://aka.ms") };
 
@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     Environment.SetEnvironmentVariable(key, value);
 
                 var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-                Assert.Equal(expectedAllowedDevAddrValues.Count, networkServerConfiguration.AllowedDevAddresses.Count);
+                Assert.Equal(expectedAllowedDevAddrValues.Length, networkServerConfiguration.AllowedDevAddresses.Count);
                 foreach (var devAddr in expectedAllowedDevAddrValues)
                 {
                     Assert.Contains(devAddr, networkServerConfiguration.AllowedDevAddresses);
@@ -35,29 +35,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
         }
 
-        public static IEnumerable<object[]> AllowedDevAddressesInput => new[]
-                {
-                    new object[]
-                    {
-                        "0228B1B1;", new HashSet<string>()
-                        {
-                            "0228B1B1", string.Empty
-                        }
-                    },
-                    new object[]
-                    {
-                        "0228B1B1;0228B1B2", new HashSet<string>()
-                        {
-                            "0228B1B1", "0228B1B2"
-                        }
-                    },
-                    new object[]
-                    {
-                        "ads;0228B1B2;", new HashSet<string>()
-                        {
-                            "ads", string.Empty, "0228B1B2"
-                        }
-                    }
-                };
+        public static TheoryData<string, DevAddr[]> AllowedDevAddressesInput =>
+            TheoryDataFactory.From(("0228B1B1;", new[] { new DevAddr(0x0228b1b1) }),
+                                   ("0228B1B1;0228B1B2", new DevAddr[] { new DevAddr(0x0228b1b1), new DevAddr(0x0228b1b2) }),
+                                   ("ads;0228B1B2;", new DevAddr[] { new DevAddr(0x0228b1b2) }));
     }
 }

@@ -4,10 +4,10 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools;
     using global::LoRaTools.LoRaMessage;
-    using global::LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
@@ -15,10 +15,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
     using static DataRateIndex;
 
     public class ADRMessageProcessorTest : MessageProcessorTestBase
     {
+        public ADRMessageProcessorTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory]
         // deviceId, # messages sent, ExpectedDR, expectedPower, expectedNbRep
         // Enough Messages, Perform ADR
@@ -44,7 +47,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             using var cache = EmptyMemoryCache();
@@ -105,7 +108,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 // We expect a mac command in the payload
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
-                var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+                var decryptedPayload = payloadDataDown.Serialize(simulatedDevice.NwkSKey.Value);
                 Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
                 Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
@@ -118,7 +121,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
             // 4. Frame counter up was updated
@@ -126,7 +129,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
         }
 
         [Theory]
@@ -168,8 +171,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twinDR = DR0;
             var twinTxPower = 0;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Callback<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                .Callback<TwinCollection, CancellationToken>((t, _) =>
                 {
                     if (t.Contains(TwinProperty.DataRate))
                         twinDR = t[TwinProperty.DataRate];
@@ -220,7 +223,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             else
             {
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
-                var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+                var decryptedPayload = payloadDataDown.Serialize(simulatedDevice.NwkSKey.Value);
                 Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
                 Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
@@ -232,7 +235,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 Assert.Equal(expectedTxPower, twinTxPower);
 
                 // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
-                Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+                Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
                 Assert.False(payloadDataDown.IsConfirmed);
                 Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
                 // 4. Frame counter up was updated
@@ -240,7 +243,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 // 5. Frame counter down is updated
                 Assert.Equal(ExpectedDeviceFcntDown + 1, loraDevice.FCntDown);
-                Assert.Equal(ExpectedDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+                Assert.Equal(ExpectedDeviceFcntDown + 1, payloadDataDown.Fcnt);
             }
         }
 
@@ -268,8 +271,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var reportedDR = DR0;
             var reportedTxPower = 0;
 
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-            .Callback<TwinCollection>((t) =>
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+            .Callback<TwinCollection, CancellationToken>((t, _) =>
             {
                 if (t.Contains(TwinProperty.DataRate))
                     reportedDR = (DataRateIndex)(int)(object)t[TwinProperty.DataRate].Value;
@@ -313,7 +316,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
-            var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+            var decryptedPayload = payloadDataDown.Serialize(simulatedDevice.NwkSKey.Value);
             Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);
@@ -324,7 +327,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(7, loraDevice.TxPower);
             Assert.Equal(7, reportedTxPower);
 
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
             // 4. Frame counter up was updated
@@ -332,7 +335,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.Fcnt);
 
             // ****************************************************
             // Second part reduce connectivity and verify the DR stay to 5 and power set to max
@@ -359,7 +362,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
-            decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+            decryptedPayload = payloadDataDown.Serialize(simulatedDevice.NwkSKey.Value);
             Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
@@ -370,7 +373,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(0, loraDevice.TxPower);
             Assert.Equal(0, reportedTxPower);
 
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
             // 4. Frame counter up was updated
@@ -378,7 +381,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 2, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 2, payloadDataDown.GetFcnt());
+            Assert.Equal(InitialDeviceFcntDown + 2, payloadDataDown.Fcnt);
 
             // Expectations
             // 1. Message was sent to IoT Hub
@@ -410,13 +413,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
             var reportedNbRep = 0;
-            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-            .Callback<TwinCollection>((t) =>
-            {
-                if (t.Contains(TwinProperty.NbRep))
-                    reportedNbRep = (int)t[TwinProperty.NbRep];
-            })
-        .ReturnsAsync(true);
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
+                            .Callback<TwinCollection, CancellationToken>((t, _) =>
+                                {
+                                    if (t.Contains(TwinProperty.NbRep))
+                                        reportedNbRep = (int)t[TwinProperty.NbRep];
+                                })
+                            .ReturnsAsync(true);
 
             using var cache = EmptyMemoryCache();
             using var loraDeviceCache = CreateDeviceCache(loraDevice);
@@ -458,7 +461,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
-            var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+            var decryptedPayload = payloadDataDown.Serialize(simulatedDevice.NwkSKey.Value);
             Array.Reverse(decryptedPayload);
             Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
@@ -492,7 +495,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
-            decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+            decryptedPayload = payloadDataDown.Serialize(simulatedDevice.NwkSKey.Value);
             Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
@@ -501,7 +504,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(2, loraDevice.NbRep);
 
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
             // 4. Frame counter up was updated
@@ -533,7 +536,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
-            decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+            decryptedPayload = payloadDataDown.Serialize(simulatedDevice.NwkSKey.Value);
             Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
@@ -543,7 +546,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // 5. Frame counter down is updated
             Assert.Equal(ExpectedDeviceFcntDown, loraDevice.FCntDown);
-            Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.Fcnt);
         }
 
         private async Task<uint> SendMessage(float currentLsnr, LoRaDataRate currentDR, uint payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, FrameControlFlags fctrl)

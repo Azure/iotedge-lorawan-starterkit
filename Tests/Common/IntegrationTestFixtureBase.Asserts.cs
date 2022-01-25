@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Common
             return false;
         }
 
-        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string targetJsonProperty, string expectedJsonValue, SearchLogOptions options = null)
+        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string targetJsonProperty, string expectedJsonValue, SearchLogOptions options)
         {
             var assertionLevel = Configuration.IoTHubAssertLevel;
             if (options != null && options.TreatAsError.HasValue)
@@ -57,10 +57,9 @@ namespace LoRaWan.Tests.Common
 
             var searchResult = await SearchIoTHubMessageAsync(
                 (eventData, eventDeviceID, eventDataMessageBody) => IsDeviceMessage(deviceID, targetJsonProperty, expectedJsonValue, eventDeviceID, eventDataMessageBody),
-                new SearchLogOptions
+                new SearchLogOptions(options.Description)
                 {
-                    Description = options?.Description ?? $"\"{targetJsonProperty}\": {expectedJsonValue}",
-                    TreatAsError = options?.TreatAsError,
+                    TreatAsError = options.TreatAsError,
                 });
 
             if (assertionLevel == LogValidationAssertLevel.Error)
@@ -79,7 +78,7 @@ namespace LoRaWan.Tests.Common
         }
 
         // Asserts leaf device message payload exists. It searches inside the payload "data" property. Has built-in retries
-        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options = null)
+        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options)
         {
             await AssertIoTHubDeviceMessageExistsAsync(deviceID, "data", expectedDataValue, options);
         }
@@ -103,7 +102,7 @@ namespace LoRaWan.Tests.Common
                 new SearchLogOptions(string.Concat(logMessageStart1, " or ", logMessageStart2)));
         }
 
-        public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null) =>
+        public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options) =>
             this.tcpLogListener != null
                 ? await SearchTcpLogs(predicate, options)
                 : await SearchIoTHubLogs(predicate, options);
@@ -191,7 +190,7 @@ namespace LoRaWan.Tests.Common
         /// </summary>
         /// <param name="serialLog">serial log from the attached device.</param>
         /// <param name="devEUI">The device EUI of the current device.</param>
-        public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, string devEUI)
+        public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, DevEui devEUI)
         {
             var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal));
             Assert.NotNull(joinConfirmMsg);
@@ -207,7 +206,7 @@ namespace LoRaWan.Tests.Common
             {
                 await Task.Delay(DelayForJoinTwinStore);
 
-                var twins = await GetTwinAsync(devEUI);
+                var twins = await GetTwinAsync(devEUI.ToString());
                 if (twins.Properties.Reported.Contains(DevAddrProperty))
                 {
                     reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.OrdinalIgnoreCase);
@@ -237,14 +236,14 @@ namespace LoRaWan.Tests.Common
                 if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Error)
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    Assert.True(searchResult.Found, $"Searching for {options?.Description ?? "??"} failed. Current log content: [{logs}]");
+                    Assert.True(searchResult.Found, $"Searching for {options.Description} failed. Current log content: [{logs}]");
                 }
                 else if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Warning)
                 {
                     if (!searchResult.Found)
                     {
                         var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                        TestLogger.Log($"[WARN] '{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
+                        TestLogger.Log($"[WARN] '{options.Description}' found in logs? {searchResult.Found}. Logs: [{logs}]");
                     }
                 }
             }
@@ -279,11 +278,11 @@ namespace LoRaWan.Tests.Common
             SearchLogResult log;
             if (isUpstream)
             {
-                log = await SearchIoTHubLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchIoTHubLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions(message) { SourceIdFilter = sourceIdFilter });
             }
             else
             {
-                log = await SearchTcpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchTcpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions(message) { SourceIdFilter = sourceIdFilter });
             }
 
             var timeIndexStart = log.FoundLogResult.IndexOf(token, StringComparison.Ordinal) + token.Length;
@@ -305,28 +304,21 @@ namespace LoRaWan.Tests.Common
             };
         }
 
-        private async Task<SearchLogResult> SearchTcpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchTcpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options)
         {
-            var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
+            var maxAttempts = options.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
             for (var i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(options?.Description))
-                    {
-                        TestLogger.Log($"TCP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
-                    else
-                    {
-                        TestLogger.Log($"TCP log message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
+                    TestLogger.Log($"TCP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
 
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                var sourceIdFilter = options?.SourceIdFilter;
+                var sourceIdFilter = options.SourceIdFilter;
 
                 foreach (var item in this.tcpLogListener.Events)
                 {
@@ -350,28 +342,21 @@ namespace LoRaWan.Tests.Common
             return new SearchLogResult(false, processedEvents);
         }
 
-        private async Task<SearchLogResult> SearchTcpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchTcpLogs(Func<string, bool> predicate, SearchLogOptions options)
         {
             return await SearchTcpLogs(evt => predicate(evt.Message), options);
         }
 
-        private async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options)
         {
-            var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
+            var maxAttempts = options.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
             for (var i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(options?.Description))
-                    {
-                        TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
-                    else
-                    {
-                        TestLogger.Log($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
+                    TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
 
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
@@ -400,29 +385,22 @@ namespace LoRaWan.Tests.Common
         }
 
         // Searches IoT Hub for messages
-        private async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options)
         {
             return await SearchIoTHubLogs(evt => predicate(evt.Message), options);
         }
 
         // Searches IoT Hub for messages
-        internal async Task<SearchLogResult> SearchIoTHubMessageAsync(Func<EventData, string, string, bool> predicate, SearchLogOptions options = null)
+        internal async Task<SearchLogResult> SearchIoTHubMessageAsync(Func<EventData, string, string, bool> predicate, SearchLogOptions options)
         {
-            var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
+            var maxAttempts = options.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
             for (var i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {
                     var timeToWait = i * Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(options?.Description))
-                    {
-                        TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
-                    else
-                    {
-                        TestLogger.Log($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
+                    TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
 
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }

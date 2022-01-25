@@ -4,53 +4,67 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
+    using LoRaWan.NetworkServer;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Defines a simulated device.
     /// </summary>
-    public class SimulatedDevice
+    public sealed class SimulatedDevice
     {
+        private static readonly IJsonReader<DevEui> DevEuiMessageReader =
+            JsonReader.Object(JsonReader.Property("DevEui", from d in JsonReader.String()
+                                                            select DevEui.Parse(d)));
+        private readonly List<SimulatedBasicsStation> simulatedBasicsStations = new List<SimulatedBasicsStation>();
+
+        private readonly ConcurrentBag<string> receivedMessages = new ConcurrentBag<string>();
+        private readonly ILogger logger;
+
+        public IReadOnlyCollection<string> ReceivedMessages => this.receivedMessages;
+
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
         public uint FrmCntUp { get; set; }
 
         public uint FrmCntDown { get; set; }
 
-        public PhysicalPayload LastPayload { get; set; }
-
         public DevNonce DevNonce { get; private set; }
 
-        public bool IsJoined => !string.IsNullOrEmpty(LoRaDevice.DevAddr);
+        public bool IsJoined => LoRaDevice.DevAddr is not null;
 
-        public string NetId { get; internal set; }
+        public NetId? NetId { get; internal set; }
 
-        public string AppNonce { get; internal set; }
+        public AppNonce AppNonce { get; internal set; }
 
-        public string AppSKey => LoRaDevice.AppSKey;
+        public AppSessionKey? AppSKey => LoRaDevice.AppSKey;
 
-        public string NwkSKey => LoRaDevice.NwkSKey;
+        public NetworkSessionKey? NwkSKey => LoRaDevice.NwkSKey;
 
-        public string AppKey => LoRaDevice.AppKey;
+        public AppKey? AppKey => LoRaDevice.AppKey;
 
-        public string AppEUI => LoRaDevice.AppEUI;
+        public JoinEui? AppEui => LoRaDevice.AppEui;
 
         public char ClassType => LoRaDevice.ClassType;
 
-        public string DevAddr
+        public DevAddr? DevAddr
         {
             get => LoRaDevice.DevAddr;
             set => LoRaDevice.DevAddr = value;
         }
 
-        public string DevEUI => LoRaDevice.DeviceID;
+        public DevEui DevEUI => LoRaDevice.DevEui;
 
         public bool Supports32BitFCnt
         {
@@ -58,14 +72,27 @@ namespace LoRaWan.Tests.Common
             set => LoRaDevice.Supports32BitFCnt = value;
         }
 
-        public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0)
+        public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0, IReadOnlyCollection<SimulatedBasicsStation> simulatedBasicsStation = null, ILogger logger = null)
         {
             LoRaDevice = testDeviceInfo;
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
+            this.logger = logger;
+            this.simulatedBasicsStations = simulatedBasicsStation?.ToList() ?? new List<SimulatedBasicsStation>();
+
+            void AddToDeviceMessageQueue(string response)
+            {
+                if (DevEuiMessageReader.Read(response) == DevEUI)
+                {
+                    this.receivedMessages.Add(response);
+                }
+            }
+
+            foreach (var basicsStation in this.simulatedBasicsStations)
+                basicsStation.MessageReceived += (_, eventArgs) => AddToDeviceMessageQueue(eventArgs.Value);
         }
 
-        public LoRaPayloadJoinRequest CreateJoinRequest(string appkey = null, DevNonce? devNonce = null )
+        public LoRaPayloadJoinRequest CreateJoinRequest(AppKey? appkey = null, DevNonce? devNonce = null)
         {
             // Some tests provide a special nonce as input to make the mic check fail.
             // We only generate one in case the value is not set.
@@ -82,24 +109,21 @@ namespace LoRaWan.Tests.Common
             }
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {DevNonce:N} / {DevNonce}");
-            var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, DevNonce);
-            joinRequest.SetMic(appkey ?? LoRaDevice.AppKey);
-
-            return joinRequest;
+            var devEui = DevEui.Parse(LoRaDevice.DeviceID);
+            var joinEui = LoRaDevice.AppEui.Value;
+            var mic = Mic.ComputeForJoinRequest((appkey ?? LoRaDevice.AppKey).Value,
+                                                new MacHeader(MacMessageType.JoinRequest), joinEui, devEui, DevNonce);
+            return new LoRaPayloadJoinRequest(joinEui, devEui, DevNonce, mic);
         }
 
 
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = FramePorts.App1, FrameControlFlags fctrlFlags = FrameControlFlags.None, bool isHexPayload = false, IList<MacCommand> macCommands = null, string appSKey = null, string nwkSKey = null)
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = FramePorts.App1, FrameControlFlags fctrlFlags = FrameControlFlags.None, bool isHexPayload = false, IList<MacCommand> macCommands = null, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
         {
-            var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
-            Array.Reverse(devAddr);
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
-
-            var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
 
             // TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
             byte[] payload = null;
@@ -111,7 +135,7 @@ namespace LoRaWan.Tests.Common
                 }
                 else
                 {
-                    payload = ConversionHelper.StringToByteArray(data);
+                    payload = StringToByteArray(data);
                 }
 
                 Array.Reverse(payload);
@@ -122,22 +146,29 @@ namespace LoRaWan.Tests.Common
 
             var payloadData = new LoRaPayloadData(
                 MacMessageType.UnconfirmedDataUp,
-                devAddr,
+                LoRaDevice.DevAddr.Value,
                 fctrlFlags,
-                fcntBytes,
+                unchecked((ushort)fcnt.Value),
                 macCommands,
                 fport,
                 payload,
                 direction,
                 Supports32BitFCnt ? fcnt : null);
 
-            payloadData.PerformEncryption(appSKey is { Length: > 0 } ? appSKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
-            payloadData.SetMic(nwkSKey is { Length: > 0 } ? nwkSKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
+            if (fport == FramePort.MacCommand)
+            {
+                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)} when fport is set to 0."));
+            }
+            else
+            {
+                payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
+            payloadData.SetMic(nwkSKey is { } someNetworkSessionKey ? someNetworkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
 
             // We want to ensure we simulate a message coming from the device, therefore only the 16 bits of the framecounter should be available.
             // The following line ensure we remove the 32 bits of the server frame counter that was generated by the constructor.
             // Some tests cases are expecting the mic check to fail because of rollover of the fcnt, if we have this value set it will never fail.
-            payloadData.Reset32BitBlockInfo();
+            payloadData.Reset32BitFcnt();
             // THIS IS NEEDED FOR TESTS AS THIS CONSTRUCTOR IS USED THERE
             // THIS WILL BE REMOVED WHEN WE MIGRATE TO USE lORAPAYLOADDATALNS INSTEAD OF LORAPAYLOAD in #1085
             // Populate the MacCommands present in the payload
@@ -150,15 +181,10 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, FramePort fport = FramePorts.App1, bool isHexPayload = false, string appSKey = null, string nwkSKey = null)
+        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, FrameControlFlags fctrlFlags = FrameControlFlags.Adr, uint? fcnt = null, FramePort fport = FramePorts.App1, bool isHexPayload = false, AppSessionKey? appSKey = null, NetworkSessionKey? nwkSKey = null)
         {
-            var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
-            Array.Reverse(devAddr);
-
             fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
-
-            var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
 
             byte[] payload = null;
 
@@ -170,7 +196,7 @@ namespace LoRaWan.Tests.Common
                 }
                 else
                 {
-                    payload = ConversionHelper.StringToByteArray(data);
+                    payload = StringToByteArray(data);
                 }
 
                 Array.Reverse(payload);
@@ -178,143 +204,152 @@ namespace LoRaWan.Tests.Common
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp, devAddr, FrameControlFlags.Adr, fcntBytes, null, fport, payload, direction, Supports32BitFCnt ? fcnt : null);
-            payloadData.PerformEncryption(string.IsNullOrEmpty(appSKey) ? AppSKey : appSKey);
-            payloadData.SetMic(string.IsNullOrEmpty(nwkSKey)? NwkSKey : nwkSKey);
+            var payloadData = new LoRaPayloadData(MacMessageType.ConfirmedDataUp,
+                                                  LoRaDevice.DevAddr.Value,
+                                                  fctrlFlags,
+                                                  unchecked((ushort)fcnt.Value),
+                                                  null,
+                                                  fport,
+                                                  payload,
+                                                  direction,
+                                                  Supports32BitFCnt ? fcnt : null);
+
+            if (fport == FramePort.MacCommand)
+            {
+                payloadData.Serialize(nwkSKey is { } someNwkSessionKey ? someNwkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)} when fport is set to 0."));
+            }
+            else
+            {
+                payloadData.Serialize(appSKey is { } someAppSessionKey ? someAppSessionKey : AppSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(AppSKey)}."));
+            }
+            payloadData.SetMic(nwkSKey is { } someNetworkSessionKey ? someNetworkSessionKey : NwkSKey ?? throw new InvalidOperationException($"Can't perform encryption without {nameof(NwkSKey)}."));
+
             return payloadData;
         }
 
-        // Sends unconfirmed message
-        public async Task SendUnconfirmedMessageAsync(SimulatedPacketForwarder simulatedPacketForwarder, string payload)
+        private bool HandleJoinAccept(LoRaPayloadJoinAccept payload)
         {
-            var token = await RandomTokenGenerator.GetTokenAsync();
-            if (LastPayload == null)
-                LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
-            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress.ToArray());
+            // Calculate the keys
+            var devNonce = DevNonce;
 
-            var unconfirmedMessage = CreateUnconfirmedDataUpMessage(payload);
-            LastPayload = await simulatedPacketForwarder.SendAsync(header, unconfirmedMessage.GetByteMessage());
+            if (LoRaDevice.AppKey is null)
+            {
+                throw new ArgumentException(nameof(LoRaDevice.AppKey));
+            }
 
-            TestLogger.Log($"[{LoRaDevice.DeviceID}] Unconfirmed data: {BitConverter.ToString(header).Replace("-", string.Empty, StringComparison.Ordinal)} {payload}");
+            var appSKey = OTAAKeysGenerator.CalculateAppSessionKey(payload.AppNonce, payload.NetId, devNonce, LoRaDevice.AppKey.Value);
+            var nwkSKey = OTAAKeysGenerator.CalculateNetworkSessionKey(payload.AppNonce, payload.NetId, devNonce, LoRaDevice.AppKey.Value);
+            var devAddr = payload.DevAddr;
 
-            // TestLogger.Log($"[{LoRaDevice.DevAddr}] Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.UTF8.GetString(gatewayInfo)}");
+            // if mic check failed, return false
+            if (payload.Mic != Mic.ComputeForJoinAccept(LoRaDevice.AppKey.Value, payload.MHdr, payload.AppNonce, payload.NetId, payload.DevAddr, payload.DlSettings, payload.RxDelay, payload.CfList))
+            {
+                return false;
+            }
+
+            LoRaDevice.AppSKey = appSKey;
+            LoRaDevice.NwkSKey = nwkSKey;
+            NetId = payload.NetId;
+            AppNonce = payload.AppNonce;
+            LoRaDevice.DevAddr = devAddr;
+
+            return true;
         }
 
-        // Sends confirmed message
-        public async Task SendConfirmedMessageAsync(SimulatedPacketForwarder simulatedPacketForwarder, string payload)
-        {
-            var token = await RandomTokenGenerator.GetTokenAsync();
-            if (LastPayload == null)
-                LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
-            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress.ToArray());
-
-            var confirmedMessage = CreateConfirmedDataUpMessage(payload);
-            LastPayload = await simulatedPacketForwarder.SendAsync(header, confirmedMessage.GetByteMessage());
-
-            TestLogger.Log($"[{LoRaDevice.DeviceID}] Confirmed data: {BitConverter.ToString(header).Replace("-", string.Empty, StringComparison.Ordinal)} {payload}");
-
-            // TestLogger.Log($"[{LoRaDevice.DevAddr}] Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.UTF8.GetString(gatewayInfo)}");
-        }
+        //// Sends unconfirmed message
+        public Task SendDataMessageAsync(LoRaRequest loRaRequest) =>
+            Task.WhenAll(from basicsStation in this.simulatedBasicsStations
+                         select basicsStation.SendDataMessageAsync(loRaRequest, CancellationToken.None));
 
         // Performs join
-        // THE FOLLOWING METHODS ARE LEFT HERE FOR REFERENCE
-        // THEY ACT AS DOCUMENTATION UNTIL WE MIGRATE THE SIMULATOR
-#pragma warning disable CA1822 // Mark members as static
-#pragma warning disable IDE0060 // Remove unused parameter
-        public async Task<bool> JoinAsync(SimulatedPacketForwarder packetForwarder, int timeoutInMs = 30 * 1000)
-#pragma warning restore IDE0060 // Remove unused parameter
-#pragma warning restore CA1822 // Mark members as static
+        public async Task<bool> JoinAsync(TimeSpan? timeout = null)
         {
-            //  TODO uncomment when simulator rebuild
-            return await Task.FromResult(true);
-            //if (IsJoined)
-            //    return true;
+            timeout ??= TimeSpan.FromSeconds(30);
+            using var joinCompleted = new SemaphoreSlim(0);
+            using var joinRequest = WaitableLoRaRequest.CreateWaitableRequest(CreateJoinRequest());
+            var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
+            var joinSuccessful = false;
 
-            //var token = await RandomTokenGenerator.GetTokenAsync();
-            //LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
-            //var header = LastPayload.GetSyncHeader(packetForwarder.MacAddress.ToArray());
+            void OnMessageReceived(object sender, EventArgs<string> response)
+            {
+                try
+                {
+                    var joinAcceptResponse = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
+                    // PDU is null in case it is another message coming from the station.
+                    if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && DevEui.Parse(someJoinAcceptResponse.DevEuiString) == DevEUI)
+                    {
+                        var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(somePdu), AppKey.Value);
+                        joinSuccessful = HandleJoinAccept(joinAccept);
+                        joinCompleted.Release();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Join failed due to: '{Message}'.", ex.Message);
+                    joinSuccessful = false;
+                    joinCompleted.Release();
+                    throw;
+                }
+            }
 
-            //var joinRequest = CreateJoinRequest();
-            //using var joinCompleted = new SemaphoreSlim(0);
+            foreach (var basicsStation in this.simulatedBasicsStations)
+                basicsStation.MessageReceived += OnMessageReceived;
 
-            //var joinRequestUplinkMessage = joinRequest.SerializeUplink(AppKey);
+            foreach (var basicsStation in this.simulatedBasicsStations)
+            {
+                await basicsStation.SerializeAndSendMessageAsync(new
+                {
+                    JoinEui = joinRequestPayload.AppEui.ToString("D", null),
+                    msgtype = "jreq",
+                    DevEui = joinRequestPayload.DevEUI.ToString("D", null),
+                    DevNonce = joinRequestPayload.DevNonce.AsUInt16,
+                    MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                    MIC = joinRequestPayload.Mic.Value.AsInt32,
+                    DR = joinRequest.RadioMetadata.DataRate,
+                    Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
+                    upinfo = new
+                    {
+                        gpstime = joinRequest.RadioMetadata.UpInfo.GpsTime,
+                        rctx = 10,
+                        rssi = joinRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
+                        xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
+                        snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
+                    }
+                });
+            }
 
+#if DEBUG
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                timeout = TimeSpan.FromSeconds(60);
+            }
+#endif
 
-            //packetForwarder.SubscribeOnce((response) =>
-            //{
-            //    //// handle join
-            //    /// TODO uncomment when simulator rebuild
-            //    //var txpk = Txpk.CreateTxpk(response);
-            //    //var convertedInputMessage = Convert.FromBase64String(txpk.Data);
+            await joinCompleted.WaitAsync(timeout.Value);
 
-            //    //var joinAccept = new LoRaPayloadJoinAccept(convertedInputMessage, AppKey);
+            foreach (var basicsStation in this.simulatedBasicsStations)
+                basicsStation.MessageReceived -= OnMessageReceived;
 
-            //    //var result = HandleJoinAccept(joinAccept); // may need to return bool and only release if true.
-            //    //joinCompleted.Release();
-
-            //    //return result;
-            //});
-
-            //            await packetForwarder.SendAsync(header, joinRequest.GetByteMessage());
-
-            //            TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request: {BitConverter.ToString(header).Replace("-", string.Empty, StringComparison.Ordinal)}");
-
-            //#if DEBUG
-            //            if (System.Diagnostics.Debugger.IsAttached)
-            //            {
-            //                timeoutInMs = 60 * 1000;
-            //            }
-            //#endif
-
-            //            return await joinCompleted.WaitAsync(timeoutInMs);
+            return joinSuccessful;
         }
-
-        //private bool HandleJoinAccept(LoRaPayloadJoinAccept payload)
-        //{
-        //    try
-        //    {
-        //        // Calculate the keys
-        //        var netid = payload.NetID.ToArray();
-        //        Array.Reverse(netid);
-        //        var appNonce = payload.AppNonce.ToArray();
-        //        Array.Reverse(appNonce);
-        //        var devNonce = DevNonce;
-        //        var deviceAppKey = ConversionHelper.StringToByteArray(LoRaDevice.AppKey);
-        //        var appSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.AppSKey, appNonce, netid, devNonce, deviceAppKey);
-        //        var nwkSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netid, devNonce, deviceAppKey);
-        //        var devAddr = payload.DevAddr;
-
-        //        // if mic check failed, return false
-        //        /*
-        //        if (!payload.CheckMic(BitConverter.ToString(nwkSKey).Replace("-", "")))
-        //        {
-        //            return false;
-        //        }
-        //        */
-
-        //        LoRaDevice.AppSKey = BitConverter.ToString(appSKey).Replace("-", string.Empty, StringComparison.Ordinal);
-        //        LoRaDevice.NwkSKey = BitConverter.ToString(nwkSKey).Replace("-", string.Empty, StringComparison.Ordinal);
-        //        NetId = BitConverter.ToString(netid).Replace("-", string.Empty, StringComparison.Ordinal);
-        //        AppNonce = BitConverter.ToString(appNonce).Replace("-", string.Empty, StringComparison.Ordinal);
-        //        LoRaDevice.DevAddr = BitConverter.ToString(devAddr.ToArray()).Replace("-", string.Empty, StringComparison.Ordinal);
-
-        //        return true;
-        //    }
-        //    catch
-        //    {
-        //    }
-
-        //    return false;
-        //}
 
         /// <summary>
         /// Setups the join properties.
         /// </summary>
-        public void SetupJoin(string appSKey, string nwkSKey, string devAddr)
+        public void SetupJoin(AppSessionKey appSKey, NetworkSessionKey nwkSKey, DevAddr devAddr)
         {
             LoRaDevice.AppSKey = appSKey;
             LoRaDevice.NwkSKey = nwkSKey;
             LoRaDevice.DevAddr = devAddr;
         }
+
+        private static byte[] StringToByteArray(string hex)
+        {
+            var bytes = new byte[hex.Length / 2];
+            return Hexadecimal.TryParse(hex, bytes) ? bytes : throw new FormatException("Invalid hexadecimal string: " + hex);
+        }
+
+        private sealed record JoinAcceptResponse([property: JsonPropertyName("pdu")] string Pdu,
+                                                 [property: JsonPropertyName("DevEui")] string DevEuiString);
     }
 }

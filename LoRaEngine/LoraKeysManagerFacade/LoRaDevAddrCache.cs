@@ -8,6 +8,7 @@ namespace LoraKeysManagerFacade
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
+    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Common.Exceptions;
@@ -103,8 +104,9 @@ namespace LoraKeysManagerFacade
             var serializedObjectValue = JsonConvert.SerializeObject(info);
 
             var cacheKeyToUse = GenerateKey(info.DevAddr);
+            var subKey = info.DevEUI is { } someDevEui ? someDevEui.ToString() : string.Empty;
 
-            if (this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue))
+            if (this.cacheStore.TrySetHashObject(cacheKeyToUse, subKey, serializedObjectValue))
             {
                 this.logger.LogInformation($"Successfully saved dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info.DevEUI}, object: {serializedObjectValue}");
 
@@ -229,24 +231,16 @@ namespace LoraKeysManagerFacade
                 {
                     if (twin.DeviceId != null)
                     {
-                        var rawDevAddr = string.Empty;
-                        if (twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
-                        {
-                            rawDevAddr = twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
-                        }
-                        else if (twin.Properties.Reported.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
-                        {
-                            rawDevAddr = twin.Properties.Reported[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
-                        }
-                        else
+                        if (!twin.Properties.Desired.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, this.logger, out DevAddr devAddr) &&
+                            !twin.Properties.Reported.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, this.logger, out devAddr))
                         {
                             continue;
                         }
 
                         devAddrCacheInfos.Add(new DevAddrCacheInfo()
                         {
-                            DevAddr = DevAddr.TryParse(rawDevAddr, out var someDevAddr) ? someDevAddr : throw new LoRaProcessingException($"Dev addr '{rawDevAddr}' is invalid.", LoRaProcessingErrorCode.InvalidFormat),
-                            DevEUI = twin.DeviceId,
+                            DevAddr = devAddr,
+                            DevEUI = DevEui.Parse(twin.DeviceId),
                             GatewayId = twin.GetGatewayID(),
                             NwkSKey = twin.GetNwkSKey(),
                             LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
@@ -284,7 +278,7 @@ namespace LoraKeysManagerFacade
         private static IDictionary<string, DevAddrCacheInfo> KeepExistingCacheInformation(HashEntry[] cacheDevEUIEntry, IGrouping<DevAddr, DevAddrCacheInfo> newDevEUIList, bool canDeleteExistingDevice)
         {
             // if the new value are not different we want to ensure we don't save, to not update the TTL of the item.
-            var toSyncValues = newDevEUIList.ToDictionary(x => x.DevEUI);
+            var toSyncValues = newDevEUIList.ToDictionary(x => x.DevEUI.Value.ToString());
 
             // If nothing is in the cache we want to return the new values.
             if (cacheDevEUIEntry.Length == 0)
@@ -357,7 +351,7 @@ namespace LoraKeysManagerFacade
                 // In this case we want to make sure we import any new value that were not contained in the old cache information
                 foreach (var remainingElementToImport in valueArrayimport)
                 {
-                    valueArrayBase.Add(remainingElementToImport.Value.DevEUI, remainingElementToImport.Value);
+                    valueArrayBase.Add(remainingElementToImport.Value.DevEUI.Value.ToString(), remainingElementToImport.Value);
                 }
             }
 

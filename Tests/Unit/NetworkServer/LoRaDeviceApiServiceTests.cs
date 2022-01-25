@@ -4,7 +4,12 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.IO;
     using System.Linq;
+    using System.Net.Http;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -51,9 +56,110 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(expected, result.ToString());
         }
 
+        [Fact]
+        public async Task SearchByEuiAsync_StationEui_Is_Compatible_With_Contract()
+        {
+            // arrange
+            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
+            using var httpHandlerMock = new HttpMessageHandlerMock();
+            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(SearchByDevEuiContract.Response, Encoding.UTF8, "application/json"),
+            });
+            using var httpClient = new HttpClient(httpHandlerMock);
+            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
+            var subject = Setup(facadeMock.Object);
+
+            // act
+            var result = await subject.GetPrimaryKeyByEuiAsync(new StationEui(1));
+
+            // assert
+            Assert.Equal(Convert.ToBase64String(Encoding.UTF8.GetBytes(SearchByDevEuiContract.PrimaryKey)), result);
+        }
+
+        [Fact]
+        public async Task SearchByEuiAsync_DevEui_Is_Compatible_With_Contract()
+        {
+            // arrange
+            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
+            using var httpHandlerMock = new HttpMessageHandlerMock();
+            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(SearchByDevEuiContract.Response, Encoding.UTF8, "application/json"),
+            });
+            using var httpClient = new HttpClient(httpHandlerMock);
+            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
+            var subject = Setup(facadeMock.Object);
+
+            // act
+            var result = await subject.GetPrimaryKeyByEuiAsync(new DevEui(1));
+
+            // assert
+            Assert.Equal(Convert.ToBase64String(Encoding.UTF8.GetBytes(SearchByDevEuiContract.PrimaryKey)), result);
+        }
+
+        [Theory]
+        [InlineData("null", null)]
+        [InlineData(@"""""", null)]
+        [InlineData(@"{""primaryKey"":""1234""}", "1234")]
+        [InlineData(@"{""PrimaryKey"":""1234""}", "1234")]
+        [InlineData(@"{""primaryKey"":""""}", "")]
+        [InlineData("{}", null)]
+        [InlineData("", null)]
+        public async Task SearchByEuiAsync_DevEui_Parses_Json(string json, string expected)
+        {
+            // arrange
+            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
+            using var httpHandlerMock = new HttpMessageHandlerMock();
+            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json"),
+            });
+            using var httpClient = new HttpClient(httpHandlerMock);
+            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
+            var subject = Setup(facadeMock.Object);
+
+            // act
+            var result = await subject.GetPrimaryKeyByEuiAsync(new DevEui(1));
+
+            // assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public async Task FetchStationFirmwareAsync_Returns_Stream_And_Content_Length()
+        {
+            var contentBytes = Encoding.UTF8.GetBytes("Test");
+            // arrange
+            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
+            using var httpHandlerMock = new HttpMessageHandlerMock();
+            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(contentBytes)
+            });
+            using var httpClient = new HttpClient(httpHandlerMock);
+            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
+            var subject = Setup(facadeMock.Object);
+
+            // act
+            var content = await subject.FetchStationFirmwareAsync(new StationEui(ulong.MaxValue), CancellationToken.None);
+
+            // assert
+            var expectedBytes = new byte[contentBytes.Length];
+            await (await content.ReadAsStreamAsync()).ReadAsync(expectedBytes, CancellationToken.None);
+            Assert.Equal(content.Headers.ContentLength, contentBytes.Length);
+            Assert.Equal(expectedBytes, contentBytes);
+        }
+
         private static LoRaDeviceAPIService Setup(string basePath) =>
             new LoRaDeviceAPIService(new NetworkServerConfiguration { FacadeServerUrl = new Uri(basePath) },
                                      new Mock<IServiceFacadeHttpClientProvider>().Object,
+                                     NullLogger<LoRaDeviceAPIService>.Instance,
+                                     TestMeter.Instance);
+
+        private static LoRaDeviceAPIService Setup(IServiceFacadeHttpClientProvider facadeHttpClientProvider) =>
+            new LoRaDeviceAPIService(new NetworkServerConfiguration { FacadeServerUrl = new Uri("https://aka.ms/api/") },
+                                     facadeHttpClientProvider,
                                      NullLogger<LoRaDeviceAPIService>.Instance,
                                      TestMeter.Instance);
     }

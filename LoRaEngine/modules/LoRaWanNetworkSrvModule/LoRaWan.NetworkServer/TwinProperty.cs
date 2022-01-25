@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer
         public const string NwkSKey = "NwkSKey";
         public const string DevAddr = "DevAddr";
         public const string DevNonce = "DevNonce";
-        public const string AppEUI = "AppEUI";
+        public const string AppEui = "AppEUI";
         public const string AppKey = "AppKey";
         public const string GatewayID = "GatewayID";
         public const string LastProcessingStationEui = "LastProcessingStationEui";
@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer
         public const string FCntUp = "FCntUp";
         public const string FCntDown = "FCntDown";
         public const string DevEUI = "DevEUI";
-        public const string NetID = "NetId"; // Must be NetId to be backward compatible
+        public const string NetId = "NetId"; // Must be NetId to be backward compatible
         public const string DownlinkEnabled = "Downlink";
         public const string PreferredWindow = "PreferredWindow"; // (1 or 2)
         public const string Deduplication = "Deduplication"; // None (default), Drop, Mark
@@ -31,6 +31,7 @@ namespace LoRaWan.NetworkServer
         // ADR stuff
         public const string DataRate = "DataRate";
         public const string TxPower = "TxPower"; // depend on region 0 - 7 EU or 0 - 14 US
+        public const string TxParam = "TxParam"; // Configuration for dwell time and EIRP
         public const string NbRep = "NbRep"; // 1 - 3
         public const string RX2DataRate = "RX2DataRate";
         public const string RX1DROffset = "RX1DROffset";
@@ -51,5 +52,8 @@ namespace LoRaWan.NetworkServer
         /// Defines the join channel index; applicable to CN470 region.
         /// </summary>
         public const string CN470JoinChannel = "CN470JoinChannel";
+
+        // Concentrator-only properties
+        public const string Package = "Package";
     }
 }

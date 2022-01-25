@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Azure;
-    using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Microsoft.Extensions.Primitives;
     using Moq;
     using Xunit;
@@ -29,7 +29,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         private readonly Mock<RegistryManager> registryManager;
         private readonly Mock<IAzureClientFactory<BlobServiceClient>> azureClientFactory;
         private readonly ConcentratorCredentialsFunction concentratorCredential;
-        private readonly Mock<ILogger> loggerMock;
+        private readonly StationEui stationEui = StationEui.Parse("001122FFFEAABBCC");
         private const string RawStringContent = "hello";
         private const string Base64EncodedString = "aGVsbG8=";
 
@@ -37,8 +37,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             this.registryManager = new Mock<RegistryManager>();
             this.azureClientFactory = new Mock<IAzureClientFactory<BlobServiceClient>>();
-            this.concentratorCredential = new ConcentratorCredentialsFunction(registryManager.Object, azureClientFactory.Object);
-            this.loggerMock = new Mock<ILogger>();
+            this.concentratorCredential = new ConcentratorCredentialsFunction(registryManager.Object, azureClientFactory.Object, NullLogger<ConcentratorCredentialsFunction>.Instance);
         }
 
         [Fact]
@@ -64,28 +63,14 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             SetupBlobMock(blobStream);
 
             // http request
-            var httpRequest = new Mock<HttpRequest>();
-            var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
-            {
-                { "StationEui", new StringValues("001122FFFEAABBCC") },
-                { "CredentialType", credentialType.ToString() }
-            });
-            httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
+            var httpRequest = SetupHttpRequest(credentialType);
 
             // twin mock
-            var twin = new Twin();
-            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
-                'cupsUri': 'https://localhost:5002',
-                'tcUri': 'wss://localhost:5001',
-                'cupsCredCrc': 1234,
-                'tcCredCrc': 5678,
-                'cupsCredentialUrl': 'https://storage.blob.core.windows.net/container/blob',
-                'tcCredentialUrl': 'https://storage.blob.core.windows.net/container/blob'
-            }}"));
+            var twin = SetupDeviceTwin();
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, this.loggerMock.Object, CancellationToken.None);
+            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, CancellationToken.None);
 
             Assert.NotNull(result);
             Assert.IsType<OkObjectResult>(result);
@@ -95,28 +80,14 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         public async Task RunFetchConcentratorCredentials_Returns_NotFound_ForMissingTwin()
         {
             // http request
-            var httpRequest = new Mock<HttpRequest>();
-            var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
-            {
-                { "StationEui", new StringValues("001122FFFEAABBCC") },
-                { "CredentialType", ConcentratorCredentialType.Cups.ToString() }
-            });
-            httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
+            var httpRequest = SetupHttpRequest();
 
             // twin mock
-            var twin = new Twin();
-            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
-                'cupsUri': 'https://localhost:5002',
-                'tcUri': 'wss://localhost:5001',
-                'cupsCredCrc': 1234,
-                'tcCredCrc': 5678,
-                'cupsCredentialUrl': 'https://storage.blob.core.windows.net/container/blob',
-                'tcCredentialUrl': 'https://storage.blob.core.windows.net/container/blob'
-            }}"));
+            var twin = SetupDeviceTwin();
             this.registryManager.Setup(m => m.GetTwinAsync("AnotherTwin", It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, this.loggerMock.Object, CancellationToken.None);
+            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, CancellationToken.None);
 
             Assert.NotNull(result);
             Assert.IsType<NotFoundResult>(result);
@@ -133,7 +104,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var queryDictionary = new Dictionary<string, StringValues>();
             if (stationEuiAvailable)
             {
-                queryDictionary.Add("StationEui", new StringValues("001122FFFEAABBCC"));
+                queryDictionary.Add("StationEui", this.stationEui.ToString());
             }
             if (credentialTypeAvailable)
             {
@@ -142,10 +113,33 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var queryCollection = new QueryCollection(queryDictionary);
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
-            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, this.loggerMock.Object, CancellationToken.None);
+            var result = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, CancellationToken.None);
 
             Assert.NotNull(result);
             Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task RunFetchConcentratorCredentials_Returns_InternalServerError_ForMissingCupsProperty()
+        {
+            var blobBytes = Encoding.UTF8.GetBytes(RawStringContent);
+            using var blobStream = new MemoryStream(blobBytes);
+            SetupBlobMock(blobStream);
+
+            // http request
+            var httpRequest = SetupHttpRequest();
+
+            // twin mock
+            var twin = new Twin();
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'key': 'value'}"));
+            this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                                .ReturnsAsync(twin);
+
+            var actual = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, CancellationToken.None);
+
+            var result = Assert.IsType<ObjectResult>(actual);
+            Assert.Equal(500, result.StatusCode);
+            Assert.Equal("'cups' desired property was not found or misconfigured.", result.Value);
         }
 
         private void SetupBlobMock(MemoryStream blobStream)
@@ -168,6 +162,34 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             this.azureClientFactory.Setup(m => m.CreateClient(FacadeStartup.WebJobsStorageClientName))
                                    .Returns(blobServiceClient.Object);
+        }
+
+        private Mock<HttpRequest> SetupHttpRequest(ConcentratorCredentialType credentialType = ConcentratorCredentialType.Cups)
+        {
+            var httpRequest = new Mock<HttpRequest>();
+            var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
+            {
+                { "StationEui", new StringValues(this.stationEui.ToString()) },
+                { "CredentialType", credentialType.ToString() }
+            });
+
+            httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
+            return httpRequest;
+        }
+
+        private static Twin SetupDeviceTwin()
+        {
+            var twin = new Twin();
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
+                'cupsUri': 'https://localhost:5002',
+                'tcUri': 'wss://localhost:5001',
+                'cupsCredCrc': 1234,
+                'tcCredCrc': 5678,
+                'cupsCredentialUrl': 'https://storage.blob.core.windows.net/container/blob',
+                'tcCredentialUrl': 'https://storage.blob.core.windows.net/container/blob'
+            }}"));
+
+            return twin;
         }
     }
 }

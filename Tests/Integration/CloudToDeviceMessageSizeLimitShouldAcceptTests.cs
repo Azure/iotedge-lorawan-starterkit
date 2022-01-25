@@ -8,18 +8,20 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Cloud to device message processing max payload size tests (Join tests are handled in other class)
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public class CloudToDeviceMessageSizeLimitShouldAcceptTests : CloudToDeviceMessageSizeLimitBaseTests
     {
+        public CloudToDeviceMessageSizeLimitShouldAcceptTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory(Skip = "Fails on CI - works locally. To enable with #562")]
         [CombinatorialData]
         public async Task Should_Accept(
@@ -62,10 +64,10 @@ namespace LoRaWan.Tests.Integration
             {
                 upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
             }
-      
+
 
             expectedDownlinkDatr = isSendingInRx2
-                ? euRegion.GetDefaultRX2ReceiveWindow().DataRate
+                ? euRegion.GetDefaultRX2ReceiveWindow(default).DataRate
                 : euRegion.GetDataRateIndex(LoRaDataRate.Parse(datr));
 
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
@@ -83,7 +85,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2dMessage.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2dMessage.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
@@ -122,10 +124,10 @@ namespace LoRaWan.Tests.Integration
             // Get downlink message
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
+            payloadDataDown.Serialize(loraDevice.AppSKey.Value);
 
             // 3. downlink message payload contains expected message type and DevAddr
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // 4. Expected Mac commands are present

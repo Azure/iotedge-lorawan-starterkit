@@ -190,8 +190,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:
-                    var stationVersion = LnsData.VersionMessageReader.Read(json);
-                    this.logger.LogInformation("Received 'version' message for station '{StationVersion}'.", stationVersion);
+                    var (version, package) = LnsData.VersionMessageReader.Read(json);
+                    this.logger.LogInformation("Received 'version' message for station '{StationVersion}' with package '{StationPackage}'.", version, package);
+                    await this.basicsStationConfigurationService.SetReportedPackageVersionAsync(stationEui, package, cancellationToken);
                     var routerConfigResponse = await this.basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
                     await socket.SendAsync(routerConfigResponse, cancellationToken);
                     break;
@@ -204,11 +205,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
                         var loraRequest = new LoRaRequest(jreq.RadioMetadata, this.downstreamSender, DateTime.UtcNow);
-                        loraRequest.SetPayload(new LoRaPayloadJoinRequestLns(jreq.MacHeader,
-                                                                             jreq.JoinEui,
-                                                                             jreq.DevEui,
-                                                                             jreq.DevNonce,
-                                                                             jreq.Mic));
+                        loraRequest.SetPayload(new LoRaPayloadJoinRequest(jreq.JoinEui,
+                                                                          jreq.DevEui,
+                                                                          jreq.DevNonce,
+                                                                          jreq.Mic));
                         loraRequest.SetRegion(routerRegion);
                         loraRequest.SetStationEui(stationEui);
                         this.messageDispatcher.DispatchRequest(loraRequest);
@@ -231,15 +231,15 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
                         var loraRequest = new LoRaRequest(updf.RadioMetadata, this.downstreamSender, DateTime.UtcNow);
-                        loraRequest.SetPayload(new LoRaPayloadDataLns(updf.DevAddr,
-                                                                      updf.MacHeader,
-                                                                      updf.FrameControlFlags,
-                                                                      updf.Counter,
-                                                                      updf.Options,
-                                                                      updf.Payload,
-                                                                      updf.Port,
-                                                                      updf.Mic,
-                                                                      this.logger));
+                        loraRequest.SetPayload(new LoRaPayloadData(updf.DevAddr,
+                                                                   updf.MacHeader,
+                                                                   updf.FrameControlFlags,
+                                                                   updf.Counter,
+                                                                   updf.Options,
+                                                                   updf.Payload,
+                                                                   updf.Port,
+                                                                   updf.Mic,
+                                                                   this.logger));
                         loraRequest.SetRegion(routerRegion);
                         loraRequest.SetStationEui(stationEui);
                         this.messageDispatcher.DispatchRequest(loraRequest);

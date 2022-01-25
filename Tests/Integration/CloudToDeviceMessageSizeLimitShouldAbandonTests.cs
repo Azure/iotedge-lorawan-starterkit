@@ -9,16 +9,18 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
+    using Xunit.Abstractions;
 
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public class CloudToDeviceMessageSizeLimitShouldAbandonTests : CloudToDeviceMessageSizeLimitBaseTests
     {
+        public CloudToDeviceMessageSizeLimitShouldAbandonTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+
         [Theory]
         [CombinatorialData]
         public async Task Should_Abandon(
@@ -52,9 +54,9 @@ namespace LoRaWan.Tests.Integration
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
             DataRateIndex expectedDownlinkDatr;
 
-            expectedDownlinkDatr = euRegion.GetDataRateIndex(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].DataRate);
+            expectedDownlinkDatr = euRegion.GetDataRateIndex(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow(default).DataRate].DataRate);
 
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(euRegion.GetDefaultRX2ReceiveWindow().DataRate)
+            var c2dPayloadSize = euRegion.GetMaxPayloadSize(euRegion.GetDefaultRX2ReceiveWindow(default).DataRate)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;
@@ -69,7 +71,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2dMessage.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
+                c2dMessage.MacCommands.Add(c2dMessageMacCommand);
             }
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
@@ -106,16 +108,22 @@ namespace LoRaWan.Tests.Integration
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
 
-            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.DataRateRx2);
+            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Rx2.DataRate);
 
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
+            if (hasMacInUpstream)
+            {
+                payloadDataDown.Serialize(loraDevice.NwkSKey ?? throw new InvalidOperationException("NwkSKey can't be null"));
+            } else
+            {
+                payloadDataDown.Serialize(loraDevice.AppSKey ?? throw new InvalidOperationException("AppSKey can't be null"));
+            }
 
             // 3. Fpending flag is set
             Assert.True(payloadDataDown.IsDownlinkFramePending);
 
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.Equal(MacMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             // Expected Mac command is present

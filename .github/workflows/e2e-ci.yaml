@@ -4,12 +4,15 @@ on: # rebuild any PRs and main branch changes
   schedule:
     - cron: '59 23 * * 1,2,3,4,5'
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [labeled]
   workflow_dispatch:
     inputs:
       RunE2ETestsOnly:
         description: 'Run E2E tests only'
         default: false
+      RunLoadTests:
+        description: 'Include Load Tests in current run'
+        default: 'false'
       TestsToRun:
         default: '[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest]'
         description: 'tests to run'
@@ -86,7 +89,7 @@ jobs:
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
       CertRemotePath: "/var/lorastarterkit/certs"
-  
+
   power_on_azure_vm:
     name: Power ON EFLOW
     if: always()
@@ -226,7 +229,9 @@ jobs:
         CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
         CUPS_STATION_EUI: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
         CUPS_CREDENTIALS_BLOB_URL: ${{ secrets.CUPSCREDENTIALSBLOBURL }}
+        CUPS_FIRMWARE_BLOB_URL: ${{ secrets.CUPSFIRMWAREBLOBURL }}
       run: |
+        # -- Credential generation section --
         chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh client $CUPS_STATION_EUI
@@ -238,10 +243,23 @@ jobs:
         curl -X PUT -T ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.bundle -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_CREDENTIALS_BLOB_URL"
         echo "::set-output name=clientbundlecrc::$(cat ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.bundle | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo)"
         echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')"
+        # -- Firmware upgrade generation section --
+        chmod +x ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh
+        NEW_FW_VERSION=$(date -u +%s)
+        sed -i "s/1.0.1-e2e/$NEW_FW_VERSION/g" ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh
+        ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $CUPS_STATION_EUI "$(realpath ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh)"
+        cp ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
+        echo "::set-output name=clientsigkeycrc::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.crc)"
+        echo "::set-output name=clientfwdigest::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/fwUpdate.digest)"
+        echo "::set-output name=clientfwversion::$NEW_FW_VERSION"
+        curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_FIRMWARE_BLOB_URL"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
         scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$RPI_HOST.pfx $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/server.pfx
+        # following is needed for the proper setup of trusted ca certificate
+        openssl x509 -in ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt -inform DER -out ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem -outform PEM
+        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/client.ca.crt
 
     - id: get_self_hosted_runner_ip_address
       shell: bash
@@ -252,6 +270,9 @@ jobs:
       itestupip: ${{ steps.get_self_hosted_runner_ip_address.outputs.itestupip }}
       clientthumbprint: ${{ steps.generate_step.outputs.clientthumbprint }}
       clientbundlecrc: ${{ steps.generate_step.outputs.clientbundlecrc }}
+      clientsigkeycrc: ${{ steps.generate_step.outputs.clientsigkeycrc }}
+      clientfwdigest: ${{ steps.generate_step.outputs.clientfwdigest }}
+      clientfwversion: ${{ steps.generate_step.outputs.clientfwversion }}
 
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
@@ -373,7 +394,68 @@ jobs:
           architecture: '${{ secrets.ARCHITECTURE }}'
           iot_edge_deployment_id: '${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}'
 
-# Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
+  load_test_job:
+    timeout-minutes: 150
+    name: Run Load Tests
+    environment:
+      name: CI_AZURE_ENVIRONMENT
+      url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
+    if: always() && (github.event_name == 'schedule' || github.event.inputs.RunLoadTests == 'true')
+    needs:
+      - deploy_arm_gw_iot_edge
+      - deploy_eflow_gw_iot_edge
+      - deploy_facade_function
+      - deploy_eflow_concentrator_iot_edge
+      - env_var
+      - certificates_job
+    runs-on: [ self-hosted, x64 ]
+    env:
+      INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
+      INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ${{ secrets.IOTHUB_CI_CONSUMER_GROUP }}
+      INTEGRATIONTEST_IoTHubConnectionString: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
+      INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
+      INTEGRATIONTEST_DevicePrefix: '03'
+      INTEGRATIONTEST_RunningInCI: true
+      INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ secrets.LOAD_TEST_LNS_ENDPOINTS }}
+      INTEGRATIONTEST_NumberOfLoadTestDevices: 10
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout current branch
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1.8.2
+      with:
+        dotnet-version: '6.0.x' # SDK Version to use.
+
+    - name: .NET SDK Information
+      run:
+        dotnet --info
+
+    - name: Configuration for load tests
+      uses: cschleiden/replace-tokens@v1
+      with:
+        files: '${{ env.TESTS_FOLDER }}/Simulation/appsettings.json'
+
+    - name: Build load tests
+      run: |
+        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
+
+    - name: Runs load tests
+      shell: bash
+      run: |
+        dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
+        -r ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/ \
+        ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
+
+    # Upload test results as artifact
+    - uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: load-test-results
+        path: ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/
+
+  # Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
   e2e_tests_job:
     timeout-minutes: 150
     name: Run E2E Tests
@@ -388,6 +470,7 @@ jobs:
       - deploy_eflow_concentrator_iot_edge
       - env_var
       - certificates_job
+      - load_test_job
     runs-on: [ self-hosted, x64 ]
     env:
       E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
@@ -411,6 +494,11 @@ jobs:
       E2ETESTS_CupsBasicStationEui: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
       E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
       E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
+      E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}
+      E2ETESTS_CupsFwDigest: ${{ needs.certificates_job.outputs.clientfwdigest }}
+      E2ETESTS_CupsBasicStationVersion: "2.0.5(rak833x64/std)"
+      E2ETESTS_CupsBasicStationPackage: ${{ needs.certificates_job.outputs.clientfwversion }}
+      E2ETESTS_CupsFwUrl: ${{ secrets.CUPSFIRMWAREBLOBURL }}
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
       E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 
@@ -518,7 +606,7 @@ jobs:
       with:
         name: e2e-test-results
         path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
-  
+
   power_off_azure_vm:
     name: Power OFF EFLOW
     if: always()
