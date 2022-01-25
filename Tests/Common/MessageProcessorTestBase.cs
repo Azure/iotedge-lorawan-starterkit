@@ -94,16 +94,7 @@ namespace LoRaWan.Tests.Common
                                                                              this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
                                                                              null);
 
-            var requestHandler = new DefaultLoRaDataRequestHandler(ServerConfiguration,
-                                                                   FrameCounterUpdateStrategyProvider,
-                                                                   ConcentratorDeduplication,
-                                                                   new LoRaPayloadDecoder(this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()),
-                                                                   deduplicationFactory,
-                                                                   adrStrategyProvider,
-                                                                   adrManagerFactory,
-                                                                   functionBundlerProvider,
-                                                                   this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
-                                                                   meter: null);
+            var requestHandler = CreateDefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceApi.Object, ConcentratorDeduplication);
             DeviceCache = new LoRaDeviceCache(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(int.MaxValue), ValidationInterval = TimeSpan.FromMilliseconds(int.MaxValue) },
                                               new NetworkServerConfiguration { GatewayID = ServerGatewayID },
                                               this.testOutputLoggerFactory.CreateLogger<LoRaDeviceCache>(),
@@ -113,6 +104,27 @@ namespace LoRaWan.Tests.Common
             // By default we pick EU868 region.
             DefaultRegion = Enum.TryParse<LoRaRegionType>(Environment.GetEnvironmentVariable("REGION"), out var loraRegionType) ?
                         (RegionManager.TryTranslateToRegion(loraRegionType, out var resolvedRegion) ? resolvedRegion : RegionManager.EU868) : RegionManager.EU868;
+        }
+
+        protected DefaultLoRaDataRequestHandler CreateDefaultLoRaDataRequestHandler(NetworkServerConfiguration networkServerConfiguration,
+                                                                                    ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
+                                                                                    LoRaDeviceAPIServiceBase loraDeviceApi,
+                                                                                    IConcentratorDeduplication concentratorDeduplication)
+        {
+            var deduplicationFactory = new DeduplicationStrategyFactory(this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<DeduplicationStrategyFactory>());
+            var adrStrategyProvider = new LoRaADRStrategyProvider(this.testOutputLoggerFactory);
+            var adrManagerFactory = new LoRAADRManagerFactory(loraDeviceApi, this.testOutputLoggerFactory);
+            var functionBundlerProvider = new FunctionBundlerProvider(loraDeviceApi, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>());
+            return new DefaultLoRaDataRequestHandler(networkServerConfiguration,
+                                                     frameCounterUpdateStrategyProvider,
+                                                     concentratorDeduplication,
+                                                     new LoRaPayloadDecoder(this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()),
+                                                     deduplicationFactory,
+                                                     adrStrategyProvider,
+                                                     adrManagerFactory,
+                                                     functionBundlerProvider,
+                                                     this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
+                                                     meter: TestMeter.Instance);
         }
 
         public static MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
