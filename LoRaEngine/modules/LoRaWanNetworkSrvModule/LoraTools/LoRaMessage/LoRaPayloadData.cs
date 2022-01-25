@@ -67,7 +67,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets optional frame.
         /// </summary>
-        public Memory<byte> Fopts { get; }
+        public ReadOnlyMemory<byte> Fopts { get; }
 
         /// <summary>
         /// Gets or sets port field.
@@ -77,7 +77,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets mAC Frame Payload Encryption.
         /// </summary>
-        public Memory<byte> Frmpayload { get; }
+        public ReadOnlyMemory<byte> Frmpayload { get; }
 
         /// <summary>
         /// Gets or sets get message direction.
@@ -127,8 +127,9 @@ namespace LoRaTools.LoRaMessage
             Fcnt = counter;
 
             // Setting FOpts
-            Fopts = new byte[options.Length / 2];
-            _ = Hexadecimal.TryParse(options, Fopts.Span);
+            var foptsBytes = new byte[options.Length / 2];
+            Fopts = foptsBytes;
+            _ = Hexadecimal.TryParse(options, foptsBytes);
 
             // Populate the MacCommands present in the payload.
             if (options.Length > 0)
@@ -137,8 +138,9 @@ namespace LoRaTools.LoRaMessage
             }
 
             // Setting FRMPayload
-            Frmpayload = new byte[payload.Length / 2];
-            _ = Hexadecimal.TryParse(payload, Frmpayload.Span);
+            var payloadBytes = new byte[payload.Length / 2];
+            Frmpayload = payloadBytes;
+            _ = Hexadecimal.TryParse(payload, payloadBytes);
 
             // Fport can be empty if no commands
             Fport = port;
