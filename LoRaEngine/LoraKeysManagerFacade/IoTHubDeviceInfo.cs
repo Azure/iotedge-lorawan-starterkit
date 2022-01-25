@@ -8,20 +8,15 @@ namespace LoraKeysManagerFacade
 
     public class IoTHubDeviceInfo
     {
-        public int NetworkId { get; set; }
-
-        public int NetworkAddress { get; set; }
+        [JsonProperty("DevAddr")]
+        public string DevAddrString
+        {
+            get => DevAddr.ToString();
+            set => DevAddr = LoRaWan.DevAddr.Parse(value);
+        }
 
         [JsonIgnore]
-        public DevAddr DevAddr
-        {
-            get => new DevAddr(NetworkId, NetworkAddress);
-            set
-            {
-                NetworkId = value.NetworkId;
-                NetworkAddress = value.NetworkAddress;
-            }
-        }
+        public DevAddr DevAddr { get; set; }
 
         [JsonIgnore]
         public DevEui? DevEUI { get; set; }
