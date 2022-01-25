@@ -19,10 +19,12 @@ namespace LoRaWan.Tests.Integration
     {
         private readonly ITestOutputHelper testOutputHelper;
         private readonly object functionLock = new object();
+        private readonly SimulatedDevice simulatedDevice;
 
         public DeduplicationStrategyIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             this.testOutputHelper = testOutputHelper;
+            this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
         }
 
         [Theory]
@@ -32,15 +34,14 @@ namespace LoRaWan.Tests.Integration
         [InlineData(DeduplicationMode.Mark, true)]
         [InlineData(DeduplicationMode.Drop, true)]
         [InlineData(DeduplicationMode.None, true)]
-        public async Task Ensures_Upstream_Message_Processing(DeduplicationMode mode, bool confirmedMessages)
+        public async Task When_Different_Strategies_Are_Used_Ensures_Correct_Upstream_And_Downstream_Processing(DeduplicationMode mode, bool confirmedMessages)
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var messageProcessed = false;
             var counterFctnDown = 0;
 
             foreach (var api in new[] { LoRaDeviceApi, SecondLoRaDeviceApi })
             {
-                api.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
+                api.Setup(x => x.ExecuteFunctionBundlerAsync(this.simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
                    .ReturnsAsync((DevEui _, FunctionBundlerRequest _) =>
                    {
                        if (mode != DeduplicationMode.None)
@@ -70,8 +71,8 @@ namespace LoRaWan.Tests.Integration
                                counterFctnDown++;
                                return counterFctnDown switch
                                {
-                                   1 => simulatedDevice.FrmCntDown + 1, // first time the message is encountered, it gets a valid frame counter down
-                                   _ => 0                               // any other time, it does not
+                                   1 => this.simulatedDevice.FrmCntDown + 1, // the first time the message is encountered, it gets a valid frame counter down
+                                   _ => 0                                    // any other time, it does not
                                };
                            }
                        });
@@ -93,6 +94,7 @@ namespace LoRaWan.Tests.Integration
 
             await SendTwoMessages(mode, confirmedMessages);
 
+            // upstream
             var actualCounts =
                 (NullCount: actualDeviceTelemetries.Count(t => t.DupMsg == null),
                  TrueCount: actualDeviceTelemetries.Count(t => t.DupMsg is { }),
@@ -107,11 +109,18 @@ namespace LoRaWan.Tests.Integration
             };
 
             Assert.Equal(expectedCounts, actualCounts);
+
+            // downstream
+            var sentDownstream = PacketForwarder.DownlinkMessages.Concat(SecondPacketForwarder.DownlinkMessages).ToArray();
+
+            if (confirmedMessages)
+                Assert.Single(sentDownstream);
+            else
+                Assert.Empty(sentDownstream);
         }
 
         private async Task SendTwoMessages(DeduplicationMode mode, bool confirmedMessages)
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var (messageProcessor1, dispose1) = CreateMessageDispatcher(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceApi.Object);
             var (messageProcessor2, dispose2) = CreateMessageDispatcher(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, SecondLoRaDeviceApi.Object);
             using (messageProcessor1)
@@ -119,7 +128,7 @@ namespace LoRaWan.Tests.Integration
             using (messageProcessor2)
             using (dispose2)
             {
-                var payload = confirmedMessages ? simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: 1) : simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
+                var payload = confirmedMessages ? this.simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: 1) : this.simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
                 using var request1 = CreateWaitableRequest(payload);
                 using var request2 = CreateWaitableRequest(payload);
@@ -165,7 +174,7 @@ namespace LoRaWan.Tests.Integration
                 var connectionManager = new LoRaDeviceClientConnectionManager(cache, new TestOutputLogger<LoRaDeviceClientConnectionManager>(this.testOutputHelper));
                 var concentratorDeduplication = new ConcentratorDeduplication(cache, new TestOutputLogger<IConcentratorDeduplication>(this.testOutputHelper));
                 var requestHandler = CreateDefaultLoRaDataRequestHandler(networkServerConfiguration, frameCounterUpdateStrategyProvider, loRaDeviceApi, concentratorDeduplication);
-                var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, connectionManager, requestHandler);
+                var loRaDevice = TestUtils.CreateFromSimulatedDevice(this.simulatedDevice, connectionManager, requestHandler);
                 loRaDevice.Deduplication = mode;
                 connectionManager.Register(loRaDevice, LoRaDeviceClient.Object);
                 var loraDeviceCache = CreateDeviceCache(loRaDevice);
