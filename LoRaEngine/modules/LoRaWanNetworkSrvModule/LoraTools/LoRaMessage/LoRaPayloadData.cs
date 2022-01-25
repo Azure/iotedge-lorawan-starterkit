@@ -269,8 +269,6 @@ namespace LoRaTools.LoRaMessage
                 Array.Copy(frmPayload, 0, rawMessage, 8 + fOptsLen + fPortLen, frmPayloadLen);
             }
 
-            if (!Frmpayload.Span.IsEmpty)
-                Frmpayload.Span.Reverse();
             Direction = direction;
         }
 

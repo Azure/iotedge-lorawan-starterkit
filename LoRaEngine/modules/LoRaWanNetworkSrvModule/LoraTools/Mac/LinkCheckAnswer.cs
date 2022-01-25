@@ -13,10 +13,10 @@ namespace LoRaTools
     public class LinkCheckAnswer : MacCommand
     {
         [JsonProperty("margin")]
-        public uint Margin { get; set; }
+        public byte Margin { get; set; }
 
         [JsonProperty("gwCnt")]
-        public uint GwCnt { get; set; }
+        public byte GwCnt { get; set; }
 
         public override int Length => 3;
 
@@ -24,7 +24,7 @@ namespace LoRaTools
         /// Initializes a new instance of the <see cref="LinkCheckAnswer"/> class.
         /// Upstream Constructor.
         /// </summary>
-        public LinkCheckAnswer(uint margin, uint gwCnt)
+        public LinkCheckAnswer(byte margin, byte gwCnt)
         {
             Margin = margin;
             GwCnt = gwCnt;
@@ -37,16 +37,16 @@ namespace LoRaTools
         /// </summary>
         public LinkCheckAnswer(ReadOnlySpan<byte> input)
         {
-            Cid = (Cid)input[2];
+            Cid = (Cid)input[0];
             Margin = input[1];
-            GwCnt = input[0];
+            GwCnt = input[2];
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)GwCnt;
-            yield return (byte)Margin;
             yield return (byte)Cid;
+            yield return Margin;
+            yield return GwCnt;
         }
 
         public override string ToString()
