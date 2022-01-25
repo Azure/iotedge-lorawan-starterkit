@@ -29,6 +29,7 @@ Issues encountered in these load tests:
 
 - [Unexpected ObjectDisposedException when IoT Hub is throttling · Issue #6042 · Azure/iotedge (github.com)](https://github.com/Azure/iotedge/issues/6042)
 - We saw several instances of an `Microsoft.Azure.Amqp.AmqpException` when we were connecting devices to multiple gateways at the same time. In general, the solution became unstable with message delivery latencies of 30 seconds on average. When only using one gateway per device, these exceptions were not occurring and the solution had the usual low message delivery times.
+- When executing the load tests for more than 1000 devices, we started to see many `AmqpException` with the message `Unable to open Events link as the connection could not be authenticated`
 
 The memory/CPU usage of the IoT Edge host in gateway mode (for 900 devices) was fairly stable at around 1GB of memory used and an average CPU consumption of 40% on a Standard D2s v3 Debian 11 VM:
 
