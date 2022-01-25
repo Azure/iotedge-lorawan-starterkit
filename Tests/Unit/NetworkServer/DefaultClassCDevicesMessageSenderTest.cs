@@ -103,12 +103,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 MessageId = Guid.NewGuid().ToString(),
             };
 
+            DownlinkMessage receivedDownlinkMessage = null;
             this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
                 .Returns(Task.CompletedTask)
-                .Callback<DownlinkMessage>(d =>
-                {
-                    EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
-                });
+                .Callback<DownlinkMessage>(d => receivedDownlinkMessage = d);
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
@@ -121,6 +119,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
             this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()), Times.Once());
+            EnsureDownlinkIsCorrect(receivedDownlinkMessage, simDevice, c2dToDeviceMessage);
 
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();
@@ -365,14 +364,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 MessageId = Guid.NewGuid().ToString(),
             };
 
+            DownlinkMessage receivedDownlinkMessage = null;
             this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
                 .Returns(Task.CompletedTask)
-                .Callback<DownlinkMessage>(d =>
-                {
-                    EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
-                    Assert.Equal(DataRateIndex.DR10, d.Rx2.DataRate);
-                    Assert.Equal(Hertz.Mega(923.3), d.Rx2.Frequency);
-                });
+                .Callback<DownlinkMessage>(d => receivedDownlinkMessage = d);
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
@@ -385,6 +380,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
             this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()), Times.Once());
+
+            EnsureDownlinkIsCorrect(receivedDownlinkMessage, simDevice, c2dToDeviceMessage);
+            Assert.Equal(DataRateIndex.DR10, receivedDownlinkMessage.Rx2.DataRate);
+            Assert.Equal(Hertz.Mega(923.3), receivedDownlinkMessage.Rx2.Frequency);
 
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();
