@@ -505,6 +505,5 @@ namespace LoRaTools.LoRaMessage
         }
 
         public bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
-
     }
 }
