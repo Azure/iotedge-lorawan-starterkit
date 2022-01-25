@@ -41,7 +41,7 @@ workloads on Windows machines.
 
 ![Redundancy](../images/scenarios/scenario-eflow.png)
 
-## Deployment of IoTEdge in the cloud
+## Deployment of IoT Edge in the cloud
 
 It is also possible to run the IoT Edge modules directly in the cloud. Either a
 Linux VM to run IoT Edge directly, or on a Windows VM with EFLOW.
