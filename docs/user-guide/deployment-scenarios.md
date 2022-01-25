@@ -23,7 +23,7 @@ connection to Azure will only be used for managing the devices, or handling the
 
 ## Redundancy with multiple concentrators and gateways
 
-In a setup where all sensors can reach at least one concentrator, it is possible
+In a setup where sensors can reach at least one concentrator, it is possible
 to get redundancy buy using at lest two concentrators per gateway, and at least
 two gateways. In this case, the deduplication of the messages will happen in two
 places: on the gateway itself for concentrator deduplication, and in the Function
