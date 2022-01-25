@@ -17,6 +17,8 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadData : LoRaPayload
     {
+        private readonly byte[] rawMessage;
+
         /// <summary>
         /// Gets or sets list of Mac Commands in the LoRaPayload.
         /// </summary>
@@ -153,12 +155,11 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         /// <param name="inputMessage">the upstream Constructor.</param>
         private LoRaPayloadData(byte[] inputMessage)
-            : base(inputMessage)
         {
-            if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
+            this.rawMessage = inputMessage ?? throw new ArgumentNullException(nameof(inputMessage));
 
             DevAddr = DevAddr.Read(inputMessage.AsSpan(1));
-            MHdr = new MacHeader(RawMessage[0]);
+            MHdr = new MacHeader(inputMessage[0]);
 
             // in this case the payload is not downlink of our type
             if (MessageType is MacMessageType.ConfirmedDataDown or
@@ -233,19 +234,19 @@ namespace LoRaTools.LoRaMessage
             }
 
             var macPyldSize = DevAddr.Size + FrameControl.Size + sizeof(ushort) + fOptsLen + frmPayloadLen + fPortLen;
-            RawMessage = new byte[1 + macPyldSize + 4];
+            var rawMessage = this.rawMessage = new byte[1 + macPyldSize + 4];
             MHdr = new MacHeader(messageType);
-            RawMessage[0] = (byte)MHdr;
+            rawMessage[0] = (byte)MHdr;
             DevAddr = devAddr;
-            _ = devAddr.Write(RawMessage.AsSpan(1));
+            _ = devAddr.Write(rawMessage.AsSpan(1));
             FrameControlFlags = fctrlFlags;
-            RawMessage[5] = FrameControl.Encode(fctrlFlags, fOpts?.Length ?? 0);
-            BinaryPrimitives.WriteUInt16LittleEndian(RawMessage.AsSpan()[6..], fcnt);
+            rawMessage[5] = FrameControl.Encode(fctrlFlags, fOpts?.Length ?? 0);
+            BinaryPrimitives.WriteUInt16LittleEndian(rawMessage.AsSpan()[6..], fcnt);
             Fcnt = fcnt;
             if (fOpts != null)
             {
-                Fopts = new Memory<byte>(RawMessage, 8, fOptsLen);
-                Array.Copy(fOpts, 0, RawMessage, 8, fOptsLen);
+                Fopts = new Memory<byte>(rawMessage, 8, fOptsLen);
+                Array.Copy(fOpts, 0, rawMessage, 8, fOptsLen);
             }
             else
             {
@@ -255,7 +256,7 @@ namespace LoRaTools.LoRaMessage
             if (fPort is { } someFPort)
             {
                 Fport = someFPort;
-                RawMessage[8 + fOptsLen] = (byte)someFPort;
+                rawMessage[8 + fOptsLen] = (byte)someFPort;
             }
             else
             {
@@ -264,8 +265,8 @@ namespace LoRaTools.LoRaMessage
 
             if (frmPayload != null)
             {
-                Frmpayload = new Memory<byte>(RawMessage, 8 + fOptsLen + fPortLen, frmPayloadLen);
-                Array.Copy(frmPayload, 0, RawMessage, 8 + fOptsLen + fPortLen, frmPayloadLen);
+                Frmpayload = new Memory<byte>(rawMessage, 8 + fOptsLen + fPortLen, frmPayloadLen);
+                Array.Copy(frmPayload, 0, rawMessage, 8 + fOptsLen + fPortLen, frmPayloadLen);
             }
 
             if (!Frmpayload.Span.IsEmpty)
@@ -331,7 +332,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         /// <param name="nwskey">the network security key.</param>
         /// <returns>if the Mic is valid or not.</returns>
-        public override bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
+        public bool CheckMic(NetworkSessionKey key, uint? server32BitFcnt = null)
         {
             Ensure32BitFcntValue(server32BitFcnt);
             // do not include MIC as it was already set
@@ -345,11 +346,11 @@ namespace LoRaTools.LoRaMessage
             var byteMsg = GetByteMessage();
             var fcnt = this.server32BitFcnt ?? Fcnt;
             Mic = LoRaWan.Mic.ComputeForData(nwskey, (byte)Direction, DevAddr, fcnt, byteMsg);
-            _ = Mic.Value.Write(RawMessage.AsSpan(RawMessage.Length - 4, 4));
+            _ = Mic.Value.Write(this.rawMessage.AsSpan(this.rawMessage.Length - 4, 4));
         }
 
         /// <summary>
-        /// Decrypts the payload value, without changing the <see cref="RawMessage"/>.
+        /// Decrypts the payload value, without changing the raw message.
         /// </summary>
         /// <remarks>
         /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py.</remarks>
@@ -361,7 +362,7 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Decrypts the payload value, without changing the <see cref="RawMessage"/>.
+        /// Decrypts the payload value, without changing the raw message.
         /// </summary>
         /// <remarks>
         /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py.</remarks>
@@ -456,7 +457,7 @@ namespace LoRaTools.LoRaMessage
         {
             if (!Frmpayload.Span.IsEmpty)
             {
-                Array.Copy(rawDecryptedPayload, 0, RawMessage, RawMessage.Length - 4 - rawDecryptedPayload.Length, rawDecryptedPayload.Length);
+                Array.Copy(rawDecryptedPayload, 0, this.rawMessage, this.rawMessage.Length - 4 - rawDecryptedPayload.Length, rawDecryptedPayload.Length);
                 return rawDecryptedPayload;
             }
             else
@@ -507,6 +508,5 @@ namespace LoRaTools.LoRaMessage
 
         public override bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
 
-        public override bool CheckMic(AppKey key) => throw new NotImplementedException();
     }
 }
