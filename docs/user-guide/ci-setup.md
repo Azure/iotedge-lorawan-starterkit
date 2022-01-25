@@ -2,7 +2,7 @@
 title: Continuous Integration Setup
 ---
 
-LoRaWAN StarterKit uses GitHub Actions for executing CI workflows. This page
+LoRaWAN Starter Kit uses GitHub Actions for executing CI workflows. This page
 describes the CI workflows which are currently used in the project.
 
 ## LoRa Build & Test CI

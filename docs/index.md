@@ -30,7 +30,7 @@ Azure IoT Edge users to experiment with LoRaWAN technology.
 ![Architecture](images/EdgeArchitecture.png)
 
 There is a list of [possible deployment scenarios](user-guide/deployment-scenarios.md)
-that outlines some of the scenarios this StarterKit enables.
+that outlines some of the scenarios this Starter Kit enables.
 
 ## Key Challenges
 

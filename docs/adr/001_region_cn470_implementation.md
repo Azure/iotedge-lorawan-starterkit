@@ -6,7 +6,7 @@
 
 ## Overview / Problem Statement
 
-The specification of region CN470 has significant differences compared to regions already supported by the Starterkit. Specifically, there are 4 different frequency channel plans involved and calculation of downstream frequencies requires knowing which channel plan has been activated for a given device during join or device provisioning:
+The specification of region CN470 has significant differences compared to regions already supported by the Starter Kit. Specifically, there are 4 different frequency channel plans involved and calculation of downstream frequencies requires knowing which channel plan has been activated for a given device during join or device provisioning:
 
 - Plan A for 20 MHz antennas
 - Plan B for 20 MHz antennas

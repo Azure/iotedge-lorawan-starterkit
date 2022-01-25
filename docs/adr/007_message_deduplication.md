@@ -14,7 +14,7 @@ __________
 LoRaWan is a broadcast protocol. As such, a message sent from a device can be picked up by multiple
 concentrators which would then pass it upstream more than once. For some use-cases, sending
 upstream duplicate messages is not acceptable. With this ADR we provide an overview of the
-deduplication strategies employed in the Azure IoT Edge Starterkit. The goal is also to provide
+deduplication strategies employed in the Azure IoT Edge Starter Kit. The goal is also to provide
 insights as to how we arrived at the current solution.
 
 ## Glossary
