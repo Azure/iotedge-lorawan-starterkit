@@ -6,7 +6,7 @@ title: Release Notes
 
 ### New Features
 
-- Support for multiple Azure IoTEdge Gateways with cache and deduplication
+- Support for multiple Azure IoT Edge Gateways with cache and deduplication
 - Support for multiple concentrators with cache and deduplication
 - Support for running LNS on a separate Edge or Cloud device
 - [EFLOW](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-for-linux-on-windows?view=iotedge-2018-06) Compatibility
