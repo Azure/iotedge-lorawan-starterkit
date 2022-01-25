@@ -231,7 +231,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (response.StatusCode is not System.Net.HttpStatusCode.NotFound)
                 {
-                    this.logger.LogError($"error calling fetch station credentials api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
+                    this.logger.LogError($"error calling fetch station credentials api: {response.ReasonPhrase}, status: {response.StatusCode}, content: {response.Content}, check the azure function log");
                 }
 
                 return string.Empty;
@@ -252,7 +252,7 @@ namespace LoRaWan.NetworkServer
             var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
             if (!response.IsSuccessStatusCode)
             {
-                this.logger.LogError($"error calling fetch station firmware api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log");
+                this.logger.LogError($"error calling fetch station firmware api: {response.ReasonPhrase}, status: {response.StatusCode}, content {response.Content}, check the azure function log");
             }
 
             return response.Content;

@@ -137,7 +137,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         }
 
         [Fact]
-        public async Task RunFetchConcentratorFirmware_Returns_UnprocessableEntityResult_ForTwinMissingCups()
+        public async Task RunFetchConcentratorFirmware_Returns_InternalServerError_ForTwinMissingCups()
         {
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
@@ -151,13 +151,15 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            var result = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
+            var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
-            Assert.IsType<UnprocessableEntityResult>(result);
+            var result = Assert.IsType<ObjectResult>(actual);
+            Assert.Equal(500, result.StatusCode);
+            Assert.Equal("Failed to parse firmware upgrade url from the 'cups' desired property.", result.Value);
         }
 
         [Fact]
-        public async Task RunFetchConcentratorFirmware_Returns_UnprocessableEntityResult_ForTwinMissingFwUrl()
+        public async Task RunFetchConcentratorFirmware_Returns_InternalServerError_ForTwinMissingFwUrl()
         {
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
@@ -175,9 +177,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            var result = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
+            var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
-            Assert.IsType<UnprocessableEntityResult>(result);
+            var result = Assert.IsType<ObjectResult>(actual);
+            Assert.Equal(500, result.StatusCode);
+            Assert.Equal("Failed to parse firmware upgrade url from the 'cups' desired property.", result.Value);
         }
 
         [Fact]
