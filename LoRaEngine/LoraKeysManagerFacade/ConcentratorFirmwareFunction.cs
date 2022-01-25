@@ -7,7 +7,6 @@ namespace LoraKeysManagerFacade
     using System.Globalization;
     using System.IO;
     using System.Net;
-    using System.Net.Mime;
     using System.Threading;
     using System.Threading.Tasks;
     using Azure;
@@ -84,8 +83,9 @@ namespace LoraKeysManagerFacade
                 }
                 catch (Exception ex) when (ex is ArgumentOutOfRangeException or JsonReaderException or NullReferenceException)
                 {
-                    this.logger.LogError(ex, "Failed to parse firmware upgrade url from the '{PropertyName}' desired property.", CupsPropertyName);
-                    return new ObjectResult("Failed to fetch firmware upgrade url from device twin")
+                    var message = $"Failed to parse firmware upgrade url from the '{CupsPropertyName}' desired property.";
+                    this.logger.LogError(ex, message);
+                    return new ObjectResult(message)
                     {
                         StatusCode = (int)HttpStatusCode.InternalServerError,
                     };

@@ -102,8 +102,9 @@ namespace LoraKeysManagerFacade
                                               or InvalidCastException
                                               or InvalidOperationException)
                 {
-                    this.logger.LogError(ex, "'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
-                    return new ObjectResult($"Failed to fetch '{CupsPropertyName}' property from device twin")
+                    var message = $"'{CupsPropertyName}' desired property was not found or misconfigured.";
+                    this.logger.LogError(ex, message);
+                    return new ObjectResult(message)
                     {
                         StatusCode = (int)HttpStatusCode.InternalServerError,
                     };
