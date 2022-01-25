@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#pragma warning disable CA1819 // Properties should not return arrays
-
 namespace LoRaTools
 {
+    using System;
     using System.Collections.Generic;
-    using LoRaWan;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -14,11 +12,20 @@ namespace LoRaTools
     /// </summary>
     public class NewChannelRequest : MacCommand
     {
+        private int freq;
+
         [JsonProperty("chIndex")]
         public byte ChIndex { get; set; }
 
+
         [JsonProperty("freq")]
-        public byte[] Freq { get; set; }
+        public int Freq
+        {
+            get => this.freq;
+            set => this.freq = value is >= 0 and <= 16_777_215
+                             ? value
+                             : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+        }
 
         [JsonProperty("drRange")]
         public byte DrRange { get; set; }
@@ -35,7 +42,7 @@ namespace LoRaTools
         {
         }
 
-        public NewChannelRequest(byte chIndex, byte[] freq, byte maxDr, byte minDr)
+        public NewChannelRequest(byte chIndex, int freq, byte maxDr, byte minDr)
         {
             ChIndex = chIndex;
             Freq = freq;
@@ -45,17 +52,21 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return DrRange;
-            yield return Freq[2];
-            yield return Freq[1];
-            yield return Freq[0];
-            yield return ChIndex;
             yield return (byte)Cid;
+            yield return ChIndex;
+            var freq = Freq;
+            unchecked
+            {
+                yield return (byte)freq;
+                yield return (byte)(freq >> 8);
+                yield return (byte)(freq >> 16);
+            }
+            yield return DrRange;
         }
 
         public override string ToString()
         {
-            return $"Type: {Cid} Answer, channel index: {ChIndex}, frequency: {LittleEndianReader.ReadUInt24(Freq):X6}, min DR: {MinDR}, max DR: {MaxDR}";
+            return $"Type: {Cid} Answer, channel index: {ChIndex}, frequency: {Freq}, min DR: {MinDR}, max DR: {MaxDR}";
         }
     }
 }

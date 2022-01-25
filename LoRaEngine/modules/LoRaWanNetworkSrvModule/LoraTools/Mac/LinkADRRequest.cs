@@ -4,6 +4,7 @@
 namespace LoRaTools
 {
     using System;
+    using System.Buffers.Binary;
     using System.Collections.Generic;
     using LoRaWan;
     using Newtonsoft.Json;
@@ -58,17 +59,17 @@ namespace LoRaTools
 
             Cid = Cid.LinkADRCmd;
             DataRateTXPower = input[1];
-            ChMask = BitConverter.ToUInt16(input, 2);
+            ChMask = BinaryPrimitives.ReadUInt16LittleEndian(input);
             Redundancy = input[4];
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return Redundancy;
-            yield return (byte)(ChMask >> 8);
-            yield return (byte)ChMask;
-            yield return DataRateTXPower;
             yield return (byte)Cid;
+            yield return DataRateTXPower;
+            yield return unchecked((byte)ChMask);
+            yield return unchecked((byte)(ChMask >> 8));
+            yield return Redundancy;
         }
 
         public override string ToString()

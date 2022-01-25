@@ -5,8 +5,8 @@
 
 namespace LoRaTools
 {
+    using System;
     using System.Collections.Generic;
-    using LoRaWan;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -14,8 +14,16 @@ namespace LoRaTools
     /// </summary>
     public class RXParamSetupRequest : MacCommand
     {
+        private int frequency;
+
         [JsonProperty("frequency")]
-        public byte[] Frequency { get; set; } = new byte[3];
+        public int Frequency
+        {
+            get => this.frequency;
+            set => this.frequency = value is >= 0 and <= 16_777_215
+                ? value
+                : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+        }
 
         [JsonProperty("dlSettings")]
         public byte DlSettings { get; set; }
@@ -32,7 +40,7 @@ namespace LoRaTools
         {
         }
 
-        public RXParamSetupRequest(byte rx1DROffset, byte rx2DataRateOffset, byte[] frequency)
+        public RXParamSetupRequest(byte rx1DROffset, byte rx2DataRateOffset, int frequency)
         {
             DlSettings = (byte)(((rx1DROffset << 4) | rx2DataRateOffset) & 0b01111111);
             Frequency = frequency;
@@ -40,16 +48,20 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return Frequency[2];
-            yield return Frequency[1];
-            yield return Frequency[0];
-            yield return DlSettings;
             yield return (byte)Cid;
+            yield return DlSettings;
+            var freq = Frequency;
+            unchecked
+            {
+                yield return (byte)freq;
+                yield return (byte)(freq >> 8);
+                yield return (byte)(freq >> 16);
+            }
         }
 
         public override string ToString()
         {
-            return $"Type: {Cid} Answer, rx1 datarate offset: {RX1DROffset}, rx2 datarate: {RX2DataRate}, frequency plan: {LittleEndianReader.ReadUInt24(Frequency):X6}";
+            return $"Type: {Cid} Answer, rx1 datarate offset: {RX1DROffset}, rx2 datarate: {RX2DataRate}, frequency plan: {Frequency}";
         }
     }
 }
