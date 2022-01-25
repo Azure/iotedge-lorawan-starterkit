@@ -8,7 +8,7 @@ highlight some of them.
 - [Deployment on Windows Server](#deployment-on-windows-server)
 - [Deployment of IoT Edge in the cloud](#deployment-of-iotedge-in-the-cloud)
 
-Other scenarios are supported, and combinations of the below scenario are possible.
+Other scenarios are supported, and combinations of the below scenarios are possible.
 
 ## Keep data on-premise
 
@@ -16,8 +16,9 @@ It is possible to deploy Azure IoT Edge on your own hardware, and keep all data
 in your local network or infrastructure. For example, by using a custom local
 forwarding module, it is possible to route the data to a local queue or message
 bus. In this case, the sensor data will never leave the on-premise network, and
-connection to Azure will only be used for managing the devices, or handling the
-[deduplication](../adr/007_message_deduplication.md).
+the connection to Azure will be used for managing the devices, handling the
+[deduplication](../adr/007_message_deduplication.md) or managing [concentrator
+updates](station-firmware-upgrade.md) for example.
 
 ![Keep data on-premise](../images/scenarios/scenario-local-data.png)
 
@@ -26,8 +27,10 @@ connection to Azure will only be used for managing the devices, or handling the
 In a setup where sensors can reach at least one concentrator, it is possible
 to get redundancy by using at least two concentrators per gateway, and at least
 two gateways. In this case, the deduplication of the messages will happen in two
-places: on the gateway itself for concentrator deduplication, and in the Function
-for gateway deduplication ([More info on deduplication strategies](../adr/007_message_deduplication.md))
+levels: the Function will signal if a message is a duplicate, and the gateway
+itself will handle the deduplication. It is possible to configure how
+deduplication is handled and which strategy is used.  
+([More info on deduplication strategies](../adr/007_message_deduplication.md))
 
 ![Redundancy](../images/scenarios/scenario-redundancy.png)
 
