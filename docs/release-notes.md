@@ -9,7 +9,7 @@ title: Release Notes
 - Support for multiple Azure IoT Edge Gateways with cache and deduplication
 - Support for multiple concentrators with cache and deduplication
 - Support for running LNS on a separate Edge or Cloud device
-- [EFLOW](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-for-linux-on-windows?view=iotedge-2018-06) Compatibility
+- Support for running the LNS on [Windows](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-for-linux-on-windows?view=iotedge-2018-06) 
 - Support for [LoRa Basics™ Station](https://github.com/lorabasics/basicstation)
 - Regional support for CN470 and AS923
 - Support for CUPS credential management
