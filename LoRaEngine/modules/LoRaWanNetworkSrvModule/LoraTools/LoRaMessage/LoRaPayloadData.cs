@@ -504,7 +504,7 @@ namespace LoRaTools.LoRaMessage
             return messageArray.ToArray();
         }
 
-        public override bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
+        public bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
 
     }
 }

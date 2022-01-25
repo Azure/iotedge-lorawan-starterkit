@@ -26,7 +26,5 @@ namespace LoRaTools.LoRaMessage
         /// Gets or sets assigned Dev Address, TODO change??.
         /// </summary>
         public DevAddr DevAddr { get; set; }
-
-        public virtual bool RequiresConfirmation => false;
     }
 }
