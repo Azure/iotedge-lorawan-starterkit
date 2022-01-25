@@ -15,7 +15,7 @@ title: Release Notes
 - Support for CUPS credential management
 - Support for CUPS concentrator firmware update
 - First class support for Class C devices
-- Metrics can be exposed through a Prometheus endpoint
+- Observability: integration with Azure Monitor and metrics that are exposed on a Prometheus endpoint
 
 ### Breaking Changes
 
