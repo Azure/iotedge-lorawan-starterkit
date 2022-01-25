@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
+    using Microsoft.AspNetCore.Mvc.TagHelpers;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -522,18 +523,10 @@ namespace LoRaWan.Tests.Integration
 
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
+            Dictionary<string, string> actualProperties = null;
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
-                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) =>
-                {
-                    Assert.NotNull(d);
-                    Assert.True(d.ContainsKey(Constants.C2D_MSG_PROPERTY_VALUE_NAME));
-
-                    if (msgId == null)
-                        Assert.True(d.ContainsValue(Constants.C2D_MSG_ID_PLACEHOLDER));
-                    else
-                        Assert.True(d.ContainsValue(msgId));
-                })
-                .Returns(Task.FromResult(true));
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) => actualProperties = d)
+                .ReturnsAsync(true);
 
             // C2D message will be checked
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
@@ -552,6 +545,14 @@ namespace LoRaWan.Tests.Integration
             Assert.True(DeviceCache.TryGetForPayload(ackRequest.Payload, out var loRaDeviceInfo));
 
             Assert.Equal(payloadFcnt, loRaDeviceInfo.FCntUp);
+
+            Assert.NotNull(actualProperties);
+            Assert.True(actualProperties.ContainsKey(Constants.C2D_MSG_PROPERTY_VALUE_NAME));
+
+            if (msgId == null)
+                Assert.True(actualProperties.ContainsValue(Constants.C2D_MSG_ID_PLACEHOLDER));
+            else
+                Assert.True(actualProperties.ContainsValue(msgId));
         }
 
         [Theory]
@@ -694,13 +695,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>())).ReturnsAsync((Message)null);
 
             // Will send the 3 unconfirmed message
+            var receivedLoRaDeviceTelemetryItems = new List<LoRaDeviceTelemetry>();
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
-                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
-                {
-                    Assert.NotNull(t.Data);
-                    Assert.IsType<DecodedPayloadValue>(t.Data);
-                    Assert.Equal("3", ((DecodedPayloadValue)t.Data).Value.ToString());
-                })
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => receivedLoRaDeviceTelemetryItems.Add(t))
                 .ReturnsAsync(true);
 
             // Will try to find the iot device based on dev addr
@@ -751,6 +748,11 @@ namespace LoRaWan.Tests.Integration
             messageDispatcher.DispatchRequest(unconfirmedRequest3);
             Assert.True(await unconfirmedRequest3.WaitCompleteAsync());
             Assert.Null(unconfirmedRequest3.ResponseDownlink);
+
+            var actualTelemetryItem = Assert.Single(receivedLoRaDeviceTelemetryItems);
+            Assert.NotNull(actualTelemetryItem.Data);
+            var decodedPayloadValue = Assert.IsType<DecodedPayloadValue>(actualTelemetryItem.Data);
+            Assert.Equal("3", decodedPayloadValue.Value.ToString());
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
@@ -884,12 +886,9 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(twin);
 
             // 1 message will be sent
+            var receivedTelemetryItems = new List<LoRaDeviceTelemetry>();
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
-                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) =>
-                 {
-                     Assert.Equal(2, t.Fcnt);
-                     Assert.Equal("2", ((DecodedPayloadValue)t.Data).Value.ToString());
-                 })
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) => receivedTelemetryItems.Add(t))
                  .ReturnsAsync(true);
 
             // will check for c2d msg
@@ -941,6 +940,10 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(simulatedDevice.AppSKey, loRaDevice.AppSKey);
             Assert.Equal(devAddr, loRaDevice.DevAddr);
             Assert.Equal(2U, loRaDevice.FCntUp);
+
+            var telemetryItem = Assert.Single(receivedTelemetryItems);
+            Assert.Equal(2, telemetryItem.Fcnt);
+            Assert.Equal("2", ((DecodedPayloadValue)telemetryItem.Data).Value.ToString());
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
@@ -1542,28 +1545,19 @@ namespace LoRaWan.Tests.Integration
 
             var loRaDevice = CreateLoRaDevice(simDevice);
 
+            var receivedTelemetryItems = new List<LoRaDeviceTelemetry>();
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true)
-                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
-                {
-                    Assert.NotNull(t.Data);
-                    Assert.Equal(FramePorts.App1, t.Port);
-                    Assert.Equal("fport_1_decoded", t.Data.ToString());
-                });
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => receivedTelemetryItems.Add(t));
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
+            var receivedDecodeCalls = new List<(FramePort, byte[])>();
             payloadDecoder.Setup(x => x.DecodeMessageAsync(devEui, It.IsAny<byte[]>(), FramePorts.App1, It.IsAny<string>()))
                 .ReturnsAsync(new DecodePayloadResult("fport_1_decoded"))
-                .Callback((DevEui _, byte[] data, FramePort fport, string decoder) =>
-                {
-                    Assert.Equal(FramePorts.App1, fport);
-
-                    // input data is empty
-                    Assert.Null(data);
-                });
+                .Callback((DevEui _, byte[] data, FramePort fport, string decoder) => receivedDecodeCalls.Add((fport, data)));
             PayloadDecoder.SetDecoder(payloadDecoder.Object);
 
             using var cache = EmptyMemoryCache();
@@ -1583,6 +1577,16 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request1.WaitCompleteAsync());
             Assert.Null(request1.ResponseDownlink);
             Assert.True(request1.ProcessingSucceeded);
+
+            var telemetryItem = Assert.Single(receivedTelemetryItems);
+            Assert.NotNull(telemetryItem.Data);
+            Assert.Equal(FramePorts.App1, telemetryItem.Port);
+            Assert.Equal("fport_1_decoded", telemetryItem.Data.ToString());
+
+            var decoderCall = Assert.Single(receivedDecodeCalls);
+            Assert.Equal(FramePorts.App1, decoderCall.Item1);
+            // input data is empty
+            Assert.Null(decoderCall.Item2);
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
