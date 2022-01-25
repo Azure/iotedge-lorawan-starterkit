@@ -123,20 +123,12 @@ namespace LoRaWan.Tests.Integration
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
-                {
-                    Assert.False(isDisconnected);
-                    loRaDeviceTelemetry = t;
-                })
-                .ReturnsAsync(true);
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
+                .ReturnsAsync(isDisconnected ? throw new InvalidOperationException("Test setup requires that it may not be disconnected.") : true);
 
             // C2D message will be checked
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                .Callback(() =>
-                {
-                    Assert.False(isDisconnected);
-                })
-                .ReturnsAsync((Message)null);
+                .ReturnsAsync(isDisconnected ? throw new InvalidOperationException("Test setup requires that it may not be disconnected.") : (Message)null);
 
             // will check client connection
             LoRaDeviceClient.Setup(x => x.EnsureConnected())
@@ -196,20 +188,12 @@ namespace LoRaWan.Tests.Integration
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
-                {
-                    Assert.False(isDisconnected);
-                    loRaDeviceTelemetry = t;
-                })
-                .ReturnsAsync(true);
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
+                .ReturnsAsync(isDisconnected ? throw new InvalidOperationException("Test setup requires that it may not be disconnected.") : true);
 
             // C2D message will be checked
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                .Callback(() =>
-                {
-                    Assert.False(isDisconnected);
-                })
-                .ReturnsAsync((Message)null);
+                .ReturnsAsync(isDisconnected ? throw new InvalidOperationException("Test setup requires that it may not be disconnected.") : (Message)null);
 
             // will check client connection
             LoRaDeviceClient.Setup(x => x.EnsureConnected())

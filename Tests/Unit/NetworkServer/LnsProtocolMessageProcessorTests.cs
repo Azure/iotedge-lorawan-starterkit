@@ -214,12 +214,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
+            WebSocketMessageType? sentType = null;
+            bool? sentEnd = null;
             this.socketMock.Setup(x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                            .Callback<ArraySegment<byte>, WebSocketMessageType, bool, CancellationToken>((message, type, end, _) =>
                            {
                                sentString = Encoding.UTF8.GetString(message);
-                               Assert.Equal(WebSocketMessageType.Text, type);
-                               Assert.True(end);
+                               sentType = type;
+                               sentEnd = end;
                            });
 
             var muxs = Id6.Format(firstNic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
@@ -230,6 +232,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Equal(expectedString, sentString);
+            Assert.Equal(WebSocketMessageType.Text, sentType.Value);
+            Assert.True(sentEnd.Value);
         }
 
         [Fact]
@@ -244,12 +248,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
+            WebSocketMessageType? sentType = null;
+            bool? sentEnd = null;
             this.socketMock.Setup(x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                            .Callback<ArraySegment<byte>, WebSocketMessageType, bool, CancellationToken>((message, type, end, _) =>
                            {
                                sentString = Encoding.UTF8.GetString(message);
-                               Assert.Equal(WebSocketMessageType.Text, type);
-                               Assert.True(end);
+                               sentType = type;
+                               sentEnd = end;
                            });
 
             // act
@@ -259,6 +265,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
+            Assert.Equal(WebSocketMessageType.Text, sentType.Value);
+            Assert.True(sentEnd.Value);
         }
 
 

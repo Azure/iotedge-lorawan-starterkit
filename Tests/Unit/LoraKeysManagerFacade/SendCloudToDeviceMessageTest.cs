@@ -4,6 +4,8 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.IO;
     using System.Net;
     using System.Text;
@@ -117,13 +119,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 Payload = "hello",
             };
 
+            LoRaCloudToDeviceMessage receivedC2DMessage = null;
             this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
-                .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) =>
-                {
-                    var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson());
-                    Assert.Equal(c2dMessage.Fport, actualMessage.Fport);
-                    Assert.Equal(c2dMessage.Payload, actualMessage.Payload);
-                })
+                .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -136,6 +134,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.Equal("C", responseValue.ClassType);
             Assert.Equal(devEui, responseValue.DevEui);
             Assert.Null(responseValue.MessageID);
+            Assert.Equal(receivedC2DMessage.Fport, actualMessage.Fport);
+            Assert.Equal(receivedC2DMessage.Payload, actualMessage.Payload);
 
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
@@ -300,13 +300,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 Payload = "hello",
             };
 
+            LoRaCloudToDeviceMessage receivedC2DMessage = null;
             this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
-                .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) =>
-                {
-                    var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson());
-                    Assert.Equal(c2dMessage.Fport, actualMessage.Fport);
-                    Assert.Equal(c2dMessage.Payload, actualMessage.Payload);
-                })
+                .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -323,6 +319,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var cachedPreferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEui);
             Assert.NotNull(cachedPreferredGateway);
             Assert.Equal("gateway1", cachedPreferredGateway.GatewayID);
+            Assert.Equal(receivedC2DMessage.Fport, actualMessage.Fport);
+            Assert.Equal(receivedC2DMessage.Payload, actualMessage.Payload);
 
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
@@ -357,13 +355,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 Payload = "hello",
             };
 
+            LoRaCloudToDeviceMessage receivedC2DMessage = null;
             this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("mygateway", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
-                .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) =>
-                {
-                    var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson());
-                    Assert.Equal(c2dMessage.Fport, actualMessage.Fport);
-                    Assert.Equal(c2dMessage.Payload, actualMessage.Payload);
-                })
+                .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -380,6 +374,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var cachedPreferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEui);
             Assert.NotNull(cachedPreferredGateway);
             Assert.Equal("mygateway", cachedPreferredGateway.GatewayID);
+
+            Assert.Equal(receivedC2DMessage.Fport, actualMessage.Fport);
+            Assert.Equal(receivedC2DMessage.Payload, actualMessage.Payload);
 
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
@@ -455,15 +452,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 Payload = "hello",
             };
 
+            LoRaCloudToDeviceMessage receivedC2DMessage = null;
+            IDictionary<string, string> receivedProperties = null;
             this.serviceClient.Setup(x => x.SendAsync(devEui.ToString(), It.IsNotNull<Message>()))
-                .Callback((string d, Message m) =>
-                {
-                    Assert.Empty(m.Properties);
-                    var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(Encoding.UTF8.GetString(m.GetBytes()));
-                    Assert.Equal(c2dMessage.Fport, actualMessage.Fport);
-                    Assert.Equal(c2dMessage.Payload, actualMessage.Payload);
-                    Assert.Equal(c2dMessage.MessageId, actualMessage.MessageId);
-                })
+                .Callback((string d, Message m) => (receivedProperties, receivedC2DMessage) = (m.Properties, JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(Encoding.UTF8.GetString(m.GetBytes()))))
                 .Returns(Task.CompletedTask);
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -476,6 +468,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.Equal("A", responseValue.ClassType);
             Assert.Equal(devEui, responseValue.DevEui);
             Assert.Equal(actualMessage.MessageId, responseValue.MessageID);
+
+            Assert.Empty(receivedProperties);
+            Assert.Equal(receivedC2DMessage.Fport, actualMessage.Fport);
+            Assert.Equal(receivedC2DMessage.Payload, actualMessage.Payload);
+            Assert.Equal(receivedC2DMessage.MessageId, actualMessage.MessageId);
 
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
