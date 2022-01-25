@@ -765,6 +765,14 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        /// <summary>
+        /// Handles the result of frame counter down, depending on the <code>DeduplicationMode</code> used.
+        /// Specifically, for invalid frame counter down:
+        /// - when mode is Drop, we do not send the message upstream nor downstream
+        /// - when mode is Mark or None, we allow upstream but skip downstream to avoid collisions
+        /// </summary>
+        /// <param name="skipDownstreamToAvoidCollisions">boolean that is used while deciding to send messages downstream</param>
+        /// <param name="result">nullable result, that needs to be handled from the caller</param>
         private static void HandleFrameCounterDownResult(uint? fcntDown, LoRaDevice loRaDevice, LoRaRequest request, ref bool skipDownstreamToAvoidCollisions, out LoRaDeviceRequestProcessResult result)
         {
             result = null;
@@ -772,11 +780,11 @@ namespace LoRaWan.NetworkServer
             if (fcntDown <= 0)
             {
                 // Failed to update the fcnt down:
-                // - In multi gateway scenarios it means another gateway has won the race to handle this message.
-                // - In single gateway scenarios this can not happen.
-                if (loRaDevice.Deduplication == DeduplicationMode.Drop) // we should neither send upstream nor downstream
+                // This can only happen in multi gateway scenarios and
+                // it means that another gateway has won the race to handle this message.
+                if (loRaDevice.Deduplication == DeduplicationMode.Drop)
                     result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
-                else // we should still send message upstream
+                else
                     skipDownstreamToAvoidCollisions = true;
             }
         }
