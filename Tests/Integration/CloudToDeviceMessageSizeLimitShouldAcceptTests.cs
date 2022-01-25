@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Integration
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
