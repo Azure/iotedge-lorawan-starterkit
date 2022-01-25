@@ -28,7 +28,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets dLSettings.
         /// </summary>
-        public Memory<byte> DlSettings { get; set; }
+        public ReadOnlyMemory<byte> DlSettings { get; set; }
 
         /// <summary>
         /// Gets or sets rxDelay.
@@ -38,7 +38,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets cFList / Optional.
         /// </summary>
-        public Memory<byte> CfList { get; set; }
+        public ReadOnlyMemory<byte> CfList { get; set; }
 
         public int Rx1DrOffset => (DlSettings.Span[0] >> 4) & 0b00000111;
 
