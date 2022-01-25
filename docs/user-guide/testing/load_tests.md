@@ -30,7 +30,7 @@ In addition to the issues, for which we will not provider more details here, we 
 
 ![image-20220124131449660](..\..\images\lt-message-latency.png)
 
-**Memory and CPU usage**: CPU usage was fairly stable. However, while memory was staying between 100 and 130MB for the LNS during the entire load test. To ensure that we do not have a memory leak, we ran a longer load test over the course of several hours, during which memory was bounded at ca. 200MB and analysis of the Heap Dump revealed that the largest contributor to the Gen 2 Heap were the device connections (as expected), which the LNS manages in an internal cache. 
+**Memory and CPU usage**: CPU usage was fairly stable. However, while memory was staying between 100 and 130MB for the LNS during the entire load test. To ensure that we do not have a memory leak, we ran a longer load test over the course of several hours, during which memory was bounded at ca. 200MB and analysis of the Heap Dump revealed that the largest contributor to the Gen 2 Heap were the device connections (as expected), which the LNS manages in an internal cache.
 
 ![host-stats](..\..\images\lt-host-stats.png)
 
