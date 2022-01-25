@@ -50,11 +50,6 @@ namespace LoRaWan.Tests.Integration
                        }
                    });
 
-                api.Setup(x => x.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
-                   // this call should only be made, if we do not have a deduplication strategy
-                   // since otherwise we expect the fcntDown to be calculated in the same API call as deduplication
-                   .ReturnsAsync(() => mode == DeduplicationMode.None ? simulatedDevice.FrmCntDown + 1 : throw new InvalidOperationException());
-
                 api.Setup(x => x.ABPFcntCacheResetAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                    .ReturnsAsync(true);
             }
