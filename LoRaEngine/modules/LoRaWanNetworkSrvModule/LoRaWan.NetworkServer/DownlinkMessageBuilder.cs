@@ -153,7 +153,6 @@ namespace LoRaWan.NetworkServer
                     }
 
                     logger.LogInformation($"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : frmPayload.ToHex())}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {(byte)(fport ?? FramePort.MacCommand)}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}");
-                    Array.Reverse(frmPayload);
                 }
                 else
                 {
@@ -328,8 +327,6 @@ namespace LoRaWan.NetworkServer
                 logger.LogInformation($"cloud to device message: {frmPayload.ToHex()}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {cloudToDeviceMessage.Fport}, confirmed: {cloudToDeviceMessage.Confirmed}, cidType: {macCommandType}");
             }
 
-            Array.Reverse(frmPayload);
-
             var msgType = cloudToDeviceMessage.Confirmed ? MacMessageType.ConfirmedDataDown : MacMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
@@ -383,7 +380,7 @@ namespace LoRaWan.NetworkServer
                         case Cid.LinkADRCmd:
                             if (loRaRequest != null)
                             {
-                                var linkCheckAnswer = new LinkCheckAnswer(loRaRequest.Region.GetModulationMargin(loRaRequest.RadioMetadata.DataRate, loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio), 1);
+                                var linkCheckAnswer = new LinkCheckAnswer(checked((byte)loRaRequest.Region.GetModulationMargin(loRaRequest.RadioMetadata.DataRate, loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio)), 1);
                                 if (cids.Add(Cid.LinkCheckCmd))
                                 {
                                     macCommands.Add(linkCheckAnswer);

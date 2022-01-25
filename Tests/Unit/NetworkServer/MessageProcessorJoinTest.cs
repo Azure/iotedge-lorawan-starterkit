@@ -433,7 +433,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
-            joinAccept.DlSettings.Span.Reverse();
             Assert.Equal(rx1DROffset, joinAccept.Rx1DrOffset);
             Assert.Equal(rx2datarate, joinAccept.Rx2Dr);
         }
@@ -516,7 +515,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
-            joinAccept.DlSettings.Span.Reverse();
             if (rx2datarate is > DR0 and < DR8)
             {
                 Assert.Equal(rx2datarate, joinAccept.Rx2Dr);
@@ -628,7 +626,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
-            joinAccept.DlSettings.Span.Reverse();
             Assert.Equal((DataRateIndex)afterJoinValues, joinAccept.Rx2Dr);
             Assert.Equal(afterJoinValues, joinAccept.Rx1DrOffset);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx1DROffsetValue);
@@ -717,7 +714,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Single(PacketForwarder.DownlinkMessages);
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
-            joinAccept.DlSettings.Span.Reverse();
             if (rx1offset is > 0 and < 6)
             {
                 Assert.Equal(rx1offset, joinAccept.Rx1DrOffset);
