@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
@@ -103,17 +104,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
+            TwinCollection actualTwinCollection = null;
             this.deviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true)
-                .Callback<TwinCollection, CancellationToken>((t, _) =>
-                {
-                    Assert.Equal(fcntUp, (uint)t[TwinProperty.FCntUp]);
-                    Assert.Equal(0U, (uint)t[TwinProperty.FCntDown]);
-                });
+                .Callback((TwinCollection t, CancellationToken _) => actualTwinCollection = t);
 
             this.device.SetFcntUp(fcntUp);
             await target.SaveChangesAsync(this.device);
 
+            Assert.Equal(fcntUp, (uint)actualTwinCollection[TwinProperty.FCntUp]);
+            Assert.Equal(0U, (uint)actualTwinCollection[TwinProperty.FCntDown]);
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
@@ -127,13 +127,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
+            var actualTwinCollections = new List<TwinCollection>();
             this.deviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true)
-                .Callback<TwinCollection, CancellationToken>((t, _) =>
-                {
-                    Assert.Equal(startingFcntDown + 10, (uint)t[TwinProperty.FCntDown]);
-                    Assert.Equal(startingFcntUp, (uint)t[TwinProperty.FCntUp]);
-                });
+                .Callback((TwinCollection t, CancellationToken _) => actualTwinCollections.Add(t));
 
             this.device.SetFcntUp(startingFcntUp);
             this.device.SetFcntDown(startingFcntDown);
@@ -148,6 +145,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 await target.SaveChangesAsync(this.device);
             }
 
+            var twinCollection = Assert.Single(actualTwinCollections);
+            Assert.Equal(startingFcntDown + 10, (uint)twinCollection[TwinProperty.FCntDown]);
+            Assert.Equal(startingFcntUp, (uint)twinCollection[TwinProperty.FCntUp]);
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }

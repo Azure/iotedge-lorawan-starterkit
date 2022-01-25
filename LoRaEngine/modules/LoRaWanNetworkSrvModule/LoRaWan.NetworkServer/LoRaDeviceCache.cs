@@ -239,7 +239,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
             _ = loRaPayload ?? throw new ArgumentNullException(nameof(loRaPayload));
-            return device.ValidateMic(loRaPayload);
+            return device.ValidateMic((LoRaPayloadData)loRaPayload);
         }
 
         public bool TryGetByDevEui(DevEui devEui, [MaybeNullWhen(returnValue: false)] out LoRaDevice device)

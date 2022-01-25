@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Integration
 {
+    using System;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -84,9 +85,9 @@ namespace LoRaWan.Tests.Integration
                                                                    It.IsAny<IReceivedLoRaCloudToDeviceMessage>(),
                                                                    It.IsAny<uint?>(),
                                                                    It.IsAny<bool>()))
-                .Returns((LoRaRequest request, LoRaDevice _, LoRaOperationTimeWatcher _, LoRaADRResult _, IReceivedLoRaCloudToDeviceMessage _, uint? _, bool _) =>
-                    new DownlinkMessageBuilderResponse(new DownlinkMessage(request.Payload.RawMessage, default, default, default, default, default, default, default, default),
-                                                       isMessageTooLong: false, ReceiveWindow1));
+                .Returns((LoRaRequest request, LoRaDevice device, LoRaOperationTimeWatcher _, LoRaADRResult _, IReceivedLoRaCloudToDeviceMessage _, uint? _, bool _) => new
+                             DownlinkMessageBuilderResponse(new DownlinkMessage(((LoRaPayloadData)request.Payload).Serialize(device.AppSKey.Value, device.NwkSKey.Value), default, default, default, default, default, default, default, default),
+                                                            isMessageTooLong: false, ReceiveWindow1));
 
             _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
             {
@@ -108,7 +109,7 @@ namespace LoRaWan.Tests.Integration
 
         #region UnconfirmedDataMessage
         [Theory]
-        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 2)] // resubmission for unconfirmed first messages can happen when the device was reset + sends the same payload within the cache retention timewindow, 
+        [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 2)] // resubmission for unconfirmed first messages can happen when the device was reset + sends the same payload within the cache retention timewindow,
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.Mark, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // [cont] we have no reliable way of knowing that
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", DeduplicationMode.None, expectedFrameCounterResets: 1, expectedBundlerCalls: 2, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 2, expectedMessagesDown: 0, expectedTwinSaves: 2)] // [cont] so deduplication here is on a best-effort case
         [DeduplicationTestData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", DeduplicationMode.Drop, expectedFrameCounterResets: 1, expectedBundlerCalls: 1, expectedFrameCounterDownCalls: 0, expectedMessagesUp: 1, expectedMessagesDown: 0, expectedTwinSaves: 1)] // duplicate
@@ -125,9 +126,8 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown,
             int expectedTwinSaves)
         {
-            var dataPayload = this.simulatedABPDevice.CreateUnconfirmedDataUpMessage("payload");
-
-            await ArrangeActAndAssert(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await ArrangeActAndAssert(() => this.simulatedABPDevice.CreateUnconfirmedDataUpMessage("payload", fcnt: 1),
+                                      station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
         [Theory]
@@ -148,9 +148,8 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown,
             int expectedTwinSaves)
         {
-            var dataPayload = this.simulatedABPDevice.CreateUnconfirmedDataUpMessage("payload", 10);
-
-            await ArrangeActAndAssert(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await ArrangeActAndAssert(() => this.simulatedABPDevice.CreateUnconfirmedDataUpMessage("payload", 10),
+                                      station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
         #endregion
 
@@ -173,9 +172,8 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown,
             int expectedTwinSaves)
         {
-            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
-
-            await ArrangeActAndAssert(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await ArrangeActAndAssert(() => this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fcnt: 1),
+                                      station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
         [Theory]
@@ -196,9 +194,8 @@ namespace LoRaWan.Tests.Integration
           int expectedMessagesDown,
           int expectedTwinSaves)
         {
-            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fcnt: 10);
-
-            await ArrangeActAndAssert(dataPayload, station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
+            await ArrangeActAndAssert(() => this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fcnt: 10),
+                                      station1, station2, deduplicationMode, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
         #endregion
 
@@ -259,8 +256,9 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown)
         {
             // arrange
-            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fcnt: 10);
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) =
+                SetupRequests(() => this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fcnt: 10),
+                              station1, station2);
 
             var gwId = "foo";
             this.loraABPDevice.GatewayID = gwId;
@@ -282,8 +280,9 @@ namespace LoRaWan.Tests.Integration
             int expectedNumberOfADRCalls)
         {
             // arrange
-            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fctrlFlags: FrameControlFlags.Adr);
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) =
+                SetupRequests(() => this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", FrameControlFlags.Adr, fcnt: 10),
+                              station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.Mark; // or None
             this.loraABPDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(1);
@@ -303,9 +302,9 @@ namespace LoRaWan.Tests.Integration
             int expectedNumberOfFrameCounterDownCalls)
         {
             // arrange
-            var dataPayload = this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload");
-
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) =
+                SetupRequests(() => this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload"),
+                              station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.Mark; // or Drop or None
             this.loraABPDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(1);
@@ -331,11 +330,12 @@ namespace LoRaWan.Tests.Integration
             int expectedNumberOfFrameCounterDownCalls)
         {
             // arrange
-            var dataPayload = this.simulatedABPDevice.CreateUnconfirmedDataUpMessage(null,
-                                                                                     fport: FramePort.MacCommand,
-                                                                                     macCommands: new List<MacCommand> { new LinkCheckRequest() });
+            LoRaPayloadData CreateDataPayload() =>
+                this.simulatedABPDevice.CreateUnconfirmedDataUpMessage(null, fcnt: 1,
+                                                                       fport: FramePort.MacCommand,
+                                                                       macCommands: new List<MacCommand> { new LinkCheckRequest() });
 
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) = SetupRequests(CreateDataPayload, station1, station2);
 
             this.loraABPDevice.Deduplication = DeduplicationMode.None; // or Mark
 
@@ -344,7 +344,7 @@ namespace LoRaWan.Tests.Integration
         }
 
         private async Task ArrangeActAndAssert(
-            LoRaPayloadData dataPayload,
+            Func<LoRaPayloadData> dataPayloadFactory,
             string station1,
             string station2,
             DeduplicationMode deduplicationMode,
@@ -355,22 +355,23 @@ namespace LoRaWan.Tests.Integration
             int expectedMessagesDown,
             int expectedTwinSaves)
         {
-            var (request1, request2) = SetupRequests(dataPayload, station1, station2);
+            var (request1, request2) = SetupRequests(dataPayloadFactory, station1, station2);
 
             this.loraABPDevice.Deduplication = deduplicationMode;
 
             await ActAndAssert(request1, request2, this.loraABPDevice, expectedNumberOfFrameCounterResets, expectedNumberOfBundlerCalls, expectedNumberOfFrameCounterDownCalls, expectedMessagesUp, expectedMessagesDown, expectedTwinSaves);
         }
 
-        private (LoRaRequest request1, LoRaRequest request2) SetupRequests(LoRaPayloadData dataPayload, string station1, string station2)
+        private (LoRaRequest request1, LoRaRequest request2) SetupRequests(Func<LoRaPayloadData> dataPayloadFactory, string station1, string station2)
         {
             return (CreateRequest(station1), CreateRequest(station2));
 
             WaitableLoRaRequest CreateRequest(string stationEui)
             {
-                var loraRequest = CreateWaitableRequest(dataPayload);
+                var payload = dataPayloadFactory();
+                var loraRequest = CreateWaitableRequest(dataPayloadFactory());
                 loraRequest.SetStationEui(StationEui.Parse(stationEui));
-                loraRequest.SetPayload(dataPayload);
+                loraRequest.SetPayload(payload);
                 return loraRequest;
             }
         }
