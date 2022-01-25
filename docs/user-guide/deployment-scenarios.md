@@ -1,6 +1,6 @@
 # Deployment Scenarios
 
-The StarterKit support a wide variety of deployments, and this article will
+The Starter Kit support a wide variety of deployments, and this article will
 highlight some of them.
 
 - [Keep data on-premise](#keep-data-on-premise)
@@ -38,7 +38,7 @@ deduplication is handled and which strategy is used.
 
 Some organizations have a limitation of only supporting Windows operating systems
 on their infrastructure. In this case, it is still possible to use IoT Edge and
-the StarterKit by using [*EFLOW*](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-for-linux-on-windows?view=iotedge-2018-06),
+the Starter Kit by using [*EFLOW*](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-for-linux-on-windows?view=iotedge-2018-06),
 short for "Edge for Linux on Windows". This allows you to run containerized Linux
 workloads on Windows machines.
 
@@ -48,7 +48,7 @@ workloads on Windows machines.
 
 It is also possible to run the IoT Edge modules directly in the cloud. Either a
 Linux VM to run IoT Edge directly, or on a Windows VM with EFLOW.
-In fact, the full end-to-end Continuous Integration pipeline for the StarterKit
+In fact, the full end-to-end Continuous Integration pipeline for the Starter Kit
 runs on EFLOW on a VM in Azure.
 
 ![Redundancy](../images/scenarios/scenario-edge-in-cloud.png)
