@@ -14,7 +14,7 @@ In `LoRaWan.Tests.Simulation` you have access to a set of load tests that can be
 
 All load tests use the `Connected_Factory_Load_Test_Scenario` load test scenario.
 
-**January 25th 2022, load test of v2.0.0-beta1 in gateway mode (ENABLE_GATEWAY=true)**
+### January 25th 2022, load test of v2.0.0-beta1 in gateway mode (ENABLE_GATEWAY=true)
 
 We ran a set of load tests to ensure that we can support a certain amount of LoRa devices, depending on various parameters. In gateway mode, the edge hub [refreshes device twin in the background](https://github.com/Azure/iotedge/blob/master/doc/EnvironmentVariables.md#edgehub), which can result in a higher load on the IoT Hub and subsequent throttling operations due to IoT Hub quota. By taking into account these variables and KPI, we ran several load tests successfully and list the parameters we used below. For all tests we ran at a rate of 1 join request per second and 1 upstream message during the cache pre-warm phase (for more than 500 devices we use 4 requests per second during the warm-up phase to speed up the process), successively increasing the load to 10 messages per second.
 
@@ -32,9 +32,9 @@ Issues encountered in these load tests:
 
 The memory/CPU usage of the IoT Edge host in gateway mode (for 900 devices) was fairly stable at around 1GB of memory used and an average CPU consumption of 40% on a Standard D2s v3 Debian 11 VM:
 
-![gateway-mode-host-cpu-memory](..\..\images\lt-host-gateway-mode.png) 
+![gateway-mode-host-cpu-memory](..\..\images\lt-host-gateway-mode.png)
 
-**January 21st 2022, load test of v2.0.0-beta1 in direct mode (ENABLE_GATEWAY=false).**
+### January 21st 2022, load test of v2.0.0-beta1 in direct mode (ENABLE_GATEWAY=false)
 
 This load test used the default deduplication strategy. First, we deployed two LNS on Standard D2s v3 Debian 11 VMs (2vCPU, 8GB of memory). We simulated 1600 OTAA devices, distributed among 8 factories with 4 concentrators each. All devices are in reach of all concentrators within the same factory and send 5 messages each, starting with a join rate of 1.5 messages per second (to not hit the IoT Hub S1 quota) and then with progressively sending messages faster and faster (starting at 1.5 messages per second to pre-warm the cache and not hit IoT Hub S1 quota, and then successively increase the load to around 9.5 messages per second). Keep in mind that the effective message rate is higher than 9.5 messages per second, since every message is delivered to the gateways by the four concentrators per factory. The following bugs/issues became apparent in the load test:
 
