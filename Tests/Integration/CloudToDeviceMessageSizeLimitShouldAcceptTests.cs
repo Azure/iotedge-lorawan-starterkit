@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Integration
     {
         public CloudToDeviceMessageSizeLimitShouldAcceptTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
 
-        [Theory(Skip = "Fails on CI - works locally. To enable with #562")]
+        [Theory]
         [CombinatorialData]
         public async Task Should_Accept(
             bool isConfirmed,
