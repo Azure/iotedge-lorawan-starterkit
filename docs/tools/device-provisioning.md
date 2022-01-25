@@ -40,8 +40,8 @@ The tool can be configured through command line arguments and an
 `appsettings.json` file.
 
 Required command line arguments are specific to the command the user wants to
-perform and are described later in this document. `iothub-connection-string`
-parameter is required for all commands and needs to contain a connection string
+run and are described later in this document. `iothub-connection-string`
+argument is required for all commands and needs to contain a connection string
 for the Azure IoT Hub you want to work with. The connection string needs to
 belong to a shared access policy with **registry read**, **registry write** and
 **service connect** permissions enabled. You can use the default policy named
