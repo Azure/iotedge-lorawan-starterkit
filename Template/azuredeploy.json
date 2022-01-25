@@ -37,6 +37,13 @@
                 "description": "In what region is your gateway deployed?"
             }
         },
+        "stationEui": {
+            "type": "string",
+            "defaultValue": "AA555A0000000101",
+            "metadata": {
+                "description": "The StationEUI of the sample concentrator device"
+            }
+        },
         "spiSpeed": {
             "type": "int",
             "allowedValues": [
