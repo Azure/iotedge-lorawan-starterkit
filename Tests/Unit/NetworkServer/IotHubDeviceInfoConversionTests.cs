@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using global::LoraKeysManagerFacade;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using Xunit;
 
     public sealed class IotHubDeviceInfoConversionTests
