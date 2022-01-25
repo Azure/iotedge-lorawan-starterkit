@@ -24,6 +24,7 @@ We ran a set of load tests to ensure that we can support a certain amount of LoR
 | S1          | 2             | 80                | 2                         | 6              | 1680                | 2                      | 650                            |
 | S1          | 1             | 140               | 4                         | 10             | 2940                | 0                      | 500                            |
 | S3          | 1             | 900               | 4                         | 15             | 5400                | 0                      | 500                            |
+| S3          | 2             | 300               | 2                         | 9              | 4800                | 0                      | 600                            |
 
 Issues encountered in these load tests:
 
