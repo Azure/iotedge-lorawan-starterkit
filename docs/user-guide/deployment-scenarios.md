@@ -36,7 +36,7 @@ for gateway deduplication ([More info on deduplication strategies](../adr/007_me
 Some organizations have a limitation of only supporting Windows operating systems
 on their infrastructure. In this case, it is still possible to use IoT Edge and
 the StarterKit by using [*EFLOW*](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-for-linux-on-windows?view=iotedge-2018-06),
-short for Edge For Linux On Windows. This allows you to run containerized Linux
+short for "Edge for Linux on Windows". This allows you to run containerized Linux
 workloads on Windows machines.
 
 ![Redundancy](../images/scenarios/scenario-eflow.png)
