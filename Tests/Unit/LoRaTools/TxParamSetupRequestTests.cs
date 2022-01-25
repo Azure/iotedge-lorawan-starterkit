@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         [MemberData(nameof(ToBytes_Theory_Data))]
         public void ToByte_Success_Cases(DwellTimeSetting dwellTimeSetting, byte actualByte)
         {
-            Assert.Equal(new[] { actualByte, (byte)Cid.TxParamSetupCmd }, new TxParamSetupRequest(dwellTimeSetting).ToBytes());
+            Assert.Equal(new[] { (byte)Cid.TxParamSetupCmd, actualByte }, new TxParamSetupRequest(dwellTimeSetting).ToBytes());
         }
 
         [Fact]

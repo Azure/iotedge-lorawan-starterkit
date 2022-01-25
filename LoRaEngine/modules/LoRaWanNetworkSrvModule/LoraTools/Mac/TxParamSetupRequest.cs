@@ -23,13 +23,13 @@ namespace LoRaTools.Mac
         public override int Length { get; } = sizeof(byte) + 1;
 
         public override IEnumerable<byte> ToBytes() =>
-            new[]
+            unchecked(new[]
             {
+                (byte)Cid.TxParamSetupCmd,
                 (byte)((byte)this.dwellTimeSetting.MaxEirp
                        | (this.dwellTimeSetting.UplinkDwellTime ? 0b0001_0000 : 0)
                        | (this.dwellTimeSetting.DownlinkDwellTime ? 0b0010_0000 : 0)),
-                (byte)Cid.TxParamSetupCmd
-            };
+            });
 
         public override string ToString() =>
             $"Type: {Cid} Request, {this.dwellTimeSetting}";
