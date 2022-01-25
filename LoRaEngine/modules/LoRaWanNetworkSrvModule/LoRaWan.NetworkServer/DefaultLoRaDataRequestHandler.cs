@@ -188,15 +188,9 @@ namespace LoRaWan.NetworkServer
                 {
                     fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
-                    // Failed to update the fcnt down
-                    // In multi gateway scenarios it means another gateway has won the race to handle this message
-                    if (fcntDown <= 0)
-                    {
-                        if (loRaDevice.Deduplication == DeduplicationMode.Drop) // we should neither send upstream nor downstream
-                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
-                        else // we should still send message upstream
-                            skipDownstreamToAvoidCollisions = true;
-                    }
+                    HandleFrameCounterDownResult(fcntDown, loRaDevice, request, ref skipDownstreamToAvoidCollisions, out result);
+                    if (result != null)
+                        return result;
                 }
                 #endregion
 
@@ -768,6 +762,22 @@ namespace LoRaWan.NetworkServer
             else
             {
                 this.logger.LogDebug($"down frame counter: {loRaDevice.FCntDown}");
+            }
+        }
+
+        private static void HandleFrameCounterDownResult(uint? fcntDown, LoRaDevice loRaDevice, LoRaRequest request, ref bool skipDownstreamToAvoidCollisions, out LoRaDeviceRequestProcessResult result)
+        {
+            result = null;
+
+            if (fcntDown <= 0)
+            {
+                // Failed to update the fcnt down:
+                // - In multi gateway scenarios it means another gateway has won the race to handle this message.
+                // - In single gateway scenarios this can not happen.
+                if (loRaDevice.Deduplication == DeduplicationMode.Drop) // we should neither send upstream nor downstream
+                    result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                else // we should still send message upstream
+                    skipDownstreamToAvoidCollisions = true;
             }
         }
 

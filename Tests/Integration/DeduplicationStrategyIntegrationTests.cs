@@ -26,29 +26,56 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData(DeduplicationMode.Mark)]
-        [InlineData(DeduplicationMode.Drop)]
-        [InlineData(DeduplicationMode.None)]
-        public async Task Validate_Dup_Message_Processing(DeduplicationMode mode)
+        [InlineData(DeduplicationMode.Mark, false)]
+        [InlineData(DeduplicationMode.Drop, false)]
+        [InlineData(DeduplicationMode.None, false)]
+        [InlineData(DeduplicationMode.Mark, true)]
+        [InlineData(DeduplicationMode.Drop, true)]
+        [InlineData(DeduplicationMode.None, true)]
+        public async Task Ensures_Upstream_Message_Processing(DeduplicationMode mode, bool confirmedMessages)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var messageProcessed = false;
+            var counterFctnDown = 0;
 
             foreach (var api in new[] { LoRaDeviceApi, SecondLoRaDeviceApi })
             {
                 api.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
                    .ReturnsAsync((DevEui _, FunctionBundlerRequest _) =>
                    {
-                       lock (this.functionLock)
+                       if (mode != DeduplicationMode.None)
                        {
-                           var isDup = messageProcessed;
-                           messageProcessed = true;
-                           return new FunctionBundlerResult()
+                           lock (this.functionLock)
                            {
-                               DeduplicationResult = new DeduplicationResult { IsDuplicate = isDup }
-                           };
+                               var isDup = messageProcessed;
+                               messageProcessed = true;
+                               return new FunctionBundlerResult()
+                               {
+                                   DeduplicationResult = new DeduplicationResult { IsDuplicate = isDup }
+                               };
+                           }
                        }
+
+                       // when DeduplicationMode is None, the Bundler deduplication is not invoked
+                       return new FunctionBundlerResult();
                    });
+
+                if (confirmedMessages)
+                {
+                    api.Setup(x => x.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+                       .ReturnsAsync(() =>
+                       {
+                           lock (this.functionLock)
+                           {
+                               counterFctnDown++;
+                               return counterFctnDown switch
+                               {
+                                   1 => simulatedDevice.FrmCntDown + 1, // first time the message is encountered, it gets a valid frame counter down
+                                   _ => 0                               // any other time, it does not
+                               };
+                           }
+                       });
+                }
 
                 api.Setup(x => x.ABPFcntCacheResetAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                    .ReturnsAsync(true);
@@ -64,7 +91,7 @@ namespace LoRaWan.Tests.Integration
                 .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            await SendTwoMessages(mode);
+            await SendTwoMessages(mode, confirmedMessages);
 
             var actualCounts =
                 (NullCount: actualDeviceTelemetries.Count(t => t.DupMsg == null),
@@ -82,7 +109,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(expectedCounts, actualCounts);
         }
 
-        private async Task SendTwoMessages(DeduplicationMode mode)
+        private async Task SendTwoMessages(DeduplicationMode mode, bool confirmedMessages)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var (messageProcessor1, dispose1) = CreateMessageDispatcher(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceApi.Object);
@@ -92,7 +119,7 @@ namespace LoRaWan.Tests.Integration
             using (messageProcessor2)
             using (dispose2)
             {
-                var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
+                var payload = confirmedMessages ? simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: 1) : simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
                 using var request1 = CreateWaitableRequest(payload);
                 using var request2 = CreateWaitableRequest(payload);
@@ -113,7 +140,7 @@ namespace LoRaWan.Tests.Integration
                             true => (request1, request2),
                             false => (request2, request1)
                         };
-                        
+
                         Assert.True(succeededRequest.ProcessingSucceeded);
                         Assert.True(failedRequest.ProcessingFailed);
                         Assert.Equal(LoRaDeviceRequestFailedReason.DeduplicationDrop, failedRequest.ProcessingFailedReason);
