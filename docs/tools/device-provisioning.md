@@ -257,6 +257,29 @@ The query verb supports the following parameters:
 |--help|no|Display this help screen.|
 |--version|no|Display version information.|
 
+### rotate-certificate
+
+Triggers an update of a client certificate installed on the Basics Station.
+
+Example:
+
+```powershell
+dotnet run -- rotate-certificate 
+  --stationeui 33CCC86800430010 
+  --certificate-bundle-location <bundle_location>
+  --client-certificate-thumbprint <thumbprint>
+  --iothub-connection-string <iothub_connection_string> 
+  --storage-connection-string <storage_connection_string>
+```
+
+|parameter|required|description|
+|-|-|-|
+|--stationeui|yes|Station EUI|
+|--certificate-bundle-location|yes|Location of the (UTF-8-encoded) certificate bundle file|
+|--client-certificate-thumbprint|yes|Client certificate thumbprint that should be accepted by the CUPS/LNS endpoints|
+|--iothub-connection-string|yes|Connection string of the IoT Hub.|
+|--storage-connection-string|yes|Connection string of the Storage account.|
+
 ### upgrade-firmware
 
 Triggers a firmware upgrade of a Basics Station.
