@@ -277,8 +277,27 @@ dotnet run -- rotate-certificate
 |--stationeui|yes|Station EUI|
 |--certificate-bundle-location|yes|Location of the (UTF-8-encoded) certificate bundle file|
 |--client-certificate-thumbprint|yes|Client certificate thumbprint that should be accepted by the CUPS/LNS endpoints|
-|--iothub-connection-string|yes|Connection string of the IoT Hub.|
-|--storage-connection-string|yes|Connection string of the Storage account.|
+|--iothub-connection-string|yes|Connection string of the IoT Hub|
+|--storage-connection-string|yes|Connection string of the Storage account|
+
+### revoke
+
+Revokes a client certificate installed on the Basics Station.
+
+Example:
+
+```powerhsell
+dotnet run -- revoke 
+  --stationeui 33CCC86800430010 
+  --client-certificate-thumbprint <thumbprint> 
+  --iothub-connection-string <iothub_connection_string>
+```
+
+|parameter|required|description|
+|-|-|-|
+|--stationeui|yes|Station EUI|
+|--client-certificate-thumbprint|yes|Client certificate thumbprint that should be revoked|
+|--iothub-connection-string|yes|Connection string of the IoT Hub|
 
 ### upgrade-firmware
 
