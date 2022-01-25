@@ -12,6 +12,23 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     public sealed class IotHubDeviceInfoConversionTests
     {
         [Fact]
+        public void Serializes_To_Expected_Json_Object()
+        {
+            // arrange
+            var original = new IoTHubDeviceInfo { DevAddr = new DevAddr(123), DevEUI = new DevEui(234), PrimaryKey = "someprimarykey" };
+
+            // act
+            var obj = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(original));
+
+            // assert
+            Assert.NotNull(obj);
+            Assert.Equal(3, obj!.Count);
+            Assert.Equal(original.DevEuiString, obj["DevEUI"]);
+            Assert.Equal(original.PrimaryKey, obj["PrimaryKey"]);
+            Assert.Equal(original.DevAddrString, obj["DevAddr"]);
+        }
+
+        [Fact]
         public void Can_Be_Json_Deserialized_As_IoTHubDeviceInfo_From_NetworkServer()
         {
             // arrange
