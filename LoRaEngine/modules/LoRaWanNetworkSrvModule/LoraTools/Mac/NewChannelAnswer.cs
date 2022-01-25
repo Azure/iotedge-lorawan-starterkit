@@ -27,16 +27,16 @@ namespace LoRaTools
         public NewChannelAnswer(ReadOnlySpan<byte> input)
             : base(input)
         {
-            Status = input[1];
             Cid = (Cid)input[0];
+            Status = input[1];
         }
 
         public override int Length => 2;
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return Status;
             yield return (byte)Cid;
+            yield return Status;
         }
 
         public override string ToString()
