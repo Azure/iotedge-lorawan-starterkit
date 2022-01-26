@@ -65,11 +65,11 @@ runs:
     shell: bash
     run: |
       az extension add --name azure-iot
-      until `az iot edge deployment show-metric --deployment-id $IOT_EDGE_DEPLOYMENT_ID --metric-id reportedSuccessfulCount --metric-type system --login $IOTHUB_CONNECTION_STRING | grep -q $DEVICE_ID`; do sleep 10 && echo wait; done
+      until `az iot edge deployment show-metric --deployment-id $IOT_EDGE_DEPLOYMENT_ID --metric-id reportedSuccessfulCount --metric-type system --login $IOTHUB_CONNECTION_STRING | grep -q $DEVICE_ID`; do sleep 10 && echo "waiting for deployment to be applied"; done
   
   - name: Wait for LNS start
     if: inputs.waitForLnsDeployment
     shell: bash
     run: |
       az extension add --name azure-iot
-      until `az iot hub module-twin show -m LoRaWanNetworkSrvModule -d $DEVICE_ID --login $IOTHUB_CONNECTION_STRING | grep -q $NET_SRV_VERSION`; do sleep 10 && echo wait; done
+      until `az iot hub module-twin show -m LoRaWanNetworkSrvModule -d $DEVICE_ID --login $IOTHUB_CONNECTION_STRING | grep -q $NET_SRV_VERSION`; do sleep 10 && echo "waiting for LNS to start"; done
