@@ -1092,6 +1092,20 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#rotate-certificate" class="md-nav__link">
+    rotate-certificate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revoke" class="md-nav__link">
+    revoke
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#upgrade-firmware" class="md-nav__link">
     upgrade-firmware
   </a>
@@ -1501,6 +1515,20 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#rotate-certificate" class="md-nav__link">
+    rotate-certificate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revoke" class="md-nav__link">
+    revoke
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#upgrade-firmware" class="md-nav__link">
     upgrade-firmware
   </a>
@@ -1575,7 +1603,7 @@
 <tbody>
 <tr>
 <td>list</td>
-<td>Lits devices in IoT Hub.</td>
+<td>List devices in IoT Hub.</td>
 </tr>
 <tr>
 <td>query</td>
@@ -1600,6 +1628,14 @@
 <tr>
 <td>remove</td>
 <td>Remove an existing device from IoT Hub.</td>
+</tr>
+<tr>
+<td>rotate-certificate</td>
+<td>Update a client certificate for a Basics Station.</td>
+</tr>
+<tr>
+<td>revoke</td>
+<td>Revoke a client certificate installed on a Basics Station.</td>
 </tr>
 <tr>
 <td>upgrade-firmware</td>
@@ -2102,6 +2138,86 @@
 </tr>
 </tbody>
 </table>
+<h3 id="rotate-certificate">rotate-certificate</h3>
+<p>Triggers an update of a client certificate installed on the Basics Station.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="n">run</span> <span class="p">--</span> <span class="n">rotate-certificate</span> 
+  <span class="p">-</span><span class="n">-stationeui</span> <span class="n">33CCC86800430010</span> 
+  <span class="p">-</span><span class="n">-certificate-bundle-location</span> <span class="p">&lt;</span><span class="n">bundle_location</span><span class="p">&gt;</span>
+  <span class="p">-</span><span class="n">-client-certificate-thumbprint</span> <span class="p">&lt;</span><span class="n">thumbprint</span><span class="p">&gt;</span>
+  <span class="p">-</span><span class="n">-iothub-connection-string</span> <span class="p">&lt;</span><span class="n">iothub_connection_string</span><span class="p">&gt;</span> 
+  <span class="p">-</span><span class="n">-storage-connection-string</span> <span class="p">&lt;</span><span class="n">storage_connection_string</span><span class="p">&gt;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>parameter</th>
+<th>required</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--stationeui</td>
+<td>yes</td>
+<td>Station EUI</td>
+</tr>
+<tr>
+<td>--certificate-bundle-location</td>
+<td>yes</td>
+<td>Location of the (UTF-8-encoded) certificate bundle file</td>
+</tr>
+<tr>
+<td>--client-certificate-thumbprint</td>
+<td>yes</td>
+<td>Client certificate thumbprint that should be accepted by the CUPS/LNS endpoints</td>
+</tr>
+<tr>
+<td>--iothub-connection-string</td>
+<td>yes</td>
+<td>Connection string of the IoT Hub</td>
+</tr>
+<tr>
+<td>--storage-connection-string</td>
+<td>yes</td>
+<td>Connection string of the Storage account</td>
+</tr>
+</tbody>
+</table>
+<h3 id="revoke">revoke</h3>
+<p>Revokes a client certificate installed on the Basics Station.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>dotnet run -- revoke 
+  --stationeui 33CCC86800430010 
+  --client-certificate-thumbprint &lt;thumbprint&gt; 
+  --iothub-connection-string &lt;iothub_connection_string&gt;
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>parameter</th>
+<th>required</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--stationeui</td>
+<td>yes</td>
+<td>Station EUI</td>
+</tr>
+<tr>
+<td>--client-certificate-thumbprint</td>
+<td>yes</td>
+<td>Client certificate thumbprint that should be revoked</td>
+</tr>
+<tr>
+<td>--iothub-connection-string</td>
+<td>yes</td>
+<td>Connection string of the IoT Hub</td>
+</tr>
+</tbody>
+</table>
 <h3 id="upgrade-firmware">upgrade-firmware</h3>
 <p>Triggers a firmware upgrade of a Basics Station.</p>
 <p>To learn more about executing firmware upgrades, please refer to the <a href="../../user-guide/station-firmware-upgrade/">Firmware
@@ -2162,11 +2278,11 @@ upgrade</a> user guide.</p>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T15:51:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-26T10:09:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-26</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-24T15:51:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-24</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-26T10:09:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-26</span>
       
     
   </small>
