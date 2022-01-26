@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.E2E
             for (var i = 0; i < 10; i++)
             {
                 var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
-                await ArduinoDevice.transferPacketAsync(msg, 10);
+                await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 // After transferPacket: Expectation from serial
