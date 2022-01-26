@@ -12,10 +12,8 @@ namespace LoRaWan.Tools.CLI
     using System.Threading.Tasks;
     using Azure;
     using CommandLine;
-    using LoRaWan.Tools.CLI.CommandLineOptions;
     using LoRaWan.Tools.CLI.Helpers;
     using LoRaWan.Tools.CLI.Options;
-    using Microsoft.Azure.Devices.Common;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -25,6 +23,8 @@ namespace LoRaWan.Tools.CLI
 
         public static async Task<int> Main(string[] args)
         {
+            if (args is null) throw new ArgumentNullException(nameof(args));
+
             try
             {
                 WriteAzureLogo();
@@ -34,6 +34,12 @@ namespace LoRaWan.Tools.CLI
                 Console.WriteLine("http://aka.ms/lora");
                 Console.ResetColor();
                 Console.WriteLine();
+
+                if (!configurationHelper.ReadConfig(args))
+                {
+                    WriteToConsole("Failed to parse configuration.", ConsoleColor.Red);
+                    return (int)ExitCode.Error;
+                }
 
                 var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions, UpgradeFirmwareOptions>(args)
                     .MapResult(
@@ -80,9 +86,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunListAndReturnExitCode(ListOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             if (!int.TryParse(opts.Page, out var page))
                 page = 10;
 
@@ -96,9 +99,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunQueryAndReturnExitCode(QueryOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
@@ -115,9 +115,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunVerifyAndReturnExitCode(VerifyOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
@@ -134,9 +131,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunBulkVerifyAndReturnExitCode(BulkVerifyOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             if (!int.TryParse(opts.Page, out var page))
                 page = 0;
 
@@ -157,9 +151,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunAddAndReturnExitCode(AddOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             var isSuccess = false;
 
             opts = IoTDeviceHelper.CleanOptions(opts, true) as AddOptions;
@@ -218,9 +209,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunRotateCertificateAndReturnExitCodeAsync(RotateCertificateOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             if (!File.Exists(opts.CertificateBundleLocation))
             {
                 StatusConsole.WriteLogLine(MessageType.Error, "Certificate bundle does not exist at defined location.");
@@ -271,9 +259,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunRevokeAndReturnExitCodeAsync(RevokeOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
 
             if (twin is null)
@@ -296,9 +281,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunUpdateAndReturnExitCode(UpdateOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             var isSuccess = false;
 
             opts = IoTDeviceHelper.CleanOptions(opts, false) as UpdateOptions;
@@ -375,9 +357,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunUpgradeFirmwareAndReturnExitCodeAsync(UpgradeFirmwareOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             if (!File.Exists(opts.FirmwareLocation))
             {
                 StatusConsole.WriteLogLine(MessageType.Error, "Firmware upgrade file does not exist at the specified location.");
@@ -464,9 +443,6 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunRemoveAndReturnExitCode(RemoveOptions opts)
         {
-            if (!configurationHelper.ReadConfig())
-                return false;
-
             return await IoTDeviceHelper.RemoveDevice(opts.DevEui, configurationHelper);
         }
 
