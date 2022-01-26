@@ -45,17 +45,17 @@ namespace LoRaTools
             }
             else
             {
+                Cid = (Cid)readOnlySpan[0];
                 Battery = readOnlySpan[1];
                 Margin = readOnlySpan[2];
-                Cid = (Cid)readOnlySpan[0];
             }
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return Margin;
-            yield return Battery;
             yield return (byte)Cid;
+            yield return Battery;
+            yield return Margin;
         }
     }
 }
