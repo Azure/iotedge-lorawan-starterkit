@@ -184,7 +184,7 @@ namespace LoRaTools.Regions
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
             {
-                if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
+                if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins.Value))
                 {
                     var datr = rx2DrFromTwins.Value;
                     logger.LogDebug($"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}");

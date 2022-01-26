@@ -35,6 +35,6 @@ namespace LoRaTools.Regions
 
         public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(DataRateIndex dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
 
-        public bool IsCurrentDownstreamDRIndexWithinAcceptableValue(DataRateIndex? dr) => (dr >= this.startDownstreamDRIndex) && dr < this.startDownstreamDRIndex + this.downstreamValidDR.Count;
+        public bool IsCurrentDownstreamDRIndexWithinAcceptableValue(DataRateIndex dr) => (dr >= this.startDownstreamDRIndex) && dr < this.startDownstreamDRIndex + this.downstreamValidDR.Count;
     }
 }

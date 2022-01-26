@@ -740,7 +740,7 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.RX1DROffset] = null;
                 }
 
-                if (DesiredRX2DataRate != DefaultJoinValues && currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate))
+                if (DesiredRX2DataRate != DefaultJoinValues && DesiredRX2DataRate.HasValue && currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate.Value))
                 {
                     reportedProperties[TwinProperty.RX2DataRate] = DesiredRX2DataRate;
                 }
@@ -805,7 +805,7 @@ namespace LoRaWan.NetworkServer
                     this.logger.LogError("the provided RX1DROffset is not valid");
                 }
 
-                if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate))
+                if (DesiredRX2DataRate.HasValue && currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate.Value))
                 {
                     ReportedRX2DataRate = DesiredRX2DataRate;
                 }
