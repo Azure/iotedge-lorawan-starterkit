@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Linq;
     using Microsoft.AspNetCore.Server.Kestrel.Https;
+    using Microsoft.Azure.Devices.Client;
 
     // Network server configuration
     public class NetworkServerConfiguration
@@ -130,6 +131,10 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public string LnsVersion { get; private set; }
 
+        /// Specifies the pool size for upstream AMQP connection
+        /// </summary>
+        public uint IotHubConnectionPoolSize { get; internal set; } = 1;
+
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
         {
@@ -170,6 +175,13 @@ namespace LoRaWan.NetworkServer
             var clientCertificateModeString = envVars.GetEnvVar("CLIENT_CERTIFICATE_MODE", "NoCertificate"); // Defaulting to NoCertificate if missing mode
             config.ClientCertificateMode = Enum.Parse<ClientCertificateMode>(clientCertificateModeString, true);
             config.LnsVersion = envVars.GetEnvVar("LNS_VERSION", string.Empty);
+
+            config.IotHubConnectionPoolSize = envVars.GetEnvVar("IOTHUB_CONNECTION_POOL_SIZE", 1U) is uint size
+                                              && size > 0U
+                                              && size < AmqpConnectionPoolSettings.AbsoluteMaxPoolSize
+                                              ? size
+                                              : throw new NotSupportedException($"'IOTHUB_CONNECTION_POOL_SIZE' needs to be between 1 and {AmqpConnectionPoolSettings.AbsoluteMaxPoolSize}.");
+
             return config;
         }
     }

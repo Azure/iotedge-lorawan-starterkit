@@ -83,7 +83,7 @@ namespace LoRaWan.NetworkServer
             var payloadFcntAdjusted = LoRaPayloadData.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
             this.logger.LogDebug($"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}");
 
-            var requiresConfirmation = request.Payload.RequiresConfirmation;
+            var requiresConfirmation = loraPayload.RequiresConfirmation;
 
             LoRaADRResult loRaADRResult = null;
 
@@ -116,9 +116,10 @@ namespace LoRaWan.NetworkServer
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
             // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
-            if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, concentratorDeduplicationResult, out var isConfirmedResubmit, out var result))
+            if (ValidateRequest(loraPayload, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, concentratorDeduplicationResult,
+                                out var isConfirmedResubmit) is { } someFailedReason)
             {
-                return result;
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, someFailedReason);
             }
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
@@ -841,21 +842,19 @@ namespace LoRaWan.NetworkServer
         /// <param name="isConfirmedResubmit"><code>True</code> when it's a confirmation resubmit.</param>
         /// <param name="result">When request is not valid, indicates the reason.</param>
         /// <returns><code>True</code> when the provided request is valid, false otherwise.</returns>
-        internal virtual bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, ConcentratorDeduplicationResult concentratorDeduplicationResult, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
+        internal virtual LoRaDeviceRequestFailedReason? ValidateRequest(LoRaPayloadData payload, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, ConcentratorDeduplicationResult concentratorDeduplicationResult, out bool isConfirmedResubmit)
         {
             isConfirmedResubmit = false;
-            result = null;
 
             if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
             {
                 // most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
-                if (request.Payload.RequiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
+                if (payload.RequiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
                 {
                     if (!loRaDevice.ValidateConfirmResubmit(payloadFcnt))
                     {
                         this.logger.LogError($"resubmit from confirmed message exceeds threshold of {LoRaDevice.MaxConfirmationResubmitCount}, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}");
-                        result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ConfirmationResubmitThresholdExceeded);
-                        return false;
+                        return LoRaDeviceRequestFailedReason.ConfirmationResubmitThresholdExceeded;
                     }
 
                     isConfirmedResubmit = true;
@@ -864,28 +863,26 @@ namespace LoRaWan.NetworkServer
                 else if (payloadFcnt == loRaDevice.FCntUp && concentratorDeduplicationResult == ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
                 {
                     // multi concentrator receive, with dedup strategy to send upstream
-                    return true;
+                    return null;
                 }
                 else
                 {
                     this.logger.LogDebug($"invalid frame counter, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}");
-                    result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.InvalidFrameCounter);
-                    return false;
+                    return LoRaDeviceRequestFailedReason.InvalidFrameCounter;
                 }
             }
 
             // ensuring the framecount difference between the node and the server
             // is <= MAX_FCNT_GAP
             var diff = payloadFcnt > loRaDevice.FCntUp ? payloadFcnt - loRaDevice.FCntUp : loRaDevice.FCntUp - payloadFcnt;
-            var valid = diff <= Constants.MaxFcntGap;
 
-            if (!valid)
+            if (diff > Constants.MaxFcntGap)
             {
                 this.logger.LogError($"invalid frame counter (diverges too much), message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}");
-                result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.InvalidFrameCounter);
+                return LoRaDeviceRequestFailedReason.InvalidFrameCounter;
             }
 
-            return valid;
+            return null; // no failure reason == success
         }
 
         private async Task<bool> DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(
