@@ -43,7 +43,7 @@
 					"LoRaWanNetworkSrvModule": {
 						"type": "docker",
 						"settings": {
-							"image": "loraedge/lorawannetworksrvmodule:2.0.0-beta1",
+							"image": "loraedge/lorawannetworksrvmodule:2.0.0",
 							"createOptions": "{\"ExposedPorts\": { \"5000/tcp\": {}}, \"HostConfig\": {  \"PortBindings\": {\"5000/tcp\": [  { \"HostPort\": \"5000\", \"HostIp\":\"172.17.0.1\" } ]}}}"
 						},
 						"version": "1.0",
@@ -61,7 +61,7 @@
 					"LoRaBasicsStationModule": {
 						"type": "docker",
 						"settings": {
-							"image": "loraedge/lorabasicsstationmodule:2.0.0-beta1",
+							"image": "loraedge/lorabasicsstationmodule:2.0.0",
 							"createOptions": "  {\"HostConfig\": {\"NetworkMode\": \"host\", \"Privileged\": true },  \"NetworkingConfig\": {\"EndpointsConfig\": {\"host\": {} }}}"
 						},
 						"env": {
