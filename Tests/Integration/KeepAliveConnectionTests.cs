@@ -86,7 +86,6 @@ namespace LoRaWan.Tests.Integration
                 .Returns(true);
 
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
-            cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = EmptyMemoryCache();
             using var loraDeviceCache = CreateDeviceCache(cachedDevice);
@@ -145,7 +144,6 @@ namespace LoRaWan.Tests.Integration
                 .Returns(true);
 
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
-            cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = EmptyMemoryCache();
             using var loraDeviceCache = CreateDeviceCache(cachedDevice);
@@ -211,7 +209,6 @@ namespace LoRaWan.Tests.Integration
                 .Returns(true);
 
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
-            cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = EmptyMemoryCache();
             using var loraDeviceCache = CreateDeviceCache(cachedDevice);
@@ -338,7 +335,6 @@ namespace LoRaWan.Tests.Integration
             };
 
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
-            cachedDevice.KeepAliveTimeout = 3;
             cachedDevice.LoRaRegion = LoRaRegionType.EU868;
             cachedDevice.InternalAcceptChanges();
             cachedDevice.SetFcntDown(cachedDevice.FCntDown + Constants.MaxFcntUnsavedDelta - 1);

@@ -135,9 +135,9 @@ namespace LoRaWan.Tests.Simulation
         public async Task Connected_Factory_Load_Test_Scenario()
         {
             const int numberOfFactories = 1;
-            const double joinsPerSecond = 3;
-            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(3, old => old > 10 ? old : old + 2);
-            const int numberOfLoops = 10;
+            const double joinsPerSecond = 1;
+            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(0.5, old => old > 0 ? old : old + 2);
+            const int numberOfLoops = 30;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
 
             // The total number of concentratos can be configured via the test configuration. It will de distributed evenly among factories;

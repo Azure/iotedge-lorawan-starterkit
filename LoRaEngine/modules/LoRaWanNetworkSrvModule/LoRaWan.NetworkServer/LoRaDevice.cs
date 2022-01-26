@@ -200,7 +200,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets a value indicating the timeout value in seconds for the device client connection.
         /// </summary>
-        public int KeepAliveTimeout { get; set; }
+        public int KeepAliveTimeout { get; } = 15;
 
         /// <summary>
         /// Gets or sets the StationEui for the Basic Station that last processed a message coming from this device.
@@ -343,10 +343,6 @@ namespace LoRaWan.NetworkServer
             ReportedCN470JoinChannel = reportedTwin.SafeRead<int?>(TwinProperty.CN470JoinChannel);
             DesiredCN470JoinChannel = desiredTwin.SafeRead<int?>(TwinProperty.CN470JoinChannel);
             Supports32BitFCnt = desiredTwin.SafeRead(TwinProperty.Supports32BitFCnt, Supports32BitFCnt);
-            KeepAliveTimeout = desiredTwin.SafeRead<int>(TwinProperty.KeepAliveTimeout);
-
-            if (KeepAliveTimeout != 0)
-                KeepAliveTimeout = Math.Max(KeepAliveTimeout, Constants.MinKeepAliveTimeout);
 
             this.lastProcessingStationEui = reportedTwin.ReadChangeTrackingProperty(TwinProperty.LastProcessingStationEui, this.lastProcessingStationEui);
 

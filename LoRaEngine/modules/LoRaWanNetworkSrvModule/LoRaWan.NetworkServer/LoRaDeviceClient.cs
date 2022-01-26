@@ -230,7 +230,7 @@ namespace LoRaWan.NetworkServer
                 this.deviceClient.Dispose();
                 this.deviceClient = null;
 
-                this.logger.LogDebug("device client disconnected");
+                this.logger.LogInformation("device client disconnected");
             }
             else
             {

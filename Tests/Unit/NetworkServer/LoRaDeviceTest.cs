@@ -805,7 +805,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
             using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
-            device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
 
             deviceClient.Setup(x => x.EnsureConnected())
@@ -840,7 +839,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
             using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
-            device.KeepAliveTimeout = 60;
             manager.Register(device, deviceClient.Object);
 
             deviceClient.Setup(x => x.EnsureConnected())
