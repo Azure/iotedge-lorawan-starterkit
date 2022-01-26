@@ -39,7 +39,7 @@ deduplication is handled and which strategy is used.
 Some organizations only support Windows Server operating systems
 on their infrastructure. In this case, it is still possible to use IoT Edge and
 the Starter Kit by using [*EFLOW*](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-for-linux-on-windows?view=iotedge-2018-06),
-short for "Edge for Linux on Windows". This allows you to run containerized Linux
+short for "Azure IoT Edge for Linux on Windows". This allows you to run containerized Linux
 workloads on Windows machines.
 
 ![Redundancy](../images/scenarios/scenario-eflow.png)
