@@ -135,8 +135,11 @@ namespace LoRaWan.NetworkServer
                         AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
                         {
                             Pooling = true,
-                            // pool size 1 => 995 devices.
-                            MaxPoolSize = 1
+                            // pool size for this project defaults to 1, allowing aroung 1000 amqp links
+                            // in case you need more, and the communications are proxied through edgeHub,
+                            // please consider changing this parameter in edgeHub configuration too
+                            // https://github.com/Azure/iotedge/blob/e6d52d6f6b0eb76e7ef250f3fcdeaf38e467ab4f/doc/EnvironmentVariables.md
+                            MaxPoolSize = this.configuration.IotHubConnectionPoolSize
                         },
                         OperationTimeout = TimeSpan.FromSeconds(10)
                     }
