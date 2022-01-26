@@ -29,6 +29,9 @@ Azure IoT Edge users to experiment with LoRaWAN technology.
 
 ![Architecture](images/EdgeArchitecture.png)
 
+There is a list of [possible deployment scenarios](user-guide/deployment-scenarios.md)
+that outlines some of the scenarios this Starter Kit enables.
+
 ## Key Challenges
 
 - Allows LoRa-enabled field gateways to connect directly to Azure without the need for a network operator as intermediary.
