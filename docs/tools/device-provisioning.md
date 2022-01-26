@@ -76,13 +76,15 @@ The following verbs/commands are supported:
 
 |verb|description|
 |-|-|
-|list|Lits devices in IoT Hub.|
+|list|List devices in IoT Hub.|
 |query|Query a device twin.|
 |verify|Verify a single device in IoT Hub.|
 |bulkverify|Bulk verify all devices in IoT Hub.|
 |add|Add a new device to IoT Hub.|
 |update|Update an existing device in IoT Hub.|
 |remove|Remove an existing device from IoT Hub.|
+|rotate-certificate|Update a client certificate for a Basics Station.|
+|revoke|Revoke a client certificate installed on a Basics Station.|
 |upgrade-firmware|Trigger a firmware upgrade of a Basics Station.|
 |help|Display more information on a specific command.|
 |version|Display version information.|
@@ -287,6 +289,48 @@ The query verb supports the following parameters:
 |--iothub-connection-string|yes|Connection string of the IoT Hub.|
 |--help|no|Display this help screen.|
 |--version|no|Display version information.|
+
+### rotate-certificate
+
+Triggers an update of a client certificate installed on the Basics Station.
+
+Example:
+
+```powershell
+dotnet run -- rotate-certificate 
+  --stationeui 33CCC86800430010 
+  --certificate-bundle-location <bundle_location>
+  --client-certificate-thumbprint <thumbprint>
+  --iothub-connection-string <iothub_connection_string> 
+  --storage-connection-string <storage_connection_string>
+```
+
+|parameter|required|description|
+|-|-|-|
+|--stationeui|yes|Station EUI|
+|--certificate-bundle-location|yes|Location of the (UTF-8-encoded) certificate bundle file|
+|--client-certificate-thumbprint|yes|Client certificate thumbprint that should be accepted by the CUPS/LNS endpoints|
+|--iothub-connection-string|yes|Connection string of the IoT Hub|
+|--storage-connection-string|yes|Connection string of the Storage account|
+
+### revoke
+
+Revokes a client certificate installed on the Basics Station.
+
+Example:
+
+```powerhsell
+dotnet run -- revoke 
+  --stationeui 33CCC86800430010 
+  --client-certificate-thumbprint <thumbprint> 
+  --iothub-connection-string <iothub_connection_string>
+```
+
+|parameter|required|description|
+|-|-|-|
+|--stationeui|yes|Station EUI|
+|--client-certificate-thumbprint|yes|Client certificate thumbprint that should be revoked|
+|--iothub-connection-string|yes|Connection string of the IoT Hub|
 
 ### upgrade-firmware
 
