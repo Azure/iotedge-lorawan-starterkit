@@ -16,22 +16,24 @@ All load tests use the `Connected_Factory_Load_Test_Scenario` load test scenario
 
 ### January 25th 2022, load test of v2.0.0-beta1 in gateway mode (ENABLE_GATEWAY=true)
 
-We ran a set of load tests to ensure that we can support a certain amount of LoRa devices, depending on various parameters. In gateway mode, the edge hub [refreshes device twin in the background](https://github.com/Azure/iotedge/blob/master/doc/EnvironmentVariables.md#edgehub), which can result in a higher load on the IoT Hub and subsequent throttling operations due to IoT Hub quota. By taking into account these variables and KPI, we ran several load tests successfully and list the parameters we used below. For all tests we ran at a rate of 1 join request per second and 1 upstream message during the cache pre-warm phase (for more than 500 devices we use 4 requests per second during the warm-up phase to speed up the process), successively increasing the load to 10 messages per second.
+We ran a set of load tests to ensure that we can support a certain amount of LoRa devices, depending on various parameters. In gateway mode, the edge hub [refreshes device twin in the background](https://github.com/Azure/iotedge/blob/master/doc/EnvironmentVariables.md#edgehub), which can result in a higher load on the IoT Hub and subsequent throttling operations due to IoT Hub quota. By taking into account these variables and KPI, we ran several load tests successfully and list the parameters we used below. For all tests we ran at a rate of 1 join request per second and 1 upstream message during the cache pre-warm phase (for more than 500 devices we use 4 requests per second during the warm-up phase to speed up the process), successively increasing the load to 10 messages per second. With this message rate, in general we saw the queue filling up too quickly on the Edge Hub. In such cases, we started to use lower message rates (3/second).
 
-| IoT Hub SKU | Gateway count | Number of devices | Concentrators per gateway | Duration [min] | Total messages sent | Receive windows missed | Avg message delivery time [ms] |
-| ----------- | ------------- | ----------------- | ------------------------- | -------------- | ------------------- | ---------------------- | ------------------------------ |
-| S1          | 2             | 40                | 2                         | 4              | 1240                | 2                      | 700                            |
-| S1          | 2             | 80                | 2                         | 6              | 1680                | 2                      | 650                            |
-| S1          | 1             | 140               | 4                         | 10             | 2940                | 0                      | 500                            |
-| S3          | 1             | 900               | 4                         | 15             | 5400                | 0                      | 500                            |
-| S3          | 2             | 300               | 2                         | 9              | 4800                | 0                      | 600                            |
+| Succeeded | IoT Hub SKU | Gateway count | Number of devices | Concentrators per gateway | Duration [min] | Total messages sent | Receive windows missed | Avg message delivery time [ms] |
+| --------- | ----------- | ------------- | ----------------- | ------------------------- | -------------- | ------------------- | ---------------------- | ------------------------------ |
+| true      | S1          | 2             | 40                | 2                         | 4              | 1240                | 2                      | 700                            |
+| true      | S1          | 2             | 80                | 2                         | 6              | 1680                | 2                      | 650                            |
+| false     | S1          | 2             | 120               | 2                         | -              | -                   | -                      | -                              |
+| true      | S1          | 1             | 140               | 4                         | 10             | 2940                | 0                      | 500                            |
+| true      | S3          | 1             | 900               | 4                         | 15             | 5400                | 0                      | 500                            |
+| false     | S3          | 1             | 1100              | 4                         | -              | -                   | -                      | -                              |
+| true      | S3          | 2             | 300               | 2                         | 9              | 4800                | 0                      | 600                            |
+| false     | S3          | 2             | 900               | -                         | -              | -                   | -                      | -                              |
 
 Issues encountered in these load tests:
 
 - [Unexpected ObjectDisposedException when IoT Hub is throttling · Issue #6042 · Azure/iotedge (github.com)](https://github.com/Azure/iotedge/issues/6042)
-- We saw several instances of an `Microsoft.Azure.Amqp.AmqpException` when we were connecting devices to multiple gateways at the same time. In general, the solution became unstable with message delivery latencies of 30 seconds on average. When only using one gateway per device, these exceptions were not occurring and the solution had the usual low message delivery times.
 - When executing the load tests for more than 1000 devices, we started to see many `AmqpException` with the message `Unable to open Events link as the connection could not be authenticated`
-- In case of two gateways and high message rates (10 messages per second), we saw that the delivery latency spiked for one of the two gateways. This behavior did not occur with lower message rates (3 messages per second).
+- In case of two gateways and high message rates (10 messages per second), we saw that the delivery latency spiked for one of the two gateways. This behavior did not occur with lower message rates (3 messages per second). This correlated with the IoT Edge hub queue filling up, and as such it's likely that this caused the delivery latency spikes.
 
 The memory/CPU usage of the IoT Edge host in gateway mode (for 900 devices) was fairly stable at around 1GB of memory used and an average CPU consumption of 40% on a Standard D2s v3 Debian 11 VM:
 
