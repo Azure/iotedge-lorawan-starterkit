@@ -49,6 +49,6 @@ workloads on Windows machines.
 It is also possible to run the IoT Edge modules directly in the cloud. Either a
 Linux VM to run IoT Edge directly, or on a Windows VM with EFLOW.
 In fact, the full end-to-end Continuous Integration pipeline for the Starter Kit
-runs on EFLOW on a VM in Azure.
+also tests this scenario with an installation of EFLOW in a Windows Server VM in Azure.
 
 ![Redundancy](../images/scenarios/scenario-edge-in-cloud.png)
