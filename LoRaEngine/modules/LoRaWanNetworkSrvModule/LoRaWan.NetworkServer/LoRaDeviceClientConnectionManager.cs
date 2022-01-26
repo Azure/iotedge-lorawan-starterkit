@@ -53,13 +53,10 @@ namespace LoRaWan.NetworkServer
 
             if (this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
             {
-                if (loRaDevice.KeepAliveTimeout > 0)
-                {
-                    if (!managedConnection.DeviceClient.EnsureConnected())
-                        return false;
+                if (!managedConnection.DeviceClient.EnsureConnected())
+                    return false;
 
-                    SetupSchedule(managedConnection);
-                }
+                SetupSchedule(managedConnection);
 
                 return true;
             }
@@ -79,7 +76,7 @@ namespace LoRaWan.NetworkServer
                     key,
                     (ce) =>
                     {
-                        ce.SlidingExpiration = TimeSpan.FromSeconds(managedConnection.LoRaDevice.KeepAliveTimeout);
+                        ce.SlidingExpiration = TimeSpan.FromSeconds(15);
                         _ = ce.RegisterPostEvictionCallback(OnScheduledDisconnect);
 
                         this.logger.LogDebug($"client connection timeout set to {managedConnection.LoRaDevice.KeepAliveTimeout} seconds (sliding expiration)");
