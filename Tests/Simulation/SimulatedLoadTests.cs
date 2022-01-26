@@ -136,7 +136,7 @@ namespace LoRaWan.Tests.Simulation
         {
             const int numberOfFactories = 1;
             const double joinsPerSecond = 1.5;
-            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(1.5, old => old + 2);
+            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(1.5, old => old > 10 ? old : old + 2);
             const int numberOfLoops = 5;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
 
@@ -150,7 +150,7 @@ namespace LoRaWan.Tests.Simulation
             Assert.True(this.simulatedBasicsStations.Count >= numberOfFactories, "There needs to be at least one concentrator per factory.");
             Assert.True(stationsPerFactory % Configuration.LnsEndpointsForSimulator.Count == 0, "LNS must be distributed evenly across factories (identical amount of indirectly connected LNS to factories).");
 
-            var testDeviceInfo = TestFixtureSim.DeviceRange6000_OTAA_FullLoad;
+            var testDeviceInfo = TestFixtureSim.DeviceRange9000_OTAA_FullLoad_DuplicationDrop;
             var devicesAndConcentratorsByFactory =
                 this.simulatedBasicsStations.Batch(stationsPerFactory)
                                             .Take(numberOfFactories)
@@ -172,6 +172,7 @@ namespace LoRaWan.Tests.Simulation
             var stopwatch = Stopwatch.StartNew();
 
             // Join OTAA devices
+            this.logger.LogInformation("Starting join phase at {Timestamp}.", DateTime.UtcNow);
             await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices, joinsPerSecond)
                                select JoinAsync(taskAndOffset.Element, taskAndOffset.Offset));
 
@@ -184,7 +185,7 @@ namespace LoRaWan.Tests.Simulation
             // Send messages
             foreach (var (index, messageRate) in messagesPerSecond.Take(numberOfLoops).Index())
             {
-                this.logger.LogInformation("Running cycle {Cycle} of {TotalNumberOfCycles}.", index + 1, numberOfLoops);
+                this.logger.LogInformation("Running cycle {Cycle} of {TotalNumberOfCycles} at {Timestamp}.", index + 1, numberOfLoops, DateTime.UtcNow);
                 await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices, messageRate)
                                    select SendUpstreamAsync(taskAndOffset.Element, taskAndOffset.Offset));
             }
