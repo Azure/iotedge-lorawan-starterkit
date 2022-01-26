@@ -6,7 +6,7 @@ namespace LoRaWan.Tools.CLI.Options
     using CommandLine;
 
     [Verb("remove", HelpText = "Remove an existing device from IoT Hub.")]
-    public class RemoveOptions
+    public class RemoveOptions : OptionsBase
     {
         [Option(
             "deveui",

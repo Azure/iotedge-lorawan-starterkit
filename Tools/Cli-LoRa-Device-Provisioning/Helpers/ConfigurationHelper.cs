@@ -20,11 +20,11 @@ namespace LoRaWan.Tools.CLI.Helpers
         public BlobContainerClient CertificateStorageContainerClient { get; set; }
         public BlobContainerClient FirmwareStorageContainerClient { get; set; }
 
-        public bool ReadConfig()
+        public bool ReadConfig(string[] args)
         {
-            string connectionString, netId, storageConnectionString;
+            string iotHubConnectionString, netId, storageConnectionString;
 
-            Console.WriteLine("Reading configuration file \"appsettings.json\"...");
+            Console.WriteLine("Reading configuration from command line and \"appsettings.json\" file...");
 
             // Read configuration file appsettings.json
             try
@@ -33,15 +33,16 @@ namespace LoRaWan.Tools.CLI.Helpers
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                     .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: false)
+                    .AddCommandLine(args)
                     .Build();
 
-                connectionString = configurationBuilder["IoTHubConnectionString"];
-                storageConnectionString = configurationBuilder["StorageConnectionString"];
+                iotHubConnectionString = configurationBuilder["iothub-connection-string"];
+                storageConnectionString = configurationBuilder["storage-connection-string"];
                 netId = configurationBuilder["NetId"];
 
-                if (connectionString is null || storageConnectionString is null || netId is null)
+                if (iotHubConnectionString is null || netId is null)
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, "The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
+                    StatusConsole.WriteLogLine(MessageType.Error, "IoT Hub connection string and NetId are required.");
                     return false;
                 }
             }
@@ -52,15 +53,15 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
 
             // Validate connection setting
-            if (string.IsNullOrEmpty(connectionString))
+            if (string.IsNullOrEmpty(iotHubConnectionString))
             {
-                StatusConsole.WriteLogLine(MessageType.Error, "Connection string 'IoTHubConnectionString' may not be empty.");
+                StatusConsole.WriteLogLine(MessageType.Error, "IoT Hub connection string may not be empty.");
                 return false;
             }
             else
             {
                 // Just show IoT Hub Hostname
-                if (GetHostFromConnectionString(connectionString, out var hostName))
+                if (GetHostFromConnectionString(iotHubConnectionString, out var hostName))
                 {
                     StatusConsole.WriteLogLine(MessageType.Info, $"Using IoT Hub: {hostName}");
                 }
@@ -101,24 +102,27 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Create Registry Manager using connection string
             try
             {
-                RegistryManager = RegistryManager.CreateFromConnectionString(connectionString);
+                RegistryManager = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
             }
             catch (Exception ex) when (ex is ArgumentNullException
                                           or FormatException
                                           or ArgumentException)
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"Failed to create connection string: {ex.Message}.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Failed to create Registry Manager from connection string: {ex.Message}.");
                 return false;
             }
 
-            try
+            if (storageConnectionString != null)
             {
-                CertificateStorageContainerClient = new BlobContainerClient(storageConnectionString, CredentialsStorageContainerName);
-                FirmwareStorageContainerClient = new BlobContainerClient(storageConnectionString, FirmwareStorageContainerName);
-            }
-            catch (FormatException)
-            {
-                StatusConsole.WriteLogLine(MessageType.Info, "Storage account is incorrectly configured.");
+                try
+                {
+                    CertificateStorageContainerClient = new BlobContainerClient(storageConnectionString, CredentialsStorageContainerName);
+                    FirmwareStorageContainerClient = new BlobContainerClient(storageConnectionString, FirmwareStorageContainerName);
+                }
+                catch (FormatException)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Info, "Storage account is incorrectly configured.");
+                }
             }
 
             Console.WriteLine("done.");
