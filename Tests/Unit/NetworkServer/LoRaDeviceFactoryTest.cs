@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
@@ -13,8 +14,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Moq.Protected;
     using Xunit;
 
-    public class LoRaDeviceFactoryTest
+    public sealed class LoRaDeviceFactoryTest : IDisposable
     {
+        private readonly Meter meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
         private readonly CancellationToken cancellationToken = CancellationToken.None;
 
         [Fact]
@@ -48,7 +50,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
             using var cache = CreateDefaultCache();
-            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache);
+            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, meter: this.meter);
 
             var device = await factory.CreateAndRegisterAsync(DefaultDeviceInfo, this.cancellationToken);
 
@@ -64,7 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
             using var cache = CreateDefaultCache();
-            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, x => x.Object.GatewayID = "OtherGw");
+            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, x => x.Object.GatewayID = "OtherGw", this.meter);
 
             var device = await factory.CreateAndRegisterAsync(DefaultDeviceInfo, this.cancellationToken);
 
@@ -77,7 +79,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
             using var cache = CreateDefaultCache();
-            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, x => x.Setup(y => y.InitializeAsync(DefaultConfiguration, this.cancellationToken)).ReturnsAsync(false));
+            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, x => x.Setup(y => y.InitializeAsync(DefaultConfiguration, this.cancellationToken)).ReturnsAsync(false), this.meter);
             await Assert.ThrowsAsync<LoRaProcessingException>(() => factory.CreateAndRegisterAsync(DefaultDeviceInfo, this.cancellationToken));
 
             Assert.False(cache.TryGetByDevEui(this.DefaultDeviceInfo.DevEUI, out _));
@@ -89,6 +91,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         private static LoRaDeviceCache CreateDefaultCache()
             => LoRaDeviceCacheDefault.CreateDefault();
+
+        public void Dispose()
+        {
+            this.meter.Dispose();
+        }
 
         private readonly IoTHubDeviceInfo DefaultDeviceInfo = new IoTHubDeviceInfo
         {
@@ -104,14 +111,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             public TestDeviceFactory(NetworkServerConfiguration configuration = null,
                                      ILoRaDeviceClientConnectionManager connectionManager = null,
                                      LoRaDeviceCache loRaDeviceCache = null,
-                                     Action<Mock<LoRaDevice>> deviceSetup = null)
+                                     Action<Mock<LoRaDevice>> deviceSetup = null,
+                                     Meter meter = null)
                 : base(configuration ?? new NetworkServerConfiguration(),
                        new Mock<ILoRaDataRequestHandler>().Object,
                        connectionManager ?? new Mock<ILoRaDeviceClientConnectionManager>().Object,
                        loRaDeviceCache,
                        NullLoggerFactory.Instance,
                        NullLogger<LoRaDeviceFactory>.Instance,
-                       meter: null)
+                       meter)
             {
                 this.deviceSetup = deviceSetup;
             }

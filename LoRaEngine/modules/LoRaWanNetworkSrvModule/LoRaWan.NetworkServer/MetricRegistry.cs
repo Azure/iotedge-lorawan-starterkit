@@ -49,7 +49,8 @@ namespace LoRaWan.NetworkServer
             D2CMessageSize,
             C2DMessageTooLong,
             DeviceCacheHits,
-            DeviceLoadRequests
+            DeviceLoadRequests,
+            TwinLoadRequests
         };
 
         public static readonly IDictionary<string, CustomMetric> RegistryLookup =
