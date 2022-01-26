@@ -1337,7 +1337,14 @@ required to execute such upgrade.</p>
 </li>
 <li>
 <p>Use LoRa Device Provisioning CLI tool to upload the upgrade files in the cloud.</p>
-<div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="p">.\</span><span class="n">Tools</span><span class="p">\</span><span class="n">Cli-LoRa-Device-Provisioning</span><span class="p">\</span><span class="n">bin</span><span class="p">\</span><span class="n">Release</span><span class="p">\</span><span class="n">net6</span><span class="p">.</span><span class="n">0</span><span class="p">\</span><span class="n">loradeviceprovisioning</span><span class="p">.</span><span class="n">dll</span> <span class="n">upgrade-firmware</span> <span class="p">-</span><span class="n">-stationeui</span> <span class="p">&lt;</span><span class="n">station_eui</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-package</span> <span class="p">&lt;</span><span class="n">package_version</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-firmware-location</span> <span class="p">&lt;</span><span class="n">firmware_file_path</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-digest-location</span> <span class="p">&lt;</span><span class="n">digest_file_path</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-checksum-location</span> <span class="p">&lt;</span><span class="n">checksum_file_path</span><span class="p">&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="p">.\</span><span class="n">Tools</span><span class="p">\</span><span class="n">Cli-LoRa-Device-Provisioning</span><span class="p">\</span><span class="n">bin</span><span class="p">\</span><span class="n">Release</span><span class="p">\</span><span class="n">net6</span><span class="p">.</span><span class="n">0</span><span class="p">\</span><span class="n">loradeviceprovisioning</span><span class="p">.</span><span class="n">dll</span> <span class="n">upgrade-firmware</span> 
+ <span class="p">-</span><span class="n">-stationeui</span> <span class="p">&lt;</span><span class="n">station_eui</span><span class="p">&gt;</span> 
+ <span class="p">-</span><span class="n">-package</span> <span class="p">&lt;</span><span class="n">package_version</span><span class="p">&gt;</span> 
+ <span class="p">-</span><span class="n">-firmware-location</span> <span class="p">&lt;</span><span class="n">firmware_file_path</span><span class="p">&gt;</span> 
+ <span class="p">-</span><span class="n">-digest-location</span> <span class="p">&lt;</span><span class="n">digest_file_path</span><span class="p">&gt;</span> 
+ <span class="p">-</span><span class="n">-checksum-location</span> <span class="p">&lt;</span><span class="n">checksum_file_path</span><span class="p">&gt;</span>
+ <span class="p">-</span><span class="n">-iothub-connection-string</span> <span class="p">&lt;</span><span class="n">iothub_connection_string</span><span class="p">&gt;</span> 
+ <span class="p">-</span><span class="n">-storage-connection-string</span> <span class="p">&lt;</span><span class="n">storage_connection_string</span><span class="p">&gt;</span>
 </code></pre></div>
 <p>Parameters:</p>
 <ul>
@@ -1372,11 +1379,11 @@ required to execute such upgrade.</p>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-26T10:09:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-26</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-26T10:15:16+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-26</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-26T10:09:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-26</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-26T10:15:16+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-26</span>
       
     
   </small>
