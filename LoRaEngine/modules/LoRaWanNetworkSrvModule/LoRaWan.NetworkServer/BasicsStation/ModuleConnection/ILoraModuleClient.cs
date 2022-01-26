@@ -20,5 +20,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         Task<Twin> GetTwinAsync(CancellationToken cancellationToken);
         Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object usercontext);
         Task SetMethodDefaultHandlerAsync(MethodCallback onDirectMethodCalled, object usercontext);
+        Task UpdateReportedPropertyAsync(string key, string value);
     }
 }
