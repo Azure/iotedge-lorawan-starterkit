@@ -123,7 +123,8 @@ namespace LoRaWan.Tests.E2E
                     {
                         case "Mark":
                             var expectedProperty = "dupmsg";
-                            await TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedProperty, "true", new SearchLogOptions(expectedProperty));
+                            await TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedProperty, "true", new SearchLogOptions(expectedProperty) { SourceIdFilter = duplicateResult.MatchedEvent.SourceId });
+                            await TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedProperty, "true", new SearchLogOptions(expectedProperty) { SourceIdFilter = notDuplicateResult.MatchedEvent.SourceId });
                             break;
                         case "Drop":
                             var logMsg = $"{device.DeviceID}: duplication strategy indicated to not process message";
