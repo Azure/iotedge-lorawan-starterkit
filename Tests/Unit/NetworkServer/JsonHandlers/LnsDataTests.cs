@@ -49,20 +49,33 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Throws<FormatException>(() => _ = LnsData.MessageTypeReader.Read(JsonUtil.Strictify(json)));
         }
 
-        [Fact]
-        internal void UpstreamDataframeReader_Succeeds()
+        public static readonly TheoryData<FramePort?, int, string>
+            UpstreamDataframeReader_Succeeds_Data =
+                TheoryDataFactory.From((FramePorts.App8, 8, "5ABBBA"),
+                                       ((FramePort?)null, -1, ""));
+
+        [Theory]
+        [MemberData(nameof(UpstreamDataframeReader_Succeeds_Data))]
+        internal void UpstreamDataframeReader_Succeeds(FramePort? expectedPort, int port, string payload)
         {
-            var json = @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '',
-                           'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916, 'DR': 4, 'Freq': 868100000,
-                           'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,
-                           'snr': 9,'rxtime': 1635347491.917289}}";
+            var json = @"{
+                msgtype: 'updf', MHdr: 128, DevAddr: 58772467, FCtrl: 0, FCnt: 164, FOpts: '',
+                FPort: " + JsonSerializer.Serialize(port) + @",
+                FRMPayload: " + JsonSerializer.Serialize(payload) + @",
+                MIC: -1943282916, DR: 4, Freq: 868100000,
+                upinfo: {
+                    rctx: 0, xtime: 40250921680313459, gpstime: 0, fts: -1, rssi: -60,
+                    snr: 9, rxtime: 1635347491.917289
+                }
+            }";
+
             var updf = LnsData.UpstreamDataFrameReader.Read(JsonUtil.Strictify(json));
             Assert.Equal(new DevAddr(58772467), updf.DevAddr);
             Assert.Equal(string.Empty, updf.Options);
-            Assert.Equal(FramePorts.App8, updf.Port);
+            Assert.Equal(expectedPort, updf.Port);
             Assert.Equal(FrameControlFlags.None, updf.FrameControlFlags);
             Assert.Equal(164, updf.Counter);
-            Assert.Equal("5ABBBA", updf.Payload);
+            Assert.Equal(payload, updf.Payload);
             Assert.Equal(new MacHeader(128), updf.MacHeader);
             Assert.Equal(new Mic(unchecked(-1943282916)), updf.Mic);
             Assert.Equal(DR4, updf.RadioMetadata.DataRate);
@@ -90,6 +103,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': 5, 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': 5.0,
+                        'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
+        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -2, 'FRMPayload': '5ABBBA', 'MIC': 5,
+                        'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
+        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -1, 'FRMPayload': null, 'MIC': 5,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         internal void UpstreamDataframeReader_Fails(string json)
         {

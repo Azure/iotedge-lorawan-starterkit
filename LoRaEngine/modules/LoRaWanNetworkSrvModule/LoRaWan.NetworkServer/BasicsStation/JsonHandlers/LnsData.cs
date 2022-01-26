@@ -98,14 +98,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("FCtrl", from b in JsonReader.Byte() select FrameControl.Decode(b).Flags),
                               JsonReader.Property("FCnt", JsonReader.UInt16()),
                               JsonReader.Property("FOpts", JsonReader.String()),
-                              JsonReader.Property("FPort", JsonReader.Byte()),
+                              JsonReader.Property("FPort", JsonReader.Either(from n in JsonReader.Byte()
+                                                                             select (FramePort?)n,
+                                                                             from _ in JsonReader.Int32().Validate(n => n == -1)
+                                                                             select (FramePort?)null)),
                               JsonReader.Property("FRMPayload", JsonReader.String()),
                               MicProperty,
                               RadioMetadataProperties.DataRate,
                               RadioMetadataProperties.Freq,
                               RadioMetadataProperties.UpInfo,
                               (_, mhdr, devAddr, fctrlFlags, cnt, opts, port, payload, mic, dr, freq, upInfo) =>
-                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), fctrlFlags, cnt, opts, (FramePort)port, payload, mic,
+                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), fctrlFlags, cnt, opts, port, payload, mic,
                                                       new RadioMetadata(dr, freq, upInfo)));
         /*
          * {
