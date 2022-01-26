@@ -81,6 +81,7 @@ namespace LoRaWan.Tests.Integration
             uint afterJoinFcntDown = 0;
             uint afterJoinFcntUp = 0;
 
+            TwinCollection actualSavedTwin = null;
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .Callback<TwinCollection, CancellationToken>((updatedTwin, _) =>
                 {
@@ -89,9 +90,7 @@ namespace LoRaWan.Tests.Integration
                     if (updatedTwin.Contains(TwinProperty.DevAddr)) afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
                     afterJoinFcntDown = updatedTwin[TwinProperty.FCntDown];
                     afterJoinFcntUp = updatedTwin[TwinProperty.FCntUp];
-                    // should not save class C device properties
-                    Assert.False(updatedTwin.Contains(TwinProperty.Region));
-                    Assert.False(updatedTwin.Contains(TwinProperty.PreferredGatewayID));
+                    actualSavedTwin = updatedTwin;
                 })
                 .ReturnsAsync(true);
 
@@ -240,6 +239,10 @@ namespace LoRaWan.Tests.Integration
             // has telemetry with both fcnt
             Assert.Single(sentTelemetry, (t) => t.Fcnt == startingPayloadFcnt);
             Assert.Single(sentTelemetry, (t) => t.Fcnt == (startingPayloadFcnt + 1));
+
+            // should not save class C device properties
+            Assert.False(actualSavedTwin.Contains(TwinProperty.Region));
+            Assert.False(actualSavedTwin.Contains(TwinProperty.PreferredGatewayID));
 
             LoRaDeviceClient.VerifyAll();
         }

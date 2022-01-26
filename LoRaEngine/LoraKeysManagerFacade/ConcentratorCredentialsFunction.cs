@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.IO;
+    using System.Net;
     using System.Security.Cryptography;
     using System.Threading;
     using System.Threading.Tasks;
@@ -101,8 +102,12 @@ namespace LoraKeysManagerFacade
                                               or InvalidCastException
                                               or InvalidOperationException)
                 {
-                    this.logger.LogError(ex, "'{PropertyName}' desired property was not found or misconfigured.", CupsPropertyName);
-                    return new UnprocessableEntityResult();
+                    var message = $"'{CupsPropertyName}' desired property was not found or misconfigured.";
+                    this.logger.LogError(ex, message);
+                    return new ObjectResult(message)
+                    {
+                        StatusCode = (int)HttpStatusCode.InternalServerError,
+                    };
                 }
             }
             else
