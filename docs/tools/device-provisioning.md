@@ -62,13 +62,15 @@ The following verbs/commands are supported:
 
 |verb|description|
 |-|-|
-|list|Lits devices in IoT Hub.|
+|list|List devices in IoT Hub.|
 |query|Query a device twin.|
 |verify|Verify a single device in IoT Hub.|
 |bulkverify|Bulk verify all devices in IoT Hub.|
 |add|Add a new device to IoT Hub.|
 |update|Update an existing device in IoT Hub.|
 |remove|Remove an existing device from IoT Hub.|
+|rotate-certificate|Update a client certificate for a Basics Station.|
+|revoke|Revoke a client certificate installed on a Basics Station.|
 |upgrade-firmware|Trigger a firmware upgrade of a Basics Station.|
 |help|Display more information on a specific command.|
 |version|Display version information.|
