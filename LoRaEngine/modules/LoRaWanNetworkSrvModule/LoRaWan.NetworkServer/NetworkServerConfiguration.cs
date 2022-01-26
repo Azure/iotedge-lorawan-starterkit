@@ -125,6 +125,11 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public ClientCertificateMode ClientCertificateMode { get; internal set; }
 
+        /// <summary>
+        /// Gets the version of the LNS.
+        /// </summary>
+        public string LnsVersion { get; private set; }
+
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
         {
@@ -164,7 +169,7 @@ namespace LoRaWan.NetworkServer
             config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
             var clientCertificateModeString = envVars.GetEnvVar("CLIENT_CERTIFICATE_MODE", "NoCertificate"); // Defaulting to NoCertificate if missing mode
             config.ClientCertificateMode = Enum.Parse<ClientCertificateMode>(clientCertificateModeString, true);
-
+            config.LnsVersion = envVars.GetEnvVar("LNS_VERSION", string.Empty);
             return config;
         }
     }
