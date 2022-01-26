@@ -761,6 +761,9 @@ namespace LoRaWan.NetworkServer
 
         private void LogNotNullFrameCounterDownState(LoRaDevice loRaDevice, uint? newFcntDown)
         {
+            if (!newFcntDown.HasValue)
+                return;
+
             if (newFcntDown <= 0)
             {
                 this.logger.LogDebug("another gateway has already sent ack or downlink msg");
