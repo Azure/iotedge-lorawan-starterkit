@@ -68,7 +68,7 @@ runs:
       until `az iot edge deployment show-metric --deployment-id $IOT_EDGE_DEPLOYMENT_ID --metric-id reportedSuccessfulCount --metric-type system --login $IOTHUB_CONNECTION_STRING | grep -q $DEVICE_ID`; do sleep 10 && echo "waiting for deployment to be applied"; done
   
   - name: Wait for LNS start
-    if: inputs.waitForLnsDeployment
+    if: inputs.waitForLnsDeployment == 'true'
     shell: bash
     run: |
       az extension add --name azure-iot
