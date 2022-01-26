@@ -129,7 +129,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Specifies the pool size for upstream AMQP connection
         /// </summary>
-        public uint IotHubConnectionPoolSize { get; internal set; }
+        public uint IotHubConnectionPoolSize { get; internal set; } = 1;
 
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
