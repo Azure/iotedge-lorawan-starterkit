@@ -42,7 +42,7 @@ namespace LoraKeysManagerFacade
 
         IReadOnlyList<string> ListGet(string key);
 
-        bool TrySetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null);
+        void SetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null);
 
         HashEntry[] GetHashObject(string key);
 
