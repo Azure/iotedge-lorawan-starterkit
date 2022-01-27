@@ -24,11 +24,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var moqCallback = new Mock<Action<LoRaDevice>>();
             using var cache = new TestDeviceCache(moqCallback.Object, this.quickRefreshOptions, true);
             var deviceMock = CreateMockDevice();
+            var disposableMock = new Mock<IDisposable>();
+            deviceMock.Setup(x => x.BeginDeviceClientConnectionActivity())
+                      .Returns(disposableMock.Object);
             var device = deviceMock.Object;
             cache.Register(device);
             await cache.WaitForRefreshAsync(CancellationToken.None);
             moqCallback.Verify(x => x.Invoke(device));
-            deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Once);
+            disposableMock.Verify(x => x.Dispose(), Times.Once);
         }
 
         [Fact]
@@ -426,16 +429,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             protected override async Task RefreshDeviceAsync(LoRaDevice device, CancellationToken cancellationToken)
             {
-                this.onRefreshDevice?.Invoke(device);
-                if (this.refreshTick.CurrentCount == 0)
-                    this.refreshTick.Release();
-
-                if (this.callDeviceRefresh)
+                try
                 {
-                    await base.RefreshDeviceAsync(device, cancellationToken);
-                }
+                    this.onRefreshDevice?.Invoke(device);
 
-                DeviceRefreshCount++;
+                    if (this.callDeviceRefresh)
+                        await base.RefreshDeviceAsync(device, cancellationToken);
+                }
+                finally
+                {
+                    if (this.refreshTick.CurrentCount == 0)
+                        this.refreshTick.Release();
+
+                    DeviceRefreshCount++;
+                }
             }
 
             protected override void OnRefresh()
