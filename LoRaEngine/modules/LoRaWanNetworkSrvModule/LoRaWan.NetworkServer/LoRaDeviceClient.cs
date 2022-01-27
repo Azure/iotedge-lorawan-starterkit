@@ -259,12 +259,12 @@ namespace LoRaWan.NetworkServer
 
         private DeviceClient CreateDeviceClient()
         {
-            var deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
-            deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
-                                                               minBackoff: TimeSpan.FromMilliseconds(100),
-                                                               maxBackoff: TimeSpan.FromSeconds(10),
-                                                               deltaBackoff: TimeSpan.FromMilliseconds(100)));
-            return deviceClient;
+            var dc = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
+            dc.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
+                                                     minBackoff: TimeSpan.FromMilliseconds(100),
+                                                     maxBackoff: TimeSpan.FromSeconds(10),
+                                                     deltaBackoff: TimeSpan.FromMilliseconds(100)));
+            return dc;
         }
 
         public void Dispose()
