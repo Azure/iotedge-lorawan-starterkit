@@ -202,8 +202,9 @@ namespace LoRaWan.Tests.Simulation
 
             await WaitForResultsInIotHubAsync();
 
-            foreach (var device in devices)
+            foreach (var (i, device) in devices.Index())
             {
+                this.logger.LogInformation("Asserting device {DeviceId} ({Index}/{Total})", device.LoRaDevice.DeviceID, i + 1, devices.Count);
                 // A correction needs to be applied since concentrators are distributed across LNS, even if they are in the same factory
                 // (detailed description found at the beginning of this test).
                 var expectedMessageCorrection = 1 / (double)numberOfFactories;
