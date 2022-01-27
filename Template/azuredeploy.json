@@ -58,10 +58,11 @@
         "spiDev": {
             "type": "int",
             "allowedValues": [
+                0,
                 1,
                 2
             ],
-            "defaultValue": 2,
+            "defaultValue": 0,
             "metadata": {
                 "description": "SPI Dev version for x86 based gateway"
             }
