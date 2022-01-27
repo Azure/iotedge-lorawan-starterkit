@@ -189,10 +189,10 @@ namespace LoRaWan.NetworkServer
                 {
                     fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
-                    HandleFrameCounterDownResult(fcntDown, loRaDevice, request, ref skipDownstreamToAvoidCollisions, out result);
+                    var result = HandleFrameCounterDownResult(fcntDown, loRaDevice, ref skipDownstreamToAvoidCollisions);
 
                     if (result != null)
-                        return result;
+                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, result.Value);
                 }
                 #endregion
 
@@ -243,10 +243,10 @@ namespace LoRaWan.NetworkServer
                     {
                         fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
-                        HandleFrameCounterDownResult(fcntDown, loRaDevice, request, ref skipDownstreamToAvoidCollisions, out result);
+                        var result = HandleFrameCounterDownResult(fcntDown, loRaDevice, ref skipDownstreamToAvoidCollisions);
 
                         if (result != null)
-                            return result;
+                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, result.Value);
 
                         requiresConfirmation = true;
                     }
@@ -777,10 +777,10 @@ namespace LoRaWan.NetworkServer
         /// - when mode is Mark or None, we allow upstream but skip downstream to avoid collisions
         /// </summary>
         /// <param name="skipDownstreamToAvoidCollisions">boolean that is used while deciding to send messages downstream</param>
-        /// <param name="result">nullable result, that needs to be handled from the caller</param>
-        private static void HandleFrameCounterDownResult(uint? fcntDown, LoRaDevice loRaDevice, LoRaRequest request, ref bool skipDownstreamToAvoidCollisions, out LoRaDeviceRequestProcessResult result)
+        /// <returns><code>LoRaDeviceRequestFailedReason</code> when Drop, otherwise null</returns>
+        private static LoRaDeviceRequestFailedReason? HandleFrameCounterDownResult(uint? fcntDown, LoRaDevice loRaDevice, ref bool skipDownstreamToAvoidCollisions)
         {
-            result = null;
+            LoRaDeviceRequestFailedReason? result = null;
 
             if (fcntDown <= 0)
             {
@@ -788,10 +788,12 @@ namespace LoRaWan.NetworkServer
                 // This can only happen in multi gateway scenarios and
                 // it means that another gateway has won the race to handle this message.
                 if (loRaDevice.Deduplication == DeduplicationMode.Drop)
-                    result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                    result = LoRaDeviceRequestFailedReason.HandledByAnotherGateway;
                 else
                     skipDownstreamToAvoidCollisions = true;
             }
+
+            return result;
         }
 
         protected virtual async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
@@ -865,8 +867,8 @@ namespace LoRaWan.NetworkServer
         /// <param name="payloadFcnt"></param>
         /// <param name="loRaDevice"></param>
         /// <param name="isConfirmedResubmit"><code>True</code> when it's a confirmation resubmit.</param>
-        /// <param name="result">When request is not valid, indicates the reason.</param>
-        /// <returns><code>True</code> when the provided request is valid, false otherwise.</returns>
+        /// <returns><code>LoRaDeviceRequestFailedReason</code> when the provided request is
+        /// invalid, otherwise null.</returns>
         internal virtual LoRaDeviceRequestFailedReason? ValidateRequest(LoRaPayloadData payload, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, ConcentratorDeduplicationResult concentratorDeduplicationResult, out bool isConfirmedResubmit)
         {
             isConfirmedResubmit = false;
