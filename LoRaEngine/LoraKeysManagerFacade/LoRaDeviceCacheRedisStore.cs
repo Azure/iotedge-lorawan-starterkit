@@ -105,15 +105,13 @@ namespace LoraKeysManagerFacade
             return list.Select(x => (string)x).ToList();
         }
 
-        public bool TrySetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null)
+        public void SetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null)
         {
-            var returnValue = this.redisCache.HashSet(key, subkey, value);
+            _ = this.redisCache.HashSet(key, subkey, value);
             if (timeToExpire.HasValue)
             {
                 _ = this.redisCache.KeyExpire(key, DateTime.UtcNow.Add(timeToExpire.Value));
             }
-
-            return returnValue;
         }
 
         public HashEntry[] GetHashObject(string key)
