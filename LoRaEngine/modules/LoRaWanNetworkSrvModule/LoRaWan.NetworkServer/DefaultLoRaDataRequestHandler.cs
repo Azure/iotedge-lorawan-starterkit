@@ -244,7 +244,7 @@ namespace LoRaWan.NetworkServer
                     {
                         fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
-                        if (fcntDown <= 0)
+                        if (!fcntDown.HasValue || fcntDown <= 0)
                             return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
 
                         //HandleFrameCounterDownResult(fcntDown, loRaDevice, request, ref skipDownstreamToAvoidCollisions, out result);
