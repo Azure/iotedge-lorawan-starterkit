@@ -7,8 +7,10 @@ namespace LoraKeysManagerFacade
     using System.Collections.Generic;
     using System.Net;
     using System.Net.Http;
+    using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -16,6 +18,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     public class CreateEdgeDevice
     {
@@ -41,9 +44,15 @@ namespace LoraKeysManagerFacade
                 !queryStrings.TryGetValue("publishingUserName", out var publishingUserName) ||
                 !queryStrings.TryGetValue("publishingPassword", out var publishingPassword) ||
                 !queryStrings.TryGetValue("region", out var region) ||
+                !queryStrings.TryGetValue("stationEui", out var stationEuiString) ||
                 !queryStrings.TryGetValue("resetPin", out var resetPin))
             {
                 return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Missing required parameters." };
+            }
+
+            if (!StationEui.TryParse(stationEuiString, out _))
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Station EUI could not be properly parsed." };
             }
 
             // optional arguments
@@ -99,10 +108,9 @@ namespace LoraKeysManagerFacade
 
                 var deviceConfigurationContent = await GetConfigurationContentAsync(new Uri(Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION")), new Dictionary<string, string>
                 {
-                    ["[$region]"] = region,
                     ["[$reset_pin]"] = resetPin,
                     ["[$spi_speed]"] = string.IsNullOrEmpty(spiSpeed) || string.Equals(spiSpeed, "8", StringComparison.OrdinalIgnoreCase) ? string.Empty : ",'SPI_SPEED':{'value':'2'}",
-                    ["[$spi_dev]"] = string.IsNullOrEmpty(spiDev) || string.Equals(spiDev, "2", StringComparison.OrdinalIgnoreCase) ? string.Empty : ",'SPI_DEV':{'value':'1'}"
+                    ["[$spi_dev]"] = string.IsNullOrEmpty(spiDev) || string.Equals(spiDev, "0", StringComparison.OrdinalIgnoreCase) ? string.Empty : $",'SPI_DEV':{{'value':'{spiDev}'}}"
                 });
 
                 await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, deviceConfigurationContent);
@@ -131,6 +139,22 @@ namespace LoraKeysManagerFacade
                 var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
 
                 _ = await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
+
+                // Deploy concentrator
+                using var httpClient = new HttpClient();
+                var regionalConfiguration = region switch
+                {
+                    var s when string.Equals("EU", s, StringComparison.OrdinalIgnoreCase) => await httpClient.GetStringAsync(new Uri(GetEnvironmentVariable("EU863_CONFIG_LOCATION"))),
+                    var s when string.Equals("US", s, StringComparison.OrdinalIgnoreCase) => await httpClient.GetStringAsync(new Uri(GetEnvironmentVariable("US902_CONFIG_LOCATION"))),
+                    _ => throw new SwitchExpressionException("Region should be either 'EU' or 'US'")
+                };
+
+                var concentratorDevice = new Device(stationEuiString);
+                _ = await this.registryManager.AddDeviceAsync(concentratorDevice);
+                var concentratorTwin = await this.registryManager.GetTwinAsync(stationEuiString);
+                var concentratorJObject = JsonConvert.DeserializeObject<JObject>(regionalConfiguration);
+                concentratorTwin.Properties.Desired["routerConfig"] = concentratorJObject;
+                _ = await this.registryManager.UpdateTwinAsync(stationEuiString, concentratorTwin, concentratorTwin.ETag);
 
                 // This section will get deployed ONLY if the user selected the "deploy end device" options.
                 // Information in this if clause, is for demo purpose only and should not be used for productive workloads.
@@ -198,8 +222,7 @@ namespace LoraKeysManagerFacade
 
         public static string GetEnvironmentVariable(string name)
         {
-            return
-                System.Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
+            return Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
         }
     }
 }

@@ -127,6 +127,10 @@ namespace LoRaWan.NetworkServer
         public ClientCertificateMode ClientCertificateMode { get; internal set; }
 
         /// <summary>
+        /// Gets the version of the LNS.
+        /// </summary>
+        public string LnsVersion { get; private set; }
+
         /// Specifies the pool size for upstream AMQP connection
         /// </summary>
         public uint IotHubConnectionPoolSize { get; internal set; } = 1;
@@ -170,6 +174,7 @@ namespace LoRaWan.NetworkServer
             config.LnsServerPfxPassword = envVars.GetEnvVar("LNS_SERVER_PFX_PASSWORD", string.Empty);
             var clientCertificateModeString = envVars.GetEnvVar("CLIENT_CERTIFICATE_MODE", "NoCertificate"); // Defaulting to NoCertificate if missing mode
             config.ClientCertificateMode = Enum.Parse<ClientCertificateMode>(clientCertificateModeString, true);
+            config.LnsVersion = envVars.GetEnvVar("LNS_VERSION", string.Empty);
 
             config.IotHubConnectionPoolSize = envVars.GetEnvVar("IOTHUB_CONNECTION_POOL_SIZE", 1U) is uint size
                                               && size > 0U

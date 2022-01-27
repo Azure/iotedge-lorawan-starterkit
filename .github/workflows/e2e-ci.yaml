@@ -393,6 +393,7 @@ jobs:
           deployment_file_name: '${{ secrets.DEPLOYMENT_FILE_NAME }}'
           architecture: '${{ secrets.ARCHITECTURE }}'
           iot_edge_deployment_id: '${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}'
+          waitForLnsDeployment: false
 
   load_test_job:
     timeout-minutes: 150

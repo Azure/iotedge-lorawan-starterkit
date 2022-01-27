@@ -42,10 +42,10 @@ namespace LoRaWan.NetworkServer
         public object Data { get; set; }
 
         [JsonProperty("port")]
-        public byte PortByte { get => (byte)Port; set => Port = (FramePort)value; }
+        public byte? PortByte { get => (byte?)Port; set => Port = (FramePort?)value; }
 
         [JsonIgnore]
-        public FramePort Port { get; set; }
+        public FramePort? Port { get; private set; }
 
         [JsonProperty("fcnt")]
         public ushort Fcnt { get; set; }
@@ -85,7 +85,7 @@ namespace LoRaWan.NetworkServer
             Data = payloadData;
             Rawdata = decryptedPayloadData?.Length > 0 ? Convert.ToBase64String(decryptedPayloadData) : string.Empty;
             Fcnt = upstreamPayload.Fcnt;
-            Port = upstreamPayload.Fport.Value;
+            Port = upstreamPayload.Fport;
             Freq = radioMetadata.Frequency.InMega;
             Datr = datr.ToString();
             Rssi = radioMetadata.UpInfo.ReceivedSignalStrengthIndication;
