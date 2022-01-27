@@ -3,7 +3,7 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    public sealed class UpstreamDataFrame
+    public class UpstreamDataFrame
     {
         public UpstreamDataFrame(MacHeader macHeader,
                                  DevAddr devAddress,
