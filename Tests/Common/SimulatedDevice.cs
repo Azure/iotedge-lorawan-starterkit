@@ -336,7 +336,7 @@ namespace LoRaWan.Tests.Common
 
                     return await tcs.Task.WaitAsync(timeout);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not TimeoutException)
                 {
                     this.logger.LogError(ex, "Join failed due to: '{Message}'.", ex.Message);
                     return false;
