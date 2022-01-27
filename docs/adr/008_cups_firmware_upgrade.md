@@ -5,7 +5,7 @@
 
 **Authors**: Daniele Antonio Maggio, Maggie Salak
 
-**Status**: Proposed
+**Status**: Accepted
 
 >This ADR is an extension of [006. CUPS Protocol Implementation - Credential
 >management][cups-adr] and focuses of firmware upgrades. For details about the
@@ -179,10 +179,11 @@ upgrade.
 A new command will be added to the Device Provisioning CLI which will allow the
 user to trigger a firmware upgrade. The command will accept the follwing inputs:
 
+- Station EUI
+- new package version (e.g. `1.0.1`)
 - firmware upgrade file
 - signature (digest of the file)
 - CRC32 checksum of the key used for the signature
-- new package version (e.g. `1.0.1`)
 
 The CLI tool will:
 

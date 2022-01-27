@@ -43,23 +43,23 @@ The template will deploy in your Azure subscription the Following resources:
 
 ## Step-by-step instructions
 
-1. Press on the button here below to start your Azure Deployment.
+1. Press on the button here below to start your Azure Deployment.  
     <!-- markdownlint-disable MD033 -->
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fmaster%2FTemplate%2Fazuredeploy.json" target="_blank">
-        <img src="http://azuredeploy.net/deploybutton.png"/>
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fv2.0.0%2FTemplate%2Fazuredeploy.json" target="_blank">
+        <img src="https://aka.ms/deploytoazurebutton"/>
     </a>
     <!-- markdownlint-enable MD033 -->
 
 2. You will get to a page asking you to fill the following fields :
 
-    - **Resource Group** - A logical "folder" where all the template resource would be put into, just choose a meaningful name.
-    - **Location** - In which DataCenter the resources should be deployed. Make sure to choose a location where [IoT Hub is available](https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&regions=all)
-    - **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the [naming restrictions of Storage](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage) apply here.
-    - **Edge gateway name** - the name of your LoRa Gateway node in the IoT Hub.
-    - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino) would be ready to use immediately.
-    - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
-    - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
-    - **useAzureMonitorOnEdge** - You can opt out of using Azure Monitor services for observability on IoT Edge.
+    - **Resource Group** - A logical "folder" where all the template resource would be put into, just choose a meaningful name.  
+    - **Location** - In which DataCenter the resources should be deployed. Make sure to choose a location where [IoT Hub is available](https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&regions=all)  
+    - **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the [naming restrictions of Storage](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage) apply here.  
+    - **Edge gateway name** - the name of your LoRa Gateway node in the IoT Hub.  
+    - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino) would be ready to use immediately.  
+    - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)  
+    - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)  
+    - **useAzureMonitorOnEdge** - You can opt out of using Azure Monitor services for observability on IoT Edge.  
 
     The deployment would take c.a. 10 minutes to complete.
 
@@ -67,7 +67,7 @@ The template will deploy in your Azure subscription the Following resources:
 
 4. Once the Azure deployment is finished, connect your IoT Edge with the cloud [as described in point 3](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm#configure-the-azure-iot-edge-security-daemon). You can get the connection string by clicking on the deployed IoT Hub -> IoT Edge Devices -> Connection string, as shown in the picture below.
 
-5. If your gateway is a Raspberry Pi, **don't forget to [enable SPI](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/) , (You need to restart your pi)**.
+5. If your gateway is a Raspberry Pi, **don't forget to [enable SPI](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/)** and to **restart your Pi**
 
 By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.
 
@@ -76,6 +76,8 @@ By using the `docker ps` command, you should see the Edge containers being deplo
 The template provision an IoT Hub with a [LoRa Basics™ Station](https://github.com/lorabasics/basicstation) and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template).
 
 If you are using the the RAK833-USB, you'll need to build a different LoRa Basics™ Station image. You can find a fork of the official Basic Station repository with support for RAK833-USB [here](https://github.com/danigian/basicstation).
+
+If you are using a SX1302 board via USB, you'll need to build a different LoRa Basics™ Station image. You can find a fork of the official Basic Station repository with support for SX1302 USB boards [here](https://github.com/danigian/basicstation/tree/corecell).
 
 ## Using a Proxy Server to connect your Concentrator to Azure
 
@@ -91,7 +93,7 @@ Follow [this guide](user-guide/devguide.md#use-a-proxy-server-to-connect-your-co
 ## LoRa Device provisioning
 
 A LoRa device is a normal IoT Hub device with some specific device twin tags. You manage it like you would with any other IoT Hub device.
-**To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did plese follow the ClearCache procedure that you find below.**
+**To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did please follow the ClearCache procedure that you find below.**
 
 ### ABP (personalization) and OTAA (over the air) provisioning
 

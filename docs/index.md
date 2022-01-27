@@ -27,7 +27,10 @@ Alternatively, it allows sending commands from the cloud to the end
 nodes. The goal of the the project is to provide guidance and a reference for
 Azure IoT Edge users to experiment with LoRaWAN technology.
 
-![Architecture](images/EdgeArchitecture.png)
+![Architecture image](images/EdgeArchitecture.png)
+
+There is a list of [possible deployment scenarios](user-guide/deployment-scenarios.md)
+that outlines some of the scenarios this Starter Kit enables.
 
 ## Key Challenges
 
