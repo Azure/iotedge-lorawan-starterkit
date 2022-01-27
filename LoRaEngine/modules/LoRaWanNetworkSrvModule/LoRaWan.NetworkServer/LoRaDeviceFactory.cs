@@ -142,7 +142,7 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(deviceConnectionStr, transportSettings, primaryKey, this.loggerFactory.CreateLogger<LoRaDeviceClient>());
+                return new LoRaDeviceClient(deviceConnectionStr, transportSettings, primaryKey, this.meter, this.loggerFactory.CreateLogger<LoRaDeviceClient>());
             }
             catch (Exception ex)
             {

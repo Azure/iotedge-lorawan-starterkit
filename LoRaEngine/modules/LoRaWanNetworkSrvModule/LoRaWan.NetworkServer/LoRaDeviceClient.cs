@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
+        private static int ActiveDeviceConnections;
         private static readonly TimeSpan twinUpdateTimeout = TimeSpan.FromSeconds(10);
         private readonly string connectionString;
         private readonly ITransportSettings[] transportSettings;
@@ -27,7 +29,7 @@ namespace LoRaWan.NetworkServer
 
         private readonly string primaryKey;
 
-        public LoRaDeviceClient(string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger)
+        public LoRaDeviceClient(string connectionString, ITransportSettings[] transportSettings, string primaryKey, Meter meter, ILogger<LoRaDeviceClient> logger)
         {
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or empty.", nameof(connectionString));
             if (string.IsNullOrEmpty(primaryKey)) throw new ArgumentException($"'{nameof(primaryKey)}' cannot be null or empty.", nameof(primaryKey));
@@ -37,6 +39,8 @@ namespace LoRaWan.NetworkServer
             this.connectionString = connectionString;
             this.primaryKey = primaryKey;
             this.logger = logger;
+            _ = meter?.CreateObservableGauge(MetricRegistry.ActiveClientConnections, () => ActiveDeviceConnections);
+            _ = Interlocked.Increment(ref ActiveDeviceConnections);
             var deviceClient = this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
             deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
                                                                minBackoff: TimeSpan.FromMilliseconds(100),
@@ -227,6 +231,7 @@ namespace LoRaWan.NetworkServer
         {
             if (this.deviceClient != null)
             {
+                _ = Interlocked.Decrement(ref ActiveDeviceConnections);
                 this.deviceClient.Dispose();
                 this.deviceClient = null;
 
@@ -249,6 +254,7 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
+                    _ = Interlocked.Increment(ref ActiveDeviceConnections);
                     this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
                     this.logger.LogDebug("device client reconnected");
                 }
