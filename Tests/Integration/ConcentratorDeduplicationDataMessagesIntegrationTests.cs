@@ -273,26 +273,22 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", "33-33-33-33-33-33-33-33", "44-44-44-44-44-44-44-44", "55-55-55-55-55-55-55-55", DeduplicationMode.Mark, 5, 1)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", "33-33-33-33-33-33-33-33", "44-44-44-44-44-44-44-44", "55-55-55-55-55-55-55-55", DeduplicationMode.None, 5, 1)]
+        [InlineData(new[] { "11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", "33-33-33-33-33-33-33-33", "44-44-44-44-44-44-44-44", "55-55-55-55-55-55-55-55" }, DeduplicationMode.Mark, 5, 1)]
+        [InlineData(new[] { "11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", "33-33-33-33-33-33-33-33", "44-44-44-44-44-44-44-44", "55-55-55-55-55-55-55-55" }, DeduplicationMode.None, 5, 1)]
         public async Task When_More_Than_4_Concentrators_Messages_Should_Go_Upstream(
-            string station1,
-            string station2,
-            string station3,
-            string station4,
-            string station5,
+            string[] stations,
             DeduplicationMode mode,
             int expectedMessagesUp,
             int expectedMessagesDown)
         {
             // This test makes sense only if the condition is met (+ 1 is added for the very first message)
             // If not, we fail the test proactively to notify that the test code should be amended. 
-            Assert.True(5 > LoRaDevice.MaxConfirmationResubmitCount + 1, "Ensure that the test tests with more stations than LoRaDevice.MaxConfirmationResubmitCount + 1");
+            Assert.True(stations.Length > LoRaDevice.MaxConfirmationResubmitCount + 1, "Ensure that the test tests with more stations than LoRaDevice.MaxConfirmationResubmitCount + 1");
 
             // arrange
             var requests =
                 SetupRequests(() => this.simulatedABPDevice.CreateConfirmedDataUpMessage("payload", fcnt: 10),
-                              new[] { station1, station2, station3, station4, station5 });
+                              stations);
 
             this.loraABPDevice.Deduplication = mode;
 
