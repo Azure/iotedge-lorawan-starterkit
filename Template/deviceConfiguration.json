@@ -33,6 +33,9 @@
 							},
 							"AuthenticationMode": {
 								"value": "CloudAndScope"
+							},
+							"NestedEdgeEnabled": {
+								"value": "false"
 							}
 						},
 						"status": "running",
@@ -49,7 +52,7 @@
 						"version": "1.0",
 						"env": {
 							"ENABLE_GATEWAY": {
-								"value": "false"
+								"value": "true"
 							},
 							"LOG_LEVEL": {
 								"value": "2"
@@ -68,8 +71,8 @@
 							"RESET_PIN": {
 								"value": "[$reset_pin]"
 							},
-							"TC_URI":{
-							  "value": "ws://172.17.0.1:5000"
+							"TC_URI": {
+								"value": "ws://172.17.0.1:5000"
 							}
 							[$spi_dev]
 							[$spi_speed]
