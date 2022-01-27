@@ -18,7 +18,6 @@ namespace LoRaWan.Tests.Simulation
     using Microsoft.Extensions.Logging;
     using Xunit;
     using Xunit.Abstractions;
-    using static MoreLinq.Extensions.BatchExtension;
     using static MoreLinq.Extensions.IndexExtension;
     using static MoreLinq.Extensions.TransposeExtension;
 
@@ -190,7 +189,7 @@ Asserting device 0300000000009023 (24/100)
             const int numberOfLoops = 7;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
 
-            // The total number of concentratos can be configured via the test configuration. It will de distributed evenly among factories;
+            // The total number of concentrators can be configured via the test configuration. It will de distributed evenly among factories;
             // The total number of devices can be configured via the test configuration. It will de distributed evenly among factories.
 
             // Devices are distributed across different LNS within the same factory to "increase resiliency". In the case of two LNS and one factory,
@@ -202,9 +201,9 @@ Asserting device 0300000000009023 (24/100)
 
             var testDeviceInfo = TestFixtureSim.DeviceRange9000_OTAA_FullLoad_DuplicationDrop;
             var devicesAndConcentratorsByFactory =
-                this.simulatedBasicsStations.Batch(stationsPerFactory)
+                this.simulatedBasicsStations.Chunk(stationsPerFactory)
                                             .Take(numberOfFactories)
-                                            .Zip(testDeviceInfo.Batch(testDeviceInfo.Count / numberOfFactories).Take(numberOfFactories))
+                                            .Zip(testDeviceInfo.Chunk(testDeviceInfo.Count / numberOfFactories).Take(numberOfFactories))
                                             .Select(b => (Stations: b.First.ToList(), DeviceInfo: b.Second))
                                             .Select(b => (b.Stations, Devices: b.DeviceInfo.Select(d => InitializeSimulatedDevice(d, b.Stations)).ToList()))
                                             .Index()
@@ -302,7 +301,7 @@ Asserting device 0300000000009023 (24/100)
             Assert.True(messagesBeforeConfirmed <= messagesBeforeJoin, "OTAA devices should send all messages as confirmed messages.");
 
             // 1. picking devices send an initial message (warm device cache in LNS module)
-            foreach (var devices in simulatedAbpDevices.Batch(batchSizeWarmupMessages))
+            foreach (var devices in simulatedAbpDevices.Chunk(batchSizeWarmupMessages))
             {
                 await Task.WhenAll(from device in devices select SendWarmupMessageAsync(device));
                 await Task.Delay(warmupDelay);
@@ -322,7 +321,7 @@ Asserting device 0300000000009023 (24/100)
             for (var messageId = initialMessageId; messageId < initialMessageId + messagesPerDeviceExcludingWarmup; ++messageId)
             {
                 foreach (var batch in simulatedAbpDevices.Zip(simulatedOtaaDevices, (first, second) => (Abp: first, Otaa: second))
-                                                         .Batch(batchSizeDataMessages))
+                                                         .Chunk(batchSizeDataMessages))
                 {
                     var payload = this.uniqueMessageFragment + messageId.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0');
                     var abpTasks = batch.Select(devices => SendUpstreamMessage(devices.Abp, payload, messageId));

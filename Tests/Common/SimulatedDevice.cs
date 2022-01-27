@@ -287,10 +287,9 @@ namespace LoRaWan.Tests.Common
 
             async Task<bool> TryJoinAsync(TimeSpan timeout)
             {
-                using var joinCompleted = new SemaphoreSlim(0);
+                var tcs = new TaskCompletionSource<bool>();
                 using var joinRequest = WaitableLoRaRequest.CreateWaitableRequest(CreateJoinRequest());
                 var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
-                var joinSuccessful = false;
 
                 void OnMessageReceived(object sender, EventArgs<string> response)
                 {
@@ -301,51 +300,56 @@ namespace LoRaWan.Tests.Common
                         if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && DevEui.Parse(someJoinAcceptResponse.DevEuiString) == DevEUI)
                         {
                             var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(somePdu), AppKey.Value);
-                            joinSuccessful = HandleJoinAccept(joinAccept);
-                            joinCompleted.Release();
+                            tcs.SetResult(HandleJoinAccept(joinAccept));
                         }
                     }
                     catch (Exception ex)
                     {
-                        this.logger.LogError(ex, "Join failed due to: '{Message}'.", ex.Message);
-                        joinSuccessful = false;
-                        joinCompleted.Release();
-                        throw;
+                        tcs.SetException(ex);
                     }
                 }
 
                 foreach (var basicsStation in this.simulatedBasicsStations)
                     basicsStation.MessageReceived += OnMessageReceived;
 
-                foreach (var basicsStation in this.simulatedBasicsStations)
+                try
                 {
-                    await basicsStation.SerializeAndSendMessageAsync(new
+                    foreach (var basicsStation in this.simulatedBasicsStations)
                     {
-                        JoinEui = joinRequestPayload.AppEui.ToString("D", null),
-                        msgtype = "jreq",
-                        DevEui = joinRequestPayload.DevEUI.ToString("D", null),
-                        DevNonce = joinRequestPayload.DevNonce.AsUInt16,
-                        MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                        MIC = joinRequestPayload.Mic.Value.AsInt32,
-                        DR = joinRequest.RadioMetadata.DataRate,
-                        Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
-                        upinfo = new
+                        await basicsStation.SerializeAndSendMessageAsync(new
                         {
-                            gpstime = joinRequest.RadioMetadata.UpInfo.GpsTime,
-                            rctx = 10,
-                            rssi = joinRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
-                            xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
-                            snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
-                        }
-                    }, this.delayByStationEui[basicsStation.StationEui]);
+                            JoinEui = joinRequestPayload.AppEui.ToString("D", null),
+                            msgtype = "jreq",
+                            DevEui = joinRequestPayload.DevEUI.ToString("D", null),
+                            DevNonce = joinRequestPayload.DevNonce.AsUInt16,
+                            MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber,
+                                              CultureInfo.InvariantCulture),
+                            MIC = joinRequestPayload.Mic.Value.AsInt32,
+                            DR = joinRequest.RadioMetadata.DataRate,
+                            Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
+                            upinfo = new
+                            {
+                                gpstime = joinRequest.RadioMetadata.UpInfo.GpsTime,
+                                rctx = 10,
+                                rssi = joinRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
+                                xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
+                                snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
+                            }
+                        }, this.delayByStationEui[basicsStation.StationEui]);
+                    }
+
+                    return await tcs.Task.WaitAsync(timeout);
                 }
-
-                await joinCompleted.WaitAsync(timeout);
-
-                foreach (var basicsStation in this.simulatedBasicsStations)
-                    basicsStation.MessageReceived -= OnMessageReceived;
-
-                return joinSuccessful;
+                catch (Exception ex) when (ex is not TimeoutException)
+                {
+                    this.logger.LogError(ex, "Join failed due to: '{Message}'.", ex.Message);
+                    return false;
+                }
+                finally
+                {
+                    foreach (var basicsStation in this.simulatedBasicsStations)
+                        basicsStation.MessageReceived -= OnMessageReceived;
+                }
             }
         }
 
