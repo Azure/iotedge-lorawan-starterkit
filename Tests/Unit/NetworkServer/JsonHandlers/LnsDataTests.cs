@@ -87,30 +87,46 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Equal(9, updf.RadioMetadata.UpInfo.SignalNoiseRatio);
         }
 
+        private const string GeneralJsonErrorMessage = "Exception of type 'System.Text.Json.JsonException' was thrown.";
+
         [Theory]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 300, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+        [InlineData(GeneralJsonErrorMessage,
+                    @"{ 'msgtype': 'updf', 'MHdr': 300, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': -58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+        [InlineData(GeneralJsonErrorMessage,
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': -58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 300, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+        [InlineData(GeneralJsonErrorMessage,
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 300, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': -164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+        [InlineData(GeneralJsonErrorMessage,
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': -164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': 5, 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+        [InlineData(GeneralJsonErrorMessage,
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': 5, 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 300, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+        [InlineData("Invalid value in JSON: 300",
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 300, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': 5, 'MIC': -1943282916,
+        [InlineData(GeneralJsonErrorMessage,
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': 5, 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': 5.0,
+        [InlineData(GeneralJsonErrorMessage,
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': 5.0,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -2, 'FRMPayload': '5ABBBA', 'MIC': 5,
+        [InlineData("Invalid value in JSON: -2",
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -2, 'FRMPayload': '5ABBBA', 'MIC': 5,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -1, 'FRMPayload': null, 'MIC': 5,
+        [InlineData(GeneralJsonErrorMessage,
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -1, 'FRMPayload': null, 'MIC': 5,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        internal void UpstreamDataframeReader_Fails(string json)
+        [InlineData(@"""FRMPayload"" without an ""FPort"" is forbidden.",
+                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -1, 'FRMPayload': '5ABBBA', 'MIC': 5,
+                        'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
+        internal void UpstreamDataframeReader_Fails(string expectedError, string json)
         {
-            _ = Assert.Throws<JsonException>(() => _ = LnsData.UpstreamDataFrameReader.Read(JsonUtil.Strictify(json)));
+            var ex = Assert.Throws<JsonException>(() => _ = LnsData.UpstreamDataFrameReader.Read(JsonUtil.Strictify(json)));
+            Assert.Equal(expectedError, ex.Message);
         }
 
         [Fact]

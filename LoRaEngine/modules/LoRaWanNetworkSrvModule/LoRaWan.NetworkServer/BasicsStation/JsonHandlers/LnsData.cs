@@ -108,8 +108,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               RadioMetadataProperties.Freq,
                               RadioMetadataProperties.UpInfo,
                               (_, mhdr, devAddr, fctrlFlags, cnt, opts, port, payload, mic, dr, freq, upInfo) =>
-                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), fctrlFlags, cnt, opts, port, payload, mic,
-                                                      new RadioMetadata(dr, freq, upInfo)));
+                                port is null && payload.Length > 0
+                                    ? throw new JsonException(@"""FRMPayload"" without an ""FPort"" is forbidden.")
+                                    : new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), fctrlFlags, cnt, opts, port, payload, mic,
+                                                            new RadioMetadata(dr, freq, upInfo)));
         /*
          * {
               "msgtype" : "jreq",
