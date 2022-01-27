@@ -154,7 +154,7 @@ namespace LoraKeysManagerFacade
                                         // Add a lock loadPrimaryKey get lock get
                                         devAddressesInfo[i].PrimaryKey = await LoadPrimaryKeyAsync(someDevEuiPrime);
                                         results.Add(devAddressesInfo[i]);
-                                        _ = devAddrCache.StoreInfo(devAddressesInfo[i]);
+                                        devAddrCache.StoreInfo(devAddressesInfo[i]);
                                     }
 
                                     // even if we fail to acquire the lock we wont enter in the next condition as devaddressinfo is not null
@@ -187,7 +187,7 @@ namespace LoraKeysManagerFacade
                                             LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                                         };
                                         results.Add(iotHubDeviceInfo);
-                                        _ = devAddrCache.StoreInfo(iotHubDeviceInfo);
+                                        devAddrCache.StoreInfo(iotHubDeviceInfo);
                                     }
 
                                     resultCount++;
@@ -197,7 +197,7 @@ namespace LoraKeysManagerFacade
                             // todo save when not our devaddr
                             if (resultCount == 0)
                             {
-                                _ = devAddrCache.StoreInfo(new DevAddrCacheInfo()
+                                devAddrCache.StoreInfo(new DevAddrCacheInfo()
                                 {
                                     DevAddr = someDevAddr
                                 });

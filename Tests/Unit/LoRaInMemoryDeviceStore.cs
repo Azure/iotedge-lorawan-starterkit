@@ -142,7 +142,7 @@ namespace LoRaWan.Tests.Unit
             return LockTakeAsync(key, null, timeToExpire, false).GetAwaiter().GetResult();
         }
 
-        public bool TrySetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null)
+        public void SetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null)
         {
             throw new NotImplementedException();
         }
