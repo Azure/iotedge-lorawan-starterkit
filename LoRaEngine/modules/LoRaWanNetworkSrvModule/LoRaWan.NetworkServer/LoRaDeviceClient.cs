@@ -21,6 +21,7 @@ namespace LoRaWan.NetworkServer
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
         private static readonly TimeSpan TwinUpdateTimeout = TimeSpan.FromSeconds(10);
+        private static int activeDeviceConnections;
         private readonly string connectionString;
         private readonly ITransportSettings[] transportSettings;
         private readonly ILogger<LoRaDeviceClient> logger;
@@ -42,6 +43,9 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
             this.twinLoadRequests = meter.CreateCounter<int>(MetricRegistry.TwinLoadRequests);
             this.deviceClient = CreateDeviceClient();
+
+            _ = meter.CreateObservableGauge(MetricRegistry.ActiveClientConnections, () => activeDeviceConnections);
+            _ = Interlocked.Increment(ref activeDeviceConnections);
         }
 
         public bool IsMatchingKey(string primaryKey) => this.primaryKey == primaryKey;
@@ -249,6 +253,7 @@ namespace LoRaWan.NetworkServer
         {
             if (this.deviceClient != null)
             {
+                _ = Interlocked.Decrement(ref activeDeviceConnections);
                 this.deviceClient.Dispose();
                 this.deviceClient = null;
 
@@ -272,6 +277,7 @@ namespace LoRaWan.NetworkServer
                 try
                 {
                     this.deviceClient = CreateDeviceClient();
+                    _ = Interlocked.Increment(ref activeDeviceConnections);
                     this.logger.LogDebug("device client reconnected");
                 }
                 catch (ArgumentException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not connect device client with error: {ex.Message}")))
