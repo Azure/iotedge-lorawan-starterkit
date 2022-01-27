@@ -105,10 +105,11 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        protected virtual Task RefreshDeviceAsync(LoRaDevice device, CancellationToken cancellationToken)
+        protected virtual async Task RefreshDeviceAsync(LoRaDevice device, CancellationToken cancellationToken)
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
-            return device.InitializeAsync(this.configuration, cancellationToken);
+            using var activity = device.BeginDeviceClientConnectionActivity();
+            _ = await device.InitializeAsync(this.configuration, cancellationToken);
         }
 
         public virtual bool Remove(LoRaDevice device, bool dispose = true)
