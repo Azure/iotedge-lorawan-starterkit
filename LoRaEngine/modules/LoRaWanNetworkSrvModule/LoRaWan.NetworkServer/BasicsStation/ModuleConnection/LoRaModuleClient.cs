@@ -37,6 +37,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             return this.moduleClient.GetTwinAsync(cancellationToken);
         }
 
+        public async Task UpdateReportedPropertyAsync(string key, string value)
+        {
+            var twinCollection = new TwinCollection();
+            twinCollection[key] = value;
+            await this.moduleClient.UpdateReportedPropertiesAsync(twinCollection);
+        }
+
         public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object usercontext)
         {
             await this.moduleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, usercontext);

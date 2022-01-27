@@ -148,7 +148,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                 new object[] { region, DR10, true, false },
                 new object[] { region, DR12, true, false },
                 new object[] { region, DR14, true, false },
-                new object[] { region, null, false, false },
             };
     }
 }
