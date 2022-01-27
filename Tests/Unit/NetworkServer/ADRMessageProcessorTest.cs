@@ -462,7 +462,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             var decryptedPayload = payloadDataDown.Serialize(simulatedDevice.NwkSKey.Value);
-            Array.Reverse(decryptedPayload);
             Assert.Equal(FramePort.MacCommand, payloadDataDown.Fport);
             Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);

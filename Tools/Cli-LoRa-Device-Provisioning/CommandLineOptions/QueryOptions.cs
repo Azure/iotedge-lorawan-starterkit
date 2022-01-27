@@ -6,7 +6,7 @@ namespace LoRaWan.Tools.CLI.Options
     using CommandLine;
 
     [Verb("query", HelpText = "Query a device twin.")]
-    public class QueryOptions
+    public class QueryOptions : OptionsBase
     {
         [Option(
             "deveui",

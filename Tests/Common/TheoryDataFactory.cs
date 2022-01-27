@@ -35,6 +35,9 @@ namespace LoRaWan.Tests.Common
             return result;
         }
 
+        public static TheoryData<T1, T2, T3> From<T1, T2, T3>(params (T1, T2, T3)[] data) =>
+            From(data.AsEnumerable());
+
         public static TheoryData<T1, T2, T3> From<T1, T2, T3>(IEnumerable<(T1, T2, T3)> data)
         {
             if (data is null) throw new ArgumentNullException(nameof(data));

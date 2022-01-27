@@ -18,6 +18,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
     public sealed class ModuleConnectionHost : IAsyncDisposable
     {
+        private const string LnsVersionPropertyName = "LnsVersion";
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly IClassCDeviceMessageSender classCMessageSender;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
@@ -49,6 +50,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         {
             this.loRaModuleClient = await this.loRaModuleClientFactory.CreateAsync();
             await InitModuleAsync(cancellationToken);
+            await this.loRaModuleClient.UpdateReportedPropertyAsync(LnsVersionPropertyName, this.networkServerConfiguration.LnsVersion);
         }
 
         internal async Task InitModuleAsync(CancellationToken cancellationToken)
