@@ -134,8 +134,21 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Connected_Factory_Load_Test_Scenario()
         {
-            // load test: 26.1., 16:04 UTC - 16:20 UTC (messages coming in until 16:35).
+            // load test: 27.1., 09:39 UTC - 9:55 UTC.
             // 500 devices, 4 concentrators, 2 gateways.
+            // No Pool size and no maxconnected clients set on edge hub.
+            /*
+             *  Starting join phase at 01/27/2022 09:39:04.
+                Running cycle 1 of 7 at 01/27/2022 09:43:13.
+                Running cycle 2 of 7 at 01/27/2022 09:45:59.
+                Running cycle 3 of 7 at 01/27/2022 09:47:39.
+                Running cycle 4 of 7 at 01/27/2022 09:49:19.
+                Running cycle 5 of 7 at 01/27/2022 09:50:58.
+                Running cycle 6 of 7 at 01/27/2022 09:52:38.
+                Running cycle 7 of 7 at 01/27/2022 09:54:18.
+                Sent 4000 messages in 1014.0382978 seconds.
+                Asserting device 0300000000009000 (1/500)
+             */
             const int numberOfFactories = 1;
             const double joinsPerSecond = 3;
             var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(3, old => old > 3 ? old : old + 2);
@@ -206,11 +219,7 @@ namespace LoRaWan.Tests.Simulation
 
             foreach (var (i, device) in devices.Index())
             {
-<<<<<<< Updated upstream
                 this.logger.LogInformation("Asserting device {DeviceId} ({Index}/{Total})", device.LoRaDevice.DeviceID, i + 1, devices.Count);
-=======
-                this.logger.LogInformation("Assertions for device {DeviceId}.", device.LoRaDevice.DeviceID);
->>>>>>> Stashed changes
                 // A correction needs to be applied since concentrators are distributed across LNS, even if they are in the same factory
                 // (detailed description found at the beginning of this test).
                 var expectedMessageCorrection = 1 / (double)numberOfFactories;
@@ -351,7 +360,7 @@ namespace LoRaWan.Tests.Simulation
         private WaitableLoRaRequest CreateConfirmedUpstreamMessage(SimulatedDevice simulatedDevice) =>
             WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(this.uniqueMessageFragment + Guid.NewGuid()));
 
-        private static Task WaitForResultsInIotHubAsync() => Task.Delay(TimeSpan.FromSeconds(10));
+        private static Task WaitForResultsInIotHubAsync() => Task.Delay(TimeSpan.FromMinutes(2));
 
         private bool ContainsMessageFromDevice(EventData eventData, SimulatedDevice simulatedDevice)
         {
