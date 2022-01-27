@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.Tests.Simulation
@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Simulation
     using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
+    using System.Text.Json;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -134,19 +135,31 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Connected_Factory_Load_Test_Scenario()
         {
-            // load test: 27.1., 10:30 UTC - 10:34 UTC.
             // 100 devices, 4 concentrators, 2 gateways.
             // No Pool size and no maxconnected clients set on edge hub.
             /*
-             * Starting join phase at 01/27/2022 10:31:13.
-               Running cycle 1 of 7 at 01/27/2022 10:31:46.
-               Running cycle 2 of 7 at 01/27/2022 10:32:19.
-               Running cycle 3 of 7 at 01/27/2022 10:32:39.
-               Running cycle 4 of 7 at 01/27/2022 10:32:59.
-               Running cycle 5 of 7 at 01/27/2022 10:33:19.
-               Running cycle 6 of 7 at 01/27/2022 10:33:39.
-               Running cycle 7 of 7 at 01/27/2022 10:33:59.
-               Sent 800 messages in 185.6636478 seconds.
+             * Message: 
+               Actual count was 4 but expected at least 7.
+               Expected: True
+               Actual:   False
+               
+                 Stack Trace: 
+               SimulatedLoadTests.Connected_Factory_Load_Test_Scenario() line 228
+               --- End of stack trace from previous location ---
+               
+                 Standard Output: 
+               Starting join phase at 01/27/2022 11:39:33.
+               Running cycle 1 of 7 at 01/27/2022 11:41:17.
+               Running cycle 2 of 7 at 01/27/2022 11:41:50.
+               Running cycle 3 of 7 at 01/27/2022 11:42:10.
+               Running cycle 4 of 7 at 01/27/2022 11:42:30.
+               Running cycle 5 of 7 at 01/27/2022 11:42:50.
+               Running cycle 6 of 7 at 01/27/2022 11:43:10.
+               Running cycle 7 of 7 at 01/27/2022 11:43:29.
+               Sent 800 messages in 256.5125718 seconds.
+               Message counts by device ID:
+               {"0300000000009000":4,"0300000000009001":5,"0300000000009002":5,"0300000000009003":6,"0300000000009004":5,"0300000000009005":6,"0300000000009006":5,"0300000000009007":5,"0300000000009008":6,"0300000000009009":4,"0300000000009010":7,"0300000000009011":7,"0300000000009012":6,"0300000000009013":6,"0300000000009014":4,"0300000000009015":3,"0300000000009016":5,"0300000000009017":5,"0300000000009018":4,"0300000000009019":2,"0300000000009020":2,"0300000000009021":5,"0300000000009022":3,"0300000000009023":4,"0300000000009024":3,"0300000000009025":4,"0300000000009026":6,"0300000000009027":5,"0300000000009028":4,"0300000000009029":4,"0300000000009030":4,"0300000000009031":4,"0300000000009032":7,"0300000000009033":4,"0300000000009034":5,"0300000000009035":5,"0300000000009036":6,"0300000000009037":6,"0300000000009038":5,"0300000000009039":4,"0300000000009040":3,"0300000000009041":7,"0300000000009042":5,"0300000000009043":4,"0300000000009044":5,"0300000000009045":4,"0300000000009046":5,"0300000000009047":5,"0300000000009048":4,"0300000000009049":4,"0300000000009050":5,"0300000000009051":4,"0300000000009052":6,"0300000000009053":4,"0300000000009054":6,"0300000000009055":5,"0300000000009056":5,"0300000000009057":5,"0300000000009058":4,"0300000000009059":4,"0300000000009060":4,"0300000000009061":5,"0300000000009062":5,"0300000000009063":4,"0300000000009064":4,"0300000000009065":4,"0300000000009066":6,"0300000000009067":4,"0300000000009068":5,"0300000000009069":6,"0300000000009070":6,"0300000000009071":4,"0300000000009072":4,"0300000000009073":5,"0300000000009074":6,"0300000000009075":3,"0300000000009076":3,"0300000000009077":4,"0300000000009078":4,"0300000000009079":4,"0300000000009080":5,"0300000000009081":3,"0300000000009082":5,"0300000000009083":5,"0300000000009084":5,"0300000000009085":6,"0300000000009086":4,"0300000000009087":6,"0300000000009088":5,"0300000000009089":6,"0300000000009090":4,"0300000000009091":6,"0300000000009092":6,"0300000000009093":6,"0300000000009094":5,"0300000000009095":5,"0300000000009096":6,"0300000000009097":5,"0300000000009098":3,"0300000000009099":5}
+
                Asserting device 0300000000009000 (1/100)
              */
             const int numberOfFactories = 1;
@@ -217,14 +230,24 @@ namespace LoRaWan.Tests.Simulation
 
             await WaitForResultsInIotHubAsync();
 
+            var actualMessageCounts = new Dictionary<string, int>();
+            foreach (var device in devices)
+            {
+                actualMessageCounts.Add(device.LoRaDevice.DeviceID, TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
+            }
+
+            this.logger.LogInformation("Message counts by device ID:");
+            this.logger.LogInformation(JsonSerializer.Serialize(actualMessageCounts));
+
             foreach (var (i, device) in devices.Index())
             {
                 this.logger.LogInformation("Asserting device {DeviceId} ({Index}/{Total})", device.LoRaDevice.DeviceID, i + 1, devices.Count);
                 // A correction needs to be applied since concentrators are distributed across LNS, even if they are in the same factory
                 // (detailed description found at the beginning of this test).
                 var expectedMessageCorrection = 1 / (double)numberOfFactories;
-                Assert.Equal(GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfLoops) * expectedMessageCorrection,
-                             TestFixture.IoTHubMessages.Events.Count(e => ContainsMessageFromDevice(e, device)));
+                var actualCount = actualMessageCounts[device.LoRaDevice.DeviceID];
+                var expectedCount = GetExpectedMessageCount(device.LoRaDevice.Deduplication, numberOfLoops) * expectedMessageCorrection;
+                Assert.True(expectedCount <= actualCount, $"Actual count was {actualCount} but expected at least {expectedCount}.");
                 EnsureMessageResponsesAreReceived(device, numberOfLoops + 1);
             }
 
@@ -360,7 +383,7 @@ namespace LoRaWan.Tests.Simulation
         private WaitableLoRaRequest CreateConfirmedUpstreamMessage(SimulatedDevice simulatedDevice) =>
             WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(this.uniqueMessageFragment + Guid.NewGuid()));
 
-        private static Task WaitForResultsInIotHubAsync() => Task.Delay(TimeSpan.FromMinutes(2));
+        private static Task WaitForResultsInIotHubAsync() => Task.Delay(TimeSpan.FromSeconds(30));
 
         private bool ContainsMessageFromDevice(EventData eventData, SimulatedDevice simulatedDevice)
         {
