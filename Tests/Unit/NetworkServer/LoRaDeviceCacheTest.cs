@@ -22,11 +22,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Device_Expires_It_Is_Refreshed()
         {
             var moqCallback = new Mock<Action<LoRaDevice>>();
-            using var cache = new TestDeviceCache(moqCallback.Object, this.quickRefreshOptions);
-            using var device = CreateTestDevice();
+            using var cache = new TestDeviceCache(moqCallback.Object, this.quickRefreshOptions, true);
+            var deviceMock = new Mock<LoRaDevice>(new DevAddr(0xffffffff), new DevEui(0), Mock.Of<ILoRaDeviceClientConnectionManager>());
+            var device = deviceMock.Object;
             cache.Register(device);
             await cache.WaitForRefreshAsync(CancellationToken.None);
             moqCallback.Verify(x => x.Invoke(device));
+            deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Once);
         }
 
         [Fact]
@@ -388,6 +390,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             public TestDeviceCache(Action<LoRaDevice> onRefreshDevice, LoRaDeviceCacheOptions options)
                 : this(onRefreshDevice, options, new NetworkServerConfiguration())
+            { }
+
+            public TestDeviceCache(Action<LoRaDevice> onRefreshDevice, LoRaDeviceCacheOptions options, bool callDeviceRefresh)
+                : this(onRefreshDevice, options, new NetworkServerConfiguration(), callDeviceRefresh: callDeviceRefresh)
             { }
 
             public TestDeviceCache(Action<LoRaDevice> onRefreshDevice)
