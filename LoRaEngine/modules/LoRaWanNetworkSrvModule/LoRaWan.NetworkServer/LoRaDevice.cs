@@ -200,7 +200,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets a value indicating the timeout value in seconds for the device client connection.
         /// </summary>
-        public int KeepAliveTimeout { get; } = 15;
+        public int KeepAliveTimeout { get; } = 45;
 
         /// <summary>
         /// Gets or sets the StationEui for the Basic Station that last processed a message coming from this device.

@@ -69,11 +69,6 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
             var timeWatcher = request.GetTimeWatcher();
-            using var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
-            if (deviceConnectionActivity == null)
-            {
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
-            }
 
             var loraPayload = (LoRaPayloadData)request.Payload;
             this.d2cPayloadSizeHistogram?.Record(loraPayload.Frmpayload.Length);
@@ -175,6 +170,12 @@ namespace LoRaWan.NetworkServer
                     // we must save class C devices regions in order to send c2d messages
                     if (loRaDevice.ClassType == LoRaDeviceClassType.C && request.Region.LoRaRegion != loRaDevice.LoRaRegion)
                         loRaDevice.UpdateRegion(request.Region.LoRaRegion, acceptChanges: false);
+                }
+
+                using var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
+                if (deviceConnectionActivity == null)
+                {
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
                 }
 
                 #region FrameCounterDown

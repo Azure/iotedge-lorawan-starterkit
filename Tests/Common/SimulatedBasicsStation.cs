@@ -18,9 +18,9 @@ namespace LoRaWan.Tests.Common
 
     public sealed class SimulatedBasicsStation : IDisposable
     {
-        private readonly StationEui stationEUI;
+        public StationEui StationEui { get; }
         private ClientWebSocket clientWebSocket = CreateClientWebSocket();
-        private readonly Uri lnsUri;
+        public Uri LnsUri { get; private set; }
         private CancellationTokenSource cancellationTokenSource;
         private bool started;
         private Task processMessagesAsync;
@@ -29,8 +29,8 @@ namespace LoRaWan.Tests.Common
 
         public SimulatedBasicsStation(StationEui stationEUI, Uri lnsUri)
         {
-            this.stationEUI = stationEUI;
-            this.lnsUri = lnsUri;
+            StationEui = stationEUI;
+            LnsUri = lnsUri;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -39,8 +39,8 @@ namespace LoRaWan.Tests.Common
             this.started = true;
 
             // Handle router-info calls
-            await this.clientWebSocket.ConnectAsync(new Uri(this.lnsUri, "router-info"), cancellationToken);
-            await SerializeAndSendMessageAsync(new { router = this.stationEUI.AsUInt64 }, cancellationToken);
+            await this.clientWebSocket.ConnectAsync(new Uri(this.LnsUri, "router-info"), cancellationToken);
+            await SerializeAndSendMessageAsync(new { router = this.StationEui.AsUInt64 }, TimeSpan.Zero, cancellationToken);
             var enumerator = this.clientWebSocket.ReadTextMessages(cancellationToken);
             if (!await enumerator.MoveNextAsync())
                 throw new InvalidOperationException("Router info endpoint should return a response.");
@@ -48,10 +48,10 @@ namespace LoRaWan.Tests.Common
             Debug.Assert(enumerator.Current.Contains("uri", StringComparison.OrdinalIgnoreCase));
 
             // Handle router-data calls
-            await this.clientWebSocket.ConnectAsync(new Uri(this.lnsUri, $"router-data/{this.stationEUI}"), cancellationToken);
+            await this.clientWebSocket.ConnectAsync(new Uri(this.LnsUri, $"router-data/{this.StationEui}"), cancellationToken);
 
             // Send version request
-            await SerializeAndSendMessageAsync(new LnsVersionRequest(this.stationEUI.ToString(), "2", "1", "test", 2, ""), cancellationToken);
+            await SerializeAndSendMessageAsync(new LnsVersionRequest(this.StationEui.ToString(), "2", "1", "test", 2, ""), TimeSpan.Zero, cancellationToken);
             this.cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             enumerator = this.clientWebSocket.ReadTextMessages(this.cancellationTokenSource.Token);
             if (!await enumerator.MoveNextAsync())
@@ -68,12 +68,12 @@ namespace LoRaWan.Tests.Common
                     Console.WriteLine("Message received: " + msg);
                 }
 
-                Console.WriteLine($"Stopping message processing in station {this.stationEUI}");
+                Console.WriteLine($"Stopping message processing in station {this.StationEui}");
             }, this.cancellationTokenSource.Token);
         }
 
         //// Sends unconfirmed message
-        public async Task SendDataMessageAsync(LoRaRequest loRaRequest, CancellationToken cancellationToken = default)
+        public async Task SendDataMessageAsync(LoRaRequest loRaRequest, TimeSpan delay, CancellationToken cancellationToken = default)
         {
             var payload = (LoRaPayloadData)loRaRequest.Payload;
 
@@ -92,14 +92,15 @@ namespace LoRaWan.Tests.Common
                                                            Rctx: 10,
                                                            Rssi: loRaRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
                                                            Xtime: loRaRequest.RadioMetadata.UpInfo.Xtime,
-                                                           Snr: loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio)), cancellationToken);
+                                                           Snr: loRaRequest.RadioMetadata.UpInfo.SignalNoiseRatio)), delay, cancellationToken);
         }
 
         /// <summary>
         /// Serializes and sends a message.
         /// </summary>
-        internal async Task SerializeAndSendMessageAsync(object obj, CancellationToken cancellationToken = default)
+        internal async Task SerializeAndSendMessageAsync(object obj, TimeSpan delay, CancellationToken cancellationToken = default)
         {
+            await Task.Delay(delay, cancellationToken);
             var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj));
             await this.clientWebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
         }

@@ -32,6 +32,7 @@ namespace LoRaWan.Tests.Common
 
         private readonly ConcurrentBag<string> receivedMessages = new ConcurrentBag<string>();
         private readonly ILogger logger;
+        private readonly Dictionary<StationEui, TimeSpan> delayByStationEui;
 
         public IReadOnlyCollection<string> ReceivedMessages => this.receivedMessages;
 
@@ -80,6 +81,11 @@ namespace LoRaWan.Tests.Common
             FrmCntUp = frmCntUp;
             this.logger = logger;
             this.simulatedBasicsStations = simulatedBasicsStation?.ToList() ?? new List<SimulatedBasicsStation>();
+            var winningGateway = RandomNumberGenerator.GetInt32(0, this.simulatedBasicsStations.Count);
+            var gatewaySet = new HashSet<Uri>(this.simulatedBasicsStations.Select(s => s.LnsUri));
+            var delayByGateway = gatewaySet.Select((g, i) => (Gateway: g, Index: i))
+                                           .ToDictionary(g => g.Gateway, g => g.Index == winningGateway ? TimeSpan.Zero : TimeSpan.FromMilliseconds(400));
+            this.delayByStationEui = this.simulatedBasicsStations.ToDictionary(s => s.StationEui, s => delayByGateway[s.LnsUri]);
 
             void AddToDeviceMessageQueue(string response)
             {
@@ -256,7 +262,7 @@ namespace LoRaWan.Tests.Common
         //// Sends unconfirmed message
         public Task SendDataMessageAsync(LoRaRequest loRaRequest) =>
             Task.WhenAll(from basicsStation in this.simulatedBasicsStations
-                         select basicsStation.SendDataMessageAsync(loRaRequest, CancellationToken.None));
+                         select basicsStation.SendDataMessageAsync(loRaRequest, this.delayByStationEui[basicsStation.StationEui], CancellationToken.None));
 
         // Performs join
         public async Task<bool> JoinAsync(TimeSpan? timeout = null)
@@ -331,7 +337,7 @@ namespace LoRaWan.Tests.Common
                             xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
                             snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
                         }
-                    });
+                    }, this.delayByStationEui[basicsStation.StationEui]);
                 }
 
                 await joinCompleted.WaitAsync(timeout);
