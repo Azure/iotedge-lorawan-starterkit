@@ -134,10 +134,12 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Connected_Factory_Load_Test_Scenario()
         {
+            // load test: 26.1., 16:04 UTC - 16:20 UTC (messages coming in until 16:35).
+            // 500 devices, 4 concentrators, 2 gateways.
             const int numberOfFactories = 1;
-            const double joinsPerSecond = 1;
-            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(0.5, old => old > 0 ? old : old + 2);
-            const int numberOfLoops = 30;
+            const double joinsPerSecond = 3;
+            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(3, old => old > 3 ? old : old + 2);
+            const int numberOfLoops = 7;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
 
             // The total number of concentratos can be configured via the test configuration. It will de distributed evenly among factories;
@@ -204,7 +206,11 @@ namespace LoRaWan.Tests.Simulation
 
             foreach (var (i, device) in devices.Index())
             {
+<<<<<<< Updated upstream
                 this.logger.LogInformation("Asserting device {DeviceId} ({Index}/{Total})", device.LoRaDevice.DeviceID, i + 1, devices.Count);
+=======
+                this.logger.LogInformation("Assertions for device {DeviceId}.", device.LoRaDevice.DeviceID);
+>>>>>>> Stashed changes
                 // A correction needs to be applied since concentrators are distributed across LNS, even if they are in the same factory
                 // (detailed description found at the beginning of this test).
                 var expectedMessageCorrection = 1 / (double)numberOfFactories;
