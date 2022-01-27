@@ -146,7 +146,7 @@ namespace LoraKeysManagerFacade
                 {
                     var s when string.Equals("EU", s, StringComparison.OrdinalIgnoreCase) => await httpClient.GetStringAsync(new Uri(GetEnvironmentVariable("EU863_CONFIG_LOCATION"))),
                     var s when string.Equals("US", s, StringComparison.OrdinalIgnoreCase) => await httpClient.GetStringAsync(new Uri(GetEnvironmentVariable("US902_CONFIG_LOCATION"))),
-                    _ => throw new SwitchExpressionException("Region was either 'EU' nor 'US'")
+                    _ => throw new SwitchExpressionException("Region should be either 'EU' or 'US'")
                 };
 
                 var concentratorDevice = new Device(stationEuiString);
