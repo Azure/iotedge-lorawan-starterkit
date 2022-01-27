@@ -134,20 +134,20 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Connected_Factory_Load_Test_Scenario()
         {
-            // load test: 27.1., 10:07 UTC - 10:26 UTC.
-            // 300 devices, 4 concentrators, 2 gateways.
+            // load test: 27.1., 10:30 UTC - 10:34 UTC.
+            // 100 devices, 4 concentrators, 2 gateways.
             // No Pool size and no maxconnected clients set on edge hub.
             /*
-             *  Starting join phase at 01/27/2022 10:08:55.
-Running cycle 1 of 7 at 01/27/2022 10:13:03.
-Running cycle 2 of 7 at 01/27/2022 10:15:49.
-Running cycle 3 of 7 at 01/27/2022 10:17:29.
-Running cycle 4 of 7 at 01/27/2022 10:19:09.
-Running cycle 5 of 7 at 01/27/2022 10:20:48.
-Running cycle 6 of 7 at 01/27/2022 10:22:28.
-Running cycle 7 of 7 at 01/27/2022 10:24:08.
-Sent 4000 messages in 1013.2087669 seconds.
-Asserting device 0300000000009000 (1/500)
+             * Starting join phase at 01/27/2022 10:31:13.
+               Running cycle 1 of 7 at 01/27/2022 10:31:46.
+               Running cycle 2 of 7 at 01/27/2022 10:32:19.
+               Running cycle 3 of 7 at 01/27/2022 10:32:39.
+               Running cycle 4 of 7 at 01/27/2022 10:32:59.
+               Running cycle 5 of 7 at 01/27/2022 10:33:19.
+               Running cycle 6 of 7 at 01/27/2022 10:33:39.
+               Running cycle 7 of 7 at 01/27/2022 10:33:59.
+               Sent 800 messages in 185.6636478 seconds.
+               Asserting device 0300000000009000 (1/100)
              */
             const int numberOfFactories = 1;
             const double joinsPerSecond = 3;
