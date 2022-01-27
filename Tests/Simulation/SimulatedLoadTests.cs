@@ -17,7 +17,6 @@ namespace LoRaWan.Tests.Simulation
     using Microsoft.Extensions.Logging;
     using Xunit;
     using Xunit.Abstractions;
-    using static MoreLinq.Extensions.BatchExtension;
     using static MoreLinq.Extensions.IndexExtension;
     using static MoreLinq.Extensions.TransposeExtension;
 
@@ -152,9 +151,9 @@ namespace LoRaWan.Tests.Simulation
 
             var testDeviceInfo = TestFixtureSim.DeviceRange9000_OTAA_FullLoad_DuplicationDrop;
             var devicesAndConcentratorsByFactory =
-                this.simulatedBasicsStations.Batch(stationsPerFactory)
+                this.simulatedBasicsStations.Chunk(stationsPerFactory)
                                             .Take(numberOfFactories)
-                                            .Zip(testDeviceInfo.Batch(testDeviceInfo.Count / numberOfFactories).Take(numberOfFactories))
+                                            .Zip(testDeviceInfo.Chunk(testDeviceInfo.Count / numberOfFactories).Take(numberOfFactories))
                                             .Select(b => (Stations: b.First.ToList(), DeviceInfo: b.Second))
                                             .Select(b => (b.Stations, Devices: b.DeviceInfo.Select(d => InitializeSimulatedDevice(d, b.Stations)).ToList()))
                                             .Index()
@@ -242,7 +241,7 @@ namespace LoRaWan.Tests.Simulation
             Assert.True(messagesBeforeConfirmed <= messagesBeforeJoin, "OTAA devices should send all messages as confirmed messages.");
 
             // 1. picking devices send an initial message (warm device cache in LNS module)
-            foreach (var devices in simulatedAbpDevices.Batch(batchSizeWarmupMessages))
+            foreach (var devices in simulatedAbpDevices.Chunk(batchSizeWarmupMessages))
             {
                 await Task.WhenAll(from device in devices select SendWarmupMessageAsync(device));
                 await Task.Delay(warmupDelay);
@@ -262,7 +261,7 @@ namespace LoRaWan.Tests.Simulation
             for (var messageId = initialMessageId; messageId < initialMessageId + messagesPerDeviceExcludingWarmup; ++messageId)
             {
                 foreach (var batch in simulatedAbpDevices.Zip(simulatedOtaaDevices, (first, second) => (Abp: first, Otaa: second))
-                                                         .Batch(batchSizeDataMessages))
+                                                         .Chunk(batchSizeDataMessages))
                 {
                     var payload = this.uniqueMessageFragment + messageId.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0');
                     var abpTasks = batch.Select(devices => SendUpstreamMessage(devices.Abp, payload, messageId));
