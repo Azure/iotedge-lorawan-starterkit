@@ -140,14 +140,11 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         [MemberData(nameof(RegionCN470RP1TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionCN470RP1TestData))]
         [MemberData(nameof(RegionCN470RP2TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionCN470RP2TestData))]
         [MemberData(nameof(RegionAS923TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionAS923TestData))]
-        public void TestIsDRIndexWithinAcceptableValues(Region region, DataRateIndex? datarate, bool upstream, bool isValid)
+        public void TestIsDRIndexWithinAcceptableValues(Region region, DataRateIndex datarate, bool upstream, bool isValid)
         {
             if (upstream)
             {
-                Assert.NotNull(datarate);
-#pragma warning disable CWE476 // false positive
-                Assert.Equal(isValid, region.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(datarate.Value));
-#pragma warning restore CWE476 // false positive
+                Assert.Equal(isValid, region.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(datarate));
             }
             else
             {
