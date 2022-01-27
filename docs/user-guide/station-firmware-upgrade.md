@@ -17,7 +17,14 @@ required to execute such upgrade.
 1. Use LoRa Device Provisioning CLI tool to upload the upgrade files in the cloud.
 
    ```powershell
-   dotnet .\Tools\Cli-LoRa-Device-Provisioning\bin\Release\net6.0\loradeviceprovisioning.dll upgrade-firmware --stationeui <station_eui> --package <package_version> --firmware-location <firmware_file_path> --digest-location <digest_file_path> --checksum-location <checksum_file_path>
+   dotnet .\Tools\Cli-LoRa-Device-Provisioning\bin\Release\net6.0\loradeviceprovisioning.dll upgrade-firmware 
+    --stationeui <station_eui> 
+    --package <package_version> 
+    --firmware-location <firmware_file_path> 
+    --digest-location <digest_file_path> 
+    --checksum-location <checksum_file_path>
+    --iothub-connection-string <iothub_connection_string> 
+    --storage-connection-string <storage_connection_string>
    ```
 
    Parameters:

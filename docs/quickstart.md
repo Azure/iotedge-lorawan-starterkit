@@ -43,10 +43,10 @@ The template will deploy in your Azure subscription the Following resources:
 
 ## Step-by-step instructions
 
-1. Press on the button here below to start your Azure Deployment.
+1. Press on the button here below to start your Azure Deployment.  
     <!-- markdownlint-disable MD033 -->
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fmaster%2FTemplate%2Fazuredeploy.json" target="_blank">
-        <img src="http://azuredeploy.net/deploybutton.png"/>
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fv2.0.0%2FTemplate%2Fazuredeploy.json" target="_blank">
+        <img src="https://aka.ms/deploytoazurebutton"/>
     </a>
     <!-- markdownlint-enable MD033 -->
 

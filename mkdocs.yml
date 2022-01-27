@@ -73,6 +73,7 @@ nav:
     - user-guide/documentation.md
     - user-guide/observability.md
     - 'Basic Station configuration':
+      - user-guide/pkt-fwd-to-station.md
       - user-guide/station-device-provisioning.md
       - user-guide/station-authentication-modes.md
       - user-guide/station-module-configuration.md
