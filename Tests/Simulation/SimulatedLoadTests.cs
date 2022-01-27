@@ -134,58 +134,28 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Connected_Factory_Load_Test_Scenario()
         {
-            // 100 devices, 4 concentrators, 2 gateways.
-            // No Pool size and no maxconnected clients set on edge hub.
-            /* Message: 
-Actual count was 6 but expected at least 7.
-Expected: True
-Actual:   False
-
-  Stack Trace: 
-SimulatedLoadTests.Connected_Factory_Load_Test_Scenario() line 228
---- End of stack trace from previous location ---
+            // 900 devices, 4 concentrators, 1 gateways.
+            /* LoRaWan.Tests.Simulation.SimulatedLoadTests.Connected_Factory_Load_Test_Scenario
+   Source: SimulatedLoadTests.cs line 135
+   Duration: 31 min
 
   Standard Output: 
-Starting join phase at 01/27/2022 14:16:20.
-Running cycle 1 of 7 at 01/27/2022 14:18:11.
-Running cycle 2 of 7 at 01/27/2022 14:18:44.
-Running cycle 3 of 7 at 01/27/2022 14:19:18.
-Running cycle 4 of 7 at 01/27/2022 14:19:51.
-Running cycle 5 of 7 at 01/27/2022 14:20:25.
-Running cycle 6 of 7 at 01/27/2022 14:20:58.
-Running cycle 7 of 7 at 01/27/2022 14:21:31.
-Sent 800 messages in 344.5467902 seconds.
-Message counts by device ID:
-{"0300000000009000":7,"0300000000009001":7,"0300000000009002":7,"0300000000009003":7,"0300000000009004":7,"0300000000009005":7,"0300000000009006":7,"0300000000009007":7,"0300000000009008":8,"0300000000009009":7,"0300000000009010":8,"0300000000009011":7,"0300000000009012":7,"0300000000009013":7,"0300000000009014":9,"0300000000009015":7,"0300000000009016":7,"0300000000009017":7,"0300000000009018":7,"0300000000009019":7,"0300000000009020":7,"0300000000009021":7,"0300000000009022":7,"0300000000009023":6,"0300000000009024":5,"0300000000009025":7,"0300000000009026":6,"0300000000009027":7,"0300000000009028":8,"0300000000009029":7,"0300000000009030":7,"0300000000009031":7,"0300000000009032":7,"0300000000009033":7,"0300000000009034":7,"0300000000009035":7,"0300000000009036":7,"0300000000009037":7,"0300000000009038":7,"0300000000009039":7,"0300000000009040":8,"0300000000009041":7,"0300000000009042":8,"0300000000009043":7,"0300000000009044":7,"0300000000009045":7,"0300000000009046":9,"0300000000009047":7,"0300000000009048":7,"0300000000009049":7,"0300000000009050":8,"0300000000009051":7,"0300000000009052":7,"0300000000009053":8,"0300000000009054":7,"0300000000009055":7,"0300000000009056":8,"0300000000009057":8,"0300000000009058":7,"0300000000009059":7,"0300000000009060":7,"0300000000009061":8,"0300000000009062":8,"0300000000009063":7,"0300000000009064":8,"0300000000009065":7,"0300000000009066":7,"0300000000009067":8,"0300000000009068":8,"0300000000009069":7,"0300000000009070":7,"0300000000009071":7,"0300000000009072":9,"0300000000009073":7,"0300000000009074":7,"0300000000009075":9,"0300000000009076":7,"0300000000009077":7,"0300000000009078":7,"0300000000009079":7,"0300000000009080":7,"0300000000009081":7,"0300000000009082":7,"0300000000009083":7,"0300000000009084":7,"0300000000009085":7,"0300000000009086":8,"0300000000009087":7,"0300000000009088":7,"0300000000009089":7,"0300000000009090":7,"0300000000009091":7,"0300000000009092":7,"0300000000009093":7,"0300000000009094":8,"0300000000009095":7,"0300000000009096":8,"0300000000009097":7,"0300000000009098":7,"0300000000009099":7}
-Asserting device 0300000000009000 (1/100)
-Asserting device 0300000000009001 (2/100)
-Asserting device 0300000000009002 (3/100)
-Asserting device 0300000000009003 (4/100)
-Asserting device 0300000000009004 (5/100)
-Asserting device 0300000000009005 (6/100)
-Asserting device 0300000000009006 (7/100)
-Asserting device 0300000000009007 (8/100)
-Asserting device 0300000000009008 (9/100)
-Asserting device 0300000000009009 (10/100)
-Asserting device 0300000000009010 (11/100)
-Asserting device 0300000000009011 (12/100)
-Asserting device 0300000000009012 (13/100)
-Asserting device 0300000000009013 (14/100)
-Asserting device 0300000000009014 (15/100)
-Asserting device 0300000000009015 (16/100)
-Asserting device 0300000000009016 (17/100)
-Asserting device 0300000000009017 (18/100)
-Asserting device 0300000000009018 (19/100)
-Asserting device 0300000000009019 (20/100)
-Asserting device 0300000000009020 (21/100)
-Asserting device 0300000000009021 (22/100)
-Asserting device 0300000000009022 (23/100)
-Asserting device 0300000000009023 (24/100)
+900 devices closer to first gateway.
+0 devices closer to second gateway.
+Starting join phase at 01/27/2022 16:45:52.
+Running cycle 1 of 7 at 01/27/2022 16:50:52.
+Running cycle 2 of 7 at 01/27/2022 16:53:52.
+Running cycle 3 of 7 at 01/27/2022 16:56:52.
+Running cycle 4 of 7 at 01/27/2022 16:59:52.
+Running cycle 5 of 7 at 01/27/2022 17:02:52.
+Running cycle 6 of 7 at 01/27/2022 17:05:51.
+Running cycle 7 of 7 at 01/27/2022 17:08:51.
+Sent 7200 messages in 1558.5731525 seconds.
              *  
              */
             const int numberOfFactories = 1;
             const double joinsPerSecond = 3;
-            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(3, _ => 3);
+            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(5, _ => 5);
             const int numberOfLoops = 7;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
 
@@ -217,6 +187,9 @@ Asserting device 0300000000009023 (24/100)
                                                 .Transpose()
                                                 .SelectMany(ds => ds)
                                                 .ToList();
+
+            this.logger.LogInformation($"{SimulatedDevice.CurrentGateway0Wins} devices closer to first gateway.");
+            this.logger.LogInformation($"{SimulatedDevice.CurrentGateway1Wins} devices closer to second gateway.");
 
             var stopwatch = Stopwatch.StartNew();
 
