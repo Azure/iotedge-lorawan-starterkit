@@ -74,6 +74,11 @@ namespace LoRaWan.Tests.Common
             set => LoRaDevice.Supports32BitFCnt = value;
         }
 
+#pragma warning disable CA2211 // Non-constant fields should not be visible
+        public static int CurrentGateway0Wins;
+        public static int CurrentGateway1Wins;
+#pragma warning restore CA2211 // Non-constant fields should not be visible
+
         public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0, IReadOnlyCollection<SimulatedBasicsStation> simulatedBasicsStation = null, ILogger logger = null)
         {
             LoRaDevice = testDeviceInfo;
@@ -81,11 +86,14 @@ namespace LoRaWan.Tests.Common
             FrmCntUp = frmCntUp;
             this.logger = logger;
             this.simulatedBasicsStations = simulatedBasicsStation?.ToList() ?? new List<SimulatedBasicsStation>();
-            var winningGateway = RandomNumberGenerator.GetInt32(0, this.simulatedBasicsStations.Count);
+
             var gatewaySet = new HashSet<Uri>(this.simulatedBasicsStations.Select(s => s.LnsUri));
+            var winningGateway = RandomNumberGenerator.GetInt32(0, gatewaySet.Count);
             var delayByGateway = gatewaySet.Select((g, i) => (Gateway: g, Index: i))
                                            .ToDictionary(g => g.Gateway, g => g.Index == winningGateway ? TimeSpan.Zero : TimeSpan.FromMilliseconds(400));
             this.delayByStationEui = this.simulatedBasicsStations.ToDictionary(s => s.StationEui, s => delayByGateway[s.LnsUri]);
+
+            _ = winningGateway == 0 ? Interlocked.Increment(ref CurrentGateway0Wins) : Interlocked.Increment(ref CurrentGateway1Wins);
 
             void AddToDeviceMessageQueue(string response)
             {
