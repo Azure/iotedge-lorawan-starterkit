@@ -139,7 +139,7 @@ namespace LoRaWan.Tests.Simulation
             const int numberOfLoops = 5;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
 
-            // The total number of concentratos can be configured via the test configuration. It will de distributed evenly among factories;
+            // The total number of concentrators can be configured via the test configuration. It will de distributed evenly among factories;
             // The total number of devices can be configured via the test configuration. It will de distributed evenly among factories.
 
             // Devices are distributed across different LNS within the same factory to "increase resiliency". In the case of two LNS and one factory,
