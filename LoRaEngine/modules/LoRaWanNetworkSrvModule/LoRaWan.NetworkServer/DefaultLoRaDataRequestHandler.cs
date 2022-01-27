@@ -188,12 +188,10 @@ namespace LoRaWan.NetworkServer
                 {
                     fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
-                    if (fcntDown <= 0)
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                    HandleFrameCounterDownResult(fcntDown, loRaDevice, request, ref skipDownstreamToAvoidCollisions, out result);
 
-                    //HandleFrameCounterDownResult(fcntDown, loRaDevice, request, ref skipDownstreamToAvoidCollisions, out result);
-                    //if (result != null)
-                    //    return result;
+                    if (result != null)
+                        return result;
                 }
                 #endregion
 
@@ -244,13 +242,10 @@ namespace LoRaWan.NetworkServer
                     {
                         fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
-                        if (!fcntDown.HasValue || fcntDown <= 0)
-                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                        HandleFrameCounterDownResult(fcntDown, loRaDevice, request, ref skipDownstreamToAvoidCollisions, out result);
 
-                        //HandleFrameCounterDownResult(fcntDown, loRaDevice, request, ref skipDownstreamToAvoidCollisions, out result);
-
-                        //if (result != null)
-                        //    return result;
+                        if (result != null)
+                            return result;
 
                         requiresConfirmation = true;
                     }
@@ -771,6 +766,30 @@ namespace LoRaWan.NetworkServer
             else
             {
                 this.logger.LogDebug($"down frame counter: {loRaDevice.FCntDown}");
+            }
+        }
+
+        /// <summary>
+        /// Handles the result of frame counter down, depending on the <code>DeduplicationMode</code> used.
+        /// Specifically, for invalid frame counter down:
+        /// - when mode is Drop, we do not send the message upstream nor downstream
+        /// - when mode is Mark or None, we allow upstream but skip downstream to avoid collisions
+        /// </summary>
+        /// <param name="skipDownstreamToAvoidCollisions">boolean that is used while deciding to send messages downstream</param>
+        /// <param name="result">nullable result, that needs to be handled from the caller</param>
+        private static void HandleFrameCounterDownResult(uint? fcntDown, LoRaDevice loRaDevice, LoRaRequest request, ref bool skipDownstreamToAvoidCollisions, out LoRaDeviceRequestProcessResult result)
+        {
+            result = null;
+
+            if (fcntDown <= 0)
+            {
+                // Failed to update the fcnt down:
+                // This can only happen in multi gateway scenarios and
+                // it means that another gateway has won the race to handle this message.
+                if (loRaDevice.Deduplication == DeduplicationMode.Drop)
+                    result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                else
+                    skipDownstreamToAvoidCollisions = true;
             }
         }
 

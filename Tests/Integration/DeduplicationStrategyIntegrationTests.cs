@@ -31,9 +31,9 @@ namespace LoRaWan.Tests.Integration
         [InlineData(DeduplicationMode.Mark, false)]
         [InlineData(DeduplicationMode.Drop, false)]
         [InlineData(DeduplicationMode.None, false)]
-        //[InlineData(DeduplicationMode.Mark, true)]
-        //[InlineData(DeduplicationMode.Drop, true)]
-        //[InlineData(DeduplicationMode.None, true)]
+        [InlineData(DeduplicationMode.Mark, true)]
+        [InlineData(DeduplicationMode.Drop, true)]
+        [InlineData(DeduplicationMode.None, true)]
         public async Task When_Different_Strategies_Are_Used_Ensures_Correct_Upstream_And_Downstream_Processing(DeduplicationMode mode, bool confirmedMessages)
         {
             var messageProcessed = false;
