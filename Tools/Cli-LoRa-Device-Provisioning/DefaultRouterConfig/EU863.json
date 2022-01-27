@@ -8,7 +8,7 @@
       "FFFFFFFFFFFFFFFF"
     ]
   ],
-  "region": " EU863",
+  "region": "EU863",
   "hwspec": "sx1301/1",
   "freq_range": [
     863000000,
