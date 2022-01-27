@@ -11,11 +11,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     public class LoRaDeviceTelemetryTest
     {
         [Theory]
-        [InlineData(1, FramePorts.App1, "1")]
-        [InlineData(2, FramePorts.App10, "1")]
-        [InlineData(100, FramePorts.App2, "1")]
-        [InlineData(100, null, "")]
-        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(uint fcnt, FramePort? fport, string data)
+        [InlineData(1, FramePorts.App1, "1", "MQ==")]
+        [InlineData(2, FramePorts.App10, "1", "MQ==")]
+        [InlineData(100, FramePorts.App2, "1", "MQ==")]
+        [InlineData(100, null, "", "")]
+        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(uint fcnt, FramePort? fport, string data, string expectedRawData)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: fcnt, fport: fport);
@@ -24,9 +24,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaRequest = WaitableLoRaRequest.CreateWaitableRequest(payload);
             var target = new LoRaDeviceTelemetry(loRaRequest, payload, decodedValue, payload.GetDecryptedPayload(simulatedDevice.AppSKey.Value));
             Assert.Equal(checked((uint)loRaRequest.RadioMetadata.DataRate), target.Chan);
-            Assert.Equal(payload.GetDecryptedPayload(simulatedDevice.AppSKey.Value) is { } decryptedPayload
-                         ? Convert.ToBase64String(decryptedPayload)
-                         : string.Empty, target.Rawdata);
+            Assert.Equal(expectedRawData, target.Rawdata);
             Assert.Equal(decodedValue, target.Data);
             Assert.Equal(TestUtils.TestRegion.GetDatarateFromIndex(loRaRequest.RadioMetadata.DataRate).ToString(), target.Datr);
             Assert.Equal(loRaRequest.RadioMetadata.Frequency.InMega, target.Freq);
