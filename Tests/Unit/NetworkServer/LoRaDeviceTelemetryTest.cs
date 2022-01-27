@@ -24,7 +24,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaRequest = WaitableLoRaRequest.CreateWaitableRequest(payload);
             var target = new LoRaDeviceTelemetry(loRaRequest, payload, decodedValue, payload.GetDecryptedPayload(simulatedDevice.AppSKey.Value));
             Assert.Equal(checked((uint)loRaRequest.RadioMetadata.DataRate), target.Chan);
-            Assert.Equal(Convert.ToBase64String(payload.GetDecryptedPayload(simulatedDevice.AppSKey.Value)), target.Rawdata);
+            Assert.Equal(payload.GetDecryptedPayload(simulatedDevice.AppSKey.Value) is { } decryptedPayload
+                         ? Convert.ToBase64String(decryptedPayload)
+                         : string.Empty, target.Rawdata);
             Assert.Equal(decodedValue, target.Data);
             Assert.Equal(TestUtils.TestRegion.GetDatarateFromIndex(loRaRequest.RadioMetadata.DataRate).ToString(), target.Datr);
             Assert.Equal(loRaRequest.RadioMetadata.Frequency.InMega, target.Freq);
