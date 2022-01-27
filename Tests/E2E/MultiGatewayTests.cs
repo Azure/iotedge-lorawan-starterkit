@@ -102,8 +102,8 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 // After transferPacket: Expectation from serial
-                // +MSG: Done
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                // +CMSG: ACK Received
+                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 var allGwGotIt = await TestFixtureCi.ValidateMultiGatewaySources((log) => log.IndexOf($"deduplication Strategy: {strategy}", StringComparison.OrdinalIgnoreCase) != -1);
                 if (allGwGotIt)
