@@ -151,7 +151,7 @@ namespace LoRaWan.Tests.Simulation
                                             .ToDictionary(el => el.Key,
                                                           stationsAndDevices => (stationsAndDevices.Value.Stations, stationsAndDevices.Value.Devices));
             // Cache the devices in a flat list to make distributing requests easier.
-            // Transposing the matrix makes sure that device requests are distributed evenly accross factories,
+            // Transposing the matrix makes sure that device requests are distributed evenly across factories,
             // instead of having all requests from the same factory executed in series.
             var devices =
                 devicesAndConcentratorsByFactory.Select(f => f.Value.Devices)
