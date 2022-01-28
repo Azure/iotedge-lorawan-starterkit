@@ -658,10 +658,10 @@ namespace LoRaWan.Tests.Integration
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
-            LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+            _ = LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
                 .ReturnsAsync(true);
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            _ = LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             // C2D message will be checked
             // LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
@@ -679,7 +679,7 @@ namespace LoRaWan.Tests.Integration
             var decodedObject = new { temp = 10, humidity = 22.1, text = "abc", cloudToDeviceMessage = new { test = 1 } };
 
             using var httpMessageHandler = new HttpMessageHandlerMock();
-            httpMessageHandler.SetupHandler((r) =>
+            _ = httpMessageHandler.SetupHandler((r) =>
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
                 {
@@ -690,9 +690,9 @@ namespace LoRaWan.Tests.Integration
             using var httpClient = new HttpClient(httpMessageHandler);
             PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
 
-            // sends unconfirmed message
-            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 10);
-            using var request = CreateWaitableRequest(unconfirmedMessagePayload);
+            // sends confirmed message
+            var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1", fcnt: 10);
+            using var request = CreateWaitableRequest(confirmedMessagePayload);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -707,9 +707,7 @@ namespace LoRaWan.Tests.Integration
             var expectedTelemetryJson = $"{{\"time\":100000,\"tmms\":100000,\"freq\":868.3,\"chan\":2,\"rfch\":1,\"modu\":\"LoRa\",\"datr\":\"SF10BW125\",\"rssi\":2.0,\"lsnr\":0.1,\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":10,\"edgets\":{loRaDeviceTelemetry.Edgets},\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"stationeui\":\"0000000000000000\"}}";
             Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
 
-            // send a second message with same fcnt to simulate
-            // sends unconfirmed message
-            var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1", fcnt: 10);
+            // send a second confirmed message with same fcnt to simulate
             using var request2 = CreateWaitableRequest(confirmedMessagePayload);
             messageDispatcher.DispatchRequest(request2);
             Assert.True(await request2.WaitCompleteAsync());
