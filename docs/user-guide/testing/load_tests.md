@@ -34,7 +34,7 @@ Issues encountered in these load tests:
 - We were not able to successfully run load tests beyond 1000 devices in gateway mode
 - In case of two gateways and many devices, we had to introduce manual changes to make the load tests succeed. By actively favoring one gateway over the other (introducing an artificial delay on the "losing" gateway and actively closing the connections) , we could make sure that in case of multiple gateways they are not competing for the connections. Only with these modifications, we were able to successfully execute load tests with stable results in multi-gateway configuration.
 
-The memory/CPU usage of the IoT Edge host in gateway mode (for 900 devices) was fairly stable at around 1GB of memory used and an average CPU consumption of 40% on a Standard D2s v3 Debian 11 VM:
+The memory/CPU usage of a single IoT Edge host in gateway mode (for 900 devices) was fairly stable at around 1GB of memory used and an average CPU consumption of 40% on a Standard D2s v3 Debian 11 VM:
 
 ![gateway-mode-host-cpu-memory](..\..\images\lt-host-gateway-mode.png)
 
