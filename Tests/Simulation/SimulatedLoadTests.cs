@@ -144,9 +144,9 @@ namespace LoRaWan.Tests.Simulation
             var devicesAndConcentratorsByFactory =
                 this.simulatedBasicsStations.Chunk(stationsPerFactory)
                                             .Take(numberOfFactories)
-                                            .Zip(testDeviceInfo.Chunk(testDeviceInfo.Count / numberOfFactories).Take(numberOfFactories))
-                                            .Select(b => (Stations: b.First.ToList(), DeviceInfo: b.Second))
-                                            .Select(b => (b.Stations, Devices: b.DeviceInfo.Select(d => InitializeSimulatedDevice(d, b.Stations)).ToList()))
+                                            .Zip(testDeviceInfo.Chunk(testDeviceInfo.Count / numberOfFactories)
+                                                               .Take(numberOfFactories),
+                                                 (ss, ds) => (Stations: ss, Devices: ds.Select(d => InitializeSimulatedDevice(d, ss)).ToList()))
                                             .Index()
                                             .ToDictionary(el => el.Key,
                                                           stationsAndDevices => (stationsAndDevices.Value.Stations, stationsAndDevices.Value.Devices));
