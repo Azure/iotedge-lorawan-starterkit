@@ -20,7 +20,6 @@ Windows](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-for-linux-on-w
 - Regional support for AS923 and CN470 (Regional Parameters v1.0.3rA and
 RP002-1.0.3 revisions)
 - Support for running LNS on a separate Edge or Cloud device
-- First class support for Class C devices
 - Observability:
   - Integration with Azure Monitor
   - Exposing a Prometheus endpoint for metrics scraping
