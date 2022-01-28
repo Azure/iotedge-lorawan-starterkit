@@ -24,7 +24,7 @@ RP002-1.0.3 revisions)
 - Observability:
   - Integration with Azure Monitor
   - Exposing a Prometheus endpoint for metrics scraping
-  - default monitoring for edgeAgent and edgeHub modules
+  - Collection of metrics for edgeAgent and edgeHub modules with [Metrics collector module](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-collect-and-transport-metrics?view=iotedge-2020-11&tabs=iothub)
   - distributed tracing
 
 ### Code Quality Improvements
