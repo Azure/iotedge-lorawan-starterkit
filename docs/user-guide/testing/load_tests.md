@@ -27,7 +27,6 @@ We ran a set of load tests to ensure that we can support a certain amount of LoR
 | true                           | S3          | 1             | 900               | 4                         | 25             | 7200                | 0                      | 500                            |                                                              |
 | false                          | S3          | 1             | 1100              | 4                         | -              | -                   | -                      | -                              |                                                              |
 
-
 Issues encountered in these load tests:
 
 - [Unexpected ObjectDisposedException when IoT Hub is throttling · Issue #6042 · Azure/iotedge (github.com)](https://github.com/Azure/iotedge/issues/6042)
