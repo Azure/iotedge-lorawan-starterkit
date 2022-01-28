@@ -139,7 +139,7 @@ namespace LoRaWan.Tests.Simulation
             // this means that for two concentrators, concentrator 1 will be connected to LNS 1 while concentrator 2 will talk to LNS 2.
             // This influences how many messages we expect in IoT Hub (due to different concentrator/LNS deduplication strategies).
 
-            Assert.True(this.simulatedBasicsStations.Count >= numberOfFactories, "There needs to be at least one concentrator per factory.");
+            Assert.True(stationsPerFactory >= 1, "There needs to be at least one concentrator per factory.");
             Assert.True(stationsPerFactory % Configuration.LnsEndpointsForSimulator.Count == 0, "LNS must be distributed evenly across factories (identical amount of indirectly connected LNS to factories).");
 
             var testDeviceInfo = TestFixtureSim.DeviceRange9000_OTAA_FullLoad_DuplicationDrop;
