@@ -59,9 +59,9 @@ The template will deploy in your Azure subscription the Following resources:
     - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino) would be ready to use immediately.  
     - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)  
     - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)  
-    - **Station Eui** - The EUI of the Basics Station concentrator that will be used for connecting to LoRaWAN Network Server
-    - **Spi speed** - (In Mbps) Custom SPI speed for your gateway, currently only supported for ARM gateways
-    - **Spi dev** - A number identifying the SPI location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)
+    - **Station Eui** - The EUI of the Basics Station concentrator that will be used for connecting to LoRaWAN Network Server  
+    - **Spi speed** - (In Mbps) Custom SPI speed for your gateway, currently only supported for ARM gateways  
+    - **Spi dev** - A number identifying the SPI location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)  
     - **Use Azure Monitor On Edge** - You can opt out of using Azure Monitor services for observability on IoT Edge.  
 
     The deployment would take c.a. 10 minutes to complete.
