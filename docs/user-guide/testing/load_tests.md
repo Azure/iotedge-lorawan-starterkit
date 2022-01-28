@@ -16,7 +16,7 @@ All load tests use the `Connected_Factory_Load_Test_Scenario` load test scenario
 
 ### January 25th - 28th 2022, load test of v2.0.0-beta1 in gateway mode (ENABLE_GATEWAY=true)
 
-We ran a set of load tests to ensure that we can support a certain amount of LoRa devices. In gateway mode, the edge hub [refreshes device twin in the background](https://github.com/Azure/iotedge/blob/master/doc/EnvironmentVariables.md#edgehub), which can result in a higher load on the IoT Hub and subsequent throttling operations due to IoT Hub quota. By taking into account these variables and KPI, we ran several load tests successfully with the parameters we used listed below. For all tests against an IoT Hub S1 instance, we ran at a rate of 1 join request per second and 1 upstream message during the cache pre-warm phase. For all IoT Hub S3 instances we use 3 join requests per second and 3 upstream messages per second during warm-up.
+We ran a set of load tests to ensure that we can support a certain amount of LoRa devices. These tests were performed using gateway mode - passing through the edge hub queue. By taking into account these variables and KPI, we ran several load tests successfully with the parameters we used listed below. For all tests against an IoT Hub S1 instance, we ran at a rate of 1 join request per second and 1 upstream message during the cache pre-warm phase. For all IoT Hub S3 instances we use 3 join requests per second and 3 upstream messages per second during warm-up.
 
 | Succeeded                      | IoT Hub SKU | Gateway count | Number of devices | Concentrators per gateway | Duration [min] | Total messages sent | Receive windows missed | Avg message delivery time [ms] | Note                                                         |
 | ------------------------------ | ----------- | ------------- | ----------------- | ------------------------- | -------------- | ------------------- | ---------------------- | ------------------------------ | ------------------------------------------------------------ |
@@ -26,18 +26,22 @@ We ran a set of load tests to ensure that we can support a certain amount of LoR
 | true                           | S1          | 1             | 140               | 4                         | 10             | 2940                | 0                      | 500                            |                                                              |
 | true                           | S3          | 1             | 900               | 4                         | 25             | 7200                | 0                      | 500                            |                                                              |
 | false                          | S3          | 1             | 1100              | 4                         | -              | -                   | -                      | -                              |                                                              |
-| true (only with modifications) | S3          | 2             | 500               | 2                         | 15             | 4000                | -                      | 400                            | Required us to actively drop connections on the idle gateway (per device) |
+
 
 Issues encountered in these load tests:
 
 - [Unexpected ObjectDisposedException when IoT Hub is throttling · Issue #6042 · Azure/iotedge (github.com)](https://github.com/Azure/iotedge/issues/6042)
-- In case of two gateways and many devices, we had to introduce manual changes to make the load tests succeed. By actively favoring one gateway over the other (introducing an artificial delay on the "losing" gateway and actively closing the connections) , we could make sure that in case of multiple gateways they are not competing for the connections. Only with these modifications, we were able to successfully execute load tests with stable results in multi-gateway configuration.
+- In case of two gateways and many devices, we quickly run inot limitations that come from the fact, that IoT edge is actively managing a cache for each device that connects to it. For that it requires an active connection. Since IoT Hub only alows a single connection per device, multiple edge hubs will start competing for the connection on a high frequency. This results in (what we refer to) connection ping pong and limits scalability on the edge itself as well as the IoT Hub (throttling). We plan to improve the situation with connection afinity to preferred edge hubs in a subsequent release.
 
 The memory/CPU usage of a single IoT Edge host in gateway mode (for 900 devices) was fairly stable at around 1GB of memory used and an average CPU consumption of 40% on a Standard D2s v3 Debian 11 VM:
 
 ![gateway-mode-host-cpu-memory](..\..\images\lt-host-gateway-mode.png)
 
 ### January 21st 2022, load test of v2.0.0-beta1 in direct mode (ENABLE_GATEWAY=false)
+
+**Note** Direct mode is not recommended to be used in production. It has limitations that might make 
+it not suitable for production use as well as it is not written to guarantee message delivery. If 
+you use this, you may lose messages.
 
 This load test used the default deduplication strategy. First, we deployed two LNS on Standard D2s v3 Debian 11 VMs (2vCPU, 8GB of memory). We simulated 1600 OTAA devices, distributed among 8 factories with 4 concentrators each. All devices are in reach of all concentrators within the same factory and send 5 messages each, starting with a join rate of 1.5 messages per second and then progressively sending messages faster and faster (starting at 1.5 messages per second to pre-warm the cache and not hit IoT Hub S1 quota, and then successively increase the load to around 9.5 messages per second). Keep in mind that the effective message rate is higher than 9.5 messages per second, since every message is delivered to the gateways by the four concentrators per factory. The following bugs/issues became apparent in the load test:
 
