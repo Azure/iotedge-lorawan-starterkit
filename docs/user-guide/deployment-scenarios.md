@@ -54,7 +54,7 @@ within reach of that concentrator.
 | Device Twin   |Deduplication          |None           |
 | Device Twin   |GatewayId              |The Id of the Network Server |
 
-![Single Single](../images/scenarios/1_scale_and_availability.jpg)
+![Single concentrator - Single gateway](../images/scenarios/1_scale_and_availability.jpg)
 
 ### Multi concentrator with single LNS
 
