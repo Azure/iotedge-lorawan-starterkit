@@ -123,9 +123,9 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Connected_Factory_Load_Test_Scenario()
         {
-            const int numberOfFactories = 1;
+            const int numberOfFactories = 2;
             const double joinsPerSecond = 1.5;
-            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(1.5, old => old > 10 ? old : old + 2);
+            var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(1.5, old => old > 2 ? old : old + 2);
             const int numberOfLoops = 5;
             var stationsPerFactory = this.simulatedBasicsStations.Count / numberOfFactories;
 
