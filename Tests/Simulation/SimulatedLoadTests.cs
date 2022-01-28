@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Simulation
         }
 
         [Fact]
-        public async Task Ten_Devices_Sending_Messages_At_Same_Time()
+        public async Task Five_Devices_Sending_Messages_At_Same_Time()
         {
             // arrange
             const int messageCount = 2;

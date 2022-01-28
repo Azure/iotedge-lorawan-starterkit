@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Simulation
                 });
             }
 
-            for (var deviceId = 1100; deviceId <= 1110; deviceId++)
+            for (var deviceId = 1100; deviceId < 1105; deviceId++)
                 this.deviceRange1000_ABP.Add(CreateAbpDevice(deviceId));
 
             for (var deviceId = 2000; deviceId < 2000 + Configuration.NumberOfLoadTestDevices; deviceId++)
