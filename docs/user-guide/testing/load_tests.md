@@ -39,9 +39,8 @@ The memory/CPU usage of a single IoT Edge host in gateway mode (for 900 devices)
 
 ### January 21st 2022, load test of v2.0.0-beta1 in direct mode (ENABLE_GATEWAY=false)
 
-**Note** Direct mode is not recommended to be used in production. It has limitations that might make 
-it not suitable for production use as well as it is not written to guarantee message delivery. If 
-you use this, you may lose messages.
+!!! Warning
+    Direct mode is not recommended for production use, as it has limitations with respect to message delivery guarantees. If you decide to use this, you may lose messages.
 
 This load test used the default deduplication strategy. First, we deployed two LNS on Standard D2s v3 Debian 11 VMs (2vCPU, 8GB of memory). We simulated 1600 OTAA devices, distributed among 8 factories with 4 concentrators each. All devices are in reach of all concentrators within the same factory and send 5 messages each, starting with a join rate of 1.5 messages per second and then progressively sending messages faster and faster (starting at 1.5 messages per second to pre-warm the cache and not hit IoT Hub S1 quota, and then successively increase the load to around 9.5 messages per second). Keep in mind that the effective message rate is higher than 9.5 messages per second, since every message is delivered to the gateways by the four concentrators per factory. The following bugs/issues became apparent in the load test:
 
