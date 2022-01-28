@@ -69,7 +69,7 @@ concentrators.
 1. Low cost
 1. Partial redundancy: if the deployment is designed to ensure that each sensor can reach
 at least 2 concentrators, you get higher availability than with single/single.
-1. Reach: if you do deploy for reach, you can get a larger support a larger geographical
+1. Reach: if you deploy for reach, you can get a larger support a larger geographical
 deployment. To combine reach with availability, the cost will raise.
 
 #### Disadvantages
