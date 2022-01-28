@@ -93,9 +93,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
 
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.AppKey.Value);
 
             Assert.Equal(1, DeviceCache.RegistrationCount(joinAccept.DevAddr));
@@ -145,7 +145,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
-            Assert.Empty(PacketForwarder.DownlinkMessages);
+            Assert.Empty(DownstreamMessageSender.DownlinkMessages);
             Assert.Equal(LoRaDeviceRequestFailedReason.ReceiveWindowMissed, request.ProcessingFailedReason);
 
             // Device frame counts were not modified
@@ -332,8 +332,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             Assert.Equal(joinAccept.DevAddr.ToString(), afterJoinDevAddr);
 
@@ -430,8 +430,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             Assert.Equal(rx1DROffset, joinAccept.Rx1DrOffset);
             Assert.Equal(rx2datarate, joinAccept.Rx2Dr);
@@ -512,8 +512,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             if (rx2datarate is > DR0 and < DR8)
             {
@@ -536,7 +536,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
             Assert.NotNull(confirmedRequest.ResponseDownlink);
-            Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
+            Assert.Equal(2, DownstreamMessageSender.DownlinkMessages.Count);
 
             TestUtils.CheckDRAndFrequencies(request, downlinkMessage);
         }
@@ -624,7 +624,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             twin.Properties.Desired[TwinProperty.RX2DataRate] = 3;
             await Task.Delay(TimeSpan.FromMilliseconds(10));
 
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             Assert.Equal((DataRateIndex)afterJoinValues, joinAccept.Rx2Dr);
             Assert.Equal(afterJoinValues, joinAccept.Rx1DrOffset);
@@ -711,8 +711,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             if (rx1offset is > 0 and < 6)
             {
@@ -735,7 +735,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
             Assert.NotNull(confirmedRequest.ResponseDownlink);
-            Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
+            Assert.Equal(2, DownstreamMessageSender.DownlinkMessages.Count);
 
             var euRegion = RegionManager.EU868;
 
@@ -824,8 +824,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             if (rxDelay is >= 0 and < 16)
             {
@@ -848,7 +848,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
             Assert.NotNull(confirmedRequest.ResponseDownlink);
-            Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
+            Assert.Equal(2, DownstreamMessageSender.DownlinkMessages.Count);
         }
     }
 }

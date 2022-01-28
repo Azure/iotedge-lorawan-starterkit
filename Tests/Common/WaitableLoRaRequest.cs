@@ -29,8 +29,8 @@ namespace LoRaWan.Tests.Common
             : base(payload)
         { }
 
-        private WaitableLoRaRequest(RadioMetadata radioMetadata, IPacketForwarder packetForwarder, DateTime startTime)
-            : base(radioMetadata, packetForwarder, startTime)
+        private WaitableLoRaRequest(RadioMetadata radioMetadata, IDownstreamMessageSender downstreamMessageSender, DateTime startTime)
+            : base(radioMetadata, downstreamMessageSender, startTime)
         { }
 
         /// <summary>
@@ -43,28 +43,29 @@ namespace LoRaWan.Tests.Common
         /// Creates a WaitableLoRaRequest that uses a deterministic time handler.
         /// </summary>
         /// <param name="rxpk">Rxpk instance.</param>
-        /// <param name="packetForwarder">PacketForwarder instance.</param>
+        /// <param name="downstreamMessageSender">DownstreamMessageSender instance.</param>
         /// <param name="startTimeOffset">Is subtracted from the current time to determine the start time for the deterministic time watcher. Default is TimeSpan.Zero.</param>
         /// <param name="constantElapsedTime">Controls how much time is elapsed when querying the time watcher. Default is TimeSpan.Zero.</param>
         /// <param name="useRealTimer">Allows you to opt-in to use a real, non-deterministic time watcher.</param>
         public static WaitableLoRaRequest Create(RadioMetadata radioMetadata,
                                                  LoRaPayload loRaPayload,
-                                                 IPacketForwarder packetForwarder = null,
+                                                 IDownstreamMessageSender downstreamMessageSender = null,
                                                  TimeSpan? startTimeOffset = null,
                                                  TimeSpan? constantElapsedTime = null,
                                                  bool useRealTimer = false,
                                                  Region region = null) =>
-            Create(radioMetadata, LoRaEnumerable.RepeatInfinite(constantElapsedTime ?? TimeSpan.Zero), packetForwarder, startTimeOffset, useRealTimer, loRaPayload, region: region);
+            Create(radioMetadata, LoRaEnumerable.RepeatInfinite(constantElapsedTime ?? TimeSpan.Zero), downstreamMessageSender, startTimeOffset, useRealTimer, loRaPayload, region: region);
 
         /// <summary>
         /// Creates a WwaitableLoRaRequest that is configured to miss certain receive windows.
         /// </summary>
         /// <param name="rxpk">Rxpk instance.</param>
-        /// <param name="packetForwarder">PacketForwarder instance.</param>
+        /// <param name="downstreamMessageSender">DownstreamMessageSender instance.</param>
         /// <param name="inTimeForC2DMessageCheck">If set to true it ensures that processing is fast enough that C2D messages can be checked.</param>
         /// <param name="inTimeForAdditionalMessageCheck">If set to true it ensures that processing is fast enough that additional C2D messages can be checked.</param>
         /// <param name="inTimeForDownlinkDelivery">If set to true it ensures that processing is fast enough that C2D messages can be checked.</param>
-        public static WaitableLoRaRequest Create(RadioMetadata radioMetadata, IPacketForwarder packetForwarder,
+        public static WaitableLoRaRequest Create(RadioMetadata radioMetadata,
+                                                 IDownstreamMessageSender downstreamMessageSender,
                                                  bool inTimeForC2DMessageCheck,
                                                  bool inTimeForAdditionalMessageCheck,
                                                  bool inTimeForDownlinkDelivery,
@@ -73,24 +74,24 @@ namespace LoRaWan.Tests.Common
             var c2dMessageCheckTimeSpan = inTimeForC2DMessageCheck ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
             var additionalMessageCheckTimeSpan = inTimeForAdditionalMessageCheck ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
             var downlinkDeliveryTimeSpan = inTimeForDownlinkDelivery ? TimeSpan.FromMilliseconds(10) : TimeSpan.FromSeconds(10);
-            return Create(radioMetadata, new[] { c2dMessageCheckTimeSpan, c2dMessageCheckTimeSpan, additionalMessageCheckTimeSpan, downlinkDeliveryTimeSpan }, packetForwarder: packetForwarder, loRaPayload: loRaPayloadData);
+            return Create(radioMetadata, new[] { c2dMessageCheckTimeSpan, c2dMessageCheckTimeSpan, additionalMessageCheckTimeSpan, downlinkDeliveryTimeSpan }, downstreamMessageSender: downstreamMessageSender, loRaPayload: loRaPayloadData);
         }
         public static WaitableLoRaRequest CreateWaitableRequest(LoRaPayload loRaPayload,
-                                                           IPacketForwarder packetForwarder = null) =>
+                                                           IDownstreamMessageSender downstreamMessageSender = null) =>
            Create(TestUtils.GenerateTestRadioMetadata(),
-                                 loRaPayload,
-                                 packetForwarder);
+                  loRaPayload,
+                  downstreamMessageSender);
 
         private static WaitableLoRaRequest Create(RadioMetadata radioMetadata,
                                                   IEnumerable<TimeSpan> elapsedTimes,
-                                                  IPacketForwarder packetForwarder = null,
+                                                  IDownstreamMessageSender downstreamMessageSender = null,
                                                   TimeSpan? startTimeOffset = null,
                                                   bool useRealTimer = false,
                                                   LoRaPayload loRaPayload = null,
                                                   Region region = null)
         {
             var request = new WaitableLoRaRequest(radioMetadata,
-                                                  packetForwarder ?? new TestPacketForwarder(),
+                                                  downstreamMessageSender ?? new TestDownstreamMessageSender(),
                                                   DateTime.UtcNow.Subtract(startTimeOffset ?? TimeSpan.Zero));
             var effectiveRegion = region ?? TestUtils.TestRegion;
             request.SetRegion(effectiveRegion);

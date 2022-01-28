@@ -22,11 +22,11 @@ namespace LoRaWan.Tests.Integration
     // Parallel message processing
     public class ParallelProcessingTests : MessageProcessorTestBase
     {
-        private readonly TestPacketForwarder packetForwarder;
+        private readonly TestDownstreamMessageSender downstreamMessageSender;
 
         public ParallelProcessingTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
-            this.packetForwarder = new TestPacketForwarder();
+            this.downstreamMessageSender = new TestDownstreamMessageSender();
         }
 
         public static IEnumerable<object[]> Multiple_ABP_Messages()
@@ -209,15 +209,15 @@ namespace LoRaWan.Tests.Integration
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
             var unconfirmedMessage3 = simulatedDevice.CreateUnconfirmedDataUpMessage("3", fcnt: 3);
 
-            var req1 = CreateWaitableRequest(unconfirmedMessage1, this.packetForwarder);
+            var req1 = CreateWaitableRequest(unconfirmedMessage1, this.downstreamMessageSender);
             messageDispatcher.DispatchRequest(req1);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 
-            var req2 = CreateWaitableRequest(unconfirmedMessage2, this.packetForwarder);
+            var req2 = CreateWaitableRequest(unconfirmedMessage2, this.downstreamMessageSender);
             messageDispatcher.DispatchRequest(req2);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 
-            var req3 = CreateWaitableRequest(unconfirmedMessage3, this.packetForwarder);
+            var req3 = CreateWaitableRequest(unconfirmedMessage3, this.downstreamMessageSender);
             messageDispatcher.DispatchRequest(req3);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 

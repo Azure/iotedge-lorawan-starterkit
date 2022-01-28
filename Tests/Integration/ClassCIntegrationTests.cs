@@ -113,7 +113,7 @@ namespace LoRaWan.Tests.Integration
             var classCSender = new DefaultClassCDevicesMessageSender(
                 ServerConfiguration,
                 deviceRegistry,
-                PacketForwarder,
+                DownstreamMessageSender,
                 FrameCounterUpdateStrategyProvider,
                 new TestOutputLogger<DefaultClassCDevicesMessageSender>(this.testOutputHelper),
                 TestMeter.Instance);
@@ -135,8 +135,8 @@ namespace LoRaWan.Tests.Integration
             }
 
             Assert.True(await classCSender.SendAsync(c2d));
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downstreamMsg = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downstreamMsg = DownstreamMessageSender.DownlinkMessages[0];
 
             var downstreamPayloadBytes = downstreamMsg.Data;
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
@@ -218,7 +218,7 @@ namespace LoRaWan.Tests.Integration
             var classCSender = new DefaultClassCDevicesMessageSender(
                 ServerConfiguration,
                 deviceRegistry,
-                PacketForwarder,
+                DownstreamMessageSender,
                 FrameCounterUpdateStrategyProvider,
                 new TestOutputLogger<DefaultClassCDevicesMessageSender>(this.testOutputHelper),
                 TestMeter.Instance);
@@ -238,8 +238,8 @@ namespace LoRaWan.Tests.Integration
             }
 
             Assert.True(await classCSender.SendAsync(c2d));
-            Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
-            var downstreamMsg = PacketForwarder.DownlinkMessages[1];
+            Assert.Equal(2, DownstreamMessageSender.DownlinkMessages.Count);
+            var downstreamMsg = DownstreamMessageSender.DownlinkMessages[1];
 
             TestLogger.Log($"appSKey: {simDevice.AppSKey}, nwkSKey: {simDevice.NwkSKey}");
 

@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Integration
     {
         private const string ServerGatewayID = "test-gateway";
 
-        private TestPacketForwarder PacketForwarder { get; }
+        private TestDownstreamMessageSender DownstreamMessageSender { get; }
 
         private readonly NetworkServerConfiguration serverConfiguration;
         private readonly Region loRaRegion;
@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Integration
             };
 
             this.loRaRegion = RegionManager.EU868;
-            PacketForwarder = new TestPacketForwarder();
+            DownstreamMessageSender = new TestDownstreamMessageSender();
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
@@ -123,7 +123,7 @@ namespace LoRaWan.Tests.Integration
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                PacketForwarder,
+                DownstreamMessageSender,
                 this.frameCounterStrategyProvider,
                 this.testOutputLoggerFactory.CreateLogger<DefaultClassCDevicesMessageSender>(),
                 TestMeter.Instance);
@@ -133,14 +133,14 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await target.SendAsync(c2d));
 
             // Verify that exactly one C2D message was received
-            Assert.Single(PacketForwarder.DownlinkMessages);
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
 
             // Verify donwlink message is correct
             EnsureDownlinkIsCorrect(
-                PacketForwarder.DownlinkMessages.First(), simulatedDevice, c2d);
+                DownstreamMessageSender.DownlinkMessages.First(), simulatedDevice, c2d);
 
             // Get C2D message payload
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(simulatedDevice.AppSKey.Value);
 
@@ -208,7 +208,7 @@ namespace LoRaWan.Tests.Integration
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                PacketForwarder,
+                DownstreamMessageSender,
                 this.frameCounterStrategyProvider,
                 this.testOutputLoggerFactory.CreateLogger<DefaultClassCDevicesMessageSender>(),
                 TestMeter.Instance);
@@ -218,7 +218,7 @@ namespace LoRaWan.Tests.Integration
             Assert.False(await target.SendAsync(c2d));
 
             // Verify that exactly one C2D message was received
-            Assert.Empty(PacketForwarder.DownlinkMessages);
+            Assert.Empty(DownstreamMessageSender.DownlinkMessages);
 
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();

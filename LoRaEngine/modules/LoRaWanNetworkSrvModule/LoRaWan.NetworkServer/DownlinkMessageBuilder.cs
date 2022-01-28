@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer
                 // The logic for passing CN470 join channel will change as part of #561
                 if (!loRaRegion.TryGetDownstreamChannelFrequency(radioMetadata.Frequency, upstreamDataRate: radioMetadata.DataRate, deviceJoinInfo: deviceJoinInfo, downstreamFrequency: out freq))
                 {
-                    logger.LogError("there was a problem in setting the frequency in the downstream message packet forwarder settings");
+                    logger.LogError("there was a problem in setting the frequency in the downstream message settings");
                     return new DownlinkMessageBuilderResponse(null, false, receiveWindow);
                 }
             }

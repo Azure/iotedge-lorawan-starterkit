@@ -8,11 +8,11 @@ namespace LoRaWan.Tests.Common
     using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
 
-    public class TestPacketForwarder : IPacketForwarder
+    public class TestDownstreamMessageSender : IDownstreamMessageSender
     {
         public IList<DownlinkMessage> DownlinkMessages { get; }
 
-        public TestPacketForwarder()
+        public TestDownstreamMessageSender()
         {
             DownlinkMessages = new List<DownlinkMessage>();
         }

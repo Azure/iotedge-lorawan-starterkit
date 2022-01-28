@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaTools.LoRaPhysical;
     using Microsoft.Extensions.Logging;
 
-    internal class DownstreamSender : IPacketForwarder
+    internal class DownstreamMessageSender : IDownstreamMessageSender
     {
         private static readonly Action<ILogger, StationEui, int, string, Exception> LogSendingMessage =
             LoggerMessage.Define<StationEui, int, string>(LogLevel.Debug, default,
@@ -21,12 +21,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
-        private readonly ILogger<DownstreamSender> logger;
+        private readonly ILogger<DownstreamMessageSender> logger;
         private readonly Random random = new Random();
 
-        public DownstreamSender(WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
-                                IBasicsStationConfigurationService basicsStationConfigurationService,
-                                ILogger<DownstreamSender> logger)
+        public DownstreamMessageSender(WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
+                                       IBasicsStationConfigurationService basicsStationConfigurationService,
+                                       ILogger<DownstreamMessageSender> logger)
         {
             this.socketWriterRegistry = socketWriterRegistry;
             this.basicsStationConfigurationService = basicsStationConfigurationService;
@@ -93,7 +93,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                     writer.WriteNumber("xtime", message.Xtime);
                     break;
                 case LoRaDeviceClassType.B:
-                    throw new NotSupportedException($"{nameof(DownstreamSender)} does not support class B devices yet.");
+                    throw new NotSupportedException($"{nameof(DownstreamMessageSender)} does not support class B devices yet.");
                 case LoRaDeviceClassType.C:
                     // if Xtime is not zero, it means that we are answering to a previous message
                     if (message.Xtime != 0)
