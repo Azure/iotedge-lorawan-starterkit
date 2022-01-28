@@ -24,9 +24,9 @@ We ran a set of load tests to ensure that we can support a certain amount of LoR
 | true                      | S1          | 2             | 80                | 2                         | 6              | 1680                | 2                      | 650                            |                                                              |
 | false                     | S1          | 2             | 120               | 2                         | -              | -                   | -                      | -                              |                                                              |
 | true                      | S1          | 1             | 140               | 4                         | 10             | 2940                | 0                      | 500                            |                                                              |
-| true                      | S3          | 1             | 900               | 4                         | 15             | 5400                | 0                      | 500                            |                                                              |
+| true                      | S3          | 1             | 900               | 4                         | 25             | 7200                | 0                      | 500                            |                                                              |
 | false                     | S3          | 1             | 1100              | 4                         | -              | -                   | -                      | -                              |                                                              |
-| true (with modifications) | S3          | 2             | 900               | 2                         | 16             | 4000                | 3                      | -                              | Required us to actively drop connections on the idle gateway (per device) |
+| true (with modifications) | S3          | 2             | 500               | 2                         | 15             | 4000                | -                      | 400                            | Required us to actively drop connections on the idle gateway (per device) |
 
 Issues encountered in these load tests:
 
