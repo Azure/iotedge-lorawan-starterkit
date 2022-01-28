@@ -14,9 +14,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Moq.Protected;
     using Xunit;
 
-    public sealed class LoRaDeviceFactoryTest : IDisposable
+    public sealed class LoRaDeviceFactoryTest
     {
-        private readonly Meter meter = new Meter(MetricRegistry.Namespace, MetricRegistry.Version);
         private readonly CancellationToken cancellationToken = CancellationToken.None;
 
         [Fact]
@@ -50,7 +49,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
             using var cache = CreateDefaultCache();
-            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, meter: this.meter);
+            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, meter: TestMeter.Instance);
 
             var device = await factory.CreateAndRegisterAsync(DefaultDeviceInfo, this.cancellationToken);
 
@@ -66,7 +65,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
             using var cache = CreateDefaultCache();
-            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, x => x.Object.GatewayID = "OtherGw", this.meter);
+            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, x => x.Object.GatewayID = "OtherGw", TestMeter.Instance);
 
             var device = await factory.CreateAndRegisterAsync(DefaultDeviceInfo, this.cancellationToken);
 
@@ -79,7 +78,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
             using var cache = CreateDefaultCache();
-            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, x => x.Setup(y => y.InitializeAsync(DefaultConfiguration, this.cancellationToken)).ReturnsAsync(false), this.meter);
+            var factory = new TestDeviceFactory(DefaultConfiguration, connectionManager.Object, cache, x => x.Setup(y => y.InitializeAsync(DefaultConfiguration, this.cancellationToken)).ReturnsAsync(false), TestMeter.Instance);
             await Assert.ThrowsAsync<LoRaProcessingException>(() => factory.CreateAndRegisterAsync(DefaultDeviceInfo, this.cancellationToken));
 
             Assert.False(cache.TryGetByDevEui(this.DefaultDeviceInfo.DevEUI, out _));
@@ -91,11 +90,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         private static LoRaDeviceCache CreateDefaultCache()
             => LoRaDeviceCacheDefault.CreateDefault();
-
-        public void Dispose()
-        {
-            this.meter.Dispose();
-        }
 
         private readonly IoTHubDeviceInfo DefaultDeviceInfo = new IoTHubDeviceInfo
         {
