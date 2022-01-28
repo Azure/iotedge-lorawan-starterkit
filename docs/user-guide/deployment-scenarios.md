@@ -27,7 +27,7 @@ updates](station-firmware-upgrade.md) for example.
 ### Single conentrator with single LNS
 
 This is the most basic deployment you can chose. It does only deploy 1 concentrator
-per and one network server. Each sensor can at most reach a single concentrator.
+and one network server. Each sensor can at most reach a single concentrator.
 
 #### Advantages
 
