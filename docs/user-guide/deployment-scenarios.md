@@ -88,7 +88,7 @@ The result in the worst case is lost of messages.
 
 ![Multi Single](../images/scenarios/2_scale_and_availability.jpg)
 
-### Multi concentrator with Multi LNS
+### Multiple concentrator with Multiple LNS
 
 Multiple concentrators are deployed that reach multiple LNS (*note* one concentrator
 can only be connected to a single LNS). Each sensor can reach one or multiple concentrators. Depending on the goal of the deployment (availability and/or reach).
