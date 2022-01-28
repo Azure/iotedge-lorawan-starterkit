@@ -97,9 +97,10 @@ namespace LoRaWan.Tests.Simulation
             for (var deviceId = 4000; deviceId < 4000 + Configuration.NumberOfLoadTestDevices; deviceId++)
                 this.deviceRange4000_OTAA_FullLoad.Add(CreateOtaaDevice(deviceId));
 
-            DeviceRange6000_OTAA_FullLoad = Enumerable.Range(6000, Configuration.NumberOfLoadTestDevices)
-                                                      .Select(deviceId => CreateOtaaDevice(deviceId))
-                                                      .ToList();
+            DeviceRange6000_OTAA_FullLoad =
+                Enumerable.Range(6000, Configuration.NumberOfLoadTestDevices)
+                          .Select(deviceId => CreateOtaaDevice(deviceId))
+                          .ToList();
 
             DeviceRange9000_OTAA_FullLoad_DuplicationDrop =
                 Enumerable.Range(9000, Configuration.NumberOfLoadTestDevices)
