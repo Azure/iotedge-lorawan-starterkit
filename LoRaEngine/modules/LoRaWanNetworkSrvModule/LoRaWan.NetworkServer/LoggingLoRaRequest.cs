@@ -54,11 +54,12 @@ namespace LoRaWan.NetworkServer
 
         private void TrackProcessingTime()
         {
+            var elapsedTime = DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime);
+            this.d2cMessageDeliveryLatencyHistogram?.Record(elapsedTime.TotalMilliseconds);
+
             if (!this.logger.IsEnabled(LogLevel.Debug))
                 return;
 
-            var elapsedTime = DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime);
-            this.d2cMessageDeliveryLatencyHistogram?.Record(elapsedTime.TotalMilliseconds);
             this.logger.LogDebug($"processing time: {elapsedTime}");
         }
 

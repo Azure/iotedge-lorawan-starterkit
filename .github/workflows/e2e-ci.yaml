@@ -419,6 +419,7 @@ jobs:
       INTEGRATIONTEST_RunningInCI: true
       INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ secrets.LOAD_TEST_LNS_ENDPOINTS }}
       INTEGRATIONTEST_NumberOfLoadTestDevices: 10
+      INTEGRATIONTEST_NumberOfLoadTestConcentrators: 2
 
     steps:
     - uses: actions/checkout@v2

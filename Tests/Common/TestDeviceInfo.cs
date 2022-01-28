@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Common
 
         public bool Supports32BitFCnt { get; set; }
 
-        public string Deduplication { get; set; }
+        public DeduplicationMode Deduplication { get; set; }
 
         public ushort RXDelay { get; set; }
 
@@ -114,7 +114,7 @@ namespace LoRaWan.Tests.Common
             // if (KeepAliveTimeout > 0)
             desiredProperties[TwinProperty.KeepAliveTimeout] = KeepAliveTimeout;
 
-            if (!string.IsNullOrEmpty(Deduplication))
+            if (Deduplication is not DeduplicationMode.None)
                 desiredProperties[TwinProperty.Deduplication] = Deduplication;
 
             return desiredProperties;
