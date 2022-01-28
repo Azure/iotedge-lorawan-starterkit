@@ -292,11 +292,11 @@ namespace LoRaWan.Tests.Common
                 {
                     try
                     {
-                        var joinAcceptResponse = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
-                        // PDU is null in case it is another message coming from the station.
-                        if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && DevEui.Parse(someJoinAcceptResponse.DevEuiString) == DevEUI)
+                        if (JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value)
+                            // PDU is null in case it is another message coming from the station.
+                            is ({ } pdu, var devEuiString) && DevEui.Parse(devEuiString) == DevEUI)
                         {
-                            var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(somePdu), AppKey.Value);
+                            var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(pdu), AppKey.Value);
                             tcs.SetResult(HandleJoinAccept(joinAccept));
                         }
                     }
