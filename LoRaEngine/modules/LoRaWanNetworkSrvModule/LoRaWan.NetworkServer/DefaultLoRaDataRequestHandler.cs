@@ -189,12 +189,10 @@ namespace LoRaWan.NetworkServer
                 {
                     fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
-                    // Failed to update the fcnt down
-                    // In multi gateway scenarios it means another gateway has won the race to handle this message, can stop now
-                    if (fcntDown <= 0)
-                    {
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
-                    }
+                    var result = HandleFrameCounterDownResult(fcntDown, loRaDevice, ref skipDownstreamToAvoidCollisions);
+
+                    if (result != null)
+                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, result.Value);
                 }
                 #endregion
 
@@ -245,10 +243,10 @@ namespace LoRaWan.NetworkServer
                     {
                         fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
-                        if (!fcntDown.HasValue || fcntDown <= 0)
-                        {
-                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
-                        }
+                        var result = HandleFrameCounterDownResult(fcntDown, loRaDevice, ref skipDownstreamToAvoidCollisions);
+
+                        if (result != null)
+                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, result.Value);
 
                         requiresConfirmation = true;
                     }
@@ -759,6 +757,9 @@ namespace LoRaWan.NetworkServer
 
         private void LogNotNullFrameCounterDownState(LoRaDevice loRaDevice, uint? newFcntDown)
         {
+            if (!newFcntDown.HasValue)
+                return;
+
             if (newFcntDown <= 0)
             {
                 this.logger.LogDebug("another gateway has already sent ack or downlink msg");
@@ -767,6 +768,32 @@ namespace LoRaWan.NetworkServer
             {
                 this.logger.LogDebug($"down frame counter: {loRaDevice.FCntDown}");
             }
+        }
+
+        /// <summary>
+        /// Handles the result of frame counter down, depending on the <code>DeduplicationMode</code> used.
+        /// Specifically, for invalid frame counter down:
+        /// - when mode is Drop, we do not send the message upstream nor downstream
+        /// - when mode is Mark or None, we allow upstream but skip downstream to avoid collisions
+        /// </summary>
+        /// <param name="skipDownstreamToAvoidCollisions">boolean that is used while deciding to send messages downstream</param>
+        /// <returns><code>LoRaDeviceRequestFailedReason</code> when Drop, otherwise null</returns>
+        private static LoRaDeviceRequestFailedReason? HandleFrameCounterDownResult(uint? fcntDown, LoRaDevice loRaDevice, ref bool skipDownstreamToAvoidCollisions)
+        {
+            LoRaDeviceRequestFailedReason? result = null;
+
+            if (fcntDown <= 0)
+            {
+                // Failed to update the fcnt down:
+                // This can only happen in multi gateway scenarios and
+                // it means that another gateway has won the race to handle this message.
+                if (loRaDevice.Deduplication == DeduplicationMode.Drop)
+                    result = LoRaDeviceRequestFailedReason.HandledByAnotherGateway;
+                else
+                    skipDownstreamToAvoidCollisions = true;
+            }
+
+            return result;
         }
 
         protected virtual async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
@@ -840,8 +867,8 @@ namespace LoRaWan.NetworkServer
         /// <param name="payloadFcnt"></param>
         /// <param name="loRaDevice"></param>
         /// <param name="isConfirmedResubmit"><code>True</code> when it's a confirmation resubmit.</param>
-        /// <param name="result">When request is not valid, indicates the reason.</param>
-        /// <returns><code>True</code> when the provided request is valid, false otherwise.</returns>
+        /// <returns><code>LoRaDeviceRequestFailedReason</code> when the provided request is
+        /// invalid, otherwise null.</returns>
         internal virtual LoRaDeviceRequestFailedReason? ValidateRequest(LoRaPayloadData payload, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, ConcentratorDeduplicationResult concentratorDeduplicationResult, out bool isConfirmedResubmit)
         {
             isConfirmedResubmit = false;
@@ -849,7 +876,7 @@ namespace LoRaWan.NetworkServer
             if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
             {
                 // most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
-                if (payload.RequiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
+                if (payload.RequiresConfirmation && payloadFcnt == loRaDevice.FCntUp && (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate or ConcentratorDeduplicationResult.DuplicateDueToResubmission))
                 {
                     if (!loRaDevice.ValidateConfirmResubmit(payloadFcnt))
                     {
