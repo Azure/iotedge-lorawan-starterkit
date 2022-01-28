@@ -93,7 +93,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = MessageDispatcher.Create(
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -198,7 +198,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = MessageDispatcher.Create(
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);

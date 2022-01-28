@@ -55,7 +55,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = MessageDispatcher.Create(
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -186,7 +186,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = MessageDispatcher.Create(
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -286,7 +286,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = MessageDispatcher.Create(
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -426,7 +426,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = MessageDispatcher.Create(
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);

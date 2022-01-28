@@ -54,12 +54,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(ServerConfiguration, cache2, SecondLoRaDeviceApi.Object, SecondLoRaDeviceFactory, loraDeviceCache2);
 
             // Send to message processor
-            using var messageProcessor1 = new MessageDispatcher(
+            using var messageProcessor1 = MessageDispatcher.Create(
                 ServerConfiguration,
                 loRaDeviceRegistry1,
                 FrameCounterUpdateStrategyProvider);
 
-            using var messageProcessor2 = new MessageDispatcher(
+            using var messageProcessor2 = MessageDispatcher.Create(
                 SecondServerConfiguration,
                 loRaDeviceRegistry2,
                 SecondFrameCounterUpdateStrategyProvider);

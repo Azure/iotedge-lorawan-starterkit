@@ -23,9 +23,6 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<MessageDispatcher> logger;
         private readonly Histogram<double> d2cMessageDeliveryLatencyHistogram;
 
-        private static readonly IMemoryCache testMemoryCache = new MemoryCache(new MemoryCacheOptions());
-        private static readonly IConcentratorDeduplication concentratorDeduplication = new ConcentratorDeduplication(testMemoryCache, NullLogger<IConcentratorDeduplication>.Instance);
-
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry deviceRegistry,
@@ -50,17 +47,21 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Use this constructor only for tests.
+        /// Use this only for tests.
         /// </summary>
-        internal MessageDispatcher(NetworkServerConfiguration configuration,
-                                   ILoRaDeviceRegistry deviceRegistry,
-                                   ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
-            : this(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
+        internal static MessageDispatcher Create(NetworkServerConfiguration configuration,
+                                                 ILoRaDeviceRegistry deviceRegistry,
+                                                 ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
+        {
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var concentratorDeduplication = new ConcentratorDeduplication(memoryCache, NullLogger<IConcentratorDeduplication>.Instance);
+
+            return new MessageDispatcher(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
                    new JoinRequestMessageHandler(configuration, concentratorDeduplication, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance, null),
                    NullLoggerFactory.Instance,
                    NullLogger<MessageDispatcher>.Instance,
-                   null)
-        { }
+                   null);
+        }
 
         /// <summary>
         /// Dispatches a request.
