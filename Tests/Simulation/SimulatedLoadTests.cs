@@ -163,28 +163,21 @@ namespace LoRaWan.Tests.Simulation
 
             // Join OTAA devices
             this.logger.LogInformation("Starting join phase at {Timestamp}.", DateTime.UtcNow);
-            await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices, joinsPerSecond)
-                               select JoinAsync(taskAndOffset.Element, taskAndOffset.Offset));
 
-            static async Task JoinAsync(SimulatedDevice simulatedDevice, TimeSpan offset)
-            {
-                await Task.Delay(offset);
-                Assert.True(await simulatedDevice.JoinAsync(), $"OTAA join for device {simulatedDevice.LoRaDevice.DeviceID} failed.");
-            }
+            await ScheduleForEachAsync(devices, Intervals(TimeSpan.FromSeconds(1) / joinsPerSecond),
+                                       async d => Assert.True(await d.JoinAsync(), $"OTAA join for device {d.LoRaDevice.DeviceID} failed."));
 
             // Send messages
             foreach (var (cycle, messageRate) in messagesPerSecond.Take(numberOfLoops).Index(1))
             {
                 this.logger.LogInformation("Running cycle {Cycle} of {TotalNumberOfCycles} at {Timestamp}.", cycle, numberOfLoops, DateTime.UtcNow);
-                await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices, messageRate)
-                                   select SendUpstreamAsync(taskAndOffset.Element, taskAndOffset.Offset));
-            }
 
-            async Task SendUpstreamAsync(SimulatedDevice simulatedDevice, TimeSpan offset)
-            {
-                await Task.Delay(offset);
-                using var request = CreateConfirmedUpstreamMessage(simulatedDevice);
-                await simulatedDevice.SendDataMessageAsync(request);
+                await ScheduleForEachAsync(devices, Intervals(TimeSpan.FromSeconds(1) / messageRate),
+                                           async d =>
+                                           {
+                                               using var request = CreateConfirmedUpstreamMessage(d);
+                                               await d.SendDataMessageAsync(request);
+                                           });
             }
 
             stopwatch.Stop();
@@ -195,11 +188,13 @@ namespace LoRaWan.Tests.Simulation
             await AssertIotHubMessageCountsAsync(devices, numberOfLoops, 1 / (double)numberOfFactories);
             AssertMessageAcknowledgements(devices, numberOfLoops + 1);
 
-            static IEnumerable<(T Element, TimeSpan Offset)> DistributeEvenly<T>(ICollection<T> input, double rate)
-            {
-                var stepTime = TimeSpan.FromSeconds(1) / rate;
-                return input.Index().Select(el => (el.Value, el.Key * stepTime));
-            }
+            static IEnumerable<TimeSpan> Intervals(TimeSpan step, TimeSpan? initial = null) =>
+                MoreLinq.MoreEnumerable.Generate(initial ?? TimeSpan.Zero, ts => ts + step);
+
+            static Task ScheduleForEachAsync<T>(IEnumerable<T> input,
+                                                IEnumerable<TimeSpan> intervals,
+                                                Func<T, Task> action) =>
+                Task.WhenAll(input.Zip(intervals, async (e, d) => { await Task.Delay(d); await action(e); }));
         }
 
         // Scenario:
