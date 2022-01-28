@@ -31,7 +31,7 @@ We ran a set of load tests to ensure that we can support a certain amount of LoR
 Issues encountered in these load tests:
 
 - [Unexpected ObjectDisposedException when IoT Hub is throttling · Issue #6042 · Azure/iotedge (github.com)](https://github.com/Azure/iotedge/issues/6042)
-- In case of two gateways and many devices, we quickly run inot limitations that come from the fact, that IoT edge is actively managing a cache for each device that connects to it. For that it requires an active connection. Since IoT Hub only alows a single connection per device, multiple edge hubs will start competing for the connection on a high frequency. This results in (what we refer to) connection ping pong and limits scalability on the edge itself as well as the IoT Hub (throttling). We plan to improve the situation with connection afinity to preferred edge hubs in a subsequent release.
+- In case of two gateways and many devices, we quickly run into limitations that come from the fact that IoT Edge is actively managing a cache for each device that connects to it, for which it requires an active connection. Since IoT Hub only allows a single connection per device, multiple Edge Hubs will start competing for the connection on a high frequency. This results in (what we refer to as) connection ping pong and limits scalability on the Edge itself as well as the IoT Hub (throttling). We plan to improve the situation by introducing connection affinity to preferred Edge Hubs in a subsequent release.
 
 The memory/CPU usage of a single IoT Edge host in gateway mode (for 900 devices) was fairly stable at around 1GB of memory used and an average CPU consumption of 40% on a Standard D2s v3 Debian 11 VM:
 
