@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Simulation
                     AppKey = GetAppKey(deviceId),
                     IsIoTHubDevice = true,
                     SensorDecoder = "DecoderValueSensor",
-                    Deduplication = deduplicationMode is { } someDeduplicationMode ? someDeduplicationMode.ToString() : null
+                    Deduplication = deduplicationMode?.ToString()
                 };
         }
 
