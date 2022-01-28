@@ -1542,7 +1542,7 @@
 <li>In case of two gateways and many devices, we quickly run into limitations that come from the fact that IoT Edge is actively managing a cache for each device that connects to it, for which it requires an active connection. Since IoT Hub only allows a single connection per device, multiple Edge Hubs will start competing for the connection on a high frequency. This results in (what we refer to as) connection ping pong and limits scalability on the Edge itself as well as the IoT Hub (throttling). We plan to improve the situation by introducing connection affinity to preferred Edge Hubs in a subsequent release.</li>
 </ul>
 <p>The memory/CPU usage of a single IoT Edge host in gateway mode (for 900 devices) was fairly stable at around 1GB of memory used and an average CPU consumption of 40% on a Standard D2s v3 Debian 11 VM:</p>
-<p><img alt="gateway-mode-host-cpu-memory" src="....\images\lt-host-gateway-mode.png" /></p>
+<p><img alt="gateway-mode-host-cpu-memory" src="../../../images/lt-host-gateway-mode.png" /></p>
 <h3 id="january-21st-2022-load-test-of-v200-beta1-in-direct-mode-enable_gatewayfalse">January 21st 2022, load test of v2.0.0-beta1 in direct mode (ENABLE_GATEWAY=false)</h3>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -1559,9 +1559,9 @@
 <p>In addition to these issues, for which we will not provide more details here, we discuss several performance/health indicators.</p>
 <p><strong>Unhandled exceptions</strong>: For a total of ca. 10k messages sent, all exceptions that we saw (ca. 48) were caused by one of the issues mentioned above.</p>
 <p><strong>D2CMessageDeliveryLatency</strong>: The D2C message delivery latency took a distinct shape for the three phases: in the join phase, the average processing time was ca. 100ms, then for the first round of messages (cache pre-warming) the average delivery/response time was ca. 800ms on the gateway winning the race. As soon as the cache was warm, the response time dropped to ca. 450ms. <strong>No receive windows were missed for all ca. 10k messages.</strong></p>
-<p><img alt="image-20220124131449660" src="....\images\lt-message-latency.png" /></p>
+<p><img alt="d2c-delivery-latency" src="../../../images/lt-message-latency.png" /></p>
 <p><strong>Memory and CPU usage</strong>: CPU usage was fairly stable, while memory was staying between 100 and 130MB for the LNS during the entire load test. To ensure that we do not have a memory leak, we ran a longer load test over the course of several hours, during which memory was bounded at ca. 200MB and analysis of the Heap Dump revealed that the largest contributor to the Gen 2 Heap were the device connections (as expected), which the LNS manages in an internal cache.</p>
-<p><img alt="host-stats" src="....\images\lt-host-stats.png" /></p>
+<p><img alt="host-stats" src="../../../images/lt-host-stats.png" /></p>
 <p><strong>January 24th, 2022 load test of v2.0.0-beta1 (ENABLE_GATEWAY=false).</strong> This load test was for deduplication strategy drop, the same parameters as the January 21st load test, except that we send seven messages per device, ending at 13.5 messages per second (giving a total of 12800 messages in one hour). The analysis was identical to the January 21st load test, there were no new findings and observations match everything we saw before.</p>
 
   <hr>
@@ -1569,11 +1569,11 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-28T13:35:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-28</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-28T13:59:29+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-28</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-28T13:35:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-28</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-28T13:59:29+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-28</span>
       
     
   </small>
