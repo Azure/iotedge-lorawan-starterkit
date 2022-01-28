@@ -53,6 +53,7 @@ within reach of that concentrator.
 | Device Twin   |KeepAliveTimeout       |undefined or 0 |
 | Device Twin   |Deduplication          |None           |
 | Device Twin   |GatewayId              |The Id of the Network Server |
+| Edge Hub Environment variable |[MaxConnectedClients](https://github.com/Azure/iotedge/blob/master/doc/EnvironmentVariables.md) |Depends on number of devices |
 
 ![Single concentrator - Single gateway](../images/scenarios/1_scale_and_availability.jpg)
 
@@ -64,7 +65,7 @@ Multiple concentrators are deployed that reach a single network server. Each sen
 
 1. Scalability: this model scales very well. It's a bit more overhead than the single concentrator / single gateway
 model as it will have to deduplicate messages coming in from the additional
-concentrators.
+concentrators. During scale tests we verified that this scenario scales up to at least 900 OTAA devices, broadcasting a message every 3 minutes to 4 concentrators.
 1. Relatively simple
 1. Low cost
 1. Partial redundancy: if the deployment is designed to ensure that each sensor can reach
@@ -85,6 +86,7 @@ The result in the worst case is lost of messages.
 | Device Twin   |KeepAliveTimeout       |undefined or 0 |
 | Device Twin   |Deduplication          |None           |
 | Device Twin   |GatewayId              |The Id of the Network Server |
+| Edge Hub Environment variable |[MaxConnectedClients](https://github.com/Azure/iotedge/blob/master/doc/EnvironmentVariables.md) |Depends on number of devices |
 
 ![Multi Single](../images/scenarios/2_scale_and_availability.jpg)
 
@@ -110,7 +112,7 @@ be eliminated.
 1. Complexity
 1. Scalability: The scalability is impacted as the LNS now needs to manage leader election
 for message handling, as well as multiple connetion are opened for the same client on
-multiple edge hubs, resulting in connection ping pong.
+multiple edge hubs, resulting in connection ping pong. For more information, refer to the [Load Tests](./testing/load_tests.md) documentation.
 
 #### Recommended settings
 
