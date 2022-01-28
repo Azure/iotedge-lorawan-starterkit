@@ -52,11 +52,11 @@ within reach of that concentrator.
 |---------------|:----------------------|:--------|
 | Device Twin   |KeepAliveTimeout       |undefined or 0 |
 | Device Twin   |Deduplication          |None           |
-| Device Twin   |GatewayId              |The Id of the Newtork Server |
+| Device Twin   |GatewayId              |The Id of the Network Server |
 
 ![Single Single](../images/scenarios/1_scale_and_availability.jpg)
 
-### Multi conentrator with single LNS
+### Multi concentrator with single LNS
 
 Multiple concentrators are deployed that reach a single network server. Each sensor can reach one or multiple concentrators. Depending on the goal of the deployment (availability and/or reach).
 
@@ -83,11 +83,11 @@ deployment. To combine reach with availability, the cost will raise.
 |---------------|:----------------------|:--------|
 | Device Twin   |KeepAliveTimeout       |undefined or 0 |
 | Device Twin   |Deduplication          |None           |
-| Device Twin   |GatewayId              |The Id of the Newtork Server |
+| Device Twin   |GatewayId              |The Id of the Network Server |
 
 ![Multi Single](../images/scenarios/2_scale_and_availability.jpg)
 
-### Multi conentrator with Multi LNS
+### Multi concentrator with Multi LNS
 
 Multiple concentrators are deployed that reach multiple LNS (*note* one concentrator
 can only be connected to a single LNS). Each sensor can reach one or multiple concentrators. Depending on the goal of the deployment (availability and/or reach).
@@ -115,8 +115,7 @@ multiple edge hubs, resulting in connection ping pong.
 
 | Target        | Setting               |Value|
 |---------------|:----------------------|:--------|
-| Device Twin   |KeepAliveTimeout       | > 0 - depending on the sensor, this can be tuned
-to be the time you expect a new message to come in. Ideally not > 300 |
+| Device Twin   |KeepAliveTimeout       | > 0 - depending on the sensor, this can be tuned to be the time you expect a new message to come in. Ideally not > 300 |
 | Device Twin   |Deduplication          |Drop           |
 | Device Twin   |GatewayId              |empty|
 
