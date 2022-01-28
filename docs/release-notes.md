@@ -54,7 +54,11 @@ Incorrect data type for the tmms property
 
 ## v2.0.0-beta
 
-- certificate validation
+### Breaking Changes
+
+- when updating from *v2.0.0-alpha*
+  - Certificate Validation: In addition to validating the thumbprint, it also
+  validates that the chain of trust is correct. See instructions [here](user-guide/station-authentication-modes.md#changing-client-certificate-mode-in-lorawan-network-server-module-and-trusting-certificate-chain)
 
 ## Previous Releases
 
