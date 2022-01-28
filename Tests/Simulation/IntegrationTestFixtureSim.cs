@@ -121,7 +121,7 @@ namespace LoRaWan.Tests.Simulation
                     DevAddr = DevAddr.Parse(deviceId.ToString("00000000", CultureInfo.InvariantCulture)),
                 };
 
-            TestDeviceInfo CreateOtaaDevice(int deviceId, DeduplicationMode? deduplicationMode = null) =>
+            TestDeviceInfo CreateOtaaDevice(int deviceId, DeduplicationMode deduplicationMode = DeduplicationMode.None) =>
                 new TestDeviceInfo
                 {
                     DeviceID = deviceId.ToString("0000000000000000", CultureInfo.InvariantCulture),
@@ -129,7 +129,7 @@ namespace LoRaWan.Tests.Simulation
                     AppKey = GetAppKey(deviceId),
                     IsIoTHubDevice = true,
                     SensorDecoder = "DecoderValueSensor",
-                    Deduplication = deduplicationMode?.ToString()
+                    Deduplication = deduplicationMode
                 };
         }
 

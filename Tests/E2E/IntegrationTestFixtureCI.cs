@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.E2E
     using System.Globalization;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Common;
+    using NetworkServer;
     using static ReceiveWindowNumber;
 
     public class IntegrationTestFixtureCi : IntegrationTestFixtureBase
@@ -550,7 +551,7 @@ namespace LoRaWan.Tests.E2E
                 NwkSKey = GetNetworkSessionKey(28),
                 DevAddr = new DevAddr(0x00000027),
                 IsIoTHubDevice = true,
-                Deduplication = "Drop"
+                Deduplication = DeduplicationMode.Drop
             };
 
             Device29_ABP = new TestDeviceInfo()
@@ -560,7 +561,7 @@ namespace LoRaWan.Tests.E2E
                 NwkSKey = GetNetworkSessionKey(29),
                 DevAddr = new DevAddr(0x00000029),
                 IsIoTHubDevice = true,
-                Deduplication = "Mark"
+                Deduplication = DeduplicationMode.Mark
             };
 
             Device30_OTAA = new TestDeviceInfo()
@@ -577,7 +578,7 @@ namespace LoRaWan.Tests.E2E
                 AppEui = JoinEui.Parse("0000000000000031"),
                 AppKey = GetAppKey(31),
                 IsIoTHubDevice = true,
-                Deduplication = "Drop"
+                Deduplication = DeduplicationMode.Drop
             };
 
             Device32_ABP = new TestDeviceInfo()
