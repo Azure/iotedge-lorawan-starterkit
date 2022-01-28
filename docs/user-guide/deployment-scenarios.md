@@ -62,7 +62,7 @@ Multiple concentrators are deployed that reach a single network server. Each sen
 
 #### Advantages
 
-1. Scalability: this model scales very well. It's a bit more overhead than the single/single
+1. Scalability: this model scales very well. It's a bit more overhead than the single concentrator / single gateway
 model as it will have to deduplicate messages coming in from the additional
 concentrators.
 1. Relatively simple
