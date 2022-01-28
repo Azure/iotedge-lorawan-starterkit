@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.Tests.Simulation
@@ -134,24 +134,55 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Connected_Factory_Load_Test_Scenario()
         {
-            // 900 devices, 4 concentrators, 1 gateways.
-            /* LoRaWan.Tests.Simulation.SimulatedLoadTests.Connected_Factory_Load_Test_Scenario
-   Source: SimulatedLoadTests.cs line 135
-   Duration: 31 min
-
-  Standard Output: 
-900 devices closer to first gateway.
-0 devices closer to second gateway.
-Starting join phase at 01/27/2022 16:45:52.
-Running cycle 1 of 7 at 01/27/2022 16:50:52.
-Running cycle 2 of 7 at 01/27/2022 16:53:52.
-Running cycle 3 of 7 at 01/27/2022 16:56:52.
-Running cycle 4 of 7 at 01/27/2022 16:59:52.
-Running cycle 5 of 7 at 01/27/2022 17:02:52.
-Running cycle 6 of 7 at 01/27/2022 17:05:51.
-Running cycle 7 of 7 at 01/27/2022 17:08:51.
-Sent 7200 messages in 1558.5731525 seconds.
-             *  
+            // 500 devices, 4 concentrators, 2 gateways. MaxConnectedClient is set to 2000, Success.
+            /*
+             * Standard Output: 
+240 devices closer to first gateway.
+260 devices closer to second gateway.
+Starting join phase at 01/28/2022 06:13:49.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Join failed due to: 'The operation has timed out.'.
+Running cycle 1 of 7 at 01/28/2022 06:17:48.
+Running cycle 2 of 7 at 01/28/2022 06:19:28.
+Running cycle 3 of 7 at 01/28/2022 06:21:08.
+Running cycle 4 of 7 at 01/28/2022 06:22:49.
+Running cycle 5 of 7 at 01/28/2022 06:24:29.
+Running cycle 6 of 7 at 01/28/2022 06:26:09.
+Running cycle 7 of 7 at 01/28/2022 06:27:50.
+Sent 4000 messages in 940.5919899 seconds.
+Message counts by device ID:
              */
             const int numberOfFactories = 1;
             const double joinsPerSecond = 3;
