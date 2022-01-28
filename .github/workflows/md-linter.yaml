@@ -3,10 +3,6 @@ name: Lint and Check Markdown
 on:
   pull_request:
     branches: [docs/main]
-    # only trigger when the PR contains a markdown file
-    paths:
-      - '**.md'
-      - '**.markdown'
   push:
     branches:
       - docs/main

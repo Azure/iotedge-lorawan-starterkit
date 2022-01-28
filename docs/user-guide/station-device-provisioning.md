@@ -109,6 +109,20 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
 
     === "US902 Example Configuration"
 
+        US902 defines several uplink channels and sub-bands. Router configuration below is suited for sub-band 1.  
+        Please adjust `radio_0` and `radio_1` freq fields accordingly for your sub-band needs.
+
+        | **Uplink sub-bands** | **Frequency range (MHz)** | **Channels** | **Radio 0 Frequency** | **Radio 1 Frequency** |
+        | -- | -- | -- | -- | --
+        | Sub-Band 1 | 902.3 - 903.7 | 0-7   | 902700000 | 903400000
+        | Sub-Band 2 | 903.9 - 905.3 | 8-15  | 904300000 | 905000000
+        | Sub-Band 3 | 905.5 - 906.9 | 16-23 | 905900000 | 906600000
+        | Sub-Band 4 | 907.1 - 908.5 | 24-31 | 907500000 | 908200000
+        | Sub-Band 5 | 908.7 - 910.1 | 32-39 | 909100000 | 909800000
+        | Sub-Band 6 | 910.3 - 911.7 | 40-47 | 910700000 | 911400000
+        | Sub-Band 7 | 911.9 - 913.3 | 48-55 | 912300000 | 913000000
+        | Sub-Band 8 | 913.5 - 914.9 | 56-63 | 913900000 | 914600000
+
         ``` json
         "routerConfig": {
           "NetID": [1],
