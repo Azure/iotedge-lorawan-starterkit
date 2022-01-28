@@ -40,12 +40,19 @@ to the [dev guide](devguide.md).
 
 ### Adaptive Data Rate
 
-Solution support Adaptive Data Rate (ADR) device management as specified in
-[LoRa spec v1.1](https://lora-alliance.org/resource_hub/lorawan-specification-v1-1/).
+Solution supports Adaptive Data Rate (ADR) device management as specified in
+[LoRa spec v1.1][lora-v1.1].
 The main goal of the ADR is to optimize the network for maximum capacity ensuring
-devices always transmit with their best settings possible (highest DR, lowest power),
-you can find more ADR information on this [page](https://www.sghoslya.com/p/how-does-lorawan-nodes-changes-their.html).
+devices always transmit with their best settings possible (highest data rate, lowest power),
+you can find more ADR information on this [page][lora-adr].
+
 Adaptive Data rate is always initiated and set on the device side. ADR should
-never be used with moving devices. Our implementation currently implement the
-[Semtech proposed Algorithm for ADR](https://www.thethingsnetwork.org/forum/uploads/default/original/2X/7/7480e044aa93a54a910dab8ef0adfb5f515d14a1.pdf)
-and has been tested against EU868 region plan.
+never be used with moving devices. Our solution currently implements the
+[Semtech proposed Algorithm for ADR][semtech-adr-algorithm]
+and has been tested against EU868 region plan. In this algorithm the data rate and transmission power calculation is done as follows:
+
+1. Signal-to-noise ratio (SNR) is calculated based on the maximum SNR over the recent transmissions, required SNR for the given region and SNR margin (always equal to 5dB).
+
+[lora-v1.1]: https://lora-alliance.org/resource_hub/lorawan-specification-v1-1/
+[lora-adr]: https://www.sghoslya.com/p/how-does-lorawan-nodes-changes-their.html
+[semtech-adr-algorithm]: https://www.thethingsnetwork.org/forum/uploads/default/original/2X/7/7480e044aa93a54a910dab8ef0adfb5f515d14a1.pdf
