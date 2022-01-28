@@ -17,20 +17,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.LoRaMessage
             using var loraRequest = WaitableLoRaRequest.Create(dataPayload);
 
             // act/assert
-            Assert.True(loraRequest.Payload.RequiresConfirmation);
-        }
-
-        [Fact]
-        public void When_Not_Data_Payload_RequiresConfirmation_Should_Return_False()
-        {
-            // arrange
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
-            var payload = simulatedDevice.CreateJoinRequest();
-            using var loraRequest = WaitableLoRaRequest.Create(payload);
-            loraRequest.SetPayload(payload);
-
-            // act/assert
-            Assert.False(loraRequest.Payload.RequiresConfirmation);
+            Assert.True(dataPayload.RequiresConfirmation);
         }
 
         [Fact]
@@ -42,7 +29,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.LoRaMessage
             using var loraRequest = WaitableLoRaRequest.Create(dataPayload);
 
             // act/assert
-            Assert.False(loraRequest.Payload.RequiresConfirmation);
+            Assert.False(dataPayload.RequiresConfirmation);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                  FrameControlFlags fctrlFlags,
                                  ushort counter,
                                  string options,
-                                 FramePort port,
+                                 FramePort? port,
                                  string payload,
                                  Mic mic,
                                  RadioMetadata radioMetadata)
@@ -31,7 +31,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public FrameControlFlags FrameControlFlags { get; }
         public ushort Counter { get; }
         public string Options { get; }
-        public FramePort Port { get; }
+        public FramePort? Port { get; }
         public string Payload { get; }
         public Mic Mic { get; }
         public RadioMetadata RadioMetadata { get; }

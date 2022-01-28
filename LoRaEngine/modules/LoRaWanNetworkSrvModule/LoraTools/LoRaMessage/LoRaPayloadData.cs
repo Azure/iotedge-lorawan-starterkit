@@ -90,12 +90,12 @@ namespace LoRaTools.LoRaMessage
                                ushort counter,
                                string options,
                                string payload,
-                               FramePort port,
+                               FramePort? port,
                                Mic? mic,
                                ILogger logger)
         {
             if (options is null) throw new ArgumentNullException(nameof(options));
-            if (string.IsNullOrEmpty(payload)) throw new ArgumentNullException(nameof(payload));
+            if (payload is null) throw new ArgumentNullException(nameof(payload));
 
             // Writing the DevAddr
             DevAddr = devAddress;
@@ -506,7 +506,6 @@ namespace LoRaTools.LoRaMessage
             return messageArray.ToArray();
         }
 
-        public override bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
-
+        public bool RequiresConfirmation => IsConfirmed || IsMacAnswerRequired;
     }
 }
