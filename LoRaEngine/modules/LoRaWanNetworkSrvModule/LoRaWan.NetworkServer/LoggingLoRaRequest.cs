@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<LoggingLoRaRequest> logger;
         private readonly Histogram<double> d2cMessageDeliveryLatencyHistogram;
 
-        public override IPacketForwarder PacketForwarder => this.wrappedRequest.PacketForwarder;
+        public override IDownstreamMessageSender DownstreamMessageSender => this.wrappedRequest.DownstreamMessageSender;
 
         public override Region Region => this.wrappedRequest.Region;
 

@@ -95,8 +95,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.NotNull(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[1];
+            Assert.Equal(2, DownstreamMessageSender.DownlinkMessages.Count);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[1];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
 
             // in this case we expect a null payload
@@ -211,7 +211,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(request.ProcessingSucceeded);
 
             Assert.NotNull(request.ResponseDownlink);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[1];
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[1];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             if (deviceId == 221)
@@ -311,8 +311,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(await request.WaitCompleteAsync());
 
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[1];
+            Assert.Equal(2, DownstreamMessageSender.DownlinkMessages.Count);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[1];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
@@ -357,8 +357,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(await secondRequest.WaitCompleteAsync());
 
             Assert.NotNull(secondRequest.ResponseDownlink);
-            Assert.Equal(3, PacketForwarder.DownlinkMessages.Count);
-            downlinkMessage = PacketForwarder.DownlinkMessages[2];
+            Assert.Equal(3, DownstreamMessageSender.DownlinkMessages.Count);
+            downlinkMessage = DownstreamMessageSender.DownlinkMessages[2];
             payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
@@ -456,8 +456,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(request.ProcessingSucceeded);
 
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[1];
+            Assert.Equal(2, DownstreamMessageSender.DownlinkMessages.Count);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[1];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
@@ -489,8 +489,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(secondRequest.ProcessingSucceeded);
 
             Assert.NotNull(secondRequest.ResponseDownlink);
-            Assert.Equal(3, PacketForwarder.DownlinkMessages.Count);
-            downlinkMessage = PacketForwarder.DownlinkMessages[2];
+            Assert.Equal(3, DownstreamMessageSender.DownlinkMessages.Count);
+            downlinkMessage = DownstreamMessageSender.DownlinkMessages[2];
             payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
@@ -530,8 +530,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(thirdRequest.ProcessingSucceeded);
 
             Assert.NotNull(thirdRequest.ResponseDownlink);
-            Assert.Equal(4, PacketForwarder.DownlinkMessages.Count);
-            downlinkMessage = PacketForwarder.DownlinkMessages[3];
+            Assert.Equal(4, DownstreamMessageSender.DownlinkMessages.Count);
+            downlinkMessage = DownstreamMessageSender.DownlinkMessages[3];
             payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);

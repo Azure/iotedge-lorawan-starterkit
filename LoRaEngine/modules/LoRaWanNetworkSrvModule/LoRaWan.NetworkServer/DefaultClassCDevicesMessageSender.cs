@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
-        private readonly IPacketForwarder packetForwarder;
+        private readonly IDownstreamMessageSender downstreamMessageSender;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly ILogger<DefaultClassCDevicesMessageSender> logger;
         private readonly Counter<int> c2dMessageTooLong;
@@ -22,14 +22,14 @@ namespace LoRaWan.NetworkServer
         public DefaultClassCDevicesMessageSender(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry loRaDeviceRegistry,
-            IPacketForwarder packetForwarder,
+            IDownstreamMessageSender downstreamMessageSender,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             ILogger<DefaultClassCDevicesMessageSender> logger,
             Meter meter)
         {
             this.configuration = configuration;
             this.loRaDeviceRegistry = loRaDeviceRegistry;
-            this.packetForwarder = packetForwarder;
+            this.downstreamMessageSender = downstreamMessageSender;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.logger = logger;
             this.c2dMessageTooLong = meter?.CreateCounter<int>(MetricRegistry.C2DMessageTooLong);
@@ -129,7 +129,7 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
+                    await this.downstreamMessageSender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
                 }
                 catch (Exception ex)
                 {

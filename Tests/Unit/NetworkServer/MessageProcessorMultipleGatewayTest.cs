@@ -71,8 +71,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
             // Create Rxpk
-            using var request1 = CreateWaitableRequest(payload, PacketForwarder);
-            using var request2 = CreateWaitableRequest(payload, SecondPacketForwarder);
+            using var request1 = CreateWaitableRequest(payload, DownstreamMessageSender);
+            using var request2 = CreateWaitableRequest(payload, SecondDownstreamMessageSender);
             messageProcessor1.DispatchRequest(request1);
             messageProcessor2.DispatchRequest(request2);
 

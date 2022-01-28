@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     {
         private readonly Mock<IBasicsStationConfigurationService> basicsStationConfigurationMock;
         private readonly Mock<IMessageDispatcher> messageDispatcher;
-        private readonly Mock<IPacketForwarder> packetForwarder;
+        private readonly Mock<IDownstreamMessageSender> downstreamMessageSender;
         private readonly LnsProtocolMessageProcessor lnsMessageProcessorMock;
         private readonly Mock<WebSocket> socketMock;
         private readonly Mock<HttpContext> httpContextMock;
@@ -41,11 +41,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             _ = this.basicsStationConfigurationMock.Setup(m => m.GetRegionAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
                                           .Returns(Task.FromResult(RegionManager.EU868));
             this.messageDispatcher = new Mock<IMessageDispatcher>();
-            this.packetForwarder = new Mock<IPacketForwarder>();
+            this.downstreamMessageSender = new Mock<IDownstreamMessageSender>();
 
             this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(this.basicsStationConfigurationMock.Object,
                                                                            new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>(), null),
-                                                                           this.packetForwarder.Object,
+                                                                           this.downstreamMessageSender.Object,
                                                                            this.messageDispatcher.Object,
                                                                            loggerMock,
                                                                            new RegistryMetricTagBag(new NetworkServerConfiguration { GatewayID = "foogateway" }),
@@ -328,7 +328,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(MacMessageType.ConfirmedDataUp, loRaRequest.Payload.MessageType);
             Assert.Equal(expectedMhdr, loRaRequest.Payload.MHdr);
             Assert.Equal(expectedMic, loRaRequest.Payload.Mic);
-            Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
+            Assert.Equal(downstreamMessageSender.Object, loRaRequest.DownstreamMessageSender);
             Assert.Equal(RegionManager.EU868, loRaRequest.Region);
         }
 
@@ -368,7 +368,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(expectedJoinEui, ((LoRaPayloadJoinRequest)loRaRequest.Payload).AppEui);
             Assert.Equal(expectedDevEui, ((LoRaPayloadJoinRequest)loRaRequest.Payload).DevEUI);
             Assert.Equal(expectedDevNonce, ((LoRaPayloadJoinRequest)loRaRequest.Payload).DevNonce);
-            Assert.Equal(packetForwarder.Object, loRaRequest.PacketForwarder);
+            Assert.Equal(downstreamMessageSender.Object, loRaRequest.DownstreamMessageSender);
             Assert.Equal(RegionManager.EU868, loRaRequest.Region);
         }
 

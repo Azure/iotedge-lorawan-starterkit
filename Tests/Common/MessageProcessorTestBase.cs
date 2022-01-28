@@ -29,7 +29,7 @@ namespace LoRaWan.Tests.Common
         private readonly long startTime;
         private bool disposedValue;
 
-        public TestPacketForwarder PacketForwarder { get; }
+        public TestDownstreamMessageSender DownstreamMessageSender { get; }
 
         protected Region DefaultRegion { get; }
 
@@ -69,7 +69,7 @@ namespace LoRaWan.Tests.Common
 
             this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
             PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder(this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()));
-            PacketForwarder = new TestPacketForwarder();
+            DownstreamMessageSender = new TestDownstreamMessageSender();
             LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerConfiguration, LoRaDeviceApi.Object);
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
@@ -156,7 +156,7 @@ namespace LoRaWan.Tests.Common
         }
 
         protected WaitableLoRaRequest CreateWaitableRequest(LoRaPayload loRaPayload,
-                                                            IPacketForwarder packetForwarder = null,
+                                                            IDownstreamMessageSender downstreamMessageSender = null,
                                                             TimeSpan? startTimeOffset = null,
                                                             TimeSpan? constantElapsedTime = null,
                                                             bool useRealTimer = false,
@@ -171,7 +171,7 @@ namespace LoRaWan.Tests.Common
             };
             return CreateWaitableRequest(radioMetadata,
                                          loRaPayload,
-                                         packetForwarder,
+                                         downstreamMessageSender,
                                          startTimeOffset,
                                          constantElapsedTime,
                                          useRealTimer,
@@ -181,7 +181,7 @@ namespace LoRaWan.Tests.Common
 
         protected WaitableLoRaRequest CreateWaitableRequest(RadioMetadata metadata,
                                                             LoRaPayload loRaPayload,
-                                                            IPacketForwarder packetForwarder = null,
+                                                            IDownstreamMessageSender downstreamMessageSender = null,
                                                             TimeSpan? startTimeOffset = null,
                                                             TimeSpan? constantElapsedTime = null,
                                                             bool useRealTimer = false,
@@ -190,7 +190,7 @@ namespace LoRaWan.Tests.Common
             var effectiveRegion = region ?? DefaultRegion;
             var request = WaitableLoRaRequest.Create(metadata,
                                                      loRaPayload,
-                                                     packetForwarder ?? PacketForwarder,
+                                                     downstreamMessageSender ?? DownstreamMessageSender,
                                                      startTimeOffset,
                                                      constantElapsedTime,
                                                      useRealTimer,

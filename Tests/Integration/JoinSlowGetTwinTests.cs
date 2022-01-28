@@ -87,8 +87,8 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await joinRequest2.WaitCompleteAsync());
             Assert.True(joinRequest2.ProcessingSucceeded);
             Assert.NotNull(joinRequest2.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var joinRequestDownlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var joinRequestDownlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             Assert.Equal(joinAccept.DevAddr.ToString(), afterJoinDevAddr);
 

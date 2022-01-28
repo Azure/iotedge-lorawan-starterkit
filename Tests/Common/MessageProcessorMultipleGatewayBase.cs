@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Common
 
         public NetworkServerConfiguration SecondServerConfiguration { get; }
 
-        public TestPacketForwarder SecondPacketForwarder { get; }
+        public TestDownstreamMessageSender SecondDownstreamMessageSender { get; }
 
         public Mock<LoRaDeviceAPIServiceBase> SecondLoRaDeviceApi { get; }
 
@@ -47,7 +47,7 @@ namespace LoRaWan.Tests.Common
                 LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
             };
 
-            SecondPacketForwarder = new TestPacketForwarder();
+            SecondDownstreamMessageSender = new TestDownstreamMessageSender();
             SecondLoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             SecondFrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(SecondServerConfiguration, SecondLoRaDeviceApi.Object);
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
