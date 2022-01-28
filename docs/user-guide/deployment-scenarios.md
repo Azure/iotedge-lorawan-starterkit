@@ -39,7 +39,7 @@ back to the device. Also, no additional edge hub keeps a connection for the leaf
 
 #### Disadvantages
 
-1. Availability: this solution has 2 single point of failure: the concentrator and the
+1. Availability: this solution has 2 points of failure: the concentrator and the
 network server. Either of those can go down. The result in the worst case is lost
 of messages.
 1. Limited reach: Since there is only a single concentrator, you have to put all your sensor
@@ -74,7 +74,8 @@ deployment. To combine reach with availability, the cost will raise.
 
 #### Disadvantages
 
-1. Availability: Depending on the deployment, this solution has at least 1 single point of failure: the network server. The result in the worst case is lost of messages.
+1. Availability: Depending on the deployment, this solution has at least one single point of failure: the network server.
+The result in the worst case is lost of messages.
 1. Reliability: message delivery might be impacted.
 
 #### Recommended settings
@@ -98,7 +99,7 @@ so that a single sensor is in range of at least 2 concentrators, both connecting
 
 #### Advantages
 
-1. Availability: If the deployment is done right, the single point of failures can
+1. Availability: If the deployment is done right, the single point of failure can
 be eliminated.
 1. Reliability: message delivery likelyhood is increased.
 1. Reach: The deployment model can be expanded
