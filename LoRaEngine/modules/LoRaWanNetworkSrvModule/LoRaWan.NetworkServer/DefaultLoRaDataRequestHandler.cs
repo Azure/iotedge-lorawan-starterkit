@@ -162,6 +162,11 @@ namespace LoRaWan.NetworkServer
                     {
                         // duplication strategy is indicating that we do not need to continue processing this message
                         this.logger.LogDebug($"duplication strategy indicated to not process message: {payloadFcnt}");
+                        var disconnected = loRaDevice.TryDisconnect();
+
+                        if (!disconnected)
+                            this.logger.LogInformation("Disconnect did not happen.");
+
                         return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
                     }
                 }
