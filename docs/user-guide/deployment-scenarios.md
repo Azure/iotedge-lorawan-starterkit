@@ -33,7 +33,7 @@ and one network server. Each sensor can at most reach a single concentrator.
 
 1. Scalability: this model scales very well. There is no additional overhead to deduplicate
 messages, nor do we need to determine who is winning the race to potentially send messages
-back to the device. Also, no additional edge hub does keep a connection for the device - which helps with the scale requirement on the IoT Hub itself.
+back to the device. Also, no additional edge hub keeps a connection for the leaf device, which helps with the scale requirement on the IoT Hub itself.
 1. Simple: the deployment is simple to start with and maintain.
 1. Low cost: No redundant hardware is used, which helps keeping the operational cost down.
 
