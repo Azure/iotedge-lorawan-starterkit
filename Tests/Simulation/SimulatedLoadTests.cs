@@ -141,23 +141,17 @@ namespace LoRaWan.Tests.Simulation
             Assert.True(stationsPerFactory % Configuration.LnsEndpointsForSimulator.Count == 0, "LNS must be distributed evenly across factories (identical amount of indirectly connected LNS to factories).");
 
             var testDeviceInfo = TestFixtureSim.DeviceRange9000_OTAA_FullLoad_DuplicationDrop;
-            var devicesAndConcentratorsByFactory =
+            var devicesByFactory =
                 this.simulatedBasicsStations.Chunk(stationsPerFactory)
                                             .Take(numberOfFactories)
                                             .Zip(testDeviceInfo.Chunk(testDeviceInfo.Count / numberOfFactories)
                                                                .Take(numberOfFactories),
-                                                 (ss, ds) => (Stations: ss, Devices: ds.Select(d => InitializeSimulatedDevice(d, ss)).ToList()))
-                                            .Index()
-                                            .ToDictionary(el => el.Key,
-                                                          stationsAndDevices => (stationsAndDevices.Value.Stations, stationsAndDevices.Value.Devices));
+                                                 (ss, ds) => ds.Select(d => InitializeSimulatedDevice(d, ss)).ToList());
+
             // Cache the devices in a flat list to make distributing requests easier.
             // Transposing the matrix makes sure that device requests are distributed evenly across factories,
             // instead of having all requests from the same factory executed in series.
-            var devices =
-                devicesAndConcentratorsByFactory.Select(f => f.Value.Devices)
-                                                .Transpose()
-                                                .SelectMany(ds => ds)
-                                                .ToList();
+            var devices = devicesByFactory.Transpose().SelectMany(ds => ds).ToList();
 
             var stopwatch = Stopwatch.StartNew();
 
