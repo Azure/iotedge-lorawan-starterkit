@@ -173,9 +173,9 @@ namespace LoRaWan.Tests.Simulation
             }
 
             // Send messages
-            foreach (var (index, messageRate) in messagesPerSecond.Take(numberOfLoops).Index())
+            foreach (var (cycle, messageRate) in messagesPerSecond.Take(numberOfLoops).Index(1))
             {
-                this.logger.LogInformation("Running cycle {Cycle} of {TotalNumberOfCycles} at {Timestamp}.", index + 1, numberOfLoops, DateTime.UtcNow);
+                this.logger.LogInformation("Running cycle {Cycle} of {TotalNumberOfCycles} at {Timestamp}.", cycle, numberOfLoops, DateTime.UtcNow);
                 await Task.WhenAll(from taskAndOffset in DistributeEvenly(devices, messageRate)
                                    select SendUpstreamAsync(taskAndOffset.Element, taskAndOffset.Offset));
             }
