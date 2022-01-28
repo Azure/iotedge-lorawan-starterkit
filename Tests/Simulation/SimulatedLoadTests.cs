@@ -12,7 +12,6 @@ namespace LoRaWan.Tests.Simulation
     using System.Text;
     using System.Text.Json;
     using System.Threading.Tasks;
-    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.EventHubs;
     using Microsoft.Extensions.Logging;
