@@ -41,11 +41,6 @@ namespace LoRaWan.NetworkServer
         public const string CloudToDeviceClearCache = "clearcache";
 
         /// <summary>
-        /// Convert the time to the packet forward time (millionth of seconds).
-        /// </summary>
-        public const uint ConvertToPktFwdTime = 1000000;
-
-        /// <summary>
         /// Minimum value for device connection keep alive timeout (1 minute).
         /// </summary>
         public const int MinKeepAliveTimeout = 60;
