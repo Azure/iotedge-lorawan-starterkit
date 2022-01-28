@@ -72,7 +72,6 @@ nav:
     - user-guide/upgrade.md
     - user-guide/documentation.md
     - user-guide/observability.md
-    - user-guide/scalability.md
     - 'Basic Station configuration':
       - user-guide/pkt-fwd-to-station.md
       - user-guide/station-device-provisioning.md
@@ -91,6 +90,7 @@ nav:
     - user-guide/deployment-scenarios.md
     - user-guide/caching.md
     - user-guide/ci-setup.md
+    - user-guide/scalability.md
   - 'Samples':
     - samples/arduino.md
     - 'Decoders':
