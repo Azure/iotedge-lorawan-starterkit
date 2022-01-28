@@ -41,11 +41,7 @@ namespace LoRaWan.NetworkServer
             this.primaryKey = primaryKey;
             this.logger = logger;
             this.twinLoadRequests = meter.CreateCounter<int>(MetricRegistry.TwinLoadRequests);
-            var deviceClient = this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
-            deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
-                                                               minBackoff: TimeSpan.FromMilliseconds(100),
-                                                               maxBackoff: TimeSpan.FromSeconds(10),
-                                                               deltaBackoff: TimeSpan.FromMilliseconds(100)));
+            this.deviceClient = CreateDeviceClient();
         }
 
         public bool IsMatchingKey(string primaryKey) => this.primaryKey == primaryKey;
@@ -255,7 +251,7 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
+                    this.deviceClient = CreateDeviceClient();
                     this.logger.LogDebug("device client reconnected");
                 }
                 catch (ArgumentException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not connect device client with error: {ex.Message}")))
@@ -265,6 +261,16 @@ namespace LoRaWan.NetworkServer
             }
 
             return true;
+        }
+
+        private DeviceClient CreateDeviceClient()
+        {
+            var dc = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
+            dc.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
+                                                     minBackoff: TimeSpan.FromMilliseconds(100),
+                                                     maxBackoff: TimeSpan.FromSeconds(10),
+                                                     deltaBackoff: TimeSpan.FromMilliseconds(100)));
+            return dc;
         }
 
         public void Dispose()
