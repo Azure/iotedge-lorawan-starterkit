@@ -72,7 +72,7 @@ namespace LoRaWan.Tests.Common
                 if (!searchResult.Found)
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    TestLogger.Log($"[WARN] \"{targetJsonProperty}\": {expectedJsonValue} for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
+                    TestLogger.Log($"[WARN] \"{targetJsonProperty}\": {expectedJsonValue} for device {deviceID} was not found. Logs: [{logs}]");
                 }
             }
         }
@@ -243,7 +243,7 @@ namespace LoRaWan.Tests.Common
                     if (!searchResult.Found)
                     {
                         var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                        TestLogger.Log($"[WARN] '{options.Description}' found in logs? {searchResult.Found}. Logs: [{logs}]");
+                        TestLogger.Log($"[WARN] '{options.Description}' was not found. Logs: [{logs}]");
                     }
                 }
             }

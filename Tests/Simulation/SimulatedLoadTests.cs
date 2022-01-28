@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Simulation
     using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
@@ -15,6 +16,7 @@ namespace LoRaWan.Tests.Simulation
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.EventHubs;
     using Microsoft.Extensions.Logging;
+    using NetworkServer;
     using Xunit;
     using Xunit.Abstractions;
     using static MoreLinq.Extensions.RepeatExtension;
@@ -336,12 +338,11 @@ namespace LoRaWan.Tests.Simulation
 
             foreach (var device in devices)
             {
-                var expectedMessageCount = device.LoRaDevice.Deduplication?.ToUpperInvariant() switch
+                var expectedMessageCount = device.LoRaDevice.Deduplication switch
                 {
-                    null or "" or "NONE" => numberOfMessages * this.simulatedBasicsStations.Count,
-                    "MARK" => numberOfMessages * this.simulatedBasicsStations.Count,
-                    "DROP" => numberOfMessages,
-                    _ => throw new NotImplementedException()
+                    DeduplicationMode.None or DeduplicationMode.Mark => numberOfMessages * this.simulatedBasicsStations.Count,
+                    DeduplicationMode.Drop => numberOfMessages,
+                    var mode => throw new SwitchExpressionException(mode)
                 };
 
                 var applicableMessageCount = correction is { } someCorrection ? expectedMessageCount * someCorrection : expectedMessageCount;
