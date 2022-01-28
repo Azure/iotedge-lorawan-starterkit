@@ -34,7 +34,7 @@ Issues encountered in these load tests:
 
 The memory/CPU usage of a single IoT Edge host in gateway mode (for 900 devices) was fairly stable at around 1GB of memory used and an average CPU consumption of 40% on a Standard D2s v3 Debian 11 VM:
 
-![gateway-mode-host-cpu-memory](..\..\images\lt-host-gateway-mode.png)
+![gateway-mode-host-cpu-memory](../../images/lt-host-gateway-mode.png)
 
 ### January 21st 2022, load test of v2.0.0-beta1 in direct mode (ENABLE_GATEWAY=false)
 
@@ -55,10 +55,10 @@ In addition to these issues, for which we will not provide more details here, we
 
 **D2CMessageDeliveryLatency**: The D2C message delivery latency took a distinct shape for the three phases: in the join phase, the average processing time was ca. 100ms, then for the first round of messages (cache pre-warming) the average delivery/response time was ca. 800ms on the gateway winning the race. As soon as the cache was warm, the response time dropped to ca. 450ms. **No receive windows were missed for all ca. 10k messages.**
 
-![image-20220124131449660](..\..\images\lt-message-latency.png)
+![d2c-delivery-latency](../../images/lt-message-latency.png)
 
 **Memory and CPU usage**: CPU usage was fairly stable, while memory was staying between 100 and 130MB for the LNS during the entire load test. To ensure that we do not have a memory leak, we ran a longer load test over the course of several hours, during which memory was bounded at ca. 200MB and analysis of the Heap Dump revealed that the largest contributor to the Gen 2 Heap were the device connections (as expected), which the LNS manages in an internal cache.
 
-![host-stats](..\..\images\lt-host-stats.png)
+![host-stats](../../images/lt-host-stats.png)
 
 **January 24th, 2022 load test of v2.0.0-beta1 (ENABLE_GATEWAY=false).** This load test was for deduplication strategy drop, the same parameters as the January 21st load test, except that we send seven messages per device, ending at 13.5 messages per second (giving a total of 12800 messages in one hour). The analysis was identical to the January 21st load test, there were no new findings and observations match everything we saw before.
