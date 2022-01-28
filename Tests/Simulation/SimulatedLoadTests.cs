@@ -17,6 +17,7 @@ namespace LoRaWan.Tests.Simulation
     using Microsoft.Extensions.Logging;
     using Xunit;
     using Xunit.Abstractions;
+    using static MoreLinq.Extensions.RepeatExtension;
     using static MoreLinq.Extensions.IndexExtension;
     using static MoreLinq.Extensions.TransposeExtension;
 
@@ -41,8 +42,9 @@ namespace LoRaWan.Tests.Simulation
             this.uniqueMessageFragment = Guid.NewGuid().ToString();
             this.logger = new TestOutputLogger(testOutputHelper);
             this.simulatedBasicsStations =
-                testFixture.DeviceRange5000_BasicsStationSimulators.Index()
-                           .Select(b => new SimulatedBasicsStation(StationEui.Parse(b.Value.DeviceID), Configuration.LnsEndpointsForSimulator[b.Key % Configuration.LnsEndpointsForSimulator.Count]))
+                testFixture.DeviceRange5000_BasicsStationSimulators
+                           .Zip(Configuration.LnsEndpointsForSimulator.Repeat(),
+                                (tdi, lnsUrl) => new SimulatedBasicsStation(StationEui.Parse(tdi.DeviceID), lnsUrl))
                            .ToList();
 
             Assert.True(this.simulatedBasicsStations.Count % Configuration.LnsEndpointsForSimulator.Count == 0, "Since Basics Stations are round-robin distributed to LNS, we must have the same number of stations per LNS for well-defined test assertions.");
