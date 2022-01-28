@@ -849,7 +849,7 @@ namespace LoRaWan.NetworkServer
             if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
             {
                 // most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
-                if (payload.RequiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
+                if (payload.RequiresConfirmation && payloadFcnt == loRaDevice.FCntUp && (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate or ConcentratorDeduplicationResult.DuplicateDueToResubmission))
                 {
                     if (!loRaDevice.ValidateConfirmResubmit(payloadFcnt))
                     {
