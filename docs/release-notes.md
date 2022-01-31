@@ -40,7 +40,7 @@ authentication modes
 - Upgrade to RaspberryPi OS based on Debian 11.0 Bullseye ([upgrade instructions](user-guide/upgrade.md#upgrading-to-raspberry-pi-os-bullseye))
 - Infrastructure changes:
   - New storage containers for CUPS credentials management and firmware upgrade
-  (more in related [ADRs](adr/008_CUPS_firmware_upgrade.md))
+  (more in related [ADRs](adr/008_cups_firmware_upgrade.md))
   - A Log Analytics workspace is required for integrating with metrics collector
   (more in related [ADRs](adr/005_observability.md))
   - [Azure Functions runtime upgrade to v4](user-guide/upgrade.md/#azure-functions)
