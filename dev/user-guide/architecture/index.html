@@ -812,26 +812,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#concepts" class="md-nav__link">
-    Concepts
-  </a>
-  
-    <nav class="md-nav" aria-label="Concepts">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#adaptive-data-rate" class="md-nav__link">
-    Adaptive Data Rate
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -891,6 +871,20 @@
     <li class="md-nav__item">
       <a href="../ci-setup/" class="md-nav__link">
         Continuous Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adaptive-data-rate/" class="md-nav__link">
+        Adaptive Data Rate
       </a>
     </li>
   
@@ -1394,26 +1388,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#concepts" class="md-nav__link">
-    Concepts
-  </a>
-  
-    <nav class="md-nav" aria-label="Concepts">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#adaptive-data-rate" class="md-nav__link">
-    Adaptive Data Rate
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1442,50 +1416,42 @@ Internet services. Nowadays, even for simple scenarios like having 10 devices
 connected to a single LoRaWan gateway (hardware with antenna), you need to
 connect your gateway to a Network Server and then work through connectors
 provided by the server vendor to integrate your LoRa gateways and devices with
-the back end. These setups can be connected to Azure IoT Hub quite easily.
-As a matter of fact <a href="https://github.com/loriot/AzureSolutionTemplate">such scenarios exist</a>.
-Customers looking for an operated network with national or international reach
-(e.g. fleet operators, logistics) will tend to choose this setup accepting the
-potentially higher complexity and dependency on the network operator.</p>
+the back end. These setups can be connected to Azure IoT Hub quite easily. As a
+matter of fact <a href="https://github.com/loriot/AzureSolutionTemplate">such scenarios
+exist</a>. Customers looking for
+an operated network with national or international reach (e.g. fleet operators,
+logistics) will tend to choose this setup accepting the potentially higher
+complexity and dependency on the network operator.</p>
 <p>However, customers looking for any of the following are expected to prefer a
-setup where the LoRaWAN network servers runs directly on the gateway/Azure IoT Edge:</p>
+setup where the LoRaWAN network servers runs directly on the gateway/Azure IoT
+Edge:</p>
 <ul>
-<li>Primarily coverage on their own ground (e.g. manufacturing plants,
-smart buildings, facilities, ports).</li>
+<li>Primarily coverage on their own ground (e.g. manufacturing plants, smart
+buildings, facilities, ports).</li>
 <li>Capabilities that Azure IoT edge brings to the table:<ul>
 <li>Local processing on the gateway.</li>
 <li>Offline capabilities of the gateway.</li>
 <li>Gateway management.</li>
 </ul>
 </li>
-<li>Homogenous management of devices and gateways independent of connectivity technology.</li>
+<li>Homogenous management of devices and gateways independent of connectivity
+  technology.</li>
 </ul>
 <h2 id="high-level-architecture">High Level Architecture</h2>
 <p>Below is a high level diagram of how the framework works, for more details refer
 to the <a href="../devguide/">dev guide</a>.</p>
 <p><img alt="Architecture" src="../../images/EdgeArchitecture.png" /></p>
-<h2 id="concepts">Concepts</h2>
-<h3 id="adaptive-data-rate">Adaptive Data Rate</h3>
-<p>Solution support Adaptive Data Rate (ADR) device management as specified in
-<a href="https://lora-alliance.org/resource_hub/lorawan-specification-v1-1/">LoRa spec v1.1</a>.
-The main goal of the ADR is to optimize the network for maximum capacity ensuring
-devices always transmit with their best settings possible (highest DR, lowest power),
-you can find more ADR information on this <a href="https://www.sghoslya.com/p/how-does-lorawan-nodes-changes-their.html">page</a>.
-Adaptive Data rate is always initiated and set on the device side. ADR should
-never be used with moving devices. Our implementation currently implement the
-<a href="https://www.thethingsnetwork.org/forum/uploads/default/original/2X/7/7480e044aa93a54a910dab8ef0adfb5f515d14a1.pdf">Semtech proposed Algorithm for ADR</a>
-and has been tested against EU868 region plan.</p>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-31T08:01:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-31</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-31T08:33:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-31</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-31T08:01:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-31</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-31T08:33:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-31</span>
       
     
   </small>
