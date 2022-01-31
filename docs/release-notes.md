@@ -13,13 +13,13 @@ CUPS Protocol (v2.0.5) for credential management and firmware upgrade
 - LoRaWAN Network Server and Basics™ Station can be decoupled, allowing the
 possibility to connect multiple concentrators on a single LoRaWAN Network Server
 instance
+- Support for running LNS on a separate Edge or Cloud device
 - Support for secure communication between LoRaWAN Network Server and Basics™
 Station
 - Support for running LoRaWAN Network Server on [Azure IoT Edge for Linux on
 Windows](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-for-linux-on-windows?view=iotedge-2018-06)
 - Regional support for AS923 and CN470 (Regional Parameters v1.0.3rA and
 RP002-1.0.3 revisions)
-- Support for running LNS on a separate Edge or Cloud device
 - [Observability](./user-guide/observability.md):
   - Integration with Azure Monitor
   - Exposing a Prometheus endpoint for metrics scraping
@@ -36,7 +36,7 @@ authentication modes
 
 ### Breaking Changes
 
-- Deprecated support for Packetforwarder ([upgrade instructions](user-guide/pkt-fwd-to-station.md))
+- Deprecated support for Packet Forwarder ([upgrade instructions](user-guide/pkt-fwd-to-station.md))
 - Upgrade to RaspberryPi OS based on Debian 11.0 Bullseye ([upgrade instructions](user-guide/upgrade.md#upgrading-to-raspberry-pi-os-bullseye))
 - Infrastructure changes:
   - New storage containers for CUPS credentials management and firmware upgrade
