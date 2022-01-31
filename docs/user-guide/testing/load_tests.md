@@ -12,7 +12,7 @@ In `LoRaWan.Tests.Simulation` you have access to a set of load tests that can be
 
 ## Example load tests
 
-All load tests use the `Connected_Factory_Load_Test_Scenario` load test scenario.
+All load tests use the `Connected_Factory_Load_Test_Scenario` load test scenario. All example load tests below were tested against IoT Edge version 1.2.7.
 
 ### January 25th - 28th 2022, load test of v2.0.0-beta1 in gateway mode (ENABLE_GATEWAY=true)
 
