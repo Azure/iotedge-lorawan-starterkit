@@ -24,7 +24,6 @@ RP002-1.0.3 revisions)
   - Integration with Azure Monitor
   - Exposing a Prometheus endpoint for metrics scraping
   - Collection of metrics for edgeAgent and edgeHub modules with [Metrics collector module](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-collect-and-transport-metrics?view=iotedge-2020-11&tabs=iothub)
-  - distributed tracing
 
 ### Code Quality Improvements
 
@@ -44,6 +43,7 @@ authentication modes
   (more in related [ADRs](adr/008_CUPS_firmware_upgrade.md))
   - A Log Analytics workspace is required for integrating with metrics collector
   (more in related [ADRs](adr/005_observability.md))
+  - [Azure Functions runtime upgrade to v4](user-guide/upgrade.md/#azure-functions)
 
 ### Bugfixes
 
