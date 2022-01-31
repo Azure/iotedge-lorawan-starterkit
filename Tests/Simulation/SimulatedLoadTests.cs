@@ -198,7 +198,7 @@ namespace LoRaWan.Tests.Simulation
         // - OTAA devices
         // - Sending confirmed/unconfirmed messages
         // - Goal: N devices in parallel based on configuration
-        [Fact]
+        [Fact(Skip = "Test is only used for manual load tests.")]
         public async Task Multiple_ABP_and_OTAA_Simulated_Devices_Confirmed()
         {
             const int messagesPerDeviceExcludingWarmup = 10;
