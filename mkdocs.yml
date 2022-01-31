@@ -83,12 +83,14 @@ nav:
     - Testing:
       - user-guide/testing/e2e_tests.md
       - user-guide/testing/integration_tests.md
+      - user-guide/testing/load_tests.md
   - 'Reference':
     - user-guide/architecture.md
     - user-guide/message-flows.md
     - user-guide/deployment-scenarios.md
     - user-guide/caching.md
     - user-guide/ci-setup.md
+    - user-guide/adaptive-data-rate.md
   - 'Samples':
     - samples/arduino.md
     - 'Decoders':
