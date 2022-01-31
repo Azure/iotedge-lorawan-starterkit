@@ -112,6 +112,7 @@ nav:
     - adr/007_message_deduplication.md
     - adr/008_cups_firmware_upgrade.md
   - About:
+    - release-notes.md
     - 'Known Issues': issues.md
     - 'Support': support.md
     - 'Contributing': contributing.md
