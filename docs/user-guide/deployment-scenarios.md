@@ -24,6 +24,10 @@ updates](station-firmware-upgrade.md) for example.
 
 ## Scalability & Availability
 
+**Note**: This guide is only talking about the LBS/LNS deployment configuration. For the full solution, the function endpoint,
+IoT Hub and Redis need to be taken into consideration as well. There is documentation for all of these services explaining
+the different options for HA and scalability.
+
 ### Single concentrator with single LNS
 
 This is the most basic deployment you can chose. It does only deploy 1 concentrator
