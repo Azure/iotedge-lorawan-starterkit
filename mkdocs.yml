@@ -90,6 +90,7 @@ nav:
     - user-guide/deployment-scenarios.md
     - user-guide/caching.md
     - user-guide/ci-setup.md
+    - user-guide/adaptive-data-rate.md
   - 'Samples':
     - samples/arduino.md
     - 'Decoders':
