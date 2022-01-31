@@ -53,7 +53,8 @@ within reach of that concentrator.
 | Device Twin   |KeepAliveTimeout       |undefined or 0 |
 | Device Twin   |Deduplication          |None           |
 | Device Twin   |GatewayId              |The Id of the Network Server |
-| Edge Hub Environment variable |[MaxConnectedClients](https://github.com/Azure/iotedge/blob/master/doc/EnvironmentVariables.md) |Depends on number of devices |
+| Edge Hub environment variable |[MaxConnectedClients](https://github.com/Azure/iotedge/blob/master/doc/EnvironmentVariables.md) |Depends on number of devices |
+| Network server environment variable |IOTHUB_CONNECTION_POOL_SIZE |Depends on the number of devices |
 
 ![Single concentrator - Single gateway](../images/scenarios/1_scale_and_availability.jpg)
 
@@ -65,7 +66,7 @@ Multiple concentrators are deployed that reach a single network server. Each sen
 
 1. Scalability: this model scales very well. It's a bit more overhead than the single concentrator / single gateway
 model as it will have to deduplicate messages coming in from the additional
-concentrators. During scale tests we verified that this scenario scales up to at least 900 OTAA devices, broadcasting a message every 3 minutes to 4 concentrators.
+concentrators. During [scale tests](./testing/load_tests.md) we verified that this scenario scales up to at least 900 OTAA devices, broadcasting a message every 3 minutes to 4 concentrators.
 1. Relatively simple
 1. Low cost
 1. Partial redundancy: if the deployment is designed to ensure that each sensor can reach
@@ -87,6 +88,7 @@ The result in the worst case is lost of messages.
 | Device Twin   |Deduplication          |None           |
 | Device Twin   |GatewayId              |The Id of the Network Server |
 | Edge Hub Environment variable |[MaxConnectedClients](https://github.com/Azure/iotedge/blob/master/doc/EnvironmentVariables.md) |Depends on number of devices |
+| Network server environment variable |IOTHUB_CONNECTION_POOL_SIZE |Depends on the number of devices |
 
 ![Multi Single](../images/scenarios/2_scale_and_availability.jpg)
 
@@ -103,7 +105,7 @@ so that a single sensor is in range of at least 2 concentrators, both connecting
 
 1. Availability: If the deployment is done right, the single point of failure can
 be eliminated.
-1. Reliability: message delivery likelyhood is increased.
+1. Reliability: message delivery likelihood is increased.
 1. Reach: The deployment model can be expanded
 
 #### Disadvantages
