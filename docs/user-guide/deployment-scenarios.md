@@ -24,7 +24,7 @@ updates](station-firmware-upgrade.md) for example.
 
 ## Scalability & Availability
 
-### Single conentrator with single LNS
+### Single concentrator with single LNS
 
 This is the most basic deployment you can chose. It does only deploy 1 concentrator
 and one network server. Each sensor can at most reach a single concentrator.
