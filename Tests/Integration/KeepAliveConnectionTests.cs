@@ -92,7 +92,8 @@ namespace LoRaWan.Tests.Integration
             using var loraDeviceCache = CreateDeviceCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageDispatcher = MessageDispatcher.Create(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -151,7 +152,8 @@ namespace LoRaWan.Tests.Integration
             using var loraDeviceCache = CreateDeviceCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageDispatcher = MessageDispatcher.Create(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -217,7 +219,8 @@ namespace LoRaWan.Tests.Integration
             using var loraDeviceCache = CreateDeviceCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageDispatcher = MessageDispatcher.Create(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -286,7 +289,8 @@ namespace LoRaWan.Tests.Integration
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
-            using var messageDispatcher = MessageDispatcher.Create(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);

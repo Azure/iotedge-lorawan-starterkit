@@ -47,23 +47,6 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Use this only for tests.
-        /// </summary>
-        internal static MessageDispatcher Create(NetworkServerConfiguration configuration,
-                                                 ILoRaDeviceRegistry deviceRegistry,
-                                                 ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
-        {
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var concentratorDeduplication = new ConcentratorDeduplication(memoryCache, NullLogger<IConcentratorDeduplication>.Instance);
-
-            return new MessageDispatcher(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
-                   new JoinRequestMessageHandler(configuration, concentratorDeduplication, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance, null),
-                   NullLoggerFactory.Instance,
-                   NullLogger<MessageDispatcher>.Instance,
-                   null);
-        }
-
-        /// <summary>
         /// Dispatches a request.
         /// </summary>
         public void DispatchRequest(LoRaRequest request)

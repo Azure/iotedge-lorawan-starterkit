@@ -53,7 +53,8 @@ namespace LoRaWan.Tests.Integration
             using var loraDeviceCache = CreateDeviceCache(loRaDevice);
             using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageProcessor1 = MessageDispatcher.Create(
+            using var messageProcessor1 = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 loRaDeviceRegistry1,
                 FrameCounterUpdateStrategyProvider);

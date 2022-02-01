@@ -180,7 +180,7 @@ namespace LoRaWan.Tests.Integration
                 var loraDeviceCache = CreateDeviceCache(loRaDevice);
                 var loraDeviceFactory = new TestLoRaDeviceFactory(networkServerConfiguration, LoRaDeviceClient.Object, connectionManager, loraDeviceCache, requestHandler);
                 var loRaDeviceRegistry = new LoRaDeviceRegistry(networkServerConfiguration, cache, loRaDeviceApi, loraDeviceFactory, loraDeviceCache);
-                return (MessageDispatcher.Create(networkServerConfiguration, loRaDeviceRegistry, frameCounterUpdateStrategyProvider),
+                return (TestMessageDispatcher.Create(cache, networkServerConfiguration, loRaDeviceRegistry, frameCounterUpdateStrategyProvider),
                         new DisposableHolder(() =>
 #pragma warning restore CA2000 // Dispose objects before losing scope
                         {
