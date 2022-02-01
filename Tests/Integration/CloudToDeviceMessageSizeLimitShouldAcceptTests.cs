@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.Integration
             TestUtils.CheckDRAndFrequencies(request, request.ResponseDownlink);
 
             // Get downlink message
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loraDevice.AppSKey.Value);
 

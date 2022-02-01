@@ -6,7 +6,6 @@ namespace LoRaWan.Tests.Common
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
@@ -24,6 +23,7 @@ namespace LoRaWan.Tests.Common
     /// </summary>
     public sealed class SimulatedDevice
     {
+        private const int MaxJoinRetryCount = 4;
         private static readonly IJsonReader<DevEui> DevEuiMessageReader =
             JsonReader.Object(JsonReader.Property("DevEui", from d in JsonReader.String()
                                                             select DevEui.Parse(d)));
@@ -199,8 +199,6 @@ namespace LoRaWan.Tests.Common
                 {
                     payload = StringToByteArray(data);
                 }
-
-                Array.Reverse(payload);
             }
 
             // 0 = uplink, 1 = downlink
@@ -265,73 +263,89 @@ namespace LoRaWan.Tests.Common
         // Performs join
         public async Task<bool> JoinAsync(TimeSpan? timeout = null)
         {
-            timeout ??= TimeSpan.FromSeconds(30);
-            using var joinCompleted = new SemaphoreSlim(0);
-            using var joinRequest = WaitableLoRaRequest.CreateWaitableRequest(CreateJoinRequest());
-            var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
-            var joinSuccessful = false;
-
-            void OnMessageReceived(object sender, EventArgs<string> response)
-            {
-                try
-                {
-                    var joinAcceptResponse = JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value);
-                    // PDU is null in case it is another message coming from the station.
-                    if (joinAcceptResponse is { } someJoinAcceptResponse && someJoinAcceptResponse.Pdu is { } somePdu && DevEui.Parse(someJoinAcceptResponse.DevEuiString) == DevEUI)
-                    {
-                        var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(somePdu), AppKey.Value);
-                        joinSuccessful = HandleJoinAccept(joinAccept);
-                        joinCompleted.Release();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    this.logger.LogError(ex, "Join failed due to: '{Message}'.", ex.Message);
-                    joinSuccessful = false;
-                    joinCompleted.Release();
-                    throw;
-                }
-            }
-
-            foreach (var basicsStation in this.simulatedBasicsStations)
-                basicsStation.MessageReceived += OnMessageReceived;
-
-            foreach (var basicsStation in this.simulatedBasicsStations)
-            {
-                await basicsStation.SerializeAndSendMessageAsync(new
-                {
-                    JoinEui = joinRequestPayload.AppEui.ToString("D", null),
-                    msgtype = "jreq",
-                    DevEui = joinRequestPayload.DevEUI.ToString("D", null),
-                    DevNonce = joinRequestPayload.DevNonce.AsUInt16,
-                    MHdr = uint.Parse(joinRequestPayload.MHdr.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                    MIC = joinRequestPayload.Mic.Value.AsInt32,
-                    DR = joinRequest.RadioMetadata.DataRate,
-                    Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
-                    upinfo = new
-                    {
-                        gpstime = joinRequest.RadioMetadata.UpInfo.GpsTime,
-                        rctx = 10,
-                        rssi = joinRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
-                        xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
-                        snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
-                    }
-                });
-            }
+            var retryCount = 0;
+            var effectiveTimeout = timeout ?? TimeSpan.FromSeconds(30);
 
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                timeout = TimeSpan.FromSeconds(60);
+                effectiveTimeout = TimeSpan.FromSeconds(60);
             }
 #endif
 
-            await joinCompleted.WaitAsync(timeout.Value);
+            while (!await TryJoinAsync(effectiveTimeout) && retryCount < MaxJoinRetryCount)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10));
+                ++retryCount;
+            }
 
-            foreach (var basicsStation in this.simulatedBasicsStations)
-                basicsStation.MessageReceived -= OnMessageReceived;
+            return retryCount < MaxJoinRetryCount;
 
-            return joinSuccessful;
+            async Task<bool> TryJoinAsync(TimeSpan timeout)
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                using var joinRequest = WaitableLoRaRequest.CreateWaitableRequest(CreateJoinRequest());
+                var joinRequestPayload = (LoRaPayloadJoinRequest)joinRequest.Payload;
+
+                void OnMessageReceived(object sender, EventArgs<string> response)
+                {
+                    try
+                    {
+                        if (JsonSerializer.Deserialize<JoinAcceptResponse>(response.Value)
+                            // PDU is null in case it is another message coming from the station.
+                            is ({ } pdu, var devEuiString) && DevEui.Parse(devEuiString) == DevEUI)
+                        {
+                            var joinAccept = new LoRaPayloadJoinAccept(StringToByteArray(pdu), AppKey.Value);
+                            tcs.SetResult(HandleJoinAccept(joinAccept));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
+                }
+
+                foreach (var basicsStation in this.simulatedBasicsStations)
+                    basicsStation.MessageReceived += OnMessageReceived;
+
+                try
+                {
+                    foreach (var basicsStation in this.simulatedBasicsStations)
+                    {
+                        await basicsStation.SerializeAndSendMessageAsync(new
+                        {
+                            JoinEui = joinRequestPayload.AppEui.ToString("D", null),
+                            msgtype = "jreq",
+                            DevEui = joinRequestPayload.DevEUI.ToString("D", null),
+                            DevNonce = joinRequestPayload.DevNonce.AsUInt16,
+                            MHdr = (byte)joinRequestPayload.MHdr,
+                            MIC = joinRequestPayload.Mic.Value.AsInt32,
+                            DR = joinRequest.RadioMetadata.DataRate,
+                            Freq = joinRequest.RadioMetadata.Frequency.AsUInt64,
+                            upinfo = new
+                            {
+                                gpstime = joinRequest.RadioMetadata.UpInfo.GpsTime,
+                                rctx = 10,
+                                rssi = joinRequest.RadioMetadata.UpInfo.ReceivedSignalStrengthIndication,
+                                xtime = joinRequest.RadioMetadata.UpInfo.Xtime,
+                                snr = joinRequest.RadioMetadata.UpInfo.SignalNoiseRatio
+                            }
+                        });
+                    }
+
+                    return await tcs.Task.WaitAsync(timeout);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Join attempt failed due to: '{Message}'.", ex.Message);
+                    return false;
+                }
+                finally
+                {
+                    foreach (var basicsStation in this.simulatedBasicsStations)
+                        basicsStation.MessageReceived -= OnMessageReceived;
+                }
+            }
         }
 
         /// <summary>

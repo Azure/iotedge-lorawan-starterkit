@@ -635,9 +635,9 @@ namespace LoRaWan.Tests.Integration
             // ack should be received
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.NotNull(confirmedRequest.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
 
-            var confirmedMessageResult = PacketForwarder.DownlinkMessages[0];
+            var confirmedMessageResult = DownstreamMessageSender.DownlinkMessages[0];
 
             // validates transmission for EU868
             Assert.Equal(radio.Frequency, confirmedMessageResult.Rx1?.Frequency);
@@ -814,8 +814,8 @@ namespace LoRaWan.Tests.Integration
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var confirmedMessageResult = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var confirmedMessageResult = DownstreamMessageSender.DownlinkMessages[0];
             Assert.Equal(radio.Frequency, confirmedMessageResult.Rx1?.Frequency);
             Assert.Equal(radio.DataRate, confirmedMessageResult.Rx1?.DataRate);
             Assert.Equal(radio.UpInfo.Xtime, confirmedMessageResult.Xtime);
@@ -931,7 +931,7 @@ namespace LoRaWan.Tests.Integration
             messageDispatcher.DispatchRequest(request1);
             Assert.True(await request1.WaitCompleteAsync());
             Assert.Null(request1.ResponseDownlink);
-            Assert.Empty(PacketForwarder.DownlinkMessages);
+            Assert.Empty(DownstreamMessageSender.DownlinkMessages);
 
             Assert.False(DeviceCache.TryGetForPayload(request1.Payload, out _));
 
@@ -945,7 +945,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request2.WaitCompleteAsync());
             Assert.True(request2.ProcessingSucceeded);
             Assert.Null(request2.ResponseDownlink);
-            Assert.Empty(PacketForwarder.DownlinkMessages);
+            Assert.Empty(DownstreamMessageSender.DownlinkMessages);
 
             Assert.True(DeviceCache.TryGetForPayload(request2.Payload, out var loRaDevice));
             Assert.Equal(simulatedDevice.NwkSKey, loRaDevice.NwkSKey);
@@ -1173,7 +1173,7 @@ namespace LoRaWan.Tests.Integration
 
                 // ack should be received
                 Assert.NotNull(firstMessageRequest.ResponseDownlink);
-                Assert.Equal(i + 1, PacketForwarder.DownlinkMessages.Count);
+                Assert.Equal(i + 1, DownstreamMessageSender.DownlinkMessages.Count);
             }
 
             // resubmitting should fail
@@ -1181,7 +1181,7 @@ namespace LoRaWan.Tests.Integration
             messageDispatcher.DispatchRequest(fourthRequest);
             Assert.True(await fourthRequest.WaitCompleteAsync());
             Assert.Null(fourthRequest.ResponseDownlink);
-            Assert.Equal(4, PacketForwarder.DownlinkMessages.Count);
+            Assert.Equal(4, DownstreamMessageSender.DownlinkMessages.Count);
             Assert.Equal(LoRaDeviceRequestFailedReason.ConfirmationResubmitThresholdExceeded, fourthRequest.ProcessingFailedReason);
 
             // Sending the next fcnt with failed messages should work, including resubmit
@@ -1196,7 +1196,7 @@ namespace LoRaWan.Tests.Integration
 
                 // ack should be received
                 Assert.NotNull(request.ResponseDownlink);
-                Assert.Equal(i + 5, PacketForwarder.DownlinkMessages.Count);
+                Assert.Equal(i + 5, DownstreamMessageSender.DownlinkMessages.Count);
             }
 
             // resubmitting should fail
@@ -1204,7 +1204,7 @@ namespace LoRaWan.Tests.Integration
             messageDispatcher.DispatchRequest(resubmitSecondRequest);
             Assert.True(await resubmitSecondRequest.WaitCompleteAsync());
             Assert.Null(resubmitSecondRequest.ResponseDownlink);
-            Assert.Equal(8, PacketForwarder.DownlinkMessages.Count);
+            Assert.Equal(8, DownstreamMessageSender.DownlinkMessages.Count);
             Assert.Equal(LoRaDeviceRequestFailedReason.ConfirmationResubmitThresholdExceeded, resubmitSecondRequest.ProcessingFailedReason);
 
             Assert.Equal(2 + deviceInitialFcntUp, loRaDevice.FCntUp);

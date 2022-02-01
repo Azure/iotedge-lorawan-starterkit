@@ -384,7 +384,7 @@ namespace LoRaWan.NetworkServer
                     if (downlinkMessageBuilderResp.DownlinkMessage != null)
                     {
                         this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)downlinkMessageBuilderResp.ReceiveWindow));
-                        _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
+                        _ = request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
 
                         if (cloudToDeviceMessage != null)
                         {
@@ -549,7 +549,7 @@ namespace LoRaWan.NetworkServer
             _ = request ?? throw new ArgumentNullException(nameof(request));
             _ = confirmDownlinkMessageBuilderResp ?? throw new ArgumentNullException(nameof(confirmDownlinkMessageBuilderResp));
 
-            return request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkMessage);
+            return request.DownstreamMessageSender.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkMessage);
         }
 
         protected virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)

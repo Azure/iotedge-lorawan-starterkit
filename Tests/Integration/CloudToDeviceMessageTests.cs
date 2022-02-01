@@ -137,7 +137,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Single(PacketForwarder.DownlinkMessages);
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
 
             LoRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Never());
 
@@ -210,8 +210,8 @@ namespace LoRaWan.Tests.Integration
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loraDevice.AppSKey.Value);
             Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
@@ -290,8 +290,8 @@ namespace LoRaWan.Tests.Integration
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loraDevice.AppSKey.Value);
             Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
@@ -373,8 +373,8 @@ namespace LoRaWan.Tests.Integration
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             TestUtils.CheckDRAndFrequencies(request, downlinkMessage);
 
 
@@ -460,8 +460,8 @@ namespace LoRaWan.Tests.Integration
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages.First();
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages.First();
 
             TestUtils.CheckDRAndFrequencies(request, downlinkMessage, true);
 
@@ -552,8 +552,8 @@ namespace LoRaWan.Tests.Integration
             // 3. Return is downstream message
             Assert.True(request.ProcessingSucceeded);
             Assert.NotNull(request.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages.First();
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages.First();
 
             TestUtils.CheckDRAndFrequencies(request, downlinkMessage, true);
 
@@ -647,7 +647,7 @@ namespace LoRaWan.Tests.Integration
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
-            var downlinkMessage = Assert.Single(PacketForwarder.DownlinkMessages);
+            var downlinkMessage = Assert.Single(DownstreamMessageSender.DownlinkMessages);
 
             Assert.Equal(LoRaDeviceClassType.A, downlinkMessage.DeviceClassType);
             Assert.Equal(loRaDevice.ReportedRXDelay, downlinkMessage.LnsRxDelay);
@@ -730,8 +730,8 @@ namespace LoRaWan.Tests.Integration
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
 
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
@@ -895,8 +895,8 @@ namespace LoRaWan.Tests.Integration
             // 2. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             payloadDataDown.Serialize(loraDevice.AppSKey.Value);
             Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
@@ -965,7 +965,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
-            using var request = WaitableLoRaRequest.Create(TestUtils.GenerateTestRadioMetadata(), PacketForwarder,
+            using var request = WaitableLoRaRequest.Create(TestUtils.GenerateTestRadioMetadata(), DownstreamMessageSender,
                                                            inTimeForC2DMessageCheck: true,
                                                            inTimeForAdditionalMessageCheck: false,
                                                            inTimeForDownlinkDelivery: false,
@@ -983,7 +983,7 @@ namespace LoRaWan.Tests.Integration
             // 2. No downstream message
             Assert.Null(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Empty(PacketForwarder.DownlinkMessages);
+            Assert.Empty(DownstreamMessageSender.DownlinkMessages);
 
             // 3. Device FcntDown did change
             Assert.True(DeviceCache.TryGetForPayload(request.Payload, out var loRaDevice));

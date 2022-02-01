@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly NetworkServerConfiguration serverConfiguration;
         private readonly Region loRaRegion;
         private readonly LoRaDeviceRegistry loRaDeviceRegistry;
-        private readonly Mock<IPacketForwarder> packetForwarder;
+        private readonly Mock<IDownstreamMessageSender> downstreamMessageSender;
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
@@ -43,7 +43,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             this.loRaRegion = RegionManager.EU868;
 
-            this.packetForwarder = new Mock<IPacketForwarder>(MockBehavior.Strict);
+            this.downstreamMessageSender = new Mock<IDownstreamMessageSender>(MockBehavior.Strict);
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
 
@@ -71,7 +71,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(null)]
         [InlineData(ServerGatewayID)]
-        public async Task When_Sending_Message_Should_Send_Downlink_To_PacketForwarder(string deviceGatewayID)
+        public async Task When_Sending_Message_Should_Send_Downlink_To_DownstreamMessageSender(string deviceGatewayID)
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
             var devEUI = simDevice.DevEUI;
@@ -104,24 +104,24 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
             DownlinkMessage receivedDownlinkMessage = null;
-            this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
+            this.downstreamMessageSender.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
                 .Returns(Task.CompletedTask)
                 .Callback<DownlinkMessage>(d => receivedDownlinkMessage = d);
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.packetForwarder.Object,
+                this.downstreamMessageSender.Object,
                 this.frameCounterStrategyProvider,
                 NullLogger<DefaultClassCDevicesMessageSender>.Instance,
                 TestMeter.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()), Times.Once());
+            this.downstreamMessageSender.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()), Times.Once());
             EnsureDownlinkIsCorrect(receivedDownlinkMessage, simDevice, c2dToDeviceMessage);
 
-            this.packetForwarder.VerifyAll();
+            this.downstreamMessageSender.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
@@ -149,14 +149,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.packetForwarder.Object,
+                this.downstreamMessageSender.Object,
                 this.frameCounterStrategyProvider,
                 NullLogger<DefaultClassCDevicesMessageSender>.Instance,
                 TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.VerifyAll();
+            this.downstreamMessageSender.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
@@ -174,14 +174,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.packetForwarder.Object,
+                this.downstreamMessageSender.Object,
                 this.frameCounterStrategyProvider,
                 NullLogger<DefaultClassCDevicesMessageSender>.Instance,
                 TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.VerifyAll();
+            this.downstreamMessageSender.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
@@ -209,14 +209,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.packetForwarder.Object,
+                this.downstreamMessageSender.Object,
                 this.frameCounterStrategyProvider,
                 NullLogger<DefaultClassCDevicesMessageSender>.Instance,
                 TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.VerifyAll();
+            this.downstreamMessageSender.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
@@ -254,14 +254,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.packetForwarder.Object,
+                this.downstreamMessageSender.Object,
                 this.frameCounterStrategyProvider,
                 NullLogger<DefaultClassCDevicesMessageSender>.Instance,
                 TestMeter.Instance);
 
             _ = await Assert.ThrowsAsync<TimeoutException>(() => target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.VerifyAll();
+            this.downstreamMessageSender.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
@@ -283,14 +283,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.packetForwarder.Object,
+                this.downstreamMessageSender.Object,
                 this.frameCounterStrategyProvider,
                 NullLogger<DefaultClassCDevicesMessageSender>.Instance,
                 TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.VerifyAll();
+            this.downstreamMessageSender.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
@@ -312,14 +312,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.packetForwarder.Object,
+                this.downstreamMessageSender.Object,
                 this.frameCounterStrategyProvider,
                 NullLogger<DefaultClassCDevicesMessageSender>.Instance,
                 TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.VerifyAll();
+            this.downstreamMessageSender.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
@@ -365,27 +365,27 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
             DownlinkMessage receivedDownlinkMessage = null;
-            this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
+            this.downstreamMessageSender.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()))
                 .Returns(Task.CompletedTask)
                 .Callback<DownlinkMessage>(d => receivedDownlinkMessage = d);
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.packetForwarder.Object,
+                this.downstreamMessageSender.Object,
                 this.frameCounterStrategyProvider,
                 NullLogger<DefaultClassCDevicesMessageSender>.Instance,
                 TestMeter.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()), Times.Once());
+            this.downstreamMessageSender.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkMessage>()), Times.Once());
 
             EnsureDownlinkIsCorrect(receivedDownlinkMessage, simDevice, c2dToDeviceMessage);
             Assert.Equal(DataRateIndex.DR10, receivedDownlinkMessage.Rx2.DataRate);
             Assert.Equal(Hertz.Mega(923.3), receivedDownlinkMessage.Rx2.Frequency);
 
-            this.packetForwarder.VerifyAll();
+            this.downstreamMessageSender.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
@@ -432,14 +432,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.packetForwarder.Object,
+                this.downstreamMessageSender.Object,
                 this.frameCounterStrategyProvider,
                 NullLogger<DefaultClassCDevicesMessageSender>.Instance,
                 TestMeter.Instance);
 
             Assert.False(await target.SendAsync(c2dToDeviceMessage));
 
-            this.packetForwarder.VerifyAll();
+            this.downstreamMessageSender.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }

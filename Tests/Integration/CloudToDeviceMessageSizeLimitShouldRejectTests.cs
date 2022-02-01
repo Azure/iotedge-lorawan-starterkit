@@ -105,7 +105,7 @@ namespace LoRaWan.Tests.Integration
                 // TODO CHANGE THIS WHEN MOVING RXPK in #1086
                 // Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
 
-                var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+                var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
                 var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
                 payloadDataDown.Serialize(loraDevice.AppSKey.Value);
 

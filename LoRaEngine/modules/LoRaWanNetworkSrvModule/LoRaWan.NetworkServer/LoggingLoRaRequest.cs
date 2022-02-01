@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<LoggingLoRaRequest> logger;
         private readonly Histogram<double> d2cMessageDeliveryLatencyHistogram;
 
-        public override IPacketForwarder PacketForwarder => this.wrappedRequest.PacketForwarder;
+        public override IDownstreamMessageSender DownstreamMessageSender => this.wrappedRequest.DownstreamMessageSender;
 
         public override Region Region => this.wrappedRequest.Region;
 
@@ -54,11 +54,12 @@ namespace LoRaWan.NetworkServer
 
         private void TrackProcessingTime()
         {
+            var elapsedTime = DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime);
+            this.d2cMessageDeliveryLatencyHistogram?.Record(elapsedTime.TotalMilliseconds);
+
             if (!this.logger.IsEnabled(LogLevel.Debug))
                 return;
 
-            var elapsedTime = DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime);
-            this.d2cMessageDeliveryLatencyHistogram?.Record(elapsedTime.TotalMilliseconds);
             this.logger.LogDebug($"processing time: {elapsedTime}");
         }
 

@@ -146,8 +146,8 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded, $"Failed due to '{joinRequest.ProcessingFailedReason}'.");
             Assert.NotNull(joinRequest.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkJoinAcceptMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkJoinAcceptMessage = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(downlinkJoinAcceptMessage.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             Assert.Equal(joinAccept.DevAddr.ToString(), afterJoinDevAddr);
 
@@ -207,9 +207,9 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
             Assert.NotNull(confirmedRequest.ResponseDownlink);
-            Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
+            Assert.Equal(2, DownstreamMessageSender.DownlinkMessages.Count);
             Assert.Equal(2, sentTelemetry.Count);
-            var downstreamMessage = PacketForwarder.DownlinkMessages[1];
+            var downstreamMessage = DownstreamMessageSender.DownlinkMessages[1];
 
             // validates txpk according to region
             DeviceJoinInfo deviceJoinInfo = null;
@@ -317,8 +317,8 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await joinRequest2.WaitCompleteAsync());
             Assert.NotNull(joinRequest2.ResponseDownlink);
             Assert.True(joinRequest2.ProcessingSucceeded);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var joinRequestDownlinkMessage2 = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var joinRequestDownlinkMessage2 = DownstreamMessageSender.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(joinRequestDownlinkMessage2.Data, simulatedDevice.LoRaDevice.AppKey.Value);
             Assert.Equal(joinAccept.DevAddr.ToString(), afterJoinDevAddr);
 
@@ -492,8 +492,8 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
             Assert.NotNull(joinRequest.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkJoinAcceptMessage = PacketForwarder.DownlinkMessages[0];
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkJoinAcceptMessage = DownstreamMessageSender.DownlinkMessages[0];
             // validates txpk according to eu region
             Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(radio.Frequency, joinRequest.RadioMetadata.DataRate, deviceJoinInfo: null, downstreamFrequency: out var receivedFrequency));
             Assert.Equal(receivedFrequency, downlinkJoinAcceptMessage.Rx1?.Frequency);
@@ -554,7 +554,7 @@ namespace LoRaWan.Tests.Integration
 
             await Task.WhenAll(joinRequest1.WaitCompleteAsync(), joinRequest2.WaitCompleteAsync());
 
-            Assert.Equal(2, PacketForwarder.DownlinkMessages.Count);
+            Assert.Equal(2, DownstreamMessageSender.DownlinkMessages.Count);
             Assert.NotNull(joinRequest1.ResponseDownlink);
             Assert.NotNull(joinRequest2.ResponseDownlink);
 

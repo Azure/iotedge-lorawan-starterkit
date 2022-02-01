@@ -6,8 +6,8 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using LoRaTools.LoRaPhysical;
 
-    // Packet forwarder
-    public interface IPacketForwarder
+    // Interface for sending downstream messages
+    public interface IDownstreamMessageSender
     {
         /// <summary>
         /// Send downstream message to LoRa device.

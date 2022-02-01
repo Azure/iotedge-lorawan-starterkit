@@ -22,11 +22,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Device_Expires_It_Is_Refreshed()
         {
             var moqCallback = new Mock<Action<LoRaDevice>>();
-            using var cache = new TestDeviceCache(moqCallback.Object, this.quickRefreshOptions);
-            using var device = CreateTestDevice();
+            using var cache = new TestDeviceCache(moqCallback.Object, this.quickRefreshOptions, true);
+            var deviceMock = CreateMockDevice();
+            var disposableMock = new Mock<IDisposable>();
+            deviceMock.Setup(x => x.BeginDeviceClientConnectionActivity())
+                      .Returns(disposableMock.Object);
+            var device = deviceMock.Object;
             cache.Register(device);
             await cache.WaitForRefreshAsync(CancellationToken.None);
             moqCallback.Verify(x => x.Invoke(device));
+            disposableMock.Verify(x => x.Dispose(), Times.Once);
         }
 
         [Fact]
@@ -60,7 +65,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Disposed_While_Refreshing_We_Shutdown_Gracefully()
         {
             using var cache = new TestDeviceCache(this.quickRefreshOptions, true);
-            var deviceMock = new Mock<LoRaDevice>(new DevAddr(0xabc), new DevEui(0x123), null);
+            var deviceMock = CreateMockDevice();
             deviceMock.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((NetworkServerConfiguration config, CancellationToken token) =>
                 {
@@ -86,7 +91,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Refresh_Fails_It_Is_Retried()
         {
             using var cache = new TestDeviceCache(this.quickRefreshOptions, true);
-            var deviceMock = new Mock<LoRaDevice>(new DevAddr(0xabc), new DevEui(0x123), null);
+            var deviceMock = CreateMockDevice();
             deviceMock.SetupSequence(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new LoRaProcessingException("Refresh failed.", LoRaProcessingErrorCode.DeviceInitializationFailed))
                 .ReturnsAsync(true);
@@ -176,7 +181,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void When_Removing_Device_Is_Disposed_On_Request(bool dispose)
         {
             using var cache = CreateNoRefreshCache();
-            var deviceMock = new Mock<LoRaDevice>(new DevAddr(200), new DevEui(100), Mock.Of<ILoRaDeviceClientConnectionManager>());
+            var deviceMock = CreateMockDevice();
             var device = deviceMock.Object;
             cache.Register(device);
             Assert.True(cache.Remove(device, dispose));
@@ -346,7 +351,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 connectionMgr.Verify(x => x.Release(device), Times.Once);
             }
         }
-        private static LoRaDevice CreateTestDevice() => new LoRaDevice(new DevAddr(0xffffffff), new DevEui(0), null) { NwkSKey = TestKeys.CreateNetworkSessionKey(0xAAAAAAAA) };
+        private static Mock<LoRaDevice> CreateMockDevice()
+            => new Mock<LoRaDevice>(new DevAddr(200), new DevEui(100), Mock.Of<ILoRaDeviceClientConnectionManager>());
+
+        private static LoRaDevice CreateTestDevice()
+            => new LoRaDevice(new DevAddr(0xffffffff), new DevEui(0), null) { NwkSKey = TestKeys.CreateNetworkSessionKey(0xAAAAAAAA) };
 
         private readonly LoRaDeviceCacheOptions quickRefreshOptions = new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(1), ValidationInterval = TimeSpan.FromMilliseconds(50) };
 
@@ -390,6 +399,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 : this(onRefreshDevice, options, new NetworkServerConfiguration())
             { }
 
+            public TestDeviceCache(Action<LoRaDevice> onRefreshDevice, LoRaDeviceCacheOptions options, bool callDeviceRefresh)
+                : this(onRefreshDevice, options, new NetworkServerConfiguration(), callDeviceRefresh: callDeviceRefresh)
+            { }
+
             public TestDeviceCache(Action<LoRaDevice> onRefreshDevice)
                 : this (onRefreshDevice, new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromMilliseconds(int.MaxValue), RefreshInterval = TimeSpan.FromMilliseconds(int.MaxValue), ValidationInterval = TimeSpan.FromMilliseconds(int.MaxValue) }, new NetworkServerConfiguration())
             { }
@@ -416,16 +429,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             protected override async Task RefreshDeviceAsync(LoRaDevice device, CancellationToken cancellationToken)
             {
-                this.onRefreshDevice?.Invoke(device);
-                if (this.refreshTick.CurrentCount == 0)
-                    this.refreshTick.Release();
-
-                if (this.callDeviceRefresh)
+                try
                 {
-                    await base.RefreshDeviceAsync(device, cancellationToken);
-                }
+                    this.onRefreshDevice?.Invoke(device);
 
-                DeviceRefreshCount++;
+                    if (this.callDeviceRefresh)
+                        await base.RefreshDeviceAsync(device, cancellationToken);
+                }
+                finally
+                {
+                    if (this.refreshTick.CurrentCount == 0)
+                        this.refreshTick.Release();
+
+                    DeviceRefreshCount++;
+                }
             }
 
             protected override void OnRefresh()

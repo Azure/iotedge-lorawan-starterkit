@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         private readonly DevEui devEui = new DevEui(ulong.MaxValue);
         private readonly Mock<IWebSocketWriter<string>> webSocketWriter;
         private readonly byte[] loraDataByteArray;
-        private readonly DownstreamSender downlinkSender;
+        private readonly DownstreamMessageSender downlinkSender;
 
         public DownstreamSenderTests()
         {
@@ -39,9 +39,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
             loraDataByteArray = Encoding.UTF8.GetBytes(loraDataBase64);
 
-            downlinkSender = new DownstreamSender(socketWriterRegistry,
+            downlinkSender = new DownstreamMessageSender(socketWriterRegistry,
                                                   basicStationConfigurationService.Object,
-                                                  Mock.Of<ILogger<DownstreamSender>>());
+                                                  Mock.Of<ILogger<DownstreamMessageSender>>());
         }
 
         [Theory]

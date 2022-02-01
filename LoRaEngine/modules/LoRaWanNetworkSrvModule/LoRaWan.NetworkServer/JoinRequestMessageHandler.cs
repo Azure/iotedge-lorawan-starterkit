@@ -282,7 +282,7 @@ namespace LoRaWan.NetworkServer
                                                           request.RadioMetadata.UpInfo.AntennaPreference);
 
                 this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
-                _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessage);
+                _ = request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessage);
                 request.NotifySucceeded(loRaDevice, downlinkMessage);
 
                 if (this.logger.IsEnabled(LogLevel.Debug))

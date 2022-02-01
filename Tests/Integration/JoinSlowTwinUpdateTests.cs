@@ -101,7 +101,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(LoRaDeviceRequestFailedReason.IoTHubProblem, joinRequest1.ProcessingFailedReason);
             Assert.True(joinRequest2.ProcessingSucceeded);
             Assert.NotNull(joinRequest2.ResponseDownlink);
-            Assert.Single(PacketForwarder.DownlinkMessages);
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
 
             Assert.True(DeviceCache.TryGetByDevEui(devEui, out var loRaDevice));
             Assert.True(loRaDevice.IsOurDevice);

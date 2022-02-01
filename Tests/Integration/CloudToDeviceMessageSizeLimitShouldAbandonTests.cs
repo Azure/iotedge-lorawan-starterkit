@@ -111,7 +111,7 @@ namespace LoRaWan.Tests.Integration
 
             Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Rx2.DataRate);
 
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             if (hasMacInUpstream)
             {

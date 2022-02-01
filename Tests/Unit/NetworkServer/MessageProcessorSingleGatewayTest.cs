@@ -284,8 +284,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // 3. Return is downstream message
             Assert.NotNull(request.ResponseDownlink);
             Assert.True(request.ProcessingSucceeded);
-            Assert.Single(PacketForwarder.DownlinkMessages);
-            var downlinkMessage = PacketForwarder.DownlinkMessages.First();
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            var downlinkMessage = DownstreamMessageSender.DownlinkMessages.First();
             var payloadDataDown = new LoRaPayloadData(downlinkMessage.Data);
             Assert.Equal(payloadDataDown.DevAddr, loraDevice.DevAddr);
             Assert.False(payloadDataDown.IsConfirmed);

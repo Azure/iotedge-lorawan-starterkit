@@ -111,7 +111,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(expectedCounts, actualCounts);
 
             // downstream
-            var sentDownstream = PacketForwarder.DownlinkMessages.Concat(SecondPacketForwarder.DownlinkMessages).ToArray();
+            var sentDownstream = DownstreamMessageSender.DownlinkMessages.Concat(SecondDownstreamMessageSender.DownlinkMessages).ToArray();
 
             if (confirmedMessages)
                 Assert.Single(sentDownstream);

@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
-        private readonly IPacketForwarder downstreamSender;
+        private readonly IDownstreamMessageSender downstreamMessageSender;
         private readonly IMessageDispatcher messageDispatcher;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
-                                           IPacketForwarder packetForwarder,
+                                           IDownstreamMessageSender downstreamMessageSender,
                                            IMessageDispatcher messageDispatcher,
                                            ILogger<LnsProtocolMessageProcessor> logger,
                                            RegistryMetricTagBag registryMetricTagBag,
@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.socketWriterRegistry = socketWriterRegistry;
-            this.downstreamSender = packetForwarder;
+            this.downstreamMessageSender = downstreamMessageSender;
             this.messageDispatcher = messageDispatcher;
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
@@ -204,7 +204,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
-                        var loraRequest = new LoRaRequest(jreq.RadioMetadata, this.downstreamSender, DateTime.UtcNow);
+                        var loraRequest = new LoRaRequest(jreq.RadioMetadata, this.downstreamMessageSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadJoinRequest(jreq.JoinEui,
                                                                           jreq.DevEui,
                                                                           jreq.DevNonce,
@@ -230,7 +230,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
                         var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
-                        var loraRequest = new LoRaRequest(updf.RadioMetadata, this.downstreamSender, DateTime.UtcNow);
+                        var loraRequest = new LoRaRequest(updf.RadioMetadata, this.downstreamMessageSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadData(updf.DevAddr,
                                                                    updf.MacHeader,
                                                                    updf.FrameControlFlags,

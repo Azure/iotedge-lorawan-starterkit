@@ -355,13 +355,13 @@ namespace LoRaWan.Tests.Integration
             var target = new DefaultClassCDevicesMessageSender(
                 ServerConfiguration,
                 deviceRegistry,
-                PacketForwarder,
+                DownstreamMessageSender,
                 FrameCounterUpdateStrategyProvider,
                 new TestOutputLogger<DefaultClassCDevicesMessageSender>(testOutputHelper),
                 TestMeter.Instance);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
-            Assert.Single(PacketForwarder.DownlinkMessages);
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
 
             await EnsureDisconnectedAsync(disconnectedEvent);
 

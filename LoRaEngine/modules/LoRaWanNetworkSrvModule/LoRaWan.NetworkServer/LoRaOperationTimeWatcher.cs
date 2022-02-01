@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
     public class LoRaOperationTimeWatcher
     {
         /// <summary>
-        /// Gets the expected time required to package and send message back to package forwarder
+        /// Gets the expected time required to package and send message back to message sender
         /// 400ms.
         /// </summary>
         public static TimeSpan ExpectedTimeToPackageAndSendMessage { get; } = TimeSpan.FromMilliseconds(400);
@@ -37,7 +37,7 @@ namespace LoRaWan.NetworkServer
         public static TimeSpan CheckForCloudMessageCallEstimatedOverhead { get; } = TimeSpan.FromMilliseconds(100);
 
         /// <summary>
-        /// Gets the expected time required to package and send message back to package forwarder plus the checking for cloud to device message overhead
+        /// Gets the expected time required to package and send message back to message sender plus the checking for cloud to device message overhead
         /// 400ms.
         /// </summary>
         public static TimeSpan ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead { get; } = ExpectedTimeToPackageAndSendMessage + CheckForCloudMessageCallEstimatedOverhead;

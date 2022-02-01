@@ -24,6 +24,7 @@ namespace LoRaWan.Tests.Unit
                 from flags in
                     from fs in Enum.GetValues<FrameControlFlags>()
                                    .Where(f => f != FrameControlFlags.None)
+                                   .Distinct()
                                    .Subsets()
                     select fs.Aggregate(FrameControlFlags.None, (fs, f) => fs | f)
                 from optionsLength in MoreEnumerable.Sequence(0, 15)

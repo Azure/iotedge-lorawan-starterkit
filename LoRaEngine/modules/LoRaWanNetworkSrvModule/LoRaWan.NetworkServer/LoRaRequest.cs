@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer
 
         public virtual LoRaPayload Payload { get; private set; }
 
-        public virtual IPacketForwarder PacketForwarder { get; }
+        public virtual IDownstreamMessageSender DownstreamMessageSender { get; }
 
         public virtual DateTime StartTime { get; }
 
@@ -34,11 +34,11 @@ namespace LoRaWan.NetworkServer
 
         public LoRaRequest(
             RadioMetadata radioMetadata,
-            IPacketForwarder packetForwarder,
+            IDownstreamMessageSender downstreamMessageSender,
             DateTime startTime)
         {
             RadioMetadata = radioMetadata;
-            PacketForwarder = packetForwarder;
+            DownstreamMessageSender = downstreamMessageSender;
             StartTime = startTime;
         }
 
