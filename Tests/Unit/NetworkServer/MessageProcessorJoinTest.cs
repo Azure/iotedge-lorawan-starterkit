@@ -39,8 +39,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(() => null);
 
             // Send to message processor
+            using var cache = NewMemoryCache();
             using var messageProcessor = TestMessageDispatcher.Create(
-                NewMemoryCache(),
+                cache,
                 ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
@@ -138,8 +139,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(loRaDevice);
 
             // Send to message processor
+            using var cache = NewMemoryCache();
             using var messageProcessor = TestMessageDispatcher.Create(
-                NewMemoryCache(),
+                cache,
                 ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
@@ -183,8 +185,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(() => loRaDevice);
 
             // Send to message processor
+            using var cache = NewMemoryCache();
             using var messageProcessor = TestMessageDispatcher.Create(
-                NewMemoryCache(),
+                cache,
                 ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
@@ -228,8 +231,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(() => loRaDevice);
 
             // Send to message processor
+            using var cache = NewMemoryCache();
             using var messageProcessor = TestMessageDispatcher.Create(
-                NewMemoryCache(),
+                cache,
                 ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
@@ -270,8 +274,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(loRaDevice);
 
             // Send to message processor
+            using var cache = NewMemoryCache();
             using var messageProcessor = TestMessageDispatcher.Create(
-                NewMemoryCache(),
+                cache,
                 ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
