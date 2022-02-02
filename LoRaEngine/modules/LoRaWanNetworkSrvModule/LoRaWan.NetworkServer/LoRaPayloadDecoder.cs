@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// LoRa payload decoder.
     /// </summary>
-    public sealed class LoRaPayloadDecoder : ILoRaPayloadDecoder, IDisposable
+    public sealed class LoRaPayloadDecoder : ILoRaPayloadDecoder
     {
         // Http client used by decoders
         // Decoder calls don't need proxy since they will never leave the IoT Edge device
@@ -185,7 +185,5 @@ namespace LoRaWan.NetworkServer
             var payloadHex = ((payload?.Length ?? 0) == 0) ? string.Empty : payload.ToHex();
             return new DecodedPayloadValue(payloadHex);
         }
-
-        public void Dispose() => this.httpClient.Dispose();
     }
 }

@@ -58,7 +58,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("0xAE0198", "{\"value\":\"0xAE0198\"}")]
         public async Task When_Value_From_String_Is_Passed_Should_Try_To_Validate_As_Number(string value, string expectedJson)
         {
-            using var target = SetupLoRaPayloadDecoder();
+            var target = SetupLoRaPayloadDecoder();
 
             var result = await target.DecodeMessageAsync(new DevEui(0x12), Encoding.UTF8.GetBytes(value), FramePorts.App1, "DecoderValueSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
@@ -68,7 +68,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Payload_Is_Null_DecoderValueSensor_Should_Return_Empty()
         {
-            using var target = SetupLoRaPayloadDecoder();
+            var target = SetupLoRaPayloadDecoder();
 
             var result = await target.DecodeMessageAsync(new DevEui(0x12), null, FramePorts.App1, "DecoderValueSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
@@ -78,7 +78,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Payload_Is_Empty_DecoderValueSensor_Should_Return_Empty()
         {
-            using var target = SetupLoRaPayloadDecoder();
+            var target = SetupLoRaPayloadDecoder();
 
             var result = await target.DecodeMessageAsync(new DevEui(0x12), Array.Empty<byte>(), FramePorts.App1, "DecoderValueSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
@@ -88,7 +88,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Payload_Is_Null_DecoderHexSensor_Should_Return_Empty()
         {
-            using var target = SetupLoRaPayloadDecoder();
+            var target = SetupLoRaPayloadDecoder();
 
             var result = await target.DecodeMessageAsync(new DevEui(0x12), null, FramePorts.App1, "DecoderHexSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Payload_Is_Empty_DecoderHexSensor_Should_Return_Empty()
         {
-            using var target = SetupLoRaPayloadDecoder();
+            var target = SetupLoRaPayloadDecoder();
 
             var result = await target.DecodeMessageAsync(new DevEui(0x12), Array.Empty<byte>(), FramePorts.App1, "DecoderHexSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
@@ -126,7 +126,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             });
 
             using var httpClient = new HttpClient(httpMessageHandler);
-            using var target = SetupLoRaPayloadDecoder(httpClient);
+            var target = SetupLoRaPayloadDecoder(httpClient);
             var result = await target.DecodeMessageAsync(devEui, null, fport, "http://test/decoder");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal(decodedValue, json);
@@ -153,7 +153,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             });
 
             using var httpClient = new HttpClient(httpMessageHandler);
-            using var target = SetupLoRaPayloadDecoder(httpClient);
+            var target = SetupLoRaPayloadDecoder(httpClient);
             var result = await target.DecodeMessageAsync(devEui, Array.Empty<byte>(), fport, "http://test/decoder");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal(decodedValue, json);
@@ -174,7 +174,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
 
-            using var target = SetupLoRaPayloadDecoder();
+            var target = SetupLoRaPayloadDecoder();
             var actual = await target.DecodeMessageAsync(new DevEui(0x12), payload, fport, decoder);
             Assert.IsType<DecodedPayloadValue>(actual.Value);
             var decodedPayloadValue = (DecodedPayloadValue)actual.Value;
@@ -196,7 +196,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
 
-            using var target = SetupLoRaPayloadDecoder();
+            var target = SetupLoRaPayloadDecoder();
             var actual = await target.DecodeMessageAsync(new DevEui(0x12), payload, fport, decoder);
             Assert.IsType<DecodedPayloadValue>(actual.Value);
             var decodedPayloadValue = (DecodedPayloadValue)actual.Value;
@@ -220,7 +220,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
 
-            using var target = SetupLoRaPayloadDecoder();
+            var target = SetupLoRaPayloadDecoder();
             var actual = await target.DecodeMessageAsync(new DevEui(0x12), payload, fport, decoder);
             Assert.NotNull(actual.Error);
         }

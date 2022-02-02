@@ -29,7 +29,6 @@ namespace LoRaWan.Tests.Common
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
         private readonly byte[] macAddress;
         private readonly long startTime;
-        private readonly LoRaPayloadDecoder loRaPayloadDecoder;
         private readonly List<IDisposable> valuesToDispose = new List<IDisposable>();
         private bool disposedValue;
 
@@ -72,10 +71,9 @@ namespace LoRaWan.Tests.Common
             };
 
             this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
-#pragma warning disable CA2000 // Dispose objects before losing scope (ownership is transferred to LoRaPayloadDecoder)
-            this.loRaPayloadDecoder = new LoRaPayloadDecoder(new HttpClient(), this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>());
-#pragma warning restore CA2000 // Dispose objects before losing scope
-            PayloadDecoder = new TestLoRaPayloadDecoder(this.loRaPayloadDecoder);
+            var httpClient = new HttpClient();
+            this.valuesToDispose.Add(httpClient);
+            PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder(httpClient, this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()));
             DownstreamMessageSender = new TestDownstreamMessageSender();
             LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerConfiguration, LoRaDeviceApi.Object);
@@ -124,9 +122,10 @@ namespace LoRaWan.Tests.Common
             var adrStrategyProvider = new LoRaADRStrategyProvider(this.testOutputLoggerFactory);
             var adrManagerFactory = new LoRAADRManagerFactory(loraDeviceApi, this.testOutputLoggerFactory);
             var functionBundlerProvider = new FunctionBundlerProvider(loraDeviceApi, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>());
-#pragma warning disable CA2000 // Dispose objects before losing scope (ownership transffered to LoRaPayloadDecoder, which is disposed as part of DisposableValue)
-            var decoder = new LoRaPayloadDecoder(new HttpClient(), this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>());
+#pragma warning disable CA2000 // Dispose objects before losing scope (disposed as part of DisposableValue)
+            var httpClient = new HttpClient();
 #pragma warning restore CA2000 // Dispose objects before losing scope
+            var decoder = new LoRaPayloadDecoder(httpClient, this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>());
             return new DisposableValue<DefaultLoRaDataRequestHandler>(
                 new DefaultLoRaDataRequestHandler(networkServerConfiguration,
                                                   frameCounterUpdateStrategyProvider,
@@ -138,7 +137,7 @@ namespace LoRaWan.Tests.Common
                                                   functionBundlerProvider,
                                                   this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
                                                   meter: TestMeter.Instance),
-                decoder);
+                httpClient);
         }
 
         public static MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
@@ -223,7 +222,6 @@ namespace LoRaWan.Tests.Common
                     this.cache.Dispose();
                     this.DeviceCache.Dispose();
                     this.testOutputLoggerFactory.Dispose();
-                    this.loRaPayloadDecoder.Dispose();
                     foreach (var d in this.valuesToDispose)
                     {
                         d.Dispose();
