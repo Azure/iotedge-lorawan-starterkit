@@ -4,7 +4,7 @@ FROM amd64/debian:buster as build
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y apt-utils build-essential gcc-arm-linux-gnueabihf
-RUN git clone --branch v2.0.5 --single-branch --depth 1 https://github.com/lorabasics/basicstation.git
+RUN git clone --branch v2.0.6 --single-branch --depth 1 https://github.com/lorabasics/basicstation.git
 RUN mkdir -p ~/toolchain-rpi/bin/
 RUN ln -s /usr/bin/arm-linux-gnueabihf-gcc ~/toolchain-rpi/bin/arm-linux-gnueabihf-gcc
 RUN ln -s /usr/bin/arm-linux-gnueabihf-ld ~/toolchain-rpi/bin/arm-linux-gnueabihf-ld
@@ -12,9 +12,6 @@ RUN ln -s /usr/bin/arm-linux-gnueabihf-ar ~/toolchain-rpi/bin/arm-linux-gnueabih
 RUN ln -s /usr/bin/arm-linux-gnueabihf-objdump ~/toolchain-rpi/bin/arm-linux-gnueabihf-objdump
 RUN ln -s /usr/bin/arm-linux-gnueabihf-objcopy ~/toolchain-rpi/bin/arm-linux-gnueabihf-objcopy
 WORKDIR /basicstation
-
-# temporary fix for https://github.com/lorabasics/basicstation/issues/142
-RUN sed -i "s|mbedtls-2.6|archive/mbedtls-2.6|g" /basicstation/deps/mbedtls/prep.sh
 
 # make standard version
 RUN make platform=rpi variant=std
