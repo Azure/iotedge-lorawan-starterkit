@@ -22,7 +22,9 @@ namespace LoRaWan.Tests.Integration
     // Decoder tests tests
     public class DecoderTests : MessageProcessorTestBase
     {
-        public DecoderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public DecoderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) => this.testOutputHelper = testOutputHelper;
 
         /// <summary>
         /// SensorDecoder: none
@@ -273,7 +275,8 @@ namespace LoRaWan.Tests.Integration
             });
 
             using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var innerDecoder = new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper));
+            PayloadDecoder.SetDecoder(innerDecoder);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -361,7 +364,8 @@ namespace LoRaWan.Tests.Integration
             });
 
             using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var innerDecoder = new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper));
+            PayloadDecoder.SetDecoder(innerDecoder);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -451,7 +455,8 @@ namespace LoRaWan.Tests.Integration
             });
 
             using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var innerDecoder = new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper));
+            PayloadDecoder.SetDecoder(innerDecoder);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -543,7 +548,8 @@ namespace LoRaWan.Tests.Integration
             });
 
             using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var innerDecoder = new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper));
+            PayloadDecoder.SetDecoder(innerDecoder);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -631,7 +637,8 @@ namespace LoRaWan.Tests.Integration
             });
 
             using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var innerDecoder = new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper));
+            PayloadDecoder.SetDecoder(innerDecoder);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -696,7 +703,8 @@ namespace LoRaWan.Tests.Integration
             });
 
             using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var innerDecoder = new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper));
+            PayloadDecoder.SetDecoder(innerDecoder);
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1", fcnt: 10);

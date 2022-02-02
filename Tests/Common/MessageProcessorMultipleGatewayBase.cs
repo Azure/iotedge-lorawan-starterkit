@@ -4,7 +4,9 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Drawing.Text;
     using System.Globalization;
+    using System.Net.Http;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
@@ -19,6 +21,8 @@ namespace LoRaWan.Tests.Common
 
         private readonly MemoryCache cache;
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
+        private readonly LoRaPayloadDecoder firstLoRaPayloadDecoder;
+        private readonly LoRaPayloadDecoder secondLoRaPayloadDecoder;
 
         public NetworkServerConfiguration SecondServerConfiguration { get; }
 
@@ -59,10 +63,16 @@ namespace LoRaWan.Tests.Common
             var functionBundlerProvider = new FunctionBundlerProvider(SecondLoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>());
             SecondConcentratorDeduplication = new ConcentratorDeduplication(this.cache, this.testOutputLoggerFactory.CreateLogger<IConcentratorDeduplication>());
 
+            this.firstLoRaPayloadDecoder = CreateLoRaPayloadDecoder();
+            this.secondLoRaPayloadDecoder = CreateLoRaPayloadDecoder();
+#pragma warning disable CA2000 // Dispose objects before losing scope (ownership is transferred to LoRaPayloadDecoder)
+            LoRaPayloadDecoder CreateLoRaPayloadDecoder() => new LoRaPayloadDecoder(new HttpClient(), this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>());
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
             SecondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(SecondServerConfiguration,
                                                                                    SecondFrameCounterUpdateStrategyProvider,
                                                                                    SecondConcentratorDeduplication,
-                                                                                   new LoRaPayloadDecoder(this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()),
+                                                                                   this.firstLoRaPayloadDecoder,
                                                                                    deduplicationStrategyFactory,
                                                                                    adrStrategyProvider,
                                                                                    loRaAdrManagerFactory,
@@ -75,7 +85,7 @@ namespace LoRaWan.Tests.Common
             var defaultRequestHandler = new DefaultLoRaDataRequestHandler(SecondServerConfiguration,
                                                                           SecondFrameCounterUpdateStrategyProvider,
                                                                           SecondConcentratorDeduplication,
-                                                                          new LoRaPayloadDecoder(this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()),
+                                                                          this.secondLoRaPayloadDecoder,
                                                                           deduplicationStrategyFactory,
                                                                           adrStrategyProvider,
                                                                           loRaAdrManagerFactory,
@@ -95,6 +105,8 @@ namespace LoRaWan.Tests.Common
             {
                 this.cache.Dispose();
                 this.testOutputLoggerFactory.Dispose();
+                this.firstLoRaPayloadDecoder.Dispose();
+                this.secondLoRaPayloadDecoder.Dispose();
             }
         }
     }

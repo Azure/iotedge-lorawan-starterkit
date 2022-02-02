@@ -75,6 +75,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                             }
                         })
                         .AddMemoryCache()
+                        .AddHttpClient()
                         .AddApiClient(NetworkServerConfiguration, ApiVersion.LatestVersion)
                         .AddSingleton(NetworkServerConfiguration)
                         .AddSingleton<ModuleConnectionHost>()

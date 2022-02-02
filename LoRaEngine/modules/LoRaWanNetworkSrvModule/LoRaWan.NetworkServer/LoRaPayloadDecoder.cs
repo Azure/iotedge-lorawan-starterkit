@@ -18,34 +18,19 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// LoRa payload decoder.
     /// </summary>
-    public class LoRaPayloadDecoder : ILoRaPayloadDecoder
+    public sealed class LoRaPayloadDecoder : ILoRaPayloadDecoder, IDisposable
     {
-        private readonly HttpClient httpClient;
-
         // Http client used by decoders
         // Decoder calls don't need proxy since they will never leave the IoT Edge device
-        private readonly Lazy<HttpClient> decodersHttpClient;
+        private readonly HttpClient httpClient;
         private readonly ILogger<LoRaPayloadDecoder> logger;
 
-        public LoRaPayloadDecoder(ILogger<LoRaPayloadDecoder> logger)
-        {
-            this.decodersHttpClient = new Lazy<HttpClient>(() =>
-            {
-                var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
-                client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
-                return client;
-            });
-            this.logger = logger;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LoRaPayloadDecoder"/> class.
-        /// Constructor for unit testing.
-        /// </summary>
-        internal LoRaPayloadDecoder(HttpClient httpClient)
+        public LoRaPayloadDecoder(HttpClient httpClient, ILogger<LoRaPayloadDecoder> logger)
         {
             this.httpClient = httpClient;
+            this.httpClient.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
+            this.httpClient.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
+            this.logger = logger;
         }
 
         public async ValueTask<DecodePayloadResult> DecodeMessageAsync(DevEui devEui, byte[] payload, FramePort fport, string sensorDecoder)
@@ -95,8 +80,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                var httpClientToUse = this.httpClient ?? this.decodersHttpClient.Value;
-                var response = await httpClientToUse.GetAsync(sensorDecoderModuleUrl);
+                var response = await this.httpClient.GetAsync(sensorDecoderModuleUrl);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -201,5 +185,7 @@ namespace LoRaWan.NetworkServer
             var payloadHex = ((payload?.Length ?? 0) == 0) ? string.Empty : payload.ToHex();
             return new DecodedPayloadValue(payloadHex);
         }
+
+        public void Dispose() => this.httpClient.Dispose();
     }
 }
