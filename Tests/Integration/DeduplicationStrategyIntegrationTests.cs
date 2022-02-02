@@ -190,14 +190,5 @@ namespace LoRaWan.Tests.Integration
                     });
             }
         }
-
-        private sealed class DisposableHolder : IDisposable
-        {
-            private readonly Action dispose;
-
-            public DisposableHolder(Action dispose) => this.dispose = dispose;
-
-            public void Dispose() => this.dispose();
-        }
     }
 }
