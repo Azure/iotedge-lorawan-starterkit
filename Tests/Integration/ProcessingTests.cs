@@ -94,7 +94,8 @@ namespace LoRaWan.Tests.Integration
 
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -176,7 +177,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -218,7 +220,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -287,7 +290,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -359,7 +363,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -411,7 +416,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -470,7 +476,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -531,7 +538,8 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+               memoryCache,
                ServerConfiguration,
                deviceRegistry,
                FrameCounterUpdateStrategyProvider);
@@ -612,7 +620,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -716,7 +725,8 @@ namespace LoRaWan.Tests.Integration
             // Making the reload interval zero
             deviceRegistry.DevAddrReloadInterval = TimeSpan.Zero;
 
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+               cache,
                ServerConfiguration,
                deviceRegistry,
                FrameCounterUpdateStrategyProvider);
@@ -791,7 +801,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -845,7 +856,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -907,7 +919,8 @@ namespace LoRaWan.Tests.Integration
             // Setting the interval in which we search for devices with same devAddr on server
             deviceRegistry.DevAddrReloadInterval = TimeSpan.Zero;
 
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -992,7 +1005,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1060,7 +1074,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1140,7 +1155,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                memoryCache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1208,7 +1224,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1255,7 +1272,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1371,7 +1389,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1486,7 +1505,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1564,7 +1584,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1610,7 +1631,8 @@ namespace LoRaWan.Tests.Integration
             using var loraDeviceCache = CreateDeviceCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1662,7 +1684,8 @@ namespace LoRaWan.Tests.Integration
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -1715,7 +1738,8 @@ namespace LoRaWan.Tests.Integration
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);

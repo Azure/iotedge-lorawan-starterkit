@@ -101,7 +101,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
