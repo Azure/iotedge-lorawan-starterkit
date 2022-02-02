@@ -39,7 +39,7 @@
       <MicrosoftExtensionsConfigurationJsonVersion>6.0.0</MicrosoftExtensionsConfigurationJsonVersion>
       <SystemIOPortsVersion>6.0.0</SystemIOPortsVersion>
       <XUnitRunnerVisualStudio>2.4.3</XUnitRunnerVisualStudio>
-      <CoverletMSBuild>3.1.0</CoverletMSBuild>
+      <CoverletMSBuild>3.1.1</CoverletMSBuild>
       <MicrosoftAzureEventHubsVersion>4.3.2</MicrosoftAzureEventHubsVersion>
       <MicrosoftAzureEventHubsProcessorVersion>4.3.2</MicrosoftAzureEventHubsProcessorVersion>
       <MicrosoftExtensionsLogging>6.0.0</MicrosoftExtensionsLogging>
