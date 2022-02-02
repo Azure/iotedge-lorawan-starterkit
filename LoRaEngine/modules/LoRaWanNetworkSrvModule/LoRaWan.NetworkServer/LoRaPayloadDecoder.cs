@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer
         /// Initializes a new instance of the <see cref="LoRaPayloadDecoder"/> class.
         /// Constructor for unit testing.
         /// </summary>
-        public LoRaPayloadDecoder(HttpClient httpClient)
+        internal LoRaPayloadDecoder(HttpClient httpClient)
         {
             this.httpClient = httpClient;
         }

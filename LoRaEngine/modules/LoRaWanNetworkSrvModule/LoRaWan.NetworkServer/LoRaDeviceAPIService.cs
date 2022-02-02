@@ -22,19 +22,19 @@ namespace LoRaWan.NetworkServer
     public sealed class LoRaDeviceAPIService : LoRaDeviceAPIServiceBase
     {
         private const string PrimaryKeyPropertyName = "PrimaryKey";
-        private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
+        private readonly IHttpClientFactory httpClientFactory;
         private readonly ILogger<LoRaDeviceAPIService> logger;
         private readonly Counter<int> deviceLoadRequests;
 
         public LoRaDeviceAPIService(NetworkServerConfiguration configuration,
-                                    IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider,
+                                    IHttpClientFactory httpClientFactory,
                                     ILogger<LoRaDeviceAPIService> logger,
                                     Meter meter)
             : base(configuration)
         {
             if (meter is null) throw new ArgumentNullException(nameof(meter));
 
-            this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;
+            this.httpClientFactory = httpClientFactory;
             this.logger = logger;
             this.deviceLoadRequests = meter.CreateCounter<int>(MetricRegistry.DeviceLoadRequests);
         }
@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer
         {
             this.logger.LogDebug("syncing FCntDown for multigateway");
 
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var client = CreateClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(DevEui devEUI, FunctionBundlerRequest request)
         {
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var client = CreateClient();
             var url = GetFullUri($"FunctionBundler/{devEUI}?code={AuthCode}");
 
             var requestBody = JsonConvert.SerializeObject(request);
@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<bool> ABPFcntCacheResetAsync(DevEui devEUI, uint fcntUp, string gatewayId)
         {
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var client = CreateClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -108,7 +108,7 @@ namespace LoRaWan.NetworkServer
         {
             this.deviceLoadRequests?.Add(1);
 
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var client = CreateClient();
 
             var url = BuildUri("GetDevice", new Dictionary<string, string>
             {
@@ -167,7 +167,7 @@ namespace LoRaWan.NetworkServer
         {
             this.deviceLoadRequests?.Add(1);
 
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var client = CreateClient();
             var url = BuildUri("GetDeviceByDevEUI", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
@@ -218,7 +218,7 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype, CancellationToken token)
         {
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var client = CreateClient();
             var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
@@ -242,7 +242,7 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<HttpContent> FetchStationFirmwareAsync(StationEui eui, CancellationToken token)
         {
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var client = CreateClient();
             var url = BuildUri("FetchConcentratorFirmware", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
@@ -257,5 +257,7 @@ namespace LoRaWan.NetworkServer
 
             return response.Content;
         }
+
+        private HttpClient CreateClient() => this.httpClientFactory.CreateClient(LoRaApiHttpClient.Name);
     }
 }

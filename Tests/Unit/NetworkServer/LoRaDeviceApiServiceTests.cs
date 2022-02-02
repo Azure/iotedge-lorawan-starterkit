@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
-    using System.IO;
     using System.Linq;
     using System.Net.Http;
     using System.Text;
@@ -60,15 +59,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task SearchByEuiAsync_StationEui_Is_Compatible_With_Contract()
         {
             // arrange
-            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
-            using var httpHandlerMock = new HttpMessageHandlerMock();
-            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent(SearchByDevEuiContract.Response, Encoding.UTF8, "application/json"),
-            });
-            using var httpClient = new HttpClient(httpHandlerMock);
-            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
-            var subject = Setup(facadeMock.Object);
+            using var content = new StringContent(SearchByDevEuiContract.Response, Encoding.UTF8, "application/json");
+            using var httpClientFactoryMock = SetupHttpClientFactoryMock(content);
+            var subject = Setup(httpClientFactoryMock.Value.Object);
 
             // act
             var result = await subject.GetPrimaryKeyByEuiAsync(new StationEui(1));
@@ -81,15 +74,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task SearchByEuiAsync_DevEui_Is_Compatible_With_Contract()
         {
             // arrange
-            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
-            using var httpHandlerMock = new HttpMessageHandlerMock();
-            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent(SearchByDevEuiContract.Response, Encoding.UTF8, "application/json"),
-            });
-            using var httpClient = new HttpClient(httpHandlerMock);
-            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
-            var subject = Setup(facadeMock.Object);
+            using var content = new StringContent(SearchByDevEuiContract.Response, Encoding.UTF8, "application/json");
+            using var httpClientFactoryMock = SetupHttpClientFactoryMock(content);
+            var subject = Setup(httpClientFactoryMock.Value.Object);
 
             // act
             var result = await subject.GetPrimaryKeyByEuiAsync(new DevEui(1));
@@ -109,15 +96,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task SearchByEuiAsync_DevEui_Parses_Json(string json, string expected)
         {
             // arrange
-            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
-            using var httpHandlerMock = new HttpMessageHandlerMock();
-            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json"),
-            });
-            using var httpClient = new HttpClient(httpHandlerMock);
-            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
-            var subject = Setup(facadeMock.Object);
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            using var httpClientFactoryMock = SetupHttpClientFactoryMock(content);
+            var subject = Setup(httpClientFactoryMock.Value.Object);
 
             // act
             var result = await subject.GetPrimaryKeyByEuiAsync(new DevEui(1));
@@ -129,17 +110,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task FetchStationFirmwareAsync_Returns_Stream_And_Content_Length()
         {
-            var contentBytes = Encoding.UTF8.GetBytes("Test");
             // arrange
-            var facadeMock = new Mock<IServiceFacadeHttpClientProvider>();
-            using var httpHandlerMock = new HttpMessageHandlerMock();
-            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent(contentBytes)
-            });
-            using var httpClient = new HttpClient(httpHandlerMock);
-            facadeMock.Setup(f => f.GetHttpClient()).Returns(httpClient);
-            var subject = Setup(facadeMock.Object);
+            var contentBytes = Encoding.UTF8.GetBytes("Test");
+            using var byteArrayContent = new ByteArrayContent(contentBytes);
+            using var httpClientFactoryMock = SetupHttpClientFactoryMock(byteArrayContent);
+            var subject = Setup(httpClientFactoryMock.Value.Object);
 
             // act
             var content = await subject.FetchStationFirmwareAsync(new StationEui(ulong.MaxValue), CancellationToken.None);
@@ -151,15 +126,31 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(expectedBytes, contentBytes);
         }
 
+        private static DisposableValue<Mock<IHttpClientFactory>> SetupHttpClientFactoryMock(HttpContent content)
+        {
+            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // ownership is transferred to return value.
+            var httpHandlerMock = new HttpMessageHandlerMock();
+            var httpClient = new HttpClient(httpHandlerMock);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = content
+            });
+            httpClientFactoryMock.Setup(f => f.CreateClient(LoRaApiHttpClient.Name)).Returns(httpClient);
+            return new DisposableValue<Mock<IHttpClientFactory>>(httpClientFactoryMock, () => { httpHandlerMock.Dispose(); httpClient.Dispose(); });
+        }
+
         private static LoRaDeviceAPIService Setup(string basePath) =>
             new LoRaDeviceAPIService(new NetworkServerConfiguration { FacadeServerUrl = new Uri(basePath) },
-                                     new Mock<IServiceFacadeHttpClientProvider>().Object,
+                                     new Mock<IHttpClientFactory>().Object,
                                      NullLogger<LoRaDeviceAPIService>.Instance,
                                      TestMeter.Instance);
 
-        private static LoRaDeviceAPIService Setup(IServiceFacadeHttpClientProvider facadeHttpClientProvider) =>
+        private static LoRaDeviceAPIService Setup(IHttpClientFactory httpClientFactory) =>
             new LoRaDeviceAPIService(new NetworkServerConfiguration { FacadeServerUrl = new Uri("https://aka.ms/api/") },
-                                     facadeHttpClientProvider,
+                                     httpClientFactory,
                                      NullLogger<LoRaDeviceAPIService>.Instance,
                                      TestMeter.Instance);
     }

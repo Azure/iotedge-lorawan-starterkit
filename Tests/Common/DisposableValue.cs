@@ -9,13 +9,17 @@ namespace LoRaWan.Tests.Common
 
     public sealed class DisposableValue<T> : IDisposable
     {
-        private readonly IDisposable disposable;
+        private readonly Action dispose;
 
-        public DisposableValue(T value, IDisposable disposable) =>
-            (Value, this.disposable) = (value, disposable);
+        public DisposableValue(T value, IDisposable disposable)
+            : this(value, () => disposable.Dispose())
+        { }
+
+        public DisposableValue(T value, Action dispose) =>
+            (Value, this.dispose) = (value, dispose);
 
         public T Value { get; }
 
-        public void Dispose() => this.disposable.Dispose();
+        public void Dispose() => this.dispose();
     }
 }
