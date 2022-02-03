@@ -58,9 +58,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("0xAE0198", "{\"value\":\"0xAE0198\"}")]
         public async Task When_Value_From_String_Is_Passed_Should_Try_To_Validate_As_Number(string value, string expectedJson)
         {
-            var target = SetupLoRaPayloadDecoder();
+            using var target = SetupLoRaPayloadDecoder();
 
-            var result = await target.DecodeMessageAsync(new DevEui(0x12), Encoding.UTF8.GetBytes(value), FramePorts.App1, "DecoderValueSensor");
+            var result = await target.Value.DecodeMessageAsync(new DevEui(0x12), Encoding.UTF8.GetBytes(value), FramePorts.App1, "DecoderValueSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal(expectedJson, json);
         }
@@ -68,9 +68,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Payload_Is_Null_DecoderValueSensor_Should_Return_Empty()
         {
-            var target = SetupLoRaPayloadDecoder();
+            using var target = SetupLoRaPayloadDecoder();
 
-            var result = await target.DecodeMessageAsync(new DevEui(0x12), null, FramePorts.App1, "DecoderValueSensor");
+            var result = await target.Value.DecodeMessageAsync(new DevEui(0x12), null, FramePorts.App1, "DecoderValueSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal("{\"value\":\"\"}", json);
         }
@@ -78,9 +78,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Payload_Is_Empty_DecoderValueSensor_Should_Return_Empty()
         {
-            var target = SetupLoRaPayloadDecoder();
+            using var target = SetupLoRaPayloadDecoder();
 
-            var result = await target.DecodeMessageAsync(new DevEui(0x12), Array.Empty<byte>(), FramePorts.App1, "DecoderValueSensor");
+            var result = await target.Value.DecodeMessageAsync(new DevEui(0x12), Array.Empty<byte>(), FramePorts.App1, "DecoderValueSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal("{\"value\":\"\"}", json);
         }
@@ -88,9 +88,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Payload_Is_Null_DecoderHexSensor_Should_Return_Empty()
         {
-            var target = SetupLoRaPayloadDecoder();
+            using var target = SetupLoRaPayloadDecoder();
 
-            var result = await target.DecodeMessageAsync(new DevEui(0x12), null, FramePorts.App1, "DecoderHexSensor");
+            var result = await target.Value.DecodeMessageAsync(new DevEui(0x12), null, FramePorts.App1, "DecoderHexSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal("{\"value\":\"\"}", json);
         }
@@ -98,9 +98,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Payload_Is_Empty_DecoderHexSensor_Should_Return_Empty()
         {
-            var target = SetupLoRaPayloadDecoder();
+            using var target = SetupLoRaPayloadDecoder();
 
-            var result = await target.DecodeMessageAsync(new DevEui(0x12), Array.Empty<byte>(), FramePorts.App1, "DecoderHexSensor");
+            var result = await target.Value.DecodeMessageAsync(new DevEui(0x12), Array.Empty<byte>(), FramePorts.App1, "DecoderHexSensor");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal("{\"value\":\"\"}", json);
         }
@@ -174,8 +174,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
 
-            var target = SetupLoRaPayloadDecoder();
-            var actual = await target.DecodeMessageAsync(new DevEui(0x12), payload, fport, decoder);
+            using var target = SetupLoRaPayloadDecoder();
+            var actual = await target.Value.DecodeMessageAsync(new DevEui(0x12), payload, fport, decoder);
             Assert.IsType<DecodedPayloadValue>(actual.Value);
             var decodedPayloadValue = (DecodedPayloadValue)actual.Value;
             Assert.Equal(expectedValue, decodedPayloadValue.Value);
@@ -196,8 +196,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
 
-            var target = SetupLoRaPayloadDecoder();
-            var actual = await target.DecodeMessageAsync(new DevEui(0x12), payload, fport, decoder);
+            using var target = SetupLoRaPayloadDecoder();
+            var actual = await target.Value.DecodeMessageAsync(new DevEui(0x12), payload, fport, decoder);
             Assert.IsType<DecodedPayloadValue>(actual.Value);
             var decodedPayloadValue = (DecodedPayloadValue)actual.Value;
             Assert.Equal(expectedValue, decodedPayloadValue.Value);
@@ -220,14 +220,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
 
-            var target = SetupLoRaPayloadDecoder();
-            var actual = await target.DecodeMessageAsync(new DevEui(0x12), payload, fport, decoder);
+            using var target = SetupLoRaPayloadDecoder();
+            var actual = await target.Value.DecodeMessageAsync(new DevEui(0x12), payload, fport, decoder);
             Assert.NotNull(actual.Error);
         }
 
-#pragma warning disable CA2000 // Dispose objects before losing scope (ownership is transferred to LoRaPayloadDecoder)
-        private static LoRaPayloadDecoder SetupLoRaPayloadDecoder() => SetupLoRaPayloadDecoder(new HttpClient());
+        private static DisposableValue<LoRaPayloadDecoder> SetupLoRaPayloadDecoder()
+        {
+#pragma warning disable CA2000 // Dispose objects before losing scope (disposed as part of DisposableValue)
+            var httpClient = new HttpClient();
 #pragma warning restore CA2000 // Dispose objects before losing scope
+            return new DisposableValue<LoRaPayloadDecoder>(SetupLoRaPayloadDecoder(httpClient), httpClient);
+        } 
 
         private static LoRaPayloadDecoder SetupLoRaPayloadDecoder(HttpClient httpClient) => new LoRaPayloadDecoder(httpClient, NullLogger<LoRaPayloadDecoder>.Instance);
     }
