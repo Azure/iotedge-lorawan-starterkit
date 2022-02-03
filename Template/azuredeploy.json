@@ -290,13 +290,14 @@
             "type": "Microsoft.Insights/components",
             "kind": "web",
             "name": "[variables('appInsightName')]",
-            "apiVersion": "2015-05-01",
+            "apiVersion": "2020-02-02",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ApplicationId": "[variables('appInsightName')]"
+                "ApplicationId": "[variables('appInsightName')]",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsName'))]"
             },
-            "dependsOn": []
+            "dependsOn": [ "[resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsName'))]" ]
         },
         {
             "name": "azuremonitoralerts",
@@ -351,7 +352,6 @@
         {
             "type": "Microsoft.OperationalInsights/workspaces",
             "apiVersion": "2021-06-01",
-            "condition": "[parameters('useAzureMonitorOnEdge')]",
             "name": "[variables('logAnalyticsName')]",
             "location": "[resourceGroup().location]",
             "properties": {
