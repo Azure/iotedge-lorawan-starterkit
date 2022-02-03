@@ -39,7 +39,7 @@ The template will deploy in your Azure subscription the Following resources:
 - [Azure Function](https://azure.microsoft.com/en-us/services/functions/)
 - [Redis Cache](https://azure.microsoft.com/en-us/services/cache/)
 - [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview)
-- [Log Analytics](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-overview) (when opted in to use Azure Monitor)
+- [Log Analytics](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-overview)
 
 ## Step-by-step instructions
 
