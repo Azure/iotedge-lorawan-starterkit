@@ -17,6 +17,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
+    using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
@@ -32,6 +33,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly IMessageDispatcher messageDispatcher;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
+        private readonly ITracing operationTracking;
         private readonly Counter<int> joinRequestCounter;
         private readonly Counter<int> uplinkMessageCounter;
         private readonly Counter<int> unhandledExceptionCount;
@@ -42,7 +44,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                            IMessageDispatcher messageDispatcher,
                                            ILogger<LnsProtocolMessageProcessor> logger,
                                            RegistryMetricTagBag registryMetricTagBag,
-                                           Meter meter)
+                                           Meter meter,
+                                           ITracing operationTracking)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.socketWriterRegistry = socketWriterRegistry;
@@ -50,6 +53,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.messageDispatcher = messageDispatcher;
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
+            this.operationTracking = operationTracking;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
             this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
             this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
@@ -187,6 +191,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                   string json,
                                                   CancellationToken cancellationToken)
         {
+            using var dataOperation = this.operationTracking.TrackDataMessage();
+
             switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:

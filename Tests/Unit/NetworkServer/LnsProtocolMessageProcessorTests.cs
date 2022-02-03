@@ -20,6 +20,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
     using Moq;
+    using Org.BouncyCastle.Asn1.IsisMtt.X509;
     using Xunit;
 
     public class LnsProtocolMessageProcessorTests
@@ -27,6 +28,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<IBasicsStationConfigurationService> basicsStationConfigurationMock;
         private readonly Mock<IMessageDispatcher> messageDispatcher;
         private readonly Mock<IDownstreamMessageSender> downstreamMessageSender;
+        private readonly Mock<ITracing> tracingMock;
         private readonly LnsProtocolMessageProcessor lnsMessageProcessorMock;
         private readonly Mock<WebSocket> socketMock;
         private readonly Mock<HttpContext> httpContextMock;
@@ -42,6 +44,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                           .Returns(Task.FromResult(RegionManager.EU868));
             this.messageDispatcher = new Mock<IMessageDispatcher>();
             this.downstreamMessageSender = new Mock<IDownstreamMessageSender>();
+            this.tracingMock = new Mock<ITracing>();
 
             this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(this.basicsStationConfigurationMock.Object,
                                                                            new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>(), null),
@@ -50,7 +53,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                            loggerMock,
                                                                            new RegistryMetricTagBag(new NetworkServerConfiguration { GatewayID = "foogateway" }),
                                                                            // Do not pass meter since metric testing will be unreliable due to interference from test classes running in parallel.
-                                                                           null);
+                                                                           null,
+                                                                           this.tracingMock.Object);
         }
 
         [Fact]
@@ -385,6 +389,26 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
                                                                                                                        this.socketMock.Object,
                                                                                                                        CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task InternalHandleDataAsync_Starts_And_Stops_Message_Tracing()
+        {
+            // arrange
+            var disposableMock = new Mock<IDisposable>();
+            this.tracingMock.Setup(t => t.TrackDataMessage()).Returns(disposableMock.Object);
+            SetDataPathParameter();
+            InitializeConfigurationServiceMock();
+            SetupSocketReceiveAsync($@"{{ msgtype: '{LnsMessageType.Version.ToBasicStationString()}', station: 'stationName', package: '1.0.0' }}");
+
+            // act
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
+                                                                       this.socketMock.Object,
+                                                                       CancellationToken.None);
+
+            // assert
+            this.tracingMock.Verify(t => t.TrackDataMessage(), Times.Once);
+            disposableMock.Verify(t => t.Dispose(), Times.Once);
         }
 
         [Fact]
