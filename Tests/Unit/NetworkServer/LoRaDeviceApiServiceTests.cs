@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             using var content = new StringContent(SearchByDevEuiContract.Response, Encoding.UTF8, "application/json");
             using var httpClientFactoryMock = SetupHttpClientFactoryMock(content);
-            var subject = Setup(httpClientFactoryMock.Value.Object);
+            var subject = Setup(httpClientFactoryMock.Value);
 
             // act
             var result = await subject.GetPrimaryKeyByEuiAsync(new StationEui(1));
@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             using var content = new StringContent(SearchByDevEuiContract.Response, Encoding.UTF8, "application/json");
             using var httpClientFactoryMock = SetupHttpClientFactoryMock(content);
-            var subject = Setup(httpClientFactoryMock.Value.Object);
+            var subject = Setup(httpClientFactoryMock.Value);
 
             // act
             var result = await subject.GetPrimaryKeyByEuiAsync(new DevEui(1));
@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
             using var httpClientFactoryMock = SetupHttpClientFactoryMock(content);
-            var subject = Setup(httpClientFactoryMock.Value.Object);
+            var subject = Setup(httpClientFactoryMock.Value);
 
             // act
             var result = await subject.GetPrimaryKeyByEuiAsync(new DevEui(1));
@@ -114,7 +114,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var contentBytes = Encoding.UTF8.GetBytes("Test");
             using var byteArrayContent = new ByteArrayContent(contentBytes);
             using var httpClientFactoryMock = SetupHttpClientFactoryMock(byteArrayContent);
-            var subject = Setup(httpClientFactoryMock.Value.Object);
+            var subject = Setup(httpClientFactoryMock.Value);
 
             // act
             var content = await subject.FetchStationFirmwareAsync(new StationEui(ulong.MaxValue), CancellationToken.None);
@@ -126,20 +126,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(expectedBytes, contentBytes);
         }
 
-        private static DisposableValue<Mock<IHttpClientFactory>> SetupHttpClientFactoryMock(HttpContent content)
+        private static DisposableValue<IHttpClientFactory> SetupHttpClientFactoryMock(HttpContent content)
         {
-            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            // ownership is transferred to return value.
+#pragma warning disable CA2000 // Dispose objects before losing scope (disposal as part of DisposableValue)
             var httpHandlerMock = new HttpMessageHandlerMock();
-            var httpClient = new HttpClient(httpHandlerMock);
+            var result = new MockHttpClientFactory(httpHandlerMock);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-            httpHandlerMock.SetupHandler(r => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            httpHandlerMock.SetupHandler(_ => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
                 Content = content
             });
-            httpClientFactoryMock.Setup(f => f.CreateClient(LoRaApiHttpClient.Name)).Returns(httpClient);
-            return new DisposableValue<Mock<IHttpClientFactory>>(httpClientFactoryMock, () => { httpHandlerMock.Dispose(); httpClient.Dispose(); });
+            return new DisposableValue<IHttpClientFactory>(result, () => { httpHandlerMock.Dispose(); result.Dispose(); });
         }
 
         private static LoRaDeviceAPIService Setup(string basePath) =>
