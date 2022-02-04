@@ -29,7 +29,7 @@ namespace LoRaWan.Tests.Integration
                                                 .BuildServiceProvider()
                                                 .GetRequiredService<IHttpClientFactory>()
                                                 .CreateClient(LoRaApiHttpClient.Name);
-            using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("https://aka.ms"));
+            using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("https://inexistenturlfoobar.ms"));
 
             // act + assert
             var response = await client.SendAsync(request);
