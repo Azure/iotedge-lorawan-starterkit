@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer
         {
             this.logger.LogDebug("syncing FCntDown for multigateway");
 
-            var client = CreateClient();
+            using var client = CreateClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(DevEui devEUI, FunctionBundlerRequest request)
         {
-            var client = CreateClient();
+            using var client = CreateClient();
             var url = GetFullUri($"FunctionBundler/{devEUI}?code={AuthCode}");
 
             var requestBody = JsonConvert.SerializeObject(request);
@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<bool> ABPFcntCacheResetAsync(DevEui devEUI, uint fcntUp, string gatewayId)
         {
-            var client = CreateClient();
+            using var client = CreateClient();
             var url = GetFullUri($"NextFCntDown?code={AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -108,7 +108,7 @@ namespace LoRaWan.NetworkServer
         {
             this.deviceLoadRequests?.Add(1);
 
-            var client = CreateClient();
+            using var client = CreateClient();
 
             var url = BuildUri("GetDevice", new Dictionary<string, string>
             {
@@ -167,7 +167,7 @@ namespace LoRaWan.NetworkServer
         {
             this.deviceLoadRequests?.Add(1);
 
-            var client = CreateClient();
+            using var client = CreateClient();
             var url = BuildUri("GetDeviceByDevEUI", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
@@ -218,7 +218,7 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<string> FetchStationCredentialsAsync(StationEui eui, ConcentratorCredentialType credentialtype, CancellationToken token)
         {
-            var client = CreateClient();
+            using var client = CreateClient();
             var url = BuildUri("FetchConcentratorCredentials", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
@@ -242,7 +242,7 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<HttpContent> FetchStationFirmwareAsync(StationEui eui, CancellationToken token)
         {
-            var client = CreateClient();
+            using var client = CreateClient();
             var url = BuildUri("FetchConcentratorFirmware", new Dictionary<string, string>
             {
                 ["code"] = AuthCode,
