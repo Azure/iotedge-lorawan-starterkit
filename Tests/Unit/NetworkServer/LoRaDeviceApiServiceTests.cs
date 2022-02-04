@@ -160,7 +160,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Fact]
         public Task FetchStationCredentialsAsync_Disposes_HttpClient() =>
-            ApiCall_Disposes_HttpClient(s => s.FetchStationCredentialsAsync(new StationEui(1), ConcentratorCredentialType.Lns ,CancellationToken.None));
+            ApiCall_Disposes_HttpClient(s => s.FetchStationCredentialsAsync(new StationEui(1), ConcentratorCredentialType.Lns, CancellationToken.None));
 
         [Fact]
         public Task FetchStationFirmwareAsync_Disposes_HttpClient() =>
