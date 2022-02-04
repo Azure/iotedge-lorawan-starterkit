@@ -215,9 +215,6 @@ namespace LoRaWan.NetworkServer
                                                          loRaDevice.ClassType,
                                                          radioMetadata.UpInfo.AntennaPreference);
 
-            if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(downlinkMessage)}");
-
             return new DownlinkMessageBuilderResponse(downlinkMessage, isMessageTooLong, receiveWindow);
         }
 
@@ -348,8 +345,6 @@ namespace LoRaWan.NetworkServer
                                                              RxDelay0,
                                                              ackLoRaMessage,
                                                              LoRaDeviceClassType.C);
-            if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug($"{ackLoRaMessage.MessageType} {JsonConvert.SerializeObject(loraDownLinkMessage)}");
 
             // Class C always uses RX2.
             return new DownlinkMessageBuilderResponse(loraDownLinkMessage, isMessageTooLong, ReceiveWindow2);

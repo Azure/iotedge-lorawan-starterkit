@@ -498,7 +498,7 @@ jobs:
       E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
       E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}
       E2ETESTS_CupsFwDigest: ${{ needs.certificates_job.outputs.clientfwdigest }}
-      E2ETESTS_CupsBasicStationVersion: "2.0.5(rak833x64/std)"
+      E2ETESTS_CupsBasicStationVersion: "2.0.6(rak833x64/std)"
       E2ETESTS_CupsBasicStationPackage: ${{ needs.certificates_job.outputs.clientfwversion }}
       E2ETESTS_CupsFwUrl: ${{ secrets.CUPSFIRMWAREBLOBURL }}
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
