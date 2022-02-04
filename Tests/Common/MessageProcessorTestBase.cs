@@ -71,9 +71,9 @@ namespace LoRaWan.Tests.Common
             };
 
             this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
-            var httpClient = new HttpClient();
-            this.valuesToDispose.Add(httpClient);
-            PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder(httpClient, this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()));
+            var httpClientFactory = new MockHttpClientFactory();
+            this.valuesToDispose.Add(httpClientFactory);
+            PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder(httpClientFactory, this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>()));
             DownstreamMessageSender = new TestDownstreamMessageSender();
             LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerConfiguration, LoRaDeviceApi.Object);
@@ -123,9 +123,9 @@ namespace LoRaWan.Tests.Common
             var adrManagerFactory = new LoRAADRManagerFactory(loraDeviceApi, this.testOutputLoggerFactory);
             var functionBundlerProvider = new FunctionBundlerProvider(loraDeviceApi, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>());
 #pragma warning disable CA2000 // Dispose objects before losing scope (disposed as part of DisposableValue)
-            var httpClient = new HttpClient();
+            var httpClientFactory = new MockHttpClientFactory();
 #pragma warning restore CA2000 // Dispose objects before losing scope
-            var decoder = new LoRaPayloadDecoder(httpClient, this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>());
+            var decoder = new LoRaPayloadDecoder(httpClientFactory, this.testOutputLoggerFactory.CreateLogger<LoRaPayloadDecoder>());
             return new DisposableValue<DefaultLoRaDataRequestHandler>(
                 new DefaultLoRaDataRequestHandler(networkServerConfiguration,
                                                   frameCounterUpdateStrategyProvider,
@@ -137,7 +137,7 @@ namespace LoRaWan.Tests.Common
                                                   functionBundlerProvider,
                                                   this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
                                                   meter: TestMeter.Instance),
-                httpClient);
+                httpClientFactory);
         }
 
         public static MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());

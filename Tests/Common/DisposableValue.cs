@@ -7,6 +7,12 @@ namespace LoRaWan.Tests.Common
 {
     using System;
 
+    /// <summary>
+    /// Used for setting up/mocking classes for testing, if intermediate disposables need to be disposed at the end of the test.
+    /// For example, when creating an instance of MessageDispatcher for testing, we need to create many intermediate
+    /// disposable instances to be passed as arguments (LoRaDevice, etc), which we don't need by their value, but which still need to be disposed of.
+    /// With this class we execute an arbitrary dispose action after we use some value.
+    /// </summary>
     public sealed class DisposableValue<T> : IDisposable
     {
         private readonly Action dispose;

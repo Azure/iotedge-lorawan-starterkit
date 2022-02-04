@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using System.Web;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -20,16 +21,12 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaPayloadDecoder : ILoRaPayloadDecoder
     {
-        // Http client used by decoders
-        // Decoder calls don't need proxy since they will never leave the IoT Edge device
-        private readonly HttpClient httpClient;
+        private readonly IHttpClientFactory httpClientFactory;
         private readonly ILogger<LoRaPayloadDecoder> logger;
 
-        public LoRaPayloadDecoder(HttpClient httpClient, ILogger<LoRaPayloadDecoder> logger)
+        public LoRaPayloadDecoder(IHttpClientFactory httpClientFactory, ILogger<LoRaPayloadDecoder> logger)
         {
-            this.httpClient = httpClient;
-            this.httpClient.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
-            this.httpClient.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
+            this.httpClientFactory = httpClientFactory;
             this.logger = logger;
         }
 
@@ -80,7 +77,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                var response = await this.httpClient.GetAsync(sensorDecoderModuleUrl);
+                var response = await this.httpClientFactory.CreateClient(PayloadDecoderHttpClient.ClientName).GetAsync(sensorDecoderModuleUrl);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -184,6 +181,24 @@ namespace LoRaWan.NetworkServer
         {
             var payloadHex = ((payload?.Length ?? 0) == 0) ? string.Empty : payload.ToHex();
             return new DecodedPayloadValue(payloadHex);
+        }
+    }
+
+    internal static class PayloadDecoderHttpClient
+    {
+        public const string ClientName = nameof(PayloadDecoderHttpClient);
+
+        public static IServiceCollection AddPayloadDecoderHttpClient(this IServiceCollection services)
+        {
+            // Decoder calls don't need proxy since they will never leave the IoT Edge device
+            _ = services.AddHttpClient(ClientName)
+                        .ConfigureHttpClient(client =>
+                        {
+                            client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
+                            client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
+                        });
+
+            return services;
         }
     }
 }

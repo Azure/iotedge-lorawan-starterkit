@@ -274,8 +274,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
+            using var httpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -362,8 +362,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -452,8 +452,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -544,8 +544,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -632,8 +632,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -697,8 +697,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1", fcnt: 10);

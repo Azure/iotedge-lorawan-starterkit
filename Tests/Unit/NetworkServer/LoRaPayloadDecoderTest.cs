@@ -10,6 +10,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
+    using Microsoft.Azure.Devices.Common.Extensions;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
     using Xunit;
@@ -125,8 +127,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            var target = SetupLoRaPayloadDecoder(httpClient);
+            using var httpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            var target = SetupLoRaPayloadDecoder(httpClientFactory);
             var result = await target.DecodeMessageAsync(devEui, null, fport, "http://test/decoder");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal(decodedValue, json);
@@ -152,8 +154,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            var target = SetupLoRaPayloadDecoder(httpClient);
+            using var httpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            var target = SetupLoRaPayloadDecoder(httpClientFactory);
             var result = await target.DecodeMessageAsync(devEui, Array.Empty<byte>(), fport, "http://test/decoder");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal(decodedValue, json);
@@ -225,14 +227,30 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.NotNull(actual.Error);
         }
 
+        [Fact]
+        public void AddPayloadDecoderHttpClient_Sets_Default_Headers()
+        {
+            // arrange
+            var services = new ServiceCollection();
+
+            // act
+            var result = services.AddPayloadDecoderHttpClient();
+
+            // assert
+            var client = result.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient(PayloadDecoderHttpClient.ClientName);
+            Assert.Equal("Keep-Alive", client.DefaultRequestHeaders.GetFirstValueOrNull("Connection"));
+            Assert.Equal("timeout=86400", client.DefaultRequestHeaders.GetFirstValueOrNull("Keep-Alive"));
+        }
+
         private static DisposableValue<LoRaPayloadDecoder> SetupLoRaPayloadDecoder()
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope (disposed as part of DisposableValue)
-            var httpClient = new HttpClient();
+            var httpClientFactory = new MockHttpClientFactory();
 #pragma warning restore CA2000 // Dispose objects before losing scope
-            return new DisposableValue<LoRaPayloadDecoder>(SetupLoRaPayloadDecoder(httpClient), httpClient);
-        } 
+            return new DisposableValue<LoRaPayloadDecoder>(SetupLoRaPayloadDecoder(httpClientFactory), httpClientFactory);
+        }
 
-        private static LoRaPayloadDecoder SetupLoRaPayloadDecoder(HttpClient httpClient) => new LoRaPayloadDecoder(httpClient, NullLogger<LoRaPayloadDecoder>.Instance);
+        private static LoRaPayloadDecoder SetupLoRaPayloadDecoder(IHttpClientFactory httpClientFactory) =>
+            new LoRaPayloadDecoder(httpClientFactory, NullLogger<LoRaPayloadDecoder>.Instance);
     }
 }
