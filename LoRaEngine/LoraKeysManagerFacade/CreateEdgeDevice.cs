@@ -25,10 +25,12 @@ namespace LoraKeysManagerFacade
         private const string AbpDeviceId = "46AAC86800430028";
         private const string OtaaDeviceId = "47AAC86800430028";
         private readonly RegistryManager registryManager;
+        private readonly IHttpClientFactory httpClientFactory;
 
-        public CreateEdgeDevice(RegistryManager registryManager)
+        public CreateEdgeDevice(RegistryManager registryManager, IHttpClientFactory httpClientFactory)
         {
             this.registryManager = registryManager;
+            this.httpClientFactory = httpClientFactory;
         }
 
         [FunctionName(nameof(CreateEdgeDevice))]
@@ -66,7 +68,7 @@ namespace LoraKeysManagerFacade
             var apiUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.scm.azurewebsites.net/api");
             var siteUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.azurewebsites.net");
             string jwt;
-            using (var client = new HttpClient())
+            using (var client = this.httpClientFactory.CreateClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", $"Basic {base64Auth}");
                 var result = await client.GetAsync(new Uri($"{apiUrl}/functions/admin/token"));
@@ -74,10 +76,9 @@ namespace LoraKeysManagerFacade
             }
 
             var facadeKey = string.Empty;
-            using (var client = new HttpClient())
+            using (var client = this.httpClientFactory.CreateClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + jwt);
-
                 var response = await client.GetAsync(new Uri($"{siteUrl}/admin/host/keys"));
                 var jsonResult = await response.Content.ReadAsStringAsync();
                 dynamic resObject = JsonConvert.DeserializeObject(jsonResult);
@@ -97,9 +98,9 @@ namespace LoraKeysManagerFacade
                 _ = await this.registryManager.AddDeviceAsync(edgeGatewayDevice);
                 _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
 
-                static async Task<ConfigurationContent> GetConfigurationContentAsync(Uri configLocation, IDictionary<string, string> tokenReplacements)
+                async Task<ConfigurationContent> GetConfigurationContentAsync(Uri configLocation, IDictionary<string, string> tokenReplacements)
                 {
-                    using var httpClient = new HttpClient();
+                    using var httpClient = this.httpClientFactory.CreateClient();
                     var json = await httpClient.GetStringAsync(configLocation);
                     foreach (var r in tokenReplacements)
                         json = json.Replace(r.Key, r.Value, StringComparison.Ordinal);
@@ -141,7 +142,7 @@ namespace LoraKeysManagerFacade
                 _ = await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
 
                 // Deploy concentrator
-                using var httpClient = new HttpClient();
+                using var httpClient = this.httpClientFactory.CreateClient();
                 var regionalConfiguration = region switch
                 {
                     var s when string.Equals("EU", s, StringComparison.OrdinalIgnoreCase) => await httpClient.GetStringAsync(new Uri(GetEnvironmentVariable("EU863_CONFIG_LOCATION"))),

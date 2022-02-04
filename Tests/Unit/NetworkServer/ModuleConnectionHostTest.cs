@@ -14,6 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Configuration;
     using System.Net;
+    using System.Net.Http;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
@@ -102,7 +103,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 FacadeAuthCode = facadeCode
             };
 
-            var localLoRaDeviceApiServiceBase = new LoRaDeviceAPIService(networkServerConfiguration, Mock.Of<IServiceFacadeHttpClientProvider>(), NullLogger<LoRaDeviceAPIService>.Instance, TestMeter.Instance);
+            var localLoRaDeviceApiServiceBase = new LoRaDeviceAPIService(networkServerConfiguration, Mock.Of<IHttpClientFactory>(), NullLogger<LoRaDeviceAPIService>.Instance, TestMeter.Instance);
             var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
             var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
             var loRaModuleClientFactory = Mock.Of<ILoRaModuleClientFactory>();

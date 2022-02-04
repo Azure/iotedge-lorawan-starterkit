@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading.Tasks;
     using Logger;
     using LoRaTools.ADR;
+    using LoRaTools.CommonAPI;
     using LoRaWan;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
@@ -74,10 +75,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
                             }
                         })
                         .AddMemoryCache()
+                        .AddHttpClient()
+                        .AddApiClient(NetworkServerConfiguration, ApiVersion.LatestVersion)
                         .AddSingleton(NetworkServerConfiguration)
-                        .AddSingleton(LoRaTools.CommonAPI.ApiVersion.LatestVersion)
                         .AddSingleton<ModuleConnectionHost>()
-                        .AddSingleton<IServiceFacadeHttpClientProvider, ServiceFacadeHttpClientProvider>()
                         .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
                         .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
                         .AddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>()
