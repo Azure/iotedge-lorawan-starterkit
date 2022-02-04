@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly IMessageDispatcher messageDispatcher;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
-        private readonly ITracing operationTracking;
+        private readonly ITracing tracing;
         private readonly Counter<int> joinRequestCounter;
         private readonly Counter<int> uplinkMessageCounter;
         private readonly Counter<int> unhandledExceptionCount;
@@ -45,7 +45,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                            ILogger<LnsProtocolMessageProcessor> logger,
                                            RegistryMetricTagBag registryMetricTagBag,
                                            Meter meter,
-                                           ITracing operationTracking)
+                                           ITracing tracing)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.socketWriterRegistry = socketWriterRegistry;
@@ -53,7 +53,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.messageDispatcher = messageDispatcher;
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
-            this.operationTracking = operationTracking;
+            this.tracing = tracing;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
             this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
             this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
@@ -191,7 +191,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                   string json,
                                                   CancellationToken cancellationToken)
         {
-            using var dataOperation = this.operationTracking.TrackDataMessage();
+            using var dataOperation = this.tracing.TrackDataMessage();
 
             switch (LnsData.MessageTypeReader.Read(json))
             {
