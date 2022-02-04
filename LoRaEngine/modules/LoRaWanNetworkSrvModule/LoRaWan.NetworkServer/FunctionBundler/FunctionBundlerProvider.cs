@@ -74,8 +74,9 @@ namespace LoRaWan.NetworkServer
             for (var i = 0; i < qualifyingExecutionItems.Count; i++)
             {
                 qualifyingExecutionItems[i].Prepare(context, bundlerRequest);
-                this.logger.LogDebug("FunctionBundler request finished preparing.");
             }
+
+            this.logger.LogDebug("Finished preparing {NumberOfExecutionItems} FunctionBundler requests.", qualifyingExecutionItems.Count);
 
             if (this.logger.IsEnabled(LogLevel.Debug))
                 this.logger.LogDebug($"FunctionBundler request: {JsonSerializer.Serialize(bundlerRequest)}");
