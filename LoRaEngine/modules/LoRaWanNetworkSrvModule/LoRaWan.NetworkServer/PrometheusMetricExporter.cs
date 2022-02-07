@@ -69,7 +69,7 @@ namespace LoRaWan.NetworkServer
             };
 #pragma warning restore format
 
-            var inOrderTags = MetricExporterHelper.GetTagsInOrder(this.RegistryLookup[instrument.Name].Tags, tags, this.metricTagBag);
+            var inOrderTags = MetricExporterHelper.GetTagsInOrder(RegistryLookup[instrument.Name].Tags, tags, this.metricTagBag);
             trackMetric(instrument.Name, inOrderTags, measurement);
         }
 
