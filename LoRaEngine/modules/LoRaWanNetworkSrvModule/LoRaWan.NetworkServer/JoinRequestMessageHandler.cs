@@ -70,7 +70,11 @@ namespace LoRaWan.NetworkServer
 
                 this.logger.LogInformation("join request received");
 
-                if (this.concentratorDeduplication.CheckDuplicateJoin(request) is ConcentratorDeduplicationResult.Duplicate)
+                var deduplicationResult = this.concentratorDeduplication.CheckDuplicateJoin(request);
+                if (deduplicationResult is ConcentratorDeduplicationResult.NotDuplicate)
+                    this.joinRequestCounter?.Add(1);
+
+                if (deduplicationResult is ConcentratorDeduplicationResult.Duplicate)
                 {
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.DeduplicationDrop);
                     // we do not log here as the concentratorDeduplication service already does more detailed logging
@@ -93,8 +97,6 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var appKey = loRaDevice.AppKey.Value;
-
-                this.joinRequestCounter?.Add(1);
 
                 if (loRaDevice.AppEui != joinReq.AppEui)
                 {

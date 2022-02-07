@@ -42,9 +42,9 @@ namespace LoRaWan.NetworkServer
             this.gauges = GetMetricsFromRegistry(MetricType.ObservableGauge, m => Metrics.CreateGauge(m.Name, m.Description, m.Tags));
 
             IDictionary<string, T> GetMetricsFromRegistry<T>(MetricType metricType, Func<CustomMetric, T> factory) =>
-                this.registryLookup.Values.Where(m => m.Type == metricType)
-                                          .Select(m => KeyValuePair.Create(m.Name, factory(m)))
-                                          .ToDictionary(m => m.Key, m => m.Value);
+                RegistryLookup.Values.Where(m => m.Type == metricType)
+                                     .Select(m => KeyValuePair.Create(m.Name, factory(m)))
+                                     .ToDictionary(m => m.Key, m => m.Value);
             this.metricTagBag = metricTagBag;
         }
 
@@ -69,7 +69,7 @@ namespace LoRaWan.NetworkServer
             };
 #pragma warning restore format
 
-            var inOrderTags = MetricExporterHelper.GetTagsInOrder(this.registryLookup[instrument.Name].Tags, tags, this.metricTagBag);
+            var inOrderTags = MetricExporterHelper.GetTagsInOrder(RegistryLookup[instrument.Name].Tags, tags, this.metricTagBag);
             trackMetric(instrument.Name, inOrderTags, measurement);
         }
 
