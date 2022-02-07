@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static DisposableValue<JoinRequestMessageHandler> Setup(ConcentratorDeduplicationResult deduplicationResult)
         {
             var deduplicationMock = new Mock<IConcentratorDeduplication>();
-            deduplicationMock.Setup(d => d.CheckDuplicateJoin(It.IsAny<LoRaRequest>())).Returns(deduplicationResult);
+            _ = deduplicationMock.Setup(d => d.CheckDuplicateJoin(It.IsAny<LoRaRequest>())).Returns(deduplicationResult);
 #pragma warning disable CA2000 // Dispose objects before losing scope (dispose handled in DisposableValue)
             var meter = new Meter(MetricNamespace);
 #pragma warning restore CA2000 // Dispose objects before losing scope
