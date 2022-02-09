@@ -209,6 +209,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         internal async Task SendEventAsync(string deviceId, Message message, CancellationToken cancellationToken)
         {
+            message.UserId = deviceId;
             await this.loRaModuleClient.SendEventAsync(deviceId, message, cancellationToken);
         }
 
