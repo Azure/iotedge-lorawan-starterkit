@@ -53,5 +53,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         {
             await this.moduleClient.SetMethodDefaultHandlerAsync(onDirectMethodCalled, usercontext);
         }
+
+        public async Task SendEventAsync(string deviceId, Message message, CancellationToken cancellationToken)
+        {
+            await this.moduleClient.SendEventAsync(deviceId, message, cancellationToken);
+        }
     }
 }

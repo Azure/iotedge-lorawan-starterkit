@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Diagnostics.Metrics;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
+    using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
 
     public class LoRaDeviceFactory : ILoRaDeviceFactory
     {
@@ -19,6 +20,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<LoRaDeviceFactory> logger;
         private readonly Meter meter;
+        private readonly ModuleConnectionHost moduleConnectionHost;
 
         public LoRaDeviceFactory(NetworkServerConfiguration configuration,
                                  ILoRaDataRequestHandler dataRequestHandler,
@@ -26,7 +28,8 @@ namespace LoRaWan.NetworkServer
                                  LoRaDeviceCache loRaDeviceCache,
                                  ILoggerFactory loggerFactory,
                                  ILogger<LoRaDeviceFactory> logger,
-                                 Meter meter)
+                                 Meter meter,
+                                 ModuleConnectionHost moduleConnectionHost)
         {
             this.configuration = configuration;
             this.dataRequestHandler = dataRequestHandler;
@@ -34,6 +37,7 @@ namespace LoRaWan.NetworkServer
             this.loggerFactory = loggerFactory;
             this.logger = logger;
             this.meter = meter;
+            this.moduleConnectionHost = moduleConnectionHost;
             this.loRaDeviceCache = loRaDeviceCache;
         }
 
@@ -145,7 +149,7 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(deviceConnectionStr, transportSettings, primaryKey, this.loggerFactory.CreateLogger<LoRaDeviceClient>(), this.meter);
+                return new LoRaDeviceClient(deviceConnectionStr, transportSettings, primaryKey, this.loggerFactory.CreateLogger<LoRaDeviceClient>(), this.meter, this.moduleConnectionHost, deviceId);
             }
             catch (Exception ex)
             {

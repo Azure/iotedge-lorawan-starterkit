@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
@@ -24,12 +25,14 @@ namespace LoRaWan.NetworkServer
         private readonly string connectionString;
         private readonly ITransportSettings[] transportSettings;
         private readonly ILogger<LoRaDeviceClient> logger;
+        private readonly ModuleConnectionHost moduleConnectionHost;
+        private readonly string deviceId;
         private readonly Counter<int> twinLoadRequests;
         private DeviceClient deviceClient;
 
         private readonly string primaryKey;
 
-        public LoRaDeviceClient(string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger, Meter meter)
+        public LoRaDeviceClient(string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger, Meter meter, ModuleConnectionHost moduleConnectionHost, string deviceId)
         {
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or empty.", nameof(connectionString));
             if (string.IsNullOrEmpty(primaryKey)) throw new ArgumentException($"'{nameof(primaryKey)}' cannot be null or empty.", nameof(primaryKey));
@@ -40,6 +43,8 @@ namespace LoRaWan.NetworkServer
             this.connectionString = connectionString;
             this.primaryKey = primaryKey;
             this.logger = logger;
+            this.moduleConnectionHost = moduleConnectionHost;
+            this.deviceId = deviceId;
             this.twinLoadRequests = meter.CreateCounter<int>(MetricRegistry.TwinLoadRequests);
             this.deviceClient = CreateDeviceClient();
         }
@@ -125,7 +130,7 @@ namespace LoRaWan.NetworkServer
                             message.Properties.Add(prop);
                     }
 
-                    await this.deviceClient.SendEventAsync(message);
+                    await this.moduleConnectionHost.SendEventAsync(deviceId, message, default);
 
                     return true;
                 }

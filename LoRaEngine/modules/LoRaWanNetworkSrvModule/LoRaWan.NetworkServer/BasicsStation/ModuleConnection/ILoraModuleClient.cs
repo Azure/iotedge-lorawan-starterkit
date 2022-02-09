@@ -21,5 +21,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object usercontext);
         Task SetMethodDefaultHandlerAsync(MethodCallback onDirectMethodCalled, object usercontext);
         Task UpdateReportedPropertyAsync(string key, string value);
+        Task SendEventAsync(string deviceId, Message message, CancellationToken cancellationToken);
     }
 }

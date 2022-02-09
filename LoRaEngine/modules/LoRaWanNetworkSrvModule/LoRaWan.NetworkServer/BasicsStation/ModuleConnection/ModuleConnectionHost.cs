@@ -20,8 +20,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
     {
         private const string LnsVersionPropertyName = "LnsVersion";
         private readonly NetworkServerConfiguration networkServerConfiguration;
-        private readonly IClassCDeviceMessageSender classCMessageSender;
-        private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
+        //private readonly IClassCDeviceMessageSender classCMessageSender;
+        //private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILogger<ModuleConnectionHost> logger;
         private readonly Counter<int> unhandledExceptionCount;
@@ -30,16 +30,16 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         public ModuleConnectionHost(
             NetworkServerConfiguration networkServerConfiguration,
-            IClassCDeviceMessageSender defaultClassCDevicesMessageSender,
+            //IClassCDeviceMessageSender defaultClassCDevicesMessageSender,
             ILoRaModuleClientFactory loRaModuleClientFactory,
-            ILoRaDeviceRegistry loRaDeviceRegistry,
+            //ILoRaDeviceRegistry loRaDeviceRegistry,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
             ILogger<ModuleConnectionHost> logger,
             Meter meter)
         {
             this.networkServerConfiguration = networkServerConfiguration ?? throw new ArgumentNullException(nameof(networkServerConfiguration));
-            this.classCMessageSender = defaultClassCDevicesMessageSender ?? throw new ArgumentNullException(nameof(defaultClassCDevicesMessageSender));
-            this.loRaDeviceRegistry = loRaDeviceRegistry ?? throw new ArgumentNullException(nameof(loRaDeviceRegistry));
+            //this.classCMessageSender = defaultClassCDevicesMessageSender ?? throw new ArgumentNullException(nameof(defaultClassCDevicesMessageSender));
+            //this.loRaDeviceRegistry = loRaDeviceRegistry ?? throw new ArgumentNullException(nameof(loRaDeviceRegistry));
             this.loRaDeviceAPIService = loRaDeviceAPIService ?? throw new ArgumentNullException(nameof(loRaDeviceAPIService));
             this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -92,11 +92,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             try
             {
-                if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return await ClearCache();
-                }
-                else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                //if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                //{
+                //    return await ClearCache();
+                //}
+                //else
+                if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     return await SendCloudToDeviceMessageAsync(methodRequest);
                 }
@@ -112,7 +113,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task<MethodResponse> SendCloudToDeviceMessageAsync(MethodRequest methodRequest)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (!string.IsNullOrEmpty(methodRequest.DataAsJson))
             {
@@ -133,21 +136,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
                 using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
 
-                if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
-                {
-                    return new MethodResponse((int)HttpStatusCode.OK);
-                }
+                //if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
+                //{
+                return new MethodResponse((int)HttpStatusCode.OK);
+                //}
             }
 
             return new MethodResponse((int)HttpStatusCode.BadRequest);
         }
 
-        private Task<MethodResponse> ClearCache()
-        {
-            this.loRaDeviceRegistry.ResetDeviceCache();
+        //private Task<MethodResponse> ClearCache()
+        //{
+        //    this.loRaDeviceRegistry.ResetDeviceCache();
 
-            return Task.FromResult(new MethodResponse((int)HttpStatusCode.OK));
-        }
+        //    return Task.FromResult(new MethodResponse((int)HttpStatusCode.OK));
+        //}
 
         /// <summary>
         /// Method to update the desired properties.
@@ -202,6 +205,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             this.logger.LogDebug("no desired property changed");
             return false;
+        }
+
+        internal async Task SendEventAsync(string deviceId, Message message, CancellationToken cancellationToken)
+        {
+            await this.loRaModuleClient.SendEventAsync(deviceId, message, cancellationToken);
         }
 
         public async ValueTask DisposeAsync()
