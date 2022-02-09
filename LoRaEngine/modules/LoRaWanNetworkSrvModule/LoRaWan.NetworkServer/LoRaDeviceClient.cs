@@ -59,9 +59,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.logger.LogDebug("getting device twin");
 
-                await this.deviceClient.OpenAsync(cancellationToken);
                 var twins = await this.deviceClient.GetTwinAsync(cancellationToken);
-                await this.deviceClient.CloseAsync(cancellationToken);
 
                 this.logger.LogDebug("done getting device twin");
 
@@ -95,9 +93,7 @@ namespace LoRaWan.NetworkServer
 
                 this.logger.LogDebug("updating twin");
 
-                await this.deviceClient.OpenAsync(cancellationToken);
                 await this.deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
-                await this.deviceClient.CloseAsync(cancellationToken);
 
                 this.logger.LogDebug("twin updated");
 
@@ -153,9 +149,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.logger.LogDebug($"checking cloud to device message for {timeout}");
 
-                await this.deviceClient.OpenAsync();
                 var msg = await this.deviceClient.ReceiveAsync(timeout);
-                await this.deviceClient.CloseAsync();
 
                 if (this.logger.IsEnabled(LogLevel.Debug))
                 {
@@ -181,9 +175,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.logger.LogDebug($"completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
-                await this.deviceClient.OpenAsync();
                 await this.deviceClient.CompleteAsync(cloudToDeviceMessage);
-                await this.deviceClient.CloseAsync();
 
                 this.logger.LogDebug($"done completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
@@ -203,9 +195,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.logger.LogDebug($"abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
-                await this.deviceClient.OpenAsync();
                 await this.deviceClient.AbandonAsync(cloudToDeviceMessage);
-                await this.deviceClient.CloseAsync();
 
                 this.logger.LogDebug($"done abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
@@ -225,9 +215,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.logger.LogDebug($"rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
-                await this.deviceClient.OpenAsync();
                 await this.deviceClient.RejectAsync(cloudToDeviceMessage);
-                await this.deviceClient.CloseAsync();
 
                 this.logger.LogDebug($"done rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
 
