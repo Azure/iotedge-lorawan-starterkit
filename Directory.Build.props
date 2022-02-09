@@ -39,14 +39,14 @@
       <MicrosoftExtensionsConfigurationJsonVersion>6.0.0</MicrosoftExtensionsConfigurationJsonVersion>
       <SystemIOPortsVersion>6.0.0</SystemIOPortsVersion>
       <XUnitRunnerVisualStudio>2.4.3</XUnitRunnerVisualStudio>
-      <CoverletMSBuild>3.1.1</CoverletMSBuild>
+      <CoverletMSBuild>3.1.2</CoverletMSBuild>
       <MicrosoftAzureEventHubsVersion>4.3.2</MicrosoftAzureEventHubsVersion>
       <MicrosoftAzureEventHubsProcessorVersion>4.3.2</MicrosoftAzureEventHubsProcessorVersion>
       <MicrosoftExtensionsLogging>6.0.0</MicrosoftExtensionsLogging>
       <MicrosoftExtensionsLoggingConfiguration>6.0.0</MicrosoftExtensionsLoggingConfiguration>
       <BogusVersion>34.0.1</BogusVersion>
       <NullablePkg>1.3.0</NullablePkg>
-      <MicrosoftAspNetCoreMvcTestingVersion>6.0.1</MicrosoftAspNetCoreMvcTestingVersion>
+      <MicrosoftAspNetCoreMvcTestingVersion>6.0.2</MicrosoftAspNetCoreMvcTestingVersion>
     </PropertyGroup>
 
     <ItemGroup>
