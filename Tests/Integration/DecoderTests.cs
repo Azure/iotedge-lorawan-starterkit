@@ -22,7 +22,9 @@ namespace LoRaWan.Tests.Integration
     // Decoder tests tests
     public class DecoderTests : MessageProcessorTestBase
     {
-        public DecoderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) { }
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public DecoderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper) => this.testOutputHelper = testOutputHelper;
 
         /// <summary>
         /// SensorDecoder: none
@@ -88,7 +90,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -177,7 +180,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -255,7 +259,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -269,8 +274,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var httpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -342,7 +347,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -356,8 +362,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -431,7 +437,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -445,8 +452,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -520,7 +527,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -536,8 +544,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -609,7 +617,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -623,8 +632,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -671,7 +680,8 @@ namespace LoRaWan.Tests.Integration
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = TestMessageDispatcher.Create(
+                cache,
                 ServerConfiguration,
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
@@ -687,8 +697,8 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            using var httpClient = new HttpClient(httpMessageHandler);
-            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
+            using var mockHttpClientFactory = new MockHttpClientFactory(httpMessageHandler);
+            PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(mockHttpClientFactory, new TestOutputLogger<LoRaPayloadDecoder>(this.testOutputHelper)));
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1", fcnt: 10);

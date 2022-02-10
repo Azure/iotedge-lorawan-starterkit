@@ -23,9 +23,6 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<MessageDispatcher> logger;
         private readonly Histogram<double> d2cMessageDeliveryLatencyHistogram;
 
-        private static readonly IMemoryCache testMemoryCache = new MemoryCache(new MemoryCacheOptions());
-        private static readonly IConcentratorDeduplication concentratorDeduplication = new ConcentratorDeduplication(testMemoryCache, NullLogger<IConcentratorDeduplication>.Instance);
-
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry deviceRegistry,
@@ -48,19 +45,6 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
             this.d2cMessageDeliveryLatencyHistogram = meter?.CreateHistogram<double>(MetricRegistry.D2CMessageDeliveryLatency);
         }
-
-        /// <summary>
-        /// Use this constructor only for tests.
-        /// </summary>
-        internal MessageDispatcher(NetworkServerConfiguration configuration,
-                                   ILoRaDeviceRegistry deviceRegistry,
-                                   ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
-            : this(configuration, deviceRegistry, frameCounterUpdateStrategyProvider,
-                   new JoinRequestMessageHandler(configuration, concentratorDeduplication, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance, null),
-                   NullLoggerFactory.Instance,
-                   NullLogger<MessageDispatcher>.Instance,
-                   null)
-        { }
 
         /// <summary>
         /// Dispatches a request.

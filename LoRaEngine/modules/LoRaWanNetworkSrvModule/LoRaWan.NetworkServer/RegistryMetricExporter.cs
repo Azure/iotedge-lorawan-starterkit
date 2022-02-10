@@ -12,19 +12,27 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
-    internal abstract class RegistryMetricExporter : IMetricExporter
+    public abstract class RegistryMetricExporter : IMetricExporter
     {
         private static readonly TimeSpan ObserveInterval = TimeSpan.FromSeconds(30);
 
         private readonly CancellationTokenSource cancellationTokenSource;
-        protected readonly IDictionary<string, CustomMetric> registryLookup;
+        private readonly string registryNamespace;
+        protected IDictionary<string, CustomMetric> RegistryLookup { get; private set; }
         private readonly ILogger<RegistryMetricExporter> logger;
         private MeterListener? listener;
         private bool disposedValue;
 
-        public RegistryMetricExporter(IDictionary<string, CustomMetric> registryLookup, ILogger<RegistryMetricExporter> logger)
+        protected RegistryMetricExporter(IDictionary<string, CustomMetric> registryLookup, ILogger<RegistryMetricExporter> logger)
+            : this(MetricRegistry.Namespace, registryLookup, logger)
+        { }
+
+        protected RegistryMetricExporter(string registryNamespace,
+                                         IDictionary<string, CustomMetric> registryLookup,
+                                         ILogger<RegistryMetricExporter> logger)
         {
-            this.registryLookup = registryLookup;
+            this.registryNamespace = registryNamespace;
+            RegistryLookup = registryLookup;
             this.logger = logger;
             this.cancellationTokenSource = new CancellationTokenSource();
         }
@@ -35,7 +43,7 @@ namespace LoRaWan.NetworkServer
             {
                 InstrumentPublished = (instrument, meterListener) =>
                 {
-                    if (instrument.Meter.Name == MetricRegistry.Namespace && this.registryLookup.ContainsKey(instrument.Name))
+                    if (instrument.Meter.Name == this.registryNamespace && RegistryLookup.ContainsKey(instrument.Name))
                     {
                         meterListener.EnableMeasurementEvents(instrument);
                     }

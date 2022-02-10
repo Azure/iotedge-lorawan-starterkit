@@ -32,7 +32,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly IMessageDispatcher messageDispatcher;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
-        private readonly Counter<int> joinRequestCounter;
         private readonly Counter<int> uplinkMessageCounter;
         private readonly Counter<int> unhandledExceptionCount;
 
@@ -50,7 +49,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.messageDispatcher = messageDispatcher;
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
-            this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
             this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
             this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }

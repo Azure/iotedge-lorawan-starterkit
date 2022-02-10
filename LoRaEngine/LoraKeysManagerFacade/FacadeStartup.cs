@@ -52,21 +52,22 @@ namespace LoraKeysManagerFacade
                            .WithName(WebJobsStorageClientName);
             });
             _ = builder.Services
-                    .AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)))
-                    .AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore)
-                    .AddSingleton<ILoRaADRManager>(sp => new LoRaADRServerManager(new LoRaADRRedisStore(redisCache, sp.GetRequiredService<ILogger<LoRaADRRedisStore>>()),
-                                                                                  new LoRaADRStrategyProvider(sp.GetRequiredService<ILoggerFactory>()),
-                                                                                  deviceCacheStore,
-                                                                                  sp.GetRequiredService<ILogger<LoRaADRServerManager>>()))
-                    .AddSingleton<CreateEdgeDevice>()
-                    .AddSingleton<DeviceGetter>()
-                    .AddSingleton<FCntCacheCheck>()
-                    .AddSingleton<FunctionBundlerFunction>()
-                    .AddSingleton<IFunctionBundlerExecutionItem, NextFCntDownExecutionItem>()
-                    .AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>()
-                    .AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>()
-                    .AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>()
-                    .AddSingleton<LoRaDevAddrCache>();
+                .AddHttpClient()
+                .AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)))
+                .AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore)
+                .AddSingleton<ILoRaADRManager>(sp => new LoRaADRServerManager(new LoRaADRRedisStore(redisCache, sp.GetRequiredService<ILogger<LoRaADRRedisStore>>()),
+                                                                              new LoRaADRStrategyProvider(sp.GetRequiredService<ILoggerFactory>()),
+                                                                              deviceCacheStore,
+                                                                              sp.GetRequiredService<ILogger<LoRaADRServerManager>>()))
+                .AddSingleton<CreateEdgeDevice>()
+                .AddSingleton<DeviceGetter>()
+                .AddSingleton<FCntCacheCheck>()
+                .AddSingleton<FunctionBundlerFunction>()
+                .AddSingleton<IFunctionBundlerExecutionItem, NextFCntDownExecutionItem>()
+                .AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>()
+                .AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>()
+                .AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>()
+                .AddSingleton<LoRaDevAddrCache>();
         }
 
         private abstract class ConfigHandler

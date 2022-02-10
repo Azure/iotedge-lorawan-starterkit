@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using System.Web;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -18,34 +19,15 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// LoRa payload decoder.
     /// </summary>
-    public class LoRaPayloadDecoder : ILoRaPayloadDecoder
+    public sealed class LoRaPayloadDecoder : ILoRaPayloadDecoder
     {
-        private readonly HttpClient httpClient;
-
-        // Http client used by decoders
-        // Decoder calls don't need proxy since they will never leave the IoT Edge device
-        private readonly Lazy<HttpClient> decodersHttpClient;
+        private readonly IHttpClientFactory httpClientFactory;
         private readonly ILogger<LoRaPayloadDecoder> logger;
 
-        public LoRaPayloadDecoder(ILogger<LoRaPayloadDecoder> logger)
+        public LoRaPayloadDecoder(IHttpClientFactory httpClientFactory, ILogger<LoRaPayloadDecoder> logger)
         {
-            this.decodersHttpClient = new Lazy<HttpClient>(() =>
-            {
-                var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
-                client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
-                return client;
-            });
+            this.httpClientFactory = httpClientFactory;
             this.logger = logger;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LoRaPayloadDecoder"/> class.
-        /// Constructor for unit testing.
-        /// </summary>
-        public LoRaPayloadDecoder(HttpClient httpClient)
-        {
-            this.httpClient = httpClient;
         }
 
         public async ValueTask<DecodePayloadResult> DecodeMessageAsync(DevEui devEui, byte[] payload, FramePort fport, string sensorDecoder)
@@ -95,8 +77,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                var httpClientToUse = this.httpClient ?? this.decodersHttpClient.Value;
-                var response = await httpClientToUse.GetAsync(sensorDecoderModuleUrl);
+                var response = await this.httpClientFactory.CreateClient(PayloadDecoderHttpClient.ClientName).GetAsync(sensorDecoderModuleUrl);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -200,6 +181,24 @@ namespace LoRaWan.NetworkServer
         {
             var payloadHex = ((payload?.Length ?? 0) == 0) ? string.Empty : payload.ToHex();
             return new DecodedPayloadValue(payloadHex);
+        }
+    }
+
+    internal static class PayloadDecoderHttpClient
+    {
+        public const string ClientName = nameof(PayloadDecoderHttpClient);
+
+        public static IServiceCollection AddPayloadDecoderHttpClient(this IServiceCollection services)
+        {
+            // Decoder calls don't need proxy since they will never leave the IoT Edge device
+            _ = services.AddHttpClient(ClientName)
+                        .ConfigureHttpClient(client =>
+                        {
+                            client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
+                            client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
+                        });
+
+            return services;
         }
     }
 }
