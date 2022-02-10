@@ -60,9 +60,21 @@ If we decide to keep track of the health of each LNS, there are several potentia
 | Ping discovery service   | Each LNS pings the discovery service on a regular basis to indicate that it's still alive. |                                           | - Time between crash of LNS and detection of crash           |
 | State update             | LNS updates state on a regular basis, which can be queried by the discovery service, e.g. using Azure Storage blob lease management (and lease renewal) |                                           | - Time between crash of LNS and detection of crash<br />- Complexity |
 | Health endpoint on LNS   | Each LNS has a health-check endpoint, that can be queried by the discovery service |                                           | - Does not necessarily work for on-premises deployments of LNS |
-| No health probes at all  | The discovery service relies on the implicit knowledge that if an LBS issues another request to the discovery service, the connection to the LNS failed | - Simple                                  | - Depends on how long the station waits before backoff (and how many LNS are down) |
+| No health checks at all  | The discovery service relies on the implicit knowledge that if an LBS issues another request to the discovery service, the connection to the LNS failed | - Simple                                  | - Depends on how long the station waits before backoff (and how many LNS are down) |
 
 We should keep in mind that we can also use a combination of the strategies and use an incremental approach again: start with a simple health detection strategy, and allow configuring a different health detection strategy.
+
+#### Spike - lost messages during LNS downtime
+
+The selection of a health check strategy should take into account how many upstream messages can potentially be lost, depending on how long the downtime is. To investigate this further, we ran a spike where we simulated the LNS going down and then recovering after different delays, starting at 10 sec. In our experiment, the leaf device was configured to send unconfirmed messages every 5 sec. The outcomes can be found in the table below. The experiment was run a number of times for each downtime duration to make sure the results can be reproduced.
+
+| LNS downtime | Number of lost messages (avg) |
+| ------------ | ----------------------------- |
+| 10 sec       | 0                             |
+| 30 sec       | 0                             |
+| 60 sec       | 0                             |
+| 90 sec       | 30                            |
+| 120 sec      | 30                            |
 
 ### Auth
 
