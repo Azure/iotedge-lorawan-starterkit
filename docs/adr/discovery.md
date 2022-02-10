@@ -13,17 +13,15 @@ we could consider implementing the service discovery as part of either the CUPS 
 
 This implies that the discovery service needs to support WebSockets. As of now, the `/router-info` endpoint is part of the LNS itself. Since we want to use it to protect against LNS outages, by definition it becomes clear that discovery needs to be isolated from the LNS and needs to be come a standalone, highly available service. In the following, we propose several properties of the discovery service.
 
-## Proposed solution
+## Decision
 
-We propose to add an ASP.NET Core Web Application to the OSS starter kit that exposes an endpoint for service discovery. The Web App can deployed anywhere (as a highly available cloud service per default, or as an on-premises service for more flexibility).
+We propose to add an ASP.NET Core Web Application to the OSS starter kit that exposes an endpoint for service discovery. The Web App can deployed anywhere (as a highly available cloud service per default, or as an on-premises service for more flexibility). With respect to configuration and health probe, we will implement two simple approaches initially, and expand the functionality in a second stage.
 
-- Initial version: let's try and see
-- Configuration: either configuration via twin or via environment variables (or maybe both?)
-- Health probes:
-  - Module state via twin
-  - D2C message health checks
-  - LNS -> HTTP Request -> Discovery Service, Discovery keeps track (in-memory) of the last successful health probe
-  - Use a combination of several strategies
+In the initial version, we will not create an active health check. We will rely on the fact that if a LBS reconnects to the discovery service, the LNS was not available. By using a round-robin distribution mechanism based on in-memory state, we can guarantee reasonably well that the LBS will be connected to a different LNS in a second attempt.
+
+The configuration to resolve the problem of LNS having different network boundaries, we rely on configuring the subset of available network servers through a configuration value in the station twin. We will recommend [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for central management of stations with the same network boundaries.
+
+In a second stage, we will prioritize one of the more advanced health probe strategies and potentially introduce more supported configuration approaches.
 
 ## Detailed analysis
 
@@ -40,10 +38,11 @@ An important restriction to consider at this point is that the service needs to 
 
 Due to the supported deployment models of the OSS starter kit, it is possible that only a subset of all LNS are reachable for a given LBS (due to network boundaries). Users need to configure which LBS can connect to which LNS. We have several, non-mutually exclusive options for this:
 
-- We can hardcode the set of LNS to which each LBS can connect to in the station twin. As of now, we already store the CUPS configuration in the station twin (which also contains the TC URI configuration value). Adding a set of supported LNS (potential using [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management)) does not introduce another location for the configuration, but keeps the config at the same location.
-  - This causes an additional device twin operation per connection request to the discovery service
-- We can use tags or reported properties to associate LBS with LNS that are within the network boundaries.
-- We could statically configure the defined network boundaries as an environment variable/configuration file on the discovery service (e.g. have a JSON structure, which indicates a set of LBS/LNS that are within the same network boundaries).
+| Name                           | Description                                                  | Advantages                                                   | Disadvantages                                                |
+| ------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Station twin                   | We can hardcode the set of LNS to which each LBS can connect to in the station twin. | - leverages  [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for configuration<br />- similar strategy to existing configuration strategies (single place for configuration) | - One registry operation per every discovery service request<br />- Complex when not using automatic device management |
+| Tags                           | We can rely on registry queries to identify LNS and stations that are in the same network | - Simple configuration (via setting a tag)                   | - Need to resolve the LNS DNS/IP based on the query results  |
+| Environment/configuration file | We could statically configure the defined network boundaries as an environment variable/configuration file on the discovery service (e.g. have a JSON structure, which indicates a set of LBS/LNS that are within the same network boundaries) | - Simple for developers                                      | - Needs a discovery service restart to pick up configuration changes<br />- Configuration is spread out |
 
 Furthermore, we must decide how to add support for how distribution strategies (round-robin, random, or a more complex balancing strategy). These options are not mutually exclusive, but can be supported at the same time. We can start by using a single, simple distribution mechanism (random/round-robin based on in-memory state) and incrementally add support for different distribution strategies.
 
