@@ -46,7 +46,7 @@ Due to the supported deployment models of the OSS starter kit, it is possible th
 
 Furthermore, we must decide how to add support for how distribution strategies (round-robin, random, or a more complex balancing strategy). These options are not mutually exclusive, but can be supported at the same time. We can start by using a single, simple distribution mechanism (random/round-robin based on in-memory state) and incrementally add support for different distribution strategies.
 
-### Health probes
+### Health checks
 
 There are potential approaches on how to detect whether a LNS is alive or not. A simple solution would be to not keep track of the health states of the LNS. If an LBS fails to connect to a LNS, it will query the discovery service again, and we can supply a different LNS (e.g. when using round-robin distribution).
 
