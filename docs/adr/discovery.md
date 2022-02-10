@@ -1,18 +1,17 @@
-# Discovery endpoint
+# 00x. LNS discovery
 
-We want to provide the users with the option to increase availability by automatically detecting healthy LNS and distributing the LBS connections across different LNS. As part of the LNS protocol, any LoRaWAN Basics Stations (LBS) [initiates a connection](https://lora-developers.semtech.com/documentation/tech-papers-and-guides/how-to-use-lora-basics-station) by using two strategies:
+**Authors**: Bastian Burger, Daniele Maggio, Maggie Salak
 
-- Directly connecting to the LNS (OR: discovery service, info is contradicting itself) using an URL configured in a  `tc.uri` file
-- Using the CUPS protocol for dynamically retrieving the LNS details. In this case, the LNS URI (= TC URI) comes from the twin configuration.
+Service (or LNS) discovery is part of the LNS protocol. When a LBS connects to the first time to a LNS, it invokes the service discovery endpoint (`/router-info`). We want to provide the users with the option to increase availability by automatically rebalancing connection attempts to healthy LNS.
 
-In the first case, the specification mentions that the LBS will connect directly to the LNS, which would imply that there is no discovery involved, and redirection to a different LNS would not conform with the specification (actually another part of the docs contradict this, [The LNS Protocol — LoRa Basics™ Station 2.0.6 January 2022 documentation (sm.tc)](https://doc.sm.tc/station/tcproto.html#querying-the-lns-connection-endpoint-discovery) mentions that the `router-info` endpoint does not need to be on the LNS itself).
+The LNS (either data or discovery) URI is returned in two places, namely:
 
-Still, we can consider discovery on two different levels:
+- as a response as part of the CUPS protocol
+- as a response of the service discovery endpoint invocation (`/router-info`)
 
-- Via the CUPS endpoint, where we return a TC URI of the LNS. The LBS will then query the `router-info` on the LNS, and will be redirected to the `router-data` endpoint. This uses HTTP(S), we can use consumption-based services, such as Azure Functions.
-- Via the LNS discovery endpoint (`router-info`), which could potentially be located in the cloud and then redirect to available LNS. This will use the `wss` protocol, services such as Azure Functions don't support this protocol.
+we could consider implementing the service discovery as part of either the CUPS protocol or the LNS protocol. Since LBS do not reconnect to the CUPS endpoint when a connection to a LNS is dropped, we are only left with the option of implementing service discovery as part of the LNS service discovery endpoint.
 
-Depending on whether we implement discovery via CUPS or discovery as a standalone service, we have different restrictions with respect to the protocol that we must use.
+This implies that the discovery service needs to support WebSockets. As of now, the `/router-info` endpoint is part of the LNS itself. Since we want to use it to protect against LNS outages, by definition it becomes clear that discovery needs to be isolated from the LNS and needs to be come a standalone, highly available service. In the following, we propose several properties of the discovery service.
 
 ## Availability
 
