@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.E2E
         /// </summary>
         private const int CloudToDeviceMessageReceiveCountThreshold = 2;
 
-        private static readonly Random random = new Random();
+        private static readonly Random Random = new Random();
 
         public C2DMessageTest(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
@@ -95,7 +95,7 @@ namespace LoRaWan.Tests.E2E
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
+            var c2dMessageBody = (100 + Random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
@@ -216,7 +216,7 @@ namespace LoRaWan.Tests.E2E
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
+            var c2dMessageBody = (100 + Random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
@@ -354,7 +354,7 @@ namespace LoRaWan.Tests.E2E
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
+            var c2dMessageBody = (100 + Random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
@@ -490,7 +490,7 @@ namespace LoRaWan.Tests.E2E
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
+            var c2dMessageBody = (100 + Random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var msgId = Guid.NewGuid().ToString();
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
@@ -603,7 +603,7 @@ namespace LoRaWan.Tests.E2E
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
+            var c2dMessageBody = (100 + Random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var msgId = Guid.NewGuid().ToString();
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {

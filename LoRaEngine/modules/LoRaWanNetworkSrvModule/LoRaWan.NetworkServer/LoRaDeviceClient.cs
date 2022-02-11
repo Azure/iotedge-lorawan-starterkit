@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
-        private static readonly TimeSpan twinUpdateTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan TwinUpdateTimeout = TimeSpan.FromSeconds(10);
         private readonly string connectionString;
         private readonly ITransportSettings[] transportSettings;
         private readonly ILogger<LoRaDeviceClient> logger;
@@ -82,7 +82,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (cancellationToken == default)
                 {
-                    cts = new CancellationTokenSource(twinUpdateTimeout);
+                    cts = new CancellationTokenSource(TwinUpdateTimeout);
                     cancellationToken = cts.Token;
                 }
 

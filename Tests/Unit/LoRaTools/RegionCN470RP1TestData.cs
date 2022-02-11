@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 
     public static class RegionCN470RP1TestData
     {
-        private static readonly Region region = RegionManager.CN470RP1;
+        private static readonly Region Region = RegionManager.CN470RP1;
 
         public static IEnumerable<object[]> TestRegionFrequencyData =>
             from f in new (Hertz Input, Hertz Output)[]
@@ -28,28 +28,28 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                 (Mega(484.1), Mega(504.5)),
                 (Mega(489.3), Mega(509.7)),
             }
-            select new object[] { region, f.Input, /* data rate */ 0, f.Output };
+            select new object[] { Region, f.Input, /* data rate */ 0, f.Output };
 
         public static IEnumerable<object[]> TestRegionDataRateData =>
            new List<object[]>
            {
-               new object[] { region, 0, 0, 0 },
-               new object[] { region, 1, 1, 0 },
-               new object[] { region, 2, 2, 0 },
-               new object[] { region, 5, 5, 0 },
-               new object[] { region, 1, 0, 5 },
-               new object[] { region, 2, 1, 1 },
-               new object[] { region, 3, 1, 2 },
-               new object[] { region, 3, 0, 3 },
-               new object[] { region, 4, 2, 2 },
-               new object[] { region, 5, 2, 3 },
+               new object[] { Region, 0, 0, 0 },
+               new object[] { Region, 1, 1, 0 },
+               new object[] { Region, 2, 2, 0 },
+               new object[] { Region, 5, 5, 0 },
+               new object[] { Region, 1, 0, 5 },
+               new object[] { Region, 2, 1, 1 },
+               new object[] { Region, 3, 1, 2 },
+               new object[] { Region, 3, 0, 3 },
+               new object[] { Region, 4, 2, 2 },
+               new object[] { Region, 5, 2, 3 },
            };
 
         public static IEnumerable<object[]> TestRegionDataRateData_InvalidOffset =>
            new List<object[]>
            {
-               new object[] { region, 0, 6 },
-               new object[] { region, 2, 10 },
+               new object[] { Region, 0, 6 },
+               new object[] { Region, 2, 10 },
            };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
@@ -60,17 +60,17 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                 (Mega(510.8),  20),
                 (Mega(512.3), 110),
             }
-            select new object[] { region, x.Frequency, x.DataRate };
+            select new object[] { Region, x.Frequency, x.DataRate };
 
         public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
            new List<object[]>
            {
-               new object[] { region, 0, 59 },
-               new object[] { region, 1, 59 },
-               new object[] { region, 2, 59 },
-               new object[] { region, 3, 123 },
-               new object[] { region, 4, 230 },
-               new object[] { region, 5, 230 },
+               new object[] { Region, 0, 59 },
+               new object[] { Region, 1, 59 },
+               new object[] { Region, 2, 59 },
+               new object[] { Region, 3, 123 },
+               new object[] { Region, 4, 230 },
+               new object[] { Region, 5, 230 },
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
@@ -81,49 +81,49 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                (Mega(500.3), Mega(500.3)),
                (Mega(509.7), Mega(509.7)),
            }
-           select new object[] { region, x.NwkSrvRx2Freq, x.ExpectedFreq };
+           select new object[] { Region, x.NwkSrvRx2Freq, x.ExpectedFreq };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
             new List<object[]>
             {
-                new object[] { region, null, null, DR0 },
-                new object[] { region, null, DR2, DR2 },
-                new object[] { region, null, DR5, DR5 },
-                new object[] { region, null, DR6, DR0 },
-                new object[] { region, DR4, null, DR4 },
-                new object[] { region, DR4, DR5, DR5 },
+                new object[] { Region, null, null, DR0 },
+                new object[] { Region, null, DR2, DR2 },
+                new object[] { Region, null, DR5, DR5 },
+                new object[] { Region, null, DR6, DR0 },
+                new object[] { Region, DR4, null, DR4 },
+                new object[] { Region, DR4, DR5, DR5 },
             };
 
         public static IEnumerable<object[]> TestTranslateToRegionData =>
            new List<object[]>
            {
-                new object[] { region, LoRaRegionType.CN470RP1 },
+                new object[] { Region, LoRaRegionType.CN470RP1 },
            };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
             from freq in new Hertz[] { Mega(470.3), Mega(489.3), Mega(509.7) }
-            select new object[] { region, freq, /* expected index */ -1 };
+            select new object[] { Region, freq, /* expected index */ -1 };
 
         public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>
            new List<object[]>
            {
-                new object[] { region, 0, true },
-                new object[] { region, 5, true },
-                new object[] { region, 6, false },
+                new object[] { Region, 0, true },
+                new object[] { Region, 5, true },
+                new object[] { Region, 6, false },
            };
 
         public static IEnumerable<object[]> TestIsDRIndexWithinAcceptableValuesData =>
             new List<object[]>
             {
-                new object[] { region, DR0, true, true },
-                new object[] { region, DR2, true, true },
-                new object[] { region, DR5, true, true },
-                new object[] { region, DR6, true, false },
-                new object[] { region, DR0, false, true },
-                new object[] { region, DR2, false, true },
-                new object[] { region, DR5, false, true },
-                new object[] { region, DR6, false, false },
-                new object[] { region, DR10, false, false },
+                new object[] { Region, DR0, true, true },
+                new object[] { Region, DR2, true, true },
+                new object[] { Region, DR5, true, true },
+                new object[] { Region, DR6, true, false },
+                new object[] { Region, DR0, false, true },
+                new object[] { Region, DR2, false, true },
+                new object[] { Region, DR5, false, true },
+                new object[] { Region, DR6, false, false },
+                new object[] { Region, DR10, false, false },
             };
     }
 }

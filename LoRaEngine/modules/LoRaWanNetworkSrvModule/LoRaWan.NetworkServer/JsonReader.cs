@@ -322,10 +322,10 @@ namespace LoRaWan.NetworkServer
 
         private sealed class DelegatingJsonReader<T> : IJsonReader<T>
         {
-            private readonly ReadHandler<T> _func;
+            private readonly ReadHandler<T> func;
 
-            public DelegatingJsonReader(ReadHandler<T> func) => _func = func;
-            public T Read(ref Utf8JsonReader reader) => _func(ref reader);
+            public DelegatingJsonReader(ReadHandler<T> func) => this.func = func;
+            public T Read(ref Utf8JsonReader reader) => this.func(ref reader);
         }
     }
 }
