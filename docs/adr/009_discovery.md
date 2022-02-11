@@ -1,4 +1,4 @@
-# 00x. LNS discovery
+# 009. LNS discovery
 
 **Authors**: Bastian Burger, Daniele Maggio, Maggie Salak
 
