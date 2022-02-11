@@ -130,7 +130,7 @@ Notes: Code changes are not extensive, as most of the code change is already the
 By establishing a [child-parent
 relationship](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships)
 between LBSs and LNS, messages from and to LBS are passed transparently through the LNS. The idea
-here would be that LNS as the parent, has access to the LBS device twin __without__ the need to use
+here would be that LNS as the parent, has access to the LBS device twin **without** the need to use
 the LBS device key.
 
 Reason for disqualifying: There seems that there is no API in either the
