@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
 
         private readonly IMemoryCache cache;
         private readonly ILogger<IConcentratorDeduplication> logger;
-        private static readonly object cacheLock = new object();
+        private static readonly object CacheLock = new object();
 
         internal sealed record DataMessageKey(DevEui DevEui, Mic Mic, ushort FCnt);
 
@@ -71,7 +71,7 @@ namespace LoRaWan.NetworkServer
         {
             var stationEui = loRaRequest.StationEui;
 
-            lock (cacheLock)
+            lock (CacheLock)
             {
                 if (!this.cache.TryGetValue(key, out previousStation))
                 {

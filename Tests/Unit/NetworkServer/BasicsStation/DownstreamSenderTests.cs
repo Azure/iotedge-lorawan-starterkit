@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
     public class DownstreamSenderTests
     {
-        private const string loraDataBase64 = "REFUQQ==";
+        private const string LoraDataBase64 = "REFUQQ==";
         private readonly StationEui stationEui = new StationEui(ulong.MaxValue);
         private readonly DevEui devEui = new DevEui(ulong.MaxValue);
         private readonly Mock<IWebSocketWriter<string>> webSocketWriter;
@@ -37,7 +37,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
             socketWriterRegistry.Register(stationEui, this.webSocketWriter.Object);
 
-            loraDataByteArray = Encoding.UTF8.GetBytes(loraDataBase64);
+            loraDataByteArray = Encoding.UTF8.GetBytes(LoraDataBase64);
 
             downlinkSender = new DownstreamMessageSender(socketWriterRegistry,
                                                   basicStationConfigurationService.Object,

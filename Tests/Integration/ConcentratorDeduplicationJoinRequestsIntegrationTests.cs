@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Integration
         private readonly SimulatedDevice simulatedDevice;
         private readonly Mock<LoRaDevice> deviceMock;
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
-        private bool _disposedValue;
+        private bool disposedValue;
 
         public ConcentratorDeduplicationJoinRequestsIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Integration
 
         protected override void Dispose(bool disposing)
         {
-            if (!this._disposedValue)
+            if (!this.disposedValue)
             {
                 if (disposing)
                 {
@@ -91,7 +91,7 @@ namespace LoRaWan.Tests.Integration
                     this.testOutputLoggerFactory.Dispose();
                 }
 
-                this._disposedValue = true;
+                this.disposedValue = true;
             }
 
             // Call base class implementation.
