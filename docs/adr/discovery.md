@@ -15,13 +15,11 @@ This implies that the discovery service needs to support WebSockets. As of now, 
 
 ## Decision
 
-**Note** WIP, not final yet.
-
 We propose to add an ASP.NET Core Web Application to the OSS starter kit that exposes an endpoint for service discovery. The Web App can deployed anywhere (as a highly available cloud service per default, or as an on-premises service for more flexibility). With respect to configuration and health probe, we will implement two simple approaches initially, and expand the functionality in a second stage.
 
-In the initial version, we will  health check. We will rely on the fact that if a LBS reconnects to the discovery service, the LNS was not available. By using a round-robin distribution mechanism based on in-memory state, we can guarantee reasonably well that the LBS will be connected to a different LNS in a second attempt. This takes place after around two minutes.
+In the initial version, we will not implement a health check. We will rely on the fact that if a LBS reconnects to the discovery service, the LNS was not available. By using a round-robin distribution mechanism based on in-memory state, we can guarantee reasonably well that the LBS will be connected to a different LNS in a second attempt. This takes place after around two minutes.
 
-To resolve the problem of LNS having different network boundaries, we rely on configuring the subset of available network servers through a configuration value in the station twin. We will recommend [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for central management of stations with the same network boundaries.
+For configuring which LBS are in reach of which LNS, we are going to tag the LNS twins and station twins with a "location" or "network" tag. All twins with the same tag are considered to be in the same network and in reach of each other.
 
 In a second stage, we will prioritize one of the more advanced health probe strategies and potentially introduce more supported configuration approaches.
 
@@ -44,7 +42,7 @@ Due to the supported deployment models of the OSS starter kit, it is possible th
 
 | Name                           | Description                                                  | Advantages                                                   | Disadvantages                                                |
 | ------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Station twin                   | We can hardcode the set of LNS to which each LBS can connect to in the station twin. | - leverages  [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for configuration<br />- similar strategy to existing configuration strategies (single place for configuration) | - (At least) one registry operation per every discovery service request<br />- Complex when not using automatic device management |
+| Station twin                   | We can hardcode the set of LNS to which each LBS can connect to in the station twin. | - leverages  [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for configuration<br />- similar strategy to existing configuration strategies (single place for configuration) | - Potentially one registry operation per every discovery service request<br />- Complex when not using automatic device management |
 | Tags                           | We can rely on registry queries to identify LNS and stations that are in the same network | - Simple configuration (via setting a tag)                   | - Need to resolve the LNS DNS/IP based on the query results (need to add it to the LNS module twin/Edge device twin) |
 | Environment/configuration file | We could statically configure the defined network boundaries as an environment variable/configuration file on the discovery service (e.g. have a JSON structure, which indicates a set of LBS/LNS that are within the same network boundaries) | - Simple for developers                                      | - Needs a discovery service restart to pick up configuration changes<br />- Configuration is spread out |
 
