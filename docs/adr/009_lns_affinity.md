@@ -23,20 +23,23 @@ IoT Hub limits active connections that an IoT device can have to one. Imagining 
 already open and a message from LNS2 arrives, IoT Hub will close connection 1 and open connection 2.
 Edge Hub on LNS1, will detect this and assume it's a transient network issue, therefore will try
 proactively to reconnect to IoT Hub. IoT Hub will now drop the connection 2 to re-establish the
-original connection 1. This connection "ping-pong" will continue happening, negatively impacting the
-scalability due to the high costs of setting up/disposing the connections. From our load tests we
-observed that in this scenario we were not even able to connect 500 devices to the same concentrator,
-while in a single LNS topology we could scale up to 900 devices without issues.
+original connection 1.  
+
+This connection "ping-pong" will continue happening, negatively impacting the scalability due to the
+high costs of setting up/disposing the connections. From our load tests we observed that in this
+scenario we were not even able to connect more than 120 devices to two LNSs, while in a single LNS
+topology we could scale up to 900 devices without issues.
 
 ## Out of scope
 
-- Deduplication strategies Mark and None: these strategies rely on multiple LNSs sending messages
-  which by definition goes against the IoT Hub limitation of a single connection per device.
-  Conceptually we find it is acceptable for the Mark and None strategies to not be as scalable as
-  the Drop strategy and will only document this limitation for potential users to be aware of.
+- Deduplication strategies Mark and None: these strategies rely on multiple LNSs sending message.
+Potentially we could work around the IoT Hub limitation of a single connection per device by
+opening and closing connections but we find it acceptable for the Mark and None strategies to not be as scalable as
+the Drop strategy and will only document this limitation for potential users to be aware of.
 
-- Class C devices are not facing this issue since for C2D messages as they are using the module
-  client​ - TODO verify this claim ❔
+- LNS performs operations on behalf of a device/sensor or a concentrator/station. However since a
+concentrator can be connected to at most one LNS, there is no ping-pong happening with operations on
+stations.
 
 ## Limitations
 
@@ -44,53 +47,40 @@ while in a single LNS topology we could scale up to 900 devices without issues.
   
 ## In-scope
 
-The problem can be manifested whenever we do operations against Iot Hub. These can be:
+- The problem can be manifested whenever we do operations against Iot Hub on behalf of edge devices. These can be:
+  - Twin reads
+  - Twin writes (updates/deletes)
+  - D2C messages
+  - C2D messages
+- Roaming edge devices (that potentially lose connectivity to an LNS) are in scope.
 
-- Twin reads
-- Twin writes (updates/deletes)
-- D2C messages
-- C2D messages
+### Connections opened on behalf of edge devices
 
-These operations can be performed on behalf of a device/sensor or a concentrator/station. However since a
-concentrator can be connected to at most 1 LNS, there is no ping-pong happening with operations on stations.
+- Data message endpoints:
+  - join: the DeviceGetter.GetDevice Function is used to detect and drop duplicates
+  - data: BeginDeviceClientConnectionActivity already creates a deviceclient
+- Device creation LoraDeviceFactory.CreateAndRegisterAsync
+  - if LoRaDevice is not in Cache, creates a DeviceClient. Happens in
+    MessageDispatcher.DispatchLoraDataMessage that is called before the message flows above
+  - class C send downstream (why is that not a problem? can it not get the connection of an upstream
+    message)❔
 
-The ping-pong occurs only if we use the DeviceClient - not if we use the registry manager (as the
-Function does).
+Version, LNS discovery and CUPS update endpoints are not affected.
 
-The Network Server does the following things that are relevant with regards to IoT Hub connections. Changes required are indicated with ⭕ and open questions with ❔
+### Background tasks
 
-- ~~During server startup, checks the certificate thumbprints against the twin (twin read) when LnsServerPfxPath. (is this~~
-  ~~actually enabled in the code now❔) This twin is not the twin of the device but of the station and~~
-  ~~a station can connect only to a single LNS so it should not result in a connection ping-pong. Also server startup happens once (under normal operation).~~
-- Once the server is up:
-  - Discovery endpoint: no twin reading/writing or C2D/D2C message ✔
-  - Data message endpoints:
-    - version -potentially get primary key from the Function (uses the registry manager), perform a
-      station twin write (version) then a station twin read ✔
-    - join - station twin read (for the region), DeviceGetter.GetDevice
-      Function (uses registry manager), UpdateAfterJoinAsync writes on the device twin ⭕
-    - data - station twin read (for the region), BeginDeviceClientConnectionActivity already creates
-     a deviceclient ⭕, if device resets we update the twin, then call the bundler..
-  - CUPS updateInfo endpoint: station read twin (for CUPS property), then calls the Function
-    RunFetchConcentratorFirmware/Credentials for the station ✔
-
-❔ Can we assume that if we lose the race on the first problematic operation against IoT Hub we
-should abandon all further operations?  
-
-Yes, assuming we choose the right threshold.
+- LoRaDeviceCache refresh in the background: every 10 minutes we are checking for devices that need
+  refreshing (those that were not refreshed in the last 2 days). Refreshing a device calls
+  BeginDeviceClientConnectionActivity that opens a connection
 
 ## Possible solutions
-
-We need to ensure that only a single LNS has an active connection for a device at a given time among
-both the Join and Upstream data endpoint.
 
 ### Delayed processing of messages from losing LNSs
 
 The main idea here is to delay the processing of future messages for all gateways *besides* the
 winning one. This should give enough time to that chosen LNS to process the message and keep the
 active connection to Iot Hub. The Function is already the single point where data messages get
-deduplicated before being sent upstream. What is changing here is the way we react to the response
-from the Function.
+deduplicated before being sent upstream.
 
 #### Example scenario in main data message flow
 
@@ -106,7 +96,7 @@ flowchart LR;
 
 where Device sends data message A and then B.
 
-Here is a rundown of what should happen:
+Here is a rundown of what SHOULD happen:
 
 - Device sends first data message A.
 - Assuming that LNS1 gets the message first and since it hasn't seen this DevEui before, it contacts
@@ -115,50 +105,47 @@ Here is a rundown of what should happen:
   yet. LNS1 wins the race and gets immediately a response and processes the message upstream.
 - LNS2 eventually receives message A and also contacts the Function since it does not have prior
   info about this devEui.
-- The function responds to LNS2 that it lost the race to process this message.
-- ⭕ Since deduplication strategy is Drop, LNS2 drops the message immediately, therefore no
-  connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. It also notes in
+- The function responds to LNS2 that it lost the race to process this message and stores the winning LNS.
+- Since deduplication strategy is Drop, LNS2 drops the message immediately, therefore no
+  connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. LNS2 SHOULD also note in
   memory that it was the losing gateway for this DevEui.
-- ⭕ When message B gets send (with a higher frame counter), assuming that this time LNS2 gets it
-  first it sees that it's not the preferred LNS for this device and therefore delays itself X ms.
+- When message B gets send (with a higher frame counter), assuming that this time LNS2 gets it
+  first it SHOULD see that it's not the preferred LNS for this device and therefore delays itself X ms.
 - This delay gives LNS1 a time advantage to reach the Function first and win the race again, failing
   back to the previous case of message A. The active connection stays with LNS1 in this case.
-  - If this delay is not sufficient for LNS1 to win the race (because LNS1 crashed or is out of
-    range etc), LNS2 will contact the Function which now award LNS2 as the "winning" LNS. LNS2 will
-    process message upstream (therefore the active connection will switch to it) and will remove the
-    "losing flag" from the in-memory store.
-  - When/if LNS1 gets message B and contacts the Function, it will let it know that it lost the race
-    for this frame counter and must therefore drop the message and mark itself as the losing LNS, as
+  - If this delay is not sufficient for LNS1 to win the race, LNS2 will contact the Function which
+    now award LNS2 as the "winning" LNS. LNS2 will process message upstream (therefore the active
+    connection will switch to it) and SHOULD remove the "losing flag" from the in-memory store.
+  - The Function SHOULD also proactively inform LNS1 that is not anymore the winning LNS for this
+    device. If not, its Edge Hub will try to reconnect to IoT Hub even if there is no more messages
+    picked up from LNS1 (out of range roaming client). 
+  - If LNS1 in the meantime gets message B and contacts the Function, it will let it know that it lost the race
+    for this frame counter and must therefore drop the message and SHOULD mark itself as the losing LNS, as
     LNS2 did for message A.
-  
-Another variant here is that all LNSs contact the function immediately and the function keeps the
-losing LNS in its state. The Function then delays sending the response to the losing LNSs.
 
+What are the scenarios that it's better that the function implements the delay? 
+Do we need the delay in both the LNS and the function?
+  
 Open questions: how to handle the case of a device reset between message A and B? We save the twin
 immediately (irrelevant but how does the Function get it for the deduplication decision?)
-
-#### Join request flow needs to be adjusted as well 
-
-TODO:
-Potentially we could already check in DeviceGetter.GetDevice if we are the winning or losing LNS.
 
 #### Feature flag
 
 The stickiness feature can be disabled with a feature flag on the LNS configuration.
 
-- When flag is set, LNS does not change its behavior and connection ping-pong happens.
+- By default LNS implements sticky affinity. When the flag is set, LNS allow the connection
+  ping-pong to happen.
 - This flag is only checked if we are on the Drop deduplication strategy (as Mark and None do not
   support stickiness anyway)
 
 #### Consequences / implementation
 
-- We should store additional state on the LNS itself or the function about which one is the winning
-  LNS.
-
-Where shall we store the info that we are the losing one? Can be on the:
-
-- LNS LoRaDeviceClient.ConnectionManager since all of  the operations pass through it.
-- On the Function
+- Join request flow needs to be adjusted as well
+- Cache refresh uses EnsureConnected method that should be changed (removed?)
+- How to fix at the messageDispatcher level ❔ Can we already call the function there?
+- ❔ Where shall we store the info that we are the losing one? Can be on the:
+  - LNS LoRaDeviceClient.ConnectionManager since all of the operations pass through it.
+  - On the Function
 
 ### Using direct mode (not Edge hub)
 
@@ -191,5 +178,11 @@ Not possible due to single parent limitation (not supporting roaming LNSs)
 
 ## Questions
 
-- The ping pong occurs only when we are going through the local Edge Hub module? why is that? Edge
-  hub tries to reconnect for us to keep the cache fresh.
+❔ If we keep the info on the Function why also local?
+
+❔ why class c are safe from the problem?
+
+❔ Can we assume that if we lose the race on the first problematic operation against IoT Hub we
+should abandon all further operations?  
+
+Yes, assuming we choose the right threshold.
