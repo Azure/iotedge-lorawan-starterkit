@@ -1,5 +1,6 @@
 # 009. LNS discovery
 
+**Feature**: [#1480](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1480)
 **Authors**: Bastian Burger, Daniele Maggio, Maggie Salak
 **Status**: Accepted
 
