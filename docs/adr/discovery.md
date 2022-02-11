@@ -87,6 +87,3 @@ The discovery service needs a certificate that has a chain that is allowed by th
 ## Orthogonal considerations
 
 - Monitoring and metrics we need for the discovery service (e.g. distribution to different LNS [count], how many LNS deaths we detect, invalid station connection attempt, etc.)
-
-
-
