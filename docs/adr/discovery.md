@@ -86,15 +86,7 @@ The discovery service needs a certificate that has a chain that is allowed by th
 
 ## Orthogonal considerations
 
-- The discovery service needs to validate that the LBS is indeed a configured LBS (needs to query IoT Hub registry)
-- Authn/Authz: which certs are valid for the discovery endpoint? tc-boot/trust
 - Monitoring and metrics we need for the discovery service (e.g. distribution to different LNS [count], how many LNS deaths we detect, invalid station connection attempt, etc.)
-- Do we want to support an opt-in/opt-out possibility (backwards compatible) of using a separate discovery service?
-
-Spikes:
-
-- Does the LBS reconnect to CUPS if the LNS dies?
-- How many messages will we lose due to the longer delays?
 
 
 
