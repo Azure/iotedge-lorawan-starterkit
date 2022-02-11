@@ -48,7 +48,7 @@ Due to the supported deployment models of the OSS starter kit, it is possible th
 | Tags                           | We can rely on registry queries to identify LNS and stations that are in the same network | - Simple configuration (via setting a tag)                   | - Need to resolve the LNS DNS/IP based on the query results (need to add it to the LNS module twin/Edge device twin) |
 | Environment/configuration file | We could statically configure the defined network boundaries as an environment variable/configuration file on the discovery service (e.g. have a JSON structure, which indicates a set of LBS/LNS that are within the same network boundaries) | - Simple for developers                                      | - Needs a discovery service restart to pick up configuration changes<br />- Configuration is spread out |
 
-Furthermore, we must decide how to add support for how distribution strategies (round-robin, random, or a more complex balancing strategy). These options are not mutually exclusive, but can be supported at the same time. We can start by using a single, simple distribution mechanism (random/round-robin based on in-memory state) and incrementally add support for different distribution strategies.
+Furthermore, we must decide how to add support for distribution strategies (round-robin, random, or a more complex balancing strategy). These options are not mutually exclusive, but can be supported at the same time. We can start by using a single, simple distribution mechanism (random/round-robin based on in-memory state) and incrementally add support for different distribution strategies.
 
 ### Health checks
 
@@ -79,6 +79,9 @@ The selection of a health check strategy should take into account how many upstr
 | 60 sec       | 0                             |
 | 90 sec       | 30                            |
 | 120 sec      | 30                            |
+
+As part of the spike we discovered that LBS does not appear to be handling the disconnect from LNS as we would expect.
+After LNS going down, the LBS tries to reconnect to the data (`router-data`) endpoint for approximately 2 min which is not expected as the [default timeout (`TC_TIMEOUT`)](https://github.com/lorabasics/basicstation/blob/ba4f85d80a438a5c2b659e568cd2d0f0de08e5a7/src/s2conf.h#L180) is 60 sec. Only after that the LBS tries to connect to the discovery (`router-info`) endpoint. After reconnecting to the discovery endpoint, all upstream messages that were sent during the downtime are lost. The upstream messages appear to only be recovered if the LNS comes back before the Basics Station times out on attempting to connect to the data endpoint and starts to connect to the discovery endpoint. We opened a [bug](https://github.com/lorabasics/basicstation/issues/152) describing this issue in the Basics Station repository.
 
 ### Auth
 
