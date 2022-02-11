@@ -36,7 +36,7 @@ First of all, we discuss the availability of the discovery service. Even in the 
 - We can achieve this by choosing a highly available cloud service that acts as the service discovery endpoint.
 - We can delegate the responsibility to the user in case of an on-premises deployment of the discovery service for even more flexibility.
 
-An important restriction to consider at this point is that the service needs to support WebSockets. Since WebSockets are [not yet supported with Azure Functions](https://github.com/Azure/Azure-Functions/issues/738), we cannot use serverless Azure services, but need an always-on solution for the discovery service.
+An important restriction to consider at this point is that the service needs to support WebSockets. Since WebSockets are [not yet supported with Azure Functions](https://github.com/Azure/Azure-Functions/issues/738), we cannot use them.
 
 ### Configuration
 
