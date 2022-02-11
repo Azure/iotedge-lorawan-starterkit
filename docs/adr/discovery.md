@@ -2,7 +2,7 @@
 
 **Authors**: Bastian Burger, Daniele Maggio, Maggie Salak
 
-Service (or LNS) discovery is part of the LNS protocol. When a LBS connects to the first time to a LNS, it invokes the service discovery endpoint (`/router-info`). We want to provide the users with the option to increase availability by automatically rebalancing connection attempts to healthy LNS.
+Service (or LNS) discovery is part of the LNS protocol. When a LBS connects to the first time to a LNS, it invokes the service discovery endpoint (`/router-info`). We want to provide the users with the option to (potentially) increase availability by automatically rebalancing connection attempts to different LNS.
 
 The LNS (either data or discovery) URI is returned in two places, namely:
 
@@ -17,7 +17,7 @@ This implies that the discovery service needs to support WebSockets. As of now, 
 
 We propose to add an ASP.NET Core Web Application to the OSS starter kit that exposes an endpoint for service discovery. The Web App can deployed anywhere (as a highly available cloud service per default, or as an on-premises service for more flexibility). With respect to configuration and health probe, we will implement two simple approaches initially, and expand the functionality in a second stage.
 
-In the initial version, we will  health check. We will rely on the fact that if a LBS reconnects to the discovery service, the LNS was not available. By using a round-robin distribution mechanism based on in-memory state, we can guarantee reasonably well that the LBS will be connected to a different LNS in a second attempt. TODO: verify, whether this requires to configure the TC_TIMEOUT on the stations (and whether that actually works).
+In the initial version, we will  health check. We will rely on the fact that if a LBS reconnects to the discovery service, the LNS was not available. By using a round-robin distribution mechanism based on in-memory state, we can guarantee reasonably well that the LBS will be connected to a different LNS in a second attempt. This takes place after around two minutes.
 
 The configuration to resolve the problem of LNS having different network boundaries, we rely on configuring the subset of available network servers through a configuration value in the station twin. We will recommend [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for central management of stations with the same network boundaries.
 
