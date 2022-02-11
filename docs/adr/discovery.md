@@ -23,16 +23,18 @@ The configuration to resolve the problem of LNS having different network boundar
 
 In a second stage, we will prioritize one of the more advanced health probe strategies and potentially introduce more supported configuration approaches.
 
+We will maintain the discovery endpoints on the LNS for backwards compatibility.
+
 ## Detailed analysis
 
 ### Availability
 
-First of all, we discuss the availability of the discovery service. Even in the presence of failures of a discovery service, there are fallback mechanisms the LBS can use to attempt a connection to the LNS (see `tc-bak/cups-bak` files). Still, the service discovery endpoint needs to be as highly available as possible.
+First of all, we discuss the availability of the discovery service. Even in the presence of failures of a discovery service, there are fallback mechanisms the LBS can use to attempt a direct connection to a LNS it last connected to (via `tc-bak/cups-bak` files). Still, the service discovery endpoint needs to be as highly available as possible.
 
 - We can achieve this by choosing a highly available cloud service that acts as the service discovery endpoint.
 - We can delegate the responsibility to the user in case of an on-premises deployment of the discovery service for even more flexibility.
 
-An important restriction to consider at this point is that the service needs to support WebSockets. Since WebSockets are [not yet supported with Azure Functions](https://github.com/Azure/Azure-Functions/issues/738), we cannot use serverless Azure Service, but need an always-on solution for the discovery service.
+An important restriction to consider at this point is that the service needs to support WebSockets. Since WebSockets are [not yet supported with Azure Functions](https://github.com/Azure/Azure-Functions/issues/738), we cannot use serverless Azure services, but need an always-on solution for the discovery service.
 
 ### Configuration
 
@@ -40,8 +42,8 @@ Due to the supported deployment models of the OSS starter kit, it is possible th
 
 | Name                           | Description                                                  | Advantages                                                   | Disadvantages                                                |
 | ------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Station twin                   | We can hardcode the set of LNS to which each LBS can connect to in the station twin. | - leverages  [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for configuration<br />- similar strategy to existing configuration strategies (single place for configuration) | - One registry operation per every discovery service request<br />- Complex when not using automatic device management |
-| Tags                           | We can rely on registry queries to identify LNS and stations that are in the same network | - Simple configuration (via setting a tag)                   | - Need to resolve the LNS DNS/IP based on the query results  |
+| Station twin                   | We can hardcode the set of LNS to which each LBS can connect to in the station twin. | - leverages  [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for configuration<br />- similar strategy to existing configuration strategies (single place for configuration) | - (At least) one registry operation per every discovery service request<br />- Complex when not using automatic device management |
+| Tags                           | We can rely on registry queries to identify LNS and stations that are in the same network | - Simple configuration (via setting a tag)                   | - Need to resolve the LNS DNS/IP based on the query results (need to add it to the LNS module twin/Edge device twin) |
 | Environment/configuration file | We could statically configure the defined network boundaries as an environment variable/configuration file on the discovery service (e.g. have a JSON structure, which indicates a set of LBS/LNS that are within the same network boundaries) | - Simple for developers                                      | - Needs a discovery service restart to pick up configuration changes<br />- Configuration is spread out |
 
 Furthermore, we must decide how to add support for how distribution strategies (round-robin, random, or a more complex balancing strategy). These options are not mutually exclusive, but can be supported at the same time. We can start by using a single, simple distribution mechanism (random/round-robin based on in-memory state) and incrementally add support for different distribution strategies.
