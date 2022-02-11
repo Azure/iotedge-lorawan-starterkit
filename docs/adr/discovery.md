@@ -21,7 +21,7 @@ We propose to add an ASP.NET Core Web Application to the OSS starter kit that ex
 
 In the initial version, we will  health check. We will rely on the fact that if a LBS reconnects to the discovery service, the LNS was not available. By using a round-robin distribution mechanism based on in-memory state, we can guarantee reasonably well that the LBS will be connected to a different LNS in a second attempt. This takes place after around two minutes.
 
-The configuration to resolve the problem of LNS having different network boundaries, we rely on configuring the subset of available network servers through a configuration value in the station twin. We will recommend [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for central management of stations with the same network boundaries.
+To resolve the problem of LNS having different network boundaries, we rely on configuring the subset of available network servers through a configuration value in the station twin. We will recommend [Automatic device management at scale with Azure IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-automatic-device-management) for central management of stations with the same network boundaries.
 
 In a second stage, we will prioritize one of the more advanced health probe strategies and potentially introduce more supported configuration approaches.
 
