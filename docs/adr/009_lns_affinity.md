@@ -17,18 +17,31 @@ flowchart LR;
     Device-->LBS2-->LNS2--2-->IoTHub;
 ```
 
-where LNSs make use of the IoT Edge Hub module to connect to IoT Hub.
+where LNS 1 and 2 make use of their IoT Edge Hub modules to connect to IoT Hub.
 
-IoT Hub limits active connections that an IoT device can have to it to one. Imagining that
-connection 1 is open and there are multiple messages from the same device reaching IoT Hub from
-different network servers (LNS) as above. IoT Hub will close connection 1 and open connection 2.
-Edge Hub on LNS1 now, will detect this and assume it's a transient network issue, therefore try
-proactively to reconnect to IoT Hub. IoT Hub will drop the connection 2 to re-establish the original
-connection 1. This connection "ping-pong" is negatively impacting the scalability due to the high
-costs of setting up/disposing the connections. From our load tests we observed that in this scenario
-we were not even able to connect 500 devices to the same concentrator when in a single LNS topology
-we could scale up to 900 devices without issues.
+IoT Hub limits active connections that an IoT device can have to one. Imagining that connection 1 is
+already open and a message from LNS2 arrives, IoT Hub will close connection 1 and open connection 2.
+Edge Hub on LNS1, will detect this and assume it's a transient network issue, therefore will try
+proactively to reconnect to IoT Hub. IoT Hub will now drop the connection 2 to re-establish the
+original connection 1. This connection "ping-pong" will continue happening, negatively impacting the
+scalability due to the high costs of setting up/disposing the connections. From our load tests we
+observed that in this scenario we were not even able to connect 500 devices to the same concentrator,
+while in a single LNS topology we could scale up to 900 devices without issues.
 
+## Out of scope
+
+- Deduplication strategies Mark and None: these strategies rely on multiple LNSs sending messages
+  which by definition goes against the IoT Hub limitation of a single connection per device.
+  Conceptually we find it is acceptable for the Mark and None strategies to not be as scalable as
+  the Drop strategy and will only document this limitation for potential users to be aware of.
+
+- Class C devices are not facing this issue since for C2D messages as they are using the module
+  client​ - TODO verify this claim ❔
+
+## Limitations
+
+- We should avoid introducing additional calls to the Function as this would also hurt scalability.
+  
 ## In-scope
 
 The problem can be manifested whenever we do operations against Iot Hub. These can be:
@@ -38,40 +51,38 @@ The problem can be manifested whenever we do operations against Iot Hub. These c
 - D2C messages
 - C2D messages
 
-## Out of scope
+These operations can be performed on behalf of a device/sensor or a concentrator/station. However since a
+concentrator can be connected to at most 1 LNS, there is no ping-pong happening with operations on stations.
 
-- Deduplication strategies Mark and None: these strategies rely on multiple LNSs sending the same
-  messages which by definition requires multiple active connections to IoT Hub, something which is
-  not possible. We find it is acceptable for the Mark and None strategies to not be as scalable
-  as the Drop strategy and will only document this limitation for potential customers to be aware of.
+The ping-pong occurs only if we use the DeviceClient - not if we use the registry manager (as the
+Function does).
 
-- Class C devices are not facing this issue since for C2D messages as they are using the module
-  client​ - TODO verify this claim ❔
+The Network Server does the following things that are relevant with regards to IoT Hub connections. Changes required are indicated with ⭕ and open questions with ❔
+
+- ~~During server startup, checks the certificate thumbprints against the twin (twin read) when LnsServerPfxPath. (is this~~
+  ~~actually enabled in the code now❔) This twin is not the twin of the device but of the station and~~
+  ~~a station can connect only to a single LNS so it should not result in a connection ping-pong. Also server startup happens once (under normal operation).~~
+- Once the server is up:
+  - Discovery endpoint: no twin reading/writing or C2D/D2C message ✔
+  - Data message endpoints:
+    - version -potentially get primary key from the Function (uses the registry manager), perform a
+      station twin write (version) then a station twin read ✔
+    - join - station twin read (for the region), DeviceGetter.GetDevice
+      Function (uses registry manager), UpdateAfterJoinAsync writes on the device twin ⭕
+    - data - station twin read (for the region), BeginDeviceClientConnectionActivity already creates
+     a deviceclient ⭕, if device resets we update the twin, then call the bundler..
+  - CUPS updateInfo endpoint: station read twin (for CUPS property), then calls the Function
+    RunFetchConcentratorFirmware/Credentials for the station ✔
+
+❔ Can we assume that if we lose the race on the first problematic operation against IoT Hub we
+should abandon all further operations?  
+
+Yes, assuming we choose the right threshold.
 
 ## Possible solutions
 
-We need to ensure that only a single LNS has an active connection to IoT Hub at a given time.
-
-The Network Server does the following things that are relevant with regards to IoT Hub:
-
-- During server startup, checks the certificate thumbprints (twin read) in case of HTTPS. ❔ is this
-  actually enabled in the code now? ❔⭕ can we contact the Function at this stage?
-- Once the server is up, there are 3 endpoints used:
-  - Discovery: no twin reading/writing or C2D/D2C message ✔
-  - Data message which can be one of
-    - version - we perform a twin write for the version then a twin read for the station ⭕ twin
-      write is the first operation
-    - join - twin read (for the region) before contacting the Function to check the DevNonce ⭕ twin read
-    - data - reads twin (for the region), BeginDeviceClientConnectionActivity, if device resets we
-      update the twin, then calls the bundler. ⭕ twin read is the first operation
-  - CUPS updateInfo: reads twin, then calls the function RunFetchConcentratorFirmware then writes
-    back to device ⭕ twin read
-
-❔ LoraDeviceCache is a singleton where is the refresh happening?!
-❔ Can we assume that if we lose the race on the first operation (twin read or write) we should
-abandon all further operations?
-
-Here are the different ways we investigated in order to achieve this:
+We need to ensure that only a single LNS has an active connection for a device at a given time among
+both the Join and Upstream data endpoint.
 
 ### Delayed processing of messages from losing LNSs
 
@@ -95,7 +106,7 @@ flowchart LR;
 
 where Device sends data message A and then B.
 
-Here is a rundown of what should happen, with changes indicated with ⭕
+Here is a rundown of what should happen:
 
 - Device sends first data message A.
 - Assuming that LNS1 gets the message first and since it hasn't seen this DevEui before, it contacts
@@ -126,12 +137,25 @@ losing LNS in its state. The Function then delays sending the response to the lo
 Open questions: how to handle the case of a device reset between message A and B? We save the twin
 immediately (irrelevant but how does the Function get it for the deduplication decision?)
 
+#### Join request flow needs to be adjusted as well 
+
+TODO:
+Potentially we could already check in DeviceGetter.GetDevice if we are the winning or losing LNS.
+
+#### Feature flag
+
+The stickiness feature can be disabled with a feature flag on the LNS configuration.
+
+- When flag is set, LNS does not change its behavior and connection ping-pong happens.
+- This flag is only checked if we are on the Drop deduplication strategy (as Mark and None do not
+  support stickiness anyway)
+
 #### Consequences / implementation
 
 - We should store additional state on the LNS itself or the function about which one is the winning
   LNS.
 
-Where shall we store the info that we are the losing one? Can be on the
+Where shall we store the info that we are the losing one? Can be on the:
 
 - LNS LoRaDeviceClient.ConnectionManager since all of  the operations pass through it.
 - On the Function
