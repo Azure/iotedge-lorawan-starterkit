@@ -15,6 +15,8 @@ This implies that the discovery service needs to support WebSockets. As of now, 
 
 ## Decision
 
+**Note** WIP, not final yet.
+
 We propose to add an ASP.NET Core Web Application to the OSS starter kit that exposes an endpoint for service discovery. The Web App can deployed anywhere (as a highly available cloud service per default, or as an on-premises service for more flexibility). With respect to configuration and health probe, we will implement two simple approaches initially, and expand the functionality in a second stage.
 
 In the initial version, we will  health check. We will rely on the fact that if a LBS reconnects to the discovery service, the LNS was not available. By using a round-robin distribution mechanism based on in-memory state, we can guarantee reasonably well that the LBS will be connected to a different LNS in a second attempt. This takes place after around two minutes.
