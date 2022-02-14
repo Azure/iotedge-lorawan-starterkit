@@ -6,10 +6,10 @@
 
 Service (or LNS) discovery is part of the LNS protocol. When a LoRa Basics Station (LBS) connects to the first time to a LNS, it invokes the service discovery endpoint (`/router-info`). We want to provide the users with the option to (potentially) increase availability by automatically rebalancing connection attempts to different LNS.
 
-The LNS (either data or discovery) URI is returned in two places, namely:
+We can consider implementing the service discovery in two places, because:
 
-- as a response as part of the CUPS protocol
-- as a response of the service discovery endpoint invocation (`/router-info`)
+- the LNS discovery endpoint is returned as a response as part of the CUPS protocol
+- the LNS data endpoint is returned as a response of the service discovery endpoint invocation (`/router-info`)
 
 we could consider implementing the service discovery as part of either the CUPS protocol or the LNS protocol. Since LBS do not reconnect to the CUPS endpoint when a connection to a LNS is dropped, we are only left with the option of implementing service discovery as part of the LNS service discovery endpoint.
 
