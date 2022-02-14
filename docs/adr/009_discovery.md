@@ -1,10 +1,10 @@
-# 009. LNS discovery
+# 009. LoRaWAN Network Server (LNS) discovery
 
 **Feature**: [#1480](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1480)
 **Authors**: Bastian Burger, Daniele Maggio, Maggie Salak
 **Status**: Accepted
 
-Service (or LNS) discovery is part of the LNS protocol. When a LBS connects to the first time to a LNS, it invokes the service discovery endpoint (`/router-info`). We want to provide the users with the option to (potentially) increase availability by automatically rebalancing connection attempts to different LNS.
+Service (or LNS) discovery is part of the LNS protocol. When a LoRa Basics Station (LBS) connects to the first time to a LNS, it invokes the service discovery endpoint (`/router-info`). We want to provide the users with the option to (potentially) increase availability by automatically rebalancing connection attempts to different LNS.
 
 The LNS (either data or discovery) URI is returned in two places, namely:
 
@@ -21,7 +21,7 @@ We propose to add an ASP.NET Core Web Application to the OSS starter kit that ex
 
 In the initial version, we will not implement a health check. We will rely on the fact that if a LBS reconnects to the discovery service, the LNS was not available. By using a round-robin distribution mechanism based on in-memory state, we can guarantee reasonably well that the LBS will be connected to a different LNS in a second attempt.
 
-For configuring which LBS are in reach of which LNS, we are going to tag the LNS twins and station twins with a "location" or "network" tag. All twins with the same tag are considered to be in the same network and in reach of each other.
+For configuring which LNS is in reach of a specific LBS, we are going to tag the LNS twins and station twins with a "location" or "network" tag. All twins with the same tag are considered to be in the same network and in reach of each other.
 
 In a second stage, we will prioritize one of the more advanced health probe strategies and potentially introduce more supported configuration approaches.
 
