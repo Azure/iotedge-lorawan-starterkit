@@ -53,7 +53,7 @@ stations.
   - Twin writes (updates/deletes)
   - D2C messages
   - C2D messages
-- Roaming edge devices (that potentially lose connectivity to an LNS) are in scope.
+- Roaming leaf devices (that potentially become out-of-range from an LNS) are in scope.
 
 ### Problematic IoT Hub operations on behalf of edge devices
 
