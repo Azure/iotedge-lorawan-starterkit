@@ -40,10 +40,6 @@ Drop strategy and will only document this limitation for potential users to be a
 - LNS performs operations on behalf of a device/sensor and a concentrator/station. However since a
 concentrator can be connected to at most one LNS, there is no ping-pong happening with operations on
 stations.
-
-## Limitations
-
-- We should avoid introducing additional calls to the Function as this would also hurt scalability.
   
 ## In-scope
 
@@ -73,10 +69,8 @@ Version, LNS discovery and CUPS update endpoints are not affected.
 
 ## Possible solution
 
-The main idea is to store locally on the LNS a dictionary mapping DevEui and whether we were the losing
-gateway for that DevEui, as decided from the Function. Based on that we would delay the processing
-of future messages for all losing gateways. This should give enough time to the preferred LNS to
-process the message and keep the active connection to Iot Hub.
+The main idea is to give the current connection holder as indicated from the Function, the edge to
+continue processing messages for this device. That gateway, will have 0 impact on performance.
 
 ### Handling of background tasks
 
@@ -231,17 +225,8 @@ Disadvantages of using a Task.Delay on the Function:
 #### Delay amount configuration
 
 The delay amount should be configurable to allow users to customize behavior for their scenarios.
-During load testing we tested with 400ms but smaller values should be tried as well.
-
-##### Feature flag
-
-The stickiness feature can be disabled with a feature flag on the LNS configuration. Couldn't we get
-the same result by setting the delay to 0❔
-
-- By default LNS implements sticky affinity. When the flag is set, LNS allow the connection
-  ping-pong to happen.
-- This flag is only checked if we are on the Drop deduplication strategy (as Mark and None do not
-  support stickiness anyway)
+During load testing we tested with 400ms but smaller values should be tried as well. If 0ms are
+specified the stickiness feature is disabled which means potential connection switching.
 
 ## Other candidates considered
 
@@ -265,9 +250,4 @@ that Edge Hub offers us.
 We could utilize child-parent connections and parent multiple LNS under a single [transparent
 gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2020-11)
 that has the active connection to IoT Hub. The problem there is that children can have only 1 parent
-and therefore we can not support roaming LNSs.
-
-## Other questions
-
-❔ Should we investigate if creating a DeviceClient already steals the connection or we know this
-doesn't happen?
+and therefore we can not support roaming leaf devices that connect to different LNSs over time.
