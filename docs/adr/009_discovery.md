@@ -31,7 +31,7 @@ We will maintain the discovery endpoints on the LNS for backwards compatibility.
 
 ### Availability
 
-First of all, we discuss the availability of the discovery service. Even in the presence of failures of a discovery service, there are fallback mechanisms the LBS can use to attempt a direct connection to a LNS it last connected to (via `tc-bak/cups-bak` files). Still, the service discovery endpoint needs to be as highly available as possible.
+First, we discuss the availability of the discovery service. Even in the presence of failures of a discovery service, there are fallback mechanisms the LBS can use to attempt a direct connection to a LNS it last connected to (via `tc-bak/cups-bak` files). Still, the service discovery endpoint needs to be as highly available as possible.
 
 - We can achieve this by choosing a highly available cloud service that acts as the service discovery endpoint.
 - We can delegate the responsibility to the user in case of an on-premises deployment of the discovery service for even more flexibility.
@@ -52,7 +52,7 @@ Furthermore, we must decide how to add support for distribution strategies (roun
 
 ### Health checks
 
-There are potential approaches on how to detect whether a LNS is alive or not. A simple solution would be to not keep track of the health states of the LNS. If an LBS fails to connect to a LNS, it will query the discovery service again, and we can supply a different LNS (e.g. when using round-robin distribution).
+There are potential approaches on how to detect whether a LNS is alive or not. A simple solution would be to not keep track of the health states of the LNS. If a LBS fails to connect to a LNS, it will query the discovery service again, and we can supply a different LNS (e.g. when using round-robin distribution).
 
 If we decide to keep track of the health of each LNS, there are several potential solutions for this:
 
@@ -64,7 +64,7 @@ If we decide to keep track of the health of each LNS, there are several potentia
 | Ping discovery service   | Each LNS pings the discovery service on a regular basis to indicate that it's still alive. |                                           | - Time between crash of LNS and detection of crash           |
 | State update             | LNS updates state on a regular basis, which can be queried by the discovery service, e.g. using Azure Storage blob lease management (and lease renewal) |                                           | - Time between crash of LNS and detection of crash<br />- Complexity |
 | Health endpoint on LNS   | Each LNS has a health-check endpoint, that can be queried by the discovery service |                                           | - Does not necessarily work for on-premises deployments of LNS |
-| No health checks at all  | The discovery service relies on the implicit knowledge that if an LBS issues another request to the discovery service, the connection to the LNS failed | - Simple                                  | - Depends on how long the station waits before backoff (and how many LNS are down)<br />- Takes around two minutes (20 seconds per default on LBS 2.0.6) on a concentrator to reconnect to the discovery endpoint if the LNS is unavailable. |
+| No health checks at all  | The discovery service relies on the implicit knowledge that if an LBS issues another request to the discovery service, the connection to the LNS failed | - Simple                                  | - Depends on how long the station waits before back-off (and how many LNS are down)<br />- Takes around two minutes (20 seconds per default on LBS 2.0.6) on a concentrator to reconnect to the discovery endpoint if the LNS is unavailable. |
 
 We should keep in mind that we can also use a combination of the strategies and use an incremental approach again: start with a simple health detection strategy, and allow configuring a different health detection strategy.
 
