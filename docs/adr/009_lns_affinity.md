@@ -71,16 +71,14 @@ stations.
 
 Version, LNS discovery and CUPS update endpoints are not affected.
 
-## Possible solutions
+## Possible solution
 
-### Delayed processing of messages from losing LNSs
+The main is to store locally on the LNS a dictionary mapping DevEui and whether we were the losing
+gateway for that DevEui, as decided from the Function. Based on that we would delay the processing
+of future messages for all losing gateways. This should give enough time to the preferred LNS to
+process the message and keep the active connection to Iot Hub.
 
-The main idea here is to store locally on the LNS a dictionary mapping DevEui and whether we were
-the losing gateway for that DevEui, as decided from the Function. Based on that we would delay the
-processing of future messages for all losing gateways. This should give enough time to the preferred
-LNS to process the message and keep the active connection to Iot Hub.
-
-#### Handling of background tasks ❔
+### Handling of background tasks
 
 When we create a (singleton) instance of the NetworkServer.LoRaDeviceCache we start a background periodical
 check to ensure the device twins for the DevEuis we encountered are kept fresh.
@@ -102,7 +100,7 @@ Alternatives
   2 days)
 - Remove the background refresh
 
-#### Handling of Join requests
+### Handling of Join requests
 
 Join requests in isolation currently do not have the connection stealing issue, as they already rely on the
 Function for the DevNonce check. If the current LNS is not the preferred gateway, it drops the
@@ -116,7 +114,7 @@ handle "backoff" in the same way as in the Data flow. The advantages of doing th
   
 Alternative is to do nothing and accept that a one-off connection stealing on the first Data message can happen.
 
-#### Data flow: LoRaDevice not in LoRaDeviceCache
+### Data flow: LoRaDevice not in LoRaDeviceCache
 
 Currently, if LoRaDevice is not in the cache we search on the Function for devices with the specific
 DevAddr then we load their twins.
@@ -128,7 +126,33 @@ We could ❔
   - if we are not the winning LNS, drop the message and mark our selves as the losing gateway
   - This would require moving the Mic computation on the Function (?)
 
-#### Main data message flow
+### Handling of device resets
+
+What happens in the above scenario, if we have a device reset between message A and B? Currently we
+are saving the twin immediately and then clear the Function cache.
+
+This is both dangerous as the request is not yet validated but is changing state of the twin as well
+as not required as at the end of processing the message we do sync changes on the twin.
+
+We should instead:
+
+- Clear the cache in the Function as we do currently.
+- Function returns if we are the losing LNS. If we are the losing one, we drop the message here,
+  mark ourselves as the losing gateway etc.
+- Otherwise we process message normally.
+- And at the end force update the twin.
+
+Alternative considered but discarded:
+
+Use the Function to do both operations
+
+- update the device twin frame counter to 0 (it needs a DeviceClient that would
+  cause a temporary connection switch)
+- Clear or update the cache entry with frame counter down and up to 0.
+- Returns the result to the LNS: whether it was the winning or losing one
+- LNS reacts as described before
+
+### Main data message flow
 
 Assuming the topology:
 
@@ -180,38 +204,11 @@ Here is a rundown of what should happen marked in **bold**:
 NB: the FunctionBundler is not called in certain topologies e.g. when multiple LBSs are connected to
 the same LNS but these topologies are not relevant for the issue here).
 
-#### Handling of device resets
+#### Handling Class C devices downstream direct messages
 
-What happens in the above scenario, if we have a device reset between message A and B? Currently we
-are saving the twin immediately and then clear the Function cache.
-
-This is both dangerous as the request is not yet validated but is changing state of the twin as well
-as not required as at the end of processing the message we do sync changes on the twin.
-
-We should instead:
-
-- Clear the cache in the Function as we do currently.
-- Function returns if we are the losing LNS. If we are the losing one, we drop the message here,
-  mark ourselves as the losing gateway etc.
-- Otherwise we process message normally.
-- And at the end force update the twin.
-
-Alternative considered but discarded:
-
-Use the Function to do both operations
-
-- update the device twin frame counter to 0 (it needs a DeviceClient that would
-  cause a temporary connection switch)
-- Clear or update the cache entry with frame counter down and up to 0.
-- Returns the result to the LNS: whether it was the winning or losing one
-- LNS reacts as described before
-
-##### Handling Class C devices downstream direct messages
-
-When we send a downstream message using Direct method via the Function,
-the Function is responsible for choosing the prererred gateway based on its existing knowledge of
-the preferred gateway. Due to that we can be sure that we have the active connection and can
-therefore send downstream messages.
+When we send a downstream message using Direct method via the Function, the Function is responsible
+for choosing the prererred gateway based on its existing knowledge of the preferred gateway. Due to
+that we can be sure that we have the active connection and can therefore send downstream messages.
 
 #### Implementation
 
@@ -248,17 +245,20 @@ the same result by setting the delay to 0❔
 - This flag is only checked if we are on the Drop deduplication strategy (as Mark and None do not
   support stickiness anyway)
 
+## Other candidates considered
+
 ### Single point of connection handling on LoRaDevice
 
-The changes presented from Atif. This would also ensure by design that new code does not open more connections
-to IoT Hub accidentally.
+The changes presented from Atif: would also ensure by design that new code does not open more
+connections to IoT Hub accidentally.
 
-## Other candidates considered
+No matter where we are doing the check on the LNS side (single point as in Atif's ADR or existing
+code) the changes on the Function side would still be required.  
 
 ### Using direct mode (not Edge hub)
 
-This was less problematic than using Edge Hub but still has temporary connection stealing. The idea
-was dropped because then we would miss the [offline
+Using direct mode is less problematic in terms of connection stealing but still had the issue. The
+idea was dropped because then we would miss the [offline
 capabilities](https://docs.microsoft.com/en-us/azure/iot-edge/offline-capabilities?view=iotedge-2020-11#how-it-works)
 that Edge Hub offers us.
 
@@ -266,8 +266,8 @@ that Edge Hub offers us.
 
 We could utilize child-parent connections and parent multiple LNS under a single [transparent
 gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2020-11)
-that has the active connection to IoT Hub. The problem there is that children can have only 1 parent and
-therefore we can not support roaming LNSs.
+that has the active connection to IoT Hub. The problem there is that children can have only 1 parent
+and therefore we can not support roaming LNSs.
 
 ## Other questions
 
