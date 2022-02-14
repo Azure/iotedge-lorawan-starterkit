@@ -61,7 +61,7 @@ stations.
   - Periodically we refresh the LoRaDeviceCache, which results in device twin reads that could
     switch the connection -> see [handling of background tasks section](#handling-of-background-tasks)
 - Message flows
-  - Join -> see [handling of join requests](#Handling-of-Join-requests)
+  - Join -> see [handling of Join requests section](#Handling-of-Join-requests)
   - Data:
     - if the device is not in LoRaDeviceCache, we fetch the device twin -> see [LoRaDevice not in cache section](#data-flow-loradevice-not-in-loradevicecache)
     - if a frame counter reset happened, we update the twin immediately -> see [handling of resets section](#handling-of-device-resets)
@@ -251,7 +251,7 @@ The changes presented from Atif: would also ensure by design that new code does 
 connections to IoT Hub accidentally.
 
 No matter where we are doing the check on the LNS side (single point as in Atif's ADR or existing
-code) the changes on the Function side would still be required.  
+code with multiple entry points) the changes on the Function side are still required.  
 
 ### Using direct mode (not Edge hub)
 
