@@ -18,9 +18,11 @@ This idea is trying to reduce dramatically the amount of links needed for sendin
 
 ## Load test result
 
+`Connected_Factory_Load_Test_Scenario` was chosen as test for understanding the behaviour of the proposed approach.
+
 After modifying the 2.0.0 code base with the required changes, the test bench was setup with 1500 leaf devices, running in 2 factories, with 1 LNS per factory and 2 concentrators per LNS. IoT Hub was sized to 1x S3 unit, in order to not be throttled on twin operations.
 
-While executing the `Connected_Factory_Load_Test_Scenario`, we were able to observe that no upstream message was dropped. Nevertheless, the "connection ping-pong" caused other issues like delays in twin updates, causing some delays/retries for OTAA join requests, and inability of sending acknowledgment on time for the expected receive windows (20% of the acknowledgements was dropped).
+While executing the test, we were able to observe that no upstream message was dropped. Nevertheless, the "connection ping-pong" caused other issues like delays in twin updates, causing some delays/retries for OTAA join requests, and inability of sending acknowledgment on time for the expected receive windows (20% of the acknowledgements was dropped).
 
 ## Conclusions
 
