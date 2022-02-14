@@ -12,7 +12,7 @@ We think it is very critical to not drop any upstream message, therefore we shou
 
 ## Approach
 
-The approach being considered in this document is still making use of DeviceClient for twin operations and C2D messages only, while routing telemtry data through the LoRaWAN Network Server ModuleClient.
+The approach being considered in this document is still making use of `Microsoft.Azure.Devices.Client.DeviceClient` for twin operations and C2D messages only, while routing telemetry data through the LoRaWAN Network Server `Microsoft.Azure.Devices.Client.ModuleClient`.
 
 This idea is trying to reduce dramatically the amount of links needed for sending telemetry upstream, by enqueueing telemetry messages on the LNS IoT Edge module outputs.
 
