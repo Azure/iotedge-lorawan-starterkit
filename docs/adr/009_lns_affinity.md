@@ -73,7 +73,7 @@ Version, LNS discovery and CUPS update endpoints are not affected.
 
 ## Possible solution
 
-The main is to store locally on the LNS a dictionary mapping DevEui and whether we were the losing
+The main idea is to store locally on the LNS a dictionary mapping DevEui and whether we were the losing
 gateway for that DevEui, as decided from the Function. Based on that we would delay the processing
 of future messages for all losing gateways. This should give enough time to the preferred LNS to
 process the message and keep the active connection to Iot Hub.
@@ -98,7 +98,7 @@ Alternatives
   - Not really a background task anymore
 - Do nothing and accept there will be a potential connection switching periodically (currently every
   2 days)
-- Remove the background refresh
+- Remove the background refresh feature all-together.
 
 ### Handling of Join requests
 
@@ -142,15 +142,13 @@ We should instead:
 - Otherwise we process message normally.
 - And at the end force update the twin.
 
-Alternative considered but discarded:
-
-Use the Function to do both operations
+Alternative considered but discarded: use the Function to do both operations
 
 - update the device twin frame counter to 0 (it needs a DeviceClient that would
   cause a temporary connection switch)
 - Clear or update the cache entry with frame counter down and up to 0.
 - Returns the result to the LNS: whether it was the winning or losing one
-- LNS reacts as described before
+- LNS reacts as described in the [main data flow section](#main-data-message-flow)
 
 ### Main data message flow
 
