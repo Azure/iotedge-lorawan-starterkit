@@ -72,19 +72,28 @@ Version, LNS discovery and CUPS update endpoints are not affected.
 The main idea is to give the current connection holder as indicated from the Function, the edge to
 continue processing messages for this device. That gateway, will have 0 impact on performance.
 
-### Handling of background tasks
+### Handling of cache refresh
 
-When we create a (singleton) instance of the NetworkServer.LoRaDeviceCache we start a background periodical
-check to ensure the device twins for the DevEuis we encountered are kept fresh.
+When we create a singleton instance of the NetworkServer.LoRaDeviceCache, we start a background periodical
+check to ensure the device twin for all the devices that connected to the LNS are kept fresh.
 
-- If we were previously the losing LNS for the DevEui that needs refresh, we could adjust the
-  LastSeen property but not actually refresh the entry
-  - this way we won't try to read the twin that could result in a connection switch
-  - when the next data message comes and we check the cache
-    - if entry is in cache, we have a stale twin in the cache - how should it be solved ❔
-    - if entry not in cache, see handling in [the section on LoRaDevice not in cache](#data-flow-loradevice-not-in-loradevicecache)
-  
-Alternatives
+This periodical background task is checking if the LNS received a device for such DevEUI in the last 10 minutes,
+if not the device is removed from cache, otherwise a "get twin" operation is executed for such device.
+
+In case multiple LNS are handling the same device "XYZ", this is triggering a connection ping-pong.
+
+Ideally we would need to refresh the cache only if, after reaching out to the function,
+the LNS is marked as the "winning" one for device "XYZ".
+
+It is important though to not remove this device from the cache, in case the LNS is still the "losing" gateway.
+If we remove it, this would trigger a "get twin" operation as soon as the next data message is coming in for "XYZ".
+
+To prevent this, it could be possible to adjust the LastSeen property but not actually refresh the entry in the cache.
+
+When the next data message for "XYZ" comes in and an entry is in cache for such device, in the eventuality that
+the Azure Function is marking our LNS as the new "winning" gateway, we have a stale twin in the cache, to be updated before processing.
+
+Alternatives considered, but not viable
 
 - Remove entry completely from the cache which is the same as [the section on LoRaDevice not in
   cache](#data-flow-loradevice-not-in-loradevicecache)
@@ -105,7 +114,7 @@ handle "backoff" in the same way as in the Data flow. The advantages of doing th
 
 - subsequent first Data (or future Join) requests do not switch the connection
 - same handling as in the Data flow (therefore easier to understand)
-  
+
 Alternative is to do nothing and accept that a one-off connection stealing on the first Data message can happen.
 
 ### Data flow: LoRaDevice not in LoRaDeviceCache
