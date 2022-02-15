@@ -30,20 +30,6 @@ namespace LoRaWan.Tests.Common
             this.singleDeviceClient.Dispose();
         }
 
-        public void TryScanExpiredItems()
-        {
-        }
-
         public void Dispose() => this.singleDeviceClient.Dispose();
-
-        public ILoRaDeviceClient GetClient(DevEui devEui)
-        {
-            return this.singleDeviceClient;
-        }
-
-        public void Release(DevEui devEui)
-        {
-            this.singleDeviceClient.Dispose();
-        }
     }
 }
