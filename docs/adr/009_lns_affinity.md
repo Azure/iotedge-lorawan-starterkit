@@ -181,17 +181,17 @@ Here is a rundown of what should happen marked in **bold**:
 1. This delay gives LNS1 a time advantage to reach the FunctionBundler first and win the race again, failing
     back to the previous case of message A. The active connection stays with LNS1.
 1. If this delay is not sufficient for LNS1 to win the race, LNS2 will contact the FunctionBundler which
-   now awards LNS2 as the "winning" LNS. LNS2 will process message upstream (therefore the active
-   connection will switch to it) and **removes the "losing flag" from the in-memory store**.
-1. **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this
+   now awards LNS2 as the "winning" LNS. LNS2 **needs to first get the device twin** as it might have a
+   stale version and then can process message upstream. It also **removes the "losing flag" from its in-memory store**.
+2. **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this
    device. The reason why we do this proactively is that otherwise its Edge Hub will try to
    reconnect to IoT Hub even if there is no more messages picked up from LNS1 (out of range roaming
    client). Additionally, **LNS1 would not need to refresh its LoRaDeviceCache anymore for this
    device** (see [previous section about caching](#data-flow-loradevice-not-in-loradevicecache)).
-1. Direct method and should be retried (e.g. in memory retries or durable Function): direct
+3. Direct method and should be retried (e.g. in memory retries or durable Function): direct
    method could fail due to the module being or Edge Hub being down, other connectivity issue
    etc. Is in memory retries sufficient here? ❔
-1. If LNS1 in the meantime gets message B and contacts the FunctionBundler, it will let it know
+4. If LNS1 in the meantime gets message B and contacts the FunctionBundler, it will let it know
    that it lost the race for this frame counter and must therefore drop the message, **mark
    itself as the losing LNS and close the connection**.
 
