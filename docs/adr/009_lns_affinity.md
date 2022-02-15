@@ -9,7 +9,7 @@ __________
 
 ## Problem statement
 
-Consider the scenario:
+Consider the topology:
 
 ```mermaid
 flowchart LR;
@@ -19,7 +19,7 @@ flowchart LR;
 
 where LNS 1 and 2 make use of their IoT Edge Hub modules to connect to IoT Hub.
 
-IoT Hub limits active connections that an IoT device can have to one. Imagining that connection 1 is
+IoT Hub limits active connections that an IoT device can have to one. Assuming that connection 1 is
 already open and a message from LNS2 arrives, IoT Hub will close connection 1 and open connection 2.
 Edge Hub on LNS1, will detect this and assume it's a transient network issue, therefore will try
 proactively to reconnect to IoT Hub. IoT Hub will now drop the connection 2 to re-establish the
@@ -65,7 +65,7 @@ stations.
     - Class C direct downstream messages sent from the portal could result in a connection switch if
     it targets a LNS other than the last connected one but we consider this as out of scope.
 
-Version, LNS discovery and CUPS update endpoints are not affected.
+Version, LNS discovery and CUPS update endpoints are not affected by this issue.
 
 ## Possible solution
 
@@ -74,31 +74,24 @@ continue processing messages for this device. That gateway, will have 0 impact o
 
 ### Handling of cache refresh
 
-When we create a singleton instance of the NetworkServer.LoRaDeviceCache, we start a background periodical
-check to ensure the device twin for all the devices that connected to the LNS are kept fresh.
-
-This periodical background task is checking if the LNS received a device for such DevEUI in the last 10 minutes,
-if not the device is removed from cache, otherwise a "get twin" operation is executed for such device.
-
-In case multiple LNS are handling the same device "XYZ", this is triggering a connection ping-pong.
+When we create the (singleton) instance of the NetworkServer.LoRaDeviceCache, we start a background periodical
+task to ensure the device twins for all the devices that connected to that LNS are kept fresh. In
+the case where we need to get a device twin, this could trigger a connection
+ping-pong.
 
 Ideally we would need to refresh the cache only if, after reaching out to the function,
 the LNS is marked as the "winning" one for device "XYZ".
 
-It is important though to not remove this device from the cache, in case the LNS is still the "losing" gateway.
-If we remove it, this would trigger a "get twin" operation as soon as the next data message is coming in for "XYZ".
+It is marked as the "losing" gateway, we could adjust the LastSeen property but not actually refresh the entry in the cache.
 
-To prevent this, it could be possible to adjust the LastSeen property but not actually refresh the entry in the cache.
+When the next data message for "XYZ" comes in and an entry is in cache for such device, in the event that
+the Azure Function is marking our LNS as the new "winning" gateway, we have a stale twin in the
+cache that needs to be updated before processing.
 
-When the next data message for "XYZ" comes in and an entry is in cache for such device, in the eventuality that
-the Azure Function is marking our LNS as the new "winning" gateway, we have a stale twin in the cache, to be updated before processing.
+Alternatives considered, but which are deemed not viable
 
-Alternatives considered, but not viable
-
-- Remove entry completely from the cache which is the same as [the section on LoRaDevice not in
-  cache](#data-flow-loradevice-not-in-loradevicecache)
-- Delay and then call the Function to check whether we are still the losing LNS
-  - Not really a background task anymore
+- Remove device entry from the cache when we are the losing gateway: if we were to do this, a "get
+  twin" operation would be triggered as soon as the next data message is coming in from the device in question.
 - Do nothing and accept there will be a potential connection switching periodically (currently every
   2 days)
 - Remove the background refresh feature all-together.
@@ -120,35 +113,32 @@ Alternative is to do nothing and accept that a one-off connection stealing on th
 ### Data flow: LoRaDevice not in LoRaDeviceCache
 
 Currently, if LoRaDevice is not in the cache we search on the Function for devices with the specific
-DevAddr then we load their twins.
+DevAddr and then load their twins.
 
 We could ❔
 
 - Amend DeviceGetter.GetDevice so that it returns info about whether we are the winning gateway
-  - if we are (we already have the connection) continue to load the twin
-  - if we are not the winning LNS, drop the message and mark our selves as the losing gateway
+  - if we are (we already have the connection) it is safe to load the twin
+  - if we are not the winning LNS, we should drop the message and mark ourselves as the losing gateway
   - This would require moving the Mic computation on the Function (?)
 
 ### Handling of ABP relax frame counter reset
 
-What happens in the above scenario, if we have a device reset between message A and B? Currently we
-are saving the twin immediately and then clear the Function cache.
-
-This is both dangerous as the request is not yet validated but is changing state of the twin as well
-as not required as at the end of processing the message we do sync changes on the twin.
+When we detect a device reset after a message, we currently save the twin immediately and then clear
+the Function cache. This twin write could result in a connection ping-pong.
 
 We should instead:
 
 - Clear the cache in the Function as we do currently.
-- Function returns if we are the losing LNS. If we are the losing one, we drop the message here,
+- The Function is changed to return if we are the losing LNS. If we are the losing one, we drop the message here,
   mark ourselves as the losing gateway etc.
-- Otherwise we process message normally.
-- And at the end force update the twin.
+- Otherwise we process message normally and at the end update the twin as we currently do.
 
-Alternative considered but discarded: use the Function to do both operations
+Alternative considered but discarded because of a possible connection switch: use the Function to do
+both operations
 
-- update the device twin frame counter to 0 (it needs a DeviceClient that would
-  cause a temporary connection switch)
+- update the device twin frame counter to 0 (as frame counter is a reported property it needs to be
+  changed via a DeviceClient that could cause a connection switch)
 - Clear or update the cache entry with frame counter down and up to 0.
 - Returns the result to the LNS: whether it was the winning or losing one
 - LNS reacts as described in the [main data flow section](#main-data-message-flow)
