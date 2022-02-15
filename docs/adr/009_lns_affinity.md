@@ -160,38 +160,38 @@ where Device sends data message A and then B.
 
 Here is a rundown of what should happen marked in **bold**:
 
-- Device sends first data message A.
-- We assume that LNS1 gets the message first. **LNS1 checks against
-  an in-memory dictionary DevEui -> flag** and since it has not seen this DevEui before (flag is
-  false) contacts the GetDevice.
-- The Function hasn't seen this DevEui either and therefore does not have an assigned LNS for it
+1. Device sends first data message A.
+1. We assume that LNS1 gets the message first. **LNS1 checks against
+   an in-memory dictionary DevEui -> flag** and since it has not seen this DevEui before (flag is
+   false) contacts the GetDevice.
+1. The Function hasn't seen this DevEui either and therefore does not have an assigned LNS for it
   yet. LNS1 wins the race and gets immediately a response and processes the message upstream.
-- LNS2 eventually receives message A, **checks its local dictionary** and also contacts the FunctionBundler since it does not have prior info about this DevEui.
-- The Function responds to LNS2 that it lost the race to process this message.
-- Since deduplication strategy is Drop, LNS2 drops the message immediately, therefore no
-  connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. **LNS2 also notes in
-  memory that it was the losing gateway for this DevEui**.
-- When message B gets send (with a higher frame counter), assuming that this time LNS2 gets it
-  first it **checks again its local dictionary it's not the preferred LNS for this device and
-  therefore delays itself X ms before contacting the FunctionBundler**.
-  - Here we can *not* simply drop as LNS1 might not be available anymore (due to a crash, device not
-    in range etc).
-- This delay gives LNS1 a time advantage to reach the FunctionBundler first and win the race again, failing
-  back to the previous case of message A. The active connection stays with LNS1.
-  - If this delay is not sufficient for LNS1 to win the race, LNS2 will contact the FunctionBundler which
-    now awards LNS2 as the "winning" LNS. LNS2 will process message upstream (therefore the active
-    connection will switch to it) and **removes the "losing flag" from the in-memory store**.
-  - **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this
-    device. The reason why we do this proactively is that otherwise its Edge Hub will try to
-    reconnect to IoT Hub even if there is no more messages picked up from LNS1 (out of range roaming
-    client). Additionally, **LNS1 would not need to refresh its LoRaDeviceCache anymore for this
-    device** (see [previous section about caching](#data-flow-loradevice-not-in-loradevicecache)).
-    - Direct method and should be retried (e.g. in memory retries or durable Function): direct
-      method could fail due to the module being or Edge Hub being down, other connectivity issue
-      etc. Is in memory retries sufficient here? ❔
-  - If LNS1 in the meantime gets message B and contacts the FunctionBundler, it will let it know
-    that it lost the race for this frame counter and must therefore drop the message, **mark
-    itself as the losing LNS and close the connection**.
+1. LNS2 eventually receives message A, **checks its local dictionary** and also contacts the FunctionBundler since it does not have prior info about this DevEui.
+1. The Function responds to LNS2 that it lost the race to process this message.
+1. Since deduplication strategy is Drop, LNS2 drops the message immediately, therefore no
+   connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. **LNS2 also notes in
+   memory that it was the losing gateway for this DevEui**.
+1. When message B gets send (with a higher frame counter), assuming that this time LNS2 gets it
+   first it **checks again its local dictionary it's not the preferred LNS for this device and
+   therefore delays itself X ms before contacting the FunctionBundler**.
+   - Here we can *not* simply drop as LNS1 might not be available anymore (due to a crash, device not
+     in range etc).
+1. This delay gives LNS1 a time advantage to reach the FunctionBundler first and win the race again, failing
+    back to the previous case of message A. The active connection stays with LNS1.
+1. If this delay is not sufficient for LNS1 to win the race, LNS2 will contact the FunctionBundler which
+   now awards LNS2 as the "winning" LNS. LNS2 will process message upstream (therefore the active
+   connection will switch to it) and **removes the "losing flag" from the in-memory store**.
+1. **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this
+   device. The reason why we do this proactively is that otherwise its Edge Hub will try to
+   reconnect to IoT Hub even if there is no more messages picked up from LNS1 (out of range roaming
+   client). Additionally, **LNS1 would not need to refresh its LoRaDeviceCache anymore for this
+   device** (see [previous section about caching](#data-flow-loradevice-not-in-loradevicecache)).
+1. Direct method and should be retried (e.g. in memory retries or durable Function): direct
+   method could fail due to the module being or Edge Hub being down, other connectivity issue
+   etc. Is in memory retries sufficient here? ❔
+1. If LNS1 in the meantime gets message B and contacts the FunctionBundler, it will let it know
+   that it lost the race for this frame counter and must therefore drop the message, **mark
+   itself as the losing LNS and close the connection**.
 
 NB: the FunctionBundler is not called in certain topologies e.g. when multiple LBSs are connected to
 the same LNS but these topologies are not relevant for the issue here).
