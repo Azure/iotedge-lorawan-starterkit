@@ -19,6 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -47,6 +48,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                            new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>(), null),
                                                                            this.downstreamMessageSender.Object,
                                                                            this.messageDispatcher.Object,
+                                                                           NullLoggerFactory.Instance,
                                                                            loggerMock,
                                                                            new RegistryMetricTagBag(new NetworkServerConfiguration { GatewayID = "foogateway" }),
                                                                            // Do not pass meter since metric testing will be unreliable due to interference from test classes running in parallel.
@@ -208,7 +210,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var mockHttpRequest = new Mock<HttpRequest>();
             mockHttpRequest.SetupGet(x => x.Host).Returns(new HostString("localhost", 1234));
             mockHttpRequest.SetupGet(x => x.IsHttps).Returns(isHttps);
+            mockHttpRequest.SetupGet(x => x.Scheme).Returns("ws");
             this.httpContextMock.Setup(h => h.Request).Returns(mockHttpRequest.Object);
+            var webSocketManager = new Mock<WebSocketManager>();
+            webSocketManager.Setup(wsm => wsm.AcceptWebSocketAsync()).ReturnsAsync(this.socketMock.Object);
+            webSocketManager.Setup(wsm => wsm.IsWebSocketRequest).Returns(true);
+            this.httpContextMock.Setup(h => h.WebSockets).Returns(webSocketManager.Object);
 
             SetupSocketReceiveAsync(@"{ router: 'b827:ebff:fee1:e39a' }");
 
@@ -228,7 +235,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B827EBFFFEE1E39A""}}";
 
             // act
-            await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(this.httpContextMock.Object, this.socketMock.Object, CancellationToken.None);
+            await this.lnsMessageProcessorMock.HandleDiscoveryAsync(this.httpContextMock.Object, CancellationToken.None);
 
             // assert
             Assert.Equal(expectedString, sentString);

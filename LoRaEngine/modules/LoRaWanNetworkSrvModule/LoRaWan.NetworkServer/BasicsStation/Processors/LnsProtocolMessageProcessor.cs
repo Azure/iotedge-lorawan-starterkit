@@ -9,14 +9,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
     using System.Diagnostics.Metrics;
-    using System.Linq;
-    using System.Net.NetworkInformation;
     using System.Net.WebSockets;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
+    using LoRaWan.NetworkServerDiscovery;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
@@ -30,6 +30,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IDownstreamMessageSender downstreamMessageSender;
         private readonly IMessageDispatcher messageDispatcher;
+        private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
         private readonly Counter<int> uplinkMessageCounter;
@@ -39,6 +40,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                            IDownstreamMessageSender downstreamMessageSender,
                                            IMessageDispatcher messageDispatcher,
+                                           ILoggerFactory loggerFactory,
                                            ILogger<LnsProtocolMessageProcessor> logger,
                                            RegistryMetricTagBag registryMetricTagBag,
                                            Meter meter)
@@ -47,6 +49,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.socketWriterRegistry = socketWriterRegistry;
             this.downstreamMessageSender = downstreamMessageSender;
             this.messageDispatcher = messageDispatcher;
+            this.loggerFactory = loggerFactory;
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
             this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
@@ -57,89 +60,35 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                                      Func<HttpContext, WebSocket, CancellationToken, Task> handler,
                                                                      CancellationToken cancellationToken)
         {
-            if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
-
-            if (!httpContext.WebSockets.IsWebSocketRequest)
-            {
-                httpContext.Response.StatusCode = 400;
-                return httpContext;
-            }
+            var webSocketConnection = new WebSocketConnection(httpContext, this.logger);
 
             try
             {
-                using var socket = await httpContext.WebSockets.AcceptWebSocketAsync();
-                this.logger.Log(LogLevel.Debug, "WebSocket connection from {RemoteIpAddress} established", httpContext.Connection.RemoteIpAddress);
-
-                try
-                {
-                    await handler(httpContext, socket, cancellationToken);
-                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", cancellationToken);
-                }
-                catch (OperationCanceledException ex)
-#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
-                    when (ex is { InnerException: WebSocketException { WebSocketErrorCode: WebSocketError.ConnectionClosedPrematurely } })
-#pragma warning restore CA1508 // Avoid dead conditional code
-                {
-                    // This can happen if the basic station client is losing connectivity
-                    this.logger.LogDebug(ex, ex.Message);
-                }
+                return await webSocketConnection.HandleAsync(handler, cancellationToken);
             }
             catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex),
                                                                     () => this.unhandledExceptionCount?.Add(1)))
             {
                 throw;
             }
-
-            return httpContext;
         }
 
-        public Task HandleDiscoveryAsync(HttpContext httpContext, CancellationToken cancellationToken) =>
-            ProcessIncomingRequestAsync(httpContext, InternalHandleDiscoveryAsync, cancellationToken);
+        public async Task HandleDiscoveryAsync(HttpContext httpContext, CancellationToken cancellationToken)
+        {
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = httpContext.Request.Scheme,
+                Port = httpContext.Request.Host.Port ?? 80,
+                Host = httpContext.Request.Host.Host
+            };
+            var discoveryService = new DiscoveryService(new LnsDiscovery(uriBuilder.Uri), this.loggerFactory.CreateLogger<DiscoveryService>());
+            await discoveryService.HandleDiscoveryRequestAsync(httpContext, cancellationToken);
+        }
 
         public Task HandleDataAsync(HttpContext httpContext, CancellationToken cancellationToken) =>
             ProcessIncomingRequestAsync(httpContext,
                                         (httpContext, socket, ct) => InternalHandleDataAsync(httpContext.Request.RouteValues, socket, ct),
                                         cancellationToken);
-
-        /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task InternalHandleDiscoveryAsync(HttpContext httpContext, WebSocket socket, CancellationToken cancellationToken)
-        {
-            await using var message = socket.ReadTextMessages(cancellationToken);
-            if (!await message.MoveNextAsync())
-            {
-                this.logger.LogWarning($"Did not receive discovery request from station.");
-            }
-            else
-            {
-                var json = message.Current;
-                var stationEui = LnsDiscovery.QueryReader.Read(json);
-                this.logger.LogInformation("Received discovery request from: {StationEui}", stationEui);
-
-                try
-                {
-                    var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
-                    var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}/{stationEui}");
-
-                    var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
-                                                           .SingleOrDefault(ni => ni.GetIPProperties()
-                                                                                    .UnicastAddresses
-                                                                                    .Any(info => info.Address.Equals(httpContext.Connection.LocalIpAddress)));
-
-                    var muxs = Id6.Format(networkInterface is { } someNetworkInterface
-                                              ? someNetworkInterface.GetPhysicalAddress().Convert48To64() : 0,
-                                          Id6.FormatOptions.FixedWidth);
-
-                    var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, url));
-                    await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, ex.Message));
-                    await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken);
-                    throw;
-                }
-            }
-        }
 
         internal async Task InternalHandleDataAsync(RouteValueDictionary routeValues, WebSocket socket, CancellationToken cancellationToken)
         {

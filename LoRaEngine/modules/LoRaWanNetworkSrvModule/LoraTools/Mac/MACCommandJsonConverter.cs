@@ -19,7 +19,7 @@ namespace LoRaTools
             return typeof(MacCommand).IsAssignableFrom(objectType);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(Newtonsoft.Json.JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (serializer is null) throw new ArgumentNullException(nameof(serializer));
 

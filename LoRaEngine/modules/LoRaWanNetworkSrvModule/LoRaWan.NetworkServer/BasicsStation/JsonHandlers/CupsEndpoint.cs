@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
     using System.Collections.Immutable;
+    using LoRaTools;
 
     public static class CupsEndpoint
     {

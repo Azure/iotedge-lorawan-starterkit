@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
+    using LoRaWan.NetworkServerDiscovery;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
@@ -144,7 +145,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                    {
                        _ = endpoints.MapMetrics();
 
-                       Map(HttpMethod.Get, BasicsStationNetworkServer.DiscoveryEndpoint,
+                       Map(HttpMethod.Get, LnsDiscovery.EndpointName,
                            context => context.Request.Host.Port is BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort,
                            (ILnsProtocolMessageProcessor processor) => processor.HandleDiscoveryAsync);
 

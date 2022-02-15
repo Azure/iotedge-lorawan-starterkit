@@ -1,16 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
+namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
 {
     using System;
     using System.Text.Json;
+    using global::LoRaTools;
     using LoRaWan;
     using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
+    using LoRaWan.NetworkServerDiscovery;
     using Xunit;
 
-    public class LnsDiscoveryTests
+    public class LnsServiceJsonTests
     {
         [Theory]
         [InlineData(@"{ ""router"": ""b827:ebff:fee1:e39a"" }")]
@@ -20,7 +21,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [InlineData(@"{ ""router"": 13269834311795860378, ""onePropAfter"": { ""value"": 123 } }")]
         public void ReadQuery(string json)
         {
-            var stationEui = LnsDiscovery.QueryReader.Read(json);
+            var stationEui = DiscoveryService.QueryReader.Read(json);
             Assert.Equal(new StationEui(0xb827_ebff_fee1_e39aUL), stationEui);
         }
 
@@ -29,7 +30,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [InlineData(@"{}")]
         public void ReadQuery_Throws_OnMissingProperty(string json)
         {
-            Assert.Throws<JsonException>(() => _ = LnsDiscovery.QueryReader.Read(json));
+            Assert.Throws<JsonException>(() => _ = DiscoveryService.QueryReader.Read(json));
         }
 
         [Theory]
@@ -38,7 +39,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [InlineData(@"{ ""router"": true }")]
         public void ReadQuery_Throws_OnInvalidPropertyType(string json)
         {
-            Assert.Throws<JsonException>(() => _ = LnsDiscovery.QueryReader.Read(json));
+            Assert.Throws<JsonException>(() => _ = DiscoveryService.QueryReader.Read(json));
         }
 
         private const string ValidMuxs = "0000:00FF:FE00:0000";
@@ -58,7 +59,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                     : throw new JsonException();
 
             var computed = Json.Stringify(w =>
-                LnsDiscovery.WriteResponse(w, stationEui, muxs, new Uri(routerDataEndpoint)));
+                DiscoveryService.WriteResponse(w, stationEui, muxs, new Uri(routerDataEndpoint)));
             Assert.Equal(expected, computed);
         }
 
@@ -71,7 +72,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             var stationEui = new StationEui(stationId6);
 
             Assert.Throws<ArgumentException>(() =>
-                _ = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, new Uri(ValidUrlString))));
+                _ = Json.Write(w => DiscoveryService.WriteResponse(w, stationEui, muxs, new Uri(ValidUrlString))));
         }
 
         [Fact]
@@ -81,7 +82,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             var stationEui = new StationEui(stationId6);
 
             Assert.Throws<ArgumentNullException>(() =>
-                Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, ValidMuxs, null)));
+                Json.Write(w => DiscoveryService.WriteResponse(w, stationEui, ValidMuxs, null)));
         }
     }
 }
