@@ -63,7 +63,7 @@ stations.
     - if a frame counter reset happened, we update the twin immediately -> see [handling of resets section](#handling-of-device-resets)
     - in the main data flow we send upstream, downstream and write the new twin -> see [main data flow section](#main-data-message-flow)
     - Class C direct downstream messages sent from the portal could result in a connection switch if
-    the handling LNS changed in the meantime but we consider this as out of scope.
+    it targets a LNS other than the last connected one but we consider this as out of scope.
 
 Version, LNS discovery and CUPS update endpoints are not affected.
 
