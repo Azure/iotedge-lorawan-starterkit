@@ -108,15 +108,10 @@ namespace LoRaWan.NetworkServer
         public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return GetClient(loRaDevice.DevEUI);
-        }
 
-        public ILoRaDeviceClient GetClient(DevEui devEui)
-        {
-            if (this.managedConnections.TryGetValue(GetConnectionCacheKey(devEui), out var managedConnection))
-                return managedConnection.DeviceClient;
-
-            throw new ManagedConnectionException($"Connection for device {devEui} was not found");
+            return this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection)
+                 ? managedConnection.DeviceClient
+                 : throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");
         }
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
@@ -138,12 +133,8 @@ namespace LoRaWan.NetworkServer
         public void Release(LoRaDevice loRaDevice)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
-            Release(loRaDevice.DevEUI);
-        }
 
-        public void Release(DevEui devEui)
-        {
-            if (this.managedConnections.TryRemove(GetConnectionCacheKey(devEui), out var removedItem))
+            if (this.managedConnections.TryRemove(GetConnectionCacheKey(loRaDevice.DevEUI), out var removedItem))
             {
                 removedItem.Dispose();
             }
