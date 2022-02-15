@@ -112,15 +112,18 @@ Alternative is to do nothing and accept that a one-off connection stealing on th
 
 ### Data flow: LoRaDevice not in LoRaDeviceCache
 
-Currently, if LoRaDevice is not in the cache we search on the Function for devices with the specific
-DevAddr and then load their twins.
+Currently, if LoRaDevice is not in the cache we search on the Function for all devices that have
+that DevAddr. Then we get their twins which could result in a connection switch.
 
-We could ❔
+We should instead ❔
 
 - Amend DeviceGetter.GetDevice so that it returns info about whether we are the winning gateway
-  - if we are (we already have the connection) it is safe to load the twin
-  - if we are not the winning LNS, we should drop the message and mark ourselves as the losing gateway
-  - This would require moving the Mic computation on the Function (?)
+  - if we are, it is safe to load the twin (we already have the connection)
+  - if we are not the winning LNS, we should not load the twin drop the message and mark ourselves as the losing gateway
+    - next time we get a message from that device we should artificially delay ourselves and check again on the Function.
+      - if this time we are the winning LNS we load the twin.
+      - if not we drop the message again.
+  - This would require moving the Mic computation on the Function (?) 
 
 ### Handling of ABP relax frame counter reset
 
