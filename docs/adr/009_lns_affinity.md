@@ -129,7 +129,7 @@ We could ❔
   - if we are not the winning LNS, drop the message and mark our selves as the losing gateway
   - This would require moving the Mic computation on the Function (?)
 
-### Handling of device resets
+### Handling of ABP relax frame counter reset
 
 What happens in the above scenario, if we have a device reset between message A and B? Currently we
 are saving the twin immediately and then clear the Function cache.
