@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServerDiscovery
             var networkId = reader.ReadRequiredString(NetworkTagName);
 
             if (networkId.Any(n => !char.IsLetterOrDigit(n)))
-                throw new InvalidOperationException("Network ID may only contain alphanumeric characters.");
+                throw new LoRaProcessingException("Network ID may not be empty and only contain alphanumeric characters.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
 
             var query = this.registryManager.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'");
             var results = new List<Uri>();
@@ -50,6 +50,9 @@ namespace LoRaWan.NetworkServerDiscovery
                 var matches = await query.GetNextAsJsonAsync();
                 results.AddRange(matches.Select(hostAddressInfo => HostAddressReader.Read(hostAddressInfo)));
             }
+
+            if (results.Count == 0)
+                throw new LoRaProcessingException($"No LNS found in network '{networkId}'.", LoRaProcessingErrorCode.LnsDiscoveryFailed);
 
             return results.First();
         }
