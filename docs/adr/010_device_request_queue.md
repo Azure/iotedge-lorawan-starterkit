@@ -25,12 +25,12 @@ message will then close that connection so that Edge Hub does't continue to
 maintain the connection in the open state through retires. The handling of the
 message needs to know:
 
-1. It can close the connection right now, without interfering with a currently
-   running operation (like a message delivery where the message could be
-   potentially dropped).
+- It can close the connection right now, without interfering with a currently
+  running operation (like a message delivery where the message could be
+  potentially dropped).
 
-1. There are no operations starting around the same time that would cause it
-   to be opened again.
+- There are no operations starting around the same time that would cause it to
+  be opened again.
 
 The following cases can trigger operations from different threads:
 
