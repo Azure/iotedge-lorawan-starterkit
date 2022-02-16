@@ -46,9 +46,6 @@ The following cases can trigger operations from different threads:
 - Cache refreshes can happen on a background thread for a device, causing the
   need for a connection.
 
-**Note**: We should consider the option to keep building on top of the connection
-locking/counting we have today.
-
 There are a number of complex and concurrent code paths in the current
 solution that make it hard to reason about when a device connection is in use,
 when it's safe to open/close without affecting another operation in flight and
