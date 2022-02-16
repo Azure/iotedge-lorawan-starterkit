@@ -147,6 +147,22 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
             Assert.Equal(LoRaProcessingErrorCode.TwinFetchFailed, ex.ErrorCode);
         }
 
+        [Fact]
+        public async Task ResolveLnsAsync_Should_Be_Resilient_Against_Missing_Host_Address()
+        {
+            // arrange
+            const string networkId = "foo";
+            SetupLbsTwinResponse(StationEui, networkId);
+            var lnsUris = LnsUris.Concat(new[] { string.Empty, null }).ToList();
+            SetupIotHubQueryResponse(networkId, lnsUris);
+
+            // act
+            var result = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
+
+            // assert
+            Assert.Contains(result, LnsUris.Select(u => new Uri(u)));
+        }
+
         private void SetupLbsTwinResponse(StationEui stationEui, string networkId)
         {
             this.registryManagerMock
@@ -154,13 +170,13 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
                 .ReturnsAsync(new Twin { Tags = new TwinCollection(@$"{{""network"":""{networkId}""}}") });
         }
 
-        private void SetupIotHubQueryResponse(string networkId, IList<string> hostAddresses)
+        private void SetupIotHubQueryResponse(string networkId, IList<string?> hostAddresses)
         {
             var queryMock = new Mock<IQuery>();
             var i = 0;
             queryMock.Setup(q => q.HasMoreResults).Returns(() => i++ % 2 == 0);
             queryMock.Setup(q => q.GetNextAsJsonAsync()).ReturnsAsync(from ha in hostAddresses
-                                                                      select JsonSerializer.Serialize(new { hostAddress = ha }));
+                                                                      select ha is { } someHa ? JsonSerializer.Serialize(new { hostAddress = ha }) : "{}");
             this.registryManagerMock
                 .Setup(rm => rm.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'"))
                 .Returns(queryMock.Object);

@@ -22,9 +22,10 @@ namespace LoRaWan.NetworkServerDiscovery
         private const string CacheKey = "LnsUriByNetworkId";
 
         private static readonly TimeSpan CacheItemExpiration = TimeSpan.FromHours(6);
-        private static readonly IJsonReader<Uri> HostAddressReader =
-            JsonReader.Object(JsonReader.Property("hostAddress", from s in JsonReader.String()
-                                                                 select new Uri(s)));
+        private static readonly IJsonReader<Uri?> HostAddressReader =
+            JsonReader.Either(JsonReader.Object(JsonReader.Property("hostAddress", from s in JsonReader.String()
+                                                                                   select new Uri(s))),
+                              JsonReader.Object<Uri?>());
 
         private readonly ILogger<TagBasedLnsDiscovery> logger;
         private readonly IMemoryCache memoryCache;
@@ -94,7 +95,10 @@ namespace LoRaWan.NetworkServerDiscovery
                     while (query.HasMoreResults)
                     {
                         var matches = await query.GetNextAsJsonAsync();
-                        results.AddRange(matches.Select(hostAddressInfo => HostAddressReader.Read(hostAddressInfo)));
+                        results.AddRange(from hostAddressInfo in matches
+                                         select HostAddressReader.Read(hostAddressInfo) into uri
+                                         where uri != null
+                                         select uri);
                     }
 
                     // Also cache if no LNS URIs are found for the given network.
