@@ -11,7 +11,7 @@ We can consider implementing the service discovery in two places, because:
 - the LNS discovery endpoint is returned as a response as part of the CUPS protocol
 - the LNS data endpoint is returned as a response of the service discovery endpoint invocation (`/router-info`)
 
-we could consider implementing the service discovery as part of either the CUPS protocol or the LNS protocol. Since LBS do not reconnect to the CUPS endpoint when a connection to a LNS is dropped, we are only left with the option of implementing service discovery as part of the LNS service discovery endpoint.
+we could consider implementing the service discovery as part of either the CUPS protocol or the LNS protocol. Since LBS does not reconnect to the CUPS endpoint when a connection to a LNS is dropped, we are only left with the option of implementing service discovery as part of the LNS service discovery endpoint.
 
 This implies that the discovery service needs to support WebSockets. As of now, the `/router-info` endpoint is part of the LNS itself. Since we want to use it to protect against LNS outages, by definition it becomes clear that discovery needs to be isolated from the LNS and needs to be come a standalone, highly available service. In the following, we propose several properties of the discovery service.
 
