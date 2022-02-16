@@ -140,6 +140,13 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
             this.registryManagerMock.Verify(rm => rm.CreateQuery(It.IsAny<string>()), Times.Once);
         }
 
+        [Fact]
+        public async Task ResolveLnsAsync_Throws_If_Twin_Not_Found()
+        {
+            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.subject.ResolveLnsAsync(StationEui, CancellationToken.None));
+            Assert.Equal(LoRaProcessingErrorCode.TwinFetchFailed, ex.ErrorCode);
+        }
+
         private void SetupLbsTwinResponse(StationEui stationEui, string networkId)
         {
             this.registryManagerMock

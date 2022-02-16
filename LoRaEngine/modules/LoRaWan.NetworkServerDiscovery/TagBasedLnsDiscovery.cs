@@ -44,6 +44,10 @@ namespace LoRaWan.NetworkServerDiscovery
         public async Task<Uri> ResolveLnsAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var twin = await this.registryManager.GetTwinAsync(stationEui.ToString(), cancellationToken);
+
+            if (twin is null)
+                throw new LoRaProcessingException($"Could not find twin for station '{stationEui}'", LoRaProcessingErrorCode.TwinFetchFailed);
+
             var reader = new TwinCollectionReader(twin.Tags, this.logger);
             var networkId = reader.ReadRequiredString(NetworkTagName);
 

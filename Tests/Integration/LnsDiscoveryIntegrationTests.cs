@@ -19,6 +19,7 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Hosting;
@@ -36,7 +37,7 @@ namespace LoRaWan.Tests.Integration
             {
                 RegistryManagerMock = new Mock<RegistryManager>();
                 services.RemoveAll<ILnsDiscovery>();
-                services.AddSingleton<ILnsDiscovery>(sp => new TagBasedLnsDiscovery(RegistryManagerMock.Object, sp.GetRequiredService<ILogger<TagBasedLnsDiscovery>>()));
+                services.AddSingleton<ILnsDiscovery>(sp => new TagBasedLnsDiscovery(sp.GetRequiredService<IMemoryCache>(), RegistryManagerMock.Object, sp.GetRequiredService<ILogger<TagBasedLnsDiscovery>>()));
             });
 
             return base.CreateHost(builder);
@@ -53,7 +54,7 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Fact]
-        public async Task RouterInfo_Returns_Dummy_Lns()
+        public async Task RouterInfo_Returns_Lns()
         {
             // arrange
             var cancellationToken = CancellationToken.None;
