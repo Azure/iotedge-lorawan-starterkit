@@ -17,6 +17,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools;
     using LoRaWan.NetworkServerDiscovery;
     using Microsoft.AspNetCore.Mvc.Testing;
+    using Microsoft.AspNetCore.TestHost;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -62,7 +63,7 @@ namespace LoRaWan.Tests.Integration
             var hostAddresses = new[] { "ws://foo:5000", "wss://bar:5001" };
             var client = this.subject.Server.CreateWebSocketClient();
             var webSocket = await client.ConnectAsync(new Uri(this.subject.Server.BaseAddress, "router-info"), cancellationToken);
-            SetupIotHubResponse(hostAddresses);
+            SetupIotHubResponse(stationEui, hostAddresses);
 
             // act
             var result = await SendMessageAsync(webSocket, new { router = stationEui.AsUInt64 }, cancellationToken);
@@ -79,25 +80,39 @@ namespace LoRaWan.Tests.Integration
             var stationEui = new StationEui(1);
             var hostAddresses = new[] { "ws://foo:5000", "wss://bar:5001" };
             var client = this.subject.Server.CreateWebSocketClient() ?? throw new InvalidOperationException("Could not create client.");
-            SetupIotHubResponse(hostAddresses);
+            SetupIotHubResponse(stationEui, hostAddresses);
 
             // act
             var first = await ExecuteAsync();
             var second = await ExecuteAsync();
             var third = await ExecuteAsync();
-
-            async Task<string> ExecuteAsync()
-            {
-                var webSocket = await client.ConnectAsync(new Uri(this.subject.Server.BaseAddress, "router-info"), cancellationToken);
-                var result = await SendMessageAsync(webSocket, new { router = stationEui.AsUInt64 }, cancellationToken);
-                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal closure", cancellationToken);
-                return result;
-            }
+            Task<string> ExecuteAsync() => SendSingleMessageAsync(client, stationEui, cancellationToken);
 
             // assert
             AssertContainsHostAddress(new Uri(hostAddresses[0]), stationEui, first);
             AssertContainsHostAddress(new Uri(hostAddresses[1]), stationEui, second);
             AssertContainsHostAddress(new Uri(hostAddresses[0]), stationEui, third);
+        }
+
+        [Fact]
+        public async Task RouterInfo_Returns_Same_Lns_For_Different_Stations()
+        {
+            // arrange
+            var cancellationToken = CancellationToken.None;
+            var firstStation = new StationEui(1);
+            var secondStation = new StationEui(2);
+            var hostAddresses = new[] { "ws://foo:5000", "wss://bar:5001" };
+            var client = this.subject.Server.CreateWebSocketClient();
+            SetupIotHubResponse(firstStation, hostAddresses);
+            SetupIotHubResponse(secondStation, hostAddresses);
+
+            // act
+            var firstResult = await SendSingleMessageAsync(client, firstStation, cancellationToken);
+            var secondResult = await SendSingleMessageAsync(client, secondStation, cancellationToken);
+
+            // assert
+            AssertContainsHostAddress(new Uri(hostAddresses[0]), firstStation, firstResult);
+            AssertContainsHostAddress(new Uri(hostAddresses[0]), secondStation, secondResult);
         }
 
         [Fact]
@@ -119,6 +134,14 @@ namespace LoRaWan.Tests.Integration
             Assert.Contains($"\"uri\":\"{hostAddress}router-data/{stationEui}\"", actual, StringComparison.OrdinalIgnoreCase);
         }
 
+        private async Task<string> SendSingleMessageAsync(WebSocketClient client, StationEui stationEui, CancellationToken cancellationToken)
+        {
+            var webSocket = await client.ConnectAsync(new Uri(this.subject.Server.BaseAddress, "router-info"), cancellationToken);
+            var result = await SendMessageAsync(webSocket, new { router = stationEui.AsUInt64 }, cancellationToken);
+            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal closure", cancellationToken);
+            return result;
+        }
+
         private static async Task<string> SendMessageAsync(WebSocket webSocket, object payload, CancellationToken cancellationToken)
         {
             await webSocket.SendAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload)), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
@@ -126,13 +149,23 @@ namespace LoRaWan.Tests.Integration
             return !await e.MoveNextAsync() ? throw new InvalidOperationException("No response received.") : e.Current;
         }
 
-        private void SetupIotHubResponse(IList<string> hostAddresses)
+        private void SetupIotHubResponse(StationEui stationEui, IList<string> hostAddresses)
+        {
+            const string networkId = "foo";
+            SetupLbsTwinResponse(stationEui, networkId);
+            SetupIotHubQueryResponse(networkId, hostAddresses);
+        }
+
+        private void SetupLbsTwinResponse(StationEui stationEui, string networkId)
         {
             this.subject
                 .RegistryManagerMock?
-                .Setup(rm => rm.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Twin { Tags = new TwinCollection(@"{""network"":""foo""}") });
+                .Setup(rm => rm.GetTwinAsync(stationEui.ToString(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Twin { Tags = new TwinCollection(@$"{{""network"":""{networkId}""}}") });
+        }
 
+        private void SetupIotHubQueryResponse(string networkId, IList<string> hostAddresses)
+        {
             var queryMock = new Mock<IQuery>();
             var i = 0;
             queryMock.Setup(q => q.HasMoreResults).Returns(() => i++ % 2 == 0);
@@ -140,7 +173,7 @@ namespace LoRaWan.Tests.Integration
                                                                       select JsonSerializer.Serialize(new { hostAddress = ha }));
             this.subject
                 .RegistryManagerMock?
-                .Setup(rm => rm.CreateQuery(It.IsAny<string>()))
+                .Setup(rm => rm.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'"))
                 .Returns(queryMock.Object);
         }
 
