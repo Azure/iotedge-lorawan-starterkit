@@ -60,7 +60,5 @@ namespace LoRaWan.NetworkServer
         /// Ensures the device client is connected.
         /// </summary>
         bool EnsureConnected();
-
-        bool IsMatchingKey(string primaryKey);
     }
 }
