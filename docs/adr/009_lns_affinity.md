@@ -69,8 +69,11 @@ Version, LNS discovery and CUPS update endpoints are not affected by this issue.
 
 ## Possible solution
 
-The main idea is to give the current connection holder as indicated from the Function, the edge to
+The main idea is to give the current connection holder (as indicated from the Function), the edge to
 continue processing messages for this device. That gateway, will have 0 impact on performance.
+
+A local (per LNS) in-memory dictionary will be used for that purpose to map DevEuis to a flag
+indicating whether the LNS is the preferred or not gateway.
 
 ### Handling of cache refresh
 
@@ -203,17 +206,6 @@ the same LNS but these topologies are not relevant for the issue here).
 When we send a downstream message using Direct method via the Function, the Function is responsible
 for choosing the prererred gateway based on its existing knowledge of the preferred gateway. Due to
 that we can be sure that we have the active connection and can therefore send downstream messages.
-
-#### Implementation
-
-The LNS in-memory dictionary is mapping DevEuis to a flag indicating whether we are the winning or losing LNS.
-
-- Where should we store locally this structure ❔
-
-  - LNS LoRaDeviceClient.ConnectionManager since all of the operations pass through it.
-  - LoRaDevice: in the case of Join requests we don't yet have a LoRaDevice and would need to create
-    one without fetching the twin
-  - LoRaDeviceClient
 
 #### Delay on the LNS itself or on the Function ❔
 
