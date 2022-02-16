@@ -45,9 +45,9 @@ stations.
   - When we send a downstream message via the Function, the Function is responsible for choosing the
     prererred gateway based on its existing knowledge of the preferred gateway. Due to that we can
     be sure that we have the active connection and can therefore send downstream messages.
-  - Messages sent from the portal could result in a connection switch if
-they target a LNS other than the preferred one but we consider this as out of scope as we can not
-guard against this case of misuse.
+  - Messages sent from the portal could result in a connection switch if they target a LNS other
+than the preferred one but we consider this as out of scope as we can not guard against this case of
+misuse.
   
 ## In-scope
 
@@ -67,20 +67,19 @@ guard against this case of misuse.
 - Message flows
   - Join -> see [handling of Join requests section](#Handling-of-Join-requests)
   - Data:
-    - if the device is not in LoRaDeviceCache, we fetch the device twin -> see [LoRaDevice not in cache section](#data-flow-loradevice-not-in-loradevicecache)
+    - if the device is not in LoRaDeviceCache, we fetch the device twin -> see [main data flow section](#main-data-message-flow)
+    - assuming we have the device twin (in the cache or fetched) in the main data flow we send upstream, downstream and write the new twin -> see [main data flow section](#main-data-message-flow)
     - if a frame counter reset happened, we update the twin immediately -> see [handling of resets section](#handling-of-device-resets)
-    - in the main data flow we send upstream, downstream and write the new twin -> see [main data flow section](#main-data-message-flow)
 
 Version, LNS discovery and CUPS update endpoints are not affected by this issue.
 
 ## Possible solution
 
 The main idea is to give the current connection holder (as indicated from the Function), the edge to
-continue processing messages for this device. That gateway, will not be penalised on performance
-(other gateways will be).
+continue processing messages for this device. The performance of that gateway will not be impacted.
 
 A local (per LNS) in-memory dictionary will be used for that purpose to map DevEuis to a flag
-indicating whether the LNS is the preferred or not gateway.
+indicating whether the LNS is the preferred gateway or not.
 
 ### Handling of cache refresh
 
@@ -134,11 +133,16 @@ the data flow re-establish it if needs to be. Disadvantage is that the first dat
 #### Alternative
 
 - Do nothing and accept that a one-off connection stealing on the first Data message can happen.
+- We do not close the connection after a Join. When the first data message arrives the Function checks
+  somehow the preferred gateway for this device when it joined: if the data message comes from the
+  same gateway it is allowed to process the message. If not, we should inform the previously owning
+  LNS to drop the connection and allow the new LNS to process the message. This was not preferred as
+  it has more complexity for unclear results.  
 
-### Data flow: LoRaDevice not in LoRaDeviceCache
+### Main data message flow
 
-Currently, if LoRaDevice is not in the cache we search on the Function for all devices that have
-that DevAddr. Then we get all their twins which could result in a connection switch.
+Currently, if LoRaDevice is not in the LNS cache, we search on the Function for all devices that
+have that DevAddr. Then we get all their twins which could result in a connection switch.
 
 #### Decision
 
@@ -152,30 +156,9 @@ This is equivalent to how we [handle Join requests](#handling-of-join-requests)
   twin for this one on the LNS side. For this the Function should perform the Mic computation which
   means that we would need to send the payload to the cloud. This is a deal breaker for us.
 
-### Handling of ABP relax frame counter reset
+#### Further processing
 
-When we detect a device reset after a message, we currently save the twin immediately and then clear
-the Function cache. This twin write could result in a connection ping-pong.
-
-#### Decision
-
-- Clear the cache in the Function as we do currently.
-- The Function is changed to return if we are the losing LNS. If we are the losing one, we drop the message here,
-  mark ourselves as the losing gateway etc.
-- Otherwise we process message normally and at the end update the twin as we currently do.
-
-#### Alternative
-
-- Use the Function to do both operations: idea was discarded because of a connection switch
-  - update the device twin frame counter to 0. As frame counter is a reported property it needs to be
-    changed via a DeviceClient that would cause a connection switch.
-  - Clear or update the cache entry with frame counter down and up to 0.
-  - Returns the result to the LNS: whether it was the winning or losing one
-  - LNS reacts as described in the [main data flow section](#main-data-message-flow)
-
-### Main data message flow
-
-Assuming the topology:
+This section uses this topology:
 
 ```mermaid
 flowchart LR;
@@ -187,7 +170,8 @@ flowchart LR;
 
 where Device sends data message A and then B.
 
-Here is a rundown of what should happen, with changes marked in **bold**:
+Here is a rundown of what should happen assuming both LNSs have a fresh twin (via background refresh
+or via fetching it using DeviceGetter.GetDevice). Changes are marked in **bold**:
 
 1. Device sends first data message A.
 1. We assume that LNS1 gets the message first. **LNS1 checks against
@@ -223,10 +207,31 @@ Notes:
 
 - The FunctionBundler is not called in certain topologies e.g. when multiple LBSs are connected to the same LNS but these topologies are not relevant for the issue here).
 - For the main flow above we consider only frame counter B > frame counter A. Resets are covered in
-  [the reset section](#handling-of-abp-relax-frame-counter-reset). Resubmits (frame counter B ==
+  [the reset section](#handling-of-abp-relax-frame-counter-reset). Resubmits (when frame counter B ==
   frame counter A) are also a current issue and should be [addressed in this issue](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1468).
 
-#### Delay on the LNS itself or on the Function
+### Handling of ABP relax frame counter reset
+
+An special case on the main data flow is when we detect a device reset after a message. Currently we save the twin immediately and then clear
+the Function cache. This twin write could result in a connection ping-pong.
+
+#### Decision
+
+- We should first clear the cache in the Function.
+- The Function is changed to return if we are the losing LNS. If we are the losing one, we drop the message here,
+  mark ourselves as the losing gateway etc.
+- Otherwise we process message normally and at the end update the twin as we currently do.
+
+#### Alternative
+
+- Use the Function to do both operations: idea was discarded because of a connection switch
+  - update the device twin frame counter to 0. As frame counter is a reported property it needs to be
+    changed via a DeviceClient that would cause a connection switch.
+  - Clear or update the cache entry with frame counter down and up to 0.
+  - Returns the result to the LNS: whether it was the winning or losing one
+  - LNS reacts as described in the [main data flow section](#main-data-message-flow)
+  
+#### Should we delay on the LNS itself or on the Function?
 
 We consider using a delay on the Function rather than on the LNS itself. The disadvantages of that are:
 
@@ -239,6 +244,10 @@ A scenario when it's better that the Function implements the delay is the follow
 - LNS2 becomes in range and receives a message with a higher frame counter. It does not know that its
   not the winning LNS and contacts immediately the Function. The Function awards it the winning LNS
   and LNS1 loses the connection without having a chance to keep it.
+
+A potential advantage of delaying on the LNS is that we can dynamically (based on how long we took in
+previous steps) choose the delay amount before contacting the Function, so that we have higher
+chances of not missing the window.
 
 ##### Decision
 
