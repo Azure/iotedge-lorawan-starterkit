@@ -40,6 +40,9 @@ Drop strategy and will only document this limitation for potential users to be a
 - LNS performs operations on behalf of a device/sensor and a concentrator/station. However since a
 concentrator can be connected to at most one LNS, there is no ping-pong happening with operations on
 stations.
+
+- Class C direct downstream messages sent from the portal could result in a connection switch if
+they target a LNS other than the preferred one but we consider this as out of scope.
   
 ## In-scope
 
@@ -62,8 +65,6 @@ stations.
     - if the device is not in LoRaDeviceCache, we fetch the device twin -> see [LoRaDevice not in cache section](#data-flow-loradevice-not-in-loradevicecache)
     - if a frame counter reset happened, we update the twin immediately -> see [handling of resets section](#handling-of-device-resets)
     - in the main data flow we send upstream, downstream and write the new twin -> see [main data flow section](#main-data-message-flow)
-    - Class C direct downstream messages sent from the portal could result in a connection switch if
-    it targets a LNS other than the last connected one but we consider this as out of scope.
 
 Version, LNS discovery and CUPS update endpoints are not affected by this issue.
 
