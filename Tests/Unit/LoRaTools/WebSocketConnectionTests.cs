@@ -50,25 +50,25 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             var socket = SetupWebSocketConnection();
 
             // act
-            var result = await this.subject.HandleAsync(handler.Object, cts.Token);
+            _ = await this.subject.HandleAsync(handler.Object, cts.Token);
 
             // assert
             handler.Verify(h => h.Invoke(this.httpContextMock.Object, socket.Object, cts.Token), Times.Once);
         }
 
         [Fact]
-        public async Task HandleAsync_Closes_Socket_After_Handling()
+        public async Task HandleAsync_Handles_Premature_Connection_Close()
         {
             // arrange
             using var cts = new CancellationTokenSource();
-            var socket = SetupWebSocketConnection();
+            _ = SetupWebSocketConnection();
 
             // act + assert (does not throw)
             _ = await this.subject.HandleAsync((_, _, _) => throw new OperationCanceledException("Some exception", new WebSocketException(WebSocketError.ConnectionClosedPrematurely)), cts.Token);
         }
 
         [Fact]
-        public async Task HandleAsync_Handles_Premature_Connection_Close()
+        public async Task HandleAsync_Closes_Socket_After_Handling()
         {
             // arrange
             using var cts = new CancellationTokenSource();

@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServerDiscovery
             if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
 
             var webSocketConnection = new WebSocketConnection(httpContext, this.logger);
-            var response = await webSocketConnection.HandleAsync(async (ctx, s, ct) =>
+            _ = await webSocketConnection.HandleAsync(async (ctx, s, ct) =>
             {
                 await using var message = s.ReadTextMessages(cancellationToken);
                 if (!await message.MoveNextAsync())
