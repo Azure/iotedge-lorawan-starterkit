@@ -121,7 +121,7 @@ Problem
 
 - Join received from LNS1 and LNS2: LNS1 wins
 - First data message received only on LNS2, Function should inform LNS1 that it's the losing one
-  (information about the winning LNS needs to be "shared" between joins and data messages).
+  (information about the owning LNS needs to be "shared" between joins and data messages).
 
 #### Decision
 
@@ -233,25 +233,27 @@ the Function cache. This twin write could result in a connection ping-pong.
   
 #### Should we delay on the LNS itself or on the Function?
 
-We consider using a delay on the Function rather than on the LNS itself. The disadvantages of that are:
+We considered using a delay on the Function rather than on the LNS itself. We decided against this approach
+because of the following disadvantages:
 
-- Observability: potentially we are messing up the measurements of the Function duration.
+- Observability: potentially we are messing up the measurements of the Function duration for the
+  LNSs that are not owning the connection. Could be documented/worked-around.
 - Keeps the HTTP connection between the LNS-Function open for more time.
 
-A scenario when it's better that the Function implements the delay is the following:
+For the sake of completeness a scenario when it's better that the Function implements the delay is the following:
 
 - LNS1 is the preferred LNS. LNS2 is out of range.
 - LNS2 becomes in range and receives a message with a higher frame counter. It does not know that its
   not the winning LNS and contacts immediately the Function. The Function awards it the winning LNS
   and LNS1 loses the connection without having a chance to keep it.
 
+LNS2 would need to fetch the device twin so it is likely to lose the race to LNS1 but even if it
+does not we accept the possibility that there is potentially a one-off connection switch (but not a
+ping pong because LNS1 will stop retrying).
+
 A potential advantage of delaying on the LNS is that we can dynamically (based on how long we took in
 previous steps) choose the delay amount before contacting the Function, so that we have higher
 chances of not missing the window.
-
-##### Decision
-
-We accept that there potentially will be a one-off connection switch (but not a ping pong because LNS1 will stop retrying)
   
 #### Delay amount configuration
 
