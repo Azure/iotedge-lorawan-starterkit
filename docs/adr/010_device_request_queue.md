@@ -6,6 +6,38 @@
 
 ## Context
 
+### Problem
+When multiple LNS maintain a connection for a particular device, we experience
+an aggressive open/close (ping-pong) behavior triggered from the edge Hub. The
+edge hub is designed for network resiliency, and hence is maintaining the connection
+for the devices that opened one. We need to solve this problem to avoid
+scalability limitations and temporary issues. 
+Today, it is hard to determine when we can close a connection or not. There
+are various places that are requiring a connection. We have to suport a scenario
+where a C2D message is requesting the closure of a device connection. That
+handling, needs to know: 
+1. It can close the connection right now, without interfering with a currently
+running operation (like a message delivery - where we would potentially drop
+the message).
+1. The connection is kept closed and there are no operations starting at the
+same time racing for the connection.
+
+The following cases can trigger operations from different threads:
+1. Join message - `DeviceJoinLoader` is eventually loading the twins and 
+storing them back up.
+1. Data message - `DeviceLoaderSynchronizer` is loading the twins for multiple
+devices - based on the DevAddr and adds them to the cache
+1. C2D message that needs to be delivered can trigger a load if we don't
+have the device in the cache
+1. Cache refreshes can happen on a background thread for a device, causing
+the need for a connection.
+
+To have an understanding, when we can close a connection or even Dispose
+a device, we need to make sure there are no active consumers for it. 
+
+**note** we should consider the option to keep building on top of the connection
+locking/counting we have today.
+
 The LNS must maintain a single connection per device. There are a number of
 complex and concurrent code paths in the current solution that make it hard to
 reason about when a device connection is in use, when it's safe to open/close
