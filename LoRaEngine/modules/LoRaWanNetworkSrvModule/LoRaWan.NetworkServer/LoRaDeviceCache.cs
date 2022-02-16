@@ -46,63 +46,68 @@ namespace LoRaWan.NetworkServer
 
         private async Task RefreshCacheAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                try
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    await Task.Delay(this.options.ValidationInterval, cancellationToken);
-                }
-                catch (TaskCanceledException)
-                {
-                    break;
-                }
-
-                OnRefresh();
-
-                // remove any devices that were not seen for the configured amount of time
-
-                var now = DateTimeOffset.UtcNow;
-
-                lock (this.syncLock)
-                {
-                    var itemsToRemove = this.euiCache.Values.Where(x => now - x.LastSeen > this.options.MaxUnobservedLifetime);
-                    foreach (var expiredDevice in itemsToRemove)
-                    {
-                        _ = Remove(expiredDevice);
-                    }
-                }
-
-                // refresh the devices that were not refreshed within the configured time window
-
-                var itemsToRefresh = this.euiCache.Values.Where(x => now - x.LastUpdate > this.options.RefreshInterval).ToList();
-                var tasks = new List<Task>(itemsToRefresh.Count);
-
-                foreach (var item in itemsToRefresh)
-                {
-                    tasks.Add(RefreshDeviceAsync(item, cancellationToken));
-                }
-
-                while (tasks.Count > 0)
-                {
-                    var t = await Task.WhenAny(tasks);
-                    _ = tasks.Remove(t);
-
                     try
                     {
-                        await t;
+                        await Task.Delay(this.options.ValidationInterval, cancellationToken);
                     }
                     catch (TaskCanceledException)
                     {
-                        // ignore canceled task for now (so all remaining tasks can be awaited),
-                        // but outer loop will eventually break due to cancellation
+                        break;
                     }
-                    catch (LoRaProcessingException ex)
+
+                    OnRefresh();
+
+                    // remove any devices that were not seen for the configured amount of time
+
+                    var now = DateTimeOffset.UtcNow;
+
+                    lock (this.syncLock)
                     {
-                        // retry on next iteration
-                        this.logger.LogError(ex, "Failed to refresh device.");
+                        var itemsToRemove = this.euiCache.Values.Where(x => now - x.LastSeen > this.options.MaxUnobservedLifetime);
+                        foreach (var expiredDevice in itemsToRemove)
+                        {
+                            _ = Remove(expiredDevice);
+                        }
+                    }
+
+                    // refresh the devices that were not refreshed within the configured time window
+
+                    var itemsToRefresh = this.euiCache.Values.Where(x => now - x.LastUpdate > this.options.RefreshInterval).ToList();
+                    var tasks = new List<Task>(itemsToRefresh.Count);
+
+                    foreach (var item in itemsToRefresh)
+                    {
+                        tasks.Add(RefreshDeviceAsync(item, cancellationToken));
+                    }
+
+                    while (tasks.Count > 0)
+                    {
+                        var t = await Task.WhenAny(tasks);
+                        _ = tasks.Remove(t);
+
+                        try
+                        {
+                            await t;
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            // ignore canceled task for now (so all remaining tasks can be awaited),
+                            // but outer loop will eventually break due to cancellation
+                        }
+                        catch (LoRaProcessingException ex)
+                        {
+                            // retry on next iteration
+                            this.logger.LogError(ex, "Failed to refresh device.");
+                        }
                     }
                 }
             }
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "Exception when refreshing cache: {Exception}.", ex)))
+            { }
         }
 
         protected virtual async Task RefreshDeviceAsync(LoRaDevice device, CancellationToken cancellationToken)

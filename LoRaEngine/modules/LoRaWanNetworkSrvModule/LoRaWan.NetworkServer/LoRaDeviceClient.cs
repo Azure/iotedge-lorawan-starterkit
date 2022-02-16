@@ -27,24 +27,18 @@ namespace LoRaWan.NetworkServer
         private readonly Counter<int> twinLoadRequests;
         private DeviceClient deviceClient;
 
-        private readonly string primaryKey;
-
-        public LoRaDeviceClient(string connectionString, ITransportSettings[] transportSettings, string primaryKey, ILogger<LoRaDeviceClient> logger, Meter meter)
+        public LoRaDeviceClient(string connectionString, ITransportSettings[] transportSettings, ILogger<LoRaDeviceClient> logger, Meter meter)
         {
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or empty.", nameof(connectionString));
-            if (string.IsNullOrEmpty(primaryKey)) throw new ArgumentException($"'{nameof(primaryKey)}' cannot be null or empty.", nameof(primaryKey));
             if (meter is null) throw new ArgumentNullException(nameof(meter));
 
             this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
 
             this.connectionString = connectionString;
-            this.primaryKey = primaryKey;
             this.logger = logger;
             this.twinLoadRequests = meter.CreateCounter<int>(MetricRegistry.TwinLoadRequests);
             this.deviceClient = CreateDeviceClient();
         }
-
-        public bool IsMatchingKey(string primaryKey) => this.primaryKey == primaryKey;
 
         public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
