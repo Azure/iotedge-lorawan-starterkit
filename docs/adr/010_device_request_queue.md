@@ -55,8 +55,8 @@ when it's safe to open/close without affecting another operation in flight and
 how various device-related operations (such as refreshing from the twin) can
 work in isolation, deterministically and without race conditions. If a single
 queue could be maintained for all device-related operations then it would
-become easier to order those operations, reason about them and make they don't cause
-connections to be opened when an LNS has lost the race against another.
+become easier to order those operations, reason about them and make they don't
+cause connections to be opened when an LNS has lost the race against another.
 
 Several approaches were explored to understand the overall impact of
 refactoring, whether the changes to the current code base and design would be
