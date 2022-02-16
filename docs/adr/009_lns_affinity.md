@@ -33,7 +33,7 @@ topology we could scale up to 900 devices without issues.
 ## Out of scope
 
 - Deduplication strategies Mark and None: these strategies rely on multiple LNSs sending message.
-Potentially we could consider other work arounds for the IoT Hub limitation of a single connection
+Potentially we could consider other workarounds for the IoT Hub limitation of a single connection
 per device but we find it acceptable for the Mark and None strategies to not be as scalable as the
 Drop strategy and will only document this limitation for potential users to be aware of.
 
@@ -41,8 +41,13 @@ Drop strategy and will only document this limitation for potential users to be a
 concentrator can be connected to at most one LNS, there is no ping-pong happening with operations on
 stations.
 
-- Class C direct downstream messages sent from the portal could result in a connection switch if
-they target a LNS other than the preferred one but we consider this as out of scope.
+- Class C downstream messages using Direct Method:
+  - When we send a downstream message via the Function, the Function is responsible for choosing the
+    prererred gateway based on its existing knowledge of the preferred gateway. Due to that we can
+    be sure that we have the active connection and can therefore send downstream messages.
+  - Messages sent from the portal could result in a connection switch if
+they target a LNS other than the preferred one but we consider this as out of scope as we can not
+guard against this case of misuse.
   
 ## In-scope
 
@@ -52,7 +57,7 @@ they target a LNS other than the preferred one but we consider this as out of sc
   - Twin writes (updates/deletes)
   - D2C messages
   - C2D messages
-- Roaming leaf devices (that potentially become out-of-range from an LNS) are in scope.
+- Roaming leaf devices (that potentially become out-of-range from an LNS) are kept in scope.
 
 ### Problematic IoT Hub operations on behalf of edge devices
 
@@ -71,34 +76,41 @@ Version, LNS discovery and CUPS update endpoints are not affected by this issue.
 ## Possible solution
 
 The main idea is to give the current connection holder (as indicated from the Function), the edge to
-continue processing messages for this device. That gateway, will have 0 impact on performance.
+continue processing messages for this device. That gateway, will not be penalised on performance
+(other gateways will be).
 
 A local (per LNS) in-memory dictionary will be used for that purpose to map DevEuis to a flag
 indicating whether the LNS is the preferred or not gateway.
 
 ### Handling of cache refresh
 
-When we create the (singleton) instance of the NetworkServer.LoRaDeviceCache, we start a background periodical
-task to ensure the device twins for all the devices that connected to that LNS are kept fresh. In
-the case where we need to get a device twin, this could trigger a connection
-ping-pong.
+When we create the (singleton) instance of the NetworkServer.LoRaDeviceCache, we start a background
+periodical task to ensure the device twins for all the devices that connected to that LNS are kept
+fresh. In the case where we need to get a device twin, this could trigger a connection ping-pong.
 
-Ideally we would need to refresh the cache only if, after reaching out to the function,
-the LNS is marked as the "winning" one for device "XYZ".
+#### Decision
 
-It is marked as the "losing" gateway, we could adjust the LastSeen property but not actually refresh the entry in the cache.
+For now we don't make changes here and accept there will be a potential connection switching
+periodically (currently every 2 days if the device was not refreshed in the meantime). This will be
+revisited with either [this issue about the frame counter
+  drift](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1499)
+ (one of the solutions there is to fetch twin and close connection immediately) or [this issue
+ specific to cache refresh](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1505)
 
-When the next data message for "XYZ" comes in and an entry is in cache for such device, in the event that
-the Azure Function is marking our LNS as the new "winning" gateway, we have a stale twin in the
-cache that needs to be updated before processing.
+#### Alternatives
 
-Alternatives considered, but which are deemed not viable
-
-- Remove device entry from the cache when we are the losing gateway: if we were to do this, a "get
-  twin" operation would be triggered as soon as the next data message is coming in from the device in question.
-- Do nothing and accept there will be a potential connection switching periodically (currently every
-  2 days)
-- Remove the background refresh feature all-together.
+- Contact the Function to see whether we are the owning gateway. If we are, refresh the twin (and
+  keep the connection open). If we are not:
+  - We adjust the LastSeen property but not actually refresh the entry in the cache.
+    When the next data message for this devices comes in and an entry is in cache for such device, in the
+    event that the Azure Function is marking our LNS as the new "winning" gateway, we have a stale
+    twin in the cache that needs to be updated before validating the request (see [main data flow](#main-data-message-flow)).
+  - Alternatively, we remove device entry from the cache. This idea is discarded because if we were
+    to do this, a "get twin" operation would be triggered as soon as the next data message is coming
+    in from the device in question (for the resolution of devAddr).
+  - We still refresh the twin and close the connection immediately.
+- Remove the background refresh feature all-together: discarded because solutions are possible and
+  not overly complex.
 
 ### Handling of Join requests
 
@@ -106,49 +118,60 @@ Join requests in isolation currently do not have the connection stealing issue, 
 Function for the DevNonce check. If the current LNS is not the preferred gateway, it drops the
 message immediately.
 
-❔ We could also consider storing the information that we were the losing LNS locally on the LNS and
-handle "backoff" in the same way as in the Data flow. The advantages of doing that are:
+Problem
 
-- subsequent first Data (or future Join) requests do not switch the connection
-- same handling as in the Data flow (therefore easier to understand)
+- Join received from LNS1 and LNS2: LNS1 wins
+- First data message received only on LNS2, Function should inform LNS1 that it's the losing one
+  (information about the winning LNS needs to be "shared" between joins and data messages).
 
-Alternative is to do nothing and accept that a one-off connection stealing on the first Data message can happen.
+#### Decision
+
+We decide to go with the simpler solution of closing the connection immediately after a Join and let
+the data flow re-establish it if needs to be. Disadvantage is that the first data message is more likely
+  to miss the window due to having re-establish the connection.
+  LNS also stores locally that it was the losing LNS and delays on a future re-join or future data messages.
+
+#### Alternative
+
+- Do nothing and accept that a one-off connection stealing on the first Data message can happen.
 
 ### Data flow: LoRaDevice not in LoRaDeviceCache
 
 Currently, if LoRaDevice is not in the cache we search on the Function for all devices that have
-that DevAddr. Then we get their twins which could result in a connection switch.
+that DevAddr. Then we get all their twins which could result in a connection switch.
 
-We should instead ❔
+#### Decision
 
-- Amend DeviceGetter.GetDevice so that it returns info about whether we are the winning gateway
-  - if we are, it is safe to load the twin (we already have the connection)
-  - if we are not the winning LNS, we should not load the twin drop the message and mark ourselves as the losing gateway
-    - next time we get a message from that device we should artificially delay ourselves and check again on the Function.
-      - if this time we are the winning LNS we load the twin.
-      - if not we drop the message again.
-  - This would require moving the Mic computation on the Function (?) 
+After loading all the twins for the LoRaDevice(s), we close the connections immediately.
+This is equivalent to how we [handle Join requests](#handling-of-join-requests)
+
+#### Alternative
+
+- Currently the DeviceGetter.GetDevice returns a list of devices that match the provided DevAddr. We
+  considered changing the Function to return a single device instead of a list and only load the
+  twin for this one on the LNS side. For this the Function should perform the Mic computation which
+  means that we would need to send the payload to the cloud. This is a deal breaker for us.
 
 ### Handling of ABP relax frame counter reset
 
 When we detect a device reset after a message, we currently save the twin immediately and then clear
 the Function cache. This twin write could result in a connection ping-pong.
 
-We should instead:
+#### Decision
 
 - Clear the cache in the Function as we do currently.
 - The Function is changed to return if we are the losing LNS. If we are the losing one, we drop the message here,
   mark ourselves as the losing gateway etc.
 - Otherwise we process message normally and at the end update the twin as we currently do.
 
-Alternative considered but discarded because of a possible connection switch: use the Function to do
-both operations
+#### Alternative
 
-- update the device twin frame counter to 0 (as frame counter is a reported property it needs to be
-  changed via a DeviceClient that could cause a connection switch)
-- Clear or update the cache entry with frame counter down and up to 0.
-- Returns the result to the LNS: whether it was the winning or losing one
-- LNS reacts as described in the [main data flow section](#main-data-message-flow)
+- Use the Function to do both operations: idea was discarded because of a connection switch
+  - update the device twin frame counter to 0. As frame counter is a reported property it needs to be
+    changed via a DeviceClient that would cause a connection switch.
+  - Clear or update the cache entry with frame counter down and up to 0.
+  - Returns the result to the LNS: whether it was the winning or losing one
+  - LNS reacts as described in the [main data flow section](#main-data-message-flow)
 
 ### Main data message flow
 
@@ -164,58 +187,62 @@ flowchart LR;
 
 where Device sends data message A and then B.
 
-Here is a rundown of what should happen marked in **bold**:
+Here is a rundown of what should happen, with changes marked in **bold**:
 
 1. Device sends first data message A.
 1. We assume that LNS1 gets the message first. **LNS1 checks against
-   an in-memory dictionary DevEui -> flag** and since it has not seen this DevEui before (flag is
-   false) contacts the GetDevice.
+   its in-memory dictionary DevEui -> flag** and since it has not seen this DevEui before contacts the Function.
 1. The Function hasn't seen this DevEui either and therefore does not have an assigned LNS for it
   yet. LNS1 wins the race and gets immediately a response and processes the message upstream.
-1. LNS2 eventually receives message A, **checks its local dictionary** and also contacts the FunctionBundler since it does not have prior info about this DevEui.
+1. LNS2 eventually receives message A, **checks its local dictionary** and also contacts the
+   FunctionBundler immediately since it does not have prior info about this DevEui.
 1. The Function responds to LNS2 that it lost the race to process this message.
 1. Since deduplication strategy is Drop, LNS2 drops the message immediately, therefore no
-   connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. **LNS2 also notes in
+   connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. **LNS2 notes in
    memory that it was the losing gateway for this DevEui**.
-1. When message B gets send (with a higher frame counter), assuming that this time LNS2 gets it
+1. When message B gets send (with a higher frame counter*), assuming that this time LNS2 gets it
    first it **checks again its local dictionary it's not the preferred LNS for this device and
    therefore delays itself X ms before contacting the FunctionBundler**.
-   - Here we can *not* simply drop as LNS1 might not be available anymore (due to a crash, device not
-     in range etc).
+   - Here we do *not* want to simply drop the message as LNS1 might not be available anymore (due to
+     a crash, device not in range etc).
+   - Since it was the losing LNS previously it should **make sure that it operates on a fresh twin**
+     (especially regarding the frame counter) see also [background refresh section](#handling-of-cache-refresh)
 1. This delay gives LNS1 a time advantage to reach the FunctionBundler first and win the race again, failing
     back to the previous case of message A. The active connection stays with LNS1.
 1. If this delay is not sufficient for LNS1 to win the race, LNS2 will contact the FunctionBundler which
-   now awards LNS2 as the "winning" LNS. LNS2 **needs to first get the device twin** as it might have a
-   stale version and then can process message upstream. It also **removes the "losing flag" from its in-memory store**.
-2. **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this
-   device. The reason why we do this proactively is that otherwise its Edge Hub will try to
-   reconnect to IoT Hub even if there is no more messages picked up from LNS1 (out of range roaming
-   client). Additionally, **LNS1 would not need to refresh its LoRaDeviceCache anymore for this
-   device** (see [previous section about caching](#data-flow-loradevice-not-in-loradevicecache)).
-3. Direct method and should be retried (e.g. in memory retries or durable Function): direct
-   method could fail due to the module being or Edge Hub being down, other connectivity issue
-   etc. Is in memory retries sufficient here? ❔
-4. If LNS1 in the meantime gets message B and contacts the FunctionBundler, it will let it know
+   now awards LNS2 as the "winning" LNS. LNS2 can now process the message upstream. It also **removes the "losing flag" from its in-memory store**.
+1. **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this device.
+   - The reason why we do this proactively is that otherwise its Edge Hub will try to reconnect to IoT Hub even if there is no more messages picked up from LNS1 (out of range roaming client).
+  - For that we can use a C2D message to LNS. Alternative: direct method could be used here but
+    delivery will not be guaranteed then.
+1. If LNS1 in the meantime gets message B and contacts the FunctionBundler, it will let it know
    that it lost the race for this frame counter and must therefore drop the message, **mark
-   itself as the losing LNS and close the connection**.
+   itself as the losing LNS and close the connection if it hasn't done so yet**.
 
-NB: the FunctionBundler is not called in certain topologies e.g. when multiple LBSs are connected to
-the same LNS but these topologies are not relevant for the issue here).
+Notes:
 
-#### Handling Class C devices downstream direct messages
+- The FunctionBundler is not called in certain topologies e.g. when multiple LBSs are connected to the same LNS but these topologies are not relevant for the issue here).
+- For the main flow above we consider only frame counter B > frame counter A. Resets are covered in
+  [the reset section](#handling-of-abp-relax-frame-counter-reset). Resubmits (frame counter B ==
+  frame counter A) are also a current issue and should be [addressed in this issue](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1468).
 
-When we send a downstream message using Direct method via the Function, the Function is responsible
-for choosing the prererred gateway based on its existing knowledge of the preferred gateway. Due to
-that we can be sure that we have the active connection and can therefore send downstream messages.
+#### Delay on the LNS itself or on the Function
 
-#### Delay on the LNS itself or on the Function ❔
-
-What are the scenarios that it's better that the function implements the delay?
-
-Disadvantages of using a Task.Delay on the Function:
+We consider using a delay on the Function rather than on the LNS itself. The disadvantages of that are:
 
 - Observability: potentially we are messing up the measurements of the Function duration.
 - Keeps the HTTP connection between the LNS-Function open for more time.
+
+A scenario when it's better that the Function implements the delay is the following:
+
+- LNS1 is the preferred LNS. LNS2 is out of range.
+- LNS2 becomes in range and receives a message with a higher frame counter. It does not know that its
+  not the winning LNS and contacts immediately the Function. The Function awards it the winning LNS
+  and LNS1 loses the connection without having a chance to keep it.
+
+##### Decision
+
+We accept that there potentially will be a one-off connection switch (but not a ping pong because LNS1 will stop retrying)
   
 #### Delay amount configuration
 
