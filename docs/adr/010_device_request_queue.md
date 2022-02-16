@@ -23,7 +23,7 @@ The ping-pong can be pevented by electing a leader LNS for a device and
 announcing the decision to others using a C2D message. An LNS receiving such a
 message will then close that connection so that Edge Hub does't continue to
 maintain the connection in the open state through retires. The handling of the
-message needs to know: 
+message needs to know:
 
 1. It can close the connection right now, without interfering with a currently
    running operation (like a message delivery where the message could be
@@ -100,7 +100,7 @@ requested over the device conneciton. During this time, suppose that another
 device named B sharing the same `DevAddr` as device A but using ABP activation
 sends an uplink message to the LNS. Since the `DevAddr` is not in the cache,
 the LNS will issues a search request to the server function to return all
-devices using the `DevAddr` in question. 
+devices using the `DevAddr` in question.
 
 Another problem is the initialization of `LoRaDevice`, which is
 a two-step process: a _minimally initialized_ instance gets created first,
@@ -160,6 +160,5 @@ The chosen approach has the following benefits:
 The absence of an explicit queue could be make it more difficult for someone
 to understand the code and choices made if they are not familiar with the
 intricacies of how async-await operates.
-
 
 [#1480]: https://github.com/Azure/iotedge-lorawan-starterkit/issues/1479
