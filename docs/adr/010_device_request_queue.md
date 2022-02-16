@@ -6,46 +6,57 @@
 
 ## Context
 
-### Problem
-When multiple LNS maintain a connection for a particular device, we experience
-an aggressive open/close (ping-pong) behavior triggered from the edge Hub. The
-edge hub is designed for network resiliency, and hence is maintaining the connection
-for the devices that opened one. We need to solve this problem to avoid
-scalability limitations and temporary issues. 
-Today, it is hard to determine when we can close a connection or not. There
-are various places that are requiring a connection. We have to suport a scenario
-where a C2D message is requesting the closure of a device connection. That
-handling, needs to know: 
+LoRa devices, which can reach multiple LNS, pose an interesting challenge for
+Edge Hub since Edge Hub wasn't designed for devices competing for gateways.
+When a device connection is made to IoT Hub, Edge Hub continues to maintain
+that connection in the open state (for network resiliency) until explicitly
+closed. Moreover, IoT Hub allows maintining only a single connection per
+device. When another is opened, the existing one closed. If a device can reach
+multiple LNS then Edge Hub and IoT Hub begin an aggressive ping-pong of
+connections being opened and closed. In other words, as each LNS or Edge Hub
+tries to open a connection for the same device, IoT Hub closes the connection
+for the other. But then the other tries to re-open the connection and the
+ping-pong continues. This problem needs addressing to avoid scalability
+limitations.
+
+The ping-pong can be pevented by electing a leader LNS for a device and
+announcing the decision to others using a C2D message. An LNS receiving such a
+message will then close that connection so that Edge Hub does't continue to
+maintain the connection in the open state through retires. The handling of the
+message needs to know: 
+
 1. It can close the connection right now, without interfering with a currently
-running operation (like a message delivery - where we would potentially drop
-the message).
-1. The connection is kept closed and there are no operations starting at the
-same time racing for the connection.
+   running operation (like a message delivery where the message could be
+   potentially dropped).
+
+1. There are no operations starting around the same time that would cause it
+   to be opened again.
 
 The following cases can trigger operations from different threads:
-1. Join message - `DeviceJoinLoader` is eventually loading the twins and 
-storing them back up.
-1. Data message - `DeviceLoaderSynchronizer` is loading the twins for multiple
-devices - based on the DevAddr and adds them to the cache
-1. C2D message that needs to be delivered can trigger a load if we don't
-have the device in the cache
-1. Cache refreshes can happen on a background thread for a device, causing
-the need for a connection.
 
-To have an understanding, when we can close a connection or even Dispose
-a device, we need to make sure there are no active consumers for it. 
+- An OTAA join message; `DeviceJoinLoader` eventually loads the twins and
+  stores them back up.
 
-**note** we should consider the option to keep building on top of the connection
+- A data message; `DeviceLoaderSynchronizer` loads the twins for multiple
+  devices based on the `DevAddr` and adds them to the cache.
+
+- C2D message that needs to be delivered can trigger a load if the device is
+  not in the cache.
+
+- Cache refreshes can happen on a background thread for a device, causing the
+  need for a connection.
+
+**Note**: We should consider the option to keep building on top of the connection
 locking/counting we have today.
 
-The LNS must maintain a single connection per device. There are a number of
-complex and concurrent code paths in the current solution that make it hard to
-reason about when a device connection is in use, when it's safe to open/close
-without affecting another operation in flight and how various device-related
-operations (such as refreshing from the twin) can work in isolation,
-deterministically and without race conditions. If a single queue could be
-maintained for all device-related operations then it would become easier to
-order those operations and reason about them.
+There are a number of complex and concurrent code paths in the current
+solution that make it hard to reason about when a device connection is in use,
+when it's safe to open/close without affecting another operation in flight and
+how various device-related operations (such as refreshing from the twin) can
+work in isolation, deterministically and without race conditions. If a single
+queue could be maintained for all device-related operations then it would
+become easier to order those operations, reason about them and make they don't cause
+connections to be opened when an LNS has lost the race against another.
 
 Several approaches were explored to understand the overall impact of
 refactoring, whether the changes to the current code base and design would be
@@ -74,6 +85,33 @@ be summed up as follows:
    of a request has completed. This would just require regular use of tasks.
    Next, all `Task`-based operations on `LoRaDevice` could be naturally and
    _implicitly_ queued and then executed in a mutually exclusive manner.
+
+Another problem is that the joining of a device takes a separate execution
+path than the uplink message handling and because the two are not
+synchronized, there is room for race conditions between devices sharing the
+same `DevAddr` but using different activation methods (OTAA and ABP). To
+illustrate with an exampe, suppose an LNS has an empty device cache and a
+device named A with a `DevAddr` of 1 (from a previous join) using OTAA
+re-joins. Since the device is not in the cache, the LNS issues a request to
+the server function to search for the device on IoT Hub and obtain its primary
+key that's needed to open a device connection. Next, a `LoRaDevice` is
+_minimally initialzed_ for the purpose of loading its twin and the twin data
+requested over the device conneciton. During this time, suppose that another
+device named B sharing the same `DevAddr` as device A but using ABP activation
+sends an uplink message to the LNS. Since the `DevAddr` is not in the cache,
+the LNS will issues a search request to the server function to return all
+devices using the `DevAddr` in question. 
+
+Another problem is the initialization of `LoRaDevice`, which is
+a two-step process: a _minimally initialized_ instance gets created first,
+then its twin information is grabbed to make it fully ready for use by future
+requests. At that point, the `LoRaDevice` instance is put into the
+`LoRaDeviceCache` so that other requests can find it. While the twin
+information is being fetched, there is a small window during which another
+request could initiate the same process.
+
+, and when it is announced in a
+`LoRaDeviceCache`. This particularly The delay between the two can mean that .
 
 ## Decision
 
