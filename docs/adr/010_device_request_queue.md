@@ -86,33 +86,6 @@ be summed up as follows:
    Next, all `Task`-based operations on `LoRaDevice` could be naturally and
    _implicitly_ queued and then executed in a mutually exclusive manner.
 
-Another problem is that the joining of a device takes a separate execution
-path than the uplink message handling and because the two are not
-synchronized, there is room for race conditions between devices sharing the
-same `DevAddr` but using different activation methods (OTAA and ABP). To
-illustrate with an exampe, suppose an LNS has an empty device cache and a
-device named A with a `DevAddr` of 1 (from a previous join) using OTAA
-re-joins. Since the device is not in the cache, the LNS issues a request to
-the server function to search for the device on IoT Hub and obtain its primary
-key that's needed to open a device connection. Next, a `LoRaDevice` is
-_minimally initialzed_ for the purpose of loading its twin and the twin data
-requested over the device conneciton. During this time, suppose that another
-device named B sharing the same `DevAddr` as device A but using ABP activation
-sends an uplink message to the LNS. Since the `DevAddr` is not in the cache,
-the LNS will issues a search request to the server function to return all
-devices using the `DevAddr` in question.
-
-Another problem is the initialization of `LoRaDevice`, which is
-a two-step process: a _minimally initialized_ instance gets created first,
-then its twin information is grabbed to make it fully ready for use by future
-requests. At that point, the `LoRaDevice` instance is put into the
-`LoRaDeviceCache` so that other requests can find it. While the twin
-information is being fetched, there is a small window during which another
-request could initiate the same process.
-
-, and when it is announced in a
-`LoRaDeviceCache`. This particularly The delay between the two can mean that .
-
 ## Decision
 
 Use the approach to simplify the entire flow and processing of a message into
