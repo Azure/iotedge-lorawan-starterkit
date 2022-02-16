@@ -97,20 +97,19 @@ base).
 
 All operations for a particular device requiring the IoT hub connection, are
 requested to be executed on the `LoRaDevice` itself. The `LoRaDevice` becomes
-a singleton. This will ensure, we only have one operation acting on the 
-connection and allows us to have a deterministic way of adding a close 
-operation without affecting any other operations currently being processed. 
-The approach has a problem with the creation of the devices. 
-A `LoRaDevice` requires the twins to be valid. That operation can't be 
+a singleton. This will ensure, we only have one operation acting on the
+connection and allows us to have a deterministic way of adding a close
+operation without affecting any other operations currently being processed.
+The approach has a problem with the creation of the devices.
+A `LoRaDevice` requires the twins to be valid. That operation can't be
 synchronized on the `LoRaDevice` as that instance is technically not available.
 Since it is not available, there should be no operation coming in, or those
 should also trigger the load. A simple solution is to synchronize both
-load operations in the `LoRaDeviceRegistry` and make sure there is only 
-ever 1 operation loading the twins for a particular DevEui. 
+load operations in the `LoRaDeviceRegistry` and make sure there is only
+ever 1 operation loading the twins for a particular DevEui.
 We also concluded that closing the connection after initialization is the
 easiest approach to delay the connection ownership decision to after the
 first message has arrived.
-
 
 Based on a spike of the refactoring this would require, it seems plausible to
 achieve the refactoring of the actual code base within two weekly sprints. It
