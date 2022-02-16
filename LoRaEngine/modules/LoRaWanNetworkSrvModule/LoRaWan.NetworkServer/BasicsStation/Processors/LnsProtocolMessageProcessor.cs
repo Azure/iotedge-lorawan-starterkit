@@ -66,7 +66,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     Host = httpContext.Request.Host.Host
                 };
 
-                var discoveryService = new DiscoveryService(new ConstantLnsDiscovery(uriBuilder.Uri), this.loggerFactory.CreateLogger<DiscoveryService>());
+                var discoveryService = new DiscoveryService(new LocalLnsDiscovery(uriBuilder.Uri), this.loggerFactory.CreateLogger<DiscoveryService>());
                 await discoveryService.HandleDiscoveryRequestAsync(httpContext, cancellationToken);
                 return 0;
             });
