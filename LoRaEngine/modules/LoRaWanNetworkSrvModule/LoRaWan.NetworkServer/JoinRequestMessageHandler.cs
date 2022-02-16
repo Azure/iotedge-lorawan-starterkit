@@ -305,6 +305,10 @@ namespace LoRaWan.NetworkServer
                 request.NotifyFailed(loRaDevice, ex);
                 throw;
             }
+            finally
+            {
+                loRaDevice?.CloseConnection();
+            }
         }
     }
 }

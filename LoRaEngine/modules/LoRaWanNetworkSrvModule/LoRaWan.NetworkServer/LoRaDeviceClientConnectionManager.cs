@@ -109,6 +109,7 @@ namespace LoRaWan.NetworkServer
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
+            _ = EnsureConnected(loRaDevice);
             return this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection)
                  ? managedConnection.DeviceClient
                  : throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");

@@ -119,7 +119,7 @@ namespace LoRaWan.NetworkServer
         protected async Task CreateDevicesAsync(IReadOnlyList<IoTHubDeviceInfo> devices)
         {
             List<Task<LoRaDevice>> initTasks = null;
-            List<Task<bool>> refreshTasks = null;
+            List<Task> refreshTasks = null;
             var deviceCreated = 0;
 
             if (devices?.Count > 0)
@@ -141,10 +141,22 @@ namespace LoRaWan.NetworkServer
                             // device in cache from a previous join that we didn't complete
                             // (lost race with another gw) - refresh the twins now and keep it
                             // in the cache
-                            refreshTasks ??= new List<Task<bool>>();
-                            refreshTasks.Add(cachedDevice.InitializeAsync(this.configuration, CancellationToken.None));
+                            refreshTasks ??= new List<Task>();
+                            refreshTasks.Add(RefreshDevice(cachedDevice));
                             this.logger.LogDebug("refreshing device to fetch DevAddr");
                         }
+                    }
+                }
+
+                async Task RefreshDevice(LoRaDevice device)
+                {
+                    try
+                    {
+                        _ = await device.InitializeAsync(this.configuration, CancellationToken.None);
+                    }
+                    finally
+                    {
+                        device.CloseConnection();
                     }
                 }
 
@@ -153,7 +165,7 @@ namespace LoRaWan.NetworkServer
                     _ = await Task.WhenAll(initTasks);
                     if (refreshTasks != null)
                     {
-                        _ = await Task.WhenAll(refreshTasks);
+                        await Task.WhenAll(refreshTasks);
                     }
                 }
                 catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.DeviceInitializationFailed
@@ -173,6 +185,7 @@ namespace LoRaWan.NetworkServer
                             // run initializers
                             InitializeDevice(device);
                             deviceCreated++;
+                            device.CloseConnection();
                         }
                     }
                 }

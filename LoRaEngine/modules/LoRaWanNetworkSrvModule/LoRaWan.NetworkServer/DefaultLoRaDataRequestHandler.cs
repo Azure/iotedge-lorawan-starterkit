@@ -69,11 +69,6 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
             var timeWatcher = request.GetTimeWatcher();
-            using var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
-            if (deviceConnectionActivity == null)
-            {
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
-            }
 
             var loraPayload = (LoRaPayloadData)request.Payload;
             this.d2cPayloadSizeHistogram?.Record(loraPayload.Frmpayload.Length);
@@ -124,6 +119,7 @@ namespace LoRaWan.NetworkServer
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
             var stationEuiChanged = false;
+            IDisposable deviceConnectionActivity = null;
 
             try
             {
@@ -163,9 +159,12 @@ namespace LoRaWan.NetworkServer
 
                 if (useMultipleGateways)
                 {
+
                     // applying the correct deduplication
                     if (bundlerResult?.DeduplicationResult != null && !bundlerResult.DeduplicationResult.CanProcess)
                     {
+                        loRaDevice.IsConnectionOwner = false;
+                        loRaDevice.CloseConnection();
                         // duplication strategy is indicating that we do not need to continue processing this message
                         this.logger.LogDebug($"duplication strategy indicated to not process message: {payloadFcnt}");
                         return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
@@ -176,6 +175,13 @@ namespace LoRaWan.NetworkServer
                     // we must save class C devices regions in order to send c2d messages
                     if (loRaDevice.ClassType == LoRaDeviceClassType.C && request.Region.LoRaRegion != loRaDevice.LoRaRegion)
                         loRaDevice.UpdateRegion(request.Region.LoRaRegion, acceptChanges: false);
+                }
+
+                loRaDevice.IsConnectionOwner = true;
+                deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
+                if (deviceConnectionActivity == null)
+                {
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
                 }
 
                 #region FrameCounterDown
@@ -523,6 +529,7 @@ namespace LoRaWan.NetworkServer
                 {
                     this.logger.LogError($"The device properties are out of range. {ex.Message}");
                 }
+                deviceConnectionActivity?.Dispose();
             }
         }
 
@@ -807,6 +814,10 @@ namespace LoRaWan.NetworkServer
                 var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
                 if (bundler != null)
                 {
+                    if (!loRaDevice.IsConnectionOwner)
+                    {
+                        await Task.Delay(400);
+                    }
                     bundlerResult = await bundler.Execute();
                     if (bundlerResult.NextFCntDown.HasValue)
                     {
