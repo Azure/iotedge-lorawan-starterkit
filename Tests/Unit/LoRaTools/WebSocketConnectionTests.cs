@@ -75,7 +75,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             var socket = SetupWebSocketConnection();
 
             // act
-            var result = await this.subject.HandleAsync(NoopHandler, cts.Token);
+            _ = await this.subject.HandleAsync(NoopHandler, cts.Token);
 
             // assert
             socket.Verify(s => s.CloseAsync(WebSocketCloseStatus.NormalClosure, It.IsAny<string>(), cts.Token), Times.Once);
