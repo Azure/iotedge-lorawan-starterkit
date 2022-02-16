@@ -87,6 +87,8 @@ namespace LoRaWan.Tests.Common
         // The path of where the station binary is located on local pc
         public string BasicStationExecutablePath { get; set; } //i.e. "C:\\folder\\station"
 
+        public bool IsCorecellBasicStation { get; set; } //when set to true, tests will pick the corecell station.conf
+
         // The path where the SSH Private Key is located (needed for remotely copying needed files and/or executing commands)
         public string SshPrivateKeyPath { get; set; } //i.e. "~/.ssh/mykey" (on WSL, it's the path in the WSL environment)
 
@@ -104,7 +106,7 @@ namespace LoRaWan.Tests.Common
 
         public string CupsFwDigest { get; set; } //a base 64 encoded digest of the upgrade file
 
-        public string CupsBasicStationVersion { get; set; } //i.e. 2.0.5(corecell/std)
+        public string CupsBasicStationVersion { get; set; } //i.e. 2.0.6(corecell/std)
 
         public string CupsBasicStationPackage { get; set; } //i.e. 1.0.0-e2e
 

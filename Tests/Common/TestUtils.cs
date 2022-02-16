@@ -247,7 +247,8 @@ namespace LoRaWan.Tests.Common
             var scriptName = "start_basicsstation.sh";
             var startScript = new FileInfo(Path.Combine(loRaBasicsStationModulePath, scriptName));
             var helperFunctions = new FileInfo(Path.Combine(loRaBasicsStationModulePath, "helper-functions.sh"));
-            var stationConf = new FileInfo(Path.Combine(loRaBasicsStationModulePath, "station.conf"));
+            var stationConf = new FileInfo(Path.Combine(loRaBasicsStationModulePath, config.IsCorecellBasicStation ? "corecell.station.conf"
+                                                                                                                   : "sx1301.station.conf"));
 
             // Copying needed files in a local temporary path
             var localTempPath = Path.GetTempPath();
