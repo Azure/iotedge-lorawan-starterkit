@@ -21,6 +21,7 @@ namespace LoRaWan.NetworkServerDiscovery
         private const string NetworkTagName = "network";
         private const string CacheKey = "LnsUriByNetworkId";
 
+        private static readonly TimeSpan CacheItemExpiration = TimeSpan.FromHours(6);
         private static readonly IJsonReader<Uri> HostAddressReader =
             JsonReader.Object(JsonReader.Property("hostAddress", from s in JsonReader.String()
                                                                  select new Uri(s)));
@@ -84,8 +85,10 @@ namespace LoRaWan.NetworkServerDiscovery
             List<Uri> lnsUris;
             try
             {
-                lnsUris = await this.memoryCache.GetOrCreateAsync($"{CacheKey}:{networkId}", async _ =>
+                lnsUris = await this.memoryCache.GetOrCreateAsync($"{CacheKey}:{networkId}", async ce =>
                 {
+                    _ = ce.SetAbsoluteExpiration(CacheItemExpiration);
+
                     var query = this.registryManager.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'");
                     var results = new List<Uri>();
                     while (query.HasMoreResults)
