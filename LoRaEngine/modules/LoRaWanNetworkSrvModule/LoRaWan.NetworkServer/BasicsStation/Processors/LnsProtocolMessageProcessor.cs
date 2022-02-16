@@ -61,7 +61,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             {
                 var uriBuilder = new UriBuilder
                 {
-                    Scheme = httpContext.Request.Scheme,
+                    Scheme = httpContext.Request.IsHttps ? "wss" : "ws",
                     Port = httpContext.Request.Host.Port ?? 80,
                     Host = httpContext.Request.Host.Host
                 };

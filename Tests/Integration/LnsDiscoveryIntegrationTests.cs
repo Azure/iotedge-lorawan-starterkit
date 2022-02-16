@@ -68,7 +68,36 @@ namespace LoRaWan.Tests.Integration
             var result = await SendMessageAsync(webSocket, new { router = stationEui.AsUInt64 }, cancellationToken);
 
             // assert
-            Assert.Contains($"\"uri\":\"{hostAddresses.First()}/router-data/{stationEui}\"", result, StringComparison.OrdinalIgnoreCase);
+            AssertContainsHostAddress(new Uri(hostAddresses[0]), stationEui, result);
+        }
+
+        [Fact]
+        public async Task RouterInfo_Returns_Lns_Using_Round_Robin_On_Rerequest()
+        {
+            // arrange
+            var cancellationToken = CancellationToken.None;
+            var stationEui = new StationEui(1);
+            var hostAddresses = new[] { "ws://foo:5000", "wss://bar:5001" };
+            var client = this.subject.Server.CreateWebSocketClient() ?? throw new InvalidOperationException("Could not create client.");
+            SetupIotHubResponse(hostAddresses);
+
+            // act
+            var first = await ExecuteAsync();
+            var second = await ExecuteAsync();
+            var third = await ExecuteAsync();
+
+            async Task<string> ExecuteAsync()
+            {
+                var webSocket = await client.ConnectAsync(new Uri(this.subject.Server.BaseAddress, "router-info"), cancellationToken);
+                var result = await SendMessageAsync(webSocket, new { router = stationEui.AsUInt64 }, cancellationToken);
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal closure", cancellationToken);
+                return result;
+            }
+
+            // assert
+            AssertContainsHostAddress(new Uri(hostAddresses[0]), stationEui, first);
+            AssertContainsHostAddress(new Uri(hostAddresses[1]), stationEui, second);
+            AssertContainsHostAddress(new Uri(hostAddresses[0]), stationEui, third);
         }
 
         [Fact]
@@ -83,6 +112,11 @@ namespace LoRaWan.Tests.Integration
 
             // assert
             Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        private static void AssertContainsHostAddress(Uri hostAddress, StationEui stationEui, string actual)
+        {
+            Assert.Contains($"\"uri\":\"{hostAddress}router-data/{stationEui}\"", actual, StringComparison.OrdinalIgnoreCase);
         }
 
         private static async Task<string> SendMessageAsync(WebSocket webSocket, object payload, CancellationToken cancellationToken)
@@ -100,7 +134,8 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(new Twin { Tags = new TwinCollection(@"{""network"":""foo""}") });
 
             var queryMock = new Mock<IQuery>();
-            queryMock.SetupSequence(q => q.HasMoreResults).Returns(true).Returns(false);
+            var i = 0;
+            queryMock.Setup(q => q.HasMoreResults).Returns(() => i++ % 2 == 0);
             queryMock.Setup(q => q.GetNextAsJsonAsync()).ReturnsAsync(from ha in hostAddresses
                                                                       select JsonSerializer.Serialize(new { hostAddress = ha }));
             this.subject

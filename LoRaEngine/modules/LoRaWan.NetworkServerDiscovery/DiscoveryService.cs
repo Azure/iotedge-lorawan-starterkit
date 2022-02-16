@@ -62,8 +62,7 @@ namespace LoRaWan.NetworkServerDiscovery
                                               Id6.FormatOptions.FixedWidth);
 
                         var lnsUri = await this.lnsDiscovery.ResolveLnsAsync(stationEui, cancellationToken);
-                        var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
-                        var url = new Uri($"{scheme}://{lnsUri.Host}:{lnsUri.Port}{DataEndpointPath}/{stationEui}");
+                        var url = new Uri($"{lnsUri.Scheme}://{lnsUri.Host}:{lnsUri.Port}{DataEndpointPath}/{stationEui}");
                         var response = Write(w => WriteResponse(w, stationEui, muxs, url));
                         await s.SendAsync(response, WebSocketMessageType.Text,
                                           true, cancellationToken);
