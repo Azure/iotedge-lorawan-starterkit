@@ -89,7 +89,7 @@ namespace LoRaWan.NetworkServer
 
         public bool Supports32BitFCnt { get; set; }
 
-        public bool IsConnectionOwner { get; set; }
+        public bool? IsConnectionOwner { get; set; }
 
         private readonly ChangeTrackingProperty<DataRateIndex> dataRate = new(TwinProperty.DataRate);
 
@@ -942,7 +942,7 @@ namespace LoRaWan.NetworkServer
 
         public void CloseConnection(bool force = false)
         {
-            if (force || !IsConnectionOwner)
+            if (force || (IsConnectionOwner is { } isOwner && !isOwner))
             {
                 this.connectionManager?.Release(this);
             }

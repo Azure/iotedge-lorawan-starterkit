@@ -814,7 +814,7 @@ namespace LoRaWan.NetworkServer
                 var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
                 if (bundler != null)
                 {
-                    if (!loRaDevice.IsConnectionOwner)
+                    if (loRaDevice.IsConnectionOwner is { } isOwner && !isOwner)
                     {
                         await Task.Delay(400);
                     }
