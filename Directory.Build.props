@@ -26,6 +26,7 @@
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
       <ApplicationInsightsVersion>2.20.0</ApplicationInsightsVersion>
       <PrometheusNetVersion>5.0.2</PrometheusNetVersion>
+      <AzureIdentityVersion>1.5.0</AzureIdentityVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.5</DockerDotnetVersion>

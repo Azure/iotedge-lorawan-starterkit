@@ -4,8 +4,10 @@
 namespace LoRaWan.NetworkServerDiscovery
 {
     using System;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Identity;
     using LoRaTools;
     using LoRaTools.Utils;
     using LoRaWan;
@@ -16,6 +18,7 @@ namespace LoRaWan.NetworkServerDiscovery
     public sealed class TagBasedLnsDiscovery : ILnsDiscovery, IDisposable
     {
         private const string IotHubConnectionStringName = "IotHub";
+        private const string HostName = "IotHubHostName";
         private const string NetworkTagName = "network";
         private const string CacheKey = "LnsUriByNetworkId";
 
@@ -31,8 +34,28 @@ namespace LoRaWan.NetworkServerDiscovery
         private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
 
         public TagBasedLnsDiscovery(IMemoryCache memoryCache, IConfiguration configuration, ILogger<TagBasedLnsDiscovery> logger)
-            : this(memoryCache, RegistryManager.CreateFromConnectionString(configuration.GetConnectionString(IotHubConnectionStringName)), logger)
+            : this(memoryCache, InitializeRegistryManager(configuration, logger), logger)
         { }
+
+        private static RegistryManager InitializeRegistryManager(IConfiguration configuration, ILogger logger)
+        {
+            var iotHubConnectionString = configuration.GetConnectionString(IotHubConnectionStringName);
+            if (!string.IsNullOrEmpty(iotHubConnectionString))
+            {
+                logger.LogInformation("Using connection string-based auth for IoT Hub.");
+                return RegistryManager.CreateFromConnectionString(iotHubConnectionString);
+            }
+            else
+            {
+                var hostName = configuration.GetValue<string>(HostName);
+
+                if (string.IsNullOrEmpty(hostName))
+                    throw new InvalidOperationException($"Specify either 'ConnectionStrings__{IotHubConnectionStringName}' or '{HostName}'.");
+
+                logger.LogInformation("Using managed identity-based auth for IoT Hub.");
+                return RegistryManager.Create(hostName, new ManagedIdentityCredential());
+            }
+        }
 
         internal TagBasedLnsDiscovery(IMemoryCache memoryCache, RegistryManager registryManager, ILogger<TagBasedLnsDiscovery> logger)
         {
