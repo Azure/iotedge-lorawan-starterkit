@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServerDiscovery
             var iotHubConnectionString = configuration.GetConnectionString(IotHubConnectionStringName);
             if (!string.IsNullOrEmpty(iotHubConnectionString))
             {
-                logger.LogInformation("Using connection string-based auth for IoT Hub.");
+                logger.LogInformation("Using connection string based auth for IoT Hub.");
                 return RegistryManager.CreateFromConnectionString(iotHubConnectionString);
             }
             else
@@ -53,7 +53,7 @@ namespace LoRaWan.NetworkServerDiscovery
                 if (string.IsNullOrEmpty(hostName))
                     throw new InvalidOperationException($"Specify either 'ConnectionStrings__{IotHubConnectionStringName}' or '{HostName}'.");
 
-                logger.LogInformation("Using managed identity-based auth for IoT Hub.");
+                logger.LogInformation("Using managed identity based auth for IoT Hub.");
                 return RegistryManager.Create(hostName, new ManagedIdentityCredential());
             }
         }
