@@ -46,7 +46,7 @@ var all = Enumerable.Range(1, maxArity)
                     .Select(n => n.ToString(CultureInfo.InvariantCulture))
                     .ToArray();
 
-for (var c = 2; c < maxArity; c++) {
+for (var c = 1; c < maxArity; c++) {
     var ns = all.Take(c);
     var ts = string.Join(", ", from n in ns select "T" + n);
     var vs = string.Join(", ", from n in ns select "v" + n);

@@ -145,7 +145,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                    {
                        _ = endpoints.MapMetrics();
 
-                       Map(HttpMethod.Get, LnsDiscovery.EndpointName,
+                       Map(HttpMethod.Get, ILnsDiscovery.EndpointName,
                            context => context.Request.Host.Port is BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort,
                            (ILnsProtocolMessageProcessor processor) => processor.HandleDiscoveryAsync);
 

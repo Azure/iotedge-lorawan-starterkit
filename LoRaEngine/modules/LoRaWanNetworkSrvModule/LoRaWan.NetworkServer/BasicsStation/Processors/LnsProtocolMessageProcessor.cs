@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 Port = httpContext.Request.Host.Port ?? 80,
                 Host = httpContext.Request.Host.Host
             };
-            var discoveryService = new DiscoveryService(new LnsDiscovery(uriBuilder.Uri), this.loggerFactory.CreateLogger<DiscoveryService>());
+            var discoveryService = new DiscoveryService(new ConstantLnsDiscovery(uriBuilder.Uri), this.loggerFactory.CreateLogger<DiscoveryService>());
             await discoveryService.HandleDiscoveryRequestAsync(httpContext, cancellationToken);
         }
 

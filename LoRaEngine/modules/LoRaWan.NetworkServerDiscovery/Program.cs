@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddSingleton<DiscoveryService>()
-                .AddSingleton(_ => new LnsDiscovery(new Uri("https://aka.ms")));
+                .AddSingleton<ILnsDiscovery, TagBasedLnsDiscovery>();
 
 var app = builder.Build();
 
@@ -18,7 +18,7 @@ var app = builder.Build();
 
 app.UseWebSockets();
 
-app.MapGet(LnsDiscovery.EndpointName, (DiscoveryService discoveryService, HttpContext httpContext, CancellationToken cancellationToken) =>
+app.MapGet(ILnsDiscovery.EndpointName, (DiscoveryService discoveryService, HttpContext httpContext, CancellationToken cancellationToken) =>
     discoveryService.HandleDiscoveryRequestAsync(httpContext, cancellationToken));
 
 app.Run();

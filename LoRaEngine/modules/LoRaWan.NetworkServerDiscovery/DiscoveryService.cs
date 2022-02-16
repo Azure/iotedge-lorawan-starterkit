@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServerDiscovery
     internal sealed class DiscoveryService
     {
         private const string DataEndpointPath = "/router-data";
-        private readonly LnsDiscovery lnsDiscovery;
+        private readonly ILnsDiscovery lnsDiscovery;
         private readonly ILogger<DiscoveryService> logger;
 
         internal static readonly IJsonReader<StationEui> QueryReader =
@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServerDiscovery
                                            ? Id6.TryParse(s, out var id6) ? new StationEui(id6) : throw new JsonException()
                                            : Hexadecimal.TryParse(s, out ulong hhd, '-') ? new StationEui(hhd) : throw new JsonException())));
 
-        public DiscoveryService(LnsDiscovery lnsDiscovery, ILogger<DiscoveryService> logger)
+        public DiscoveryService(ILnsDiscovery lnsDiscovery, ILogger<DiscoveryService> logger)
         {
             this.lnsDiscovery = lnsDiscovery;
             this.logger = logger;
