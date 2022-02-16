@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
     using LoRaWan.NetworkServerDiscovery;
     using Xunit;
 
-    public class LnsServiceJsonTests
+    public class DiscoveryServiceJsonTests
     {
         [Theory]
         [InlineData(@"{ ""router"": ""b827:ebff:fee1:e39a"" }")]

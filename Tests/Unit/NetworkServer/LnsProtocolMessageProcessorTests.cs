@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Linq;
-    using System.Net.NetworkInformation;
+    using System.Net;
     using System.Net.WebSockets;
     using System.Text;
     using System.Threading;
@@ -16,6 +16,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
+    using LoRaWan.NetworkServerDiscovery;
+    using LoRaWan.Tests.Unit.NetworkServerDiscovery;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
@@ -142,7 +144,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // this is needed for logging the Basic Station (caller) remote ip address
             var connectionInfo = new Mock<ConnectionInfo>();
-            connectionInfo.Setup(c => c.RemoteIpAddress).Returns(System.Net.IPAddress.Loopback);
+            connectionInfo.Setup(c => c.RemoteIpAddress).Returns(IPAddress.Loopback);
             httpContextMock.Setup(m => m.Connection).Returns(connectionInfo.Object);
 
             // act and assert
@@ -189,23 +191,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // mocking localIpAddress
             var connectionInfoMock = new Mock<ConnectionInfo>();
-            // this is going to select the network interface with most bytes received / sent
-            // this should correspond to the real ethernet/wifi interface on the machine
-            var firstNic = isValidNic ? NetworkInterface.GetAllNetworkInterfaces()
-                                                        .OrderByDescending(x => x.GetIPv4Statistics().BytesReceived + x.GetIPv4Statistics().BytesSent)
-                                                        .FirstOrDefault()
-                                      : null;
-            if (firstNic is not null)
-            {
-                var firstNicIp = firstNic.GetIPProperties().UnicastAddresses.First().Address;
-                connectionInfoMock.SetupGet(ci => ci.LocalIpAddress).Returns(firstNicIp);
-                this.httpContextMock.Setup(h => h.Connection).Returns(connectionInfoMock.Object);
-            }
-            else
-            {
-                connectionInfoMock.SetupGet(ci => ci.LocalIpAddress).Returns(new System.Net.IPAddress(new byte[] { 192, 168, 1, 10 }));
-                this.httpContextMock.Setup(h => h.Connection).Returns(connectionInfoMock.Object);
-            }
+            var nic = isValidNic ? DiscoveryServiceTests.GetMostUsedNic() : null;
+            var ip = isValidNic ? nic?.GetIPProperties().UnicastAddresses.First().Address : new IPAddress(new byte[] { 192, 168, 1, 10 });
+            _ = connectionInfoMock.SetupGet(ci => ci.LocalIpAddress).Returns(ip);
+            this.httpContextMock.Setup(h => h.Connection).Returns(connectionInfoMock.Object);
 
             var mockHttpRequest = new Mock<HttpRequest>();
             mockHttpRequest.SetupGet(x => x.Host).Returns(new HostString("localhost", 1234));
@@ -231,7 +220,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                sentEnd = end;
                            });
 
-            var muxs = Id6.Format(firstNic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
+            var muxs = Id6.Format(nic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
             var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B827EBFFFEE1E39A""}}";
 
             // act

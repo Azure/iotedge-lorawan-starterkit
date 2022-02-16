@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.NetworkServer
+namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
 {
     using System;
     using System.Net.NetworkInformation;
-    using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServerDiscovery;
     using Xunit;
 
     public class PhysicalAddressExtensionsTests
