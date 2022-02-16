@@ -10,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddSingleton<DiscoveryService>()
-                .AddSingleton<ILnsDiscovery, TagBasedLnsDiscovery>();
+                .AddSingleton<ILnsDiscovery, TagBasedLnsDiscovery>()
+                .AddMemoryCache();
 
 var app = builder.Build();
 

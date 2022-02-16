@@ -10,26 +10,33 @@ namespace LoRaWan.NetworkServerDiscovery
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Azure.Devices;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Configuration;
 
-    public sealed class TagBasedLnsDiscovery : ILnsDiscovery
+    public sealed class TagBasedLnsDiscovery : ILnsDiscovery, IDisposable
     {
         private const string IotHubConnectionStringName = "IotHub";
         private const string NetworkTagName = "network";
+        private const string CacheKey = "LnsUriByNetworkId";
 
         private static readonly IJsonReader<Uri> HostAddressReader =
             JsonReader.Object(JsonReader.Property("hostAddress", from s in JsonReader.String()
                                                                  select new Uri(s)));
 
         private readonly ILogger<TagBasedLnsDiscovery> logger;
+        private readonly IMemoryCache memoryCache;
         private readonly RegistryManager registryManager;
+        private readonly Dictionary<StationEui, Uri> lastLnsUriByStationId = new();
+        private readonly object lastLnsUriByStationIdLock = new();
+        private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
 
-        public TagBasedLnsDiscovery(IConfiguration configuration, ILogger<TagBasedLnsDiscovery> logger)
-            : this(RegistryManager.CreateFromConnectionString(configuration.GetConnectionString(IotHubConnectionStringName)), logger)
+        public TagBasedLnsDiscovery(IMemoryCache memoryCache, IConfiguration configuration, ILogger<TagBasedLnsDiscovery> logger)
+            : this(memoryCache, RegistryManager.CreateFromConnectionString(configuration.GetConnectionString(IotHubConnectionStringName)), logger)
         { }
 
-        internal TagBasedLnsDiscovery(RegistryManager registryManager, ILogger<TagBasedLnsDiscovery> logger)
+        internal TagBasedLnsDiscovery(IMemoryCache memoryCache, RegistryManager registryManager, ILogger<TagBasedLnsDiscovery> logger)
         {
+            this.memoryCache = memoryCache;
             this.registryManager = registryManager;
             this.logger = logger;
         }
@@ -43,18 +50,45 @@ namespace LoRaWan.NetworkServerDiscovery
             if (networkId.Any(n => !char.IsLetterOrDigit(n)))
                 throw new LoRaProcessingException("Network ID may not be empty and only contain alphanumeric characters.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
 
-            var query = this.registryManager.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'");
-            var results = new List<Uri>();
-            while (query.HasMoreResults)
+            // Semaphore over all cache operations.
+            // Once the LNS are loaded by network ID, these operations should return immediately.
+            // We wait on the semaphore to avoid having two concurrent requests to the registry for the same network ID.
+            await this.cacheSemaphore.WaitAsync(cancellationToken);
+
+            List<Uri> lnsUris;
+            try
             {
-                var matches = await query.GetNextAsJsonAsync();
-                results.AddRange(matches.Select(hostAddressInfo => HostAddressReader.Read(hostAddressInfo)));
+                lnsUris = await this.memoryCache.GetOrCreateAsync($"{CacheKey}:{networkId}", async _ =>
+                {
+                    var query = this.registryManager.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'");
+                    var results = new List<Uri>();
+                    while (query.HasMoreResults)
+                    {
+                        var matches = await query.GetNextAsJsonAsync();
+                        results.AddRange(matches.Select(hostAddressInfo => HostAddressReader.Read(hostAddressInfo)));
+                    }
+
+                    // Also cache if no LNS URIs are found for the given network.
+                    // This makes sure that rogue LBS do not cause too many registry operations.
+                    return results;
+                });
+            }
+            finally
+            {
+                _ = this.cacheSemaphore.Release();
             }
 
-            if (results.Count == 0)
+            if (lnsUris.Count == 0)
                 throw new LoRaProcessingException($"No LNS found in network '{networkId}'.", LoRaProcessingErrorCode.LnsDiscoveryFailed);
 
-            return results.First();
+            lock (this.lastLnsUriByStationIdLock)
+            {
+                var next = this.lastLnsUriByStationId.TryGetValue(stationEui, out var lastLnsUri) ? lnsUris[(lnsUris.FindIndex(u => u == lastLnsUri) + 1) % lnsUris.Count] : lnsUris[0];
+                this.lastLnsUriByStationId[stationEui] = next;
+                return next;
+            }
         }
+
+        public void Dispose() => this.cacheSemaphore.Dispose();
     }
 }
