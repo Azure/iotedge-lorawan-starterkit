@@ -56,39 +56,27 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
-        internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
-                                                                     Func<HttpContext, WebSocket, CancellationToken, Task> handler,
-                                                                     CancellationToken cancellationToken)
-        {
-            var webSocketConnection = new WebSocketConnection(httpContext, this.logger);
+        public Task HandleDiscoveryAsync(HttpContext httpContext, CancellationToken cancellationToken) =>
+            ExecuteWithExceptionHandlingAsync(async () =>
+            {
+                var uriBuilder = new UriBuilder
+                {
+                    Scheme = httpContext.Request.Scheme,
+                    Port = httpContext.Request.Host.Port ?? 80,
+                    Host = httpContext.Request.Host.Host
+                };
 
-            try
-            {
-                return await webSocketConnection.HandleAsync(handler, cancellationToken);
-            }
-            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex),
-                                                                    () => this.unhandledExceptionCount?.Add(1)))
-            {
-                throw;
-            }
-        }
-
-        public async Task HandleDiscoveryAsync(HttpContext httpContext, CancellationToken cancellationToken)
-        {
-            var uriBuilder = new UriBuilder
-            {
-                Scheme = httpContext.Request.Scheme,
-                Port = httpContext.Request.Host.Port ?? 80,
-                Host = httpContext.Request.Host.Host
-            };
-            var discoveryService = new DiscoveryService(new ConstantLnsDiscovery(uriBuilder.Uri), this.loggerFactory.CreateLogger<DiscoveryService>());
-            await discoveryService.HandleDiscoveryRequestAsync(httpContext, cancellationToken);
-        }
+                var discoveryService = new DiscoveryService(new ConstantLnsDiscovery(uriBuilder.Uri), this.loggerFactory.CreateLogger<DiscoveryService>());
+                await discoveryService.HandleDiscoveryRequestAsync(httpContext, cancellationToken);
+                return 0;
+            });
 
         public Task HandleDataAsync(HttpContext httpContext, CancellationToken cancellationToken) =>
-            ProcessIncomingRequestAsync(httpContext,
-                                        (httpContext, socket, ct) => InternalHandleDataAsync(httpContext.Request.RouteValues, socket, ct),
-                                        cancellationToken);
+            ExecuteWithExceptionHandlingAsync(async () =>
+            {
+                var webSocketConnection = new WebSocketConnection(httpContext, this.logger);
+                return await webSocketConnection.HandleAsync((httpContext, socket, ct) => InternalHandleDataAsync(httpContext.Request.RouteValues, socket, ct), cancellationToken);
+            });
 
         internal async Task InternalHandleDataAsync(RouteValueDictionary routeValues, WebSocket socket, CancellationToken cancellationToken)
         {
@@ -210,6 +198,19 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     break;
                 default:
                     throw new SwitchExpressionException();
+            }
+        }
+
+        private async Task<T> ExecuteWithExceptionHandlingAsync<T>(Func<Task<T>> action)
+        {
+            try
+            {
+                return await action();
+            }
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, "An exception occurred while processing requests: {Exception}.", ex),
+                                                                    () => this.unhandledExceptionCount?.Add(1)))
+            {
+                throw;
             }
         }
 
