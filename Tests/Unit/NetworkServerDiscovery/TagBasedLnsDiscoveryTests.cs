@@ -163,6 +163,22 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
             Assert.Contains(result, LnsUris.Select(u => new Uri(u)));
         }
 
+        [Fact]
+        public async Task ResolveLnsAsync_Caches_Station_Network()
+        {
+            // arrange
+            const string networkId = "foo";
+            SetupLbsTwinResponse(StationEui, networkId);
+            SetupIotHubQueryResponse(networkId, LnsUris);
+
+            // act
+            _ = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
+            _ = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
+
+            // assert
+            this.registryManagerMock.Verify(rm => rm.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
         private void SetupLbsTwinResponse(StationEui stationEui, string networkId)
         {
             this.registryManagerMock
