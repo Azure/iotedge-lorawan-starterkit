@@ -62,9 +62,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 var uriBuilder = new UriBuilder
                 {
                     Scheme = httpContext.Request.IsHttps ? "wss" : "ws",
-                    Port = httpContext.Request.Host.Port ?? 80,
                     Host = httpContext.Request.Host.Host
                 };
+
+                if (httpContext.Request.Host.Port is { } somePort)
+                    uriBuilder.Port = somePort;
 
                 var discoveryService = new DiscoveryService(new LocalLnsDiscovery(uriBuilder.Uri), this.loggerFactory.CreateLogger<DiscoveryService>());
                 await discoveryService.HandleDiscoveryRequestAsync(httpContext, cancellationToken);

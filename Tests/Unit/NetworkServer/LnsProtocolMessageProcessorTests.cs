@@ -103,13 +103,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        public async Task InternalHandleDiscoveryAsync_ShouldSendProperJson(bool isHttps, bool isValidNic)
+        [InlineData(true, true, 1234)]
+        [InlineData(false, false, 1234)]
+        [InlineData(true, false, 1234)]
+        [InlineData(false, true, 1234)]
+        [InlineData(true, true, null)]
+        [InlineData(false, true, null)]
+        public async Task InternalHandleDiscoveryAsync_ShouldSendProperJson(bool isHttps, bool isValidNic, int? port)
         {
             // arrange
+            const string host = "localhost";
             InitializeConfigurationServiceMock();
 
             // mocking localIpAddress
@@ -120,7 +123,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.httpContextMock.Setup(h => h.Connection).Returns(connectionInfoMock.Object);
 
             var mockHttpRequest = new Mock<HttpRequest>();
-            mockHttpRequest.SetupGet(x => x.Host).Returns(new HostString("localhost", 1234));
+            mockHttpRequest.SetupGet(x => x.Host).Returns(port is { } somePort ? new HostString(host, somePort) : new HostString(host));
             mockHttpRequest.SetupGet(x => x.IsHttps).Returns(isHttps);
             mockHttpRequest.SetupGet(x => x.Scheme).Returns("ws");
             this.httpContextMock.Setup(h => h.Request).Returns(mockHttpRequest.Object);
@@ -144,7 +147,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                            });
 
             var muxs = Id6.Format(nic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
-            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B827EBFFFEE1E39A""}}";
+            var portString = port is { } somePortPrime ? $":{somePortPrime}" : string.Empty;
+            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://{host}{portString}{BasicsStationNetworkServer.DataEndpoint}/B827EBFFFEE1E39A""}}";
 
             // act
             await this.lnsMessageProcessorMock.HandleDiscoveryAsync(this.httpContextMock.Object, CancellationToken.None);
