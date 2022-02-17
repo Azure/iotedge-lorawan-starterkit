@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Integration
     using Xunit;
     using Xunit.Abstractions;
 
-    public class ConnectionAffinityIntegrationTests : MessageProcessorTestBase
+    public class LoRaDataRequestHandlerConnectionAffinityIntegrationTests : MessageProcessorTestBase
     {
         private readonly MemoryCache cache;
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
@@ -24,11 +24,11 @@ namespace LoRaWan.Tests.Integration
         private readonly SimulatedDevice simulatedABPDevice;
         private readonly Mock<LoRaDevice> deviceMock;
 
-        public ConnectionAffinityIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        public LoRaDataRequestHandlerConnectionAffinityIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             this.cache = new MemoryCache(new MemoryCacheOptions());
             this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
-            var concentratorDeduplication = new ConcentratorDeduplication(cache, this.testOutputLoggerFactory.CreateLogger<IConcentratorDeduplication>());
+            var concentratorDeduplication = new ConcentratorDeduplication(this.cache, this.testOutputLoggerFactory.CreateLogger<IConcentratorDeduplication>());
 
             this.frameCounterStrategyMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>();
             this.frameCounterProviderMock = new Mock<ILoRaDeviceFrameCounterUpdateStrategyProvider>();
@@ -47,13 +47,6 @@ namespace LoRaWan.Tests.Integration
                 CallBase = true
             };
 
-            _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
-            {
-                DeduplicationResult = new DeduplicationResult
-                { IsDuplicate = true, CanProcess = false },
-                NextFCntDown = null
-            });
-
             this.simulatedABPDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             this.deviceMock = new Mock<LoRaDevice>(
                 MockBehavior.Default,
@@ -67,20 +60,38 @@ namespace LoRaWan.Tests.Integration
             _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(this.deviceMock.Object.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
         }
 
-        [Fact]
-        public async Task Test()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Connection_Handling_Should_Depend_On_Deduplication_Result(bool keptConnection)
         {
             // arrange
             var message = this.simulatedABPDevice.CreateUnconfirmedDataUpMessage("payload", fcnt: 1);
             var loraRequest = CreateWaitableRequest(message);
             this.deviceMock.Object.IsConnectionOwner = true;
+            _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
+            {
+                DeduplicationResult = new DeduplicationResult
+                { CanProcess = keptConnection },
+                NextFCntDown = null
+            });
 
             // act
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(loraRequest, this.deviceMock.Object);
 
             // assert
-            Assert.False(this.deviceMock.Object.IsConnectionOwner);
-            this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Once);
+            Assert.Equal(keptConnection, this.deviceMock.Object.IsConnectionOwner);
+
+            if (keptConnection)
+            {
+                this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Never);
+                this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Once);
+            }
+            else
+            {
+                this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Once);
+                this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Never);
+            }
         }
 
         protected override void Dispose(bool disposing)
