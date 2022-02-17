@@ -5,13 +5,13 @@
 
 ## Context
 
-LoRa devices, which can reach multiple LNS, pose an interesting challenge for
+LoRa devices, which can reach multiple LNSs, pose an interesting challenge for
 Edge Hub since Edge Hub wasn't designed for devices competing for gateways.
 When a device connection is made to IoT Hub, Edge Hub continues to maintain
 that connection in the open state (for network resiliency) until explicitly
 closed. Moreover, IoT Hub allows maintining only a single connection per
-device. When another is opened, the existing one closed. If a device can reach
-multiple LNS then Edge Hub and IoT Hub begin an aggressive ping-pong of
+device. When another is opened, the existing one is closed. If a device can
+reach multiple LNSs then Edge Hub and IoT Hub begin an aggressive ping-pong of
 connections being opened and closed. In other words, as each LNS or Edge Hub
 tries to open a connection for the same device, IoT Hub closes the connection
 for the other. But then the other tries to re-open the connection and the
@@ -25,8 +25,8 @@ maintain the connection in the open state through retires. The handling of the
 message needs to know:
 
 - It can close the connection right now, without interfering with a currently
-  running operation (like a message delivery where the message could be
-  potentially dropped).
+  running operation, such as a message delivery where the message could be
+  potentially dropped.
 
 - There are no operations starting around the same time that would cause it to
   be opened again.
