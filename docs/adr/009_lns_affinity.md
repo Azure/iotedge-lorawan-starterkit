@@ -185,7 +185,7 @@ or via fetching it using DeviceGetter.GetDevice). Changes are marked in **bold**
    connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. **LNS2 updates its
    in memory state that it does not own the connection for this device**.
 1. When message B gets send (with a higher frame counter*), assuming that this time LNS2 gets it
-   first it **checks again its local dictionary it's not the preferred LNS for this device and
+   first it **checks again its local state that indicates it's not owning the connection for the device and
    therefore delays itself X ms before contacting the FunctionBundler**.
    - Here we do *not* want to simply drop the message as LNS1 might not be available anymore (due to
      a crash, device not in range etc).
