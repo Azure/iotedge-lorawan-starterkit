@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServerDiscovery
                 await using var message = s.ReadTextMessages(cancellationToken);
                 if (!await message.MoveNextAsync())
                 {
-                    this.logger.LogWarning($"Did not receive discovery request from station.");
+                    this.logger.LogWarning("Did not receive discovery request from station.");
                 }
                 else
                 {

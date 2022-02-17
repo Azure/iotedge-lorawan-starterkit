@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using LoRaWan;
 using LoRaWan.NetworkServerDiscovery;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +21,14 @@ var app = builder.Build();
 
 app.UseWebSockets();
 
-app.MapGet(ILnsDiscovery.EndpointName, (DiscoveryService discoveryService, HttpContext httpContext, CancellationToken cancellationToken) =>
-    discoveryService.HandleDiscoveryRequestAsync(httpContext, cancellationToken));
+app.MapGet(ILnsDiscovery.EndpointName, async (DiscoveryService discoveryService, HttpContext httpContext, ILogger<Program> logger, CancellationToken cancellationToken) =>
+{
+    try
+    {
+        await discoveryService.HandleDiscoveryRequestAsync(httpContext, cancellationToken);
+    }
+    catch (Exception ex) when (ExceptionFilterUtility.False(() => logger.LogError(ex, "Exception when executing discovery endpoint: '{Exception}'.", ex)))
+    { }
+});
 
 app.Run();
