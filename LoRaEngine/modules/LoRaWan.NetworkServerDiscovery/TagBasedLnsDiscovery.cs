@@ -102,6 +102,8 @@ namespace LoRaWan.NetworkServerDiscovery
                                          select uri);
                     }
 
+                    this.logger.LogInformation("Loaded {Count} LNS candidates for network '{NetworkId}'", results.Count, networkId);
+
                     // Also cache if no LNS URIs are found for the given network.
                     // This makes sure that rogue LBS do not cause too many registry operations.
                     return results;
