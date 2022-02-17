@@ -232,6 +232,8 @@ namespace LoRaWan.Tests.Integration
             Assert.True(request1.ProcessingSucceeded);
 
             await EnsureDisconnectedAsync(disconnectedEvent);
+            LoRaDeviceClient.Verify(x => x.Disconnect(), Times.Exactly(1));
+            LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(4));
 
             // sends unconfirmed message #2
             using var request2 = CreateWaitableRequest(simulatedDevice.CreateUnconfirmedDataUpMessage("2"));
@@ -242,7 +244,7 @@ namespace LoRaWan.Tests.Integration
             await EnsureDisconnectedAsync(disconnectedEvent);
 
             LoRaDeviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
-            LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
+            LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(8));
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
