@@ -135,16 +135,18 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
 
         private static (Mock<HttpContext>, Mock<WebSocket>) SetupWebSocketConnection(bool isHttps = false, bool notWebSocketRequest = false)
         {
+            var socketMock = new Mock<WebSocket>();
+
             var webSocketsManager = new Mock<WebSocketManager>();
             _ = webSocketsManager.SetupGet(wsm => wsm.IsWebSocketRequest).Returns(!notWebSocketRequest);
-            var socketMock = new Mock<WebSocket>();
             _ = webSocketsManager.Setup(wsm => wsm.AcceptWebSocketAsync()).ReturnsAsync(socketMock.Object);
+
+            var httpRequestMock = new Mock<HttpRequest>();
+            _ = httpRequestMock.SetupGet(ci => ci.IsHttps).Returns(isHttps);
 
             var httpContextMock = new Mock<HttpContext>();
             _ = httpContextMock.SetupGet(h => h.WebSockets).Returns(webSocketsManager.Object);
             _ = httpContextMock.SetupGet(h => h.Response).Returns(Mock.Of<HttpResponse>());
-            var httpRequestMock = new Mock<HttpRequest>();
-            _ = httpRequestMock.SetupGet(ci => ci.IsHttps).Returns(isHttps);
             _ = httpContextMock.SetupGet(h => h.Request).Returns(httpRequestMock.Object);
             _ = httpContextMock.SetupGet(h => h.Connection).Returns(Mock.Of<ConnectionInfo>());
 
