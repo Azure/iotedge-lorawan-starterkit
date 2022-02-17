@@ -10,6 +10,7 @@
     <PackageReference Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(ApplicationInsightsVersion)" />
     <PackageReference Include="Microsoft.Azure.Devices" Version="$(MicrosoftAzureDevicesVersion)" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="$(PrometheusNetVersion)" />
   </ItemGroup>
 
   <ItemGroup>
