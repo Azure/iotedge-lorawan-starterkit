@@ -10,11 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Configuration.AddJsonFile("appsettings.local.json", optional: true);
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
 builder.Services.AddSingleton<DiscoveryService>()
                 .AddSingleton<ILnsDiscovery, TagBasedLnsDiscovery>()
-                .AddMemoryCache();
+                .AddMemoryCache()
+                .AddApplicationInsightsTelemetry();
 
 var app = builder.Build();
 
