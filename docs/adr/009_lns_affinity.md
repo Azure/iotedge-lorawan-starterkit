@@ -205,7 +205,7 @@ or via fetching it using DeviceGetter.GetDevice). Changes are marked in **bold**
 
 Notes:
 
-- The FunctionBundler is not called in certain topologies e.g. when multiple LBSs are connected to the same LNS but these topologies are not relevant for the issue here).
+- The FunctionBundler is not called in certain topologies e.g. when multiple LBSs are connected to the same LNS but these topologies are not relevant for the issue here as they employ a single connection per device by design).
 - For the main flow above we consider only frame counter B > frame counter A. Resets are covered in
   [the reset section](#handling-of-abp-relax-frame-counter-reset). Resubmits (when frame counter B ==
   frame counter A) are also a current issue and should be [addressed in this issue](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1468).
