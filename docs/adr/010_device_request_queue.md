@@ -1,7 +1,6 @@
 # Device Request Queue
 
 - **Feature**: [#1480]
-- **Author(s)**: Atif Aziz
 - **Status**: Proposed
 
 ## Context
