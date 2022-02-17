@@ -20,8 +20,6 @@ COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/NOTICE.txt ./
 
 WORKDIR /build/LoRaEngine/modules
 COPY ["LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/LoRaWan.NetworkServerDiscovery.csproj", "LoRaWan.NetworkServerDiscovery/"]
-RUN dotnet restore "LoRaWan.NetworkServerDiscovery/LoRaWan.NetworkServerDiscovery.csproj"
-COPY ./LoRaEngine/modules/LoRaWan.NetworkServerDiscovery LoRaWan.NetworkServerDiscovery
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj", "LoRaWanNetworkSrvModule/"]
@@ -36,6 +34,9 @@ COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools LoraTools
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer LoRaWan.NetworkServer
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule LoRaWanNetworkSrvModule
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan LoRaWan
+
+WORKDIR /build/LoRaEngine/modules
+COPY ./LoRaEngine/modules/LoRaWan.NetworkServerDiscovery LoRaWan.NetworkServerDiscovery
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule
 
