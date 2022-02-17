@@ -829,7 +829,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.True(device.TryDisconnect());
 
-            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
+            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(3));
         }
 
         [Fact]
@@ -865,7 +865,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.True(device.TryDisconnect());
 
-            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
+            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(4));
             deviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
         }
 
