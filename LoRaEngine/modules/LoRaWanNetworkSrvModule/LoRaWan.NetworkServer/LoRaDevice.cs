@@ -952,7 +952,7 @@ namespace LoRaWan.NetworkServer
         {
             if (dispose)
             {
-                CloseConnection();
+                CloseConnection(dispose);
                 this.syncSave.Dispose();
             }
         }
