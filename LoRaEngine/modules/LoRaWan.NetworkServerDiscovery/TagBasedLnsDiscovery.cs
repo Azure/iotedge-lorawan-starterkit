@@ -84,6 +84,7 @@ namespace LoRaWan.NetworkServerDiscovery
             var reader = new TwinCollectionReader(twin.Tags, this.logger);
             var networkId = reader.ReadRequiredString(NetworkTagName);
 
+            // Protect against SQL injection.
             if (networkId.Any(n => !char.IsLetterOrDigit(n)))
                 throw new LoRaProcessingException("Network ID may not be empty and only contain alphanumeric characters.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
 
