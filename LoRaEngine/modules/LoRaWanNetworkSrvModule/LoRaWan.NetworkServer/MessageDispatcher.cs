@@ -6,9 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Diagnostics.Metrics;
     using LoRaTools.LoRaMessage;
-    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Abstractions;
 
     /// <summary>
     /// Message dispatcher.
