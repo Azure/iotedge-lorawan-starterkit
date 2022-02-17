@@ -395,21 +395,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             Assert.Equal("reader", ex.ParamName);
         }
 
-        private static readonly IJsonReader<int?> EmptyObjectReader =
-            JsonReader.Object<int?>();
-
-        [Theory]
-        [InlineData("{ str: 'foobar' }")]
-        [InlineData("{ num: 42, str: 'foobar' }")]
-        [InlineData("{ str: 'foobar', num: 42 }")]
-        [InlineData("{ str: 'FOOBAR', num: -42, str: 'foobar', num: 42 }")]
-        [InlineData("{ nums: [1, 2, 3], str: 'foobar', num: 42, obj: {} }")]
-        public void EmptyObject_With_Valid_Input(string json)
-        {
-            var result = EmptyObjectReader.Read(JsonUtil.Strictify(json));
-            Assert.Null(result);
-        }
-
         private static readonly IJsonReader<(ulong, string)> Object2Reader =
             JsonReader.Object(JsonReader.Property("num", JsonReader.UInt64(), (true, 0UL)),
                               JsonReader.Property("str", JsonReader.String()),

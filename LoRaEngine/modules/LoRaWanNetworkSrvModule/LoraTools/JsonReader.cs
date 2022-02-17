@@ -150,19 +150,6 @@ namespace LoRaTools
         /// Properties without a default value that are missing from the read JSON object will cause
         /// <see cref="JsonException"/> to be thrown.
         /// </remarks>
-        public static IJsonReader<T> Object<T>() =>
-            Object(NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
-                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
-                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
-                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
-                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
-                   NonProperty.Instance,
-                   (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => default(T));
-
-        /// <remarks>
-        /// Properties without a default value that are missing from the read JSON object will cause
-        /// <see cref="JsonException"/> to be thrown.
-        /// </remarks>
         public static IJsonReader<T> Object<T>(IJsonProperty<T> property) =>
             Object(property, NonProperty.Instance, NonProperty.Instance,
                    NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,

@@ -23,9 +23,10 @@ namespace LoRaWan.NetworkServerDiscovery
 
         private static readonly TimeSpan CacheItemExpiration = TimeSpan.FromHours(6);
         private static readonly IJsonReader<Uri?> HostAddressReader =
-            JsonReader.Either(JsonReader.Object(JsonReader.Property("hostAddress", from s in JsonReader.String()
-                                                                                   select new Uri(s))),
-                              JsonReader.Object<Uri?>());
+            JsonReader.Object(JsonReader.Property("hostAddress",
+                                                  from s in JsonReader.String()
+                                                  select string.IsNullOrEmpty(s) ? null : new Uri(s),
+                                                  (true, null)));
 
         private readonly ILogger<TagBasedLnsDiscovery> logger;
         private readonly IMemoryCache memoryCache;
