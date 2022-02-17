@@ -35,7 +35,6 @@ namespace LoRaWan.NetworkServerDiscovery
         private readonly Dictionary<StationEui, Uri> lastLnsUriByStationId = new();
         private readonly object lastLnsUriByStationIdLock = new();
         private readonly SemaphoreSlim lnsByNetworkCacheSemaphore = new SemaphoreSlim(1);
-        private readonly SemaphoreSlim networkByStationCacheSemaphore = new SemaphoreSlim(1);
 
         public TagBasedLnsDiscovery(IMemoryCache memoryCache, IConfiguration configuration, ILogger<TagBasedLnsDiscovery> logger)
             : this(memoryCache, InitializeRegistryManager(configuration, logger), logger)
@@ -71,13 +70,13 @@ namespace LoRaWan.NetworkServerDiscovery
         public async Task<Uri> ResolveLnsAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var twin =
-                await GetOrCreateInSeriesAsync($"{NetworkByStationCacheKey}:{stationEui}",
-                                               _ =>
-                                               {
-                                                   this.logger.LogInformation("Loaded twin for station '{Station}'", stationEui);
-                                                   return this.registryManager.GetTwinAsync(stationEui.ToString(), cancellationToken);
-                                               },
-                                               this.networkByStationCacheSemaphore, cancellationToken);
+                await GetOrCreateAsync($"{NetworkByStationCacheKey}:{stationEui}",
+                                       _ =>
+                                       {
+                                           this.logger.LogInformation("Loaded twin for station '{Station}'", stationEui);
+                                           return this.registryManager.GetTwinAsync(stationEui.ToString(), cancellationToken);
+                                       },
+                                       null, cancellationToken);
 
             if (twin is null)
                 throw new LoRaProcessingException($"Could not find twin for station '{stationEui}'", LoRaProcessingErrorCode.TwinFetchFailed);
@@ -88,7 +87,7 @@ namespace LoRaWan.NetworkServerDiscovery
             if (networkId.Any(n => !char.IsLetterOrDigit(n)))
                 throw new LoRaProcessingException("Network ID may not be empty and only contain alphanumeric characters.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
 
-            var lnsUris = await GetOrCreateInSeriesAsync(
+            var lnsUris = await GetOrCreateAsync(
                 $"{LnsByNetworkCacheKey}:{networkId}",
                 async _ =>
                 {
@@ -124,11 +123,15 @@ namespace LoRaWan.NetworkServerDiscovery
         }
 
         /// <summary>
-        /// Serializes all cache operations to avoid having two concurrent requests to the registry for the same operation.
+        /// Unifies all cache operations by setting the same absolute expiration on all cache entries.
+        /// By passing a semaphore it serializes all cache operations to avoid having two concurrent requests to the registry for the same operation.
         /// </summary>
-        private async Task<TItem> GetOrCreateInSeriesAsync<TItem>(string key, Func<ICacheEntry, Task<TItem>> factory, SemaphoreSlim semaphore, CancellationToken cancellationToken)
+        private async Task<TItem> GetOrCreateAsync<TItem>(string key, Func<ICacheEntry, Task<TItem>> factory, SemaphoreSlim? semaphore, CancellationToken cancellationToken)
         {
-            await semaphore.WaitAsync(cancellationToken);
+            if (semaphore is { } someSemaphore)
+            {
+                await someSemaphore.WaitAsync(cancellationToken);
+            }
 
             try
             {
@@ -140,14 +143,10 @@ namespace LoRaWan.NetworkServerDiscovery
             }
             finally
             {
-                _ = semaphore.Release();
+                _ = semaphore?.Release();
             }
         }
 
-        public void Dispose()
-        {
-            this.lnsByNetworkCacheSemaphore.Dispose();
-            this.networkByStationCacheSemaphore.Dispose();
-        }
+        public void Dispose() => this.lnsByNetworkCacheSemaphore.Dispose();
     }
 }
