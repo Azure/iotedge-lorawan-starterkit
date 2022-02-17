@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\LoRaWan.NetworkServerDiscovery\LoRaWan.NetworkServerDiscovery.csproj" />
     <ProjectReference Include="..\Logger\Logger.csproj" />
     <ProjectReference Include="..\LoraTools\LoRaTools.csproj" />
     <ProjectReference Include="..\LoRaWan\LoRaWan.csproj" />

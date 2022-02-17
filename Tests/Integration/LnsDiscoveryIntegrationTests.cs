@@ -15,6 +15,7 @@ namespace LoRaWan.Tests.Integration
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.NetworkServerDiscovery;
     using LoRaWan.NetworkServerDiscovery;
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.AspNetCore.TestHost;

@@ -12,12 +12,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading.Tasks;
     using Common;
     using global::LoRaTools.LoRaMessage;
+    using global::LoRaTools.NetworkServerDiscovery;
     using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
-    using LoRaWan.NetworkServerDiscovery;
-    using LoRaWan.Tests.Unit.NetworkServerDiscovery;
+    using LoRaWan.Tests.Unit.LoRaTools;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;

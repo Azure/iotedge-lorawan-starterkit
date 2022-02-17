@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
+namespace LoRaWan.Tests.Unit.LoRaTools
 {
     using System;
     using System.Text.Json;
     using global::LoRaTools;
+    using global::LoRaTools.NetworkServerDiscovery;
     using LoRaWan;
     using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServerDiscovery;
     using Xunit;
 
     public class DiscoveryServiceJsonTests

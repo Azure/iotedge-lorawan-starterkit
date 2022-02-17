@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.NetworkServerDiscovery;
+    using LoRaTools.NetworkServerDiscovery;
 
     public sealed class LocalLnsDiscovery : ILnsDiscovery
     {

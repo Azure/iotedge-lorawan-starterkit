@@ -1,15 +1,22 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServerDiscovery
+namespace LoRaTools.NetworkServerDiscovery
 {
     using System;
+    using System.IO;
+    using System.Linq;
     using System.Net.NetworkInformation;
     using System.Net.WebSockets;
     using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaWan;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
 
-    internal sealed class DiscoveryService
+    public sealed class DiscoveryService
     {
         private const string DataEndpointPath = "/router-data";
         private readonly ILnsDiscovery lnsDiscovery;

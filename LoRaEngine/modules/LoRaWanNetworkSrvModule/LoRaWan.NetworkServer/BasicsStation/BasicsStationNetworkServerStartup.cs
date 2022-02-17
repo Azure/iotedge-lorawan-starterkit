@@ -12,11 +12,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Logger;
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
+    using LoRaTools.NetworkServerDiscovery;
     using LoRaWan;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
-    using LoRaWan.NetworkServerDiscovery;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;

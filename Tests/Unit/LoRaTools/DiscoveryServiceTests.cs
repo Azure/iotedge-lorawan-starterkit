@@ -3,7 +3,7 @@
 
 #nullable enable
 
-namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
+namespace LoRaWan.Tests.Unit.LoRaTools
 {
     using System;
     using System.Linq;
@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.NetworkServerDiscovery;
+    using global::LoRaTools.NetworkServerDiscovery;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
