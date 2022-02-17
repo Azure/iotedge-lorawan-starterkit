@@ -17,8 +17,6 @@ flowchart LR;
   Device-->LBS2-->LNS2--2-->IoTHub;
 ```
 
-where LNS 1 and 2 make use of their IoT Edge Hub modules to connect to IoT Hub.
-
 IoT Hub limits active connections that an IoT device can have to one. Assuming that connection 1 is
 already open and a message from LNS2 arrives, IoT Hub will close connection 1 and open connection 2.
 Edge Hub on LNS1, will detect this and assume it's a transient network issue, therefore will try
@@ -41,14 +39,6 @@ Drop strategy and will only document this limitation for potential users to be a
 concentrator can be connected to at most one LNS, there is no ping-pong happening with operations on
 stations.
 
-- Class C downstream messages using Direct Method:
-  - When we send a downstream message via the Function, the Function is responsible for choosing the
-    prererred gateway based on its existing knowledge of the preferred gateway. Due to that we can
-    be sure that we have the active connection and can therefore send downstream messages.
-  - Messages sent from the portal could result in a connection switch if they target a LNS other
-than the preferred one but we consider this as out of scope as we can not guard against this case of
-misuse.
-  
 ## In-scope
 
 - The problem can be manifested whenever we do operations against Iot Hub on behalf of edge devices.
@@ -58,6 +48,7 @@ misuse.
   - D2C messages
   - C2D messages
 - Roaming leaf devices (that potentially become out-of-range from an LNS) are kept in scope.
+- Downstream messages for Class C devices via Direct Method
 
 ### Problematic IoT Hub operations on behalf of edge devices
 
@@ -70,6 +61,7 @@ misuse.
     - if the device is not in LoRaDeviceCache, we fetch the device twin -> see [main data flow section](#main-data-message-flow)
     - assuming we have the device twin (in the cache or fetched) in the main data flow we send upstream, downstream and write the new twin -> see [main data flow section](#main-data-message-flow)
     - if a frame counter reset happened, we update the twin immediately -> see [handling of resets section](#handling-of-device-resets)
+  - C2D message via Direct method -> see [handling class C downstream messages section](#handling-class-c-downstream-messages)
 
 Version, LNS discovery and CUPS update endpoints are not affected by this issue.
 
@@ -230,7 +222,13 @@ the Function cache. This twin write could result in a connection ping-pong.
   - Clear or update the cache entry with frame counter down and up to 0.
   - Returns the result to the LNS: whether it was the winning or losing one
   - LNS reacts as described in the [main data flow section](#main-data-message-flow)
-  
+
+### Handling Class C downstream messages
+
+For class C devices we can send C2D messages using a Direct Method that could (one-off) steal the
+active connection. When the Direct method is invoked via the portal on an LNS, we should check if we
+are the connection holder for that device and if not drop the message.
+
 #### Should we delay on the LNS itself or on the Function?
 
 We considered using a delay on the Function rather than on the LNS itself. We decided against this approach
