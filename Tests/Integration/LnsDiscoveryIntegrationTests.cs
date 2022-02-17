@@ -47,6 +47,9 @@ namespace LoRaWan.Tests.Integration
 
     public sealed class LnsDiscoveryIntegrationTests : IDisposable
     {
+        private static readonly string[] HostAddresses = new[] { "ws://foo:5000", "wss://bar:5001" };
+        private static readonly StationEui StationEui = new StationEui(1);
+
         private readonly LnsDiscoveryApplication subject;
 
         public LnsDiscoveryIntegrationTests()
@@ -59,17 +62,15 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             var cancellationToken = CancellationToken.None;
-            var stationEui = new StationEui(1);
-            var hostAddresses = new[] { "ws://foo:5000", "wss://bar:5001" };
             var client = this.subject.Server.CreateWebSocketClient();
             var webSocket = await client.ConnectAsync(new Uri(this.subject.Server.BaseAddress, "router-info"), cancellationToken);
-            SetupIotHubResponse(stationEui, hostAddresses);
+            SetupIotHubResponse(StationEui, HostAddresses);
 
             // act
-            var result = await SendMessageAsync(webSocket, new { router = stationEui.AsUInt64 }, cancellationToken);
+            var result = await SendMessageAsync(webSocket, new { router = StationEui.AsUInt64 }, cancellationToken);
 
             // assert
-            AssertContainsHostAddress(new Uri(hostAddresses[0]), stationEui, result);
+            AssertContainsHostAddress(new Uri(HostAddresses[0]), StationEui, result);
         }
 
         [Fact]
@@ -77,21 +78,15 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             var cancellationToken = CancellationToken.None;
-            var stationEui = new StationEui(1);
-            var hostAddresses = new[] { "ws://foo:5000", "wss://bar:5001" };
             var client = this.subject.Server.CreateWebSocketClient() ?? throw new InvalidOperationException("Could not create client.");
-            SetupIotHubResponse(stationEui, hostAddresses);
+            SetupIotHubResponse(StationEui, HostAddresses);
 
-            // act
-            var first = await ExecuteAsync();
-            var second = await ExecuteAsync();
-            var third = await ExecuteAsync();
-            Task<string> ExecuteAsync() => SendSingleMessageAsync(client, stationEui, cancellationToken);
-
-            // assert
-            AssertContainsHostAddress(new Uri(hostAddresses[0]), stationEui, first);
-            AssertContainsHostAddress(new Uri(hostAddresses[1]), stationEui, second);
-            AssertContainsHostAddress(new Uri(hostAddresses[0]), stationEui, third);
+            // act + assert
+            for (var i = 0; i < HostAddresses.Length; ++i)
+            {
+                var result = await SendSingleMessageAsync(client, StationEui, cancellationToken);
+                AssertContainsHostAddress(new Uri(HostAddresses[i % HostAddresses.Length]), StationEui, result);
+            }
         }
 
         [Fact]
@@ -101,18 +96,17 @@ namespace LoRaWan.Tests.Integration
             var cancellationToken = CancellationToken.None;
             var firstStation = new StationEui(1);
             var secondStation = new StationEui(2);
-            var hostAddresses = new[] { "ws://foo:5000", "wss://bar:5001" };
             var client = this.subject.Server.CreateWebSocketClient();
-            SetupIotHubResponse(firstStation, hostAddresses);
-            SetupIotHubResponse(secondStation, hostAddresses);
+            SetupIotHubResponse(firstStation, HostAddresses);
+            SetupIotHubResponse(secondStation, HostAddresses);
 
             // act
             var firstResult = await SendSingleMessageAsync(client, firstStation, cancellationToken);
             var secondResult = await SendSingleMessageAsync(client, secondStation, cancellationToken);
 
             // assert
-            AssertContainsHostAddress(new Uri(hostAddresses[0]), firstStation, firstResult);
-            AssertContainsHostAddress(new Uri(hostAddresses[0]), secondStation, secondResult);
+            AssertContainsHostAddress(new Uri(HostAddresses[0]), firstStation, firstResult);
+            AssertContainsHostAddress(new Uri(HostAddresses[0]), secondStation, secondResult);
         }
 
         [Fact]
