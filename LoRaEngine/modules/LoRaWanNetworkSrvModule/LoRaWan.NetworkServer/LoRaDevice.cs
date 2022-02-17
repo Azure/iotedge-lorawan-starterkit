@@ -940,7 +940,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public void CloseConnection(bool force = false)
+        internal virtual void CloseConnection(bool force = false)
         {
             if (force || (IsConnectionOwner is { } isOwner && !isOwner))
             {
