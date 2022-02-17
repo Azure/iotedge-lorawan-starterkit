@@ -15,7 +15,7 @@ namespace LoRaWan.Tests.Integration
     using Xunit;
     using Xunit.Abstractions;
 
-    public sealed class ConcentratorDeduplicationJoinRequestsIntegrationTests : MessageProcessorTestBase
+    public sealed class JoinRequestMessageHandlerIntegrationTests : MessageProcessorTestBase
     {
         private readonly MemoryCache cache;
         private readonly JoinRequestMessageHandler joinRequestHandler;
@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Integration
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
         private bool disposedValue;
 
-        public ConcentratorDeduplicationJoinRequestsIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        public JoinRequestMessageHandlerIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             this.simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(0));
             this.deviceMock = new Mock<LoRaDevice>(MockBehavior.Default,
@@ -79,6 +79,35 @@ namespace LoRaWan.Tests.Integration
             loraRequest.SetPayload(joinRequest);
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
             this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Ensures_Connection_Closed_After_Every_Join(bool joinHandledByAnotherGateway)
+        {
+            // arrange
+            var joinRequest = this.simulatedDevice.CreateJoinRequest();
+            var loraRequest = CreateWaitableRequest(joinRequest);
+            loraRequest.SetPayload(joinRequest);
+            loraRequest.SetRegion(new RegionEU868());
+
+            if (joinHandledByAnotherGateway)
+                this.deviceMock.Object.DevNonce = joinRequest.DevNonce;
+
+            // act
+            await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
+
+            // assert
+            this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Once);
+            if (!joinHandledByAnotherGateway)
+                this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Once());
+
+            // act and assert again
+            joinRequest = this.simulatedDevice.CreateJoinRequest();
+            loraRequest.SetPayload(joinRequest);
+            await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
+            this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Exactly(2));
         }
 
         protected override void Dispose(bool disposing)
