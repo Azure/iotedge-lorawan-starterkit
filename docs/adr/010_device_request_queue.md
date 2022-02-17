@@ -84,32 +84,38 @@ be summed up as follows:
 
 ## Decision
 
-Use the approach to simplify the entire flow and processing of a message into
-a simple request-response model. A quick spike demonstrated that the changes
-to the main code base would be fairly contained and the largest impact is
-expected to be in adapting the tests (which could also be done with a stop-gap
-measure where the tests are adapted after the initial refactoring of the code
-base).
+All operations for a particular device requiring the IoT Hub connection are to
+be executed in a serial/exclusive fashion on the `LoRaDevice` itself. This
+will ensure that there is only one operation acting on the connection at any
+given time. Making each execution exclusive (think queue) gives a
+deterministic way of adding a close operation without affecting any other
+operations that may be in flight.
 
-All operations for a particular device requiring the IoT hub connection, are
-requested to be executed on the `LoRaDevice` itself. The `LoRaDevice` becomes
-a singleton. This will ensure, we only have one operation acting on the
-connection and allows us to have a deterministic way of adding a close
-operation without affecting any other operations currently being processed.
-The approach has a problem with the creation of the devices. A `LoRaDevice`
-requires the twins to be valid. That operation can't be synchronized on the
-`LoRaDevice` as that instance is technically not available. Since it is not
-available, there should be no operation coming in, or those should also
-trigger the load. A simple solution is to synchronize both load operations in
-the `LoRaDeviceRegistry` and make sure there is only ever 1 operation loading
-the twins for a particular DevEui. We also concluded that closing the
-connection after initialization is the easiest approach to delay the
-connection ownership decision to after the first message has arrived.
+Unfortunately, the initialization of a `LoRaDevice` cannot be addressed with
+the same approach since it requires a two-step initialization per its current
+design. That is, a `LoRaDevice` is _minimally initialized_ when created so its
+`InitializeAsync` method can be called to fetch the twin information. Until
+that completes, a `LoRaDevice` is not considered technically ready for being
+put in the cache. Since a `LoRaDevice` cannot be discovered during its
+initialization, it cannot be synchronized with the other operations. To work
+around this,m load operations will be synchronized in the `LoRaDeviceRegistry`
+to ensure there is only ever one operation loading the twins for a particular
+DevEUI. It was also decided that closing the connection after initialization
+is the easiest approach to delay the connection ownership decision to after
+the arrival of the first message.
 
-Based on a spike of the refactoring this would require, it seems plausible to
-achieve the refactoring of the actual code base within two weekly sprints. It
-is expected that the bulk of the time will be spent in refactoring the test
-code.
+The approach to simplify the entire flow and processing of a message into a
+simple request-response model will be taken a stretch goal so that the
+connection management can be implemented and tested earlier. A quick spike
+demonstrated that the changes to the main code base would be fairly contained
+and the largest impact is expected to be in adapting the tests (which could
+also be done with a stop-gap measure where the tests are adapted after the
+initial refactoring of the code base).
+
+Based on a spike of the changes the simple request-response model would
+require, it seems plausible to achieve the refactoring within (at most) two
+weekly sprints. It is expected that the bulk of the time will be spent in
+refactoring the test code.
 
 ## Consequences
 
