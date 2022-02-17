@@ -957,7 +957,6 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-
         public void Dispose()
         {
             Dispose(true);

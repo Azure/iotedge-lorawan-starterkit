@@ -159,7 +159,6 @@ namespace LoRaWan.NetworkServer
 
                 if (useMultipleGateways)
                 {
-
                     // applying the correct deduplication
                     if (bundlerResult?.DeduplicationResult != null && !bundlerResult.DeduplicationResult.CanProcess)
                     {
