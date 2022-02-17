@@ -944,7 +944,7 @@ namespace LoRaWan.NetworkServer
         {
             if (force || (IsConnectionOwner is { } isOwner && !isOwner))
             {
-                _ = this.connectionManager.GetClient(this).Disconnect();
+                this.connectionManager.CloseConnection(this);
             }
         }
 

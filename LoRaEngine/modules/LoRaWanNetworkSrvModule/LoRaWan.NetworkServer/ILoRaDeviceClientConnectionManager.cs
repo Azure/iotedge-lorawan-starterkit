@@ -11,6 +11,8 @@ namespace LoRaWan.NetworkServer
 
         ILoRaDeviceClient GetClient(LoRaDevice loRaDevice);
 
+        void CloseConnection(LoRaDevice loRaDevice);
+
         void Release(LoRaDevice loRaDevice);
 
         void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient);

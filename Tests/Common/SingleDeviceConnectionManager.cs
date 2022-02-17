@@ -31,5 +31,8 @@ namespace LoRaWan.Tests.Common
         }
 
         public void Dispose() => this.singleDeviceClient.Dispose();
+
+        public void CloseConnection(LoRaDevice loRaDevice) =>
+            _ = this.singleDeviceClient.Disconnect();
     }
 }

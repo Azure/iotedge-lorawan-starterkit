@@ -51,20 +51,16 @@ namespace LoRaWan.NetworkServer
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
-            if (this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
+            var managedConnection = GetManagedConnection(loRaDevice);
+            if (!managedConnection.DeviceClient.EnsureConnected())
+                return false;
+
+            if (loRaDevice.KeepAliveTimeout > 0)
             {
-                if (loRaDevice.KeepAliveTimeout > 0)
-                {
-                    if (!managedConnection.DeviceClient.EnsureConnected())
-                        return false;
-
-                    SetupSchedule(managedConnection);
-                }
-
-                return true;
+                SetupSchedule(managedConnection);
             }
 
-            throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");
+            return true;
         }
 
         /// <summary>
@@ -105,15 +101,30 @@ namespace LoRaWan.NetworkServer
 
         private static string GetScheduleCacheKey(DevEui devEui) => string.Concat("connection:schedule:", devEui);
 
+        public void CloseConnection(LoRaDevice loRaDevice)
+        {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
+            var client = GetLoRaDeviceClient(loRaDevice);
+
+            _ = client.Disconnect();
+        }
+
+        private ILoRaDeviceClient GetLoRaDeviceClient(LoRaDevice loRaDevice) =>
+            GetManagedConnection(loRaDevice).DeviceClient;
+
+        private ManagedConnection GetManagedConnection(LoRaDevice loRaDevice) =>
+            this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection)
+                 ? managedConnection
+                 : throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");
+
         public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
             _ = EnsureConnected(loRaDevice);
 
-            return this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection)
-                 ? managedConnection.DeviceClient
-                 : throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");
+            return GetLoRaDeviceClient(loRaDevice);
         }
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
