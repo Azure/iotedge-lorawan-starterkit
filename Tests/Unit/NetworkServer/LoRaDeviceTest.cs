@@ -792,6 +792,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             deviceClient.Setup(x => x.Disconnect())
                 .Returns(true);
 
+            deviceClient.Setup(x => x.EnsureConnected())
+                .Returns(true);
+
             Assert.True(device.TryDisconnect());
 
             deviceClient.Verify(x => x.Disconnect(), Times.Once());
