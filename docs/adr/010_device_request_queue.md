@@ -19,9 +19,9 @@ ping-pong continues. This problem needs addressing to avoid scalability
 limitations.
 
 The ping-pong can be prevented by electing a leader LNS for a device through
-the function race determination and as a fallback announcing the decision to 
-others using a C2D message. An LNS receiving such a message will then close 
-that connection so that Edge Hub doesn't continue to maintain the connection 
+the function race determination and as a fallback announcing the decision to
+others using a C2D message. An LNS receiving such a message will then close
+that connection so that Edge Hub doesn't continue to maintain the connection
 in the open state through retires. The handling of the message needs to know:
 
 - It can close the connection right now, without interfering with a currently
