@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
@@ -21,14 +22,23 @@ namespace LoRaWan.NetworkServer
     public sealed class LoRaDeviceClientConnectionManager : ILoRaDeviceClientConnectionManager
     {
         private readonly IMemoryCache cache;
+        private readonly ILoggerFactory? loggerFactory;
         private readonly ILogger<LoRaDeviceClientConnectionManager> logger;
         private readonly ConcurrentDictionary<DevEui, SynchronizedLoRaDeviceClient> clientByDevEui = new();
 
         private record struct ScheduleKey(DevEui DevEui);
 
-        public LoRaDeviceClientConnectionManager(IMemoryCache cache, ILogger<LoRaDeviceClientConnectionManager> logger)
+        public LoRaDeviceClientConnectionManager(IMemoryCache cache,
+                                                 ILogger<LoRaDeviceClientConnectionManager> logger) :
+            this(cache, null, logger)
+        { }
+
+        public LoRaDeviceClientConnectionManager(IMemoryCache cache,
+                                                 ILoggerFactory? loggerFactory,
+                                                 ILogger<LoRaDeviceClientConnectionManager> logger)
         {
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            this.loggerFactory = loggerFactory;
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -45,7 +55,8 @@ namespace LoRaWan.NetworkServer
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
-            var loRaDeviceClient = new SynchronizedLoRaDeviceClient(loraDeviceClient, loRaDevice);
+            var loRaDeviceClient = new SynchronizedLoRaDeviceClient(loraDeviceClient, loRaDevice,
+                                                                    this.loggerFactory?.CreateLogger<SynchronizedLoRaDeviceClient>());
 
             loRaDeviceClient.EnsureConnectedSucceeded += (sender, args) =>
             {
@@ -105,15 +116,46 @@ namespace LoRaWan.NetworkServer
         {
             private readonly ILoRaDeviceClient client;
             private readonly LoRaDevice device;
+            private readonly ILogger? logger;
             private int pid;
-            private readonly ExclusiveProcessor<int> exclusiveProcessor = new();
+            private readonly ExclusiveProcessor<Process> exclusiveProcessor = new();
             private bool shouldDisconnect;
             private int activities;
 
-            public SynchronizedLoRaDeviceClient(ILoRaDeviceClient client, LoRaDevice device)
+            private record struct Process(int Id, string Name);
+
+            public SynchronizedLoRaDeviceClient(ILoRaDeviceClient client, LoRaDevice device, ILogger<SynchronizedLoRaDeviceClient>? logger)
             {
                 this.client = client;
                 this.device = device;
+                this.logger = logger;
+
+                if (logger is { } someLogger && someLogger.IsEnabled(LogLevel.Debug))
+                {
+                    this.exclusiveProcessor.Processing += (_, p) =>
+                    {
+                        var (id, name) = p;
+                        using var scope = someLogger.BeginDeviceScope(device.DevEUI);
+                        someLogger.LogDebug(@"Invoking ""{Name}"" ({Id})", name, id);
+                    };
+
+                    this.exclusiveProcessor.Processed += (_, args) =>
+                    {
+                        var ((id, name), outcome) = args;
+                        using var scope = someLogger.BeginDeviceScope(device.DevEUI);
+                        someLogger.LogDebug(@"Invoked ""{Name}"" ({Id}); status = {Status}, run-time = {RunTime}, wait-time = {WaitTime}",
+                                            name, id, outcome.Task.Status, outcome.RunDuration, outcome.WaitDuration);
+                    };
+
+                    this.exclusiveProcessor.Interrupted += (_, p) =>
+                    {
+                        var (interrupted, interrupting) = p;
+                        using var scope = someLogger.BeginDeviceScope(device.DevEUI);
+                        someLogger.LogDebug(@"Interrupted ""{Name}"" ({Id}) by {InterruptingName} ({InterruptingId})",
+                                            interrupted.Name, interrupted.Id,
+                                            interrupting.Name, interrupting.Id);
+                    };
+                }
             }
 
             public DevEui DevEui => this.device.DevEUI;
@@ -123,13 +165,16 @@ namespace LoRaWan.NetworkServer
 
             public event EventHandler? EnsureConnectedSucceeded;
 
-            private Task<T> InvokeExclusivelyAsync<T>(Func<ILoRaDeviceClient, Task<T>> processor) =>
-                InvokeExclusivelyAsync(doesNotRequireOpenConnection: false, processor);
+            private Task<T> InvokeExclusivelyAsync<T>(Func<ILoRaDeviceClient, Task<T>> processor,
+                                                      [CallerMemberName] string? callerName = null) =>
+                InvokeExclusivelyAsync(doesNotRequireOpenConnection: false, processor, callerName);
 
-            private async Task<T> InvokeExclusivelyAsync<T>(bool doesNotRequireOpenConnection, Func<ILoRaDeviceClient, Task<T>> processor)
+            private async Task<T> InvokeExclusivelyAsync<T>(bool doesNotRequireOpenConnection,
+                                                            Func<ILoRaDeviceClient, Task<T>> processor,
+                                                            [CallerMemberName] string? callerName = null)
             {
                 _ = Interlocked.Increment(ref this.pid);
-                return await this.exclusiveProcessor.ProcessAsync(this.pid, async () =>
+                return await this.exclusiveProcessor.ProcessAsync(new Process(this.pid, callerName!), async () =>
                 {
                     if (!doesNotRequireOpenConnection)
                         _ = EnsureConnected();

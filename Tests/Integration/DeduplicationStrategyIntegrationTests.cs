@@ -167,7 +167,7 @@ namespace LoRaWan.Tests.Integration
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope (ownership transferred to caller)
                 var cache = EmptyMemoryCache();
-                var connectionManager = new LoRaDeviceClientConnectionManager(cache, new TestOutputLogger<LoRaDeviceClientConnectionManager>(this.testOutputHelper));
+                var connectionManager = new LoRaDeviceClientConnectionManager(cache, new TestOutputLoggerFactory(this.testOutputHelper), new TestOutputLogger<LoRaDeviceClientConnectionManager>(this.testOutputHelper));
                 var concentratorDeduplication = new ConcentratorDeduplication(cache, new TestOutputLogger<IConcentratorDeduplication>(this.testOutputHelper));
                 var requestHandler = CreateDefaultLoRaDataRequestHandler(networkServerConfiguration, frameCounterUpdateStrategyProvider, loRaDeviceApi, concentratorDeduplication);
                 var loRaDevice = TestUtils.CreateFromSimulatedDevice(this.simulatedDevice, connectionManager, requestHandler.Value);

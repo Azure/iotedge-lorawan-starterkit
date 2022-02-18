@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
 
         public event EventHandler<(T InterruptedProcessor, T InterruptingProcessor)>? Interrupted;
         public event EventHandler<T>? Processing;
-        public event EventHandler<IProcessingOutcome>? Processed;
+        public event EventHandler<(T Processor, IProcessingOutcome Outcome)>? Processed;
 
         public ExclusiveProcessor() : this(ps => ps[0]) { }
 
@@ -112,7 +112,7 @@ namespace LoRaWan.NetworkServer
                         var task = await Task.WhenAny(function());
                         var endTime = DateTimeOffset.Now;
                         var outcome = new ProcessingTaskOutcome<TResult>(task, submissionTime, startTime - submissionTime, endTime - startTime);
-                        Processed?.Invoke(this, outcome);
+                        Processed?.Invoke(this, (processor, outcome));
                         return outcome;
                     }
                 }

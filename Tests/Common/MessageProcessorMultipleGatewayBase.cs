@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Common
                                                                           this.testOutputLoggerFactory.CreateLogger<DefaultLoRaDataRequestHandler>(),
                                                                           meter: null);
 
-            SecondConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, this.testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
+            SecondConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
             SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(SecondServerConfiguration, SecondLoRaDeviceClient.Object, SecondConnectionManager, DeviceCache, defaultRequestHandler);
         }
 
