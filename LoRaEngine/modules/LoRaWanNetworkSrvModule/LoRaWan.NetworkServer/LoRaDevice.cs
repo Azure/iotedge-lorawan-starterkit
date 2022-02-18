@@ -487,7 +487,7 @@ namespace LoRaWan.NetworkServer
                         return false;
                     }
 
-                    var result = await ProcessAsync(client => client.UpdateReportedPropertiesAsync(reportedProperties, default));
+                    var result = await Client.UpdateReportedPropertiesAsync(reportedProperties, default);
                     if (result)
                     {
                         InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
@@ -672,18 +672,17 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private Task<T> ProcessAsync<T>(Func<ILoRaDeviceClient, Task<T>> processor) =>
-            this.connectionManager.UseAsync(DevEUI, processor);
+        private ILoRaDeviceClient Client => this.connectionManager.GetClient(this);
 
-        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => ProcessAsync(client => client.SendEventAsync(telemetry, properties));
+        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => Client.SendEventAsync(telemetry, properties);
 
-        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => ProcessAsync(client => client.ReceiveAsync(timeout));
+        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => Client.ReceiveAsync(timeout);
 
-        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => ProcessAsync(client => client.CompleteAsync(cloudToDeviceMessage));
+        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => Client.CompleteAsync(cloudToDeviceMessage);
 
-        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => ProcessAsync(client => client.AbandonAsync(cloudToDeviceMessage));
+        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => Client.AbandonAsync(cloudToDeviceMessage);
 
-        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => ProcessAsync(client => client.RejectAsync(cloudToDeviceMessage));
+        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => Client.RejectAsync(cloudToDeviceMessage);
 
         /// <summary>
         /// Updates device on the server after a join succeeded.
@@ -771,7 +770,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var devAddrBeforeSave = DevAddr;
-            var succeeded = await ProcessAsync(client => client.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
+            var succeeded = await Client.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
             // Only save if the devAddr remains the same, otherwise ignore the save
             if (succeeded && devAddrBeforeSave == DevAddr)

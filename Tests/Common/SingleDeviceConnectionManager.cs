@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
-    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
 
     /// <summary>
@@ -23,11 +22,6 @@ namespace LoRaWan.Tests.Common
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
         {
-        }
-
-        public Task<T> UseAsync<T>(DevEui devEui, Func<ILoRaDeviceClient, Task<T>> processor)
-        {
-            return processor(this.singleDeviceClient);
         }
 
         public IAsyncDisposable ReserveConnection(DevEui devEui)

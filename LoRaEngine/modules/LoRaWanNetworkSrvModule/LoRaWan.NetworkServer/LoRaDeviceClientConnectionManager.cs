@@ -98,11 +98,6 @@ namespace LoRaWan.NetworkServer
                 client.Dispose();
         }
 
-        public Task<T> UseAsync<T>(DevEui devEui, Func<ILoRaDeviceClient, Task<T>> processor) =>
-            processor == null
-                ? throw new ArgumentNullException(nameof(processor))
-                : processor(this.clientByDevEui[devEui]);
-
         public IAsyncDisposable ReserveConnection(DevEui devEui) =>
             this.clientByDevEui[devEui].BeginDeviceClientConnectionActivity();
 

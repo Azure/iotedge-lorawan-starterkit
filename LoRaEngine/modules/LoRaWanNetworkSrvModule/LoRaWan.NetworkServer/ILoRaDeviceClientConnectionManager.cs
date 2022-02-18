@@ -6,7 +6,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Threading.Tasks;
 
     public interface ILoRaDeviceClientConnectionManager : IDisposable
     {
@@ -16,22 +15,6 @@ namespace LoRaWan.NetworkServer
 
         void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient);
 
-        Task<T> UseAsync<T>(DevEui devEui, Func<ILoRaDeviceClient, Task<T>> processor);
-
         IAsyncDisposable ReserveConnection(DevEui devEui);
-    }
-
-    public static class LoRaDeviceClientConnectionManagerExtensions
-    {
-        public static Task UseAsync(this ILoRaDeviceClientConnectionManager connectionManager, DevEui devEui, Func<ILoRaDeviceClient, Task> processor)
-        {
-            if (connectionManager == null) throw new ArgumentNullException(nameof(connectionManager));
-
-            return connectionManager.UseAsync(devEui, async client =>
-            {
-                await processor(client);
-                return 0;
-            });
-        }
     }
 }
