@@ -229,7 +229,6 @@ namespace LoRaWan.NetworkServer
         {
             if (this.deviceClient != null)
             {
-                this.deviceClient.CloseAsync().GetAwaiter().GetResult();
                 this.deviceClient.Dispose();
                 this.deviceClient = null;
 
