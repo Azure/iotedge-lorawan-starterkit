@@ -5,41 +5,18 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Manages <see cref="ILoRaDeviceClient"/> connections for <see cref="LoRaDevice"/>.
     /// </summary>
-    public sealed class LoRaDeviceClientConnectionManager : ILoRaDeviceClientConnectionManager
+    public sealed partial class LoRaDeviceClientConnectionManager : ILoRaDeviceClientConnectionManager
     {
-        internal sealed class ManagedConnection : IDisposable
-        {
-            public ManagedConnection(LoRaDevice loRaDevice, ILoRaDeviceClient deviceClient)
-            {
-                LoRaDevice = loRaDevice;
-                DeviceClient = deviceClient;
-            }
-
-            public LoRaDevice LoRaDevice { get; }
-
-            public ILoRaDeviceClient DeviceClient { get; }
-
-            public void Dispose()
-            {
-                DeviceClient.Dispose();
-
-                // Disposing the Connection Manager should only happen on application shutdown
-                // (which in turn triggers the disposal of all managed connections).
-                // In that specific case disposing the LoRaDevice will cause the LoRa device to unregister itself again,
-                // which causes DeviceClient.Dispose() to be called twice. We do not optimize this case, since the Dispose logic is idempotent.
-                LoRaDevice.Dispose();
-            }
-        }
-
         private readonly IMemoryCache cache;
         private readonly ILogger<LoRaDeviceClientConnectionManager> logger;
-        private readonly ConcurrentDictionary<string, ManagedConnection> managedConnections = new ConcurrentDictionary<string, ManagedConnection>();
+        private readonly ConcurrentDictionary<DevEui, LoRaDeviceClient> clientByDevEui = new();
 
         public LoRaDeviceClientConnectionManager(IMemoryCache cache, ILogger<LoRaDeviceClientConnectionManager> logger)
         {
@@ -47,61 +24,25 @@ namespace LoRaWan.NetworkServer
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public bool EnsureConnected(LoRaDevice loRaDevice)
-        {
-            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-
-            if (this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
-            {
-                if (loRaDevice.KeepAliveTimeout > 0)
-                {
-                    if (!managedConnection.DeviceClient.EnsureConnected())
-                        return false;
-
-                    SetupSchedule(managedConnection);
-                }
-
-                return true;
-            }
-
-            throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");
-        }
-
         /// <summary>
         /// Sets the schedule for a device client disconnect.
         /// </summary>
-        private void SetupSchedule(ManagedConnection managedConnection)
+        private void SetupSchedule(LoRaDeviceClient client)
         {
-            var key = GetScheduleCacheKey(managedConnection.LoRaDevice.DevEUI);
+            var key = GetScheduleCacheKey(client.DevEui);
             // Touching an existing item will update the last access item
             // Creating will start the expiration count
             _ = this.cache.GetOrCreate(
                     key,
-                    (ce) =>
+                    ce =>
                     {
-                        ce.SlidingExpiration = TimeSpan.FromSeconds(managedConnection.LoRaDevice.KeepAliveTimeout);
-                        _ = ce.RegisterPostEvictionCallback(OnScheduledDisconnect);
-
-                        this.logger.LogDebug($"client connection timeout set to {managedConnection.LoRaDevice.KeepAliveTimeout} seconds (sliding expiration)");
-
-                        return managedConnection;
+                        var keepAliveTimeout = client.KeepAliveTimeout;
+                        ce.SlidingExpiration = keepAliveTimeout;
+                        _ = ce.RegisterPostEvictionCallback((_, value, _, _) => _ = ((LoRaDeviceClient)value).DisconnectAsync());
+                        this.logger.LogDebug($"client connection timeout set to {keepAliveTimeout.TotalSeconds} seconds (sliding expiration)");
+                        return client;
                     });
         }
-
-        private void OnScheduledDisconnect(object key, object value, EvictionReason reason, object state)
-        {
-            var managedConnection = (ManagedConnection)value;
-
-            using var scope = this.logger.BeginDeviceScope(managedConnection.LoRaDevice.DevEUI);
-
-            if (!managedConnection.LoRaDevice.TryDisconnect())
-            {
-                this.logger.LogInformation("scheduled device disconnection has been postponed. Device client connection is active");
-                SetupSchedule(managedConnection);
-            }
-        }
-
-        private static string GetConnectionCacheKey(DevEui devEui) => string.Concat("connection:", devEui);
 
         private static string GetScheduleCacheKey(DevEui devEui) => string.Concat("connection:schedule:", devEui);
 
@@ -109,8 +50,8 @@ namespace LoRaWan.NetworkServer
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
-            return this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection)
-                 ? managedConnection.DeviceClient
+            return this.clientByDevEui.TryGetValue(loRaDevice.DevEUI, out var client)
+                 ? client
                  : throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");
         }
 
@@ -118,15 +59,15 @@ namespace LoRaWan.NetworkServer
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
-            var key = GetConnectionCacheKey(loRaDevice.DevEUI);
-            lock (this.managedConnections)
+            var key = loRaDevice.DevEUI;
+            lock (this.clientByDevEui)
             {
-                if (this.managedConnections.ContainsKey(key))
+                if (this.clientByDevEui.ContainsKey(key))
                 {
                     throw new InvalidOperationException($"Connection already registered for device {loRaDevice.DevEUI}");
                 }
 
-                this.managedConnections[key] = new ManagedConnection(loRaDevice, loraDeviceClient);
+                this.clientByDevEui[key] = new LoRaDeviceClient(this, loraDeviceClient, loRaDevice);
             }
         }
 
@@ -134,7 +75,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
-            if (this.managedConnections.TryRemove(GetConnectionCacheKey(loRaDevice.DevEUI), out var removedItem))
+            if (this.clientByDevEui.TryRemove(loRaDevice.DevEUI, out var removedItem))
             {
                 removedItem.Dispose();
             }
@@ -147,16 +88,6 @@ namespace LoRaWan.NetworkServer
         public void TryScanExpiredItems()
         {
             _ = this.cache.TryGetValue(string.Empty, out _);
-        }
-
-        public void Dispose()
-        {
-            // The LoRaDeviceClientConnectionManager does not own the cache, but it owns all the managed connections.
-
-            foreach (var it in this.managedConnections)
-            {
-                it.Value.Dispose();
-            }
         }
     }
 }

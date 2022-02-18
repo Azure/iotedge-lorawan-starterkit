@@ -81,9 +81,9 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
                 .Callback(() => disconnectedEvent.Release())
-                .Returns(true);
+                .Returns(Task.CompletedTask);
 
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
@@ -137,13 +137,13 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
                     isDisconnected = true;
                 })
-                .Returns(true);
+                .Returns(Task.CompletedTask);
 
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
@@ -204,13 +204,13 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
                     isDisconnected = true;
                 })
-                .Returns(true);
+                .Returns(Task.CompletedTask);
 
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
@@ -241,7 +241,7 @@ namespace LoRaWan.Tests.Integration
 
             await EnsureDisconnectedAsync(disconnectedEvent);
 
-            LoRaDeviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
+            LoRaDeviceClient.Verify(x => x.DisconnectAsync(), Times.Exactly(2));
             LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
 
             LoRaDeviceClient.VerifyAll();
@@ -282,9 +282,9 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
                 .Callback(() => disconnectedEvent.Release())
-                .Returns(true);
+                .Returns(Task.CompletedTask);
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -318,12 +318,12 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
                 })
-                .Returns(true);
+                .Returns(Task.CompletedTask);
 
             // will check client connection
             LoRaDeviceClient.Setup(x => x.EnsureConnected())

@@ -113,7 +113,7 @@ namespace LoRaWan.NetworkServer
         protected virtual async Task RefreshDeviceAsync(LoRaDevice device, CancellationToken cancellationToken)
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
-            using (device.BeginDeviceClientConnectionActivity())
+            await using (device.BeginDeviceClientConnectionActivity())
                 _ = await device.InitializeAsync(this.configuration, cancellationToken);
         }
 

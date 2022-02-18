@@ -14,7 +14,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
@@ -774,99 +773,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(expectedKeepAliveTimeout, loRaDevice.KeepAliveTimeout);
-        }
-
-        [Fact]
-        public void When_Device_Has_No_Connection_Timeout_Should_Disconnect()
-        {
-            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            deviceClient.Setup(dc => dc.Dispose());
-            using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
-            manager.Register(device, deviceClient.Object);
-
-            var activity = device.BeginDeviceClientConnectionActivity();
-            Assert.NotNull(activity);
-
-            deviceClient.Setup(x => x.Disconnect())
-                .Returns(true);
-
-            Assert.True(device.TryDisconnect());
-
-            deviceClient.Verify(x => x.Disconnect(), Times.Once());
-        }
-
-        [Fact]
-        public void When_Device_Connection_Not_In_Use_Should_Disconnect()
-        {
-            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            deviceClient.Setup(dc => dc.Dispose());
-            using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
-            device.KeepAliveTimeout = 60;
-            manager.Register(device, deviceClient.Object);
-
-            deviceClient.Setup(x => x.EnsureConnected())
-                .Returns(true);
-
-            var activity1 = device.BeginDeviceClientConnectionActivity();
-            Assert.NotNull(activity1);
-
-            Assert.False(device.TryDisconnect());
-
-            var activity2 = device.BeginDeviceClientConnectionActivity();
-            Assert.NotNull(activity2);
-
-            Assert.False(device.TryDisconnect());
-            activity1.Dispose();
-            Assert.False(device.TryDisconnect());
-
-            activity2.Dispose();
-            deviceClient.Setup(x => x.Disconnect())
-                .Returns(true);
-
-            Assert.True(device.TryDisconnect());
-
-            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
-        }
-
-        [Fact]
-        public void When_Needed_Should_Reconnect_Client()
-        {
-            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            deviceClient.Setup(dc => dc.Dispose());
-            using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
-            device.KeepAliveTimeout = 60;
-            manager.Register(device, deviceClient.Object);
-
-            deviceClient.Setup(x => x.EnsureConnected())
-                .Returns(true);
-
-            deviceClient.Setup(x => x.Disconnect())
-                .Returns(true);
-
-            using (var activity1 = device.BeginDeviceClientConnectionActivity())
-            {
-                Assert.NotNull(activity1);
-            }
-
-            Assert.True(device.TryDisconnect());
-
-            using (var activity2 = device.BeginDeviceClientConnectionActivity())
-            {
-                Assert.NotNull(activity2);
-
-                Assert.False(device.TryDisconnect());
-            }
-
-            Assert.True(device.TryDisconnect());
-
-            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
-            deviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
         }
 
         [Fact]
