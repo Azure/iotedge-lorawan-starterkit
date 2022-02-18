@@ -65,14 +65,16 @@ stations.
 
 Version, LNS discovery and CUPS update endpoints are not affected by this issue.
 
-## Possible solution
+## Solution
 
 The main idea is to give the current connection holder (as indicated from the Function), the edge to
 continue processing messages for this device. The performance of that gateway will not be impacted.
 
-A local (per LNS) in-memory dictionary will be used for that purpose to map DevEuis to a flag
-indicating whether the LNS is the preferred gateway or not.
-
+The information whether the current LNS is the connection owner is stored locally. The LNS that is
+the connection owner will keep the connection open. Any other network servers receiving messages,
+will not maintain an active connection to IoT Hub. If the owning network server stops responding or
+gets out of reach, the ownership is transferred to the next winning network server.
+  
 ### Handling of cache refresh
 
 When we create the (singleton) instance of the NetworkServer.LoRaDeviceCache, we start a background
@@ -81,27 +83,24 @@ fresh. In the case where we need to get a device twin, this could trigger a conn
 
 #### Decision
 
-For now we don't make changes here and accept there will be a potential connection switching
-periodically (currently every 2 days if the device was not refreshed in the meantime). This will be
-revisited with either [this issue about the frame counter
-  drift](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1499)
- (one of the solutions there is to fetch twin and close connection immediately) or [this issue
- specific to cache refresh](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1505)
+The preferred option for now is to refresh the twin and close the connection immediately. This could
+result in a connection switch but not a permanent connection ping pong. This will be revisited with
+either [this issue about the frame counter
+  drift](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1499) (one of the solutions
+ there is to fetch twin and close connection immediately) or [this issue specific to cache
+ refresh](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1505)
 
 #### Alternatives
 
-- Contact the Function to see whether we are the owning gateway. If we are, refresh the twin (and
+- Check against the local store whether we are the owning gateway. If we are, refresh the twin (and
   keep the connection open). If we are not:
   - We adjust the LastSeen property but not actually refresh the entry in the cache.
     When the next data message for this devices comes in and an entry is in cache for such device, in the
     event that the Azure Function is marking our LNS as the new "winning" gateway, we have a stale
     twin in the cache that needs to be updated before validating the request (see [main data flow](#main-data-message-flow)).
-  - Alternatively, we remove device entry from the cache. This idea is discarded because if we were
+  - Alternatively, we remove the device entry from the cache. This idea is discarded because if we were
     to do this, a "get twin" operation would be triggered as soon as the next data message is coming
     in from the device in question (for the resolution of devAddr).
-  - We still refresh the twin and close the connection immediately.
-- Remove the background refresh feature all-together: discarded because solutions are possible and
-  not overly complex.
 
 ### Handling of Join requests
 
@@ -138,8 +137,9 @@ have that DevAddr. Then we get all their twins which could result in a connectio
 
 #### Decision
 
-After loading all the twins for the LoRaDevice(s), we close the connections immediately.
-This is equivalent to how we [handle Join requests](#handling-of-join-requests)
+After loading all the twins for the LoRaDevice(s), we close the connections immediately. This is
+equivalent to how we [handle Join requests](#handling-of-join-requests) and [background cache
+tasks](#handling-of-cache-refresh).
 
 #### Alternative
 
@@ -167,44 +167,42 @@ or via fetching it using DeviceGetter.GetDevice). Changes are marked in **bold**
 
 1. Device sends first data message A.
 1. We assume that LNS1 gets the message first. **LNS1 checks against
-   its in-memory dictionary DevEui -> flag** and since it has not seen this DevEui before contacts the Function.
+   its in-memory state** and since an owner for the device connection was not elected yet, directly contacts the function without delay.
 1. The Function hasn't seen this DevEui either and therefore does not have an assigned LNS for it
   yet. LNS1 wins the race and gets immediately a response and processes the message upstream.
-1. LNS2 eventually receives message A, **checks its local dictionary** and also contacts the
-   FunctionBundler immediately since it does not have prior info about this DevEui.
+1. LNS2 eventually receives message A, **checks its local state** and also contacts the
+   Function immediately since it does not have prior info about this device.
 1. The Function responds to LNS2 that it lost the race to process this message.
 1. Since deduplication strategy is Drop, LNS2 drops the message immediately, therefore no
    connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. **LNS2 updates its
    in memory state that it does not own the connection for this device**.
 1. When message B gets send (with a higher frame counter*), assuming that this time LNS2 gets it
    first it **checks again its local state that indicates it's not owning the connection for the device and
-   therefore delays itself X ms before contacting the FunctionBundler**.
+   therefore delays itself X ms before contacting the Function**.
    - Here we do *not* want to simply drop the message as LNS1 might not be available anymore (due to
      a crash, device not in range etc).
-   - Since it was the losing LNS previously it should **make sure that it operates on a fresh twin**
-     (especially regarding the frame counter) see also [background refresh section](#handling-of-cache-refresh)
-1. This delay gives LNS1 a time advantage to reach the FunctionBundler first and win the race again, failing
+   - This delay gives LNS1 a time advantage to reach the Function first and win the race again, failing
     back to the previous case of message A. The active connection stays with LNS1.
-1. If this delay is not sufficient for LNS1 to win the race, LNS2 will contact the FunctionBundler which
+1. If this delay is not sufficient for LNS1 to win the race, LNS2 will contact the Function which
    now awards LNS2 as the "winning" LNS. LNS2 can now process the message upstream. It also **removes the "losing flag" from its in-memory store**.
 1. **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this device.
-   - The reason why we do this proactively is that otherwise its Edge Hub will try to reconnect to IoT Hub even if there is no more messages picked up from LNS1 (out of range roaming client).
+   - The reason why we do this is to ensure that LNS1 knows connection ownership was transferred to another network server and it can drop the connection. This is for the case, where the upstream message does not reach LNS1.
   - For that we can use a C2D message to LNS. Alternative: direct method could be used here but
     delivery will not be guaranteed then.
-1. If LNS1 in the meantime gets message B and contacts the FunctionBundler, it will let it know
+1. If LNS1 in the meantime gets message B and contacts the Function, it will let it know
    that it lost the race for this frame counter and must therefore drop the message, **mark
    itself as the losing LNS and close the connection if it hasn't done so yet**.
 
 Notes:
 
-- The FunctionBundler is not called in certain topologies e.g. when multiple LBSs are connected to the same LNS but these topologies are not relevant for the issue here as they employ a single connection per device by design).
+- The Function is not called in certain topologies e.g. when multiple LBSs are connected to the same LNS but these topologies are not relevant for the issue here as they employ a single connection per device by design).
 - For the main flow above we consider only frame counter B > frame counter A. Resets are covered in
   [the reset section](#handling-of-abp-relax-frame-counter-reset). Resubmits (when frame counter B ==
   frame counter A) are also a current issue and should be [addressed in this issue](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1468).
 
 ### Handling of ABP relax frame counter reset
 
-An special case on the main data flow is when we detect a device reset after a message. Currently we save the twin immediately and then clear
+A special case on the main data flow is when we detect a device reset after a message. Currently we save the twin immediately and then clear
 the Function cache. This twin write could result in a connection ping-pong.
 
 #### Decision
@@ -261,14 +259,6 @@ specified the stickiness feature is disabled which means potential connection sw
 
 ## Other candidates considered
 
-### Single point of connection handling on LoRaDevice
-
-The changes presented from Atif: would also ensure by design that new code does not open more
-connections to IoT Hub accidentally.
-
-No matter where we are doing the check on the LNS side (single point as in Atif's ADR or existing
-code with multiple entry points) the changes on the Function side are still required.  
-
 ### Using direct mode (not Edge hub)
 
 Using direct mode is less problematic in terms of connection stealing but still had the issue. The
@@ -282,3 +272,13 @@ We could utilize child-parent connections and parent multiple LNS under a single
 gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2020-11)
 that has the active connection to IoT Hub. The problem there is that children can have only 1 parent
 and therefore we can not support roaming leaf devices that connect to different LNSs over time.
+
+## Related changes
+
+### Single point of connection handling on LoRaDevice
+
+[Using a single device queue](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1479) would
+also ensure by design that new code does not open more connections to IoT Hub accidentally.
+
+Independently of the resolution of the aforementioned issue, the changes on the Function side are
+still required.
