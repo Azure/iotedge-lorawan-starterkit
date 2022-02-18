@@ -15,6 +15,6 @@ namespace LoRaWan.NetworkServer
 
         void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient);
 
-        IAsyncDisposable BeginDeviceClientConnectionActivity(DevEui devEui);
+        IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice);
     }
 }

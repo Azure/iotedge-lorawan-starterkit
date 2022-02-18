@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Common
         {
         }
 
-        public IAsyncDisposable BeginDeviceClientConnectionActivity(DevEui devEui)
+        public IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice)
         {
             throw new NotImplementedException();
         }

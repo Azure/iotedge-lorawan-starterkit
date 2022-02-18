@@ -109,8 +109,11 @@ namespace LoRaWan.NetworkServer
                 client.Dispose();
         }
 
-        public IAsyncDisposable BeginDeviceClientConnectionActivity(DevEui devEui) =>
-            this.clientByDevEui[devEui].BeginDeviceClientConnectionActivity();
+        public IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice)
+        {
+            if (loRaDevice == null) throw new ArgumentNullException(nameof(loRaDevice));
+            return this.clientByDevEui[loRaDevice.DevEUI].BeginDeviceClientConnectionActivity();
+        }
 
         private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient
         {

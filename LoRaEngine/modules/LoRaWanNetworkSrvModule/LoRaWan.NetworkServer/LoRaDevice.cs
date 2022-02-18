@@ -642,7 +642,7 @@ namespace LoRaWan.NetworkServer
                 return AsyncDisposable.Nop;
             }
 
-            return this.connectionManager.BeginDeviceClientConnectionActivity(DevEUI);
+            return this.connectionManager.BeginDeviceClientConnectionActivity(this);
         }
 
         /// <summary>
