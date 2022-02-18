@@ -125,8 +125,19 @@ namespace LoRaWan.NetworkServer
             {
                 #region FunctionBundler
                 FunctionBundlerResult bundlerResult = null;
-                if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission)
-                    bundlerResult = await TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
+                if (useMultipleGateways && (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission))
+                {
+                    // in the case of resubmissions we need to contact the function to get a valid frame counter down
+                    var bundler = CreateBundler(loraPayload, loRaDevice, request);
+                    if (bundler != null)
+                    {
+                        if (loRaDevice.IsConnectionOwner is { } isOwner && !isOwner)
+                        {
+                            await DelayProcessing();
+                        }
+                        bundlerResult = await TryUseBundler(bundler, loRaDevice);
+                    }
+                }
                 #endregion
 
                 loRaADRResult = bundlerResult?.AdrResult;
@@ -802,29 +813,22 @@ namespace LoRaWan.NetworkServer
             return result;
         }
 
-        protected virtual async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
+        protected virtual FunctionBundler CreateBundler(LoRaPayloadData loraPayload, LoRaDevice loRaDevice, LoRaRequest request)
+            => this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
+
+        protected virtual async Task DelayProcessing() => await Task.Delay(400);
+
+        protected virtual async Task<FunctionBundlerResult> TryUseBundler(FunctionBundler bundler, LoRaDevice loRaDevice)
         {
+            _ = bundler ?? throw new ArgumentNullException(nameof(bundler));
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
-            FunctionBundlerResult bundlerResult = null;
-            if (useMultipleGateways)
+            var bundlerResult = await bundler.Execute();
+            if (bundlerResult.NextFCntDown.HasValue)
             {
-                // in the case of resubmissions we need to contact the function to get a valid frame counter down
-                var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
-                if (bundler != null)
-                {
-                    if (loRaDevice.IsConnectionOwner is { } isOwner && !isOwner)
-                    {
-                        await Task.Delay(400);
-                    }
-                    bundlerResult = await bundler.Execute();
-                    if (bundlerResult.NextFCntDown.HasValue)
-                    {
-                        // we got a new framecounter down. Make sure this
-                        // gets saved eventually to the twins
-                        loRaDevice.SetFcntDown(bundlerResult.NextFCntDown.Value);
-                    }
-                }
+                // we got a new framecounter down. Make sure this
+                // gets saved eventually to the twins
+                loRaDevice.SetFcntDown(bundlerResult.NextFCntDown.Value);
             }
 
             return bundlerResult;
