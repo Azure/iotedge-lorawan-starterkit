@@ -32,25 +32,6 @@ namespace LoRaWan.NetworkServer
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <summary>
-        /// Sets the schedule for a device client disconnect.
-        /// </summary>
-        private void SetupSchedule(LoRaDeviceClient client)
-        {
-            // Touching an existing item will update the last access item
-            // Creating will start the expiration count
-            _ = this.cache.GetOrCreate(
-                    new ScheduleKey(client.DevEui),
-                    ce =>
-                    {
-                        var keepAliveTimeout = client.KeepAliveTimeout;
-                        ce.SlidingExpiration = keepAliveTimeout;
-                        _ = ce.RegisterPostEvictionCallback((_, value, _, _) => _ = ((LoRaDeviceClient)value).DisconnectAsync());
-                        this.logger.LogDebug($"client connection timeout set to {keepAliveTimeout.TotalSeconds} seconds (sliding expiration)");
-                        return client;
-                    });
-        }
-
         public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
@@ -66,10 +47,25 @@ namespace LoRaWan.NetworkServer
 
             var loRaDeviceClient = new LoRaDeviceClient(loraDeviceClient, loRaDevice);
 
-            loRaDeviceClient.EnsureConnectedSuceeded += (_, _) =>
+            loRaDeviceClient.EnsureConnectedSuceeded += (sender, args) =>
             {
-                if (loRaDeviceClient.KeepAliveTimeout > TimeSpan.Zero)
-                    SetupSchedule(loRaDeviceClient);
+                var client = (LoRaDeviceClient)sender!;
+
+                if (loRaDeviceClient.KeepAliveTimeout <= TimeSpan.Zero)
+                    return;
+
+                // Set the schedule for a device client disconnect.
+                // Touching an existing item will update the last access item
+                // and creating will start the expiration count.
+
+                _ = this.cache.GetOrCreate(new ScheduleKey(client.DevEui), ce =>
+                {
+                    var keepAliveTimeout = client.KeepAliveTimeout;
+                    ce.SlidingExpiration = keepAliveTimeout;
+                    _ = ce.RegisterPostEvictionCallback((_, value, _, _) => _ = ((LoRaDeviceClient)value).DisconnectAsync());
+                    this.logger.LogDebug($"client connection timeout set to {keepAliveTimeout.TotalSeconds} seconds (sliding expiration)");
+                    return client;
+                });
             };
 
             var key = loRaDevice.DevEUI;
