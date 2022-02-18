@@ -53,6 +53,8 @@ namespace LoRaWan.NetworkServer
 #pragma warning restore CA1062 // Validate arguments of public methods
         }
 
+#pragma warning restore CA1034 // Nested types should not be visible
+
         private sealed record ProcessingTaskOutcome<TResult> :
             ProcessingOutcome<Task<TResult>>,
             IProcessingOutcome
@@ -66,8 +68,6 @@ namespace LoRaWan.NetworkServer
 
             Task IProcessingOutcome.Task => Result;
         }
-
-#pragma warning restore CA1034 // Nested types should not be visible
 
         public async Task<ProcessingOutcome<TResult>> ProcessAsync<TResult>(T processor, Func<Task<TResult>> function)
         {
