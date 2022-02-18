@@ -22,7 +22,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IMemoryCache cache;
         private readonly ILogger<LoRaDeviceClientConnectionManager> logger;
-        private readonly ConcurrentDictionary<DevEui, LoRaDeviceClient> clientByDevEui = new();
+        private readonly ConcurrentDictionary<DevEui, SynchronizedLoRaDeviceClient> clientByDevEui = new();
 
         private record struct ScheduleKey(DevEui DevEui);
 
@@ -45,11 +45,11 @@ namespace LoRaWan.NetworkServer
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
-            var loRaDeviceClient = new LoRaDeviceClient(loraDeviceClient, loRaDevice);
+            var loRaDeviceClient = new SynchronizedLoRaDeviceClient(loraDeviceClient, loRaDevice);
 
             loRaDeviceClient.EnsureConnectedSucceeded += (sender, args) =>
             {
-                var client = (LoRaDeviceClient)sender!;
+                var client = (SynchronizedLoRaDeviceClient)sender!;
 
                 if (loRaDeviceClient.KeepAliveTimeout <= TimeSpan.Zero)
                     return;
@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
                 {
                     var keepAliveTimeout = client.KeepAliveTimeout;
                     ce.SlidingExpiration = keepAliveTimeout;
-                    _ = ce.RegisterPostEvictionCallback(static (_, value, _, _) => _ = ((LoRaDeviceClient)value).DisconnectAsync());
+                    _ = ce.RegisterPostEvictionCallback(static (_, value, _, _) => _ = ((SynchronizedLoRaDeviceClient)value).DisconnectAsync());
                     this.logger.LogDebug($"client connection timeout set to {keepAliveTimeout.TotalSeconds} seconds (sliding expiration)");
                     return client;
                 });
@@ -101,7 +101,7 @@ namespace LoRaWan.NetworkServer
         public IAsyncDisposable ReserveConnection(DevEui devEui) =>
             this.clientByDevEui[devEui].BeginDeviceClientConnectionActivity();
 
-        private sealed class LoRaDeviceClient : ILoRaDeviceClient
+        private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient
         {
             private readonly ILoRaDeviceClient client;
             private readonly LoRaDevice device;
@@ -110,7 +110,7 @@ namespace LoRaWan.NetworkServer
             private bool shouldDisconnect;
             private int activities;
 
-            public LoRaDeviceClient(ILoRaDeviceClient client, LoRaDevice device)
+            public SynchronizedLoRaDeviceClient(ILoRaDeviceClient client, LoRaDevice device)
             {
                 this.client = client;
                 this.device = device;
