@@ -64,8 +64,16 @@ namespace LoRaWan.NetworkServer
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
+            var loRaDeviceClient = new LoRaDeviceClient(loraDeviceClient, loRaDevice);
+
+            loRaDeviceClient.EnsureConnectedSuceeded += (_, _) =>
+            {
+                if (loRaDeviceClient.KeepAliveTimeout > TimeSpan.Zero)
+                    SetupSchedule(loRaDeviceClient);
+            };
+
             var key = loRaDevice.DevEUI;
-            if (!this.clientByDevEui.TryAdd(key, new LoRaDeviceClient(this, loraDeviceClient, loRaDevice)))
+            if (!this.clientByDevEui.TryAdd(key, loRaDeviceClient))
                 throw new InvalidOperationException($"Connection already registered for device {key}");
         }
 
@@ -104,7 +112,6 @@ namespace LoRaWan.NetworkServer
 
         private sealed class LoRaDeviceClient : ILoRaDeviceClient
         {
-            private readonly LoRaDeviceClientConnectionManager connectionManager;
             private readonly ILoRaDeviceClient client;
             private readonly LoRaDevice device;
             private int pid;
@@ -112,9 +119,8 @@ namespace LoRaWan.NetworkServer
             private bool shouldDisconnect;
             private int activities;
 
-            public LoRaDeviceClient(LoRaDeviceClientConnectionManager connectionManager, ILoRaDeviceClient client, LoRaDevice device)
+            public LoRaDeviceClient(ILoRaDeviceClient client, LoRaDevice device)
             {
-                this.connectionManager = connectionManager;
                 this.client = client;
                 this.device = device;
             }
@@ -124,6 +130,8 @@ namespace LoRaWan.NetworkServer
 
             public void Dispose() => this.client?.Dispose();
 
+            public event EventHandler? EnsureConnectedSuceeded;
+
             private Task<T> InvokeExclusivelyAsync<T>(Func<ILoRaDeviceClient, Task<T>> processor) =>
                 InvokeExclusivelyAsync(doesNotRequireOpenConnection: false, processor);
 
@@ -132,11 +140,8 @@ namespace LoRaWan.NetworkServer
                 _ = Interlocked.Increment(ref this.pid);
                 return await this.exclusiveProcessor.ProcessAsync(this.pid, async () =>
                 {
-                    if (!doesNotRequireOpenConnection && this.device.KeepAliveTimeout > 0)
-                    {
+                    if (!doesNotRequireOpenConnection)
                         _ = EnsureConnected();
-                        this.connectionManager.SetupSchedule(this);
-                    }
 
                     return await processor(this.client);
                 });
@@ -163,8 +168,13 @@ namespace LoRaWan.NetworkServer
             public Task<bool> RejectAsync(Message cloudToDeviceMessage) =>
                 InvokeExclusivelyAsync(client => client.RejectAsync(cloudToDeviceMessage));
 
-            public bool EnsureConnected() =>
-                this.client.EnsureConnected();
+            public bool EnsureConnected()
+            {
+                var connected = this.client.EnsureConnected();
+                if (connected)
+                    EnsureConnectedSuceeded?.Invoke(this, EventArgs.Empty);
+                return connected;
+            }
 
             public Task DisconnectAsync() =>
                 DisconnectAsync(deferred: false);
