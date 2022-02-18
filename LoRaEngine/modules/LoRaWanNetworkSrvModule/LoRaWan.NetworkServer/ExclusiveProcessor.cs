@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer
         private readonly SemaphoreSlim processingLock = new(1);
         private readonly List<T> queue = new();
 
+        public event EventHandler<T>? Submitted;
         public event EventHandler<(T InterruptedProcessor, T InterruptingProcessor)>? Interrupted;
         public event EventHandler<T>? Processing;
         public event EventHandler<(T Processor, IProcessingOutcome Outcome)>? Processed;
@@ -83,6 +84,8 @@ namespace LoRaWan.NetworkServer
 
             lock (this.queue)
                 this.queue.Add(processor);
+
+            Submitted?.Invoke(this, processor);
 
             while (true)
             {

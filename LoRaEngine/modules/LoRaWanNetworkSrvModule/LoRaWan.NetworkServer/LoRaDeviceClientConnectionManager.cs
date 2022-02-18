@@ -135,6 +135,12 @@ namespace LoRaWan.NetworkServer
 
                 if (logger is { } someLogger && someLogger.IsEnabled(LogLevel.Debug))
                 {
+                    this.exclusiveProcessor.Submitted += (_, p) =>
+                    {
+                        var (id, name) = p;
+                        someLogger.LogDebug(@"Queued ""{Name}"" ({Id})", name, id);
+                    };
+
                     this.exclusiveProcessor.Processing += (_, p) =>
                     {
                         var (id, name) = p;
