@@ -339,6 +339,9 @@ The network ID may only consist of alphanumeric characters. After you configured
 Keep in mind that the `hostAddress` value must include the scheme and the host name. In case you omit the port, the defaults of the protocol will be used.
 
 !!! Note:
+  The discovery endpoint distributes LBS to LNS using a round-robin distribution mechanism. It will always try the same LNS per LBS first. Hence, it can be used for an active/passive scenario, but not to distribute load more evenly across different LNS.
+
+!!! Note:
   The configuration values of the network name of a station, respectively of the set of LNS in a given network, are cached by the discovery endpoint for six hours.
   If you updated the configuration, make sure to restart the discovery service to ensure that the cache is refreshed.
 
@@ -359,7 +362,7 @@ We recommend that you use an Azure App Service to run the discovery service in t
 
 #### On-premises deployment
 
-When deploying the discovery service on-premises, please read how to [Host ASP.NET Core on Windows with IIS](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-6.0) (or any other hosting strategy you may want to use). You must specify the IoT Hub connection string by setting the `ConnectionStrings__IotHub` environment variable, since you cannot use managed identities with an on-premises deployment.
+When deploying the discovery service on-premises, please read how to [Host ASP.NET Core on Windows with IIS](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-6.0) (or any other hosting strategy you may want to use). You must specify the IoT Hub connection string by setting the `ConnectionStrings__IotHub` environment variable, since you cannot use managed identities with an on-premises deployment. Similar to the LNS, the discovery endpoint exposes metrics in Prometheus format.
 
 ## Debugging in Visual Studio, outside of IoT Edge and Docker
 
