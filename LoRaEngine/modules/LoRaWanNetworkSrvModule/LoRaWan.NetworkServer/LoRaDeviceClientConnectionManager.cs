@@ -135,14 +135,12 @@ namespace LoRaWan.NetworkServer
                     this.exclusiveProcessor.Processing += (_, p) =>
                     {
                         var (id, name) = p;
-                        using var scope = someLogger.BeginDeviceScope(device.DevEUI);
                         someLogger.LogDebug(@"Invoking ""{Name}"" ({Id})", name, id);
                     };
 
                     this.exclusiveProcessor.Processed += (_, args) =>
                     {
                         var ((id, name), outcome) = args;
-                        using var scope = someLogger.BeginDeviceScope(device.DevEUI);
                         someLogger.LogDebug(@"Invoked ""{Name}"" ({Id}); status = {Status}, run-time = {RunTime}, wait-time = {WaitTime}",
                                             name, id, outcome.Task.Status, outcome.RunDuration, outcome.WaitDuration);
                     };
@@ -150,7 +148,6 @@ namespace LoRaWan.NetworkServer
                     this.exclusiveProcessor.Interrupted += (_, p) =>
                     {
                         var (interrupted, interrupting) = p;
-                        using var scope = someLogger.BeginDeviceScope(device.DevEUI);
                         someLogger.LogDebug(@"Interrupted ""{Name}"" ({Id}) by {InterruptingName} ({InterruptingId})",
                                             interrupted.Name, interrupted.Id,
                                             interrupting.Name, interrupting.Id);
