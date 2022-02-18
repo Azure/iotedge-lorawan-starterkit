@@ -77,8 +77,9 @@ namespace LoRaWan.Tests.Common
             return Create(radioMetadata, new[] { c2dMessageCheckTimeSpan, c2dMessageCheckTimeSpan, additionalMessageCheckTimeSpan, downlinkDeliveryTimeSpan }, downstreamMessageSender: downstreamMessageSender, loRaPayload: loRaPayloadData);
         }
         public static WaitableLoRaRequest CreateWaitableRequest(LoRaPayload loRaPayload,
-                                                           IDownstreamMessageSender downstreamMessageSender = null) =>
-           Create(TestUtils.GenerateTestRadioMetadata(),
+                                                                RadioMetadata radioMetadata = null,
+                                                                IDownstreamMessageSender downstreamMessageSender = null) =>
+           Create(radioMetadata ?? TestUtils.GenerateTestRadioMetadata(),
                   loRaPayload,
                   downstreamMessageSender);
 

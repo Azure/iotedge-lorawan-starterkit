@@ -11,7 +11,7 @@
 // Changes to this file will be lost if the code is re-generated.
 //------------------------------------------------------------------------------
 
-namespace LoRaWan.NetworkServer
+namespace LoRaTools
 {
     using System;
     using System.Text.Json;

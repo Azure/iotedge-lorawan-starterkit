@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer
         private readonly LoRaDeviceAPIServiceBase deviceApi;
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<FunctionBundlerProvider> logger;
-        private static readonly List<IFunctionBundlerExecutionItem> functionItems = new List<IFunctionBundlerExecutionItem>
+        private static readonly List<IFunctionBundlerExecutionItem> FunctionItems = new List<IFunctionBundlerExecutionItem>
         {
             new FunctionBundlerDeduplicationExecutionItem(),
             new FunctionBundlerADRExecutionItem(),
@@ -48,10 +48,10 @@ namespace LoRaWan.NetworkServer
             var context = new FunctionBundlerExecutionContext(gatewayId, loRaPayload.Fcnt, loRaDevice.FCntDown,
                                                               loRaPayload, loRaDevice, deduplicationFactory, request);
 
-            var qualifyingExecutionItems = new List<IFunctionBundlerExecutionItem>(functionItems.Count);
-            for (var i = 0; i < functionItems.Count; i++)
+            var qualifyingExecutionItems = new List<IFunctionBundlerExecutionItem>(FunctionItems.Count);
+            for (var i = 0; i < FunctionItems.Count; i++)
             {
-                var itm = functionItems[i];
+                var itm = FunctionItems[i];
                 if (itm.RequiresExecution(context))
                 {
                     qualifyingExecutionItems.Add(itm);
@@ -74,8 +74,9 @@ namespace LoRaWan.NetworkServer
             for (var i = 0; i < qualifyingExecutionItems.Count; i++)
             {
                 qualifyingExecutionItems[i].Prepare(context, bundlerRequest);
-                this.logger.LogDebug("FunctionBundler request finished preparing.");
             }
+
+            this.logger.LogDebug("Finished preparing {NumberOfExecutionItems} FunctionBundler requests.", qualifyingExecutionItems.Count);
 
             if (this.logger.IsEnabled(LogLevel.Debug))
                 this.logger.LogDebug($"FunctionBundler request: {JsonSerializer.Serialize(bundlerRequest)}");

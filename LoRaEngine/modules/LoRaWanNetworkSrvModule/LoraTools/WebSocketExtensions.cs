@@ -3,7 +3,7 @@
 
 #nullable enable
 
-namespace LoRaWan.NetworkServer
+namespace LoRaTools
 {
     using System;
     using System.Buffers;

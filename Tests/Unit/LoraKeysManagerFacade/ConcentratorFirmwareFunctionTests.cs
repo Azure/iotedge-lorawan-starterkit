@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     {
         private const string BlobContent = "testcontents";
 
-        private readonly StationEui TestStationEui = StationEui.Parse("11-11-11-11-11-11-11-11");
+        private readonly StationEui testStationEui = StationEui.Parse("11-11-11-11-11-11-11-11");
 
         private readonly Mock<RegistryManager> registryManager;
         private readonly Mock<BlobClient> blobClient;
@@ -62,7 +62,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
             {
-                { "StationEui", new StringValues(this.TestStationEui.ToString()) }
+                { "StationEui", new StringValues(this.testStationEui.ToString()) }
             });
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
@@ -102,7 +102,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
             {
-                { "StationEui", new StringValues(this.TestStationEui.ToString()) }
+                { "StationEui", new StringValues(this.testStationEui.ToString()) }
             });
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
@@ -142,7 +142,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
             {
-                { "StationEui", new StringValues(this.TestStationEui.ToString()) }
+                { "StationEui", new StringValues(this.testStationEui.ToString()) }
             });
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
@@ -164,7 +164,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
             {
-                { "StationEui", new StringValues(this.TestStationEui.ToString()) }
+                { "StationEui", new StringValues(this.testStationEui.ToString()) }
             });
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
@@ -190,7 +190,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var httpRequest = new Mock<HttpRequest>();
             var queryCollection = new QueryCollection(new Dictionary<string, StringValues>()
             {
-                { "StationEui", new StringValues(this.TestStationEui.ToString()) }
+                { "StationEui", new StringValues(this.testStationEui.ToString()) }
             });
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 

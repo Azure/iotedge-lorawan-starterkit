@@ -121,20 +121,16 @@ namespace LoRaWan.Tests.Integration
 
         private async Task SendTwoMessages(DeduplicationMode mode, bool confirmedMessages)
         {
-            var (messageProcessor1, dispose1) = CreateMessageDispatcher(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceApi.Object);
-            var (messageProcessor2, dispose2) = CreateMessageDispatcher(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, SecondLoRaDeviceApi.Object);
-            using (messageProcessor1)
-            using (dispose1)
-            using (messageProcessor2)
-            using (dispose2)
+            using var messageProcessor1 = CreateMessageDispatcher(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceApi.Object);
+            using var messageProcessor2 = CreateMessageDispatcher(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, SecondLoRaDeviceApi.Object);
             {
                 var payload = confirmedMessages ? this.simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: 1) : this.simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
                 using var request1 = CreateWaitableRequest(payload);
                 using var request2 = CreateWaitableRequest(payload);
 
-                messageProcessor1.DispatchRequest(request1);
-                messageProcessor2.DispatchRequest(request2);
+                messageProcessor1.Value.DispatchRequest(request1);
+                messageProcessor2.Value.DispatchRequest(request2);
 
                 await Task.WhenAll(request1.WaitCompleteAsync(Timeout.Infinite), request2.WaitCompleteAsync(Timeout.Infinite));
 
@@ -165,41 +161,34 @@ namespace LoRaWan.Tests.Integration
                 }
             }
 
-            (MessageDispatcher, IDisposable) CreateMessageDispatcher(NetworkServerConfiguration networkServerConfiguration,
-                                                                     ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-                                                                     LoRaDeviceAPIServiceBase loRaDeviceApi)
+            DisposableValue<MessageDispatcher> CreateMessageDispatcher(NetworkServerConfiguration networkServerConfiguration,
+                                                                       ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
+                                                                       LoRaDeviceAPIServiceBase loRaDeviceApi)
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope (ownership transferred to caller)
                 var cache = EmptyMemoryCache();
                 var connectionManager = new LoRaDeviceClientConnectionManager(cache, new TestOutputLogger<LoRaDeviceClientConnectionManager>(this.testOutputHelper));
                 var concentratorDeduplication = new ConcentratorDeduplication(cache, new TestOutputLogger<IConcentratorDeduplication>(this.testOutputHelper));
                 var requestHandler = CreateDefaultLoRaDataRequestHandler(networkServerConfiguration, frameCounterUpdateStrategyProvider, loRaDeviceApi, concentratorDeduplication);
-                var loRaDevice = TestUtils.CreateFromSimulatedDevice(this.simulatedDevice, connectionManager, requestHandler);
+                var loRaDevice = TestUtils.CreateFromSimulatedDevice(this.simulatedDevice, connectionManager, requestHandler.Value);
                 loRaDevice.Deduplication = mode;
                 connectionManager.Register(loRaDevice, LoRaDeviceClient.Object);
                 var loraDeviceCache = CreateDeviceCache(loRaDevice);
-                var loraDeviceFactory = new TestLoRaDeviceFactory(networkServerConfiguration, LoRaDeviceClient.Object, connectionManager, loraDeviceCache, requestHandler);
+                var loraDeviceFactory = new TestLoRaDeviceFactory(networkServerConfiguration, LoRaDeviceClient.Object, connectionManager, loraDeviceCache, requestHandler.Value);
                 var loRaDeviceRegistry = new LoRaDeviceRegistry(networkServerConfiguration, cache, loRaDeviceApi, loraDeviceFactory, loraDeviceCache);
-                return (TestMessageDispatcher.Create(cache, networkServerConfiguration, loRaDeviceRegistry, frameCounterUpdateStrategyProvider),
-                        new DisposableHolder(() =>
+                return new DisposableValue<MessageDispatcher>(
+                    TestMessageDispatcher.Create(cache, networkServerConfiguration, loRaDeviceRegistry, frameCounterUpdateStrategyProvider),
+                    () =>
 #pragma warning restore CA2000 // Dispose objects before losing scope
-                        {
-                            cache.Dispose();
-                            connectionManager.Dispose();
-                            loRaDevice.Dispose();
-                            loraDeviceCache.Dispose();
-                            loRaDeviceRegistry.Dispose();
-                        }));
+                    {
+                        cache.Dispose();
+                        connectionManager.Dispose();
+                        loRaDevice.Dispose();
+                        loraDeviceCache.Dispose();
+                        loRaDeviceRegistry.Dispose();
+                        requestHandler.Dispose();
+                    });
             }
-        }
-
-        private sealed class DisposableHolder : IDisposable
-        {
-            private readonly Action dispose;
-
-            public DisposableHolder(Action dispose) => this.dispose = dispose;
-
-            public void Dispose() => this.dispose();
         }
     }
 }

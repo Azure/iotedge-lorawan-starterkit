@@ -18,10 +18,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
-            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
+            using var joinDeviceLoader = new JoinDeviceLoader(defaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
 
             await joinDeviceLoader.LoadAsync();
-            factory.Verify(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()), Times.Once);
+            factory.Verify(x => x.CreateAndRegisterAsync(defaultDeviceInfo, It.IsAny<CancellationToken>()), Times.Once);
             Assert.True(joinDeviceLoader.CanCache);
         }
 
@@ -30,13 +30,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
-            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
+            using var joinDeviceLoader = new JoinDeviceLoader(defaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
 
-            using var device = new LoRaDevice(DefaultDeviceInfo.DevAddr, DefaultDeviceInfo.DevEUI, null);
+            using var device = new LoRaDevice(defaultDeviceInfo.DevAddr, defaultDeviceInfo.DevEUI, null);
             cache.Register(device);
 
             Assert.Equal(device, await joinDeviceLoader.LoadAsync());
-            factory.Verify(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()), Times.Never);
+            factory.Verify(x => x.CreateAndRegisterAsync(defaultDeviceInfo, It.IsAny<CancellationToken>()), Times.Never);
             Assert.True(joinDeviceLoader.CanCache);
         }
 
@@ -45,10 +45,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
-            factory.Setup(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()))
+            factory.Setup(x => x.CreateAndRegisterAsync(defaultDeviceInfo, It.IsAny<CancellationToken>()))
                    .ThrowsAsync(new LoRaProcessingException());
 
-            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
+            using var joinDeviceLoader = new JoinDeviceLoader(defaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
 
             Assert.Null(await joinDeviceLoader.LoadAsync());
             Assert.False(joinDeviceLoader.CanCache);
@@ -60,25 +60,25 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
 
-            using var device = new LoRaDevice(DefaultDeviceInfo.DevAddr, DefaultDeviceInfo.DevEUI, null);
+            using var device = new LoRaDevice(defaultDeviceInfo.DevAddr, defaultDeviceInfo.DevEUI, null);
 
-            factory.Setup(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()))
+            factory.Setup(x => x.CreateAndRegisterAsync(defaultDeviceInfo, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(() =>
                     {
                         cache.Register(device);
                         return device;
                     });
 
-            using var joinDeviceLoader = new JoinDeviceLoader(DefaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
+            using var joinDeviceLoader = new JoinDeviceLoader(defaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
 
             var t1 = joinDeviceLoader.LoadAsync();
             var t2 = joinDeviceLoader.LoadAsync();
 
             Assert.All(await Task.WhenAll(t1, t2), x => Assert.Equal(device, x));
-            factory.Verify(x => x.CreateAndRegisterAsync(DefaultDeviceInfo, It.IsAny<CancellationToken>()), Times.Once);
+            factory.Verify(x => x.CreateAndRegisterAsync(defaultDeviceInfo, It.IsAny<CancellationToken>()), Times.Once);
         }
 
-        private readonly IoTHubDeviceInfo DefaultDeviceInfo = new()
+        private readonly IoTHubDeviceInfo defaultDeviceInfo = new()
         {
             DevEUI = new DevEui(0),
             PrimaryKey = "AAAA",

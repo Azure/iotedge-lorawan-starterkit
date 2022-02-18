@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer
+namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
@@ -322,10 +322,10 @@ namespace LoRaWan.NetworkServer
 
         private sealed class DelegatingJsonReader<T> : IJsonReader<T>
         {
-            private readonly ReadHandler<T> _func;
+            private readonly ReadHandler<T> func;
 
-            public DelegatingJsonReader(ReadHandler<T> func) => _func = func;
-            public T Read(ref Utf8JsonReader reader) => _func(ref reader);
+            public DelegatingJsonReader(ReadHandler<T> func) => this.func = func;
+            public T Read(ref Utf8JsonReader reader) => this.func(ref reader);
         }
     }
 }

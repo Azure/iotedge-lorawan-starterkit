@@ -1,0 +1,207 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+#nullable enable
+
+namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using LoRaWan.NetworkServerDiscovery;
+    using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging.Abstractions;
+    using Moq;
+    using Xunit;
+
+    public sealed class TagBasedLnsDiscoveryTests : IDisposable
+    {
+        private static readonly StationEui StationEui = new StationEui(1);
+        private static readonly string[] LnsUris = new[] { "ws://foo:5000/bar/baz", "wss://baz:5001/baz", "ws://baz" };
+
+        private readonly Mock<RegistryManager> registryManagerMock;
+        private readonly MemoryCache memoryCache;
+        private readonly TagBasedLnsDiscovery subject;
+
+        public TagBasedLnsDiscoveryTests()
+        {
+            this.registryManagerMock = new Mock<RegistryManager>();
+            this.registryManagerMock.Setup(rm => rm.CreateQuery(It.IsAny<string>())).Returns(Mock.Of<IQuery>());
+            this.memoryCache = new MemoryCache(new MemoryCacheOptions());
+            this.subject = new TagBasedLnsDiscovery(memoryCache, this.registryManagerMock.Object, NullLogger<TagBasedLnsDiscovery>.Instance);
+        }
+
+        [Fact]
+        public async Task ResolveLnsAsync_Resolves_Lns_By_Tag()
+        {
+            // arrange
+            const string networkId = "foo";
+            SetupLbsTwinResponse(StationEui, networkId);
+            SetupIotHubQueryResponse(networkId, LnsUris);
+
+            // act
+            var result = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
+
+            // assert
+            Assert.Contains(result, LnsUris.Select(u => new Uri(u)));
+        }
+
+        [Fact]
+        public async Task ResolveLnsAsync_Throws_If_No_Lns_Matches()
+        {
+            // arrange
+            SetupLbsTwinResponse(StationEui, "firstnetwork");
+            SetupIotHubQueryResponse("someothernetwork", LnsUris);
+
+            // act + assert
+            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.subject.ResolveLnsAsync(StationEui, CancellationToken.None));
+            Assert.Equal(LoRaProcessingErrorCode.LnsDiscoveryFailed, ex.ErrorCode);
+        }
+
+        [Theory]
+        [InlineData("asdf123.")]
+        [InlineData("'asdf123'")]
+        [InlineData("network+")]
+        public async Task ResolveLnsAsync_Throws_If_NetworkId_Is_Invalid(string networkId)
+        {
+            // arrange
+            SetupLbsTwinResponse(StationEui, networkId);
+
+            // act + assert
+            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.subject.ResolveLnsAsync(StationEui, CancellationToken.None));
+            Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, ex.ErrorCode);
+        }
+
+        [Fact]
+        public async Task ResolveLnsAsync_Throws_If_Network_Is_Empty()
+        {
+            SetupLbsTwinResponse(StationEui, string.Empty);
+            _ = await Assert.ThrowsAsync<InvalidOperationException>(() => this.subject.ResolveLnsAsync(StationEui, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task ResolveLnsAsync_Uses_Round_Robin_Distribution()
+        {
+            // arrange
+            const int numberOfRequests = 5;
+            const string networkId = "foo";
+            SetupLbsTwinResponse(StationEui, networkId);
+            SetupIotHubQueryResponse(networkId, LnsUris);
+
+            // act + assert
+            for (var i = 0; i < numberOfRequests; ++i)
+            {
+                var result = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
+                Assert.Equal(new Uri(LnsUris[i % LnsUris.Length]), result);
+            }
+        }
+
+        [Fact]
+        public async Task ResolveLnsAsync_Tracks_Last_Returned_Lns_By_Station()
+        {
+            // arrange
+            const string networkId = "foo";
+            var firstStation = new StationEui(1);
+            var secondStation = new StationEui(2);
+            SetupLbsTwinResponse(firstStation, networkId);
+            SetupLbsTwinResponse(secondStation, networkId);
+            SetupIotHubQueryResponse(networkId, LnsUris);
+
+            // act
+            var first = await this.subject.ResolveLnsAsync(firstStation, CancellationToken.None);
+            var second = await this.subject.ResolveLnsAsync(secondStation, CancellationToken.None);
+
+            // assert
+            Assert.Equal(new Uri(LnsUris[0]), first);
+            Assert.Equal(new Uri(LnsUris[0]), second);
+        }
+
+        [Fact]
+        public async Task ResolveLnsAsync_Caches_Lns_By_Network()
+        {
+            // arrange
+            const string networkId = "foo";
+            var firstStation = new StationEui(1);
+            var secondStation = new StationEui(2);
+            SetupLbsTwinResponse(firstStation, networkId);
+            SetupLbsTwinResponse(secondStation, networkId);
+            SetupIotHubQueryResponse(networkId, LnsUris);
+
+            // act
+            _ = await this.subject.ResolveLnsAsync(firstStation, CancellationToken.None);
+            _ = await this.subject.ResolveLnsAsync(secondStation, CancellationToken.None);
+
+            // assert
+            this.registryManagerMock.Verify(rm => rm.CreateQuery(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ResolveLnsAsync_Throws_If_Twin_Not_Found()
+        {
+            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.subject.ResolveLnsAsync(StationEui, CancellationToken.None));
+            Assert.Equal(LoRaProcessingErrorCode.TwinFetchFailed, ex.ErrorCode);
+        }
+
+        [Fact]
+        public async Task ResolveLnsAsync_Should_Be_Resilient_Against_Missing_Host_Address()
+        {
+            // arrange
+            const string networkId = "foo";
+            SetupLbsTwinResponse(StationEui, networkId);
+            var lnsUris = LnsUris.Concat(new[] { string.Empty, null }).ToList();
+            SetupIotHubQueryResponse(networkId, lnsUris);
+
+            // act
+            var result = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
+
+            // assert
+            Assert.Contains(result, LnsUris.Select(u => new Uri(u)));
+        }
+
+        [Fact]
+        public async Task ResolveLnsAsync_Caches_Station_Network()
+        {
+            // arrange
+            const string networkId = "foo";
+            SetupLbsTwinResponse(StationEui, networkId);
+            SetupIotHubQueryResponse(networkId, LnsUris);
+
+            // act
+            _ = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
+            _ = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
+
+            // assert
+            this.registryManagerMock.Verify(rm => rm.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        private void SetupLbsTwinResponse(StationEui stationEui, string networkId)
+        {
+            this.registryManagerMock
+                .Setup(rm => rm.GetTwinAsync(stationEui.ToString(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Twin { Tags = new TwinCollection(@$"{{""network"":""{networkId}""}}") });
+        }
+
+        private void SetupIotHubQueryResponse(string networkId, IList<string?> hostAddresses)
+        {
+            var queryMock = new Mock<IQuery>();
+            var i = 0;
+            queryMock.Setup(q => q.HasMoreResults).Returns(() => i++ % 2 == 0);
+            queryMock.Setup(q => q.GetNextAsJsonAsync()).ReturnsAsync(from ha in hostAddresses
+                                                                      select ha is { } someHa ? JsonSerializer.Serialize(new { hostAddress = ha }) : "{}");
+            this.registryManagerMock
+                .Setup(rm => rm.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'"))
+                .Returns(queryMock.Object);
+        }
+
+        public void Dispose()
+        {
+            this.memoryCache.Dispose();
+            this.subject.Dispose();
+        }
+    }
+}

@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
     using System.Linq;
     using System.Text;
     using System.Text.Json;
+    using LoRaTools;
     using LoRaTools.Regions;
 
     internal static class LnsStationConfiguration

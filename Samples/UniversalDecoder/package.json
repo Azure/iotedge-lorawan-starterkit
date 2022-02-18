@@ -18,11 +18,11 @@
         "express-validator": "^6.14.0",
         "fs-extra": "^10.0.0",
         "glob": "^7.1.7",
-        "pino": "^7.6.5",
+        "pino": "^7.8.0",
         "pino-pretty": "^7.5.1"
     },
     "devDependencies": {
-        "jest": "^27.4.7",
+        "jest": "^27.5.1",
         "supertest": "^6.2.2"
     },
     "jest": {

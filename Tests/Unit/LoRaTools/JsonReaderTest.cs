@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit.NetworkServer
+namespace LoRaWan.Tests.Unit.LoRaTools
 {
     using System;
     using System.Linq;
     using System.Text;
     using System.Text.Json;
-    using LoRaWan.NetworkServer;
+    using global::LoRaTools;
     using LoRaWan.Tests.Common;
     using Xunit;
 

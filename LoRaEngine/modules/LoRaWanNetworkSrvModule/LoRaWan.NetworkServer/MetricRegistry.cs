@@ -57,13 +57,15 @@ namespace LoRaWan.NetworkServer
             new Dictionary<string, CustomMetric>(Registry.ToDictionary(m => m.Name, m => m), StringComparer.OrdinalIgnoreCase);
     }
 
-    internal record CustomMetric(string Name, string Description, MetricType Type, string[] Tags);
+#pragma warning disable CA1819 // Properties should not return arrays (prometheus-net only accepts arrays in their API, done to avoid unnecessary conversion)
+    public record CustomMetric(string Name, string Description, MetricType Type, string[] Tags);
+#pragma warning restore CA1819 // Properties should not return arrays
 
     internal record CustomHistogram(string Name, string Description, MetricType Type, string[] Tags,
                                     double BucketStart, double BucketWidth, int BucketCount)
         : CustomMetric(Name, Description, Type, Tags);
 
-    internal enum MetricType
+    public enum MetricType
     {
         Counter,
         Histogram,
