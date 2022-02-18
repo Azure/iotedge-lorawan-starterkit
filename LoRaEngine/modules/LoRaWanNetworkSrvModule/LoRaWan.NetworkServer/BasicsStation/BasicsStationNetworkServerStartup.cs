@@ -12,6 +12,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Logger;
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
+    using LoRaTools.NetworkServerDiscovery;
     using LoRaWan;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
@@ -144,7 +145,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                    {
                        _ = endpoints.MapMetrics();
 
-                       Map(HttpMethod.Get, BasicsStationNetworkServer.DiscoveryEndpoint,
+                       Map(HttpMethod.Get, ILnsDiscovery.EndpointName,
                            context => context.Request.Host.Port is BasicsStationNetworkServer.LnsPort or BasicsStationNetworkServer.LnsSecurePort,
                            (ILnsProtocolMessageProcessor processor) => processor.HandleDiscoveryAsync);
 

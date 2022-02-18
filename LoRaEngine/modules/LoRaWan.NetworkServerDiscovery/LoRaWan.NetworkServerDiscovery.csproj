@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(TargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="$(MicrosoftAzureDevicesVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
+  </ItemGroup>
+
+</Project>
