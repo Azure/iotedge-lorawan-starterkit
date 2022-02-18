@@ -350,7 +350,6 @@ You can then choose to deploy the discovery service either on-prem or in the clo
 - The log level can be configured by setting the `Logging__LogLevel__Default` environment variable. For more fine-grained configuration of the console log level, refer to [Logging in .NET Core and ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-6.0#set-log-level-by-command-line-environment-variables-and-other-configuration).
 - You can use Application Insights by setting the `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable. The log levels for Application Insights can be configured similarly to the default log levels, but by using the environment variables `Logging__ApplicationInsights__LogLevel__<Default|...>`.
 - You can configure on which URLs the service is listening by setting the environment variable `ASPNETCORE_URLS`.
-- You can configure the certificates that should be used by the discovery endpoint as described in the [Minimal APIs overview](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0#specify-https-using-a-custom-certificate). Instead of using the `appsettings.json` you can always use environment variables of the structure `Kestrel__Certificates__Default__<Path|KeyPath|...>`.
 
 #### Deployment in Azure
 
@@ -362,7 +361,10 @@ We recommend that you use an Azure App Service to run the discovery service in t
 
 #### On-premises deployment
 
-When deploying the discovery service on-premises, please read how to [Host ASP.NET Core on Windows with IIS](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-6.0) (or any other hosting strategy you may want to use). You must specify the IoT Hub connection string by setting the `ConnectionStrings__IotHub` environment variable, since you cannot use managed identities with an on-premises deployment. Similar to the LNS, the discovery endpoint exposes metrics in Prometheus format.
+When deploying the discovery service on-premises, please read how to [Host ASP.NET Core on Windows with IIS](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-6.0) (or any other hosting strategy you may want to use).
+
+- You must specify the IoT Hub connection string by setting the `ConnectionStrings__IotHub` environment variable, since you cannot use managed identities with an on-premises deployment. Similar to the LNS, the discovery endpoint exposes metrics in Prometheus format.
+- You can configure the certificates that should be used by the discovery endpoint as described in the [Minimal APIs overview](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0#specify-https-using-a-custom-certificate). Instead of using the `appsettings.json` you can always use environment variables of the structure `Kestrel__Certificates__Default__<Path|KeyPath|...>`.
 
 ## Debugging in Visual Studio, outside of IoT Edge and Docker
 
