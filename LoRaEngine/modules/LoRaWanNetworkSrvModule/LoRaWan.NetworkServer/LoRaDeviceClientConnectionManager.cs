@@ -24,6 +24,8 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger<LoRaDeviceClientConnectionManager> logger;
         private readonly ConcurrentDictionary<DevEui, LoRaDeviceClient> clientByDevEui = new();
 
+        private record struct ScheduleKey(DevEui DevEui);
+
         public LoRaDeviceClientConnectionManager(IMemoryCache cache, ILogger<LoRaDeviceClientConnectionManager> logger)
         {
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
@@ -35,11 +37,10 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         private void SetupSchedule(LoRaDeviceClient client)
         {
-            var key = GetScheduleCacheKey(client.DevEui);
             // Touching an existing item will update the last access item
             // Creating will start the expiration count
             _ = this.cache.GetOrCreate(
-                    key,
+                    new ScheduleKey(client.DevEui),
                     ce =>
                     {
                         var keepAliveTimeout = client.KeepAliveTimeout;
@@ -49,8 +50,6 @@ namespace LoRaWan.NetworkServer
                         return client;
                     });
         }
-
-        private static string GetScheduleCacheKey(DevEui devEui) => string.Concat("connection:schedule:", devEui);
 
         public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice)
         {
