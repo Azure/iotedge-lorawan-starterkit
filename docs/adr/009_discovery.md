@@ -25,7 +25,7 @@ For configuring which LNS a LBS should/can connect to, we are going to tag the L
 
 In a second stage, we will prioritize one of the more advanced health probe strategies and potentially introduce more supported configuration approaches.
 
-We will maintain the discovery endpoints on the LNS for backwards compatibility.
+We will maintain the discovery endpoints on the LNS, to enable the scenario where a user does not want to use the standalone discovery service.
 
 ## Detailed analysis
 
