@@ -32,8 +32,8 @@ if [[ -z "$RADIODEV" ]]; then
     export RADIODEV=/dev/spidev$SPI_DEV.0
 fi
 
-#start basestation
-echo "Starting base station..."
+#start basics station
+echo "Starting basics station..."
 if [[ "$CORECELL" == true ]]; then
     echo "Starting Corecell (SX1302) binary"
     $STATION_PATH/station.corecell -f
