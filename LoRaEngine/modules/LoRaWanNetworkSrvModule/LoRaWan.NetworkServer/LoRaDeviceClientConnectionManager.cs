@@ -66,15 +66,8 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
             var key = loRaDevice.DevEUI;
-            lock (this.clientByDevEui)
-            {
-                if (this.clientByDevEui.ContainsKey(key))
-                {
-                    throw new InvalidOperationException($"Connection already registered for device {loRaDevice.DevEUI}");
-                }
-
-                this.clientByDevEui[key] = new LoRaDeviceClient(this, loraDeviceClient, loRaDevice);
-            }
+            if (!this.clientByDevEui.TryAdd(key, new LoRaDeviceClient(this, loraDeviceClient, loRaDevice)))
+                throw new InvalidOperationException($"Connection already registered for device {key}");
         }
 
         public void Release(LoRaDevice loRaDevice)
@@ -102,23 +95,13 @@ namespace LoRaWan.NetworkServer
                 client.Dispose();
         }
 
-        public Task<T> UseAsync<T>(DevEui devEui, Func<ILoRaDeviceClient, Task<T>> processor)
-        {
-            if (processor == null) throw new ArgumentNullException(nameof(processor));
+        public Task<T> UseAsync<T>(DevEui devEui, Func<ILoRaDeviceClient, Task<T>> processor) =>
+            processor == null
+                ? throw new ArgumentNullException(nameof(processor))
+                : processor(this.clientByDevEui[devEui]);
 
-            ILoRaDeviceClient client;
-            lock (this.clientByDevEui)
-                client = this.clientByDevEui[devEui];
-            return processor(client);
-        }
-
-        public IAsyncDisposable ReserveConnection(DevEui devEui)
-        {
-            ILoRaDeviceClient client;
-            lock (this.clientByDevEui)
-                client = this.clientByDevEui[devEui];
-            return ((LoRaDeviceClient)client).BeginDeviceClientConnectionActivity();
-        }
+        public IAsyncDisposable ReserveConnection(DevEui devEui) =>
+            this.clientByDevEui[devEui].BeginDeviceClientConnectionActivity();
 
         private sealed class LoRaDeviceClient : ILoRaDeviceClient
         {
