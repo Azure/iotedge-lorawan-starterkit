@@ -110,6 +110,7 @@ namespace LoRaWan.Tests.E2E
         }
     }
 
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class LnsDiscoveryTests : IClassFixture<LnsDiscoveryFixture>, IDisposable
     {
         private static readonly IJsonReader<(Uri LnsUri, string Muxs, StationEui StationEui)> RouterInfoResponseReader =
@@ -136,14 +137,13 @@ namespace LoRaWan.Tests.E2E
         public async Task Discovery_Requests_Should_Be_Distributed_Between_Lns()
         {
             // arrange
-            var cancellationToken = CancellationToken.None;
             var station = this.firstStation;
             var lnsInfo = LnsDiscoveryFixture.LnsInfoByStation[station];
 
             // act + assert
             var responses = new List<Uri>();
             for (var i = 0; i < lnsInfo.Length * 2; ++i)
-                responses.Add(await GetLnsAddressAndAssertAsync(station, cancellationToken));
+                responses.Add(await GetLnsAddressAndAssertAsync(station, CancellationToken.None));
 
             // assert
             AssertLnsResponsesForStation(station, lnsInfo.Concat(lnsInfo).ToList(), responses);
