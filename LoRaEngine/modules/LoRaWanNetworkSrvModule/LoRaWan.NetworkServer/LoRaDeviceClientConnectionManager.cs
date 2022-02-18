@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
                 {
                     var keepAliveTimeout = client.KeepAliveTimeout;
                     ce.SlidingExpiration = keepAliveTimeout;
-                    _ = ce.RegisterPostEvictionCallback((_, value, _, _) => _ = ((LoRaDeviceClient)value).DisconnectAsync());
+                    _ = ce.RegisterPostEvictionCallback(static (_, value, _, _) => _ = ((LoRaDeviceClient)value).DisconnectAsync());
                     this.logger.LogDebug($"client connection timeout set to {keepAliveTimeout.TotalSeconds} seconds (sliding expiration)");
                     return client;
                 });
