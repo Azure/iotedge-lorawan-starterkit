@@ -98,7 +98,7 @@ design. That is, a `LoRaDevice` is _minimally initialized_ when created so its
 that completes, a `LoRaDevice` is not considered technically ready for being
 put in the cache. Since a `LoRaDevice` cannot be discovered during its
 initialization, it cannot be synchronized with the other operations. To work
-around this,m load operations will be synchronized in the `LoRaDeviceRegistry`
+around this, load operations will be synchronized in the `LoRaDeviceRegistry`
 to ensure there is only ever one operation loading the twins for a particular
 DevEUI. It was also decided that closing the connection after initialization
 is the easiest approach to delay the connection ownership decision to after
