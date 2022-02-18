@@ -338,12 +338,12 @@ The network ID may only consist of alphanumeric characters. After you configured
 
 Keep in mind that the `hostAddress` value must include the scheme and the host name. In case you omit the port, the defaults of the protocol will be used.
 
-!!! Note:
-  The discovery endpoint distributes LBS to LNS using a round-robin distribution mechanism. It will always try the same LNS per LBS first. Hence, it can be used for an active/passive scenario, but not to distribute load more evenly across different LNS.
+!!! note
+    The discovery endpoint distributes LBS to LNS using a round-robin distribution mechanism. It will always try the same LNS per LBS first. Hence, it can be used for an active/passive scenario, but not to distribute load more evenly across different LNS.
 
-!!! Note:
-  The configuration values of the network name of a station, respectively of the set of LNS in a given network, are cached by the discovery endpoint for six hours.
-  If you updated the configuration, make sure to restart the discovery service to ensure that the cache is refreshed.
+!!! note
+    The configuration values of the network name of a station, respectively of the set of LNS in a given network, are cached by the discovery endpoint for six hours.
+    If you updated the configuration, make sure to restart the discovery service to ensure that the cache is refreshed.
 
 You can then choose to deploy the discovery service either on-prem or in the cloud. For both deployment strategies, you can configure the following behavior:
 
