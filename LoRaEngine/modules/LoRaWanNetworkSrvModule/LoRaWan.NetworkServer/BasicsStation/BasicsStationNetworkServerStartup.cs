@@ -113,7 +113,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                             new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>(), sp.GetRequiredService<ILogger<PrometheusMetricExporter>>()))));
 
             if (useApplicationInsights)
-                _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
+            {
+                _ = services.AddApplicationInsightsTelemetry(appInsightsKey)
+                            .AddSingleton<ITracing, ApplicationInsightsTracing>();
+            }
+            else
+            {
+                _ = services.AddSingleton<ITracing, NoopTracing>();
+            }
 
             if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
                 _ = services.AddSingleton<IClientCertificateValidatorService, ClientCertificateValidatorService>();
