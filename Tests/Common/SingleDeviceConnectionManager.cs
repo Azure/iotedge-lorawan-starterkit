@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Common
 
         public Task<T> UseAsync<T>(DevEui devEui, Func<ILoRaDeviceClient, Task<T>> processor)
         {
-            throw new NotImplementedException();
+            return processor(this.singleDeviceClient);
         }
 
         public IAsyncDisposable ReserveConnection(DevEui devEui)

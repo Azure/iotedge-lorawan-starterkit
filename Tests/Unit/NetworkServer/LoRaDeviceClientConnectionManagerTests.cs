@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // assert
             foreach (var (_, c) in deviceRegistrations)
             {
-                c.Verify(client => client.Dispose(), Times.Exactly(2));
+                c.Verify(client => client.Dispose(), Times.Exactly(1));
             }
         }
 
