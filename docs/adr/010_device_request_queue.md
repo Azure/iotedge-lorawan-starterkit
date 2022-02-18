@@ -1,6 +1,6 @@
 # Device Request Queue
 
-- **Feature**: [#1480]
+- **Feature**: [#1479]
 - **Status**: Proposed
 
 ## Context
@@ -151,4 +151,4 @@ The absence of an explicit queue could be make it more difficult for someone
 to understand the code and choices made if they are not familiar with the
 intricacies of how async-await operates.
 
-[#1480]: https://github.com/Azure/iotedge-lorawan-starterkit/issues/1479
+[#1479]: https://github.com/Azure/iotedge-lorawan-starterkit/issues/1479
