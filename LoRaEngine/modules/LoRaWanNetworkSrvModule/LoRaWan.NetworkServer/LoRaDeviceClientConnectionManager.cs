@@ -217,26 +217,54 @@ namespace LoRaWan.NetworkServer
             private Task<DisconnectionResult> DisconnectAsync(bool deferred) =>
                 InvokeExclusivelyAsync(doesNotRequireOpenConnection: true, async client =>
                 {
+                    DisconnectionResult result;
+
                     if (Interlocked.Add(ref this.activities, 0) > 0)
                     {
                         this.shouldDisconnect = true;
-                        return DisconnectionResult.Deferred;
+                        result = DisconnectionResult.Deferred;
+                    }
+                    else if (deferred && !this.shouldDisconnect)
+                    {
+                        result = DisconnectionResult.AlreadyDisconnected;
+                    }
+                    else
+                    {
+                        this.shouldDisconnect = false;
+                        await client.DisconnectAsync();
+                        result = DisconnectionResult.Disconnected;
                     }
 
-                    if (deferred && !this.shouldDisconnect)
-                        return DisconnectionResult.AlreadyDisconnected;
+                    if (this.logger is { } logger && logger.IsEnabled(LogLevel.Debug))
+                    {
+                        const string message = $"{nameof(DisconnectAsync)} = {{DisconnectResult}}";
+                        logger.LogDebug(message, result);
+                    }
 
-                    this.shouldDisconnect = false;
-                    await client.DisconnectAsync();
-                    return DisconnectionResult.Disconnected;
+                    return result;
                 });
 
             public IAsyncDisposable BeginDeviceClientConnectionActivity()
             {
-                _ = Interlocked.Increment(ref this.activities);
+                var activities = Interlocked.Increment(ref this.activities);
+
+                if (this.logger is { } logger && logger.IsEnabled(LogLevel.Debug))
+                {
+                    const string message = $"{nameof(BeginDeviceClientConnectionActivity)} = {{Activities}}";
+                    logger.LogDebug(message, activities);
+                }
+
                 return new AsyncDisposable(async cancellationToken =>
                 {
-                    if (Interlocked.Decrement(ref this.activities) > 0)
+                    var activities = Interlocked.Decrement(ref this.activities);
+
+                    if (this.logger is { } logger && logger.IsEnabled(LogLevel.Debug))
+                    {
+                        const string message = $"{nameof(BeginDeviceClientConnectionActivity)} (disposal) = {{Activities}}";
+                        logger.LogDebug(message, activities);
+                    }
+
+                    if (activities > 0)
                         return;
 
                     _ = await DisconnectAsync(deferred: true);
