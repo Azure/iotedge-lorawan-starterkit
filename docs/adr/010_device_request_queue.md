@@ -140,7 +140,7 @@ The chosen approach has the following benefits:
   application-level).
 
 - Greatest potential to simplify tests since assertions can rely on simply
-  return values and exceptions.
+  return values and exceptions, instead of success/failure notifications.
 
 - It is not mutually exclusive with other approaches explored. For example, by
   simplifying to the request-response model, it would be even easier to have
