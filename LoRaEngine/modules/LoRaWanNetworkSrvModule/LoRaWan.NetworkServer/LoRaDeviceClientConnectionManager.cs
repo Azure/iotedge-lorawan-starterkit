@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
 
             var loRaDeviceClient = new LoRaDeviceClient(loraDeviceClient, loRaDevice);
 
-            loRaDeviceClient.EnsureConnectedSuceeded += (sender, args) =>
+            loRaDeviceClient.EnsureConnectedSucceeded += (sender, args) =>
             {
                 var client = (LoRaDeviceClient)sender!;
 
@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer
 
             public void Dispose() => this.client?.Dispose();
 
-            public event EventHandler? EnsureConnectedSuceeded;
+            public event EventHandler? EnsureConnectedSucceeded;
 
             private Task<T> InvokeExclusivelyAsync<T>(Func<ILoRaDeviceClient, Task<T>> processor) =>
                 InvokeExclusivelyAsync(doesNotRequireOpenConnection: false, processor);
@@ -163,7 +163,7 @@ namespace LoRaWan.NetworkServer
             {
                 var connected = this.client.EnsureConnected();
                 if (connected)
-                    EnsureConnectedSuceeded?.Invoke(this, EventArgs.Empty);
+                    EnsureConnectedSucceeded?.Invoke(this, EventArgs.Empty);
                 return connected;
             }
 
