@@ -105,7 +105,7 @@ is the easiest approach to delay the connection ownership decision to after
 the arrival of the first message.
 
 The approach to simplify the entire flow and processing of a message into a
-simple request-response model will be taken a stretch goal so that the
+simple request-response model will be taken as a stretch goal so that the
 connection management can be implemented and tested earlier. A quick spike
 demonstrated that the changes to the main code base would be fairly contained
 and the largest impact is expected to be in adapting the tests (which could
