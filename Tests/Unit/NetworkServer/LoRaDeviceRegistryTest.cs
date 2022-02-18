@@ -343,7 +343,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Device should not be connected
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceClient.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Never());
-            LoRaDeviceClient.Verify(x => x.Disconnect(), Times.Never());
 
             // device is in cache
             Assert.True(DeviceCache.TryGetForPayload(request1.Payload, out var loRaDevice));

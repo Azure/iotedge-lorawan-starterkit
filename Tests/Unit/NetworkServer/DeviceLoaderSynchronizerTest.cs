@@ -196,8 +196,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // device should not be initialized, since it belongs to another gateway
             loRaDeviceClient.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Never());
 
-            // device should not be disconnected (was never connected)
-            loRaDeviceClient.Verify(x => x.Disconnect(), Times.Never());
+            // device should be disconnected after initialization
+            loRaDeviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
 
             // Device was searched by DevAddr
             apiService.VerifyAll();
@@ -380,7 +380,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await deviceLoader.ExecuteCreateDevicesAsync(new[] { new IoTHubDeviceInfo { DevAddr = new DevAddr(0x456),  DevEUI = devEui } });
 
             loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
-            loRaDevice.Verify(x => x.CloseConnection(false), Times.Once);
+            loRaDevice.Verify(x => x.CloseConnection(true), Times.Once);
         }
 
         [Fact]
@@ -399,7 +399,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await deviceLoader.ExecuteCreateDevicesAsync(new[] { new IoTHubDeviceInfo { DevAddr = new DevAddr(0x456), DevEUI = devEui } });
 
             loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
-            loRaDevice.Verify(x => x.CloseConnection(false), Times.Once);
+            loRaDevice.Verify(x => x.CloseConnection(true), Times.Once);
 
             Assert.True(deviceLoader.HasLoadingDeviceError);
         }

@@ -156,7 +156,7 @@ namespace LoRaWan.NetworkServer
                     }
                     finally
                     {
-                        device.CloseConnection();
+                        device.CloseConnection(true);
                     }
                 }
 
@@ -185,7 +185,7 @@ namespace LoRaWan.NetworkServer
                             // run initializers
                             InitializeDevice(device);
                             deviceCreated++;
-                            device.CloseConnection();
+                            device.CloseConnection(true);
                         }
                     }
                 }

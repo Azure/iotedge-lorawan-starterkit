@@ -942,7 +942,7 @@ namespace LoRaWan.NetworkServer
 
         internal virtual void CloseConnection(bool force = false)
         {
-            if (force || (IsConnectionOwner is { } isOwner && !isOwner))
+            if (IsConnectionOwner is null or false)
             {
                 this.connectionManager?.CloseConnection(this);
             }

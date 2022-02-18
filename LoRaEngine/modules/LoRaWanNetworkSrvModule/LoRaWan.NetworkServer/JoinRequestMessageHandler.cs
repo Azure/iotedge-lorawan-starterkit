@@ -307,7 +307,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                loRaDevice?.CloseConnection();
+                loRaDevice?.CloseConnection(true);
             }
         }
     }
