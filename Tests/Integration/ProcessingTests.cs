@@ -1293,6 +1293,9 @@ namespace LoRaWan.Tests.Integration
             deviceClient.Setup(x => x.Disconnect())
                .Returns(true);
 
+            deviceClient.Setup(x => x.EnsureConnected())
+               .Returns(true);
+
             deviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                .ReturnsAsync((Message)null);
 
