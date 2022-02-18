@@ -36,6 +36,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A3AF6806
 		Tests\.editorconfig = Tests\.editorconfig
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.NetworkServerDiscovery", "LoRaEngine\modules\LoRaWan.NetworkServerDiscovery\LoRaWan.NetworkServerDiscovery.csproj", "{CF2A693D-59FF-490D-934C-8D7AD552A030}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -132,6 +134,14 @@ Global
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|x86.ActiveCfg = Release|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|x86.Build.0 = Release|Any CPU
+		{CF2A693D-59FF-490D-934C-8D7AD552A030}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF2A693D-59FF-490D-934C-8D7AD552A030}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF2A693D-59FF-490D-934C-8D7AD552A030}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CF2A693D-59FF-490D-934C-8D7AD552A030}.Debug|x86.Build.0 = Debug|Any CPU
+		{CF2A693D-59FF-490D-934C-8D7AD552A030}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF2A693D-59FF-490D-934C-8D7AD552A030}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF2A693D-59FF-490D-934C-8D7AD552A030}.Release|x86.ActiveCfg = Release|Any CPU
+		{CF2A693D-59FF-490D-934C-8D7AD552A030}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

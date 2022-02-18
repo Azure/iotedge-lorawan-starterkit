@@ -15,6 +15,7 @@ namespace LoRaWan.Tests.Common
     using LoRaWan.NetworkServer;
     using LoRaTools.LoRaMessage;
     using System.Text.Json.Serialization;
+    using LoRaTools;
 
     public sealed class SimulatedBasicsStation : IDisposable
     {

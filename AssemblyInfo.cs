@@ -8,5 +8,6 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("LoRaTools")]
 [assembly: InternalsVisibleTo("LoRaWan.NetworkServer")]
 [assembly: InternalsVisibleTo("LoRaWan.Tests.Unit")]
+[assembly: InternalsVisibleTo("LoRaWan.Tests.Integration")]
 [assembly: InternalsVisibleTo("LoRaWan.Tests.Common")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

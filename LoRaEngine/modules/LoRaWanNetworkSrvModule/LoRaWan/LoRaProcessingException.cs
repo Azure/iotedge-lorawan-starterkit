@@ -65,6 +65,7 @@ namespace LoRaWan
         InvalidFrequency,
         InvalidFormat,
         PayloadNotSet,
-        RegionNotSet
+        RegionNotSet,
+        LnsDiscoveryFailed
     }
 }
