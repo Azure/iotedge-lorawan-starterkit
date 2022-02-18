@@ -136,6 +136,8 @@ namespace LoRaWan.Tests.E2E
         [Fact]
         public async Task Discovery_Requests_Should_Be_Distributed_Between_Lns()
         {
+            LogTestStart(nameof(Discovery_Requests_Should_Be_Distributed_Between_Lns));
+
             // arrange
             var station = this.firstStation;
             var lnsInfo = LnsDiscoveryFixture.LnsInfoByStation[station];
@@ -152,6 +154,8 @@ namespace LoRaWan.Tests.E2E
         [Fact]
         public async Task Discovery_Requests_Should_Distinguish_Between_Stations()
         {
+            LogTestStart(nameof(Discovery_Requests_Should_Distinguish_Between_Stations));
+
             // arrange
             var cancellationToken = CancellationToken.None;
             Assert.Equal(LnsDiscoveryFixture.LnsInfoByStation[this.firstStation].AsEnumerable(), LnsDiscoveryFixture.LnsInfoByStation[this.secondStation].AsEnumerable());
@@ -167,6 +171,8 @@ namespace LoRaWan.Tests.E2E
         [Fact]
         public async Task Discovery_Requests_Should_Distinguish_Between_Networks()
         {
+            LogTestStart(nameof(Discovery_Requests_Should_Distinguish_Between_Networks));
+
             // arrange
             var cancellationToken = CancellationToken.None;
             Assert.NotEqual(LnsDiscoveryFixture.LnsInfoByStation[this.firstStation].AsEnumerable(), LnsDiscoveryFixture.LnsInfoByStation[this.thirdStation].AsEnumerable());
@@ -190,6 +196,8 @@ namespace LoRaWan.Tests.E2E
         [Fact]
         public async Task Discovery_Requests_Should_Indicate_Error_Reason_For_Unknown_Station()
         {
+            LogTestStart(nameof(Discovery_Requests_Should_Indicate_Error_Reason_For_Unknown_Station));
+
             var response = await SendSingleMessageAsync(new StationEui((ulong)RandomNumberGenerator.GetInt32(int.MaxValue)), CancellationToken.None);
             Assert.Contains("could not find twin for station", response, StringComparison.OrdinalIgnoreCase);
         }
@@ -225,6 +233,8 @@ namespace LoRaWan.Tests.E2E
 
             return result;
         }
+
+        private static void LogTestStart(string testName) => TestLogger.Log($"Starting test '{testName}'.");
 
         public void Dispose() => this.subject.Dispose();
     }
