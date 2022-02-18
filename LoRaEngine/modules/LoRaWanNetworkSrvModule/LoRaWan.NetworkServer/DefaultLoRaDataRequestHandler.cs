@@ -529,7 +529,8 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged);
+                    if (loRaDevice.IsConnectionOwner.GetValueOrDefault())
+                        await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged);
                 }
                 catch (OperationCanceledException saveChangesException)
                 {

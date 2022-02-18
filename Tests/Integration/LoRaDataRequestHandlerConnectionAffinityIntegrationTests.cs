@@ -104,11 +104,13 @@ namespace LoRaWan.Tests.Integration
             {
                 this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Never);
                 this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Once);
+                this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Once);
             }
             else
             {
                 this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Once);
                 this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Never);
+                this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Never);
             }
         }
 
