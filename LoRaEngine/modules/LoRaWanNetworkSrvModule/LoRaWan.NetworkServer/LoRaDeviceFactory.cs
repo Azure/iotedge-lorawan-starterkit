@@ -70,7 +70,10 @@ namespace LoRaWan.NetworkServer
                 {
                     throw new LoRaProcessingException("Failed to initialize device twins.", LoRaProcessingErrorCode.DeviceInitializationFailed);
                 }
+
+                loRaDevice.CloseConnection();
                 this.loRaDeviceCache.Register(loRaDevice);
+
                 return loRaDevice;
             }
             catch

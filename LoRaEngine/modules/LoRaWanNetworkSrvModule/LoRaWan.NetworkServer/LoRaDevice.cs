@@ -944,7 +944,7 @@ namespace LoRaWan.NetworkServer
         {
             if (force || (IsConnectionOwner is { } isOwner && !isOwner))
             {
-                this.connectionManager.CloseConnection(this);
+                this.connectionManager?.CloseConnection(this);
             }
         }
 
@@ -952,7 +952,7 @@ namespace LoRaWan.NetworkServer
         {
             if (dispose)
             {
-                CloseConnection(dispose);
+                this.connectionManager?.Release(this);
                 this.syncSave.Dispose();
             }
         }
