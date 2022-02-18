@@ -212,7 +212,7 @@ namespace LoRaWan.NetworkServer
             public Task DisconnectAsync() =>
                 DisconnectAsync(deferred: false);
 
-            private enum DisconnectionResult { Disconnected, Deferred, AlreadyDisconnected }
+            private enum DisconnectionResult { Disconnected, Deferred, NotDisconnected }
 
             private Task<DisconnectionResult> DisconnectAsync(bool deferred) =>
                 InvokeExclusivelyAsync(doesNotRequireOpenConnection: true, async client =>
@@ -226,7 +226,7 @@ namespace LoRaWan.NetworkServer
                     }
                     else if (deferred && !this.shouldDisconnect)
                     {
-                        result = DisconnectionResult.AlreadyDisconnected;
+                        result = DisconnectionResult.NotDisconnected;
                     }
                     else
                     {
