@@ -242,8 +242,7 @@ namespace LoRaWan.Tests.Integration
             await EnsureDisconnectedAsync(disconnectedEvent);
 
             LoRaDeviceClient.Verify(x => x.DisconnectAsync(), Times.Exactly(2));
-            LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
-
+            LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2 * /* send + receive */ 2));
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
         }

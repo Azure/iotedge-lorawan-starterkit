@@ -88,14 +88,14 @@ namespace LoRaWan.NetworkServer
             public void Dispose() => this.client?.Dispose();
 
             private Task<T> InvokeExclusivelyAsync<T>(Func<ILoRaDeviceClient, Task<T>> processor) =>
-                InvokeExclusivelyAsync(false, processor);
+                InvokeExclusivelyAsync(doesNotRequireOpenConnection: false, processor);
 
-            private async Task<T> InvokeExclusivelyAsync<T>(bool isConnectionRequired, Func<ILoRaDeviceClient, Task<T>> processor)
+            private async Task<T> InvokeExclusivelyAsync<T>(bool doesNotRequireOpenConnection, Func<ILoRaDeviceClient, Task<T>> processor)
             {
                 _ = Interlocked.Increment(ref this.pid);
                 return await this.exclusiveProcessor.ProcessAsync(this.pid, async () =>
                 {
-                    if (isConnectionRequired)
+                    if (!doesNotRequireOpenConnection && this.device.KeepAliveTimeout > 0)
                     {
                         _ = EnsureConnected();
                         this.connectionManager.SetupSchedule(this);
@@ -135,7 +135,7 @@ namespace LoRaWan.NetworkServer
             private enum DisconnectionResult { Disconnected, Deferred, AlreadyDisconnected }
 
             private Task<DisconnectionResult> DisconnectAsync(bool deferred) =>
-                InvokeExclusivelyAsync(isConnectionRequired: false, async client =>
+                InvokeExclusivelyAsync(doesNotRequireOpenConnection: true, async client =>
                 {
                     if (Interlocked.Add(ref this.activities, 0) > 0)
                     {
