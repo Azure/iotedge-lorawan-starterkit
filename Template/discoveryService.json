@@ -31,7 +31,7 @@
         },
         "roleNameGuid": {
             "type": "string",
-            "defaultValue": "[guid(resourceGroup().id, "twincontributor")]",
+            "defaultValue": "[guid(resourceGroup().id, 'twincontributor')]",
             "metadata": {
                 "description": "A new GUID used to identify the role assignment"
             }
