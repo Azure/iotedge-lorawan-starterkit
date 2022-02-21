@@ -27,7 +27,13 @@ namespace LoRaWan.NetworkServer
         private readonly ILogger logger;
         private readonly ConcurrentDictionary<DevEui, SynchronizedLoRaDeviceClient> clientByDevEui = new();
 
-        private record struct ScheduleKey(DevEui DevEui);
+        /// <remarks>
+        /// This record could be a "record struct" but since it is used as a key in a
+        /// <see cref="IMemoryCache"/>, which treats all keys as objects, it will always get boxed.
+        /// As a result, it might as well be kept as a reference to avoid superfluous allocations
+        /// (via unboxing and re-boxing).
+        /// </remarks>
+        private record ScheduleKey(DevEui DevEui);
 
         public LoRaDeviceClientConnectionManager(IMemoryCache cache,
                                                  ILogger<LoRaDeviceClientConnectionManager> logger) :
