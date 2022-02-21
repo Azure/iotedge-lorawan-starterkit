@@ -897,7 +897,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        private LoRaDevice CreateDefaultDevice() => new LoRaDevice(new DevAddr(0xffffffff), new DevEui(0), new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
+        private LoRaDevice CreateDefaultDevice(ILoRaDeviceClientConnectionManager connectionManager = null) =>
+            new(new DevAddr(0xffffffff), new DevEui(0), connectionManager ?? new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         public class FrameCounterInitTests
@@ -1037,6 +1038,24 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     => InitializeFrameCounters(new TwinCollectionReader(twin.Properties.Desired, this.logger),
                                                new TwinCollectionReader(twin.Properties.Reported, this.logger));
             }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void BeginDeviceClientConnectionActivity_Delegates_To_Connection_Manager_When_Device_Has_KeepAliveTimeout(int timeoutSeconds)
+        {
+            // arrange
+            var connectionManagerMock = new Mock<ILoRaDeviceClientConnectionManager>();
+            using var target = CreateDefaultDevice(connectionManagerMock.Object);
+            target.KeepAliveTimeout = timeoutSeconds;
+
+            // act
+            target.BeginDeviceClientConnectionActivity();
+
+            // assert
+            connectionManagerMock.Verify(x => x.BeginDeviceClientConnectionActivity(target),
+                                         Times.Exactly(timeoutSeconds > 0 ? 1 : 0));
         }
     }
 }
