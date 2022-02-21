@@ -6,42 +6,56 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading;
+    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Common;
+    using Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
     using Xunit.Abstractions;
 
     public sealed class LoRaDeviceClientConnectionManagerTests : IDisposable
     {
-        private readonly MemoryCache cache;
+        private readonly Mock<IMemoryCache> cacheMock;
         private readonly LoRaDeviceClientConnectionManager subject;
         private readonly TestOutputLoggerFactory loggerFactory;
+        private readonly ILogger<ILoRaDeviceClientConnectionManager> logger;
         private LoRaDevice? testDevice;
 
         public LoRaDeviceClientConnectionManagerTests(ITestOutputHelper testOutputHelper)
         {
-            this.cache = new MemoryCache(new MemoryCacheOptions());
+            this.cacheMock = new Mock<IMemoryCache>();
+            var cache = this.cacheMock.Object;
             this.loggerFactory = new TestOutputLoggerFactory(testOutputHelper);
-            var logger = new TestOutputLogger<LoRaDeviceClientConnectionManager>(testOutputHelper);
-            this.subject = new LoRaDeviceClientConnectionManager(this.cache, logger);
+            this.logger = new TestOutputLogger<LoRaDeviceClientConnectionManager>(testOutputHelper);
+            this.subject = new LoRaDeviceClientConnectionManager(cache, this.loggerFactory, this.logger);
         }
 
         public void Dispose()
         {
             this.subject.Dispose();
             this.testDevice?.Dispose();
-            this.cache.Dispose();
             this.loggerFactory.Dispose();
         }
 
-        private LoRaDevice TestDevice => this.testDevice ??= new LoRaDevice(null, new DevEui(42), null);
+        private LoRaDevice TestDevice => this.testDevice ??= new(null, new DevEui(42), this.subject);
+
+        private (Mock<ILoRaDeviceClient>, ILoRaDeviceClient) RegisterTestDevice(TimeSpan? keepAliveTimeout = null)
+        {
+            var device = TestDevice;
+            device.KeepAliveTimeout = (int)(keepAliveTimeout ?? TimeSpan.Zero).TotalSeconds;
+            var mock = new Mock<ILoRaDeviceClient>();
+            this.subject.Register(device, mock.Object);
+            mock.Setup(x => x.EnsureConnected()).Returns(true);
+            return (mock, this.subject.GetClient(device));
+        }
 
         [Theory]
         [InlineData(0)]
@@ -95,17 +109,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
 
-            var device = TestDevice;
-            var clientMock = new Mock<ILoRaDeviceClient>();
-            this.subject.Register(device, clientMock.Object);
-            var client = this.subject.GetClient(device);
+            var (clientMock, client) = RegisterTestDevice();
 
             // act
 
             client.GetTwinAsync(CancellationToken.None);
 
             var telemetry = new LoRaDeviceTelemetry();
-            var properties = new System.Collections.Generic.Dictionary<string, string>();
+            var properties = new Dictionary<string, string>();
             client.SendEventAsync(telemetry, properties);
 
             var reportedProperties = new TwinCollection();
@@ -138,10 +149,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
 
-            var device = TestDevice;
-            var clientMock = new Mock<ILoRaDeviceClient>();
-            this.subject.Register(device, clientMock.Object);
-            var client = this.subject.GetClient(device);
+            var (clientMock, client) = RegisterTestDevice();
 
             // act
 
@@ -151,6 +159,141 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
             clientMock.Verify(x => x.EnsureConnected(), Times.Never);
+        }
+
+        private Mock<ICacheEntry> CreateCacheEntryMock(IList<PostEvictionCallbackRegistration>? postEvictionCallbackRegistrationList = null)
+        {
+            var cacheEntryMock = new Mock<ICacheEntry>();
+            this.cacheMock.Setup(x => x.CreateEntry(It.IsAny<object>())).Returns(cacheEntryMock.Object);
+            cacheEntryMock.SetupAllProperties();
+            if (postEvictionCallbackRegistrationList is { } somePostEvictionCallbackRegistrationList)
+                cacheEntryMock.Setup(x => x.PostEvictionCallbacks).Returns(somePostEvictionCallbackRegistrationList);
+            return cacheEntryMock;
+        }
+
+        [Fact]
+        public async Task Client_With_Zero_KeepAliveTimeout_Is_Never_Cached_For_Disconnection()
+        {
+            // arrange
+
+            var postEvictionCallbackRegistrationList = new List<PostEvictionCallbackRegistration>();
+            _ = CreateCacheEntryMock(postEvictionCallbackRegistrationList);
+
+            var (clientMock, client) = RegisterTestDevice(keepAliveTimeout: TimeSpan.Zero);
+            clientMock.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(new Twin());
+
+            // 1st act
+
+            await client.GetTwinAsync(CancellationToken.None);
+
+            // assert
+
+            clientMock.Verify(x => x.EnsureConnected(), Times.Once);
+            clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+            Assert.Empty(postEvictionCallbackRegistrationList);
+        }
+
+        [Fact]
+        public async Task Client_With_Non_Zero_KeepAliveTimeout_Is_Disconnected_When_Evicted_From_Cache()
+        {
+            // arrange
+
+            var postEvictionCallbackRegistrationList = new List<PostEvictionCallbackRegistration>();
+            var cacheEntryMock = CreateCacheEntryMock(postEvictionCallbackRegistrationList);
+
+            var (clientMock, client) = RegisterTestDevice(keepAliveTimeout: TimeSpan.FromSeconds(1));
+            clientMock.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(new Twin());
+
+            // 1st act
+
+            await client.GetTwinAsync(CancellationToken.None);
+
+            // assert
+
+            clientMock.Verify(x => x.EnsureConnected(), Times.Once);
+            var registration = Assert.Single(postEvictionCallbackRegistrationList);
+
+            // 2nd act
+
+            registration.EvictionCallback(null, cacheEntryMock.Object.Value, EvictionReason.Expired, registration.State);
+
+            // assert
+
+            clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task Client_Disconnection_Is_Deferred_When_An_Activity_Is_Outstanding()
+        {
+            // arrange
+
+            _ = CreateCacheEntryMock(new List<PostEvictionCallbackRegistration>());
+
+            var (clientMock, client) = RegisterTestDevice(keepAliveTimeout: TimeSpan.FromSeconds(1));
+            clientMock.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(new Twin());
+
+            // 1st act
+
+            await using (TestDevice.BeginDeviceClientConnectionActivity())
+            {
+                await client.GetTwinAsync(CancellationToken.None);
+
+                // assert
+
+                clientMock.Verify(x => x.EnsureConnected(), Times.Once);
+
+                // 2nd act
+
+                await client.DisconnectAsync();
+
+                // assert
+
+                clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+
+                // 3rd act (activity disposed)
+            }
+
+            // assert
+
+            clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task Client_Disconnection_Via_KeepAliveTimeout_Expiry_Is_Deferred_When_An_Activity_Is_Outstanding()
+        {
+            // arrange
+
+            var postEvictionCallbackRegistrationList = new List<PostEvictionCallbackRegistration>();
+            var cacheEntryMock = CreateCacheEntryMock(postEvictionCallbackRegistrationList);
+
+            var (clientMock, client) = RegisterTestDevice(keepAliveTimeout: TimeSpan.FromSeconds(1));
+            clientMock.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(new Twin());
+
+            // 1st act
+
+            await using (TestDevice.BeginDeviceClientConnectionActivity())
+            {
+                await client.GetTwinAsync(CancellationToken.None);
+
+                // assert
+
+                var registration = Assert.Single(postEvictionCallbackRegistrationList);
+
+                // 2nd act
+
+                registration.EvictionCallback(null, cacheEntryMock.Object.Value, EvictionReason.Expired, registration.State);
+
+                // assert
+
+                clientMock.Verify(x => x.EnsureConnected(), Times.Once);
+                clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+
+                // 3rd act (activity disposed)
+            }
+
+            // assert
+
+            clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
         }
     }
 }
