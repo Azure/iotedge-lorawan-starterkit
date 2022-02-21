@@ -1058,11 +1058,6 @@ namespace LoRaWan.NetworkServer
 
             internal ScopedDeviceClientConnection(LoRaDevice loRaDevice)
             {
-                if (loRaDevice.KeepAliveTimeout == 0)
-                {
-                    throw new InvalidOperationException("Scoped device client connection can be created only for devices with a connection timeout");
-                }
-
                 this.loRaDevice = loRaDevice;
             }
 
