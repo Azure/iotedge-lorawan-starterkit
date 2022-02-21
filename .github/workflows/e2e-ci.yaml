@@ -14,7 +14,7 @@ on: # rebuild any PRs and main branch changes
         description: 'Include Load Tests in current run'
         default: 'false'
       TestsToRun:
-        default: '[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest]'
+        default: '[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest]'
         description: 'tests to run'
       TxPower:
         description: 'TXPower value to use in E2E tests'
@@ -58,10 +58,10 @@ jobs:
           echo "::set-output name=E2ETestsToRun::${{ github.event.inputs.TestsToRun }}"
         elif [ ${{ github.event_name }} == 'pull_request' ]; then
           echo "Set up for pull request"
-          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest]"
+          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest]"
         else
           echo "Set up for cron trigger"
-          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest]"
+          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest]"
         fi
 
     - id: check-if-run
@@ -602,6 +602,13 @@ jobs:
       id: e2e_tests_cupstest
       with:
         test_name: 'CupsTest'
+
+    - name:  Runs LNS discovery E2E tests
+      if: always() && contains(env.TestsToRun, 'LnsDiscoveryTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'LnsDiscoveryTest'))
+      uses: ./.github/actions/rune2etest
+      id: e2e_tests_lnsdiscoverytest
+      with:
+        test_name: 'LnsDiscoveryTest'
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
