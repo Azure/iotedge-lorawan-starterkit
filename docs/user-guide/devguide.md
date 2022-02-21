@@ -304,9 +304,9 @@ Refer to the [Observability](observability.md) guide if you want to learn about 
 
 The LNS protocol specifies that the first request an LBS makes is for the `/router-info` discovery endpoint. Each LNS from the starter kit implements the `/router-info` endpoint and redirects any requests to that endpoint forward to the `/router-data` endpoint on the same LNS.
 
-We also support a standalone discovery endpoint, which you can use to distribute LBS connections to different LNS. The standalone discovery endpoint is an ASP.NET Core application and its implementation is part of the `LoRaWan.NetworkServerDiscovery` project.
+We also support a standalone discovery service, which you can use to distribute LBS connections to different LNS. The discovery service is an ASP.NET Core application and its implementation is part of the `LoRaWan.NetworkServerDiscovery` project.
 
-The standalone discovery endpoint relies on configuration from IoT Hub module twins to associate each LBS with a set of LNS to which it may connect to. For this the configuration needs to take into account possible network boundaries - by defining these networks you can control which LBS should connect to which LNS. For this you need to configure your LBS twin in IoT Hub as follows:
+The discovery service relies on configuration from IoT Hub module twins to associate each LBS with a set of LNS to which it may connect to. For this the configuration needs to take into account possible network boundaries - by defining these networks you can control which LBS should connect to which LNS. For this you need to configure your LBS twin in IoT Hub as follows:
 
 ```json
 {

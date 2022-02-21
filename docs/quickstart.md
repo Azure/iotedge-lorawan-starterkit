@@ -40,6 +40,7 @@ The template will deploy in your Azure subscription the Following resources:
 - [Redis Cache](https://azure.microsoft.com/en-us/services/cache/)
 - [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview)
 - [Log Analytics](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-overview)
+- [App Service](https://docs.microsoft.com/en-us/azure/app-service/overview) (when opted in to use standalone discovery service)
 
 ## Step-by-step instructions
 
@@ -62,7 +63,8 @@ The template will deploy in your Azure subscription the Following resources:
     - **Station Eui** - The EUI of the Basics Station concentrator that will be used for connecting to LoRaWAN Network Server  
     - **Spi speed** - (In Mbps) Custom SPI speed for your gateway, currently only supported for ARM gateways  
     - **Spi dev** - A number identifying the SPI location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)  
-    - **Use Azure Monitor On Edge** - You can opt out of using Azure Monitor services for observability on IoT Edge.  
+    - **Use Azure Monitor On Edge** - You can opt out of using Azure Monitor services for observability on IoT Edge.
+    - **Use Discovery Service** - You can opt in to use a standalone discovery service. This deploys an additional App Service (including a dedicated App Service Plan). Detailed information can be found [LNS Discovery](#lns-discovery).
 
     The deployment would take c.a. 10 minutes to complete.
 
@@ -323,6 +325,13 @@ By default the network server does not use the local edge queue (edgeHub), sendi
 |----------------|-------|---------------------------------------------------------------|
 | ENABLE_GATEWAY | true  | Messages go to edgeHub and then to IoT Hub                    |
 |                | false | Messages go directly to IoT Hub, skipping local edgeHub Queue |
+
+## LNS Discovery
+
+When opted-in to use the LNS discovery service while also opting in to deploy the sample devices using the quickstart template, the LNS discovery service is automatically configured. You only need to adapt the `hostAddress` in the desired properties of the LNS module of your Edge device to point to the real IP/DNS of your gateway. If you did not opt-in to any of the abovementioned options when using the quickstart, refer to the [Dev Guide](user-guide/devguide.md#lns-discovery) for instructions on how to configure the LNS discovery service.
+
+!!! note
+    The LNS discovery service from the quickstart allows both HTTP and HTTPS per default. Make sure to change this if you only want to allow HTTPS.
 
 ## Customize the solution & Deep dive
 
