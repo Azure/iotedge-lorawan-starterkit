@@ -15,6 +15,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.NetworkServerDiscovery;
+    using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
@@ -44,19 +45,28 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             Assert.Equal(400, httpContext.Object.Response.StatusCode);
         }
 
+        public static TheoryData<Uri, bool, Uri> HandleDiscoveryRequestAsync_Success_TheoryData() => TheoryDataFactory.From(new[]
+        {
+            (new Uri("wss://localhost:5000"), true, new Uri("wss://localhost:5000/router-data/")),
+            (new Uri("wss://localhost:5000"), false, new Uri("wss://localhost:5000/router-data/")),
+            (new Uri("ws://localhost:5000"), true, new Uri("ws://localhost:5000/router-data/")),
+            (new Uri("ws://localhost:5000"), false, new Uri("ws://localhost:5000/router-data/")),
+            (new Uri("ws://localhost:5000/"), false, new Uri("ws://localhost:5000/router-data/")),
+            (new Uri("ws://localhost:5000/some-path"), true, new Uri("ws://localhost:5000/some-path/router-data/")),
+            (new Uri("ws://localhost:5000/some-path/"), true, new Uri("ws://localhost:5000/some-path/router-data/")),
+            (new Uri("ws://localhost:5000/some-path/router-data"), true, new Uri("ws://localhost:5000/some-path/router-data/")),
+            (new Uri("ws://localhost:5000/some-path/router-data/"), true, new Uri("ws://localhost:5000/some-path/router-data/")),
+            (new Uri("ws://localhost:5000/some-path/ROUTER-data/"), true, new Uri("ws://localhost:5000/some-path/router-data/")),
+        });
+
         [Theory]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        public async Task HandleDiscoveryRequestAsync_Success_Response(bool isHttps, bool isValidNic)
+        [MemberData(nameof(HandleDiscoveryRequestAsync_Success_TheoryData))]
+        public async Task HandleDiscoveryRequestAsync_Success_Response(Uri lnsUri, bool isValidNic, Uri expectedLnsUri)
         {
             // arrange
             using var cts = new CancellationTokenSource();
             var stationEui = new StationEui(ulong.MaxValue);
-            var lnsUri = new Uri($"{(isHttps ? "wss" : "ws")}://localhost:5000");
-
-            var (httpContextMock, webSocketMock) = SetupWebSocketConnection(isHttps: isHttps);
+            var (httpContextMock, webSocketMock) = SetupWebSocketConnection();
 
             // setup discovery request
             SetupDiscoveryRequest(webSocketMock, stationEui);
@@ -83,7 +93,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             await this.subject.HandleDiscoveryRequestAsync(httpContextMock.Object, cts.Token);
 
             // assert
-            var expectedResponse = @$"{{""router"":""{stationEui:i}"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://{lnsUri.Host}:{lnsUri.Port}/router-data/{stationEui.ToHex()}""}}";
+            var expectedResponse = @$"{{""router"":""{stationEui:i}"",""muxs"":""{muxs}"",""uri"":""{new Uri(expectedLnsUri, stationEui.ToHex()).AbsoluteUri}""}}";
             Assert.Equal(expectedResponse, actualResponse);
             webSocketMock.Verify(ws => ws.SendAsync(It.IsAny<ArraySegment<byte>>(),
                                                     WebSocketMessageType.Text,
@@ -133,7 +143,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                             .FirstOrDefault();
 
 
-        private static (Mock<HttpContext>, Mock<WebSocket>) SetupWebSocketConnection(bool isHttps = false, bool notWebSocketRequest = false)
+        private static (Mock<HttpContext>, Mock<WebSocket>) SetupWebSocketConnection(bool notWebSocketRequest = false)
         {
             var socketMock = new Mock<WebSocket>();
 
@@ -141,13 +151,9 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             _ = webSocketsManager.SetupGet(wsm => wsm.IsWebSocketRequest).Returns(!notWebSocketRequest);
             _ = webSocketsManager.Setup(wsm => wsm.AcceptWebSocketAsync()).ReturnsAsync(socketMock.Object);
 
-            var httpRequestMock = new Mock<HttpRequest>();
-            _ = httpRequestMock.SetupGet(ci => ci.IsHttps).Returns(isHttps);
-
             var httpContextMock = new Mock<HttpContext>();
             _ = httpContextMock.SetupGet(h => h.WebSockets).Returns(webSocketsManager.Object);
             _ = httpContextMock.SetupGet(h => h.Response).Returns(Mock.Of<HttpResponse>());
-            _ = httpContextMock.SetupGet(h => h.Request).Returns(httpRequestMock.Object);
             _ = httpContextMock.SetupGet(h => h.Connection).Returns(Mock.Of<ConnectionInfo>());
 
             return (httpContextMock, socketMock);

@@ -9,6 +9,7 @@ namespace LoRaTools.NetworkServerDiscovery
     using System.Net.NetworkInformation;
     using System.Net.WebSockets;
     using System.Text.Json;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -18,7 +19,7 @@ namespace LoRaTools.NetworkServerDiscovery
 
     public sealed class DiscoveryService
     {
-        private const string DataEndpointPath = "/router-data";
+        private const string DataEndpointPath = "router-data";
         private readonly ILnsDiscovery lnsDiscovery;
         private readonly ILogger<DiscoveryService> logger;
 
@@ -69,7 +70,13 @@ namespace LoRaTools.NetworkServerDiscovery
                                               Id6.FormatOptions.FixedWidth);
 
                         var lnsUri = await this.lnsDiscovery.ResolveLnsAsync(stationEui, cancellationToken);
-                        var url = new Uri($"{lnsUri.Scheme}://{lnsUri.Host}:{lnsUri.Port}{DataEndpointPath}/{stationEui}");
+
+                        // Ensure resilience against duplicate specification of `router-data` and make sure that LNS host address ends with slash
+                        // to make sure that URI composes as expected.
+                        var lnsUriSanitized = Regex.Replace(lnsUri.AbsoluteUri, @"/router-data/?", string.Empty, RegexOptions.IgnoreCase);
+                        lnsUriSanitized = lnsUriSanitized.EndsWith('/') ? lnsUriSanitized : $"{lnsUriSanitized}/";
+
+                        var url = new Uri(new Uri(lnsUriSanitized), $"{DataEndpointPath}/{stationEui}");
                         var response = Write(w => WriteResponse(w, stationEui, muxs, url));
                         await s.SendAsync(response, WebSocketMessageType.Text,
                                           true, cancellationToken);
