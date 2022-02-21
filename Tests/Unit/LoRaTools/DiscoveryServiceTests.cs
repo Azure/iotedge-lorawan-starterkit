@@ -15,7 +15,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.NetworkServerDiscovery;
-    using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
@@ -114,28 +113,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             Assert.Contains(errorMessage, actualResponse, StringComparison.Ordinal);
             webSocketMock.Verify(ws => ws.SendAsync(It.IsAny<ArraySegment<byte>>(), WebSocketMessageType.Text,
                                                     true, cts.Token), Times.Once);
-        }
-
-        public static TheoryData<Uri> HandleDiscoveryRequestAsync_Detects_Uri_Misconfiguration_TheoryData() => TheoryDataFactory.From(new[]
-        {
-            new Uri("mylns", UriKind.Relative),
-            new Uri("http://mylns:1234")
-        });
-
-        [Theory]
-        [MemberData(nameof(HandleDiscoveryRequestAsync_Detects_Uri_Misconfiguration_TheoryData))]
-        public async Task HandleDiscoveryRequestAsync_Detects_Uri_Misconfiguration(Uri hostAddress)
-        {
-            // arrange
-            var (httpContextMock, webSocketMock) = SetupWebSocketConnection();
-
-            SetupDiscoveryRequest(webSocketMock, new StationEui(1));
-            this.lnsDiscoveryMock.Setup(d => d.ResolveLnsAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
-                                 .ReturnsAsync(hostAddress);
-
-            // act + assert
-            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.subject.HandleDiscoveryRequestAsync(httpContextMock.Object, CancellationToken.None));
-            Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, ex.ErrorCode);
         }
 
         private static void SetupDiscoveryRequest(Mock<WebSocket> webSocketMock, StationEui stationEui)

@@ -69,13 +69,6 @@ namespace LoRaTools.NetworkServerDiscovery
                                               Id6.FormatOptions.FixedWidth);
 
                         var lnsUri = await this.lnsDiscovery.ResolveLnsAsync(stationEui, cancellationToken);
-
-                        if (!lnsUri.IsAbsoluteUri)
-                            throw new LoRaProcessingException("LNS host address must be an absolute URI.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
-
-                        if (lnsUri.Scheme is not "ws" and not "wss")
-                            throw new LoRaProcessingException("LNS host address scheme must either be 'ws' or 'wss'.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
-
                         var url = new Uri($"{lnsUri.Scheme}://{lnsUri.Host}:{lnsUri.Port}{DataEndpointPath}/{stationEui}");
                         var response = Write(w => WriteResponse(w, stationEui, muxs, url));
                         await s.SendAsync(response, WebSocketMessageType.Text,
