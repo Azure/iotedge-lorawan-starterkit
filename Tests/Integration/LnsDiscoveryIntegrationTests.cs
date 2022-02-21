@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Net;
     using System.Net.WebSockets;
@@ -17,6 +18,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools;
     using LoRaTools.NetworkServerDiscovery;
     using LoRaWan.NetworkServerDiscovery;
+    using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Azure.Devices;
@@ -89,6 +91,44 @@ namespace LoRaWan.Tests.Integration
             }
         }
 
+        public static TheoryData<string> Erroneous_Host_Address_TheoryData() => TheoryDataFactory.From(new[]
+        {
+            "", "http://mylns:5000", "htt://mylns:5000", "ws:/mylns:5000"
+        });
+
+        [Theory]
+        [MemberData(nameof(Erroneous_Host_Address_TheoryData))]
+        public async Task RouterInfo_Fails_If_All_Lns_Are_Misconfigured(string hostAddress)
+        {
+            // arrange
+            var cancellationToken = CancellationToken.None;
+            var client = this.subject.Server.CreateWebSocketClient();
+            SetupIotHubResponse(StationEui, new[] { hostAddress });
+
+            // act
+            var result = await SendSingleMessageAsync(client, StationEui, cancellationToken);
+
+            // assert
+            Assert.Contains("No LNS found in network", result, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Theory]
+        [MemberData(nameof(Erroneous_Host_Address_TheoryData))]
+        public async Task RouterInfo_Is_Resilient_Against_Misconfigured_Lns(string hostAddress)
+        {
+            // arrange
+            var cancellationToken = CancellationToken.None;
+            var client = this.subject.Server.CreateWebSocketClient();
+            SetupIotHubResponse(StationEui, HostAddresses.Append(hostAddress).ToList());
+
+            // act + assert
+            for (var i = 0; i < HostAddresses.Length; ++i)
+            {
+                var result = await SendSingleMessageAsync(client, StationEui, cancellationToken);
+                AssertContainsHostAddress(new Uri(HostAddresses[i % HostAddresses.Length]), StationEui, result);
+            }
+        }
+
         [Fact]
         public async Task RouterInfo_Returns_Same_Lns_For_Different_Stations()
         {
@@ -134,7 +174,16 @@ namespace LoRaWan.Tests.Integration
             await webSocket.SendAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { router = stationEui.AsUInt64 })), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
             var e = webSocket.ReadTextMessages(cancellationToken);
             var result = !await e.MoveNextAsync() ? throw new InvalidOperationException("No response received.") : e.Current;
-            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal closure", cancellationToken);
+
+            try
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal closure", cancellationToken);
+            }
+            catch (IOException)
+            {
+                // Remote already closed the connection.
+            }
+
             return result;
         }
 
@@ -159,10 +208,10 @@ namespace LoRaWan.Tests.Integration
             var i = 0;
             queryMock.Setup(q => q.HasMoreResults).Returns(() => i++ % 2 == 0);
             queryMock.Setup(q => q.GetNextAsJsonAsync()).ReturnsAsync(from ha in hostAddresses
-                                                                      select JsonSerializer.Serialize(new { hostAddress = ha }));
+                                                                      select JsonSerializer.Serialize(new { hostAddress = ha, deviceId = Guid.NewGuid().ToString() }));
             this.subject
                 .RegistryManagerMock?
-                .Setup(rm => rm.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'"))
+                .Setup(rm => rm.CreateQuery($"SELECT properties.desired.hostAddress, deviceId FROM devices.modules WHERE tags.network = '{networkId}'"))
                 .Returns(queryMock.Object);
         }
 
