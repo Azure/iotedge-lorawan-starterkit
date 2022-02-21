@@ -311,22 +311,33 @@ namespace LoRaWan.NetworkServer
             private EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? processingEventHandler;
             private EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? processedEventHandler;
 
+            private void AddEventHandler<T>(ref EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? field,
+                                            EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? value,
+                                            EventHandler<T> adapter,
+                                            Action<ExclusiveProcessor<Process>, EventHandler<T>> adder,
+                                            Action<ExclusiveProcessor<Process>, EventHandler<T>> remover)
+            {
+                if (field is not null)
+                    remover(this.exclusiveProcessor, adapter);
+                adder(this.exclusiveProcessor, adapter);
+                field = value;
+            }
+
+            private void RemoveEventHandler<T>(ref EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? field,
+                                               EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? value,
+                                               EventHandler<T> adapter,
+                                               Action<ExclusiveProcessor<Process>, EventHandler<T>> remover)
+            {
+                if (value != field)
+                    return;
+                field = null;
+                remover(this.exclusiveProcessor, adapter);
+            }
+
             event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? ILoRaDeviceClientSynchronizedOperationEventSource.Queued
             {
-                add
-                {
-                    if (this.submittedEventHandler is not null)
-                        this.exclusiveProcessor.Submitted -= OnSubmitted;
-                    this.exclusiveProcessor.Submitted += OnSubmitted;
-                    this.submittedEventHandler = value;
-                }
-                remove
-                {
-                    if (value != this.processingEventHandler)
-                        return;
-                    this.submittedEventHandler = null;
-                    this.exclusiveProcessor.Submitted -= OnSubmitted;
-                }
+                add => AddEventHandler<Process>(ref this.submittedEventHandler, value, OnSubmitted, (ep, h) => ep.Submitted += h, (ep, h) => ep.Submitted -= h);
+                remove => RemoveEventHandler<Process>(ref this.submittedEventHandler, value, OnSubmitted, (ep, h) => ep.Submitted -= h);
             }
 
             private void OnSubmitted(object? sender, Process process) =>
@@ -334,20 +345,8 @@ namespace LoRaWan.NetworkServer
 
             event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? ILoRaDeviceClientSynchronizedOperationEventSource.Processing
             {
-                add
-                {
-                    if (this.processedEventHandler is not null)
-                        this.exclusiveProcessor.Processing -= OnProcessing;
-                    this.exclusiveProcessor.Processing += OnProcessing;
-                    this.processingEventHandler = value;
-                }
-                remove
-                {
-                    if (value != this.processingEventHandler)
-                        return;
-                    this.processingEventHandler = null;
-                    this.exclusiveProcessor.Processing -= OnProcessing;
-                }
+                add => AddEventHandler<Process>(ref this.processingEventHandler, value, OnProcessing, (ep, h) => ep.Processing += h, (ep, h) => ep.Processing -= h);
+                remove => RemoveEventHandler<Process>(ref this.processingEventHandler, value, OnProcessing, (ep, h) => ep.Processing -= h);
             }
 
             private void OnProcessing(object? sender, Process process) =>
@@ -355,20 +354,8 @@ namespace LoRaWan.NetworkServer
 
             event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? ILoRaDeviceClientSynchronizedOperationEventSource.Processed
             {
-                add
-                {
-                    if (this.processedEventHandler is not null)
-                        this.exclusiveProcessor.Processed -= OnProcessed;
-                    this.exclusiveProcessor.Processed += OnProcessed;
-                    this.processedEventHandler = value;
-                }
-                remove
-                {
-                    if (value != this.processedEventHandler)
-                        return;
-                    this.processedEventHandler = null;
-                    this.exclusiveProcessor.Processed -= OnProcessed;
-                }
+                add => AddEventHandler<(Process, ExclusiveProcessor<Process>.IProcessingOutcome)>(ref this.processedEventHandler, value, OnProcessed, (ep, h) => ep.Processed += h, (ep, h) => ep.Processed -= h);
+                remove => RemoveEventHandler<(Process, ExclusiveProcessor<Process>.IProcessingOutcome)>(ref this.processedEventHandler, value, OnProcessed, (ep, h) => ep.Processed -= h);
             }
 
             private void OnProcessed(object? sender, (Process, ExclusiveProcessor<Process>.IProcessingOutcome) args)
