@@ -73,7 +73,24 @@ namespace LoRaWan.NetworkServer
                 {
                     var keepAliveTimeout = client.KeepAliveTimeout;
                     ce.SlidingExpiration = keepAliveTimeout;
-                    _ = ce.RegisterPostEvictionCallback(static (_, value, _, _) => _ = ((SynchronizedLoRaDeviceClient)value).DisconnectAsync());
+                    // NOTE! Use of an async void, while generally discouraged, is used here
+                    // intentionally since the eviction callback is synchronous and using async
+                    // void logically equates to "Task.Run". The risk of any exception going
+                    // unnoticed (in either case) is mitigated by logging it.
+                    _ = ce.RegisterPostEvictionCallback(state: this.logger, callback: static async (_, value, _, state) =>
+                    {
+                        var client = (SynchronizedLoRaDeviceClient)value;
+                        var logger = (ILogger)state;
+                        try
+                        {
+                            using var scope = logger.BeginDeviceScope(client.DevEui);
+                            await client.DisconnectAsync();
+                        }
+                        catch (Exception ex) when (ExceptionFilterUtility.False(() => logger.LogError(ex, "Error while disconnecting client ({DevEUI}) due to cache eviction.", client.DevEui)))
+                        {
+                        }
+                    });
+
                     this.logger.LogDebug($"client connection timeout set to {keepAliveTimeout.TotalSeconds} seconds (sliding expiration)");
                     return client;
                 });
