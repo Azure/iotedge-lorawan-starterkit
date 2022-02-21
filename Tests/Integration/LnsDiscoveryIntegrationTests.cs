@@ -44,6 +44,8 @@ namespace LoRaWan.Tests.Integration
                 services.AddSingleton<ILnsDiscovery>(sp => new TagBasedLnsDiscovery(sp.GetRequiredService<IMemoryCache>(), RegistryManagerMock.Object, sp.GetRequiredService<ILogger<TagBasedLnsDiscovery>>()));
             });
 
+            builder.ConfigureLogging(hostBuilder => hostBuilder.ClearProviders());
+
             return base.CreateHost(builder);
         }
     }
