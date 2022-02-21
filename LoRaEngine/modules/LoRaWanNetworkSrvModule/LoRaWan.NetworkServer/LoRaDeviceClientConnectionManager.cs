@@ -307,61 +307,75 @@ namespace LoRaWan.NetworkServer
                 });
             }
 
-            private EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? submittedEventHandler;
-            private EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? processingEventHandler;
-            private EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? processedEventHandler;
+            private OperationEvent<Process>? submittedEvent;
+            private OperationEvent<Process>? processingEvent;
+            private OperationEvent<(Process, ExclusiveProcessor<Process>.IProcessingOutcome)>? processedEvent;
 
-            private void AddEventHandler<T>(ref EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? field,
-                                            EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? value,
-                                            EventHandler<T> adapter,
-                                            Action<ExclusiveProcessor<Process>, EventHandler<T>> adder,
-                                            Action<ExclusiveProcessor<Process>, EventHandler<T>> remover)
-            {
-                if (field is not null)
-                    remover(this.exclusiveProcessor, adapter);
-                adder(this.exclusiveProcessor, adapter);
-                field = value;
-            }
+            private OperationEvent<Process> SubmittedEvent =>
+                this.submittedEvent ??= new(this, p => p, static (ep, h) => ep.Submitted += h, static (ep, h) => ep.Submitted -= h);
 
-            private void RemoveEventHandler<T>(ref EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? field,
-                                               EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? value,
-                                               EventHandler<T> adapter,
-                                               Action<ExclusiveProcessor<Process>, EventHandler<T>> remover)
-            {
-                if (value != field)
-                    return;
-                field = null;
-                remover(this.exclusiveProcessor, adapter);
-            }
+            private OperationEvent<Process> ProcessingEvent =>
+                this.processingEvent ??= new(this, p => p, static (ep, h) => ep.Processing += h, static (ep, h) => ep.Processing -= h);
+
+            private OperationEvent<(Process, ExclusiveProcessor<Process>.IProcessingOutcome)> ProcessedEvent =>
+                this.processedEvent ??= new(this, args => args.Item1, static (ep, h) => ep.Processed += h, static (ep, h) => ep.Processed -= h);
 
             event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? ILoRaDeviceClientSynchronizedOperationEventSource.Queued
             {
-                add => AddEventHandler<Process>(ref this.submittedEventHandler, value, OnSubmitted, (ep, h) => ep.Submitted += h, (ep, h) => ep.Submitted -= h);
-                remove => RemoveEventHandler<Process>(ref this.submittedEventHandler, value, OnSubmitted, (ep, h) => ep.Submitted -= h);
+                add => SubmittedEvent.Add(value);
+                remove => SubmittedEvent.Remove(value);
             }
-
-            private void OnSubmitted(object? sender, Process process) =>
-                this.submittedEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedOperationEventArgs(process.Id, process.Name));
 
             event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? ILoRaDeviceClientSynchronizedOperationEventSource.Processing
             {
-                add => AddEventHandler<Process>(ref this.processingEventHandler, value, OnProcessing, (ep, h) => ep.Processing += h, (ep, h) => ep.Processing -= h);
-                remove => RemoveEventHandler<Process>(ref this.processingEventHandler, value, OnProcessing, (ep, h) => ep.Processing -= h);
+                add => ProcessingEvent.Add(value);
+                remove => ProcessingEvent.Remove(value);
             }
-
-            private void OnProcessing(object? sender, Process process) =>
-                this.processingEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedOperationEventArgs(process.Id, process.Name));
 
             event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? ILoRaDeviceClientSynchronizedOperationEventSource.Processed
             {
-                add => AddEventHandler<(Process, ExclusiveProcessor<Process>.IProcessingOutcome)>(ref this.processedEventHandler, value, OnProcessed, (ep, h) => ep.Processed += h, (ep, h) => ep.Processed -= h);
-                remove => RemoveEventHandler<(Process, ExclusiveProcessor<Process>.IProcessingOutcome)>(ref this.processedEventHandler, value, OnProcessed, (ep, h) => ep.Processed -= h);
+                add => ProcessedEvent.Add(value);
+                remove => ProcessedEvent.Remove(value);
             }
 
-            private void OnProcessed(object? sender, (Process, ExclusiveProcessor<Process>.IProcessingOutcome) args)
+            private sealed class OperationEvent<T>
             {
-                var ((id, name), _) = args;
-                this.processedEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedOperationEventArgs(id, name));
+                private EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? field;
+                private readonly SynchronizedLoRaDeviceClient client;
+                private readonly EventHandler<T> handler;
+                private readonly Action<ExclusiveProcessor<Process>, EventHandler<T>> adder;
+                private readonly Action<ExclusiveProcessor<Process>, EventHandler<T>> remover;
+
+                public OperationEvent(SynchronizedLoRaDeviceClient client,
+                                      Func<T, Process> argsMapper,
+                                      Action<ExclusiveProcessor<Process>, EventHandler<T>> adder,
+                                      Action<ExclusiveProcessor<Process>, EventHandler<T>> remover)
+                {
+                    this.client = client;
+                    this.handler = (_, args) =>
+                    {
+                        var (id, name) = argsMapper(args);
+                        this.field?.Invoke(this.client, new LoRaDeviceClientSynchronizedOperationEventArgs(id, name));
+                    };
+                    this.adder = adder;
+                    this.remover = remover;
+                }
+
+                public void Add(EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? value)
+                {
+                    if (this.field is not null)
+                        this.remover(this.client.exclusiveProcessor, this.handler);
+                    this.adder(this.client.exclusiveProcessor, this.handler);
+                    this.field = value;
+                }
+
+                public void Remove(EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? value)
+                {
+                    if (value != this.field)
+                        return;
+                    this.field = null;
+                    this.remover(this.client.exclusiveProcessor, this.handler);
+                }
             }
         }
     }
