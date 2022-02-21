@@ -134,7 +134,7 @@ namespace LoRaWan.NetworkServer
             return this.clientByDevEui[loRaDevice.DevEUI].BeginDeviceClientConnectionActivity();
         }
 
-        private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient, ILoRaDeviceClientSynchronizedEventSource
+        private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient, ILoRaDeviceClientSynchronizedOperationEventSource
         {
             private readonly ILoRaDeviceClient client;
             private readonly LoRaDevice device;
@@ -307,11 +307,11 @@ namespace LoRaWan.NetworkServer
                 });
             }
 
-            private EventHandler<LoRaDeviceClientSynchronizedEventArgs>? submittedEventHandler;
-            private EventHandler<LoRaDeviceClientSynchronizedEventArgs>? processingEventHandler;
-            private EventHandler<LoRaDeviceClientSynchronizedEventArgs>? processedEventHandler;
+            private EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? submittedEventHandler;
+            private EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? processingEventHandler;
+            private EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? processedEventHandler;
 
-            event EventHandler<LoRaDeviceClientSynchronizedEventArgs>? ILoRaDeviceClientSynchronizedEventSource.Queued
+            event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? ILoRaDeviceClientSynchronizedOperationEventSource.Queued
             {
                 add
                 {
@@ -330,9 +330,9 @@ namespace LoRaWan.NetworkServer
             }
 
             private void OnSubmitted(object? sender, Process process) =>
-                this.submittedEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedEventArgs(process.Id, process.Name));
+                this.submittedEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedOperationEventArgs(process.Id, process.Name));
 
-            event EventHandler<LoRaDeviceClientSynchronizedEventArgs>? ILoRaDeviceClientSynchronizedEventSource.Processing
+            event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? ILoRaDeviceClientSynchronizedOperationEventSource.Processing
             {
                 add
                 {
@@ -351,9 +351,9 @@ namespace LoRaWan.NetworkServer
             }
 
             private void OnProcessing(object? sender, Process process) =>
-                this.processingEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedEventArgs(process.Id, process.Name));
+                this.processingEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedOperationEventArgs(process.Id, process.Name));
 
-            event EventHandler<LoRaDeviceClientSynchronizedEventArgs>? ILoRaDeviceClientSynchronizedEventSource.Processed
+            event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs>? ILoRaDeviceClientSynchronizedOperationEventSource.Processed
             {
                 add
                 {
@@ -374,19 +374,19 @@ namespace LoRaWan.NetworkServer
             private void OnProcessed(object? sender, (Process, ExclusiveProcessor<Process>.IProcessingOutcome) args)
             {
                 var ((id, name), _) = args;
-                this.processedEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedEventArgs(id, name));
+                this.processedEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedOperationEventArgs(id, name));
             }
         }
     }
 
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-    public sealed record LoRaDeviceClientSynchronizedEventArgs(int Id, string Name);
+    public sealed record LoRaDeviceClientSynchronizedOperationEventArgs(int Id, string Name);
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 
-    public interface ILoRaDeviceClientSynchronizedEventSource
+    public interface ILoRaDeviceClientSynchronizedOperationEventSource
     {
-        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Queued;
-        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Processing;
-        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Processed;
+        event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs> Queued;
+        event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs> Processing;
+        event EventHandler<LoRaDeviceClientSynchronizedOperationEventArgs> Processed;
     }
 }

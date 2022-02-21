@@ -306,7 +306,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var queuedOperations = new List<(int Id, string Name)>();
             var completedOperations = new List<(int Id, string Name)>();
 
-            var eventSource = (ILoRaDeviceClientSynchronizedEventSource)client;
+            var eventSource = (ILoRaDeviceClientSynchronizedOperationEventSource)client;
             eventSource.Queued += (_, args) => queuedOperations.Add((args.Id, args.Name));
             eventSource.Processed += (_, args) => completedOperations.Add((args.Id, args.Name));
 
