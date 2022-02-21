@@ -230,6 +230,7 @@ namespace LoRaWan.NetworkServer
         {
             if (this.deviceClient != null)
             {
+                _ = Interlocked.Decrement(ref activeDeviceConnections);
                 await this.deviceClient.CloseAsync(cancellationToken);
 #pragma warning disable CA1849 // Calling DisposeAsync after CloseAsync throws an error
                 this.deviceClient.Dispose();
