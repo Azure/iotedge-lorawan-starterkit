@@ -14,7 +14,19 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+    public sealed record LoRaDeviceClientSynchronizedEventArgs(int Id, string Name);
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+
+    public interface ILoRaDeviceClientSynchronizedEventSource
+    {
+        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Queued;
+        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Processing;
+        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Processed;
+    }
 
     /// <summary>
     /// Manages <see cref="ILoRaDeviceClient"/> connections for <see cref="LoRaDevice"/>.
@@ -33,6 +45,7 @@ namespace LoRaWan.NetworkServer
             this(cache, null, logger)
         { }
 
+        [ActivatorUtilitiesConstructor]
         public LoRaDeviceClientConnectionManager(IMemoryCache cache,
                                                  ILoggerFactory? loggerFactory,
                                                  ILogger<ILoRaDeviceClientConnectionManager> logger)
@@ -132,7 +145,7 @@ namespace LoRaWan.NetworkServer
             return this.clientByDevEui[loRaDevice.DevEUI].BeginDeviceClientConnectionActivity();
         }
 
-        private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient
+        private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient, ILoRaDeviceClientSynchronizedEventSource
         {
             private readonly ILoRaDeviceClient client;
             private readonly LoRaDevice device;
@@ -303,6 +316,76 @@ namespace LoRaWan.NetworkServer
 
                     _ = await DisconnectAsync(deferred: true);
                 });
+            }
+
+            private EventHandler<LoRaDeviceClientSynchronizedEventArgs>? submittedEventHandler;
+            private EventHandler<LoRaDeviceClientSynchronizedEventArgs>? processingEventHandler;
+            private EventHandler<LoRaDeviceClientSynchronizedEventArgs>? processedEventHandler;
+
+            event EventHandler<LoRaDeviceClientSynchronizedEventArgs>? ILoRaDeviceClientSynchronizedEventSource.Queued
+            {
+                add
+                {
+                    if (this.submittedEventHandler is not null)
+                        this.exclusiveProcessor.Submitted -= OnSubmitted;
+                    this.exclusiveProcessor.Submitted += OnSubmitted;
+                    this.submittedEventHandler = value;
+                }
+                remove
+                {
+                    if (value != this.processingEventHandler)
+                        return;
+                    this.submittedEventHandler = null;
+                    this.exclusiveProcessor.Submitted -= OnSubmitted;
+                }
+            }
+
+            private void OnSubmitted(object? sender, Process process) =>
+                this.submittedEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedEventArgs(process.Id, process.Name));
+
+            event EventHandler<LoRaDeviceClientSynchronizedEventArgs>? ILoRaDeviceClientSynchronizedEventSource.Processing
+            {
+                add
+                {
+                    if (this.processedEventHandler is not null)
+                        this.exclusiveProcessor.Processing -= OnProcessing;
+                    this.exclusiveProcessor.Processing += OnProcessing;
+                    this.processingEventHandler = value;
+                }
+                remove
+                {
+                    if (value != this.processingEventHandler)
+                        return;
+                    this.processingEventHandler = null;
+                    this.exclusiveProcessor.Processing -= OnProcessing;
+                }
+            }
+
+            private void OnProcessing(object? sender, Process process) =>
+                this.processingEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedEventArgs(process.Id, process.Name));
+
+            event EventHandler<LoRaDeviceClientSynchronizedEventArgs>? ILoRaDeviceClientSynchronizedEventSource.Processed
+            {
+                add
+                {
+                    if (this.processedEventHandler is not null)
+                        this.exclusiveProcessor.Processed -= OnProcessed;
+                    this.exclusiveProcessor.Processed += OnProcessed;
+                    this.processedEventHandler = value;
+                }
+                remove
+                {
+                    if (value != this.processedEventHandler)
+                        return;
+                    this.processedEventHandler = null;
+                    this.exclusiveProcessor.Processed -= OnProcessed;
+                }
+            }
+
+            private void OnProcessed(object? sender, (Process, ExclusiveProcessor<Process>.IProcessingOutcome) args)
+            {
+                var ((id, name), _) = args;
+                this.processedEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedEventArgs(id, name));
             }
         }
     }

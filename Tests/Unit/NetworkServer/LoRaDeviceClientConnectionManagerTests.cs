@@ -295,5 +295,85 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
         }
+
+        [Fact]
+        public async Task Client_Operations_Are_Synchronized()
+        {
+            var (clientMock, client) = RegisterTestDevice();
+
+            // Monitor operations on the client.
+
+            var queuedOperations = new List<(int Id, string Name)>();
+            var completedOperations = new List<(int Id, string Name)>();
+
+            var eventSource = (ILoRaDeviceClientSynchronizedEventSource)client;
+            eventSource.Queued += (_, args) => queuedOperations.Add((args.Id, args.Name));
+            eventSource.Processed += (_, args) => completedOperations.Add((args.Id, args.Name));
+
+            // Setup the client mock.
+
+            var tcs = new
+            {
+                GetTwinAsync = new TaskCompletionSource<Twin>(),
+                UpdateReportedPropertiesAsync = new TaskCompletionSource<bool>(),
+                DisconnectAsync = new TaskCompletionSource(),
+            };
+
+            clientMock.Setup(x => x.GetTwinAsync(CancellationToken.None)).Returns(tcs.GetTwinAsync.Task);
+
+            var reportedProperties = new TwinCollection();
+            clientMock.Setup(x => x.UpdateReportedPropertiesAsync(reportedProperties, CancellationToken.None)).Returns(tcs.UpdateReportedPropertiesAsync.Task);
+
+            clientMock.Setup(x => x.DisconnectAsync()).Returns(tcs.DisconnectAsync.Task);
+
+            // Issue the first operation and...
+
+            var getTwinTask = client.GetTwinAsync(CancellationToken.None);
+
+            // ...assert state of each operations list is the expected:
+
+            Assert.Single(queuedOperations);
+            Assert.Empty(completedOperations);
+
+            // Issue the second operations and...
+
+            var updateReportedPropertiesTask = client.UpdateReportedPropertiesAsync(reportedProperties, CancellationToken.None);
+
+            // ...assert state of each operations list is the expected:
+
+            Assert.Equal(2, queuedOperations.Count);
+            Assert.Empty(completedOperations);
+
+            // Issue the third operation and...
+
+            var disconnectTask = client.DisconnectAsync();
+
+            // ...assert state of each operations list is the expected:
+
+            Assert.Equal(3, queuedOperations.Count);
+            Assert.Empty(completedOperations);
+
+            // Assert that the queued operations are the expected ones and in the expected order.
+
+            var expectedQueuedOperations = new[]
+            {
+                (1, nameof(client.GetTwinAsync)),
+                (2, nameof(client.UpdateReportedPropertiesAsync)),
+                (3, nameof(client.DisconnectAsync))
+            };
+            Assert.Equal(expectedQueuedOperations, queuedOperations);
+
+            // Now complete all operations.
+
+            tcs.GetTwinAsync.SetResult(new Twin());
+            tcs.UpdateReportedPropertiesAsync.SetResult(true);
+            tcs.DisconnectAsync.SetResult();
+
+            await Task.WhenAll(getTwinTask, updateReportedPropertiesTask, disconnectTask);
+
+            // Assert the the queued operations completed in the same order.
+
+            Assert.Equal(completedOperations, queuedOperations);
+        }
     }
 }
