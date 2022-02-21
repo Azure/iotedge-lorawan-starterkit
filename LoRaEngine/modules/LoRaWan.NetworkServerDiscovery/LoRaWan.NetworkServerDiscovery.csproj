@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>$(TargetFramework)</TargetFramework>
@@ -8,7 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(ApplicationInsightsVersion)" />
     <PackageReference Include="Microsoft.Azure.Devices" Version="$(MicrosoftAzureDevicesVersion)" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="$(PrometheusNetVersion)" />
   </ItemGroup>
 
   <ItemGroup>
