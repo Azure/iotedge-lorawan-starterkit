@@ -1,57 +1,57 @@
 # What is Azure Sphere
 
-[Azure Sphere](https://azure.microsoft.com/en-us/services/azure-sphere/) delivers device security by
-combining hardware, operating system software, and cloud services that has been purpose-built for
-secure IoT applications.
-
-Together these components implement [The Seven Properties of Highly Secure
+[Azure Sphere](https://azure.microsoft.com/en-us/services/azure-sphere/) is a security service
+combining hardware, OS-level software, and cloud services to secure IoT applications. Together these
+three components ensure [The Seven Properties of Highly Secure
 Devices](https://www.microsoft.com/en-us/research/uploads/prod/2020/11/Seven-Properties-of-Highly-Secured-Devices-2nd-Edition-R1.pdf).
 
 [Pricing](https://azure.microsoft.com/en-us/pricing/details/azure-sphere/): one time purchase of
-devices only (no recurring fees)
+hardware only (no recurring fees)
 
 ## Advantages for the starter kit
 
 - Automated management of the underlying OS and the concentrator logic.
-- Out of the box security for critical applications with features:
+- Although some features are already supported e.g. password-less authentication, we could benefit
+  from built-in, e.g:
   - hardware security
   - error reporting (i.e. A software error, such as a buffer overrun induced by an attacker probing
 security, is reported to cloud-based failure analysis system)
   - renewable security (revoking compromised assets for known vulnerabilities)
-- Considering the maintenance required for the concentrators, the additional or more expensive
-  hardware could still be justified or even be cheaper in the long term.
+- Cost savings: considering the maintenance required for the concentrators, the additional or more expensive
+  hardware could be justified or even be cheaper in the long term.
 
 ## Disadvantages
 
 - Requires specific hardware with [limited choices so
-  far](https://azure.microsoft.com/en-us/services/azure-sphere/#ecosystem) (some also out of stock)
-  - There is a [concentrator built from
+  far/potentially more expensive](https://azure.microsoft.com/en-us/services/azure-sphere/#ecosystem) (some also out of stock)
+  - There is a [LoRaWAN concentrator built from
     Miromico](https://www.avnet.com/wps/portal/silica/solutions/technologies/wireless-connectivity/lora-gateways/)
-    that works with the Packet Forwarder and we are in touch with the company to learn if it can be
-    potentially used with the LoRa Basics Station.
-- Cups implementation already supports some of the features e.g. password-less authentication
+    that only works with the Packet Forwarder for now. Miromico are aware of this limitation but we
+    are not sure when they plan to support LBS.
+- Introduces another layer that needs to be considered.
 
-# Process for the concentrators
+## Process for the concentrators
 
 [Quickstart](https://docs.microsoft.com/en-us/azure-sphere/install/overview)
-- Get the hardware (either a new device or "guardian module")
-- install SDK/CLI + [VS
+
+- Get the hardware (either a new device or "guardian module" that is "attached" to existing hardware)
+- Install SDK/CLI + [VS
   extension](https://marketplace.visualstudio.com/items?itemName=AzureSphereTeam.AzureSphereSDKforVisualStudio2019)
   and connect the device to the PC
-- [create a
-  tenant](https://docs.microsoft.com/en-us/azure-sphere/deployment/manage-tenants?tabs=cliv2beta)
-- [claim the
+- [Create a
+  "tenant"](https://docs.microsoft.com/en-us/azure-sphere/deployment/manage-tenants?tabs=cliv2beta)
+- [Claim the
   device](https://docs.microsoft.com/en-us/azure-sphere/install/claim-device?tabs=cliv2beta):
   one-time operation that can not be undone
-- [configure networking](https://docs.microsoft.com/en-us/azure-sphere/install/configure-wifi)
-- [subscribe to
+- [Configure networking](https://docs.microsoft.com/en-us/azure-sphere/install/configure-wifi)
+- [Subscribe to
   notifications/updates](https://docs.microsoft.com/en-us/azure-sphere/install/get-notifications)
 
-## Integration with other services
+## Integration with other Azure services
 
-Can be used [together with IoT Hub or
+Can be used [together with IoT Hub or IoT
 Central](https://docs.microsoft.com/en-us/azure-sphere/app-development/use-azure-iot): you need to
-register the Sphere tenant to the hub
+register the Sphere tenant to the IoT Hub
 
 Can be used [together with IoT
 Edge](https://docs.microsoft.com/en-us/azure-sphere/app-development/setup-iot-edge?tabs=cliv2beta)
@@ -61,7 +61,6 @@ Edge](https://docs.microsoft.com/en-us/azure-sphere/app-development/setup-iot-ed
 [Sphere Vs Azure
 RTOS](https://docs.microsoft.com/en-us/answers/questions/27002/when-should-i-use-azure-sphere-versus-azure-rtos.html):
 Sphere focuses on security while RTOS is more generic/requires more manual maintenance/setting-up.
-
 [The two can be combined
 though](https://techcommunity.microsoft.com/t5/internet-of-things-blog/combining-azure-sphere-iot-security-with-azure-rtos-real-time/ba-p/1992869)
 
@@ -72,16 +71,17 @@ though](https://techcommunity.microsoft.com/t5/internet-of-things-blog/combining
 > use. [Docs](https://docs.microsoft.com/en-us/azure-sphere/hardware/guardian-modules)
 
 [List of hardware includes only 2
-devices](https://azure.microsoft.com/en-gb/services/azure-sphere/#ecosystem).
+devices (see guardian devices)](https://azure.microsoft.com/en-gb/services/azure-sphere/#ecosystem).
 
 [Connectivity](https://docs.microsoft.com/en-us/azure-sphere/hardware/guardian-modules#connectivity)
+
 - upstream to the cloud can be Ethernet, wifi or cellular
 - downstream can be serial, ethernet, wireless
 
-# Resources - activity 
+## Resources - activity
 
-- Short [video demo](https://www.youtube.com/watch?v=AqLOS3dnksE)
-- Releases happen on a monthly cadence - release on Jan 26 [was
+- [IoT show episode discussing Azure Sphere on the Miromico LoRaWAN gateway](https://www.youtube.com/watch?v=AqLOS3dnksE)
+- Releases happen on a monthly cadence - last release on Jan 26 [was
 cancelled](https://techcommunity.microsoft.com/t5/internet-of-things-blog/general-availability-release-of-azure-sphere-version-22-01-is/ba-p/3073222)
 but otherwise seems actively developed.
 - [Stack
