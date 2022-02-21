@@ -82,3 +82,11 @@ conditionallySetupTc() {
         touch tc.uri && echo "$TC_URI" > tc.uri
     fi
 }
+
+setLogLevel() {
+    if [[ -z "$LOG_LEVEL" ]]; then
+        echo "No custom LOG_LEVEL has been set. Defaulting to INFO."
+    else
+        sed -i "s/\"log_level\": \"INFO\",/\"log_level\":\"$LOG_LEVEL\",/g" station.conf
+    fi
+}
