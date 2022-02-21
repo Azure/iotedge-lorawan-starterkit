@@ -42,10 +42,8 @@ namespace LoRaWan.NetworkServer
             this.primaryKey = primaryKey;
             this.logger = logger;
             this.twinLoadRequests = meter.CreateCounter<int>(MetricRegistry.TwinLoadRequests);
-            this.deviceClient = CreateDeviceClient();
-
             _ = meter.CreateObservableGauge(MetricRegistry.ActiveClientConnections, () => activeDeviceConnections);
-            _ = Interlocked.Increment(ref activeDeviceConnections);
+            this.deviceClient = CreateDeviceClient();
         }
 
         public bool IsMatchingKey(string primaryKey) => this.primaryKey == primaryKey;
@@ -278,7 +276,6 @@ namespace LoRaWan.NetworkServer
                 try
                 {
                     this.deviceClient = CreateDeviceClient();
-                    _ = Interlocked.Increment(ref activeDeviceConnections);
                     this.logger.LogDebug("device client reconnected");
                 }
                 catch (ArgumentException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not connect device client with error: {ex.Message}")))
@@ -292,6 +289,7 @@ namespace LoRaWan.NetworkServer
 
         private DeviceClient CreateDeviceClient()
         {
+            _ = Interlocked.Increment(ref activeDeviceConnections);
             var dc = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
             dc.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
                                                      minBackoff: TimeSpan.FromMilliseconds(100),
