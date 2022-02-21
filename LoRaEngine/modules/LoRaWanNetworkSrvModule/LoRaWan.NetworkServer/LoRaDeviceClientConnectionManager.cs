@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IMemoryCache cache;
         private readonly ILoggerFactory? loggerFactory;
-        private readonly ILogger<LoRaDeviceClientConnectionManager> logger;
+        private readonly ILogger logger;
         private readonly ConcurrentDictionary<DevEui, SynchronizedLoRaDeviceClient> clientByDevEui = new();
 
         private record struct ScheduleKey(DevEui DevEui);
@@ -35,7 +35,7 @@ namespace LoRaWan.NetworkServer
 
         public LoRaDeviceClientConnectionManager(IMemoryCache cache,
                                                  ILoggerFactory? loggerFactory,
-                                                 ILogger<LoRaDeviceClientConnectionManager> logger)
+                                                 ILogger<ILoRaDeviceClientConnectionManager> logger)
         {
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
             this.loggerFactory = loggerFactory;
