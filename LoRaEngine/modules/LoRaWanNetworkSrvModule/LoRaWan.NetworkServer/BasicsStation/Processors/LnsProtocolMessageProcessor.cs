@@ -17,6 +17,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using LoRaTools.LoRaMessage;
     using LoRaTools.NetworkServerDiscovery;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
+    using Microsoft.ApplicationInsights;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
@@ -33,6 +34,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly RegistryMetricTagBag registryMetricTagBag;
+        private readonly ITracing tracing;
         private readonly Counter<int> uplinkMessageCounter;
         private readonly Counter<int> unhandledExceptionCount;
 
@@ -43,7 +45,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                            ILoggerFactory loggerFactory,
                                            ILogger<LnsProtocolMessageProcessor> logger,
                                            RegistryMetricTagBag registryMetricTagBag,
-                                           Meter meter)
+                                           Meter meter,
+                                           ITracing tracing)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.socketWriterRegistry = socketWriterRegistry;
@@ -52,6 +55,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.loggerFactory = loggerFactory;
             this.logger = logger;
             this.registryMetricTagBag = registryMetricTagBag;
+            this.tracing = tracing;
             this.uplinkMessageCounter = meter?.CreateCounter<int>(MetricRegistry.D2CMessagesReceived);
             this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
@@ -124,6 +128,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                   string json,
                                                   CancellationToken cancellationToken)
         {
+            using var dataOperation = this.tracing.TrackDataMessage();
+
             switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:

@@ -64,11 +64,10 @@ namespace LoRaWan.Tests.Integration
             // arrange
             var cancellationToken = CancellationToken.None;
             var client = this.subject.Server.CreateWebSocketClient();
-            var webSocket = await client.ConnectAsync(new Uri(this.subject.Server.BaseAddress, "router-info"), cancellationToken);
             SetupIotHubResponse(StationEui, HostAddresses);
 
             // act
-            var result = await SendMessageAsync(webSocket, new { router = StationEui.AsUInt64 }, cancellationToken);
+            var result = await SendSingleMessageAsync(client, StationEui, cancellationToken);
 
             // assert
             AssertContainsHostAddress(new Uri(HostAddresses[0]), StationEui, result);
@@ -79,7 +78,7 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             var cancellationToken = CancellationToken.None;
-            var client = this.subject.Server.CreateWebSocketClient() ?? throw new InvalidOperationException("Could not create client.");
+            var client = this.subject.Server.CreateWebSocketClient();
             SetupIotHubResponse(StationEui, HostAddresses);
 
             // act + assert
@@ -132,16 +131,11 @@ namespace LoRaWan.Tests.Integration
         private async Task<string> SendSingleMessageAsync(WebSocketClient client, StationEui stationEui, CancellationToken cancellationToken)
         {
             var webSocket = await client.ConnectAsync(new Uri(this.subject.Server.BaseAddress, "router-info"), cancellationToken);
-            var result = await SendMessageAsync(webSocket, new { router = stationEui.AsUInt64 }, cancellationToken);
+            await webSocket.SendAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { router = stationEui.AsUInt64 })), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+            var e = webSocket.ReadTextMessages(cancellationToken);
+            var result = !await e.MoveNextAsync() ? throw new InvalidOperationException("No response received.") : e.Current;
             await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal closure", cancellationToken);
             return result;
-        }
-
-        private static async Task<string> SendMessageAsync(WebSocket webSocket, object payload, CancellationToken cancellationToken)
-        {
-            await webSocket.SendAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload)), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
-            var e = webSocket.ReadTextMessages(cancellationToken);
-            return !await e.MoveNextAsync() ? throw new InvalidOperationException("No response received.") : e.Current;
         }
 
         private void SetupIotHubResponse(StationEui stationEui, IList<string> hostAddresses)
