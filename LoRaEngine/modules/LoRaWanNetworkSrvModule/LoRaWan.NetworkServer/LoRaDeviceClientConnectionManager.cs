@@ -48,7 +48,7 @@ namespace LoRaWan.NetworkServer
         [ActivatorUtilitiesConstructor]
         public LoRaDeviceClientConnectionManager(IMemoryCache cache,
                                                  ILoggerFactory? loggerFactory,
-                                                 ILogger<ILoRaDeviceClientConnectionManager> logger)
+                                                 ILogger<LoRaDeviceClientConnectionManager> logger)
         {
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
             this.loggerFactory = loggerFactory;

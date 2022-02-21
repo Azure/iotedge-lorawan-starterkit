@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<IMemoryCache> cacheMock;
         private readonly LoRaDeviceClientConnectionManager subject;
         private readonly TestOutputLoggerFactory loggerFactory;
-        private readonly ILogger<ILoRaDeviceClientConnectionManager> logger;
+        private readonly ILogger<LoRaDeviceClientConnectionManager> logger;
         private LoRaDevice? testDevice;
 
         public LoRaDeviceClientConnectionManagerTests(ITestOutputHelper testOutputHelper)
