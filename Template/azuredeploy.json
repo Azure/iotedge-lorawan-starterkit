@@ -93,7 +93,7 @@
         "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
         "gitUsername": "Azure",
         "functionZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v2.0.0/function-2.0.0.zip",
-        "discoveryServiceZipBinary": "TODO:replacewithnextrelease",
+        "discoveryServiceZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v2.1.0/discoveryservice-2.1.0.zip",
         "gitBranch": "v2.0.0",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
