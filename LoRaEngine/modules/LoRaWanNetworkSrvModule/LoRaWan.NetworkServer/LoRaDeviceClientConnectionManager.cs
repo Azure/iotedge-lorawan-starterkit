@@ -213,8 +213,16 @@ namespace LoRaWan.NetworkServer
             public bool EnsureConnected()
             {
                 var connected = this.client.EnsureConnected();
+
+                if (this.logger?.IsEnabled(LogLevel.Debug) ?? false)
+                {
+                    const string message = $"{nameof(EnsureConnected)} = {{Connected}}";
+                    this.logger.LogDebug(message, connected);
+                }
+
                 if (connected)
                     EnsureConnectedSucceeded?.Invoke(this, EventArgs.Empty);
+
                 return connected;
             }
 
