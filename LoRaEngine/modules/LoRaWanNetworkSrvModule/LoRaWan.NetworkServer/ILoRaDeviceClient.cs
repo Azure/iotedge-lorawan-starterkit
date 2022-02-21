@@ -62,5 +62,7 @@ namespace LoRaWan.NetworkServer
         bool EnsureConnected();
 
         bool IsMatchingKey(string primaryKey);
+
+        Task<bool> DisconnectAsync(CancellationToken cancellationToken);
     }
 }

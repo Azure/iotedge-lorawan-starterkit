@@ -222,6 +222,26 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        public async Task<bool> DisconnectAsync(CancellationToken cancellationToken)
+        {
+            if (this.deviceClient != null)
+            {
+                await this.deviceClient.CloseAsync(cancellationToken);
+#pragma warning disable CA1849 // Calling DisposeAsync after CloseAsync throws an error
+                this.deviceClient.Dispose();
+#pragma warning restore CA1849 // Call async methods when in an async method
+                this.deviceClient = null;
+
+                this.logger.LogDebug("device client disconnected");
+            }
+            else
+            {
+                this.logger.LogDebug("device client was already disconnected");
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Disconnects device client.
         /// </summary>

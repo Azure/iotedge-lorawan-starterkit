@@ -3,6 +3,8 @@
 
 namespace LoRaWan.Tests.Common
 {
+    using System.Threading;
+    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
 
     /// <summary>
@@ -34,5 +36,8 @@ namespace LoRaWan.Tests.Common
 
         public void CloseConnection(LoRaDevice loRaDevice) =>
             _ = this.singleDeviceClient.Disconnect();
+
+        public Task CloseConnectionAsync(LoRaDevice loRaDevice, CancellationToken cancellationToken) =>
+            _ = this.singleDeviceClient.DisconnectAsync(cancellationToken);
     }
 }

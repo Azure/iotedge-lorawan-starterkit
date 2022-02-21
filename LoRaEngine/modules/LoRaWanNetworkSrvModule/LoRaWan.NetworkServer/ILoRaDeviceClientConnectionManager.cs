@@ -4,6 +4,8 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public interface ILoRaDeviceClientConnectionManager : IDisposable
     {
@@ -16,5 +18,6 @@ namespace LoRaWan.NetworkServer
         void Release(LoRaDevice loRaDevice);
 
         void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient);
+        Task CloseConnectionAsync(LoRaDevice loRaDevice, CancellationToken cancellationToken);
     }
 }

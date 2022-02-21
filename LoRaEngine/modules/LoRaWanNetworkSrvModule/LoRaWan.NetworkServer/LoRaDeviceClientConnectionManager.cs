@@ -5,6 +5,8 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
@@ -100,6 +102,15 @@ namespace LoRaWan.NetworkServer
         private static string GetConnectionCacheKey(DevEui devEui) => string.Concat("connection:", devEui);
 
         private static string GetScheduleCacheKey(DevEui devEui) => string.Concat("connection:schedule:", devEui);
+
+        public Task CloseConnectionAsync(LoRaDevice loRaDevice, CancellationToken cancellationToken)
+        {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
+            var client = GetLoRaDeviceClient(loRaDevice);
+
+            return client.DisconnectAsync(cancellationToken);
+        }
 
         public void CloseConnection(LoRaDevice loRaDevice)
         {

@@ -940,6 +940,14 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        internal virtual async Task CloseConnectionAsync(CancellationToken cancellationToken, bool force = false)
+        {
+            if (force || (IsConnectionOwner is null or false))
+            {
+                await this.connectionManager?.CloseConnectionAsync(this, cancellationToken);
+            }
+        }
+
         internal virtual void CloseConnection(bool force = false)
         {
             if (force || (IsConnectionOwner is null or false))
