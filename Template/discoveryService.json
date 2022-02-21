@@ -23,17 +23,25 @@
         "discoveryZipUrl": {
             "type": "string"
         },
-        "iotHubResourceId": {
+        "iotHubName": {
             "type": "string"
         },
         "appInsightsInstrumentationKey": {
             "type": "string"
+        },
+        "roleNameGuid": {
+            "type": "string",
+            "defaultValue": "[newGuid()]",
+            "metadata": {
+                "description": "A new GUID used to identify the role assignment"
+            }
         }
     },
     "variables": {
-        "appServicePlanName": "[concat('plan-', parameters('webAppName'))]",
-        "iotHubTwinContributorRoleId": "494bdba2-168f-4f31-a0a1-191d2f7c028c",
+        "appServicePlanName": "[concat(parameters('webAppName'), 'plan')]",
+        "iotHubTwinContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '494bdba2-168f-4f31-a0a1-191d2f7c028c')]",
         "aspNetCoreUrls": "http://0.0.0.0:80;https://0.0.0.0:443",
+        "webSitesApiVersion": "2021-03-01"
     },
     "resources": [
         {
@@ -47,7 +55,7 @@
         },
         {
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2021-03-01",
+            "apiVersion": "[variables('webSitesApiVersion')]",
             "name": "[parameters('webAppName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -82,14 +90,14 @@
         },
         {
             "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2015-07-01",
-            "name": "[guid('IotHubContributorAssignment')]",
+            "apiVersion": "2020-08-01-preview",
+            "name": "[parameters('roleNameGuid')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', parameters('webAppName'))]"
             ],
-            "scope": "[parameters('iotHubResourceId')]",
+            "scope": "[concat('Microsoft.Devices/IotHubs/', parameters('iotHubName'))]",
             "properties": {
-                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2021-03-01', 'Full').identity.principalId]",
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), variables('webSitesApiVersion'), 'Full').identity.principalId]",
                 "roleDefinitionId": "[variables('iotHubTwinContributorRoleId')]"
             }
         }
