@@ -17,17 +17,6 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
 
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-    public sealed record LoRaDeviceClientSynchronizedEventArgs(int Id, string Name);
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-
-    public interface ILoRaDeviceClientSynchronizedEventSource
-    {
-        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Queued;
-        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Processing;
-        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Processed;
-    }
-
     /// <summary>
     /// Manages <see cref="ILoRaDeviceClient"/> connections for <see cref="LoRaDevice"/>.
     /// </summary>
@@ -388,5 +377,16 @@ namespace LoRaWan.NetworkServer
                 this.processedEventHandler?.Invoke(this, new LoRaDeviceClientSynchronizedEventArgs(id, name));
             }
         }
+    }
+
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+    public sealed record LoRaDeviceClientSynchronizedEventArgs(int Id, string Name);
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+
+    public interface ILoRaDeviceClientSynchronizedEventSource
+    {
+        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Queued;
+        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Processing;
+        event EventHandler<LoRaDeviceClientSynchronizedEventArgs> Processed;
     }
 }
