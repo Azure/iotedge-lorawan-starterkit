@@ -633,17 +633,12 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Ensures that the device is connected. Calls the connection manager that keeps track of device connection lifetime.
         /// </summary>
-        internal virtual IAsyncDisposable BeginDeviceClientConnectionActivity()
-        {
+        internal virtual IAsyncDisposable BeginDeviceClientConnectionActivity() =>
             // Most devices won't have a connection timeout
             // In that case check without lock and return a cached disposable
-            if (KeepAliveTimeout == 0)
-            {
-                return AsyncDisposable.Nop;
-            }
-
-            return this.connectionManager.BeginDeviceClientConnectionActivity(this);
-        }
+            KeepAliveTimeout == 0
+                ? AsyncDisposable.Nop
+                : this.connectionManager.BeginDeviceClientConnectionActivity(this);
 
         /// <summary>
         /// Indicates whether or not we can resubmit an ack for the confirmation up message.
