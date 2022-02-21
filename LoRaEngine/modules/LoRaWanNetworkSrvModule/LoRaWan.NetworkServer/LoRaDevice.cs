@@ -639,13 +639,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal virtual IDisposable BeginDeviceClientConnectionActivity()
         {
-            // Most devices won't have a connection timeout
-            // In that case check without lock and return a cached disposable
-            if (KeepAliveTimeout == 0)
-            {
-                return NullDisposable.Instance;
-            }
-
             lock (this.processingSyncLock)
             {
                 if (this.connectionManager.EnsureConnected(this))
