@@ -84,7 +84,8 @@
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                             "value": "[parameters('appInsightsInstrumentationKey')]"
                         }
-                    ]
+                    ],
+                    "webSocketsEnabled": true
                 }
             }
         },
