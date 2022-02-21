@@ -494,6 +494,7 @@ jobs:
       E2ETESTS_DefaultBasicStationEui: ${{ secrets.DEFAULTCISTATIONEUI }}
       E2ETESTS_RadioDev: ${{ secrets.CIBASICSTATIONRADIODEV }}
       E2ETESTS_CupsBasicStationEui: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
+      E2ETESTS_IsCorecellBasicStation: false
       E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
       E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
       E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}

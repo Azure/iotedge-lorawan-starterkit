@@ -247,7 +247,8 @@ namespace LoRaWan.Tests.Common
             var scriptName = "start_basicsstation.sh";
             var startScript = new FileInfo(Path.Combine(loRaBasicsStationModulePath, scriptName));
             var helperFunctions = new FileInfo(Path.Combine(loRaBasicsStationModulePath, "helper-functions.sh"));
-            var stationConf = new FileInfo(Path.Combine(loRaBasicsStationModulePath, "station.conf"));
+            var stationConf = new FileInfo(Path.Combine(loRaBasicsStationModulePath, config.IsCorecellBasicStation ? "corecell.station.conf"
+                                                                                                                   : "sx1301.station.conf"));
 
             // Copying needed files in a local temporary path
             var localTempPath = Path.GetTempPath();
@@ -257,7 +258,8 @@ namespace LoRaWan.Tests.Common
             File.Copy(config.BasicStationExecutablePath, Path.Combine(tempDirectory, "station.std"));
             File.Copy(startScript.FullName, Path.Combine(tempDirectory, scriptName));
             File.Copy(helperFunctions.FullName, Path.Combine(tempDirectory, "helper-functions.sh"));
-            File.Copy(stationConf.FullName, Path.Combine(tempDirectory, "station.conf"));
+            File.Copy(stationConf.FullName, Path.Combine(tempDirectory, config.IsCorecellBasicStation ? "corecell.station.conf"
+                                                                                                      : "sx1301.station.conf"));
 
             Environment.SetEnvironmentVariable("BS_TEMP_DIRECTORY", tempDirectory);
             // Following environment variable is needed if following bash commands are executed within WSL
