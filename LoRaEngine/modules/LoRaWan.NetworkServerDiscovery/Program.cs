@@ -4,17 +4,17 @@
 using LoRaTools.NetworkServerDiscovery;
 using LoRaWan;
 using LoRaWan.NetworkServerDiscovery;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Configuration.AddJsonFile("appsettings.local.json", optional: true);
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
 builder.Services.AddSingleton<DiscoveryService>()
                 .AddSingleton<ILnsDiscovery, TagBasedLnsDiscovery>()
-                .AddMemoryCache();
+                .AddMemoryCache()
+                .AddApplicationInsightsTelemetry();
 
 var app = builder.Build();
 
@@ -31,5 +31,7 @@ app.MapGet(ILnsDiscovery.EndpointName, async (DiscoveryService discoveryService,
     catch (Exception ex) when (ExceptionFilterUtility.False(() => logger.LogError(ex, "Exception when executing discovery endpoint: '{Exception}'.", ex)))
     { }
 });
+
+app.MapMetrics();
 
 app.Run();
