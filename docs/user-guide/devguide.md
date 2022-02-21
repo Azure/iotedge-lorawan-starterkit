@@ -345,7 +345,7 @@ Keep in mind that the `hostAddress` value must include the scheme and the host n
     The configuration values of the network name of a station, respectively of the set of LNS in a given network, are cached by the discovery endpoint for six hours.
     If you updated the configuration, make sure to restart the discovery service to ensure that the cache is refreshed.
 
-You can then choose to deploy the discovery service either on-prem or in the cloud. For both deployment strategies, you can configure the following behavior:
+You can choose to deploy the discovery service either on-prem or in the cloud. For both deployment strategies, you can configure the following behavior:
 
 - The log level can be configured by setting the `Logging__LogLevel__Default` environment variable. For more fine-grained configuration of the console log level, refer to [Logging in .NET Core and ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-6.0#set-log-level-by-command-line-environment-variables-and-other-configuration).
 - You can use Application Insights by setting the `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable. The log levels for Application Insights can be configured similarly to the default log levels, but by using the environment variables `Logging__ApplicationInsights__LogLevel__<Default|...>`.
@@ -353,7 +353,7 @@ You can then choose to deploy the discovery service either on-prem or in the clo
 
 #### Deployment in Azure
 
-We recommend that you use an Azure App Service to run the discovery service in the cloud. We recommend that you follow the [App Service Quickstart](https://docs.microsoft.com/en-us/azure/app-service/quickstart-dotnetcore?tabs=net60&pivots=development-environment-cli) for instructions how to deploy an ASP.NET Core app in an Azure App Service. When using an App Service, make sure that you:
+We recommend that you use an Azure App Service to run the discovery service in the cloud. You can follow the [App Service Quickstart](https://docs.microsoft.com/en-us/azure/app-service/quickstart-dotnetcore?tabs=net60&pivots=development-environment-cli) for instructions how to deploy an ASP.NET Core app in an Azure App Service. When using an App Service, make sure that you:
 
 - [Enable the system assigned managed identity](https://docs.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=portal%2Chttp#add-a-system-assigned-identity)
 - Assign a role to the system assigned identity which allows it to query the IoT Hub twins, e.g. IoT Hub Twin Contributor.
@@ -363,8 +363,8 @@ We recommend that you use an Azure App Service to run the discovery service in t
 
 When deploying the discovery service on-premises, please read how to [Host ASP.NET Core on Windows with IIS](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-6.0) (or any other hosting strategy you may want to use).
 
-- You must specify the IoT Hub connection string by setting the `ConnectionStrings__IotHub` environment variable, since you cannot use managed identities with an on-premises deployment. Similar to the LNS, the discovery endpoint exposes metrics in Prometheus format.
-- You can configure the certificates that should be used by the discovery endpoint as described in the [Minimal APIs overview](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0#specify-https-using-a-custom-certificate). Instead of using the `appsettings.json` you can always use environment variables of the structure `Kestrel__Certificates__Default__<Path|KeyPath|...>`.
+- You must specify the IoT Hub connection string by setting the `ConnectionStrings__IotHub` environment variable, since you cannot use managed identities with an on-premises deployment. The discovery endpoint exposes metrics in Prometheus format.
+- You can configure the certificates that should be used by the discovery endpoint as described in the [Minimal APIs overview](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0#specify-https-using-a-custom-certificate). Instead of using the `appsettings.json`, you can use environment variables of the same structure `Kestrel__Certificates__Default__<Path|KeyPath|...>`.
 
 ## Debugging in Visual Studio, outside of IoT Edge and Docker
 
