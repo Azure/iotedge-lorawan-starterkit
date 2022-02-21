@@ -1,21 +1,27 @@
 #This docker builds a container for the LoRa Basics station on arm32 architecture
 
 FROM amd64/debian:buster as build
-RUN apt-get update
-RUN apt-get install -y git
-RUN apt-get install -y apt-utils build-essential gcc-arm-linux-gnueabihf
+RUN apt-get update \
+    && apt-get install -y git apt-utils build-essential gcc-arm-linux-gnueabihf
 RUN git clone --branch v2.0.6 --single-branch --depth 1 https://github.com/lorabasics/basicstation.git
-RUN mkdir -p ~/toolchain-rpi/bin/
-RUN ln -s /usr/bin/arm-linux-gnueabihf-gcc ~/toolchain-rpi/bin/arm-linux-gnueabihf-gcc
-RUN ln -s /usr/bin/arm-linux-gnueabihf-ld ~/toolchain-rpi/bin/arm-linux-gnueabihf-ld
-RUN ln -s /usr/bin/arm-linux-gnueabihf-ar ~/toolchain-rpi/bin/arm-linux-gnueabihf-ar
-RUN ln -s /usr/bin/arm-linux-gnueabihf-objdump ~/toolchain-rpi/bin/arm-linux-gnueabihf-objdump
-RUN ln -s /usr/bin/arm-linux-gnueabihf-objcopy ~/toolchain-rpi/bin/arm-linux-gnueabihf-objcopy
+
+# creating links for allowing cross-compilation of arm-linux-gnueabihf binaries
+RUN mkdir -p ~/toolchain-rpi/bin/ ~/toolchain-corecell/bin/ \
+    && ln -s /usr/bin/arm-linux-gnueabihf-gcc ~/toolchain-rpi/bin/arm-linux-gnueabihf-gcc \
+    && ln -s /usr/bin/arm-linux-gnueabihf-ld ~/toolchain-rpi/bin/arm-linux-gnueabihf-ld \
+    && ln -s /usr/bin/arm-linux-gnueabihf-ar ~/toolchain-rpi/bin/arm-linux-gnueabihf-ar \
+    && ln -s /usr/bin/arm-linux-gnueabihf-objdump ~/toolchain-rpi/bin/arm-linux-gnueabihf-objdump \
+    && ln -s /usr/bin/arm-linux-gnueabihf-objcopy ~/toolchain-rpi/bin/arm-linux-gnueabihf-objcopy \
+    && cp -RP ~/toolchain-rpi/bin/* ~/toolchain-corecell/bin/
 WORKDIR /basicstation
+
+# make corecell version
+RUN make platform=corecell variant=std
+RUN mkdir built && cp ./build-corecell-std/bin/station ./built/station.corecell
 
 # make standard version
 RUN make platform=rpi variant=std
-RUN mkdir built && cp ./build-rpi-std/bin/station ./built/station.std
+RUN cp ./build-rpi-std/bin/station ./built/station.std
 
 # clean before making spi speed 2 version
 RUN make platform=rpi variant=std clean
@@ -28,7 +34,8 @@ FROM arm32v7/debian:buster
 WORKDIR /basicstation
 COPY --from=build /basicstation/deps/lgw/platform-rpi/reset_lgw.sh .
 COPY --from=build /basicstation/built/* .
-COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/sx1301.station.conf .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/corecell.station.conf .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/helper-functions.sh .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basicsstation.sh .
 COPY LICENSE .

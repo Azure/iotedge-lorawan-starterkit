@@ -14,7 +14,7 @@ WORKDIR /basicstation
 COPY --from=build /basicstation/build-linux-std/bin/station ./station.std
 COPY LoRaEngine/modules/LoRaBasicsStationModule/helper-functions.sh .
 COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basicsstation.sh .
-COPY LoRaEngine/modules/LoRaBasicsStationModule/station.conf .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/sx1301.station.conf .
 COPY --from=build /basicstation/deps/lgw/platform-linux/reset_lgw.sh .
 COPY LICENSE .
 COPY ./LoRaEngine/modules/LoRaBasicsStationModule/NOTICE.txt .
