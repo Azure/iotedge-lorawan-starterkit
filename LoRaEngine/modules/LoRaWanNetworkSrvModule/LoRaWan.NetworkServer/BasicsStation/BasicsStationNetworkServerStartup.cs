@@ -17,6 +17,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.ApplicationInsights;
+    using Microsoft.ApplicationInsights.AspNetCore.Extensions;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -112,7 +113,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                             new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>(), sp.GetRequiredService<ILogger<PrometheusMetricExporter>>()))));
 
             if (useApplicationInsights)
-                _ = services.AddApplicationInsightsTelemetry(appInsightsKey);
+            {
+                _ = services.AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions
+                {
+                    EnableAdaptiveSampling = false,
+                    InstrumentationKey = appInsightsKey
+                });
+            }
 
             if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
                 _ = services.AddSingleton<IClientCertificateValidatorService, ClientCertificateValidatorService>();
