@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Concurrent;
+    using LoRaWan.NetworkServer.Logger;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 

@@ -3,13 +3,13 @@
 
 #nullable enable
 
-namespace LoRaWan.Tests.Unit.Logger
+namespace LoRaWan.Tests.Unit.NetworkServer.Logger
 {
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using global::Logger;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.Logger;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
@@ -125,7 +125,7 @@ namespace LoRaWan.Tests.Unit.Logger
         {
             var optionsMonitor = new Mock<IOptionsMonitor<LoRaLoggerConfiguration>>();
             optionsMonitor.Setup(om => om.CurrentValue).Returns(configuration);
-            optionsMonitor.Setup(om => om.OnChange(It.IsAny<Action<LoRaLoggerConfiguration, string>>())).Returns(NullDisposable.Instance);
+            optionsMonitor.Setup(om => om.OnChange(It.IsAny<Action<LoRaLoggerConfiguration, string>>())).Returns(NoopDisposable.Instance);
             var mcf = moduleClientFactory ?? new Lazy<Task<ModuleClient>>(Task.FromResult((ModuleClient)null!));
             var provider = new IotHubLoggerProvider(optionsMonitor.Object, mcf);
             return new DisposableValue<Mock<IotHubLogger>>(new Mock<IotHubLogger>(provider, mcf), provider);

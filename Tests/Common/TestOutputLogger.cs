@@ -25,7 +25,7 @@ namespace LoRaWan.Tests.Common
         public TestOutputLogger(ITestOutputHelper testOutputHelper) =>
             this.testOutputHelper = testOutputHelper;
 
-        public IDisposable BeginScope<TState>(TState state) => NullDisposable.Instance;
+        public IDisposable BeginScope<TState>(TState state) => NoopDisposable.Instance;
 
         public bool IsEnabled(LogLevel logLevel) => logLevel >= TestLogLevel;
 

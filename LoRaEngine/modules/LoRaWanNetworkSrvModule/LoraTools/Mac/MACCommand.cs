@@ -131,8 +131,6 @@ namespace LoRaTools
             var pointer = 0;
             var macCommands = new List<MacCommand>(3);
 
-            using var scope = logger?.BeginDeviceScope(deviceId);
-
             while (pointer < input.Length)
             {
                 try

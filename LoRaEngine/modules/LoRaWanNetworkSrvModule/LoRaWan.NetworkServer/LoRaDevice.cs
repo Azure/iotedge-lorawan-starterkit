@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
+    using LoRaWan.NetworkServer.Logger;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
@@ -641,7 +642,7 @@ namespace LoRaWan.NetworkServer
             // In that case check without lock and return a cached disposable
             if (KeepAliveTimeout == 0)
             {
-                return NullDisposable.Instance;
+                return NoopDisposable.Instance;
             }
 
             lock (this.processingSyncLock)

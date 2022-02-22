@@ -3,13 +3,12 @@
 
 #nullable enable
 
-namespace Logger
+namespace LoRaWan.NetworkServer.Logger
 {
     using System;
     using System.Collections.Concurrent;
     using System.Text;
     using System.Threading.Tasks;
-    using LoRaWan;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;

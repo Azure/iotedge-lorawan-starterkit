@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Logger\Logger.csproj" />
     <ProjectReference Include="..\LoraTools\LoRaTools.csproj" />
     <ProjectReference Include="..\LoRaWan\LoRaWan.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
