@@ -233,7 +233,7 @@ namespace LoRaWan.Tests.Integration
 
             await EnsureDisconnectedAsync(disconnectedEvent);
             LoRaDeviceClient.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(1));
-            LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(4));
+            LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
 
             // sends unconfirmed message #2
             using var request2 = CreateWaitableRequest(simulatedDevice.CreateUnconfirmedDataUpMessage("2"));

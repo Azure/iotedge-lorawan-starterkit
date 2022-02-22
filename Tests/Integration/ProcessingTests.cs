@@ -1257,7 +1257,7 @@ namespace LoRaWan.Tests.Integration
         {
             var msgPayload = "1234";
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            deviceClient.Setup(dc => dc.DisposeAsync());
+            deviceClient.Setup(dc => dc.DisposeAsync()).Returns(ValueTask.CompletedTask);
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0, gatewayID: ServerGatewayID));
 
             var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
@@ -1330,6 +1330,8 @@ namespace LoRaWan.Tests.Integration
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
+
+            await deviceRegistry.DisposeAsync();
         }
 
         [Theory]
