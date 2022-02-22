@@ -128,10 +128,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                     return new MethodResponse((int)HttpStatusCode.BadRequest);
                 }
 
+                using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
+
+                if (c2d.Fport == FramePort.DropConnectionCommand)
+                {
+                    if (c2d.DevEUI == null)
+                    {
+                        this.logger.LogError($"DevEUI missing, cannot drop connection for the device; message Id: {c2d.MessageId}");
+                        return new MethodResponse((int)HttpStatusCode.BadRequest);
+                    }
+                    var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(c2d.DevEUI.Value);
+                    await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None);
+                }
+
                 using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
                 this.logger.LogDebug($"received cloud to device message from direct method: {methodRequest.DataAsJson}");
-
-                using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
 
                 if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
                 {
