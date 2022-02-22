@@ -196,7 +196,7 @@ namespace LoraKeysManagerFacade
                 _ = method.SetPayloadJson(JsonConvert.SerializeObject(c2dMessage));
 
                 var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
-                if (IsSuccessStatusCode(res.Status))
+                if (HttpUtilities.IsSuccessStatusCode(res.Status))
                 {
                     this.log.LogInformation("Direct method call to {gatewayID} and {devEUI} succeeded with {statusCode}", preferredGatewayID, devEUI, res.Status);
 
@@ -233,10 +233,5 @@ namespace LoraKeysManagerFacade
                 };
             }
         }
-
-        /// <summary>
-        /// Gets if the http status code indicates success.
-        /// </summary>
-        private static bool IsSuccessStatusCode(int statusCode) => statusCode is >= 200 and <= 299;
     }
 }

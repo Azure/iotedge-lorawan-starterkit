@@ -3,6 +3,7 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
+    using System;
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
@@ -90,11 +91,19 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                     DevEUI = devEUI,
                                     Fport = FramePort.DropConnectionCommand
                                 };
-                                using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(loraC2DMessage)));
+
                                 try
                                 {
                                     logger?.LogDebug($"Sending C2D message to LNS: {previousGateway} to drop connection for device: {devEUI}");
-                                    await this.serviceClient.SendAsync(previousGateway, message);
+
+                                    var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                                    _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
+
+                                    var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
+                                    if (res == null || !HttpUtilities.IsSuccessStatusCode(res.Status))
+                                    {
+                                        logger?.LogError($"Failed to send C2D message to LNS: {previousGateway} to drop the connection for device: {devEUI}, status: {res?.Status}");
+                                    }
                                 }
                                 catch (IotHubException ex)
                                 {
