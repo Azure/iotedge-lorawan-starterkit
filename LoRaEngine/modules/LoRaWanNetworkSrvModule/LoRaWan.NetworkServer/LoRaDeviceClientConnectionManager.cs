@@ -136,7 +136,7 @@ namespace LoRaWan.NetworkServer
 
         public IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice)
         {
-            if (loRaDevice == null) throw new ArgumentNullException(nameof(loRaDevice));
+            ArgumentNullException.ThrowIfNull(loRaDevice, nameof(loRaDevice));
             return this.clientByDevEui[loRaDevice.DevEUI].BeginDeviceClientConnectionActivity();
         }
 
