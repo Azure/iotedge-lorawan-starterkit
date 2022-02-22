@@ -145,7 +145,7 @@ namespace LoRaWan.NetworkServer
             private readonly ILoRaDeviceClient client;
             private readonly LoRaDevice device;
             private readonly ILogger? logger;
-            private int pid;
+            private int operationSequenceNumber;
             private readonly ExclusiveProcessor<Process> exclusiveProcessor = new();
             private bool disconnectedDuringActivity;
             private int activities;
@@ -204,8 +204,8 @@ namespace LoRaWan.NetworkServer
                                                             Func<ILoRaDeviceClient, Task<T>> processor,
                                                             [CallerMemberName] string? callerName = null)
             {
-                _ = Interlocked.Increment(ref this.pid);
-                return await this.exclusiveProcessor.ProcessAsync(new Process(this.pid, callerName!), async () =>
+                _ = Interlocked.Increment(ref this.operationSequenceNumber);
+                return await this.exclusiveProcessor.ProcessAsync(new Process(this.operationSequenceNumber, callerName!), async () =>
                 {
                     if (!doesNotRequireOpenConnection)
                         _ = EnsureConnected();
