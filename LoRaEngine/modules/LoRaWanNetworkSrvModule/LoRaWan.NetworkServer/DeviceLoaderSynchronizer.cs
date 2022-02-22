@@ -185,7 +185,6 @@ namespace LoRaWan.NetworkServer
                             // run initializers
                             InitializeDevice(device);
                             deviceCreated++;
-                            await device.CloseConnectionAsync(CancellationToken.None);
                         }
                     }
                 }
