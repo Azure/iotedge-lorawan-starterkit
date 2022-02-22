@@ -24,6 +24,10 @@ namespace LoraKeysManagerFacade
     {
         private const string AbpDeviceId = "46AAC86800430028";
         private const string OtaaDeviceId = "47AAC86800430028";
+        private const string NetworkTagName = "network";
+        private const string HostAddressPropertyName = "hostAddress";
+        private const string NetworkId = "quickstartnetwork";
+        private static readonly Uri DefaultHostAddress = new Uri("ws://mylns:5000");
         private readonly RegistryManager registryManager;
         private readonly IHttpClientFactory httpClientFactory;
 
@@ -137,6 +141,8 @@ namespace LoraKeysManagerFacade
 
                 var twin = new Twin();
                 twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
+                twin.Properties.Desired[HostAddressPropertyName] = DefaultHostAddress;
+                twin.Tags[NetworkTagName] = NetworkId;
                 var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
 
                 _ = await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
@@ -155,6 +161,7 @@ namespace LoraKeysManagerFacade
                 var concentratorTwin = await this.registryManager.GetTwinAsync(stationEuiString);
                 var concentratorJObject = JsonConvert.DeserializeObject<JObject>(regionalConfiguration);
                 concentratorTwin.Properties.Desired["routerConfig"] = concentratorJObject;
+                concentratorTwin.Tags[NetworkTagName] = NetworkId;
                 _ = await this.registryManager.UpdateTwinAsync(stationEuiString, concentratorTwin, concentratorTwin.ETag);
 
                 // This section will get deployed ONLY if the user selected the "deploy end device" options.

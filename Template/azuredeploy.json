@@ -73,6 +73,13 @@
             "metadata": {
                 "description": "Controls whether observability is set up for IoT edge."
             }
+        },
+        "useDiscoveryService": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Controls whether the standalone discovery service should be deployed."
+            }
         }
     },
     "variables": {
@@ -86,12 +93,14 @@
         "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
         "gitUsername": "Azure",
         "functionZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v2.0.0/function-2.0.0.zip",
+        "discoveryServiceZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v2.1.0/discoveryservice-2.1.0.zip",
         "gitBranch": "v2.0.0",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
         "appInsightName": "[concat(parameters('uniqueSolutionPrefix'), 'insight')]",
         "redisCacheName": "[concat(parameters('uniqueSolutionPrefix'), 'redis')]",
         "logAnalyticsName": "[concat(parameters('uniqueSolutionPrefix'), 'log')]",
+        "discoveryServiceWebAppName": "[concat(parameters('uniqueSolutionPrefix'), 'discovery')]",
         "deploymentsAPIVersion": "2021-04-01"
     },
     "resources": [
@@ -374,6 +383,40 @@
                     "capacity": 0,
                     "family": "C",
                     "name": "Basic"
+                }
+            }
+        },
+        {
+            "name": "discoveryservice",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('deploymentsAPIVersion')]",
+            "condition": "[parameters('useDiscoveryService')]",
+            "dependsOn": [                
+                "[resourceId('microsoft.insights/components/', variables('appInsightName'))]",
+                "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"  
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit/',variables('gitBranch'),'/Template/discoveryService.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "webAppName": {
+                        "value": "[variables('discoveryServiceWebAppName')]"
+                    },
+                    "iotHubName": {
+                        "value": "[variables('iotHubName')]"
+                    },
+                    "iotHubHostName": {
+                        "value": "[reference(resourceId('Microsoft.Devices/IoTHubs', variables('iotHubName')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).hostName]"
+                    },
+                    "discoveryZipUrl": {
+                        "value": "[variables('discoveryServiceZipBinary')]"
+                    },
+                    "appInsightsInstrumentationKey": {
+                        "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey]"
+                    }
                 }
             }
         }
