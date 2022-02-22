@@ -73,7 +73,7 @@ namespace LoRaTools.NetworkServerDiscovery
 
                         // Ensure resilience against duplicate specification of `router-data` and make sure that LNS host address ends with slash
                         // to make sure that URI composes as expected.
-                        var lnsUriSanitized = Regex.Replace(lnsUri.AbsoluteUri, @"/router-data/?$", string.Empty, RegexOptions.IgnoreCase);
+                        var lnsUriSanitized = Regex.Replace(lnsUri.AbsoluteUri, @"/router-data/?$", string.Empty, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
                         lnsUriSanitized = lnsUriSanitized.EndsWith('/') ? lnsUriSanitized : $"{lnsUriSanitized}/";
 
                         var url = new Uri(new Uri(lnsUriSanitized), $"{DataEndpointPath}/{stationEui}");
