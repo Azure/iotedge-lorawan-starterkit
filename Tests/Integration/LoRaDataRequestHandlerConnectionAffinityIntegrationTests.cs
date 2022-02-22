@@ -114,15 +114,15 @@ namespace LoRaWan.Tests.Integration
             }
         }
 
-        protected override void Dispose(bool disposing)
+        protected override async ValueTask DisposeAsync(bool disposing)
         {
-            base.Dispose(disposing);
             if (disposing)
             {
                 this.cache.Dispose();
                 this.loraRequest.Dispose();
                 this.testOutputLoggerFactory.Dispose();
             }
+            await base.DisposeAsync(disposing);
         }
     }
 }

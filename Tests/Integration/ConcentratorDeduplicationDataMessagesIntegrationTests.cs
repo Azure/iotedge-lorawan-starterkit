@@ -432,14 +432,14 @@ namespace LoRaWan.Tests.Integration
                 this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Exactly(twinSaves));
         }
 
-        protected override void Dispose(bool disposing)
+        protected override async ValueTask DisposeAsync(bool disposing)
         {
-            base.Dispose(disposing);
+            await base.DisposeAsync(disposing);
             if (disposing)
             {
                 this.cache.Dispose();
-                this.loraABPDevice.Dispose();
                 this.testOutputLoggerFactory.Dispose();
+                await this.loraABPDevice.DisposeAsync();
             }
         }
     }

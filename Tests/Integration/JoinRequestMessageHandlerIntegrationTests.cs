@@ -110,7 +110,7 @@ namespace LoRaWan.Tests.Integration
             this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Exactly(2));
         }
 
-        protected override void Dispose(bool disposing)
+        protected override async ValueTask DisposeAsync(bool disposing)
         {
             if (!this.disposedValue)
             {
@@ -124,7 +124,7 @@ namespace LoRaWan.Tests.Integration
             }
 
             // Call base class implementation.
-            base.Dispose(disposing);
+            await base.DisposeAsync(disposing);
         }
     }
 }
