@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Integration
 {
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
@@ -102,13 +103,13 @@ namespace LoRaWan.Tests.Integration
 
             if (keptConnection)
             {
-                this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Never);
+                this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None), Times.Never);
                 this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Once);
                 this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Once);
             }
             else
             {
-                this.deviceMock.Verify(x => x.CloseConnection(It.IsAny<bool>()), Times.Once);
+                this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None), Times.Once);
                 this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Never);
                 this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Never);
             }
