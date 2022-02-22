@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
 
     public sealed class ExclusiveProcessor<T>
     {
-        private readonly Func<IReadOnlyList<T>, T> scheduler;
+        private readonly IScheduler scheduler;
         private readonly IEqualityComparer<T> comparer;
         private readonly SemaphoreSlim processingLock = new(1);
         private readonly List<T> queue = new();
@@ -24,11 +24,25 @@ namespace LoRaWan.NetworkServer
         public event EventHandler<T>? Processing;
         public event EventHandler<(T Processor, IProcessingOutcome Outcome)>? Processed;
 
-        public ExclusiveProcessor() : this(ps => ps[0]) { }
+#pragma warning disable CA1034 // Nested types should not be visible (tightly related)
+        public interface IScheduler
+#pragma warning restore CA1034 // Nested types should not be visible
+        {
+            T SelectNext(IReadOnlyList<T> processes);
+        }
 
-        public ExclusiveProcessor(Func<IReadOnlyList<T>, T> scheduler) : this(scheduler, null) { }
+        public static readonly IScheduler DefaultScheduler = new FifoScheduler();
 
-        public ExclusiveProcessor(Func<IReadOnlyList<T>, T> scheduler, IEqualityComparer<T>? comparer)
+        private sealed class FifoScheduler : IScheduler
+        {
+            public T SelectNext(IReadOnlyList<T> processes) => processes[0];
+        }
+
+        public ExclusiveProcessor() : this(DefaultScheduler) { }
+
+        public ExclusiveProcessor(IScheduler scheduler) : this(scheduler, null) { }
+
+        public ExclusiveProcessor(IScheduler scheduler, IEqualityComparer<T>? comparer)
         {
             this.scheduler = scheduler;
             this.comparer = comparer ?? EqualityComparer<T>.Default;
@@ -97,7 +111,7 @@ namespace LoRaWan.NetworkServer
 
                     lock (this.queue)
                     {
-                        var nextProcessor = this.scheduler(this.queue);
+                        var nextProcessor = this.scheduler.SelectNext(this.queue);
                         if (!this.comparer.Equals(nextProcessor, processor))
                             next = (true, nextProcessor);
                         else
