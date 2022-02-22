@@ -69,7 +69,7 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
             var timeWatcher = request.GetTimeWatcher();
-            using var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
+            await using var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
             if (deviceConnectionActivity == null)
             {
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);

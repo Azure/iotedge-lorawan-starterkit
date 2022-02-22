@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Disconnects device client.
         /// </summary>
-        bool Disconnect();
+        Task DisconnectAsync();
 
         /// <summary>
         /// Ensures the device client is connected.

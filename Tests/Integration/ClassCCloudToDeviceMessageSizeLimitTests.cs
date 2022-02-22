@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Integration
             this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
 
             this.cache = new MemoryCache(new MemoryCacheOptions());
-            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
+            this.connectionManager = new LoRaDeviceClientConnectionManager(this.cache, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object, this.deviceCache, this.connectionManager);
 
             this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory, this.deviceCache);
