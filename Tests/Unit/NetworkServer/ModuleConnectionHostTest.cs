@@ -191,7 +191,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var networkServerConfiguration = new NetworkServerConfiguration();
             var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
             var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-            loRaDeviceRegistry.Setup(x => x.ResetDeviceCacheAsync());
+            loRaDeviceRegistry.Setup(x => x.ResetDeviceCacheAsync()).Returns(Task.CompletedTask);
 
             // Change the iot edge timeout.
             networkServerConfiguration.IoTEdgeTimeout = 5;

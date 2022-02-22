@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Xunit;
     using Xunit.Abstractions;
 
-    public sealed class LoRaDeviceClientConnectionManagerTests : IDisposable
+    public sealed class LoRaDeviceClientConnectionManagerTests : IAsyncDisposable
     {
         private readonly Mock<IMemoryCache> cacheMock;
         private readonly LoRaDeviceClientConnectionManager subject;
@@ -38,10 +38,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.subject = new LoRaDeviceClientConnectionManager(cache, this.loggerFactory, this.logger);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.subject.Dispose();
-            this.testDevice?.Dispose();
+            await this.subject.DisposeAsync();
+            if (this.testDevice is { } someTestDevice)
+                await someTestDevice.DisposeAsync();
             this.loggerFactory.Dispose();
         }
 
@@ -61,7 +62,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(5)]
-        public void When_Disposing_Should_Dispose_All_Managed_Connections(int numberOfDevices)
+        public async Task When_Disposing_Should_Dispose_All_Managed_Connections(int numberOfDevices)
         {
             // arrange
 
@@ -78,13 +79,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // act
 
-            this.subject.Dispose();
+            await this.subject.DisposeAsync();
 
             // assert
 
             foreach (var (_, c) in deviceRegistrations)
             {
-                c.Verify(client => client.Dispose(), Times.Exactly(1));
+                c.Verify(client => client.DisposeAsync(), Times.Exactly(1));
             }
         }
 
@@ -145,7 +146,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void Client_DisconnectAsync_Does_Not_Invoke_EnsureConnected()
+        public async Task Client_DisconnectAsync_Does_Not_Invoke_EnsureConnected()
         {
             // arrange
 
@@ -153,11 +154,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // act
 
-            client.DisconnectAsync();
+            await client.DisconnectAsync(CancellationToken.None);
 
             // assert
 
-            clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
+            clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Once);
             clientMock.Verify(x => x.EnsureConnected(), Times.Never);
         }
 
@@ -189,7 +190,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // assert
 
             clientMock.Verify(x => x.EnsureConnected(), Times.Once);
-            clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+            clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Never);
             Assert.Empty(postEvictionCallbackRegistrationList);
         }
 
@@ -219,7 +220,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
 
-            clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
+            clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Once);
         }
 
         [Fact]
@@ -244,18 +245,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 // 2nd act
 
-                await client.DisconnectAsync();
+                await client.DisconnectAsync(CancellationToken.None);
 
                 // assert
 
-                clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+                clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Never);
 
                 // 3rd act (activity disposed)
             }
 
             // assert
 
-            clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
+            clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Once);
         }
 
         [Fact]
@@ -275,14 +276,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await using (TestDevice.BeginDeviceClientConnectionActivity())
             {
                 await client.GetTwinAsync(CancellationToken.None);
-                await client.DisconnectAsync();
+                await client.DisconnectAsync(CancellationToken.None);
 
                 // assert
 
-                clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+                clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Never);
             }
 
-            clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
+            clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Once);
         }
 
         [Fact]
@@ -306,7 +307,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
 
-            clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+            clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Never);
         }
 
         [Fact]
@@ -337,14 +338,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 // assert
 
                 clientMock.Verify(x => x.EnsureConnected(), Times.Once);
-                clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+                clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Never);
 
                 // 3rd act (activity disposed)
             }
 
             // assert
 
-            clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
+            clientMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Once);
         }
 
         [Fact]
@@ -375,7 +376,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var reportedProperties = new TwinCollection();
             clientMock.Setup(x => x.UpdateReportedPropertiesAsync(reportedProperties, CancellationToken.None)).Returns(tcs.UpdateReportedPropertiesAsync.Task);
 
-            clientMock.Setup(x => x.DisconnectAsync()).Returns(tcs.DisconnectAsync.Task);
+            clientMock.Setup(x => x.DisconnectAsync(CancellationToken.None)).Returns(tcs.DisconnectAsync.Task);
 
             // Issue the first operation and...
 
@@ -397,7 +398,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // Issue the third operation and...
 
-            var disconnectTask = client.DisconnectAsync();
+            var disconnectTask = client.DisconnectAsync(CancellationToken.None);
 
             // ...assert state of each operations list is the expected:
 

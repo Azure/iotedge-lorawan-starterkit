@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Moq;
     using Xunit;
 
-    public sealed class DeviceLoaderSynchronizerTest : IDisposable
+    public sealed class DeviceLoaderSynchronizerTest : IAsyncDisposable
     {
         private readonly MemoryCache memoryCache;
         private readonly LoRaDeviceClientConnectionManager connectionManager;
@@ -25,9 +25,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.connectionManager = new LoRaDeviceClientConnectionManager(this.memoryCache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.connectionManager.Dispose();
+            await this.connectionManager.DisposeAsync();
             this.memoryCache.Dispose();
         }
 
@@ -42,7 +42,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var deviceFactory = new Mock<ILoRaDeviceFactory>(MockBehavior.Strict);
 
-            using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
             var target = new DeviceLoaderSynchronizer(
                 devAddr,
                 apiService.Object,
@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var deviceFactory = new Mock<ILoRaDeviceFactory>(MockBehavior.Strict);
 
-            using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
             var target = new DeviceLoaderSynchronizer(
                 devAddr,
                 apiService.Object,
@@ -129,7 +129,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(new SearchDevicesResult(iotHubDeviceInfo.AsList()));
 
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
-            using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
             var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object, deviceCache, this.connectionManager);
             var target = new DeviceLoaderSynchronizer(
                 simulatedDevice.DevAddr.Value,
@@ -174,7 +174,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
 
-            using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
             var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object, deviceCache, this.connectionManager);
             var target = new DeviceLoaderSynchronizer(
                 simulatedDevice.DevAddr.Value,
@@ -197,7 +197,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loRaDeviceClient.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Never());
 
             // device should be disconnected after initialization
-            loRaDeviceClient.Verify(x => x.DisconnectAsync(), Times.Exactly(2)); // FIXME review why exactly 2 disconnects
+            loRaDeviceClient.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(1));
 
             // Device was searched by DevAddr
             apiService.VerifyAll();
@@ -223,7 +223,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(TestUtils.CreateABPTwin(simulatedDevice));
 
-            using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
             var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object, deviceCache, this.connectionManager);
             var target = new DeviceLoaderSynchronizer(
                 simulatedDevice.DevAddr.Value,
@@ -282,7 +282,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_Not_Our_Device_In_Cache()
+        public async Task When_Not_Our_Device_In_Cache()
         {
             var loraRequestMock = CreateVerifyableRequest();
             var request = loraRequestMock.Object;
@@ -299,7 +299,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             VerifyFailedReason(loraRequestMock, LoRaDeviceRequestFailedReason.BelongsToAnotherGateway);
 
-            loRaDevice.Dispose();
+            await loRaDevice.DisposeAsync();
         }
 
         [Theory]
@@ -367,7 +367,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Cache_Contains_Join_Device_It_Is_Reloaded()
         {
-            using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
 
             var devEui = new DevEui(0x123);
             var loRaDevice = new Mock<LoRaDevice>(null, devEui, null);
@@ -380,13 +380,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await deviceLoader.ExecuteCreateDevicesAsync(new[] { new IoTHubDeviceInfo { DevAddr = new DevAddr(0x456),  DevEUI = devEui } });
 
             loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
-            loRaDevice.Verify(x => x.CloseConnection(true), Times.Once);
+            loRaDevice.Verify(x => x.CloseConnectionAsync(CancellationToken.None), Times.Once);
         }
 
         [Fact]
         public async Task When_Reload_Fails_Loader_Updates_State()
         {
-            using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
 
             var devEui = new DevEui(0x123);
             var loRaDevice = new Mock<LoRaDevice>(null, devEui, null);
@@ -399,7 +399,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await deviceLoader.ExecuteCreateDevicesAsync(new[] { new IoTHubDeviceInfo { DevAddr = new DevAddr(0x456), DevEUI = devEui } });
 
             loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
-            loRaDevice.Verify(x => x.CloseConnection(true), Times.Once);
+            loRaDevice.Verify(x => x.CloseConnectionAsync(CancellationToken.None), Times.Once);
 
             Assert.True(deviceLoader.HasLoadingDeviceError);
         }

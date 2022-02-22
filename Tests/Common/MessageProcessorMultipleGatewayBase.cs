@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Globalization;
+    using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
@@ -90,9 +91,9 @@ namespace LoRaWan.Tests.Common
         }
 
         // Protected implementation of Dispose pattern.
-        protected override void Dispose(bool disposing)
+        protected override async ValueTask DisposeAsync(bool disposing)
         {
-            base.Dispose(disposing);
+            await base.DisposeAsync(disposing);
             if (disposing)
             {
                 this.cache.Dispose();

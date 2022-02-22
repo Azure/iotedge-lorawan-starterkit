@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
 
@@ -31,14 +30,8 @@ namespace LoRaWan.Tests.Common
             throw new NotImplementedException();
         }
 
-        public Task ReleaseAsync(LoRaDevice loRaDevice)
-        {
-            this.singleDeviceClient.Dispose();
-        }
+        public Task ReleaseAsync(LoRaDevice loRaDevice) => this.singleDeviceClient.DisposeAsync().AsTask();
 
-        public void Dispose() => this.singleDeviceClient.Dispose();
-
-        public Task CloseConnectionAsync(LoRaDevice loRaDevice, CancellationToken cancellationToken) =>
-            _ = this.singleDeviceClient.DisconnectAsync(cancellationToken);
+        public ValueTask DisposeAsync() => this.singleDeviceClient.DisposeAsync();
     }
 }
