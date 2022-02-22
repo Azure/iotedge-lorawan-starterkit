@@ -758,7 +758,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await unconfirmedRequest3.WaitCompleteAsync());
             Assert.Null(unconfirmedRequest3.ResponseDownlink);
 
-            var actualTelemetryItem = Assert.Single(receivedLoRaDeviceTelemetryItems);
+            var actualTelemetryItem = await RetryAssert.SingleAsync(receivedLoRaDeviceTelemetryItems);
             Assert.NotNull(actualTelemetryItem.Data);
             var decodedPayloadValue = Assert.IsType<DecodedPayloadValue>(actualTelemetryItem.Data);
             Assert.Equal("3", decodedPayloadValue.Value.ToString());

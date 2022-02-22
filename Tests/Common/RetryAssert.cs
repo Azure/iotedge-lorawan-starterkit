@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaWan.Tests.Common
 {
     using System;
@@ -11,27 +13,52 @@ namespace LoRaWan.Tests.Common
 
     public static class RetryAssert
     {
-        public static Task ContainsAsync<T>(T expected, IEnumerable<T> collection, int maxAttempts = 3, TimeSpan? interval = null) =>
-            ContainsAsync(el => expected.Equals(el), collection, maxAttempts, interval);
+        private static readonly TimeSpan DefaultInterval = TimeSpan.FromSeconds(5);
 
-        public static async Task ContainsAsync<T>(Predicate<T> predicate, IEnumerable<T> collection, int maxAttempts = 3, TimeSpan? interval = null)
-        {
-            var intervalToUse = interval ?? TimeSpan.FromSeconds(5);
+        public static Task ContainsAsync<T>(T expected, IEnumerable<T> enumerable, int maxAttempts = 3, TimeSpan? interval = null) =>
+            ContainsAsync(el => expected?.Equals(el) ?? throw new ArgumentNullException(nameof(expected)), enumerable, maxAttempts, interval);
 
-            for (var i = 0; i < maxAttempts; ++i)
+        public static Task ContainsAsync<T>(Predicate<T> predicate, IEnumerable<T> enumerable, int maxAttempts = 3, TimeSpan? interval = null) =>
+            RetryAsync(() =>
             {
                 try
                 {
-                    Assert.Contains(collection, predicate);
-                    return;
+                    Assert.Contains(enumerable, predicate);
+                    return ((int?)0, true);
                 }
                 catch (ContainsException)
                 {
-                    if ((i + 1) == maxAttempts)
-                        throw;
+                    return (default, false);
                 }
+            }, maxAttempts, interval);
 
-                await Task.Delay(intervalToUse);
+        public static Task<T> SingleAsync<T>(IEnumerable<T> enumerable, int maxAttempts = 3, TimeSpan? interval = null) =>
+            RetryAsync(() =>
+            {
+                try
+                {
+                    return (Assert.Single(enumerable), true);
+                }
+                catch (SingleException)
+                {
+                    return (default, false);
+                }
+            }, maxAttempts, interval);
+
+        private static async Task<T> RetryAsync<T>(Func<(T?, bool)> assert, int maxAttempts, TimeSpan? interval)
+        {
+            var effectiveInterval = interval ?? DefaultInterval;
+
+            var i = 0;
+            while (true)
+            {
+                if (assert() is (var result, true))
+                    return result ?? throw new InvalidOperationException("Result of the assertion was null.");
+
+                if (++i == maxAttempts)
+                    throw new InvalidOperationException("Maximum number of retries exceeded. Assertion failed.");
+
+                await Task.Delay(effectiveInterval);
             }
         }
     }
