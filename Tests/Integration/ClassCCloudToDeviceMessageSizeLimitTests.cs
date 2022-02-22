@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Integration
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class CCloud to device message processing max payload size tests (Join tests are handled in other class)
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
-    public sealed class ClassCCloudToDeviceMessageSizeLimitTests : IDisposable
+    public sealed class ClassCCloudToDeviceMessageSizeLimitTests : IAsyncDisposable
     {
         private const string ServerGatewayID = "test-gateway";
 
@@ -239,13 +239,14 @@ namespace LoRaWan.Tests.Integration
             return new string(chars, 0, length);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.loRaDeviceRegistry.Dispose();
-            this.connectionManager.Dispose();
+            await this.loRaDeviceRegistry.DisposeAsync();
+            await this.connectionManager.DisposeAsync();
+            await this.deviceCache.DisposeAsync();
+
             this.cache.Dispose();
             this.testOutputLoggerFactory.Dispose();
-            this.deviceCache.Dispose();
         }
     }
 }
