@@ -7,16 +7,19 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
     using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.FunctionBundler;
     using LoRaWan.Tests.Common;
+    using Microsoft.Azure.Devices;
     using Moq;
     using Xunit;
 
     public class MessageDeduplicationTests : FunctionTestBase
     {
         private readonly DeduplicationExecutionItem deduplicationExecutionItem;
+        private readonly Mock<IServiceClient> serviceClientMock;
 
         public MessageDeduplicationTests()
         {
-            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore(), Mock.Of<IServiceClient>());
+            this.serviceClientMock = new Mock<IServiceClient>();
+            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore(), this.serviceClientMock.Object);
         }
 
         [Fact]
@@ -58,6 +61,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             var dev1EUI = TestEui.GenerateDevEui();
             var dev2EUI = TestEui.GenerateDevEui();
 
+            this.serviceClientMock.Setup(x => x.InvokeDeviceMethodAsync(
+                It.IsAny<string>(), LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>()))
+                .ReturnsAsync(new CloudToDeviceMethodResult() { Status = 200 });
+
             var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
@@ -66,6 +73,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
 
+            this.serviceClientMock.Verify(
+                x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>()),
+                Times.Once);
+
             result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev2EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
@@ -73,6 +84,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev2EUI, gateway2Id, 2, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
+
+            this.serviceClientMock.Verify(
+                x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>()),
+                Times.Exactly(2));
         }
     }
 }
