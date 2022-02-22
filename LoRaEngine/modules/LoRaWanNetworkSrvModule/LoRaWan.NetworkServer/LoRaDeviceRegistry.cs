@@ -212,7 +212,7 @@ namespace LoRaWan.NetworkServer
                 // it gets re-fetched on the next message
                 if (this.deviceCache.TryGetByDevEui(devEUI, out var someDevice) && someDevice.AppSKey != null)
                 {
-                    _ = this.deviceCache.RemoveAsync(someDevice);
+                    _ = await this.deviceCache.RemoveAsync(someDevice);
                     this.logger.LogDebug("Device was removed from cache.");
                 }
 
