@@ -256,6 +256,12 @@ namespace LoRaWan.NetworkServer
 
             private enum DisconnectionResult { Disconnected, Deferred, NotDisconnected }
 
+            /// <remarks>
+            /// This method is either called by an explicit call to <see cref="DisconnectAsync"/>
+            /// or when an activity is ending (when <see cref="isActivityEnding"/> is <c>true</c>)
+            /// to issue a disconnection if it was deferred and no other activities are
+            /// outstanding.
+            /// </remarks>
             private Task<DisconnectionResult> DisconnectAsync(bool isActivityEnding) =>
                 InvokeExclusivelyAsync(doesNotRequireOpenConnection: true, async client =>
                 {
