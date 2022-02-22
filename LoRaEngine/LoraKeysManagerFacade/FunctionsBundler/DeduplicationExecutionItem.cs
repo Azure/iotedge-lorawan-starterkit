@@ -3,18 +3,26 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
+    using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan;
+    using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
 
     public class DeduplicationExecutionItem : IFunctionBundlerExecutionItem
     {
         private readonly ILoRaDeviceCacheStore cacheStore;
+        private readonly IServiceClient serviceClient;
 
-        public DeduplicationExecutionItem(ILoRaDeviceCacheStore cacheStore)
+        public DeduplicationExecutionItem(
+            ILoRaDeviceCacheStore cacheStore,
+            IServiceClient serviceClient)
         {
             this.cacheStore = cacheStore;
+            this.serviceClient = serviceClient;
         }
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
@@ -69,9 +77,30 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
                         if (updateCacheState)
                         {
+                            var previousGateway = cachedDeviceState.GatewayId;
+
                             cachedDeviceState.FCntUp = clientFCntUp;
                             cachedDeviceState.GatewayId = gatewayId;
                             _ = deviceCache.StoreInfo(cachedDeviceState);
+
+                            if (previousGateway != gatewayId)
+                            {
+                                var loraC2DMessage = new LoRaCloudToDeviceMessage()
+                                {
+                                    DevEUI = devEUI,
+                                    Fport = FramePort.DropConnectionCommand
+                                };
+                                using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(loraC2DMessage)));
+                                try
+                                {
+                                    logger?.LogDebug($"Sending C2D message to LNS: {previousGateway} to drop connection for device: {devEUI}");
+                                    await this.serviceClient.SendAsync(previousGateway, message);
+                                }
+                                catch (IotHubException ex)
+                                {
+                                    logger?.LogError(ex, $"Failed to send C2D message to LNS: {previousGateway} to drop the connection for device: {devEUI}");
+                                }
+                            }
                         }
                     }
                     else

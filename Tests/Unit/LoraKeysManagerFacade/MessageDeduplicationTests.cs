@@ -4,8 +4,10 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 {
     using System.Threading.Tasks;
+    using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.FunctionBundler;
     using LoRaWan.Tests.Common;
+    using Moq;
     using Xunit;
 
     public class MessageDeduplicationTests : FunctionTestBase
@@ -14,7 +16,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 
         public MessageDeduplicationTests()
         {
-            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore());
+            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore(), Mock.Of<IServiceClient>());
         }
 
         [Fact]
