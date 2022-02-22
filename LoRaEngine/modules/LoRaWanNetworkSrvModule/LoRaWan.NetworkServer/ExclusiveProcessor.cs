@@ -94,7 +94,7 @@ namespace LoRaWan.NetworkServer
         {
             ArgumentNullException.ThrowIfNull(function, nameof(function));
 
-            var submissionTime = DateTimeOffset.Now;
+            var submissionTime = DateTime.UtcNow;
 
             lock (this.queue)
                 this.queue.Add(processor);
@@ -125,9 +125,9 @@ namespace LoRaWan.NetworkServer
                     else
                     {
                         Processing?.Invoke(this, processor);
-                        var startTime = DateTimeOffset.Now;
+                        var startTime = DateTime.UtcNow;
                         var task = await Task.WhenAny(function());
-                        var endTime = DateTimeOffset.Now;
+                        var endTime = DateTime.UtcNow;
                         var outcome = new ProcessingTaskOutcome<TResult>(task, submissionTime, startTime - submissionTime, endTime - startTime);
                         Processed?.Invoke(this, (processor, outcome));
                         return outcome;
