@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
             var stationEuiChanged = false;
-            IDisposable deviceConnectionActivity = null;
+            IAsyncDisposable deviceConnectionActivity = null;
 
             try
             {
@@ -541,7 +541,10 @@ namespace LoRaWan.NetworkServer
                 {
                     this.logger.LogError($"The device properties are out of range. {ex.Message}");
                 }
-                deviceConnectionActivity?.Dispose();
+                if (deviceConnectionActivity is { } someDeviceConnectionActivity)
+                {
+                    await someDeviceConnectionActivity.DisposeAsync();
+                }
             }
         }
 

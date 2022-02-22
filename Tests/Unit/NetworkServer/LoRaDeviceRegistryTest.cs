@@ -343,6 +343,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Device should not be connected
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceClient.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Never());
+            LoRaDeviceClient.Verify(x => x.DisconnectAsync(), Times.Never());
 
             // device is in cache
             Assert.True(DeviceCache.TryGetForPayload(request1.Payload, out var loRaDevice));
@@ -427,7 +428,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // ensure all devices are in cache
             Assert.Equal(deviceCount, deviceList.Count(x => DeviceCache.TryGetByDevEui(x.DevEUI, out _)));
 
-            target.ResetDeviceCache();
+            target.ResetDeviceCacheAsync();
             Assert.False(deviceList.Any(x => DeviceCache.TryGetByDevEui(x.DevEUI, out _)), "Should not find devices again");
         }
 

@@ -1,23 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
 
-    public interface ILoRaDeviceClientConnectionManager : IDisposable
+    public interface ILoRaDeviceClientConnectionManager : IAsyncDisposable
     {
-        bool EnsureConnected(LoRaDevice loRaDevice);
-
         ILoRaDeviceClient GetClient(LoRaDevice loRaDevice);
 
-        void CloseConnection(LoRaDevice loRaDevice);
-
-        void Release(LoRaDevice loRaDevice);
+        Task ReleaseAsync(LoRaDevice loRaDevice);
 
         void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient);
-        Task CloseConnectionAsync(LoRaDevice loRaDevice, CancellationToken cancellationToken);
+
+        IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice);
     }
 }

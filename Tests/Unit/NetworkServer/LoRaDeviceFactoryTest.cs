@@ -143,13 +143,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         internal static void VerifySuccess(this Mock<ILoRaDeviceClientConnectionManager> connectionManager, LoRaDevice device)
         {
             connectionManager.Verify(x => x.Register(device, It.IsAny<ILoRaDeviceClient>()), Times.Once);
-            connectionManager.Verify(x => x.Release(device), Times.Never);
+            connectionManager.Verify(x => x.ReleaseAsync(device), Times.Never);
         }
 
         internal static void VerifyFailure(this Mock<ILoRaDeviceClientConnectionManager> connectionManager, LoRaDevice device)
         {
             connectionManager.Verify(x => x.Register(device, It.IsAny<ILoRaDeviceClient>()), Times.Once);
-            connectionManager.Verify(x => x.Release(device), Times.Once);
+            connectionManager.Verify(x => x.ReleaseAsync(device), Times.Once);
         }
     }
 }

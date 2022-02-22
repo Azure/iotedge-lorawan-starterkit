@@ -14,7 +14,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
@@ -777,102 +776,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_Device_Has_No_Connection_Timeout_Should_Disconnect()
-        {
-            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            deviceClient.Setup(dc => dc.Dispose());
-            using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
-            manager.Register(device, deviceClient.Object);
-
-            var activity = device.BeginDeviceClientConnectionActivity();
-            Assert.NotNull(activity);
-
-            deviceClient.Setup(x => x.Disconnect())
-                .Returns(true);
-
-            deviceClient.Setup(x => x.EnsureConnected())
-                .Returns(true);
-
-            Assert.True(device.TryDisconnect());
-
-            deviceClient.Verify(x => x.Disconnect(), Times.Once());
-        }
-
-        [Fact]
-        public void When_Device_Connection_Not_In_Use_Should_Disconnect()
-        {
-            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            deviceClient.Setup(dc => dc.Dispose());
-            using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
-            device.KeepAliveTimeout = 60;
-            manager.Register(device, deviceClient.Object);
-
-            deviceClient.Setup(x => x.EnsureConnected())
-                .Returns(true);
-
-            var activity1 = device.BeginDeviceClientConnectionActivity();
-            Assert.NotNull(activity1);
-
-            Assert.False(device.TryDisconnect());
-
-            var activity2 = device.BeginDeviceClientConnectionActivity();
-            Assert.NotNull(activity2);
-
-            Assert.False(device.TryDisconnect());
-            activity1.Dispose();
-            Assert.False(device.TryDisconnect());
-
-            activity2.Dispose();
-            deviceClient.Setup(x => x.Disconnect())
-                .Returns(true);
-
-            Assert.True(device.TryDisconnect());
-
-            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(3));
-        }
-
-        [Fact]
-        public void When_Needed_Should_Reconnect_Client()
-        {
-            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            deviceClient.Setup(dc => dc.Dispose());
-            using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var manager = new LoRaDeviceClientConnectionManager(cache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
-            using var device = new LoRaDevice(DevAddr.Private0(0), new DevEui(0x0123456789), manager);
-            device.KeepAliveTimeout = 60;
-            manager.Register(device, deviceClient.Object);
-
-            deviceClient.Setup(x => x.EnsureConnected())
-                .Returns(true);
-
-            deviceClient.Setup(x => x.Disconnect())
-                .Returns(true);
-
-            using (var activity1 = device.BeginDeviceClientConnectionActivity())
-            {
-                Assert.NotNull(activity1);
-            }
-
-            Assert.True(device.TryDisconnect());
-
-            using (var activity2 = device.BeginDeviceClientConnectionActivity())
-            {
-                Assert.NotNull(activity2);
-
-                Assert.False(device.TryDisconnect());
-            }
-
-            Assert.True(device.TryDisconnect());
-
-            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(4));
-            deviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
-        }
-
-        [Fact]
         public async Task When_Initialized_With_Class_C_And_Custom_RX2DR_Should_Have_Correct_Properties()
         {
             var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
@@ -994,7 +897,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        private LoRaDevice CreateDefaultDevice() => new LoRaDevice(new DevAddr(0xffffffff), new DevEui(0), new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
+        private LoRaDevice CreateDefaultDevice(ILoRaDeviceClientConnectionManager connectionManager = null) =>
+            new(new DevAddr(0xffffffff), new DevEui(0), connectionManager ?? new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         public class FrameCounterInitTests
@@ -1134,6 +1038,24 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     => InitializeFrameCounters(new TwinCollectionReader(twin.Properties.Desired, this.logger),
                                                new TwinCollectionReader(twin.Properties.Reported, this.logger));
             }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void BeginDeviceClientConnectionActivity_Delegates_To_Connection_Manager_When_Device_Has_KeepAliveTimeout(int timeoutSeconds)
+        {
+            // arrange
+            var connectionManagerMock = new Mock<ILoRaDeviceClientConnectionManager>();
+            using var target = CreateDefaultDevice(connectionManagerMock.Object);
+            target.KeepAliveTimeout = timeoutSeconds;
+
+            // act
+            target.BeginDeviceClientConnectionActivity();
+
+            // assert
+            connectionManagerMock.Verify(x => x.BeginDeviceClientConnectionActivity(target),
+                                         Times.Exactly(timeoutSeconds > 0 ? 1 : 0));
         }
     }
 }

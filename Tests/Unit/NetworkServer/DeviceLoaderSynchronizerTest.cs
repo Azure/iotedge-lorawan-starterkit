@@ -197,7 +197,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             loRaDeviceClient.Verify(x => x.GetTwinAsync(CancellationToken.None), Times.Never());
 
             // device should be disconnected after initialization
-            loRaDeviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
+            loRaDeviceClient.Verify(x => x.DisconnectAsync(), Times.Exactly(2)); // FIXME review why exactly 2 disconnects
 
             // Device was searched by DevAddr
             apiService.VerifyAll();

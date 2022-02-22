@@ -1288,10 +1288,12 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(searchDevicesResult);
 
+            deviceClient.Setup(x => x.EnsureConnected()).Returns(true);
+
             deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice.CreateABPTwin());
 
-            deviceClient.Setup(x => x.Disconnect())
-               .Returns(true);
+            deviceClient.Setup(x => x.DisconnectAsync())
+               .Returns(Task.CompletedTask);
 
             deviceClient.Setup(x => x.EnsureConnected())
                .Returns(true);

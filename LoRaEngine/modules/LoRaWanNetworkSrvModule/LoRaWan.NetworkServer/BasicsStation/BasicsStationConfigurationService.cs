@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
@@ -70,7 +71,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                           LoRaProcessingErrorCode.InvalidDeviceConfiguration);
                     }
 
-                    using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
+                    await using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
                     var twin = await client.GetTwinAsync(cancellationToken);
                     return twin.Properties.Desired;
                 });
@@ -141,7 +142,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                   LoRaProcessingErrorCode.InvalidDeviceConfiguration);
             }
 
-            using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
+            await using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
             var twinCollection = new TwinCollection();
             twinCollection[TwinProperty.Package] = package;
             _ = await client.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);

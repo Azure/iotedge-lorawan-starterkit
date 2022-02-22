@@ -24,14 +24,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var moqCallback = new Mock<Action<LoRaDevice>>();
             using var cache = new TestDeviceCache(moqCallback.Object, this.quickRefreshOptions, true);
             var deviceMock = CreateMockDevice();
-            var disposableMock = new Mock<IDisposable>();
+            var disposableMock = new Mock<IAsyncDisposable>();
             deviceMock.Setup(x => x.BeginDeviceClientConnectionActivity())
                       .Returns(disposableMock.Object);
             var device = deviceMock.Object;
             cache.Register(device);
             await cache.WaitForRefreshAsync(CancellationToken.None);
             moqCallback.Verify(x => x.Invoke(device));
-            disposableMock.Verify(x => x.Dispose(), Times.Once);
+            disposableMock.Verify(x => x.DisposeAsync(), Times.Once);
         }
 
         [Fact]
@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await cache.WaitForRemoveAsync(cts.Token);
 
             Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
-            connectionManager.Verify(x => x.Release(device), Times.Once);
+            connectionManager.Verify(x => x.ReleaseAsync(device), Times.Once);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             using var cache = CreateNoRefreshCache();
             using var device = CreateTestDevice();
-            Assert.False(cache.Remove(device));
+            Assert.False(cache.RemoveAsync(device));
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = CreateNoRefreshCache();
             using var device = CreateTestDevice();
             cache.Register(device);
-            Assert.True(cache.Remove(device));
+            Assert.True(cache.RemoveAsync(device));
             Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
         }
 
@@ -149,7 +149,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var cache = CreateNoRefreshCache();
             using var device = CreateTestDevice();
             cache.Register(device);
-            Assert.True(cache.Remove(device));
+            Assert.True(cache.RemoveAsync(device));
             Assert.False(cache.HasRegistrations(device.DevAddr.Value));
         }
 
@@ -163,7 +163,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.True(cache.TryGetByDevEui(device.DevEUI, out _));
             ValidateStats(1, 0);
-            Assert.True(cache.Remove(device));
+            Assert.True(cache.RemoveAsync(device));
             Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
             ValidateStats(1, 1);
 
@@ -184,7 +184,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var deviceMock = CreateMockDevice();
             var device = deviceMock.Object;
             cache.Register(device);
-            Assert.True(cache.Remove(device, dispose));
+            Assert.True(cache.RemoveAsync(device, dispose));
             Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
 
             deviceMock.Protected().Verify(nameof(device.Dispose), dispose ? Times.Once() : Times.Never(), true, true);
@@ -208,11 +208,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(cache.HasRegistrations(devAddr));
             Assert.Equal(2, cache.RegistrationCount(devAddr));
 
-            Assert.True(cache.Remove(device1));
+            Assert.True(cache.RemoveAsync(device1));
             Assert.True(cache.HasRegistrations(devAddr));
             Assert.Equal(1, cache.RegistrationCount(devAddr));
 
-            Assert.True(cache.Remove(device2));
+            Assert.True(cache.RemoveAsync(device2));
             Assert.False(cache.HasRegistrations(devAddr));
             Assert.Equal(0, cache.RegistrationCount(devAddr));
         }
@@ -344,11 +344,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 return (device, connectionMgr);
             }).ToArray();
 
-            cache.Reset();
+            cache.ResetAsync();
 
             foreach (var (device, connectionMgr) in items)
             {
-                connectionMgr.Verify(x => x.Release(device), Times.Once);
+                connectionMgr.Verify(x => x.ReleaseAsync(device), Times.Once);
             }
         }
         private static Mock<LoRaDevice> CreateMockDevice()
@@ -450,12 +450,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 RefreshOperationsCount++;
             }
 
-            public override bool Remove(LoRaDevice loRaDevice, bool dispose = true)
+            public override bool RemoveAsync(LoRaDevice loRaDevice, bool dispose = true)
             {
                 if (this.removeTick.CurrentCount == 0)
                     this.removeTick.Release();
 
-                var ret = base.Remove(loRaDevice, dispose);
+                var ret = base.RemoveAsync(loRaDevice, dispose);
 
                 return ret;
             }

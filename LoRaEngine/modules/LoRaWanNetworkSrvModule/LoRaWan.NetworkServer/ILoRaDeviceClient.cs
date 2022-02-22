@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
     /// LoRa device client contract
     /// Defines the iteractions between a LoRa device and a IoT service (Azure IoT Hub).
     /// </summary>
-    public interface ILoRaDeviceClient : IDisposable
+    public interface ILoRaDeviceClient : IAsyncDisposable
     {
         /// <summary>
         /// Gets the twin properties for the device.
@@ -52,17 +52,13 @@ namespace LoRaWan.NetworkServer
         Task<bool> RejectAsync(Message cloudToDeviceMessage);
 
         /// <summary>
-        /// Disconnects device client.
-        /// </summary>
-        bool Disconnect();
-
-        /// <summary>
         /// Ensures the device client is connected.
         /// </summary>
         bool EnsureConnected();
 
-        bool IsMatchingKey(string primaryKey);
-
-        Task<bool> DisconnectAsync(CancellationToken cancellationToken);
+        /// <summary>
+        /// Disconnects device client.
+        /// </summary>
+        Task DisconnectAsync(CancellationToken cancellationToken);
     }
 }

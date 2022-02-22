@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Common
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
@@ -19,23 +20,23 @@ namespace LoRaWan.Tests.Common
             this.singleDeviceClient = deviceClient;
         }
 
-        public bool EnsureConnected(LoRaDevice loRaDevice) => true;
-
         public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice) => this.singleDeviceClient;
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
         {
         }
 
-        public void Release(LoRaDevice loRaDevice)
+        public IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ReleaseAsync(LoRaDevice loRaDevice)
         {
             this.singleDeviceClient.Dispose();
         }
 
         public void Dispose() => this.singleDeviceClient.Dispose();
-
-        public void CloseConnection(LoRaDevice loRaDevice) =>
-            _ = this.singleDeviceClient.Disconnect();
 
         public Task CloseConnectionAsync(LoRaDevice loRaDevice, CancellationToken cancellationToken) =>
             _ = this.singleDeviceClient.DisconnectAsync(cancellationToken);

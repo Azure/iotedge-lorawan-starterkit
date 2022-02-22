@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Common
 
             LoRaDeviceClient = new Mock<ILoRaDeviceClient>();
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
-            ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, this.testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
+            ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<LoRaDeviceClientConnectionManager>());
             ConcentratorDeduplication = new ConcentratorDeduplication(this.cache, this.testOutputLoggerFactory.CreateLogger<IConcentratorDeduplication>());
             RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(ServerConfiguration,
                                                                              FrameCounterUpdateStrategyProvider,

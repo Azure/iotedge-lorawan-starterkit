@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Logging.Abstractions;
     using static ReceiveWindowNumber;
 
-    public class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
+    public class LoRaDevice : IAsyncDisposable, ILoRaDeviceRequestQueue
     {
         /// <summary>
         /// Defines the maximum amount of times an ack resubmit will be sent.
@@ -161,7 +161,9 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Used to synchronize the async save operation to the twins for this particular device.
         /// </summary>
+#pragma warning disable CA2213 // Disposable fields should be disposed (disposed in async)
         private readonly SemaphoreSlim syncSave = new SemaphoreSlim(1, 1);
+#pragma warning restore CA2213 // Disposable fields should be disposed
         private readonly object processingSyncLock = new object();
         private readonly Queue<LoRaRequest> queuedRequests = new Queue<LoRaRequest>();
 
@@ -190,8 +192,6 @@ namespace LoRaWan.NetworkServer
         public RxDelay DesiredRXDelay { get; set; }
 
         private ILoRaDataRequestHandler dataRequestHandler;
-
-        private volatile int deviceClientConnectionActivityCounter;
 
         /// <summary>
         ///  Gets or sets a value indicating whether cloud to device messages are enabled for the device
@@ -483,7 +483,7 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
 
                     // For class C devices this might be the only moment the connection is established
-                    using var deviceClientActivityScope = BeginDeviceClientConnectionActivity();
+                    await using var deviceClientActivityScope = BeginDeviceClientConnectionActivity();
                     if (deviceClientActivityScope == null)
                     {
                         // Logging as information because the real error was logged as error
@@ -491,7 +491,7 @@ namespace LoRaWan.NetworkServer
                         return false;
                     }
 
-                    var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties, default);
+                    var result = await Client.UpdateReportedPropertiesAsync(reportedProperties, default);
                     if (result)
                     {
                         InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
@@ -637,19 +637,12 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Ensures that the device is connected. Calls the connection manager that keeps track of device connection lifetime.
         /// </summary>
-        internal virtual IDisposable BeginDeviceClientConnectionActivity()
-        {
-            lock (this.processingSyncLock)
-            {
-                if (this.connectionManager.EnsureConnected(this))
-                {
-                    this.deviceClientConnectionActivityCounter++;
-                    return new ScopedDeviceClientConnection(this);
-                }
-            }
-
-            return null;
-        }
+        internal virtual IAsyncDisposable BeginDeviceClientConnectionActivity() =>
+            // Most devices won't have a connection timeout
+            // In that case check without lock and return a cached disposable
+            KeepAliveTimeout == 0
+                ? AsyncDisposable.Nop
+                : this.connectionManager.BeginDeviceClientConnectionActivity(this);
 
         /// <summary>
         /// Indicates whether or not we can resubmit an ack for the confirmation up message.
@@ -678,15 +671,17 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.connectionManager.GetClient(this).SendEventAsync(telemetry, properties);
+        private ILoRaDeviceClient Client => this.connectionManager.GetClient(this);
 
-        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => this.connectionManager.GetClient(this).ReceiveAsync(timeout);
+        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => Client.SendEventAsync(telemetry, properties);
 
-        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.GetClient(this).CompleteAsync(cloudToDeviceMessage);
+        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => Client.ReceiveAsync(timeout);
 
-        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.GetClient(this).AbandonAsync(cloudToDeviceMessage);
+        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => Client.CompleteAsync(cloudToDeviceMessage);
 
-        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.GetClient(this).RejectAsync(cloudToDeviceMessage);
+        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => Client.AbandonAsync(cloudToDeviceMessage);
+
+        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => Client.RejectAsync(cloudToDeviceMessage);
 
         /// <summary>
         /// Updates device on the server after a join succeeded.
@@ -765,7 +760,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            using var activityScope = BeginDeviceClientConnectionActivity();
+            await using var activityScope = BeginDeviceClientConnectionActivity();
             if (activityScope == null)
             {
                 // Logging as information because the real error was logged as error
@@ -774,7 +769,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var devAddrBeforeSave = DevAddr;
-            var succeeded = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
+            var succeeded = await Client.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
             // Only save if the devAddr remains the same, otherwise ignore the save
             if (succeeded && devAddrBeforeSave == DevAddr)
@@ -935,32 +930,26 @@ namespace LoRaWan.NetworkServer
 
         internal virtual async Task CloseConnectionAsync(CancellationToken cancellationToken, bool force = false)
         {
-            if (force || (IsConnectionOwner is null or false))
+            if ((force || (IsConnectionOwner is null or false))
+                && this.connectionManager is { } someConnectionManager)
             {
-                await this.connectionManager?.CloseConnectionAsync(this, cancellationToken);
+                await someConnectionManager.GetClient(this).DisconnectAsync(cancellationToken);
             }
         }
 
-        internal virtual void CloseConnection(bool force = false)
-        {
-            if (force || (IsConnectionOwner is null or false))
-            {
-                this.connectionManager?.CloseConnection(this);
-            }
-        }
-
-        protected virtual void Dispose(bool dispose)
+        protected virtual async ValueTask DisposeAsync(bool dispose)
         {
             if (dispose)
             {
-                this.connectionManager?.Release(this);
+                if (this.connectionManager is { } someConnectionManager)
+                    await someConnectionManager.ReleaseAsync(this);
                 this.syncSave.Dispose();
             }
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            Dispose(true);
+            await DisposeAsync(true);
             GC.SuppressFinalize(this);
         }
 
@@ -1012,58 +1001,6 @@ namespace LoRaWan.NetworkServer
             foreach (var prop in GetTrackableProperties())
             {
                 prop.AcceptChanges();
-            }
-        }
-
-        /// <summary>
-        /// Ends a device client connection activity
-        /// Called by <see cref="ScopedDeviceClientConnection.Dispose"/>.
-        /// </summary>
-        private void EndDeviceClientConnectionActivity()
-        {
-            lock (this.processingSyncLock)
-            {
-                if (this.deviceClientConnectionActivityCounter == 0)
-                {
-                    throw new InvalidOperationException("Cannot decrement count, already at zero");
-                }
-
-                this.deviceClientConnectionActivityCounter--;
-            }
-        }
-
-        /// <summary>
-        /// Disconnects the <see cref="ILoRaDeviceClient"/> if there is no pending activity.
-        /// </summary>
-        internal bool TryDisconnect()
-        {
-            lock (this.processingSyncLock)
-            {
-                if (this.deviceClientConnectionActivityCounter == 0)
-                {
-                    return this.connectionManager.GetClient(this).Disconnect();
-                }
-
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Defines a <see cref="ILoRaDeviceClient"/> scope.
-        /// While a connection activity is open the connection cannot be closed.
-        /// </summary>
-        private class ScopedDeviceClientConnection : IDisposable
-        {
-            private readonly LoRaDevice loRaDevice;
-
-            internal ScopedDeviceClientConnection(LoRaDevice loRaDevice)
-            {
-                this.loRaDevice = loRaDevice;
-            }
-
-            public void Dispose()
-            {
-                this.loRaDevice.EndDeviceClientConnectionActivity();
             }
         }
     }

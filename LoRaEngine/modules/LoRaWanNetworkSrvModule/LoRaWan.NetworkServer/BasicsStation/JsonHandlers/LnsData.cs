@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
     using System.Text.Json;
+    using LoRaTools;
 
     public static class LnsData
     {
