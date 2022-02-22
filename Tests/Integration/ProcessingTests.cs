@@ -1292,7 +1292,7 @@ namespace LoRaWan.Tests.Integration
 
             deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice.CreateABPTwin());
 
-            deviceClient.Setup(x => x.DisconnectAsync())
+            deviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                .Returns(Task.CompletedTask);
 
             deviceClient.Setup(x => x.EnsureConnected())

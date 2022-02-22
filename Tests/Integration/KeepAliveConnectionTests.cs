@@ -81,7 +81,7 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() => disconnectedEvent.Release())
                 .Returns(Task.CompletedTask);
 
@@ -137,7 +137,7 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
@@ -204,7 +204,7 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
@@ -283,7 +283,7 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() => disconnectedEvent.Release())
                 .Returns(Task.CompletedTask);
 
@@ -319,7 +319,7 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
