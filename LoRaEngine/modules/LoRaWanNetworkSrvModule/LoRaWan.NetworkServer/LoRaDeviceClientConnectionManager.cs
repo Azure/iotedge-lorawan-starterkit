@@ -147,7 +147,7 @@ namespace LoRaWan.NetworkServer
             private readonly ILogger? logger;
             private int pid;
             private readonly ExclusiveProcessor<Process> exclusiveProcessor = new();
-            private bool shouldDisconnect;
+            private bool disconnectedDuringActivity;
             private int activities;
 
             private record struct Process(int Id, string Name);
@@ -252,27 +252,27 @@ namespace LoRaWan.NetworkServer
             }
 
             public Task DisconnectAsync() =>
-                DisconnectAsync(deferred: false);
+                DisconnectAsync(isActivityEnding: false);
 
             private enum DisconnectionResult { Disconnected, Deferred, NotDisconnected }
 
-            private Task<DisconnectionResult> DisconnectAsync(bool deferred) =>
+            private Task<DisconnectionResult> DisconnectAsync(bool isActivityEnding) =>
                 InvokeExclusivelyAsync(doesNotRequireOpenConnection: true, async client =>
                 {
                     DisconnectionResult result;
 
                     if (Interlocked.Add(ref this.activities, 0) > 0)
                     {
-                        this.shouldDisconnect = true;
+                        this.disconnectedDuringActivity = true;
                         result = DisconnectionResult.Deferred;
                     }
-                    else if (deferred && !this.shouldDisconnect)
+                    else if (isActivityEnding && !this.disconnectedDuringActivity)
                     {
                         result = DisconnectionResult.NotDisconnected;
                     }
                     else
                     {
-                        this.shouldDisconnect = false;
+                        this.disconnectedDuringActivity = false;
                         await client.DisconnectAsync();
                         result = DisconnectionResult.Disconnected;
                     }
@@ -309,7 +309,7 @@ namespace LoRaWan.NetworkServer
                     if (activities > 0)
                         return;
 
-                    _ = await DisconnectAsync(deferred: true);
+                    _ = await DisconnectAsync(isActivityEnding: true);
                 });
             }
 
