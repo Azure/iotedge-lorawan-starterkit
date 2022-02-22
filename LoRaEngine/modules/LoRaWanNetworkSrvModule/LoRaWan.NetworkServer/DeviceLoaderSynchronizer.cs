@@ -145,6 +145,17 @@ namespace LoRaWan.NetworkServer
                             refreshTasks.Add(RefreshDevice(cachedDevice));
                             this.logger.LogDebug("refreshing device to fetch DevAddr");
                         }
+                        else
+                        {
+                            // it's a cached device with a potentially outdated DevAddr, let's make sure
+                            // it is disconnected. If it is all up to date, the connection will be re-established
+                            if (cachedDevice.IsConnectionOwner is { } isOwner && isOwner)
+                            {
+                                this.logger.LogDebug("stale connection owner, releasing the connection.");
+                                cachedDevice.IsConnectionOwner = false;
+                            }
+                            await cachedDevice.CloseConnectionAsync(CancellationToken.None);
+                        }
                     }
                 }
 
