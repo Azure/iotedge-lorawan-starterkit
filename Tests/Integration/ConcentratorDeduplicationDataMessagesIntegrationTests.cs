@@ -226,7 +226,7 @@ namespace LoRaWan.Tests.Integration
             var request1 = CreateOTAARequest(dataPayload, station1);
             var request2 = CreateOTAARequest(dataPayload, station2);
 
-            using var loraOTAADevice = new LoRaDevice(simulatedOTAADevice.DevAddr, simulatedOTAADevice.DevEUI, ConnectionManager);
+            await using var loraOTAADevice = new LoRaDevice(simulatedOTAADevice.DevAddr, simulatedOTAADevice.DevEUI, ConnectionManager);
             loraOTAADevice.AppKey = AppKey.Parse(value32);
 
             loraOTAADevice.Deduplication = deduplicationMode;
