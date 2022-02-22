@@ -116,19 +116,51 @@ namespace LoRaWan.Tests.Unit.NetworkServer.Logger
             Assert.False(logger.IsEnabled(logLevel));
         }
 
+        [Fact]
+        public void Traces_Iot_Hub_Send_Events()
+        {
+            // arrange
+            var tracing = new Mock<ITracing>();
+            const LogLevel logLevel = LogLevel.Information;
+            using var testableLogger = SetupProviderAndLogger(new LoRaLoggerConfiguration { LogLevel = logLevel }, tracing: tracing.Object);
+
+            // act
+            testableLogger.Value.Object.Log(logLevel, "foo");
+
+            // assert
+            tracing.Verify(t => t.TrackIotHubDependency("SDK SendEvent", "log"), Times.Once);
+        }
+
+        [Fact]
+        public void Does_Not_Trace_If_Log_Level_Disabled()
+        {
+            // arrange
+            var tracing = new Mock<ITracing>();
+            using var testableLogger = SetupProviderAndLogger(new LoRaLoggerConfiguration { LogLevel = LogLevel.Error }, tracing: tracing.Object);
+
+            // act
+            testableLogger.Value.Object.Log(LogLevel.Information, "foo");
+
+            // assert
+            tracing.Verify(t => t.TrackIotHubDependency(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
         private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger(Lazy<Task<ModuleClient>>? moduleClientFactory) =>
              SetupProviderAndLogger(new LoRaLoggerConfiguration { LogLevel = LogLevel.Trace, UseScopes = false }, moduleClientFactory);
 
         private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger() => SetupProviderAndLogger(null);
 
-        private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger(LoRaLoggerConfiguration configuration, Lazy<Task<ModuleClient>>? moduleClientFactory = null)
+        private static DisposableValue<Mock<IotHubLogger>> SetupProviderAndLogger(LoRaLoggerConfiguration configuration,
+                                                                                  Lazy<Task<ModuleClient>>? moduleClientFactory = null,
+                                                                                  ITracing? tracing = null)
         {
             var optionsMonitor = new Mock<IOptionsMonitor<LoRaLoggerConfiguration>>();
             optionsMonitor.Setup(om => om.CurrentValue).Returns(configuration);
             optionsMonitor.Setup(om => om.OnChange(It.IsAny<Action<LoRaLoggerConfiguration, string>>())).Returns(NoopDisposable.Instance);
             var mcf = moduleClientFactory ?? new Lazy<Task<ModuleClient>>(Task.FromResult((ModuleClient)null!));
-            var provider = new IotHubLoggerProvider(optionsMonitor.Object, mcf);
-            return new DisposableValue<Mock<IotHubLogger>>(new Mock<IotHubLogger>(provider, mcf), provider);
+            tracing ??= new NoopTracing();
+            var provider = new IotHubLoggerProvider(optionsMonitor.Object, mcf, tracing);
+            return new DisposableValue<Mock<IotHubLogger>>(new Mock<IotHubLogger>(provider, mcf, tracing), provider);
         }
 
         private static async Task VerifyMessageAsync(Mock<IotHubLogger> logger, string message)
