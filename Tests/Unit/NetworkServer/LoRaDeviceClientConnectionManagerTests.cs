@@ -259,6 +259,57 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
+        public async Task Client_Disconnection_Is_Deferred_When_Several_Activities_Are_Outstanding()
+        {
+            // arrange
+
+            _ = CreateCacheEntryMock(new List<PostEvictionCallbackRegistration>());
+
+            var (clientMock, client) = RegisterTestDevice(keepAliveTimeout: TimeSpan.FromSeconds(1));
+            clientMock.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(new Twin());
+
+            // act
+
+            await using (TestDevice.BeginDeviceClientConnectionActivity())
+            await using (TestDevice.BeginDeviceClientConnectionActivity())
+            await using (TestDevice.BeginDeviceClientConnectionActivity())
+            {
+                await client.GetTwinAsync(CancellationToken.None);
+                await client.DisconnectAsync();
+
+                // assert
+
+                clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+            }
+
+            clientMock.Verify(x => x.DisconnectAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task Client_Not_Disconnected_If_No_Disconnection_Deferred_During_Activities()
+        {
+            // arrange
+
+            _ = CreateCacheEntryMock(new List<PostEvictionCallbackRegistration>());
+
+            var (clientMock, client) = RegisterTestDevice(keepAliveTimeout: TimeSpan.FromSeconds(1));
+            clientMock.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(new Twin());
+
+            // act
+
+            await using (TestDevice.BeginDeviceClientConnectionActivity())
+            await using (TestDevice.BeginDeviceClientConnectionActivity())
+            await using (TestDevice.BeginDeviceClientConnectionActivity())
+            {
+                await client.GetTwinAsync(CancellationToken.None);
+            }
+
+            // assert
+
+            clientMock.Verify(x => x.DisconnectAsync(), Times.Never);
+        }
+
+        [Fact]
         public async Task Client_Disconnection_Via_KeepAliveTimeout_Expiry_Is_Deferred_When_An_Activity_Is_Outstanding()
         {
             // arrange
