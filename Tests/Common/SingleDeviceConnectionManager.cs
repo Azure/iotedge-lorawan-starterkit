@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Common
 {
+    using System;
     using LoRaWan.NetworkServer;
 
     /// <summary>
@@ -17,12 +18,15 @@ namespace LoRaWan.Tests.Common
             this.singleDeviceClient = deviceClient;
         }
 
-        public bool EnsureConnected(LoRaDevice loRaDevice) => true;
-
         public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice) => this.singleDeviceClient;
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
         {
+        }
+
+        public IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice)
+        {
+            throw new NotImplementedException();
         }
 
         public void Release(LoRaDevice loRaDevice)

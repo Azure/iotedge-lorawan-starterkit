@@ -24,14 +24,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var moqCallback = new Mock<Action<LoRaDevice>>();
             using var cache = new TestDeviceCache(moqCallback.Object, this.quickRefreshOptions, true);
             var deviceMock = CreateMockDevice();
-            var disposableMock = new Mock<IDisposable>();
+            var disposableMock = new Mock<IAsyncDisposable>();
             deviceMock.Setup(x => x.BeginDeviceClientConnectionActivity())
                       .Returns(disposableMock.Object);
             var device = deviceMock.Object;
             cache.Register(device);
             await cache.WaitForRefreshAsync(CancellationToken.None);
             moqCallback.Verify(x => x.Invoke(device));
-            disposableMock.Verify(x => x.Dispose(), Times.Once);
+            disposableMock.Verify(x => x.DisposeAsync(), Times.Once);
         }
 
         [Fact]

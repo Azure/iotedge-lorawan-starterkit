@@ -210,11 +210,11 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Disconnects device client.
         /// </summary>
-        public bool Disconnect()
+        public async Task DisconnectAsync()
         {
             if (this.deviceClient != null)
             {
-                this.deviceClient.Dispose();
+                await this.deviceClient.DisposeAsync();
                 this.deviceClient = null;
 
                 this.logger.LogDebug("device client disconnected");
@@ -223,8 +223,6 @@ namespace LoRaWan.NetworkServer
             {
                 this.logger.LogDebug("device client was already disconnected");
             }
-
-            return true;
         }
 
         /// <summary>
