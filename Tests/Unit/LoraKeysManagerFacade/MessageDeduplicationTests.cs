@@ -73,8 +73,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
 
+            // Make sure direct method was invoked on the LNS module to notify gateway 1
+            // that it is no longer the leading gateway for device 1
             this.serviceClientMock.Verify(
-                x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>()),
+                x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId,
+                It.Is<CloudToDeviceMethod>(
+                    m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName
+                    && m.GetPayloadAsJson().Contains(dev1EUI.ToString()))),
                 Times.Once);
 
             result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev2EUI, gateway1Id, 1, 1);
@@ -85,9 +90,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
 
+            // Make sure direct method was invoked for gateway 1 and device 2
             this.serviceClientMock.Verify(
-                x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>()),
-                Times.Exactly(2));
+                x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId,
+                It.Is<CloudToDeviceMethod>(
+                    m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName
+                    && m.GetPayloadAsJson().Contains(dev2EUI.ToString()))),
+                Times.Once);
         }
     }
 }
