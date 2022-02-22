@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.E2E
 
                 // After transferPacket: Expectation from serial
                 // +MSG: Done
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 // 0000000000000004: valid frame counter, msg: 1 server: 0
                 await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.E2E
 
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
-                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs, maxAttempts: 5, interval: TimeSpan.FromSeconds(10));
+                await RetryAssert.ContainsAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs, maxAttempts: 5, interval: TimeSpan.FromSeconds(10));
 
                 // 0000000000000004: decoding with: DecoderValueSensor port: 8
                 await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");

@@ -42,7 +42,7 @@ namespace LoRaWan.Tests.E2E
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             // +CMSG: ACK Received
-            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
+            await RetryAssert.ContainsAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
             // Find "0000000000000011: message '{"value":1234}' sent to hub" in network server logs
             await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":\"1234\"}}' sent to hub");
@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.E2E
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             // +CMSG: ACK Received
-            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
+            await RetryAssert.ContainsAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
             // Find "0000000000000011: message '{"value":1234}' sent to hub" in network server logs
             await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":4321}}' sent to hub");

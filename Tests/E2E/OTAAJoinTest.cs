@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.E2E
             // +JOIN: Network joined
             // +JOIN: NetID 010000 DevAddr 02:9B:0D:3E
             // Assert.Contains("+JOIN: Network joined", this.lora.SerialLogs);
-            await AssertUtils.ContainsWithRetriesAsync(
+            await RetryAssert.ContainsAsync(
                 (s) => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal),
                 ArduinoDevice.SerialLogs);
 
@@ -202,7 +202,7 @@ namespace LoRaWan.Tests.E2E
 
             // After transferPacket: Expectation from serial
             // +MSG: Done
-            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+            await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
             // 0000000000000004: valid frame counter, msg: 1 server: 0
             await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
@@ -229,10 +229,10 @@ namespace LoRaWan.Tests.E2E
 
             // After transferPacketWithConfirmed: Expectation from serial
             // +CMSG: ACK Received
-            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
+            await RetryAssert.ContainsAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
             // Checking than the communication occurs on DR 4 and RX2 as part of preferred windows RX2 and custom RX2 DR
-            await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), ArduinoDevice.SerialLogs);
+            await RetryAssert.ContainsAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), ArduinoDevice.SerialLogs);
             // this test has a custom datarate for RX 2 of 3
             const string logMessage2 = "\"Rx2\":{\"DataRate\":3";
             await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains(logMessage2, StringComparison.Ordinal), new SearchLogOptions(logMessage2));

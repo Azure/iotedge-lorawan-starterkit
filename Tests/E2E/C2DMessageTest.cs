@@ -89,7 +89,7 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
                 // +CMSG: ACK Received
-                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 TestFixtureCi.ClearLogs();
             }
@@ -125,7 +125,7 @@ namespace LoRaWan.Tests.E2E
 
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
-                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 // Check that RXDelay was correctly used
                 await TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay, device.GatewayID);
@@ -210,7 +210,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 TestFixtureCi.ClearLogs();
             }
@@ -244,7 +244,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
@@ -348,7 +348,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 TestFixtureCi.ClearLogs();
             }
@@ -382,7 +382,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
@@ -484,7 +484,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 TestFixtureCi.ClearLogs();
             }
@@ -520,7 +520,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 // check if c2d message was found
                 var searchResults = await TestFixtureCi.SearchNetworkServerModuleAsync(
@@ -597,7 +597,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 TestFixture.ClearLogs();
             }
@@ -636,7 +636,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 // check if c2d message was found
                 var searchResults = await TestFixture.SearchNetworkServerModuleAsync(

@@ -89,7 +89,7 @@ namespace LoRaWan.Tests.E2E
 
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
-                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 // 0000000000000031: message '{"value": 101}' sent to hub
                 var expectedPayload = $"{{\"value\":{msg}}}";

@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Common
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-    using System.Net.Http;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;

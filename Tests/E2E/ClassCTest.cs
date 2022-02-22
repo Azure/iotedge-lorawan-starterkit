@@ -68,7 +68,7 @@ namespace LoRaWan.Tests.E2E
 
             Assert.Contains(ArduinoDevice.SerialLogs, (l) => l.Contains("PORT: 23; RX: \"FF00\"", StringComparison.Ordinal));
             Assert.Contains(ArduinoDevice.SerialLogs, (l) => l.Contains("RXWIN0, RSSI", StringComparison.Ordinal));
-            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+            await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
         }
     }
 }

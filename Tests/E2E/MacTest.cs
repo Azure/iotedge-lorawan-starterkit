@@ -48,7 +48,7 @@ namespace LoRaWan.Tests.E2E
 
                     // After transferPacket: Expectation from serial
                     // +MSG: Done
-                    await AssertUtils.ContainsWithRetriesAsync("+MSGHEX: Done", ArduinoDevice.SerialLogs);
+                    await RetryAssert.ContainsAsync("+MSGHEX: Done", ArduinoDevice.SerialLogs);
 
                     await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 TestFixtureCi.ClearLogs();
             }
@@ -152,7 +152,7 @@ namespace LoRaWan.Tests.E2E
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 // check if c2d message was found
                 if (!foundMacCommandReceivedMsg)
@@ -236,7 +236,7 @@ namespace LoRaWan.Tests.E2E
                 await ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
                 TestFixture.ClearLogs();
             }
 
@@ -265,7 +265,7 @@ namespace LoRaWan.Tests.E2E
 
                 // After transferPacket: Expectation from serial
                 // +MSG: Done
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 // check if C2D message was found
                 if (await SearchMessageAsync($"{device.DeviceID}: cloud to device MAC command LinkADRCmd received Type: LinkADRCmd Answer, datarate: 3"))

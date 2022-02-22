@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.E2E
 
                 // After transferPacket: Expectation from serial
                 // +MSG: Done
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
                 var expectedPayload = $"{{\"value\":{msg}}}";
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.E2E
 
                 // After transferPacket: Expectation from serial
                 // +CMSG: ACK Received
-                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
+                await RetryAssert.ContainsAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 var allGwGotIt = await TestFixtureCi.ValidateMultiGatewaySources((log) => log.IndexOf($"deduplication Strategy: {strategy}", StringComparison.OrdinalIgnoreCase) != -1);
                 if (allGwGotIt)
