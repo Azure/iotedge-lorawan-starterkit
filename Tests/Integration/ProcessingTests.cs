@@ -141,7 +141,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
 
-            LoRaDeviceClient.Setup(ldc => ldc.Dispose());
+            LoRaDeviceClient.Setup(ldc => ldc.DisposeAsync());
         }
 
         [Theory]
@@ -907,7 +907,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             // first device client will be disposed
-            LoRaDeviceClient.Setup(x => x.Dispose());
+            LoRaDeviceClient.Setup(x => x.DisposeAsync());
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
@@ -1041,7 +1041,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.VerifyAll();
             LoRaDeviceClient.VerifyAll();
 
-            LoRaDeviceClient.Setup(ldc => ldc.Dispose());
+            LoRaDeviceClient.Setup(ldc => ldc.DisposeAsync());
         }
 
         /// <summary>
@@ -1063,7 +1063,7 @@ namespace LoRaWan.Tests.Integration
             twin.Properties.Desired[missingProperty] = null;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                     .ReturnsAsync(twin);
-            LoRaDeviceClient.Setup(x => x.Dispose());
+            LoRaDeviceClient.Setup(x => x.DisposeAsync());
             // Lora device api
 
             // will search for the device twice
@@ -1257,7 +1257,7 @@ namespace LoRaWan.Tests.Integration
         {
             var msgPayload = "1234";
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            deviceClient.Setup(dc => dc.Dispose());
+            deviceClient.Setup(dc => dc.DisposeAsync());
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0, gatewayID: ServerGatewayID));
 
             var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
