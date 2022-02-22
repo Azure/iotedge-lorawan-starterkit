@@ -57,6 +57,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             (new Uri("ws://localhost:5000/some-path/router-data"), true, new Uri("ws://localhost:5000/some-path/router-data/")),
             (new Uri("ws://localhost:5000/some-path/router-data/"), true, new Uri("ws://localhost:5000/some-path/router-data/")),
             (new Uri("ws://localhost:5000/some-path/ROUTER-data/"), true, new Uri("ws://localhost:5000/some-path/router-data/")),
+            (new Uri("ws://localhost:5000/router-data/some-path"), true, new Uri("ws://localhost:5000/router-data/some-path/router-data/")),
+            (new Uri("ws://localhost:5000/router-data/some-path/router-data"), true, new Uri("ws://localhost:5000/router-data/some-path/router-data/")),
         });
 
         [Theory]
