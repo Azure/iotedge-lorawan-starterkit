@@ -33,21 +33,21 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public LoRaDeviceTest()
         {
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.loRaDeviceClient.Setup(ldc => ldc.Dispose());
+            this.loRaDeviceClient.Setup(ldc => ldc.DisposeAsync()).Returns(ValueTask.CompletedTask);
             this.configuration = new NetworkServerConfiguration { GatewayID = "test-gateway" };
         }
 
         [Fact]
         public async Task When_No_Changes_Were_Made_Should_Not_Save_Frame_Counter()
         {
-            using var target = CreateDefaultDevice();
+            await using var target = CreateDefaultDevice();
             await target.SaveChangesAsync();
         }
 
         [Fact]
         public async Task When_Incrementing_FcntDown_Should_Save_Frame_Counter()
         {
-            using var target = CreateDefaultDevice();
+            await using var target = CreateDefaultDevice();
 
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Setting_FcntDown_Should_Save_Frame_Counter()
         {
-            using var target = CreateDefaultDevice();
+            await using var target = CreateDefaultDevice();
 
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Setting_FcntUp_Should_Save_Frame_Counter()
         {
-            using var target = CreateDefaultDevice();
+            await using var target = CreateDefaultDevice();
 
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -91,7 +91,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task After_Saving_Frame_Counter_Changes_Should_Not_Have_Pending_Changes()
         {
-            using var target = CreateDefaultDevice();
+            await using var target = CreateDefaultDevice();
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
@@ -126,8 +126,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var loRaDevice = new LoRaDevice(null, new DevEui(0xabc0200000000009), connectionManager);
+            await using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
+            await using var loRaDevice = new LoRaDevice(null, new DevEui(0xabc0200000000009), connectionManager);
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(joinEui, loRaDevice.AppEui);
             Assert.Equal(appKey, loRaDevice.AppKey);
@@ -177,7 +177,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
 
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(joinEui, loRaDevice.AppEui);
@@ -220,7 +220,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
 
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Null(loRaDevice.AppEui);
@@ -273,7 +273,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.False(loRaDevice.DownlinkEnabled);
         }
@@ -311,7 +311,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.True(loRaDevice.DownlinkEnabled);
         }
@@ -343,7 +343,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.True(loRaDevice.DownlinkEnabled);
         }
@@ -381,7 +381,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(ReceiveWindow1, loRaDevice.PreferredWindow);
         }
@@ -417,7 +417,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(ReceiveWindow2, loRaDevice.PreferredWindow);
         }
@@ -449,7 +449,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(ReceiveWindow1, loRaDevice.PreferredWindow);
         }
@@ -479,29 +479,29 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(2, loRaDevice.ReportedCN470JoinChannel); // check that reported property is prioritized
         }
 
         [Fact]
-        public void New_LoRaDevice_Should_Have_C2D_Enabled()
+        public async Task New_LoRaDevice_Should_Have_C2D_Enabled()
         {
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             Assert.True(loRaDevice.DownlinkEnabled);
         }
 
         [Fact]
-        public void New_LoRaDevice_Should_Have_PreferredWindow_As_1()
+        public async Task New_LoRaDevice_Should_Have_PreferredWindow_As_1()
         {
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             Assert.Equal(ReceiveWindow1, loRaDevice.PreferredWindow);
         }
 
         [Fact]
-        public void After_3_Resubmits_Should_Not_Be_Valid_To_Resend_Ack()
+        public async Task After_3_Resubmits_Should_Not_Be_Valid_To_Resend_Ack()
         {
-            using var target = CreateDefaultDevice();
+            await using var target = CreateDefaultDevice();
 
             // 1st time
             target.SetFcntUp(12);
@@ -535,9 +535,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_ResetFcnt_In_New_Instance_Should_Have_HasFrameCountChanges_False()
+        public async Task When_ResetFcnt_In_New_Instance_Should_Have_HasFrameCountChanges_False()
         {
-            using var target = CreateDefaultDevice();
+            await using var target = CreateDefaultDevice();
 
             // Setting from 0 to 0 should not trigger changes
             target.ResetFcnt();
@@ -554,7 +554,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             var lastUpdate = loRaDevice.LastUpdate = DateTime.UtcNow - TimeSpan.FromDays(1);
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.True(loRaDevice.LastUpdate > lastUpdate);
@@ -566,19 +566,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ThrowsAsync(new IotHubException());
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             var lastUpdate = loRaDevice.LastUpdate = DateTime.UtcNow - TimeSpan.FromDays(1);
             await Assert.ThrowsAsync<LoRaProcessingException>(async () => await loRaDevice.InitializeAsync(this.configuration));
             Assert.Equal(lastUpdate, loRaDevice.LastUpdate);
         }
 
         [Fact]
-        public void When_ResetFcnt_In_Device_With_Pending_Changes_Should_Have_HasFrameCountChanges_True()
+        public async Task When_ResetFcnt_In_Device_With_Pending_Changes_Should_Have_HasFrameCountChanges_True()
         {
             var devAddr = new DevAddr(0x1231);
 
             // Non zero fcnt up
-            using var target = CreateDefaultDevice();
+            await using var target = CreateDefaultDevice();
             target.SetFcntUp(1);
             target.AcceptFrameCountChanges();
             target.ResetFcnt();
@@ -587,8 +587,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down
-            using var secondConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var secondTarget = new LoRaDevice(devAddr, new DevEui(0x12312), secondConnectionManager);
+            await using var secondConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
+            await using var secondTarget = new LoRaDevice(devAddr, new DevEui(0x12312), secondConnectionManager);
             secondTarget.SetFcntDown(1);
             secondTarget.AcceptFrameCountChanges();
             secondTarget.ResetFcnt();
@@ -597,8 +597,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(secondTarget.HasFrameCountChanges);
 
             // Non zero fcnt down and up
-            using var thirdConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var thirdTarget = new LoRaDevice(devAddr, new DevEui(0x12312), thirdConnectionManager);
+            await using var thirdConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
+            await using var thirdTarget = new LoRaDevice(devAddr, new DevEui(0x12312), thirdConnectionManager);
             thirdTarget.SetFcntDown(1);
             thirdTarget.SetFcntDown(2);
             thirdTarget.AcceptFrameCountChanges();
@@ -609,12 +609,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void When_ResetFcnt_In_NonZero_FcntUp_Or_FcntDown_Should_Have_HasFrameCountChanges_True()
+        public async Task When_ResetFcnt_In_NonZero_FcntUp_Or_FcntDown_Should_Have_HasFrameCountChanges_True()
         {
             var devAddr = new DevAddr(0x1231);
 
             // Non zero fcnt up
-            using var target = CreateDefaultDevice();
+            await using var target = CreateDefaultDevice();
             target.SetFcntUp(1);
             target.AcceptFrameCountChanges();
             target.ResetFcnt();
@@ -623,8 +623,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down
-            using var secondConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var secondTarget = new LoRaDevice(devAddr, new DevEui(0x12312), secondConnectionManager);
+            await using var secondConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
+            await using var secondTarget = new LoRaDevice(devAddr, new DevEui(0x12312), secondConnectionManager);
             secondTarget.SetFcntDown(1);
             secondTarget.AcceptFrameCountChanges();
             secondTarget.ResetFcnt();
@@ -635,8 +635,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(secondTarget.HasFrameCountChanges);
 
             // Non zero fcnt down and up
-            using var thirdConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
-            using var thirdTarget = new LoRaDevice(devAddr, new DevEui(0x12312), thirdConnectionManager);
+            await using var thirdConnectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
+            await using var thirdTarget = new LoRaDevice(devAddr, new DevEui(0x12312), thirdConnectionManager);
             thirdTarget.SetFcntDown(1);
             thirdTarget.SetFcntDown(2);
             thirdTarget.AcceptFrameCountChanges();
@@ -680,7 +680,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
 
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.True(loRaDevice.IsOurDevice);
@@ -726,7 +726,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
 
             if (string.Equals(LoRaRegionType.EU868.ToString(), regionValue, StringComparison.OrdinalIgnoreCase))
@@ -770,7 +770,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(expectedKeepAliveTimeout, loRaDevice.KeepAliveTimeout);
         }
@@ -810,7 +810,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             await loRaDevice.InitializeAsync(this.configuration);
             Assert.Equal(LoRaDeviceClassType.C, loRaDevice.ClassType);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
@@ -827,11 +827,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void When_Updating_Dwell_Time_Settings_Should_Update(bool acceptChanges)
+        public async Task When_Updating_Dwell_Time_Settings_Should_Update(bool acceptChanges)
         {
             // arrange
             var dwellTimeSetting = new DwellTimeSetting(true, false, 3);
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
 
             // act
             loRaDevice.UpdateDwellTimeSetting(dwellTimeSetting, acceptChanges);
@@ -847,7 +847,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             var dwellTimeSetting = new DwellTimeSetting(true, false, 3);
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             TwinCollection actualReportedProperties = null;
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()))
                                  .Callback((TwinCollection t, CancellationToken _) => actualReportedProperties = t)
@@ -875,7 +875,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task InitializeAsync_Should_Initialize_TxParams()
         {
             // arrange
-            using var loRaDevice = CreateDefaultDevice();
+            await using var loRaDevice = CreateDefaultDevice();
             var dwellTimeSetting = new DwellTimeSetting(true, false, 4);
             var twin = TestUtils.CreateTwin(GetEssentialDesiredProperties(),
                                             new Dictionary<string, object> { [TwinProperty.TxParam] = JsonSerializer.Serialize(dwellTimeSetting) });
@@ -911,9 +911,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             [Fact]
-            public void If_No_Reset_FcntUpDown_Initialized()
+            public async Task If_No_Reset_FcntUpDown_Initialized()
             {
-                using var device = CreateDefault();
+                await using var device = CreateDefault();
 
                 const uint fcntUp = 10;
                 const uint fcntDown = 2;
@@ -935,9 +935,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             [InlineData(1, 1, 10, 10, 10, 10, false)]  // all up to date - no update - expect set to last reported
             [InlineData(2, 1, 10, 10, 10, 10, true)]   // reset counter higher - expect to set to start counter and saved
             [InlineData(2, 3, 10, 10, 10, 10, false)]  // reset counter smaller - expect set to last reported
-            public void When_Start_Specified_Initialized_Correctly(uint fcntResetDesired, uint fcntResetReported, uint startDesiredUp, uint startDesiredDown, uint startReportedUp, uint startReportedDown, bool expectStart)
+            public async Task When_Start_Specified_Initialized_Correctly(uint fcntResetDesired, uint fcntResetReported, uint startDesiredUp, uint startDesiredDown, uint startReportedUp, uint startReportedDown, bool expectStart)
             {
-                using var device = CreateDefault();
+                await using var device = CreateDefault();
 
                 const uint fcntUp = 10;
                 const uint fcntDown = 2;
@@ -975,9 +975,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             [Theory]
             [InlineData(10, 10, 0, 0, true)]
             [InlineData(10, 10, 10, 10, false)]
-            public void When_Reset_Specified_Initialized_Correctly(uint startDesiredUp, uint startDesiredDown, uint startReportedUp, uint startReportedDown, bool expectStart)
+            public async Task When_Reset_Specified_Initialized_Correctly(uint startDesiredUp, uint startDesiredDown, uint startReportedUp, uint startReportedDown, bool expectStart)
             {
-                using var device = CreateDefault();
+                await using var device = CreateDefault();
 
                 const uint fcntUp = 10;
                 const uint fcntDown = 2;
@@ -1043,11 +1043,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
-        public void BeginDeviceClientConnectionActivity_Delegates_To_Connection_Manager_When_Device_Has_KeepAliveTimeout(int timeoutSeconds)
+        public async Task BeginDeviceClientConnectionActivity_Delegates_To_Connection_Manager_When_Device_Has_KeepAliveTimeout(int timeoutSeconds)
         {
             // arrange
             var connectionManagerMock = new Mock<ILoRaDeviceClientConnectionManager>();
-            using var target = CreateDefaultDevice(connectionManagerMock.Object);
+            await using var target = CreateDefaultDevice(connectionManagerMock.Object);
             target.KeepAliveTimeout = timeoutSeconds;
 
             // act

@@ -6,6 +6,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Threading.Tasks;
     using global::LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -13,7 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
 
-    public sealed class ConcentratorDeduplicationTest : IDisposable
+    public sealed class ConcentratorDeduplicationTest : IAsyncDisposable
     {
         private readonly MemoryCache cache; // ownership passed to ConcentratorDeduplication
         private readonly LoRaDeviceClientConnectionManager connectionManager;
@@ -51,12 +52,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void When_Data_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Should_Add_To_Cache(bool isCacheEmpty)
+        public async Task When_Data_Message_Not_Encountered_Should_Not_Find_Duplicates_And_Should_Add_To_Cache(bool isCacheEmpty)
         {
             // arrange
             if (!isCacheEmpty)
             {
-                using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(0x1111111111111111UL), this.connectionManager);
+                await using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(0x1111111111111111UL), this.connectionManager);
                 _ = this.concentratorDeduplication.CheckDuplicateData(this.dataRequest, testDevice);
             }
 
@@ -109,10 +110,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [MemberData(nameof(CreateKeyDataMessagesTheoryData))]
-        internal void CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(ConcentratorDeduplication.DataMessageKey expectedKey, ulong devEui, ushort mic, ushort frameCounter, string? fieldNotUsedInKey = null)
+        internal async Task CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(ConcentratorDeduplication.DataMessageKey expectedKey, ulong devEui, ushort mic, ushort frameCounter, string? fieldNotUsedInKey = null)
         {
             var options = fieldNotUsedInKey ?? string.Empty;
-            using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(devEui), this.connectionManager);
+            await using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(devEui), this.connectionManager);
 
             var payload = new LoRaPayloadData(this.dataPayload.DevAddr, new MacHeader(MacMessageType.ConfirmedDataUp),
                                               FrameControlFlags.None, frameCounter, options, "payload", FramePort.AppMin, new Mic(mic),
@@ -194,13 +195,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
         #endregion
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.loRaDevice.Dispose();
+            await this.loRaDevice.DisposeAsync();
             this.dataRequest.Dispose();
             this.joinRequest.Dispose();
 
-            this.connectionManager.Dispose();
+            await this.connectionManager.DisposeAsync();
             this.cache?.Dispose();
         }
     }

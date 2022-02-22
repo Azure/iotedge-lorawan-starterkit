@@ -307,7 +307,8 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                await loRaDevice?.CloseConnectionAsync(CancellationToken.None);
+                if (loRaDevice is { } someLoRaDevice)
+                    await someLoRaDevice.CloseConnectionAsync(CancellationToken.None);
             }
         }
     }
