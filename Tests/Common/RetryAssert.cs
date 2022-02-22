@@ -19,44 +19,46 @@ namespace LoRaWan.Tests.Common
             ContainsAsync(el => expected?.Equals(el) ?? throw new ArgumentNullException(nameof(expected)), enumerable, maxAttempts, interval);
 
         public static Task ContainsAsync<T>(Predicate<T> predicate, IEnumerable<T> enumerable, int maxAttempts = 3, TimeSpan? interval = null) =>
-            RetryAsync(() =>
+            RetryAssertAsync<int>(() =>
             {
                 try
                 {
                     Assert.Contains(enumerable, predicate);
-                    return ((int?)0, true);
+                    return (0, null);
                 }
-                catch (ContainsException)
+                catch (ContainsException ex)
                 {
-                    return (default, false);
+                    return (default, ex);
                 }
             }, maxAttempts, interval);
 
         public static Task<T> SingleAsync<T>(IEnumerable<T> enumerable, int maxAttempts = 3, TimeSpan? interval = null) =>
-            RetryAsync(() =>
+            RetryAssertAsync<T>(() =>
             {
                 try
                 {
-                    return (Assert.Single(enumerable), true);
+                    return (Assert.Single(enumerable), null);
                 }
-                catch (SingleException)
+                catch (SingleException ex)
                 {
-                    return (default, false);
+                    return (default, ex);
                 }
             }, maxAttempts, interval);
 
-        private static async Task<T> RetryAsync<T>(Func<(T?, bool)> assert, int maxAttempts, TimeSpan? interval)
+        private static async Task<T> RetryAssertAsync<T>(Func<(T?, Exception?)> assert, int maxAttempts, TimeSpan? interval)
         {
             var effectiveInterval = interval ?? DefaultInterval;
 
             var i = 0;
             while (true)
             {
-                if (assert() is (var result, true))
-                    return result ?? throw new InvalidOperationException("Result of the assertion was null.");
+                var (result, ex) = assert();
+
+                if (result is { } someResult)
+                    return someResult;
 
                 if (++i == maxAttempts)
-                    throw new InvalidOperationException("Maximum number of retries exceeded. Assertion failed.");
+                    throw new InvalidOperationException("Maximum number of retries exceeded.", ex);
 
                 await Task.Delay(effectiveInterval);
             }
