@@ -117,7 +117,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.Logger
         }
 
         [Fact]
-        public void Traces_Iot_Hub_Send_Events()
+        public async Task Traces_Iot_Hub_Send_Events()
         {
             // arrange
             var tracing = new Mock<ITracing>();
@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.Logger
             testableLogger.Value.Object.Log(logLevel, "foo");
 
             // assert
-            tracing.Verify(t => t.TrackIotHubDependency("SDK SendEvent", "log"), Times.Once);
+            await tracing.RetryVerifyAsync(t => t.TrackIotHubDependency("SDK SendEvent", "log"), Times.Once);
         }
 
         [Fact]
