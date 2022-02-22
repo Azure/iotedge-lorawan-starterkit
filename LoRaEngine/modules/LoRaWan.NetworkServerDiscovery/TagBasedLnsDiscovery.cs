@@ -27,13 +27,12 @@ namespace LoRaWan.NetworkServerDiscovery
         private static readonly IJsonReader<LnsHostAddressParseResult> HostAddressReader =
             JsonReader.Object(JsonReader.Property("hostAddress",
                                                   from s in JsonReader.String()
-                                                  select Uri.TryCreate(s, default, out var uri) ? uri : null,
+                                                  select Uri.TryCreate(s, UriKind.Absolute, out var uri)
+                                                      && uri.Scheme is "ws" or "wss"
+                                                       ? uri : null,
                                                   (true, null)),
                               JsonReader.Property("deviceId", JsonReader.String()),
-                              (hostAddress, deviceId) => new LnsHostAddressParseResult(hostAddress is { } someHostAddress
-                                                                                                       && someHostAddress.IsAbsoluteUri
-                                                                                                       && someHostAddress.Scheme is "ws" or "wss" ? someHostAddress : null,
-                                                                                       deviceId));
+                              (hostAddress, deviceId) => new LnsHostAddressParseResult(hostAddress, deviceId));
 
         private readonly ILogger<TagBasedLnsDiscovery> logger;
         private readonly IMemoryCache memoryCache;
