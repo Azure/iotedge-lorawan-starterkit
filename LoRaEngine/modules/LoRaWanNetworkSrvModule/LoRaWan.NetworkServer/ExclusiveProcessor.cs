@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer
 
         public async Task<ProcessingOutcome<Task<TResult>>> TryProcessAsync<TResult>(T processor, Func<Task<TResult>> function)
         {
-            if (function == null) throw new ArgumentNullException(nameof(function));
+            ArgumentNullException.ThrowIfNull(function, nameof(function));
 
             var submissionTime = DateTimeOffset.Now;
 
