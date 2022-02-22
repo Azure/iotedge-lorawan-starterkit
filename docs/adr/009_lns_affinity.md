@@ -177,7 +177,7 @@ or via fetching it using DeviceGetter.GetDevice). Changes are marked in **bold**
    connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. **LNS2 updates its
    in memory state that it does not own the connection for this device**.
 1. When message B gets send (with a higher frame counter*), assuming that this time LNS2 gets it
-   first it **checks again its local state that indicates it's not owning the connection for the device and
+   first, it **checks again its local state that indicates it's not owning the connection for the device and
    therefore delays itself X ms before contacting the Function**.
    - Here we do *not* want to simply drop the message as LNS1 might not be available anymore (due to
      a crash, device not in range etc).
@@ -185,9 +185,12 @@ or via fetching it using DeviceGetter.GetDevice). Changes are marked in **bold**
     back to the previous case of message A. The active connection stays with LNS1.
 1. If this delay is not sufficient for LNS1 to win the race, LNS2 will contact the Function which
    now awards LNS2 as the "winning" LNS. LNS2 can now process the message upstream. It also **removes the "losing flag" from its in-memory store**.
-1. **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this device.
-   - The reason why we do this is to ensure that LNS1 knows connection ownership was transferred to another network server and it can drop the connection. This is for the case, where the upstream message does not reach LNS1.
-  - For that we can use a C2D message to LNS. Alternative: direct method could be used here but
+1. **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this
+   device.
+    - The reason why we do this is to ensure that LNS1 knows connection ownership was transferred to
+    another network server and it can drop the connection. This is for the case, where the upstream
+    message does not reach LNS1.
+    - For that we can use a C2D message to LNS. Alternative: direct method could be used here but
     delivery will not be guaranteed then.
 1. If LNS1 in the meantime gets message B and contacts the Function, it will let it know
    that it lost the race for this frame counter and must therefore drop the message, **mark
