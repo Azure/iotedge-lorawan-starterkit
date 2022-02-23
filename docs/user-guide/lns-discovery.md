@@ -64,7 +64,7 @@ You can configure the following behavior of the LNS discovery service.
 We recommend that you use an Azure App Service to run the discovery service in the cloud. You can follow the [App Service Quickstart](https://docs.microsoft.com/en-us/azure/app-service/quickstart-dotnetcore?tabs=net60&pivots=development-environment-cli) for instructions how to deploy an ASP.NET Core app in an Azure App Service. When using an App Service, make sure that you:
 
 - [Enable the system assigned managed identity](https://docs.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=portal%2Chttp#add-a-system-assigned-identity)
-- Assign a role to the system assigned identity which allows it to query the IoT Hub twins, e.g. IoT Hub Twin Contributor.
+- Assign a role to the system assigned identity which allows it to execute the `Microsoft.Devices/IotHubs/twins/read` data action for reading the IoT Hub twins. Built-in `IoT Hub Twin Contributor` role allows that.
 - Specify the Iot Hub host name as described in the [configuration](#configuration) section.
 
 ## On-premises deployment
