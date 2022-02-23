@@ -305,12 +305,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            if (deviceGatewayID != null) twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties());
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             // Device twin will be updated
@@ -412,14 +407,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            twin.Properties.Desired[TwinProperty.RX1DROffset] = rx1DROffset;
-            twin.Properties.Desired[TwinProperty.RX2DataRate] = rx2datarate;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            {
+                Rx1DROffset = rx1DROffset,
+                Rx2DataRate = rx2datarate
+            });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
@@ -487,14 +479,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null);
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            twin.Properties.Desired[TwinProperty.RX2DataRate] = rx2datarate;
-            twin.Properties.Desired[TwinProperty.PreferredWindow] = 2;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            {
+                Rx2DataRate = rx2datarate,
+                PreferredWindow = 2
+            });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
@@ -583,15 +572,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null);
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            twin.Properties.Desired[TwinProperty.RX2DataRate] = afterJoinValues;
-            twin.Properties.Desired[TwinProperty.RX1DROffset] = afterJoinValues;
-            twin.Properties.Desired[TwinProperty.RXDelay] = afterJoinValues;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            {
+                Rx2DataRate = (DataRateIndex)afterJoinValues,
+                Rx1DROffset = afterJoinValues,
+                RxDelay = afterJoinValues
+            });
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
@@ -688,14 +674,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null);
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            twin.Properties.Desired[TwinProperty.RX1DROffset] = rx1offset;
-            twin.Properties.Desired[TwinProperty.PreferredWindow] = 1;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            {
+                Rx1DROffset = rx1offset,
+                PreferredWindow = 1
+            });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
@@ -802,14 +785,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null);
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            twin.Properties.Desired[TwinProperty.RXDelay] = rxDelay;
-            twin.Properties.Desired[TwinProperty.PreferredWindow] = 1;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            {
+                RxDelay = rxDelay,
+                PreferredWindow = 1
+            });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
