@@ -69,7 +69,7 @@ namespace LoRaWan.Tests.Common
             {
                 if (value is { } someValue)
                 {
-                    twinCollection[key] = value;
+                    twinCollection[key] = someValue;
                 }
             }
         }
