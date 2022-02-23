@@ -35,12 +35,7 @@ namespace LoRaWan.Tests.Integration
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = LoRaDeviceTwin.Create(
-                simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
-                {
-                    DevEui = devEui,
-                    GatewayId = deviceGatewayID
-                });
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties());
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 

@@ -32,12 +32,7 @@ namespace LoRaWan.Tests.Integration
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried twice, 1st time will take 7 seconds, 2nd time 0.1 second
-            var twin = LoRaDeviceTwin.Create(
-                simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
-                {
-                    DevEui = devEui,
-                    GatewayId = deviceGatewayID,
-                });
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties());
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 

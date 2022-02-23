@@ -110,7 +110,7 @@ namespace LoRaWan.Tests.Integration
 
             // twin will be loaded
             var initialTwin = LoRaDeviceTwin.Create(
-                simulatedDevice.LoRaDevice.GetAbpTwinProperties() with
+                simulatedDevice.LoRaDevice.GetAbpDesiredTwinProperties() with
                 {
                     DevEui = devEui,
                     GatewayId = twinGatewayID

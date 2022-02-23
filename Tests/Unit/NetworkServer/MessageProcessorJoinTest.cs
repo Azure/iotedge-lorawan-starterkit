@@ -80,7 +80,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties()));
+                .ReturnsAsync(LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties()));
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -305,7 +305,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties());
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties());
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             // Device twin will be updated
@@ -407,7 +407,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
             {
                 Rx1DROffset = rx1DROffset,
                 Rx2DataRate = rx2datarate
@@ -479,7 +479,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null);
 
             // Device twin will be queried
-            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
             {
                 Rx2DataRate = rx2datarate,
                 PreferredWindow = 2
@@ -572,7 +572,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null);
 
             // Device twin will be queried
-            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
             {
                 Rx2DataRate = (DataRateIndex)afterJoinValues,
                 Rx1DROffset = afterJoinValues,
@@ -674,7 +674,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null);
 
             // Device twin will be queried
-            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
             {
                 Rx1DROffset = rx1offset,
                 PreferredWindow = 1
@@ -785,7 +785,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null);
 
             // Device twin will be queried
-            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
             {
                 RxDelay = rxDelay,
                 PreferredWindow = 1

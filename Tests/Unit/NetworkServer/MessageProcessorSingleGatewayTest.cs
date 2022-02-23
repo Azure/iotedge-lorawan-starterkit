@@ -550,7 +550,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null);
 
             // twin will be loaded
-            var initialTwin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetAbpTwinProperties() with { DevEui = devEui },
+            var initialTwin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetAbpDesiredTwinProperties() with { DevEui = devEui },
             new LoRaReportedTwinProperties { FCntDown = deviceTwinFcntDown, FCntUp = deviceTwinFcntUp });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(initialTwin);

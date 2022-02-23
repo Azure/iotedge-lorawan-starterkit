@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null)).ReturnsAsync(true);
 
             var initialTwin = LoRaDeviceTwin.Create(
-                simulatedDevice.LoRaDevice.GetAbpTwinProperties() with
+                simulatedDevice.LoRaDevice.GetAbpDesiredTwinProperties() with
                 {
                     DevEui = devEui,
                     AbpRelaxMode = abpRelaxed,
@@ -177,7 +177,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null)).ReturnsAsync(true);
 
             var initialTwin = LoRaDeviceTwin.Create(
-                simulatedDevice.LoRaDevice.GetAbpTwinProperties() with
+                simulatedDevice.LoRaDevice.GetAbpDesiredTwinProperties() with
                 {
                     DevEui = devEui,
                     AbpRelaxMode = true,

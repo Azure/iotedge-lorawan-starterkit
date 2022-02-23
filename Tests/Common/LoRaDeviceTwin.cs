@@ -119,7 +119,7 @@ namespace LoRaWan.Tests.Common
 
     public static class LoRaDeviceTwinExtensions
     {
-        public static LoRaDesiredTwinProperties GetOtaaTwinProperties(this TestDeviceInfo testDeviceInfo) =>
+        public static LoRaDesiredTwinProperties GetOtaaDesiredTwinProperties(this TestDeviceInfo testDeviceInfo) =>
             new LoRaDesiredTwinProperties
             {
                 DevEui = testDeviceInfo.DevEui,
@@ -139,10 +139,10 @@ namespace LoRaWan.Tests.Common
                 DevNonce = simulatedDevice.DevNonce,
                 NetId = simulatedDevice.NetId,
                 FCntDown = simulatedDevice.FrmCntDown,
-                FCntUp = simulatedDevice.FrmCntUp
+                FCntUp = simulatedDevice.FrmCntUp,
             };
 
-        public static LoRaDesiredTwinProperties GetAbpTwinProperties(this TestDeviceInfo testDeviceInfo) =>
+        public static LoRaDesiredTwinProperties GetAbpDesiredTwinProperties(this TestDeviceInfo testDeviceInfo) =>
             new LoRaDesiredTwinProperties
             {
                 AppSessionKey = testDeviceInfo.AppSKey ?? throw new InvalidOperationException($"{nameof(testDeviceInfo.AppSKey)} must not be null."),

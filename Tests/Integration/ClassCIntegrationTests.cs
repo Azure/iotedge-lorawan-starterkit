@@ -162,7 +162,7 @@ namespace LoRaWan.Tests.Integration
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaTwinProperties(),
+                .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaDesiredTwinProperties(),
                                                     simDevice.GetOtaaReportedTwinProperties()));
 
             AppSessionKey? savedAppSKey = null;
@@ -353,7 +353,7 @@ namespace LoRaWan.Tests.Integration
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaTwinProperties(),
+                .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaDesiredTwinProperties(),
                                                     new LoRaReportedTwinProperties
                                                     {
                                                         // reported: { 'PreferredGateway': '' } -> if device is for multiple gateways and one initial was defined

@@ -196,7 +196,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync("123");
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaTwinProperties(), simDevice.GetOtaaReportedTwinProperties()));
+                .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaDesiredTwinProperties(), simDevice.GetOtaaReportedTwinProperties()));
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
@@ -338,7 +338,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync("123");
 
             var twin = LoRaDeviceTwin.Create(
-                simDevice.LoRaDevice.GetOtaaTwinProperties() with
+                simDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
                 {
                     Rx2DataRate = DataRateIndex.DR10
                 },
@@ -404,7 +404,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync("123");
 
             var twin = LoRaDeviceTwin.Create(
-                simDevice.LoRaDevice.GetOtaaTwinProperties() with
+                simDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
                 {
                     Rx2DataRate = DataRateIndex.DR10
                 },
