@@ -53,21 +53,20 @@ namespace LoRaWan.NetworkServer
 
         internal async Task ProcessJoinRequestAsync(LoRaRequest request)
         {
+            var timeWatcher = request.GetTimeWatcher();
+            var processingTimeout = timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() - TimeSpan.FromMilliseconds(100);
+            using var joinAcceptCancellationToken = new CancellationTokenSource(processingTimeout > TimeSpan.Zero ? processingTimeout : TimeSpan.Zero);
+
+            var joinReq = (LoRaPayloadJoinRequest)request.Payload;
+
+            var devEui = joinReq.DevEUI;
+
+            using var scope = this.logger.BeginDeviceScope(devEui);
+
             LoRaDevice loRaDevice = null;
-            var loraRegion = request.Region;
 
             try
             {
-                var timeWatcher = request.GetTimeWatcher();
-                var processingTimeout = timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() - TimeSpan.FromMilliseconds(100);
-                using var joinAcceptCancellationToken = new CancellationTokenSource(processingTimeout > TimeSpan.Zero ? processingTimeout : TimeSpan.Zero);
-
-                var joinReq = (LoRaPayloadJoinRequest)request.Payload;
-
-                var devEui = joinReq.DevEUI;
-
-                using var scope = this.logger.BeginDeviceScope(devEui);
-
                 this.logger.LogInformation("join request received");
 
                 var deduplicationResult = this.concentratorDeduplication.CheckDuplicateJoin(request);
@@ -76,7 +75,7 @@ namespace LoRaWan.NetworkServer
 
                 if (deduplicationResult is ConcentratorDeduplicationResult.Duplicate)
                 {
-                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+                    request.NotifyFailed(devEui.ToString(), LoRaDeviceRequestFailedReason.DeduplicationDrop);
                     // we do not log here as the concentratorDeduplication service already does more detailed logging
                     return;
                 }
@@ -257,6 +256,7 @@ namespace LoRaWan.NetworkServer
                     loraSpecDesiredRxDelay,
                     null);
 
+                var loraRegion = request.Region;
                 if (!loraRegion.TryGetDownstreamChannelFrequency(request.RadioMetadata.Frequency, upstreamDataRate: request.RadioMetadata.DataRate, deviceJoinInfo: deviceJoinInfo, downstreamFrequency: out var freq))
                 {
                     this.logger.LogError("could not resolve DR and/or frequency for downstream");
@@ -296,11 +296,10 @@ namespace LoRaWan.NetworkServer
                 {
                     this.logger.LogInformation("join accepted");
                 }
-
             }
             catch (Exception ex) when
                 (ExceptionFilterUtility.True(() => this.logger.LogError(ex, $"failed to handle join request. {ex.Message}", LogLevel.Error),
-                                                () => this.unhandledExceptionCount?.Add(1)))
+                                             () => this.unhandledExceptionCount?.Add(1)))
             {
                 request.NotifyFailed(loRaDevice, ex);
                 throw;
