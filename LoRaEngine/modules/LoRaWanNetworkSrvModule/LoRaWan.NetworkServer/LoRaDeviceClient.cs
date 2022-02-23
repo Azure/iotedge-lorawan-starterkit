@@ -198,7 +198,7 @@ namespace LoRaWan.NetworkServer
 
                 await executeAsync(this.deviceClient, cloudToDeviceMessage);
 
-                this.logger.LogDebug("done processing '{OperationName}' on cloud to device message, id: '{MessageId}'.", messageId);
+                this.logger.LogDebug("done processing '{OperationName}' on cloud to device message, id: '{MessageId}'.", operationName, messageId);
                 return true;
             }
             catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "'{OperationName}' failed on cloud to device message (id: {MessageId}) with error: '{ExceptionMessage}'.", operationName, messageId, ex.Message)))
