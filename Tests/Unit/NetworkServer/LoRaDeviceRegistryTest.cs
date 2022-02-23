@@ -45,15 +45,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             apiService.VerifyAll();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task GetDeviceForJoinRequestAsync_When_Join_Handled_By_Other_Cache_Is_Updated(bool joinedDevice)
+        [Fact]
+        public async Task GetDeviceForJoinRequestAsync_When_Join_Handled_By_Other_Cache_Is_Cleared()
         {
             var devNonce = new DevNonce(1);
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var otaaDevice = TestDeviceInfo.CreateOTAADevice(1);
-            if (joinedDevice) otaaDevice.AppSKey = new AppSessionKey();
 
             var simulatedDevice = new SimulatedDevice(otaaDevice);
 
@@ -64,7 +61,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await using var target = new LoRaDeviceRegistry(ServerConfiguration, this.cache, apiService.Object, this.loraDeviceFactoryMock.Object, DeviceCache);
 
             Assert.Null(await target.GetDeviceForJoinRequestAsync(simulatedDevice.DevEUI, devNonce));
-            Assert.Equal(joinedDevice, !DeviceCache.TryGetByDevEui(simulatedDevice.DevEUI, out _));
+            Assert.False(DeviceCache.TryGetByDevEui(simulatedDevice.DevEUI, out _));
         }
 
         [Theory]
