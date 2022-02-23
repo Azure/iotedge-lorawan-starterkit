@@ -54,11 +54,15 @@ namespace LoRaWan.Tests.Common
             {
                 var (result, ex) = assert();
 
-                if (result is { } someResult)
-                    return someResult;
-
-                if (++i == maxAttempts)
-                    throw new InvalidOperationException("Maximum number of retries exceeded.", ex);
+                if (ex is { } someException)
+                {
+                    if (++i == maxAttempts)
+                        throw new InvalidOperationException("Maximum number of retries exceeded.", ex);
+                }
+                else
+                {
+                    return result ?? throw new InvalidOperationException("Result of the assertion may not be null.");
+                }
 
                 await Task.Delay(effectiveInterval);
             }
