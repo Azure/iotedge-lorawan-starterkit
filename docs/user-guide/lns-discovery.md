@@ -18,6 +18,9 @@ The discovery service relies on configuration from IoT Hub module twins to assoc
 
 The network ID may only consist of alphanumeric characters. After you configured the LBS, you need to also configure your LNS with the same network. The LNS twin furthermore needs to contain the IP/DNS of the host, hence the twin of the LNS *module* should look like:
 
+!!! warning
+    We will only query the LNS modules for LNS within the same network. If you configure the network/host address on the IoT Edge device twin, it will not be detected.
+
 ```json
 {
   ...,
