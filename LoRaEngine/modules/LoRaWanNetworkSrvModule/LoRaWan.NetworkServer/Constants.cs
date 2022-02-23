@@ -41,6 +41,11 @@ namespace LoRaWan.NetworkServer
         public const string CloudToDeviceClearCache = "clearcache";
 
         /// <summary>
+        /// Property in decoder json response commanding LNS to drop the connection.
+        /// </summary>
+        public const string CloudToDeviceDropConnection = "dropconnection";
+
+        /// <summary>
         /// Minimum value for device connection keep alive timeout (1 minute).
         /// </summary>
         public const int MinKeepAliveTimeout = 60;
