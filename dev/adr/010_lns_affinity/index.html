@@ -1,0 +1,1917 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
+    
+    
+      
+        <title>010. LNS sticky affinity over multiple sessions - IoTEdge LoRaWAN StarterKit - documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.edf004c2.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/timeago.css">
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#010-lns-sticky-affinity-over-multiple-sessions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-header__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IoTEdge LoRaWAN StarterKit - documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              010. LNS sticky affinity over multiple sessions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../quickstart/" class="md-tabs__link">
+      Quick Start
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../user-guide/devguide/" class="md-tabs__link">
+        User Guide
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../user-guide/architecture/" class="md-tabs__link">
+        Reference
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../samples/arduino/" class="md-tabs__link">
+        Samples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tools/device-provisioning/" class="md-tabs__link">
+        Tools
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../001_region_cn470_implementation/" class="md-tabs__link">
+        Decision Log
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../release-notes/" class="md-tabs__link">
+        About
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-nav__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    IoTEdge LoRaWAN StarterKit - documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/devguide/" class="md-nav__link">
+        Developer Guidance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/partner/" class="md-nav__link">
+        Device Manufacturer Guidance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/upgrade/" class="md-nav__link">
+        Upgrade to a new version
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/documentation/" class="md-nav__link">
+        Working with the documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/observability/" class="md-nav__link">
+        Observability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_6" type="checkbox" id="__nav_3_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_6">
+          Basic Station configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_6">
+          <span class="md-nav__icon md-icon"></span>
+          Basic Station configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/pkt-fwd-to-station/" class="md-nav__link">
+        Migrate from Packet Forwarder to LoRa Basics Station
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-device-provisioning/" class="md-nav__link">
+        Concentrator provisioning
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-authentication-modes/" class="md-nav__link">
+        Authentication modes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-module-configuration/" class="md-nav__link">
+        LBS IoT Edge Module configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-firmware-upgrade/" class="md-nav__link">
+        Firmware upgrade with CUPS
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_7" type="checkbox" id="__nav_3_7" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_7">
+          Region specifics
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Region specifics" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_7">
+          <span class="md-nav__icon md-icon"></span>
+          Region specifics
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/as923/" class="md-nav__link">
+        Region AS923
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_8" type="checkbox" id="__nav_3_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_8">
+          Testing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Testing" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_8">
+          <span class="md-nav__icon md-icon"></span>
+          Testing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/testing/e2e_tests/" class="md-nav__link">
+        E2E Tests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/testing/integration_tests/" class="md-nav__link">
+        Integration Tests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/testing/load_tests/" class="md-nav__link">
+        Load Tests
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/architecture/" class="md-nav__link">
+        Architecture and Concepts
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/message-flows/" class="md-nav__link">
+        Message Flows
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/deployment-scenarios/" class="md-nav__link">
+        Deployment Scenarios
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/caching/" class="md-nav__link">
+        Caching
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/ci-setup/" class="md-nav__link">
+        Continuous Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/adaptive-data-rate/" class="md-nav__link">
+        Adaptive Data Rate
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Samples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Samples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Samples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/arduino/" class="md-nav__link">
+        Arduino Demo Code
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_2">
+          Decoders
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Decoders" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Decoders
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/decoder/" class="md-nav__link">
+        Decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/universal/" class="md-nav__link">
+        Universal Decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/cayenne/" class="md-nav__link">
+        Cayenne Decoder
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          Tools
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tools" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Tools
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/device-provisioning/" class="md-nav__link">
+        LoRa Device Provisioning
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/arduino-samples/" class="md-nav__link">
+        Arduino Samples
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/certificate-generation/" class="md-nav__link">
+        Basic Station Certificates Generation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/cups-firmware-file-preparation/" class="md-nav__link">
+        CUPS - Firmware update file preparation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_7">
+          Decision Log
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Decision Log" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          Decision Log
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../001_region_cn470_implementation/" class="md-nav__link">
+        001. Region CN470 implementation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../002_lbs_configuration/" class="md-nav__link">
+        002. LoRa Basic Station configuration endpoint implementation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../003_documentation/" class="md-nav__link">
+        003. Documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../004_region_as923_implementation/" class="md-nav__link">
+        004. Region AS923 implementation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../005_observability/" class="md-nav__link">
+        005. Observability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../006_cups/" class="md-nav__link">
+        006. CUPS Protocol Implementation - Credential management
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../007_message_deduplication/" class="md-nav__link">
+        007. Deduplication of messages
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../008_cups_firmware_upgrade/" class="md-nav__link">
+        008. CUPS Protocol Implementation - Firmware Upgrade
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8" type="checkbox" id="__nav_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_8">
+          About
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="About" data-md-level="1">
+        <label class="md-nav__title" for="__nav_8">
+          <span class="md-nav__icon md-icon"></span>
+          About
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release-notes/" class="md-nav__link">
+        Release Notes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/" class="md-nav__link">
+        Known Issues
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../support/" class="md-nav__link">
+        Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        Contributing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../license/" class="md-nav__link">
+        License
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#problem-statement" class="md-nav__link">
+    Problem statement
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    Out of scope
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-scope" class="md-nav__link">
+    In-scope
+  </a>
+  
+    <nav class="md-nav" aria-label="In-scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problematic-iot-hub-operations-on-behalf-of-edge-devices" class="md-nav__link">
+    Problematic IoT Hub operations on behalf of edge devices
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solution" class="md-nav__link">
+    Solution
+  </a>
+  
+    <nav class="md-nav" aria-label="Solution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#handling-of-cache-refresh" class="md-nav__link">
+    Handling of cache refresh
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling of cache refresh">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    Decision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternatives" class="md-nav__link">
+    Alternatives
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-of-join-requests" class="md-nav__link">
+    Handling of Join requests
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling of Join requests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision_1" class="md-nav__link">
+    Decision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative" class="md-nav__link">
+    Alternative
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#main-data-message-flow" class="md-nav__link">
+    Main data message flow
+  </a>
+  
+    <nav class="md-nav" aria-label="Main data message flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision_2" class="md-nav__link">
+    Decision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative_1" class="md-nav__link">
+    Alternative
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#further-processing" class="md-nav__link">
+    Further processing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-of-abp-relax-frame-counter-reset" class="md-nav__link">
+    Handling of ABP relax frame counter reset
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling of ABP relax frame counter reset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision_3" class="md-nav__link">
+    Decision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative_2" class="md-nav__link">
+    Alternative
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-class-c-downstream-messages" class="md-nav__link">
+    Handling Class C downstream messages
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling Class C downstream messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#should-we-delay-on-the-lns-itself-or-on-the-function" class="md-nav__link">
+    Should we delay on the LNS itself or on the Function?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delay-amount-configuration" class="md-nav__link">
+    Delay amount configuration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-candidates-considered" class="md-nav__link">
+    Other candidates considered
+  </a>
+  
+    <nav class="md-nav" aria-label="Other candidates considered">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-direct-mode-not-edge-hub" class="md-nav__link">
+    Using direct mode (not Edge hub)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parent-child-gateways" class="md-nav__link">
+    Parent-child gateways
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-changes" class="md-nav__link">
+    Related changes
+  </a>
+  
+    <nav class="md-nav" aria-label="Related changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#single-point-of-connection-handling-on-loradevice" class="md-nav__link">
+    Single point of connection handling on LoRaDevice
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/adr/010_lns_affinity.md" title="Edit this page" class="md-content__button md-icon">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+</a>
+
+
+<h1 id="010-lns-sticky-affinity-over-multiple-sessions">010. LNS sticky affinity over multiple sessions</h1>
+<p><strong>Feature</strong>: <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1475">#1475</a>  </p>
+<p><strong>Authors</strong>: Spyros Giannakakis, Daniele Antonio Maggio, Patrick Schuler</p>
+<p><strong>Status</strong>: Accepted</p>
+<hr />
+<h2 id="problem-statement">Problem statement</h2>
+<p>Consider the topology:</p>
+<div class="mermaid">flowchart LR;
+  Device--&gt;LBS1--&gt;LNS1--1--&gt;IoTHub;
+  Device--&gt;LBS2--&gt;LNS2--2--&gt;IoTHub;</div>
+<p>IoT Hub limits active connections that an IoT device can have to one. Assuming that connection 1 is
+already open and a message from LNS2 arrives, IoT Hub will close connection 1 and open connection 2.
+Edge Hub on LNS1, will detect this and assume it's a transient network issue, therefore will try
+proactively to reconnect to IoT Hub. IoT Hub will now drop the connection 2 to re-establish the
+original connection 1.  </p>
+<p>This connection "ping-pong" will continue happening, negatively impacting the scalability due to the
+high costs of setting up/disposing the connections. From our load tests we observed that in this
+scenario we were not even able to connect more than 120 devices to two LNSs, while in a single LNS
+topology we could scale up to 900 devices without issues.</p>
+<h2 id="out-of-scope">Out of scope</h2>
+<ul>
+<li>Deduplication strategies Mark and None: these strategies rely on multiple LNSs sending message.
+Potentially we could consider other workarounds for the IoT Hub limitation of a single connection
+per device but we find it acceptable for the Mark and None strategies to not be as scalable as the
+Drop strategy and will only document this limitation for potential users to be aware of.</li>
+</ul>
+<ul>
+<li>LNS performs operations on behalf of a device/sensor and a concentrator/station. However since a
+concentrator can be connected to at most one LNS, there is no ping-pong happening with operations on
+stations.</li>
+</ul>
+<h2 id="in-scope">In-scope</h2>
+<ul>
+<li>The problem can be manifested whenever we do operations against Iot Hub on behalf of edge devices.
+  These can be:<ul>
+<li>Twin reads</li>
+<li>Twin writes (updates/deletes)</li>
+<li>D2C messages</li>
+<li>C2D messages</li>
+</ul>
+</li>
+<li>Roaming leaf devices (that potentially become out-of-range from an LNS) are kept in scope.</li>
+<li>Downstream messages for Class C devices via Direct Method</li>
+</ul>
+<h3 id="problematic-iot-hub-operations-on-behalf-of-edge-devices">Problematic IoT Hub operations on behalf of edge devices</h3>
+<ul>
+<li>Background tasks<ul>
+<li>Periodically we refresh the LoRaDeviceCache, which results in device twin reads that could
+  switch the connection -&gt; see <a href="#handling-of-background-tasks">handling of background tasks section</a></li>
+</ul>
+</li>
+<li>Message flows<ul>
+<li>Join -&gt; see <a href="#Handling-of-Join-requests">handling of Join requests section</a></li>
+<li>Data:<ul>
+<li>if the device is not in LoRaDeviceCache, we fetch the device twin -&gt; see <a href="#main-data-message-flow">main data flow section</a></li>
+<li>assuming we have the device twin (in the cache or fetched) in the main data flow we send upstream, downstream and write the new twin -&gt; see <a href="#main-data-message-flow">main data flow section</a></li>
+<li>if a frame counter reset happened, we update the twin immediately -&gt; see <a href="#handling-of-device-resets">handling of resets section</a></li>
+</ul>
+</li>
+<li>C2D message via Direct method -&gt; see <a href="#handling-class-c-downstream-messages">handling class C downstream messages section</a></li>
+</ul>
+</li>
+</ul>
+<p>Version, LNS discovery and CUPS update endpoints are not affected by this issue.</p>
+<h2 id="solution">Solution</h2>
+<p>The main idea is to give the current connection holder (as indicated from the Function), the edge to
+continue processing messages for this device. The performance of that gateway will not be impacted.</p>
+<p>The information whether the current LNS is the connection owner is stored locally. The LNS that is
+the connection owner will keep the connection open. Any other network servers receiving messages,
+will not maintain an active connection to IoT Hub. If the owning network server stops responding or
+gets out of reach, the ownership is transferred to the next winning network server.</p>
+<h3 id="handling-of-cache-refresh">Handling of cache refresh</h3>
+<p>When we create the (singleton) instance of the NetworkServer.LoRaDeviceCache, we start a background
+periodical task to ensure the device twins for all the devices that connected to that LNS are kept
+fresh. In the case where we need to get a device twin, this could trigger a connection ping-pong.</p>
+<h4 id="decision">Decision</h4>
+<p>The preferred option for now is to refresh the twin and close the connection immediately. This could
+result in a connection switch but not a permanent connection ping pong. This will be revisited with
+either <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1499">this issue about the frame counter
+  drift</a> (one of the solutions
+ there is to fetch twin and close connection immediately) or <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1505">this issue specific to cache
+ refresh</a></p>
+<h4 id="alternatives">Alternatives</h4>
+<ul>
+<li>Check against the local store whether we are the owning gateway. If we are, refresh the twin (and
+  keep the connection open). If we are not:<ul>
+<li>We adjust the LastSeen property but not actually refresh the entry in the cache.
+  When the next data message for this devices comes in and an entry is in cache for such device, in the
+  event that the Azure Function is marking our LNS as the new "winning" gateway, we have a stale
+  twin in the cache that needs to be updated before validating the request (see <a href="#main-data-message-flow">main data flow</a>).</li>
+<li>Alternatively, we remove the device entry from the cache. This idea is discarded because if we were
+  to do this, a "get twin" operation would be triggered as soon as the next data message is coming
+  in from the device in question (for the resolution of devAddr).</li>
+</ul>
+</li>
+</ul>
+<h3 id="handling-of-join-requests">Handling of Join requests</h3>
+<p>Join requests in isolation currently do not have the connection stealing issue, as they already rely on the
+Function for the DevNonce check. If the current LNS is not the preferred gateway, it drops the
+message immediately.</p>
+<p>Problem</p>
+<ul>
+<li>Join received from LNS1 and LNS2: LNS1 wins</li>
+<li>First data message received only on LNS2, Function should inform LNS1 that it's the losing one
+  (information about the owning LNS needs to be "shared" between joins and data messages).</li>
+</ul>
+<h4 id="decision_1">Decision</h4>
+<p>We decide to go with the simpler solution of closing the connection immediately after a Join and let
+the data flow re-establish it if needs to be. Disadvantage is that the first data message is more likely
+  to miss the window due to having re-establish the connection.
+  LNS also stores locally that it was the losing LNS and delays on a future re-join or future data messages.</p>
+<h4 id="alternative">Alternative</h4>
+<ul>
+<li>Do nothing and accept that a one-off connection stealing on the first Data message can happen.</li>
+<li>We do not close the connection after a Join. When the first data message arrives the Function checks
+  somehow the preferred gateway for this device when it joined: if the data message comes from the
+  same gateway it is allowed to process the message. If not, we should inform the previously owning
+  LNS to drop the connection and allow the new LNS to process the message. This was not preferred as
+  it has more complexity for unclear results.  </li>
+</ul>
+<h3 id="main-data-message-flow">Main data message flow</h3>
+<p>Currently, if LoRaDevice is not in the LNS cache, we search on the Function for all devices that
+have that DevAddr. Then we get all their twins which could result in a connection switch.</p>
+<h4 id="decision_2">Decision</h4>
+<p>After loading all the twins for the LoRaDevice(s), we close the connections immediately. This is
+equivalent to how we <a href="#handling-of-join-requests">handle Join requests</a> and <a href="#handling-of-cache-refresh">background cache
+tasks</a>.</p>
+<h4 id="alternative_1">Alternative</h4>
+<ul>
+<li>Currently the DeviceGetter.GetDevice returns a list of devices that match the provided DevAddr. We
+  considered changing the Function to return a single device instead of a list and only load the
+  twin for this one on the LNS side. For this the Function should perform the Mic computation which
+  means that we would need to send the payload to the cloud. This is a deal breaker for us.</li>
+</ul>
+<h4 id="further-processing">Further processing</h4>
+<p>This section uses this topology:</p>
+<div class="mermaid">flowchart LR;
+    Device--&gt;LBS1--&gt;LNS1--&gt;Function;
+    Device--&gt;LBS2--&gt;LNS2--&gt;Function;
+    LNS1--&gt;IoTHub;
+    LNS2--&gt;IoTHub;</div>
+<p>where Device sends data message A and then B.</p>
+<p>Here is a rundown of what should happen assuming both LNSs have a fresh twin (via background refresh
+or via fetching it using DeviceGetter.GetDevice). Changes are marked in <strong>bold</strong>:</p>
+<ol>
+<li>Device sends first data message A.</li>
+<li>We assume that LNS1 gets the message first. <strong>LNS1 checks against
+   its in-memory state</strong> and since an owner for the device connection was not elected yet, directly contacts the function without delay.</li>
+<li>The Function hasn't seen this DevEui either and therefore does not have an assigned LNS for it
+  yet. LNS1 wins the race and gets immediately a response and processes the message upstream.</li>
+<li>LNS2 eventually receives message A, <strong>checks its local state</strong> and also contacts the
+   Function immediately since it does not have prior info about this device.</li>
+<li>The Function responds to LNS2 that it lost the race to process this message.</li>
+<li>Since deduplication strategy is Drop, LNS2 drops the message immediately, therefore no
+   connection to Iot Hub is opened and only LNS1 has the connection to Iot Hub. <strong>LNS2 updates its
+   in memory state that it does not own the connection for this device</strong>.</li>
+<li>When message B gets send (with a higher frame counter<em>), assuming that this time LNS2 gets it
+   first, it </em><em>checks again its local state that indicates it's not owning the connection for the device and
+   therefore delays itself X ms before contacting the Function</em>*.<ul>
+<li>Here we do <em>not</em> want to simply drop the message as LNS1 might not be available anymore (due to
+   a crash, device not in range etc).</li>
+<li>This delay gives LNS1 a time advantage to reach the Function first and win the race again, failing
+  back to the previous case of message A. The active connection stays with LNS1.</li>
+</ul>
+</li>
+<li>If this delay is not sufficient for LNS1 to win the race, LNS2 will contact the Function which
+   now awards LNS2 as the "winning" LNS. LNS2 can now process the message upstream. It also <strong>removes the "losing flag" from its in-memory store</strong>.</li>
+<li><strong>The Function also proactively informs LNS1</strong> that it's not anymore the winning LNS for this
+   device.
+    - The reason why we do this is to ensure that LNS1 knows connection ownership was transferred to
+    another network server and it can drop the connection. This is for the case, where the upstream
+    message does not reach LNS1.
+    - For that we can use a C2D message to LNS. Alternative: direct method could be used here but
+    delivery will not be guaranteed then.</li>
+<li>If LNS1 in the meantime gets message B and contacts the Function, it will let it know
+   that it lost the race for this frame counter and must therefore drop the message, <strong>mark
+   itself as the losing LNS and close the connection if it hasn't done so yet</strong>.</li>
+</ol>
+<p>Notes:</p>
+<ul>
+<li>The Function is not called in certain topologies e.g. when multiple LBSs are connected to the same LNS but these topologies are not relevant for the issue here as they employ a single connection per device by design).</li>
+<li>For the main flow above we consider only frame counter B &gt; frame counter A. Resets are covered in
+  <a href="#handling-of-abp-relax-frame-counter-reset">the reset section</a>. Resubmits (when frame counter B ==
+  frame counter A) are also a current issue and should be <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1468">addressed in this issue</a>.</li>
+</ul>
+<h3 id="handling-of-abp-relax-frame-counter-reset">Handling of ABP relax frame counter reset</h3>
+<p>A special case on the main data flow is when we detect a device reset after a message. Currently we save the twin immediately and then clear
+the Function cache. This twin write could result in a connection ping-pong.</p>
+<h4 id="decision_3">Decision</h4>
+<ul>
+<li>We should first clear the cache in the Function.</li>
+<li>The Function is changed to return if we are the losing LNS. If we are the losing one, we drop the message here,
+  mark ourselves as the losing gateway etc.</li>
+<li>Otherwise we process message normally and at the end update the twin as we currently do.</li>
+</ul>
+<h4 id="alternative_2">Alternative</h4>
+<ul>
+<li>Use the Function to do both operations: idea was discarded because of a connection switch<ul>
+<li>update the device twin frame counter to 0. As frame counter is a reported property it needs to be
+  changed via a DeviceClient that would cause a connection switch.</li>
+<li>Clear or update the cache entry with frame counter down and up to 0.</li>
+<li>Returns the result to the LNS: whether it was the winning or losing one</li>
+<li>LNS reacts as described in the <a href="#main-data-message-flow">main data flow section</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="handling-class-c-downstream-messages">Handling Class C downstream messages</h3>
+<p>For class C devices we can send C2D messages using a Direct Method that could (one-off) steal the
+active connection. When the Direct method is invoked via the portal on an LNS, we should check if we
+are the connection holder for that device and if not drop the message.</p>
+<h4 id="should-we-delay-on-the-lns-itself-or-on-the-function">Should we delay on the LNS itself or on the Function?</h4>
+<p>We considered using a delay on the Function rather than on the LNS itself. We decided against this approach
+because of the following disadvantages:</p>
+<ul>
+<li>Observability: potentially we are messing up the measurements of the Function duration for the
+  LNSs that are not owning the connection. Could be documented/worked-around.</li>
+<li>Keeps the HTTP connection between the LNS-Function open for more time.</li>
+</ul>
+<p>For the sake of completeness a scenario when it's better that the Function implements the delay is the following:</p>
+<ul>
+<li>LNS1 is the preferred LNS. LNS2 is out of range.</li>
+<li>LNS2 becomes in range and receives a message with a higher frame counter. It does not know that its
+  not the winning LNS and contacts immediately the Function. The Function awards it the winning LNS
+  and LNS1 loses the connection without having a chance to keep it.</li>
+</ul>
+<p>LNS2 would need to fetch the device twin so it is likely to lose the race to LNS1 but even if it
+does not we accept the possibility that there is potentially a one-off connection switch (but not a
+ping pong because LNS1 will stop retrying).</p>
+<p>A potential advantage of delaying on the LNS is that we can dynamically (based on how long we took in
+previous steps) choose the delay amount before contacting the Function, so that we have higher
+chances of not missing the window.</p>
+<h4 id="delay-amount-configuration">Delay amount configuration</h4>
+<p>The delay amount should be configurable to allow users to customize behavior for their scenarios.
+During load testing we tested with 400ms but smaller values should be tried as well. If 0ms are
+specified the stickiness feature is disabled which means potential connection switching.</p>
+<h2 id="other-candidates-considered">Other candidates considered</h2>
+<h3 id="using-direct-mode-not-edge-hub">Using direct mode (not Edge hub)</h3>
+<p>Using direct mode is less problematic in terms of connection stealing but still had the issue. The
+idea was dropped because then we would miss the <a href="https://docs.microsoft.com/en-us/azure/iot-edge/offline-capabilities?view=iotedge-2020-11#how-it-works">offline
+capabilities</a>
+that Edge Hub offers us.</p>
+<h3 id="parent-child-gateways">Parent-child gateways</h3>
+<p>We could utilize child-parent connections and parent multiple LNS under a single <a href="https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2020-11">transparent
+gateway</a>
+that has the active connection to IoT Hub. The problem there is that children can have only 1 parent
+and therefore we can not support roaming leaf devices that connect to different LNSs over time.</p>
+<h2 id="related-changes">Related changes</h2>
+<h3 id="single-point-of-connection-handling-on-loradevice">Single point of connection handling on LoRaDevice</h3>
+<p><a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1479">Using a single device queue</a> would
+also ensure by design that new code does not open more connections to IoT Hub accidentally.</p>
+<p>Independently of the resolution of the aforementioned issue, the changes on the Function side are
+still required.</p>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-02-23T08:02:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-02-23</span>
+      
+        <br>
+        Created:
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-02-23T08:02:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-02-23</span>
+      
+    
+  </small>
+</div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/Azure/iotedge-lorawan-starterkit" target="_blank" rel="noopener" title="iotedge-lorawan-starterkit on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e1a181d9.min.js"></script>
+      
+        <script src="../../js/timeago.min.js"></script>
+      
+        <script src="../../js/timeago_mkdocs_material.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
