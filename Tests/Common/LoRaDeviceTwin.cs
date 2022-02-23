@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Globalization;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using Microsoft.Azure.Devices.Shared;
 
@@ -35,6 +36,7 @@ namespace LoRaWan.Tests.Common
                 SetDesiredPropertyIfExists(twin, TwinProperty.RX2DataRate, someDesiredProperties.Rx2DataRate?.ToString());
                 SetDesiredPropertyIfExists(twin, TwinProperty.PreferredWindow, someDesiredProperties.PreferredWindow?.ToString(CultureInfo.InvariantCulture));
                 SetDesiredPropertyIfExists(twin, TwinProperty.RXDelay, someDesiredProperties.RxDelay?.ToString(CultureInfo.InvariantCulture));
+                SetDesiredPropertyIfExists(twin, TwinProperty.ClassType, someDesiredProperties.ClassType?.ToString());
             }
 
             if (reportedProperties is { } someReportedProperties)
@@ -48,6 +50,11 @@ namespace LoRaWan.Tests.Common
                 SetReportedPropertyIfExists(twin, TwinProperty.DevAddr, someReportedProperties.DevAddr?.ToString());
                 SetReportedPropertyIfExists(twin, TwinProperty.DevNonce, someReportedProperties.DevNonce?.ToString());
                 SetReportedPropertyIfExists(twin, TwinProperty.FCntResetCounter, someReportedProperties.FCntResetCounter?.ToString(CultureInfo.InvariantCulture));
+                SetReportedPropertyIfExists(twin, TwinProperty.PreferredGatewayID, someReportedProperties.PreferredGatewayId?.ToString());
+                SetReportedPropertyIfExists(twin, TwinProperty.Region, someReportedProperties.Region?.ToString());
+                SetReportedPropertyIfExists(twin, TwinProperty.NetId, someReportedProperties.NetId?.ToString());
+                SetReportedPropertyIfExists(twin, TwinProperty.RX2DataRate, someReportedProperties.Rx2DataRate?.ToString());
+                SetReportedPropertyIfExists(twin, TwinProperty.LastProcessingStationEui, someReportedProperties.LastProcessingStation?.ToString());
             }
 
             return twin;
@@ -89,6 +96,7 @@ namespace LoRaWan.Tests.Common
         public DataRateIndex? Rx2DataRate { get; init; }
         public int? PreferredWindow { get; init; }
         public int? RxDelay { get; init; }
+        public char? ClassType { get; init; }
     }
 
     public sealed record LoRaReportedTwinProperties
@@ -102,6 +110,11 @@ namespace LoRaWan.Tests.Common
         public DevAddr? DevAddr { get; init; }
         public DevNonce? DevNonce { get; init; }
         public int? FCntResetCounter { get; init; }
+        public string? PreferredGatewayId { get; init; }
+        public LoRaRegionType? Region { get; init; }
+        public NetId? NetId { get; init; }
+        public DataRateIndex? Rx2DataRate { get; init; }
+        public StationEui? LastProcessingStation { get; init; }
     }
 
     public static class LoRaDeviceTwinExtensions
@@ -113,7 +126,20 @@ namespace LoRaWan.Tests.Common
                 JoinEui = testDeviceInfo.AppEui ?? throw new InvalidOperationException($"{nameof(testDeviceInfo.AppEui)} must not be null."),
                 AppKey = testDeviceInfo.AppKey ?? throw new InvalidOperationException($"{nameof(testDeviceInfo.AppKey)} must not be null."),
                 SensorDecoder = testDeviceInfo.SensorDecoder ?? throw new InvalidOperationException($"{nameof(testDeviceInfo.SensorDecoder)} must not be null."),
+                ClassType = testDeviceInfo.ClassType,
                 GatewayId = testDeviceInfo.GatewayID,
+            };
+
+        public static LoRaReportedTwinProperties GetOtaaReportedTwinProperties(this SimulatedDevice simulatedDevice) =>
+            new LoRaReportedTwinProperties
+            {
+                DevAddr = simulatedDevice.DevAddr,
+                AppSessionKey = simulatedDevice.AppSKey,
+                NetworkSessionKey = simulatedDevice.NwkSKey,
+                DevNonce = simulatedDevice.DevNonce,
+                NetId = simulatedDevice.NetId,
+                FCntDown = simulatedDevice.FrmCntDown,
+                FCntUp = simulatedDevice.FrmCntUp
             };
 
         public static LoRaDesiredTwinProperties GetAbpTwinProperties(this TestDeviceInfo testDeviceInfo) =>
@@ -123,6 +149,7 @@ namespace LoRaWan.Tests.Common
                 NetworkSessionKey = testDeviceInfo.NwkSKey ?? throw new InvalidOperationException($"{nameof(testDeviceInfo.NwkSKey)} must not be null."),
                 DevAddr = testDeviceInfo.DevAddr ?? throw new InvalidOperationException($"{nameof(testDeviceInfo.DevAddr)} must not be null."),
                 SensorDecoder = testDeviceInfo.SensorDecoder ?? throw new InvalidOperationException($"{nameof(testDeviceInfo.SensorDecoder)} must not be null."),
+                ClassType = testDeviceInfo.ClassType,
                 GatewayId = testDeviceInfo.GatewayID,
             };
     }

@@ -112,50 +112,6 @@ namespace LoRaWan.Tests.Common
             return CreateTwin(desired: finalDesiredProperties, reported: finalReportedProperties);
         }
 
-        public static Twin CreateOTAATwin(
-            this SimulatedDevice simulatedDevice,
-            Dictionary<string, object> desiredProperties = null,
-            Dictionary<string, object> reportedProperties = null)
-        {
-            var finalDesiredProperties = new Dictionary<string, object>
-                {
-                    { TwinProperty.AppEui, simulatedDevice.AppEui?.ToString() },
-                    { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
-                    { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
-                    { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },
-                    { TwinProperty.ClassType, simulatedDevice.ClassType.ToString() },
-                };
-
-            if (desiredProperties != null)
-            {
-                foreach (var kv in desiredProperties)
-                {
-                    finalDesiredProperties[kv.Key] = kv.Value;
-                }
-            }
-
-            var finalReportedProperties = new Dictionary<string, object>
-            {
-                { TwinProperty.DevAddr, simulatedDevice.DevAddr?.ToString() },
-                { TwinProperty.AppSKey, simulatedDevice.AppSKey?.ToString() },
-                { TwinProperty.NwkSKey, simulatedDevice.NwkSKey?.ToString() },
-                { TwinProperty.DevNonce, simulatedDevice.DevNonce.ToString() },
-                { TwinProperty.NetId, simulatedDevice.NetId?.ToString() },
-                { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
-                { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
-            };
-
-            if (reportedProperties != null)
-            {
-                foreach (var kv in reportedProperties)
-                {
-                    finalReportedProperties[kv.Key] = kv.Value;
-                }
-            }
-
-            return CreateTwin(desired: finalDesiredProperties, reported: finalReportedProperties);
-        }
-
         /// <summary>
         /// Helper to create a <see cref="Message"/> from a <see cref="LoRaCloudToDeviceMessage"/>.
         /// </summary>

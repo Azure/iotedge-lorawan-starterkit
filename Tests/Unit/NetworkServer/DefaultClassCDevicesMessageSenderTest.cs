@@ -196,7 +196,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync("123");
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simDevice.CreateOTAATwin());
+                .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaTwinProperties(), simDevice.GetOtaaReportedTwinProperties()));
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
@@ -337,20 +337,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
                 .ReturnsAsync("123");
 
-            var twin = simDevice.CreateOTAATwin(
-                desiredProperties: new Dictionary<string, object>
+            var twin = LoRaDeviceTwin.Create(
+                simDevice.LoRaDevice.GetOtaaTwinProperties() with
                 {
-                    { TwinProperty.RX2DataRate, "10" }
+                    Rx2DataRate = DataRateIndex.DR10
                 },
-                reportedProperties: new Dictionary<string, object>
+                simDevice.GetOtaaReportedTwinProperties() with
                 {
-                    { TwinProperty.RX2DataRate, 10 },
-                    { TwinProperty.Region, LoRaRegionType.US915.ToString() },
+                    Rx2DataRate = DataRateIndex.DR10,
+                    Region = LoRaRegionType.US915,
                     // OTAA device, already joined
-                    { TwinProperty.DevAddr, devAddr.ToString() },
-                    { TwinProperty.AppSKey, appSKey.ToString() },
-                    { TwinProperty.NwkSKey, nwkSKey.ToString() },
-                    { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
+                    DevAddr = devAddr,
+                    AppSessionKey = appSKey,
+                    NetworkSessionKey = nwkSKey,
+                    LastProcessingStation = new StationEui(ulong.MaxValue)
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
@@ -403,19 +403,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
                 .ReturnsAsync("123");
 
-            var twin = simDevice.CreateOTAATwin(
-                desiredProperties: new Dictionary<string, object>
+            var twin = LoRaDeviceTwin.Create(
+                simDevice.LoRaDevice.GetOtaaTwinProperties() with
                 {
-                    { TwinProperty.RX2DataRate, "10" }
+                    Rx2DataRate = DataRateIndex.DR10
                 },
-                reportedProperties: new Dictionary<string, object>
+                simDevice.GetOtaaReportedTwinProperties() with
                 {
-                    { TwinProperty.RX2DataRate, 10 },
-                    { TwinProperty.Region, LoRaRegionType.US915.ToString() },
+                    Rx2DataRate = DataRateIndex.DR10,
+                    Region = LoRaRegionType.US915,
                     // OTAA device, already joined
-                    { TwinProperty.DevAddr, devAddr.ToString() },
-                    { TwinProperty.AppSKey, appSKey.ToString() },
-                    { TwinProperty.NwkSKey, nwkSKey.ToString() },
+                    DevAddr = devAddr,
+                    AppSessionKey = appSKey,
+                    NetworkSessionKey = nwkSKey
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))

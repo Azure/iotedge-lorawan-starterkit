@@ -162,7 +162,8 @@ namespace LoRaWan.Tests.Integration
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simDevice.CreateOTAATwin());
+                .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaTwinProperties(),
+                                                    simDevice.GetOtaaReportedTwinProperties()));
 
             AppSessionKey? savedAppSKey = null;
             NetworkSessionKey? savedNwkSKey = null;
@@ -351,16 +352,14 @@ namespace LoRaWan.Tests.Integration
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
 
-            var customReportedProperties = new Dictionary<string, object>();
-            // reported: { 'PreferredGateway': '' } -> if device is for multiple gateways and one initial was defined
-            if (string.IsNullOrEmpty(deviceGatewayID) && !string.IsNullOrEmpty(initialPreferredGatewayID))
-                customReportedProperties[TwinProperty.PreferredGatewayID] = initialPreferredGatewayID;
-
-            if (initialLoRaRegion.HasValue)
-                customReportedProperties[TwinProperty.Region] = initialLoRaRegion.Value.ToString();
-
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simDevice.CreateOTAATwin(reportedProperties: customReportedProperties));
+                .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaTwinProperties(),
+                                                    new LoRaReportedTwinProperties
+                                                    {
+                                                        // reported: { 'PreferredGateway': '' } -> if device is for multiple gateways and one initial was defined
+                                                        PreferredGatewayId = string.IsNullOrEmpty(deviceGatewayID) ? initialPreferredGatewayID : null,
+                                                        Region = initialLoRaRegion
+                                                    }));
 
             var shouldSavePreferredGateway = string.IsNullOrEmpty(deviceGatewayID) && initialPreferredGatewayID != ServerGatewayID;
             var shouldSaveRegion = !initialLoRaRegion.HasValue || initialLoRaRegion.Value != LoRaRegionType.EU868;

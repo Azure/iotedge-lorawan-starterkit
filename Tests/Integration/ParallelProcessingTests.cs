@@ -304,7 +304,7 @@ namespace LoRaWan.Tests.Integration
             var device2Twin = TestUtils.CreateABPTwin(device2);
             var device3 = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(3));
             device3.SetupJoin(TestKeys.CreateAppSessionKey(0x88), TestKeys.CreateNetworkSessionKey(0x88), new DevAddr(0x02000088));
-            var device3Twin = TestUtils.CreateOTAATwin(device3);
+            var device3Twin = LoRaDeviceTwin.Create(device3.LoRaDevice.GetOtaaTwinProperties(), device3.GetOtaaReportedTwinProperties());
             var device4 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(4));
             var device4Twin = TestUtils.CreateABPTwin(device4);
 

@@ -80,7 +80,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simulatedDevice.CreateOTAATwin());
+                .ReturnsAsync(LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaTwinProperties()));
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
