@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Common
             {
                 var (result, ex) = assert();
 
-                if (ex is { } someException)
+                if (ex is { })
                 {
                     if (++i == maxAttempts)
                         throw new InvalidOperationException("Maximum number of retries exceeded.", ex);
