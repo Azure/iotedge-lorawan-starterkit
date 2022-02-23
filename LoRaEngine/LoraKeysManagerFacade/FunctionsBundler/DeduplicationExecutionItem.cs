@@ -4,7 +4,6 @@
 namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System;
-    using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan;
@@ -89,25 +88,25 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                 var loraC2DMessage = new LoRaCloudToDeviceMessage()
                                 {
                                     DevEUI = devEUI,
-                                    Fport = FramePort.DropConnectionCommand
+                                    Fport = FramePort.AppMin
                                 };
 
                                 try
                                 {
-                                    logger?.LogDebug($"Sending C2D message to LNS: {previousGateway} to drop connection for device: {devEUI}");
+                                    logger?.LogDebug($"Invoking direct method on LNS: {previousGateway} to drop connection for device: {devEUI}");
 
-                                    var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                                    var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                                     _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
 
                                     var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
                                     if (res == null || !HttpUtilities.IsSuccessStatusCode(res.Status))
                                     {
-                                        logger?.LogError($"Failed to send C2D message to LNS: {previousGateway} to drop the connection for device: {devEUI}, status: {res?.Status}");
+                                        logger?.LogError($"Failed to invoke direct method on LNS: {previousGateway} to drop the connection for device: {devEUI}, status: {res?.Status}");
                                     }
                                 }
                                 catch (IotHubException ex)
                                 {
-                                    logger?.LogError(ex, $"Failed to send C2D message to LNS: {previousGateway} to drop the connection for device: {devEUI}");
+                                    logger?.LogError(ex, $"Failed to invoke direct method on LNS: {previousGateway} to drop the connection for device: {devEUI}");
                                 }
                             }
                         }
