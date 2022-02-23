@@ -1,8 +1,8 @@
 # LNS discovery
 
-The LNS protocol specifies that the first request an LBS makes is to the `/router-info` discovery endpoint. The LNS from the starter kit implements the `/router-info` endpoint and redirects any requests to that endpoint forward to the `/router-data` endpoint on the same LNS.
+The LNS protocol specifies that the first request an LBS makes is to the `/router-info` discovery endpoint. The LNS from the starter kit implements the `/router-info` endpoint and redirects any requests to that endpoint to the `/router-data` endpoint on the same LNS.
 
-In addition to the discovery endpoint on the LNS itself, we also support a standalone discovery service, which you can use to distribute LBS connections to different LNS. The discovery service is a .NET application, and its implementation is part of the `LoRaWan.NetworkServerDiscovery` project.
+In addition to the discovery endpoint on the LNS itself, we also support a standalone discovery service, which you can use to dynamically distribute LBS connections to different LNS, ensuring failover of LBS to another LNS in case the current LNS is experiencing downtime. The discovery service is a .NET application, and its implementation is part of the `LoRaWan.NetworkServerDiscovery` project.
 
 The discovery service relies on configuration from IoT Hub module twins to associate each LBS with a set of LNS to which it may connect to. For this the configuration needs to take into account possible network boundaries - by defining these networks you can control which LBS should connect to which LNS. For this you need to configure your LBS twin in IoT Hub as follows:
 
@@ -40,8 +40,8 @@ Keep in mind that the `hostAddress` value must include the scheme and the host n
     The discovery endpoint distributes LBS to LNS using a round-robin distribution mechanism. It will always try the same LNS per LBS first. Hence, it can be used for an active/passive scenario, but not to distribute load more evenly across different LNS.
 
 !!! note
-    The configuration values of the network name of a station, respectively of the set of LNS in a given network, are cached by the discovery endpoint for six hours.
-    If you updated the configuration, make sure to restart the discovery service to ensure that the cache is refreshed.
+    The configuration values of the network name of a station, respectively of the set of LNS in a given network, are cached by the discovery endpoint for 6 hours.
+    If you updated the configuration and want it to take effect sooner, make sure to restart the discovery service to ensure that the cache is refreshed.
 
 You can choose to deploy the discovery service either on-prem or in the cloud. For both deployment strategies, you can configure the following behavior:
 
