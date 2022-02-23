@@ -1,10 +1,10 @@
-# 009. LNS sticky affinity over multiple sessions
+# 010. LNS sticky affinity over multiple sessions
 
 **Feature**: [#1475](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1475)  
 
-**Authors**:
+**Authors**: Spyros Giannakakis, Daniele Antonio Maggio, Patrick Schuler
 
-**Status**: Proposed
+**Status**: Accepted
 __________
 
 ## Problem statement
