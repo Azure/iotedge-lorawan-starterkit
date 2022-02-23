@@ -328,7 +328,7 @@ By default the network server does not use the local edge queue (edgeHub), sendi
 
 ## LNS Discovery
 
-When opted-in to use the LNS discovery service while also opting in to deploy the sample devices using the quickstart template, the LNS discovery service is automatically configured for you. You only need to adapt the `hostAddress` in the desired properties of the LNS module of your Edge device to point to the real IP/DNS of your gateway. If you did not opt-in to one of the abovementioned options when using the quickstart, refer to the [Dev Guide](user-guide/devguide.md#lns-discovery) for instructions on how to configure the LNS discovery service.
+When opted-in to use the LNS discovery service while also opting in to deploy the sample devices using the quickstart template, the LNS discovery service is automatically configured for you. You only need to adapt the `hostAddress` in the desired properties of the LNS module of your Edge device to point to the real IP/DNS of your gateway. If you did not opt-in to one of the abovementioned options when using the quickstart, refer to the [LNS discovery](user-guide/lns-discovery.md) guide for instructions on how to configure the LNS discovery service.
 
 !!! warning
     The LNS discovery service from the quickstart allows both HTTP and HTTPS per default. Make sure to change this if you only want to allow HTTPS.
