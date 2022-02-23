@@ -78,7 +78,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             this.serviceClientMock.Verify(
                 x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId,
                 It.Is<CloudToDeviceMethod>(
-                    m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName
+                    m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection
                     && m.GetPayloadAsJson().Contains(dev1EUI.ToString()))),
                 Times.Once);
 
@@ -94,7 +94,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             this.serviceClientMock.Verify(
                 x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId,
                 It.Is<CloudToDeviceMethod>(
-                    m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName
+                    m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection
                     && m.GetPayloadAsJson().Contains(dev2EUI.ToString()))),
                 Times.Once);
         }
