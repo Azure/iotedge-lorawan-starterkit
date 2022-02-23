@@ -2,11 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 #nullable enable
 
-namespace LoRaWan
+namespace LoRaWan.NetworkServer.Logger
 {
     using System;
     using System.Collections.Concurrent;
-    using Logger;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Logging;

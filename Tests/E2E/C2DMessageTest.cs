@@ -111,7 +111,7 @@ namespace LoRaWan.Tests.E2E
             var expectedRxSerial = $"+CMSG: PORT: 1; RX: \"{ToHexString(c2dMessageBody)}\"";
             Log($"Expected C2D received log is: {expectedRxSerial}");
 
-            var c2dLogMessage = $"{device.DeviceID}: done completing cloud to device message, id: {c2dMessage.MessageId}";
+            var c2dLogMessage = $"{device.DeviceID}: done processing 'Complete' on cloud to device message, id: '{c2dMessage.MessageId}'";
             Log($"Expected C2D network server log is: {expectedRxSerial}");
 
             // Sends 8x confirmed messages, stopping if C2D message is found

@@ -126,12 +126,10 @@ namespace LoRaTools
         /// <summary>
         /// Create a List of Mac commands from server based on a sequence of bytes.
         /// </summary>
-        public static IList<MacCommand> CreateServerMacCommandFromBytes(DevEui deviceId, ReadOnlyMemory<byte> input, ILogger logger = null)
+        public static IList<MacCommand> CreateServerMacCommandFromBytes(ReadOnlyMemory<byte> input, ILogger logger = null)
         {
             var pointer = 0;
             var macCommands = new List<MacCommand>(3);
-
-            using var scope = logger?.BeginDeviceScope(deviceId);
 
             while (pointer < input.Length)
             {
