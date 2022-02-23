@@ -96,6 +96,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, foundStation);
         }
 
+        // Ensures that ConcentratorDeduplication.DataMessageKey can be internal, even though it is part of the return type of RawCreateKeyDataMessagesTheoryData.
         public sealed class DataMessageKeyHolder
         {
             internal DataMessageKeyHolder(ConcentratorDeduplication.DataMessageKey dataMessageKey) => Value = dataMessageKey;
@@ -179,6 +180,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, addedStation);
         }
 
+        // Ensures that ConcentratorDeduplication.JoinMessageKey can be internal, even though it is part of the return type of RawCreateKeyJoinMessagesTheoryData.
         public sealed class JoinMessageKeyHolder
         {
             internal JoinMessageKeyHolder(ConcentratorDeduplication.JoinMessageKey joinMessageKey) => Value = joinMessageKey;
