@@ -202,6 +202,54 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
+        public async Task OnDirectMethodCall_DropConnection_Should_Work_As_Expected()
+        {
+            // arrange
+            var networkServerConfiguration = new NetworkServerConfiguration();
+            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
+            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
+            var devEui = new DevEui(0);
+            var mockedDevice = new Mock<LoRaDevice>(null, devEui, null);
+            _ = loRaDeviceRegistry.Setup(x => x.GetDeviceByDevEUIAsync(devEui)).ReturnsAsync(mockedDevice.Object);
+            var c2d = $"{{\"DevEui\": \"{ devEui }\", \"Fport\": 1}}";
+
+            // act
+            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+            await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDropConnection, Encoding.UTF8.GetBytes(c2d)), null);
+
+            // assert
+            loRaDeviceRegistry.VerifyAll();
+            mockedDevice.Verify(x => x.CloseConnectionAsync(It.IsAny<CancellationToken>(), It.IsAny<bool>()), Times.Once);
+        }
+
+        public static TheoryData<byte[]> DropConnectionInvalidMessages =>
+            new TheoryData<byte[]>
+                {
+                    null,
+                    Array.Empty<byte>(),
+                    Encoding.UTF8.GetBytes("{{\"DevEui\": null, \"Fport\": 1}}")
+                };
+
+
+        [Theory]
+        [MemberData(nameof(DropConnectionInvalidMessages))]
+        public async Task OnDirectMethodCall_DropConnection_Should_Return_Bad_Request_When_Invalid_Message(byte[] c2d)
+        {
+            // arrange
+            var networkServerConfiguration = new NetworkServerConfiguration();
+            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
+            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
+
+            // act
+            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+            var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDropConnection, c2d), null);
+
+            // assert
+            Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
+            loRaDeviceRegistry.VerifyNoOtherCalls();
+        }
+
+        [Fact]
         public async Task OnDirectMethodCall_CloudToDeviceDecoderElementName_When_Correct_Should_Work()
         {
             var networkServerConfiguration = new NetworkServerConfiguration();
