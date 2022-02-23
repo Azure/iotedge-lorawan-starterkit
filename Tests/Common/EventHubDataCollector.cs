@@ -6,55 +6,63 @@ namespace LoRaWan.Tests.Common
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.EventHubs;
+    using Azure.Messaging.EventHubs;
+    using Azure.Messaging.EventHubs.Consumer;
 
-    public class EventHubDataCollector : IPartitionReceiveHandler, IDisposable
+    public sealed class EventHubDataCollector : IAsyncDisposable
     {
         private readonly ConcurrentQueue<EventData> events;
         private readonly string connectionString;
-        private EventHubClient eventHubClient;
-        private readonly List<PartitionReceiver> receivers;
-        private readonly HashSet<Action<IEnumerable<EventData>>> subscribers;
-
-        public bool LogToConsole { get; set; } = true;
-
-        public string ConsumerGroupName { get; set; } = "$Default";
+        private readonly EventHubConsumerClient consumer;
+        private readonly string consumerGroupName;
+        private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private bool started;
+        private Task receiveAsync;
 
         public EventHubDataCollector(string connectionString)
             : this(connectionString, null)
-        {
-        }
+        { }
 
         public EventHubDataCollector(string connectionString, string consumerGroupName)
         {
             this.connectionString = connectionString;
-            this.eventHubClient = EventHubClient.CreateFromConnectionString(connectionString);
+            this.consumerGroupName = !string.IsNullOrEmpty(consumerGroupName) ? consumerGroupName : EventHubConsumerClient.DefaultConsumerGroupName;
+            this.consumer = new EventHubConsumerClient(this.consumerGroupName, connectionString);
             this.events = new ConcurrentQueue<EventData>();
-            this.receivers = new List<PartitionReceiver>();
-            if (!string.IsNullOrEmpty(consumerGroupName))
-                ConsumerGroupName = consumerGroupName;
-
-            this.subscribers = new HashSet<Action<IEnumerable<EventData>>>();
         }
 
         public async Task StartAsync()
         {
-            if (this.receivers.Count > 0)
+            if (this.started)
                 throw new InvalidOperationException("Already started");
 
-            if (LogToConsole)
-            {
-                TestLogger.Log($"Connecting to IoT Hub Event Hub @{this.connectionString} using consumer group {ConsumerGroupName}");
-            }
+            this.started = true;
+            TestLogger.Log($"Connecting to IoT Hub Event Hub @{this.connectionString} using consumer group {this.consumerGroupName}");
 
-            var rti = await this.eventHubClient.GetRuntimeInformationAsync();
-            foreach (var partitionId in rti.PartitionIds)
+            var eventPosition = EventPosition.FromEnqueuedTime(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1)));
+            this.receiveAsync =
+                Task.WhenAll(from partitionId in await this.consumer.GetPartitionIdsAsync(this.cancellationTokenSource.Token)
+                             select ProcessEventsAsync(partitionId, eventPosition, this.cancellationTokenSource.Token));
+        }
+
+        public async Task StopAsync()
+        {
+            if (!this.started)
+                throw new InvalidOperationException("Processing has not yet started.");
+
+            this.cancellationTokenSource.Cancel();
+
+            try
             {
-                var receiver = this.eventHubClient.CreateReceiver(ConsumerGroupName, partitionId, EventPosition.FromEnqueuedTime(DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(1))));
-                receiver.SetReceiveHandler(this);
-                this.receivers.Add(receiver);
+                await this.receiveAsync;
+            }
+            catch (OperationCanceledException)
+            {
+                // expected cancellation of receive operation.
             }
         }
 
@@ -64,95 +72,35 @@ namespace LoRaWan.Tests.Common
             this.events.Clear();
         }
 
-        public void Subscribe(Action<IEnumerable<EventData>> subscriber)
-        {
-            this.subscribers.Add(subscriber);
-        }
-
-        public void Unsubscribe(Action<IEnumerable<EventData>> subscriber)
-        {
-            this.subscribers.Remove(subscriber);
-        }
-
         public IReadOnlyCollection<EventData> Events => this.events;
 
-        public Task ProcessEventsAsync(IEnumerable<EventData> events)
+        public async Task ProcessEventsAsync(string partitionId, EventPosition eventPosition, CancellationToken cancellationToken)
         {
-            try
+            await foreach (var item in this.consumer.ReadEventsFromPartitionAsync(partitionId, eventPosition, cancellationToken))
             {
-                if (this.subscribers.Count > 0)
+                try
                 {
-                    foreach (var subscriber in this.subscribers)
-                    {
-                        subscriber(events);
-                    }
+                    var eventData = item.Data;
+                    this.events.Enqueue(eventData);
+                    var bodyText = Encoding.UTF8.GetString(eventData.EventBody);
+                    TestLogger.Log($"[IOTHUB] {bodyText}");
                 }
-
-                foreach (var item in events)
+                catch (Exception ex)
                 {
-                    this.events.Enqueue(item);
-
-                    if (LogToConsole)
-                    {
-                        var bodyText = Encoding.UTF8.GetString(item.Body);
-                        TestLogger.Log($"[IOTHUB] {bodyText}");
-                    }
+                    TestLogger.Log($"Error processing iot hub event. {ex}");
                 }
             }
-            catch (Exception ex)
-            {
-                TestLogger.Log($"Error processing iot hub event. {ex}");
-            }
-
-            return Task.FromResult(0);
         }
 
-        public Task ProcessErrorAsync(Exception error) =>
-            Console.Error.WriteLineAsync(error.ToString());
-
-        public int MaxBatchSize { get; set; } = 32;
-
-        private bool disposedValue; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        public async ValueTask DisposeAsync()
         {
+            this.cancellationTokenSource.Cancel();
+            this.cancellationTokenSource.Dispose();
+
+            await this.consumer.CloseAsync();
+            await this.consumer.DisposeAsync();
+
             TestLogger.Log($"{nameof(EventHubDataCollector)} disposed");
-
-            if (!this.disposedValue)
-            {
-                if (disposing)
-                {
-                    for (var i = this.receivers.Count - 1; i >= 0; i--)
-                    {
-                        try
-                        {
-                            this.receivers[i].SetReceiveHandler(null);
-                            this.receivers[i].Close();
-                        }
-                        catch (Exception ex)
-                        {
-                            TestLogger.Log($"Error closing event hub receiver: {ex}");
-                        }
-
-                        this.receivers.RemoveAt(i);
-                    }
-
-                    this.eventHubClient.Close();
-                    this.eventHubClient = null;
-                }
-
-                // TODO: free unmanaged resources(unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-                this.disposedValue = true;
-            }
-        }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }

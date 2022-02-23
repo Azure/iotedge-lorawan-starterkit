@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Common
     using System.Collections.Generic;
     using System.Net.NetworkInformation;
     using System.Text;
-    using Microsoft.Azure.EventHubs;
+    using Azure.Messaging.EventHubs;
 
     /// <summary>
     /// Utility class.
