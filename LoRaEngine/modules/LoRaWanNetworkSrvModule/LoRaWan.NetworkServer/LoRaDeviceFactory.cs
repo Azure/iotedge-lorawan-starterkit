@@ -82,15 +82,14 @@ namespace LoRaWan.NetworkServer
                 // a connection registered, we will leak this client.
                 await loRaDeviceClient.DisposeAsync();
 
-                if (logger.IsEnabled(LogLevel.Debug))
+                if (this.logger.IsEnabled(LogLevel.Debug))
                 {
                     try
                     {
                         // if the created client is registered, release it
-                        if (this.connectionManager.GetClient(loRaDevice) is IIdentityProvider<ILoRaDeviceClient> clientIdentity
-                            && clientIdentity.Identity != loRaDeviceClient)
+                        if (loRaDeviceClient != ((IIdentityProvider<ILoRaDeviceClient>)this.connectionManager.GetClient(loRaDevice)).Identity)
                         {
-                            logger.LogDebug("leaked connection found");
+                            this.logger.LogDebug("leaked connection found");
                         }
                     }
                     catch (ManagedConnectionException) { }

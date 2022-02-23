@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Interface between IoT Hub and device.
     /// </summary>
-    public sealed class LoRaDeviceClient : ILoRaDeviceClient
+    public sealed class LoRaDeviceClient : ILoRaDeviceClient, IIdentityProvider<ILoRaDeviceClient>
     {
         private static readonly TimeSpan TwinUpdateTimeout = TimeSpan.FromSeconds(10);
         private static int activeDeviceConnections;
@@ -275,5 +275,7 @@ namespace LoRaWan.NetworkServer
         {
             await DisconnectAsync(CancellationToken.None);
         }
+
+        ILoRaDeviceClient IIdentityProvider<ILoRaDeviceClient>.Identity => this;
     }
 }
