@@ -53,10 +53,6 @@ namespace LoRaWan.NetworkServer
 
         internal async Task ProcessJoinRequestAsync(LoRaRequest request)
         {
-            var timeWatcher = request.GetTimeWatcher();
-            var processingTimeout = timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() - TimeSpan.FromMilliseconds(100);
-            using var joinAcceptCancellationToken = new CancellationTokenSource(processingTimeout > TimeSpan.Zero ? processingTimeout : TimeSpan.Zero);
-
             var joinReq = (LoRaPayloadJoinRequest)request.Payload;
 
             var devEui = joinReq.DevEUI;
@@ -67,6 +63,10 @@ namespace LoRaWan.NetworkServer
 
             try
             {
+                var timeWatcher = request.GetTimeWatcher();
+                var processingTimeout = timeWatcher.GetRemainingTimeToJoinAcceptSecondWindow() - TimeSpan.FromMilliseconds(100);
+                using var joinAcceptCancellationToken = new CancellationTokenSource(processingTimeout > TimeSpan.Zero ? processingTimeout : TimeSpan.Zero);
+
                 this.logger.LogInformation("join request received");
 
                 var deduplicationResult = this.concentratorDeduplication.CheckDuplicateJoin(request);
