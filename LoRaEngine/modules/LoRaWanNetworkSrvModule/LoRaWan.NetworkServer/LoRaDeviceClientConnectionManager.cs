@@ -140,7 +140,7 @@ namespace LoRaWan.NetworkServer
             return this.clientByDevEui[loRaDevice.DevEUI].BeginDeviceClientConnectionActivity();
         }
 
-        private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient, ILoRaDeviceClientSynchronizedOperationEventSource
+        private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient, ILoRaDeviceClientSynchronizedOperationEventSource, IIdentityProvider<ILoRaDeviceClient>
         {
             private readonly ILoRaDeviceClient client;
             private readonly LoRaDevice device;
@@ -191,6 +191,8 @@ namespace LoRaWan.NetworkServer
 
             public DevEui DevEui => this.device.DevEUI;
             public TimeSpan KeepAliveTimeout => TimeSpan.FromSeconds(this.device.KeepAliveTimeout);
+
+            ILoRaDeviceClient IIdentityProvider<ILoRaDeviceClient>.Identity => this.client;
 
             public ValueTask DisposeAsync() => this.client.DisposeAsync();
 

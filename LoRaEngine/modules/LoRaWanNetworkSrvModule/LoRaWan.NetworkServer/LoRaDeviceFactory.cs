@@ -79,7 +79,7 @@ namespace LoRaWan.NetworkServer
             catch
             {
                 // release the loradevice client explicitly. If we were unable to register, or there was already
-                // a connection registered, we will leak this client. 
+                // a connection registered, we will leak this client.
                 await loRaDeviceClient.DisposeAsync();
 
                 if (logger.IsEnabled(LogLevel.Debug))
@@ -87,7 +87,8 @@ namespace LoRaWan.NetworkServer
                     try
                     {
                         // if the created client is registered, release it
-                        if (this.connectionManager.GetClient(loRaDevice) != loRaDeviceClient)
+                        if (this.connectionManager.GetClient(loRaDevice) is IIdentityProvider<ILoRaDeviceClient> clientIdentity
+                            && clientIdentity.Identity != loRaDeviceClient)
                         {
                             logger.LogDebug("leaked connection found");
                         }
