@@ -196,6 +196,8 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
+                this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
+
                 var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse();
                 if (windowToUse is null)
                 {
@@ -204,8 +206,6 @@ namespace LoRaWan.NetworkServer
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ReceiveWindowMissed);
                     return;
                 }
-
-                this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                 // Build join accept downlink message
 
