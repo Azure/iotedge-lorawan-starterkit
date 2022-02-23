@@ -39,8 +39,8 @@ The following cases can trigger operations from different threads:
 - A data message; `DeviceLoaderSynchronizer` loads the twins for multiple
   devices based on the `DevAddr` and adds them to the cache.
 
-- C2D message that needs to be delivered can trigger a load if the device is
-  not in the cache.
+- C2D message for a class C device that needs to be delivered can trigger a
+  load if the device is not in the cache.
 
 - Cache refreshes can happen on a background thread for a device, causing the
   need for a connection.
