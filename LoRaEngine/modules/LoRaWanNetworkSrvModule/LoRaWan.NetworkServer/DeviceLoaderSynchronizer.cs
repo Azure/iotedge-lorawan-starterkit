@@ -105,9 +105,10 @@ namespace LoRaWan.NetworkServer
                     SetState(LoaderState.Finished);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason.ApplicationError);
+                this.logger.LogError(ex, "Failed to load devices");
                 throw;
             }
             finally
