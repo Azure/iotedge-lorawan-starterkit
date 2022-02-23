@@ -210,7 +210,7 @@ namespace LoRaWan.NetworkServer
                 // another gateway processed the join request. If we have it in the cache
                 // with existing session keys, we need to invalidate that entry, to ensure
                 // it gets re-fetched on the next message
-                if (this.deviceCache.TryGetByDevEui(devEUI, out var someDevice) && someDevice.AppSKey != null)
+                if (this.deviceCache.TryGetByDevEui(devEUI, out var someDevice))
                 {
                     _ = await this.deviceCache.RemoveAsync(someDevice);
                     this.logger.LogDebug("Device was removed from cache.");
