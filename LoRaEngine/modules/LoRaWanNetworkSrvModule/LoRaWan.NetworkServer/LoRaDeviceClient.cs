@@ -231,10 +231,6 @@ namespace LoRaWan.NetworkServer
 
                 this.logger.LogDebug("device client disconnected");
             }
-            else
-            {
-                this.logger.LogDebug("device client was already disconnected");
-            }
         }
 
 
@@ -273,8 +269,6 @@ namespace LoRaWan.NetworkServer
         public async ValueTask DisposeAsync()
         {
             await DisconnectAsync(CancellationToken.None);
-
-            GC.SuppressFinalize(this);
         }
     }
 }
