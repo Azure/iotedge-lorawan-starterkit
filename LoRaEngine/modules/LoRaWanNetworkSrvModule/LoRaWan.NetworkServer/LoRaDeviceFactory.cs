@@ -53,6 +53,7 @@ namespace LoRaWan.NetworkServer
         private async Task<LoRaDevice> RegisterCoreAsync(IoTHubDeviceInfo deviceInfo, CancellationToken cancellationToken)
         {
             var loRaDevice = CreateDevice(deviceInfo);
+            var loRaDeviceClient = CreateDeviceClient(deviceInfo.DevEUI.ToString(), deviceInfo.PrimaryKey);
             try
             {
                 // we always want to register the connection if we have a key.
@@ -61,7 +62,7 @@ namespace LoRaWan.NetworkServer
                 // even though, we don't own it, to detect ownership
                 // changes.
                 // Ownership is transferred to connection manager.
-                this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI.ToString(), deviceInfo.PrimaryKey));
+                this.connectionManager.Register(loRaDevice, loRaDeviceClient);
 
                 loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
@@ -77,6 +78,23 @@ namespace LoRaWan.NetworkServer
             }
             catch
             {
+                // release the loradevice client explicitly. If we were unable to register, or there was already
+                // a connection registered, we will leak this client. 
+                await loRaDeviceClient.DisposeAsync();
+
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    try
+                    {
+                        // if the created client is registered, release it
+                        if (this.connectionManager.GetClient(loRaDevice) != loRaDeviceClient)
+                        {
+                            logger.LogDebug("leaked connection found");
+                        }
+                    }
+                    catch (ManagedConnectionException) { }
+                }
+
                 await this.connectionManager.ReleaseAsync(loRaDevice);
                 await loRaDevice.DisposeAsync();
                 throw;
