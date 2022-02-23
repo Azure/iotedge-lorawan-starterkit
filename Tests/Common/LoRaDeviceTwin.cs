@@ -59,19 +59,17 @@ namespace LoRaWan.Tests.Common
 
             return twin;
 
-            static void SetDesiredPropertyIfExists(Twin twin, string propertyName, string? value)
-            {
-                if (value is { } someValue)
-                {
-                    twin.Properties.Desired[propertyName] = value;
-                }
-            }
+            static void SetDesiredPropertyIfExists(Twin twin, string key, string? value) =>
+                SetPropertyIfExists(twin.Properties.Desired, key, value);
 
-            static void SetReportedPropertyIfExists(Twin twin, string propertyName, string? value)
+            static void SetReportedPropertyIfExists(Twin twin, string key, string? value) =>
+                SetPropertyIfExists(twin.Properties.Reported, key, value);
+
+            static void SetPropertyIfExists(TwinCollection twinCollection, string key, string? value)
             {
                 if (value is { } someValue)
                 {
-                    twin.Properties.Reported[propertyName] = value;
+                    twinCollection[key] = value;
                 }
             }
         }
