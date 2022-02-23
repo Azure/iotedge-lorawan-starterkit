@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServerDiscovery;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -147,20 +148,39 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
             Assert.Equal(LoRaProcessingErrorCode.TwinFetchFailed, ex.ErrorCode);
         }
 
-        [Fact]
-        public async Task ResolveLnsAsync_Should_Be_Resilient_Against_Missing_Host_Address()
+        public static TheoryData<string?> Erroneous_Host_Address_TheoryData() => TheoryDataFactory.From(new[]
+        {
+            null, "", "http://mylns:5000", "htt://mylns:5000", "ws:/mylns:5000"
+        });
+
+        [Theory]
+        [MemberData(nameof(Erroneous_Host_Address_TheoryData))]
+        public async Task ResolveLnsAsync_Is_Resilient_Against_Erroneous_Host_Address(string? hostAddress)
         {
             // arrange
             const string networkId = "foo";
             SetupLbsTwinResponse(StationEui, networkId);
-            var lnsUris = LnsUris.Concat(new[] { string.Empty, null }).ToList();
-            SetupIotHubQueryResponse(networkId, lnsUris);
+            SetupIotHubQueryResponse(networkId, LnsUris.Concat(new[] { hostAddress }).ToList());
 
             // act
             var result = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
 
             // assert
             Assert.Contains(result, LnsUris.Select(u => new Uri(u)));
+        }
+
+        [Theory]
+        [MemberData(nameof(Erroneous_Host_Address_TheoryData))]
+        public async Task ResolveLnsAsync_Throws_if_Only_Lns_Is_Misconfigured(string? hostAddress)
+        {
+            // arrange
+            const string networkId = "foo";
+            SetupLbsTwinResponse(StationEui, networkId);
+            SetupIotHubQueryResponse(networkId, new[] { hostAddress });
+
+            // act + assert
+            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.subject.ResolveLnsAsync(StationEui, CancellationToken.None));
+            Assert.Equal(LoRaProcessingErrorCode.LnsDiscoveryFailed, ex.ErrorCode);
         }
 
         [Fact]
@@ -192,9 +212,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
             var i = 0;
             queryMock.Setup(q => q.HasMoreResults).Returns(() => i++ % 2 == 0);
             queryMock.Setup(q => q.GetNextAsJsonAsync()).ReturnsAsync(from ha in hostAddresses
-                                                                      select ha is { } someHa ? JsonSerializer.Serialize(new { hostAddress = ha }) : "{}");
+                                                                      select ha is { } someHa ? JsonSerializer.Serialize(new { hostAddress = ha, deviceId = Guid.NewGuid().ToString() })
+                                                                                              : JsonSerializer.Serialize(new { deviceId = Guid.NewGuid().ToString() }));
             this.registryManagerMock
-                .Setup(rm => rm.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'"))
+                .Setup(rm => rm.CreateQuery($"SELECT properties.desired.hostAddress, deviceId FROM devices.modules WHERE tags.network = '{networkId}'"))
                 .Returns(queryMock.Object);
         }
 

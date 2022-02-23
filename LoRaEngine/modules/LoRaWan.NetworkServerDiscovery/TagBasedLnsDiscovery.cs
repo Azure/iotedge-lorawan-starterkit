@@ -24,11 +24,15 @@ namespace LoRaWan.NetworkServerDiscovery
         private const string NetworkByStationCacheKey = "NetworkByStation";
 
         private static readonly TimeSpan CacheItemExpiration = TimeSpan.FromHours(6);
-        private static readonly IJsonReader<Uri?> HostAddressReader =
+        private static readonly IJsonReader<LnsHostAddressParseResult> HostAddressReader =
             JsonReader.Object(JsonReader.Property("hostAddress",
                                                   from s in JsonReader.String()
-                                                  select string.IsNullOrEmpty(s) ? null : new Uri(s),
-                                                  (true, null)));
+                                                  select Uri.TryCreate(s, UriKind.Absolute, out var uri)
+                                                      && uri.Scheme is "ws" or "wss"
+                                                       ? uri : null,
+                                                  (true, null)),
+                              JsonReader.Property("deviceId", JsonReader.String()),
+                              (hostAddress, deviceId) => new LnsHostAddressParseResult(hostAddress, deviceId));
 
         private readonly ILogger<TagBasedLnsDiscovery> logger;
         private readonly IMemoryCache memoryCache;
@@ -93,18 +97,27 @@ namespace LoRaWan.NetworkServerDiscovery
                 $"{LnsByNetworkCacheKey}:{networkId}",
                 async _ =>
                 {
-                    var query = this.registryManager.CreateQuery($"SELECT properties.desired.hostAddress FROM devices.modules WHERE tags.network = '{networkId}'");
+                    var query = this.registryManager.CreateQuery($"SELECT properties.desired.hostAddress, deviceId FROM devices.modules WHERE tags.network = '{networkId}'");
                     var results = new List<Uri>();
+                    var parseFailures = new List<string>();
                     while (query.HasMoreResults)
                     {
                         var matches = await query.GetNextAsJsonAsync();
-                        results.AddRange(from hostAddressInfo in matches
-                                         select HostAddressReader.Read(hostAddressInfo) into uri
-                                         where uri != null
-                                         select uri);
+
+                        var parseResult = matches.Select(hostAddressInfo => HostAddressReader.Read(hostAddressInfo)).ToList();
+
+                        results.AddRange(parseResult.Select(r => r.HostAddress)
+                                                    .Where(hostAddress => hostAddress != null)
+                                                    .Cast<Uri>());
+
+                        parseFailures.AddRange(parseResult.Where(r => r.HostAddress is null)
+                                                          .Select(r => r.DeviceId));
                     }
 
                     this.logger.LogInformation("Loaded {Count} LNS candidates for network '{NetworkId}'", results.Count, networkId);
+
+                    if (parseFailures.Count > 0)
+                        this.logger.LogWarning("The following LNS in network '{NetworkId}' have a misconfigured host address: {DeviceIds}.", networkId, string.Join(',', parseFailures));
 
                     // Also cache if no LNS URIs are found for the given network.
                     // This makes sure that rogue LBS do not cause too many registry operations.
@@ -150,5 +163,7 @@ namespace LoRaWan.NetworkServerDiscovery
         }
 
         public void Dispose() => this.lnsByNetworkCacheSemaphore.Dispose();
+
+        private record struct LnsHostAddressParseResult(Uri? HostAddress, string DeviceId);
     }
 }
