@@ -682,7 +682,7 @@ namespace LoRaWan.Tests.Integration
 
             var updatedTwin = LoRaDeviceTwin.Create(
                 simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with { SensorDecoder = nameof(LoRaPayloadDecoder.DecoderValueSensor) },
-                new LoRaReportTwinProperties
+                new LoRaReportedTwinProperties
                 {
                     AppSessionKey = appSKey,
                     NetworkSessionKey = nwkSKey,

@@ -57,7 +57,21 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null)).ReturnsAsync(true);
-            var initialTwin = SetupTwins(deviceFcntUp, deviceFcntDown, startFcntUp, startFcntDown, abpRelaxed, supports32Bit, simulatedDevice, devEui, devAddr);
+
+            var initialTwin = LoRaDeviceTwin.Create(
+                simulatedDevice.LoRaDevice.GetAbpTwinProperties() with
+                {
+                    DevEui = devEui,
+                    AbpRelaxMode = abpRelaxed,
+                    Supports32BitFCnt = supports32Bit,
+                    FCntUpStart = startFcntUp,
+                    FCntDownStart = startFcntDown
+                },
+                new LoRaReportedTwinProperties
+                {
+                    FCntUp = deviceFcntUp,
+                    FCntDown = deviceFcntDown,
+                });
 
             LoRaDeviceClient
                 .Setup(x => x.GetTwinAsync(CancellationToken.None)).Returns(() =>
@@ -162,17 +176,24 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null)).ReturnsAsync(true);
 
-            var initialTwin = SetupTwins((uint)fcntUp, startFcntDownDesired, startFcntUpDesired, startFcntDownDesired, true, false, simulatedDevice, devEui, devAddr);
-
-            if (startFcntUpReported.HasValue)
-                initialTwin.Properties.Reported[TwinProperty.FCntUpStart] = startFcntUpReported.Value;
-            if (startFcntDownReported.HasValue)
-                initialTwin.Properties.Reported[TwinProperty.FCntDownStart] = startFcntDownReported.Value;
-
-            if (fcntResetCounterDesired.HasValue)
-                initialTwin.Properties.Desired[TwinProperty.FCntResetCounter] = fcntResetCounterDesired.Value;
-            if (fcntResetCounterReported.HasValue)
-                initialTwin.Properties.Reported[TwinProperty.FCntResetCounter] = fcntResetCounterReported.Value;
+            var initialTwin = LoRaDeviceTwin.Create(
+                simulatedDevice.LoRaDevice.GetAbpTwinProperties() with
+                {
+                    DevEui = devEui,
+                    AbpRelaxMode = true,
+                    Supports32BitFCnt = false,
+                    FCntUpStart = startFcntUpDesired,
+                    FCntDownStart = startFcntDownDesired,
+                    FCntResetCounter = fcntResetCounterDesired
+                },
+                new LoRaReportedTwinProperties
+                {
+                    FCntUp = (uint)fcntUp,
+                    FCntDown = startFcntDownDesired,
+                    FCntUpStart = startFcntUpReported,
+                    FCntDownStart = startFcntDownReported,
+                    FCntResetCounter = fcntResetCounterReported
+                });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(initialTwin);
 
@@ -225,32 +246,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never());
             }
-        }
-
-        private static Twin SetupTwins(uint? deviceFcntUp, uint? deviceFcntDown, uint? startFcntUp, uint? startFcntDown, bool abpRelaxed, bool supports32Bit, SimulatedDevice simulatedDevice, DevEui devEui, DevAddr devAddr)
-        {
-            var initialTwin = new Twin();
-            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr.ToString();
-            initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            initialTwin.Properties.Desired[TwinProperty.GatewayID] = simulatedDevice.LoRaDevice.GatewayID;
-            initialTwin.Properties.Desired[TwinProperty.ABPRelaxMode] = abpRelaxed;
-
-            initialTwin.Properties.Desired[TwinProperty.Supports32BitFCnt] = supports32Bit;
-
-            if (deviceFcntUp.HasValue)
-                initialTwin.Properties.Reported[TwinProperty.FCntUp] = deviceFcntUp.Value;
-            if (deviceFcntDown.HasValue)
-                initialTwin.Properties.Reported[TwinProperty.FCntDown] = deviceFcntDown.Value;
-            if (startFcntUp.HasValue)
-                initialTwin.Properties.Desired[TwinProperty.FCntUpStart] = startFcntUp.Value;
-            if (startFcntDown.HasValue)
-                initialTwin.Properties.Desired[TwinProperty.FCntDownStart] = startFcntDown.Value;
-            return initialTwin;
         }
     }
 }

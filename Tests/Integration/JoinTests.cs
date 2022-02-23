@@ -70,7 +70,7 @@ namespace LoRaWan.Tests.Integration
                     DevEui = devEui,
                     GatewayId = deviceGatewayID,
                 },
-                new LoRaReportTwinProperties
+                new LoRaReportedTwinProperties
                 {
                     FCntUp = initialFcntUp,
                     FCntDown = initialFcntDown
