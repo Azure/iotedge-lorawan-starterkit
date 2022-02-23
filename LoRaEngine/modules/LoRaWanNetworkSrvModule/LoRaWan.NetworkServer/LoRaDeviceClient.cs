@@ -194,7 +194,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 this.logger.LogDebug("'{OperationName}' cloud to device message, id: '{MessageId}'.", operationName, messageId);
-                using var rejectOperation = this.tracing.TrackIotHubDependency(GetSdkDependencyName(operationName), $"{this.deviceIdTracingData}&messageId={messageId}");
+                using var dependencyOperation = this.tracing.TrackIotHubDependency(GetSdkDependencyName(operationName), $"{this.deviceIdTracingData}&messageId={messageId}");
 
                 await executeAsync(this.deviceClient, cloudToDeviceMessage);
 
