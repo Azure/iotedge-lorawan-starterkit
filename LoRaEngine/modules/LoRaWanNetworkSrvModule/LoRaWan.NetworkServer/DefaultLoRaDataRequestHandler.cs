@@ -132,7 +132,7 @@ namespace LoRaWan.NetworkServer
                     var bundler = CreateBundler(loraPayload, loRaDevice, request);
                     if (bundler != null)
                     {
-                        if (loRaDevice.IsConnectionOwner is { } isOwner && !isOwner)
+                        if (loRaDevice.IsConnectionOwner is false)
                         {
                             await DelayProcessing();
                         }
@@ -530,7 +530,7 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    if (loRaDevice.IsConnectionOwner.GetValueOrDefault())
+                    if (loRaDevice.IsConnectionOwner is true)
                         await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged);
                 }
                 catch (OperationCanceledException saveChangesException)

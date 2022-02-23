@@ -150,7 +150,7 @@ namespace LoRaWan.NetworkServer
                         {
                             // it's a cached device with a potentially outdated DevAddr, let's make sure
                             // it is disconnected. If it is all up to date, the connection will be re-established
-                            if (cachedDevice.IsConnectionOwner is { } isOwner && isOwner)
+                            if (cachedDevice.IsConnectionOwner is true)
                             {
                                 this.logger.LogDebug("stale connection owner, releasing the connection.");
                                 cachedDevice.IsConnectionOwner = false;
