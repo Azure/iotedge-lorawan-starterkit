@@ -127,20 +127,17 @@ namespace LoRaWan.Tests.Integration
                 });
 
             // twin will be loaded
-            var initialTwin = new Twin();
-            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr.ToString();
-            if (parallelTestConfiguration.GatewayID != null)
-                initialTwin.Properties.Desired[TwinProperty.GatewayID] = parallelTestConfiguration.GatewayID;
-            initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            if (parallelTestConfiguration.DeviceTwinFcntDown.HasValue)
-                initialTwin.Properties.Reported[TwinProperty.FCntDown] = parallelTestConfiguration.DeviceTwinFcntDown.Value;
-            if (parallelTestConfiguration.DeviceTwinFcntUp.HasValue)
-                initialTwin.Properties.Reported[TwinProperty.FCntUp] = parallelTestConfiguration.DeviceTwinFcntUp.Value;
+            var initialTwin = LoRaDeviceTwin.Create(
+                simulatedDevice.LoRaDevice.GetAbpTwinProperties() with
+                {
+                    DevEui = devEui,
+                    GatewayId = parallelTestConfiguration.GatewayID
+                },
+                new LoRaReportTwinProperties
+                {
+                    FCntDown = parallelTestConfiguration.DeviceTwinFcntDown,
+                    FCntUp = parallelTestConfiguration.DeviceTwinFcntUp,
+                });
 
             looseDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .Returns(() =>

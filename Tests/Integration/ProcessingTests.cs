@@ -680,19 +680,14 @@ namespace LoRaWan.Tests.Integration
 
             simulatedDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
-            var updatedTwin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
+            var updatedTwin = LoRaDeviceTwin.Create(
+                simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with { SensorDecoder = nameof(LoRaPayloadDecoder.DecoderValueSensor) },
+                new LoRaReportTwinProperties
                 {
-                    { TwinProperty.AppEui, simulatedDevice.AppEui?.ToString() },
-                    { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
-                    { TwinProperty.SensorDecoder, nameof(LoRaPayloadDecoder.DecoderValueSensor) },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { TwinProperty.AppSKey, appSKey.ToString() },
-                    { TwinProperty.NwkSKey, nwkSKey.ToString() },
-                    { TwinProperty.DevAddr, devAddr.ToString() },
-                    { TwinProperty.DevNonce, "ABCD" },
+                    AppSessionKey = appSKey,
+                    NetworkSessionKey = nwkSKey,
+                    DevAddr = devAddr,
+                    DevNonce = new DevNonce(0xABCD)
                 });
 
             // Twin will be loaded once

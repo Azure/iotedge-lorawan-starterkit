@@ -109,20 +109,17 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             // twin will be loaded
-            var initialTwin = new Twin();
-            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey?.ToString();
-            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr.ToString();
-            if (twinGatewayID != null)
-                initialTwin.Properties.Desired[TwinProperty.GatewayID] = twinGatewayID;
-            initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            if (deviceTwinFcntDown.HasValue)
-                initialTwin.Properties.Reported[TwinProperty.FCntDown] = deviceTwinFcntDown.Value;
-            if (deviceTwinFcntUp.HasValue)
-                initialTwin.Properties.Reported[TwinProperty.FCntUp] = deviceTwinFcntUp.Value;
+            var initialTwin = LoRaDeviceTwin.Create(
+                simulatedDevice.LoRaDevice.GetAbpTwinProperties() with
+                {
+                    DevEui = devEui,
+                    GatewayId = twinGatewayID
+                },
+                new LoRaReportTwinProperties
+                {
+                    FCntDown = deviceTwinFcntDown,
+                    FCntUp = deviceTwinFcntUp,
+                });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(initialTwin);
 

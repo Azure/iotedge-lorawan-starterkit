@@ -35,12 +35,12 @@ namespace LoRaWan.Tests.Integration
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            var twin = LoRaDeviceTwin.Create(
+                simulatedDevice.LoRaDevice.GetOtaaTwinProperties() with
+                {
+                    DevEui = devEui,
+                    GatewayId = deviceGatewayID
+                });
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
