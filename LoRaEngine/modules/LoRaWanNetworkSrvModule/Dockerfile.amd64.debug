@@ -26,10 +26,8 @@ COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWa
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoRaWan.NetworkServer.csproj", "LoRaWan.NetworkServer/"]
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan/LoRaWan.csproj", "LoRaWan/"]
 COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools/LoRaTools.csproj", "LoraTools/"]
-COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger/Logger.csproj", "Logger/"]
 RUN dotnet restore "LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj"
 
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger Logger
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools LoraTools
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer LoRaWan.NetworkServer
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule LoRaWanNetworkSrvModule
