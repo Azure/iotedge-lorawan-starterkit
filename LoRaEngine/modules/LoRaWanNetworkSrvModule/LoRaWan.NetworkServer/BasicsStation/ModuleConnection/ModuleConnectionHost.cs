@@ -25,6 +25,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILogger<ModuleConnectionHost> logger;
         private readonly Counter<int> unhandledExceptionCount;
+        private readonly Counter<int> forceClosedConnections;
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
@@ -44,6 +45,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.unhandledExceptionCount = (meter ?? throw new ArgumentNullException(nameof(meter))).CreateCounter<int>(MetricRegistry.UnhandledExceptions);
+            this.forceClosedConnections = meter.CreateCounter<int>(MetricRegistry.ForceClosedClientConnections);
+
         }
 
         public async Task CreateAsync(CancellationToken cancellationToken)
@@ -155,6 +158,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         private async Task<MethodResponse> DropConnection(MethodRequest methodRequest)
         {
+            this.forceClosedConnections.Add(1);
             ReceivedLoRaCloudToDeviceMessage c2d = null;
 
             try
