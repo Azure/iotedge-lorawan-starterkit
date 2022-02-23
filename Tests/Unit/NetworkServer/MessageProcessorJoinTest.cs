@@ -482,7 +482,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
             {
                 Rx2DataRate = rx2datarate,
-                PreferredWindow = 2
+                PreferredWindow = ReceiveWindowNumber.ReceiveWindow2
             });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
@@ -677,7 +677,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
             {
                 Rx1DROffset = rx1offset,
-                PreferredWindow = 1
+                PreferredWindow = ReceiveWindowNumber.ReceiveWindow1
             });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
@@ -788,7 +788,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
             {
                 RxDelay = rxDelay,
-                PreferredWindow = 1
+                PreferredWindow = ReceiveWindowNumber.ReceiveWindow1
             });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);

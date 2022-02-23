@@ -34,7 +34,7 @@ namespace LoRaWan.Tests.Common
                 SetDesiredPropertyIfExists(twin, TwinProperty.FCntResetCounter, someDesiredProperties.FCntResetCounter?.ToString(CultureInfo.InvariantCulture));
                 SetDesiredPropertyIfExists(twin, TwinProperty.RX1DROffset, someDesiredProperties.Rx1DROffset?.ToString(CultureInfo.InvariantCulture));
                 SetDesiredPropertyIfExists(twin, TwinProperty.RX2DataRate, someDesiredProperties.Rx2DataRate?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.PreferredWindow, someDesiredProperties.PreferredWindow?.ToString(CultureInfo.InvariantCulture));
+                SetDesiredPropertyIfExists(twin, TwinProperty.PreferredWindow, someDesiredProperties.PreferredWindow?.ToString());
                 SetDesiredPropertyIfExists(twin, TwinProperty.RXDelay, someDesiredProperties.RxDelay?.ToString(CultureInfo.InvariantCulture));
                 SetDesiredPropertyIfExists(twin, TwinProperty.ClassType, someDesiredProperties.ClassType?.ToString());
             }
@@ -92,7 +92,7 @@ namespace LoRaWan.Tests.Common
         public int? FCntResetCounter { get; init; }
         public int? Rx1DROffset { get; init; }
         public DataRateIndex? Rx2DataRate { get; init; }
-        public int? PreferredWindow { get; init; }
+        public ReceiveWindowNumber? PreferredWindow { get; init; }
         public int? RxDelay { get; init; }
         public char? ClassType { get; init; }
     }
