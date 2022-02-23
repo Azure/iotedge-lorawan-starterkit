@@ -24,7 +24,7 @@ namespace LoRaWan.NetworkServer
         private const string AbandonOperationName = "Abandon";
         private const string RejectOperationName = "Reject";
         private static readonly string GetTwinDependencyName = GetSdkDependencyName("GetTwin");
-        private static readonly string UpdateReportedProperteisDependencyName = GetSdkDependencyName("UpdateReportedProperties");
+        private static readonly string UpdateReportedPropertiesDependencyName = GetSdkDependencyName("UpdateReportedProperties");
         private static readonly string SendEventDependencyName = GetSdkDependencyName("SendEvent");
         private static readonly string ReceiveDependencyName = GetSdkDependencyName("Receive");
         private static string GetSdkDependencyName(string dependencyName) => $"SDK {dependencyName}";
@@ -99,7 +99,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 this.logger.LogDebug("updating twin");
-                using var updateReportedPropertiesOperation = this.tracing.TrackIotHubDependency(UpdateReportedProperteisDependencyName, this.deviceIdTracingData);
+                using var updateReportedPropertiesOperation = this.tracing.TrackIotHubDependency(UpdateReportedPropertiesDependencyName, this.deviceIdTracingData);
 
                 await this.deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
