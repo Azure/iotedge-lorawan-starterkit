@@ -112,6 +112,9 @@ nav:
     - adr/006_cups.md
     - adr/007_message_deduplication.md
     - adr/008_cups_firmware_upgrade.md
+    - adr/009_discovery.md
+    - adr/010_lns_affinity.md
+    - adr/011_device_request_queue.md
   - About:
     - release-notes.md
     - 'Known Issues': issues.md
