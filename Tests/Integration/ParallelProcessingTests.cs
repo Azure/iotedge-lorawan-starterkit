@@ -296,17 +296,17 @@ namespace LoRaWan.Tests.Integration
             const int payloadInitialFcnt = 2;
 
             var device1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            var device1Twin = TestUtils.CreateABPTwin(device1);
+            var device1Twin = device1.GetDefaultAbpTwin();
             var device2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2))
             {
                 DevAddr = device1.DevAddr
             };
-            var device2Twin = TestUtils.CreateABPTwin(device2);
+            var device2Twin = device2.GetDefaultAbpTwin();
             var device3 = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(3));
             device3.SetupJoin(TestKeys.CreateAppSessionKey(0x88), TestKeys.CreateNetworkSessionKey(0x88), new DevAddr(0x02000088));
             var device3Twin = LoRaDeviceTwin.Create(device3.LoRaDevice.GetOtaaDesiredTwinProperties(), device3.GetOtaaReportedTwinProperties());
             var device4 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(4));
-            var device4Twin = TestUtils.CreateABPTwin(device4);
+            var device4Twin = device4.GetDefaultAbpTwin();
 
             var device1And2Result = new IoTHubDeviceInfo[]
             {

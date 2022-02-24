@@ -65,10 +65,8 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
-            var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
-                {
-                    { TwinProperty.Region, region.LoRaRegion.ToString() }
-                });
+            var twin = LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetAbpDesiredTwinProperties(),
+                                             simDevice.GetAbpReportedTwinProperties() with { Region = region.LoRaRegion });
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);

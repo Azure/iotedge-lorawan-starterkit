@@ -79,11 +79,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
                 .ReturnsAsync("123");
 
-            var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
-                {
-                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
-                    { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
-                });
+            var twin = LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetAbpDesiredTwinProperties(),
+                                             simDevice.GetAbpReportedTwinProperties() with
+                                             {
+                                                 Region = LoRaRegionType.EU868,
+                                                 LastProcessingStation = new StationEui(ulong.MaxValue)
+                                             });
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
@@ -136,7 +137,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync("123");
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simDevice.CreateABPTwin());
+                .ReturnsAsync(simDevice.GetDefaultAbpTwin());
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
@@ -230,11 +231,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
                 .ReturnsAsync("123");
 
-            var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
-                {
-                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
-                    { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
-                });
+            var twin = LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetAbpDesiredTwinProperties(),
+                                             simDevice.GetAbpReportedTwinProperties() with
+                                             {
+                                                 Region = LoRaRegionType.EU868,
+                                                 LastProcessingStation = new StationEui(ulong.MaxValue)
+                                             });
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);

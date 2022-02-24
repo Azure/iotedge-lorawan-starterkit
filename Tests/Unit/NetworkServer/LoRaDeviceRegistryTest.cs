@@ -82,7 +82,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // device will be initialized
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simulatedDevice.CreateABPTwin());
+                .ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
 
             using var request = WaitableLoRaRequest.Create(payload);
             var requestHandler = new Mock<ILoRaDataRequestHandler>(MockBehavior.Strict);
@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // device will be initialized
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simulatedDevice.CreateABPTwin());
+                .ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
 
             using var target = new LoRaDeviceRegistry(ServerConfiguration, this.cache, apiService.Object, this.loraDeviceFactoryMock.Object, DeviceCache);
 
@@ -233,7 +233,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var loRaDeviceClient1 = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             loRaDeviceClient1.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simulatedDevice1.CreateABPTwin());
+                .ReturnsAsync(simulatedDevice1.GetDefaultAbpTwin());
 
             using var connectionManager1 = new SingleDeviceConnectionManager(loRaDeviceClient1.Object);
             using var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice1, connectionManager1);
@@ -249,7 +249,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             simulatedDevice2.LoRaDevice.NwkSKey = TestKeys.CreateNetworkSessionKey(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF);
             var loRaDeviceClient2 = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             loRaDeviceClient2.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simulatedDevice2.CreateABPTwin());
+                .ReturnsAsync(simulatedDevice2.GetDefaultAbpTwin());
             using var connectionManager2 = new SingleDeviceConnectionManager(loRaDeviceClient2.Object);
             using var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, connectionManager2);
 
@@ -443,7 +443,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simDevice.CreateABPTwin());
+                .ReturnsAsync(simDevice.GetDefaultAbpTwin());
 
             var handlerImplementation = new Mock<ILoRaDataRequestHandler>(MockBehavior.Strict);
             var deviceFactory = new TestLoRaDeviceFactory(deviceClient.Object, handlerImplementation.Object, DeviceCache, ConnectionManager);
@@ -480,7 +480,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simDevice.CreateABPTwin());
+                .ReturnsAsync(simDevice.GetDefaultAbpTwin());
 
             var handlerImplementation = new Mock<ILoRaDataRequestHandler>(MockBehavior.Strict);
             handlerImplementation.Setup(x => x.ProcessRequestAsync(It.IsNotNull<LoRaRequest>(), It.IsNotNull<LoRaDevice>()))

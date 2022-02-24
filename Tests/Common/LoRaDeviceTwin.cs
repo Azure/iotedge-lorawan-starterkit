@@ -34,9 +34,16 @@ namespace LoRaWan.Tests.Common
                 SetDesiredPropertyIfExists(twin, TwinProperty.FCntResetCounter, someDesiredProperties.FCntResetCounter?.ToString(CultureInfo.InvariantCulture));
                 SetDesiredPropertyIfExists(twin, TwinProperty.RX1DROffset, someDesiredProperties.Rx1DROffset?.ToString(CultureInfo.InvariantCulture));
                 SetDesiredPropertyIfExists(twin, TwinProperty.RX2DataRate, someDesiredProperties.Rx2DataRate?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.PreferredWindow, someDesiredProperties.PreferredWindow?.ToString());
+                var receiveWindow = someDesiredProperties.PreferredWindow switch
+                {
+                    ReceiveWindowNumber.ReceiveWindow1 => 1,
+                    ReceiveWindowNumber.ReceiveWindow2 => 2,
+                    _ => (int?)null
+                };
+                SetDesiredPropertyIfExists(twin, TwinProperty.PreferredWindow, receiveWindow?.ToString(CultureInfo.InvariantCulture));
                 SetDesiredPropertyIfExists(twin, TwinProperty.RXDelay, someDesiredProperties.RxDelay?.ToString(CultureInfo.InvariantCulture));
                 SetDesiredPropertyIfExists(twin, TwinProperty.ClassType, someDesiredProperties.ClassType?.ToString());
+                SetDesiredPropertyIfExists(twin, TwinProperty.KeepAliveTimeout, someDesiredProperties.KeepAliveTimeout?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
             }
 
             if (reportedProperties is { } someReportedProperties)
@@ -95,6 +102,7 @@ namespace LoRaWan.Tests.Common
         public ReceiveWindowNumber? PreferredWindow { get; init; }
         public int? RxDelay { get; init; }
         public char? ClassType { get; init; }
+        public TimeSpan? KeepAliveTimeout { get; init; }
     }
 
     public sealed record LoRaReportedTwinProperties
@@ -150,5 +158,15 @@ namespace LoRaWan.Tests.Common
                 ClassType = testDeviceInfo.ClassType,
                 GatewayId = testDeviceInfo.GatewayID,
             };
+
+        public static LoRaReportedTwinProperties GetAbpReportedTwinProperties(this SimulatedDevice simulatedDevice) =>
+            new LoRaReportedTwinProperties
+            {
+                FCntDown = simulatedDevice.FrmCntDown,
+                FCntUp = simulatedDevice.FrmCntUp,
+            };
+
+        public static Twin GetDefaultAbpTwin(this SimulatedDevice simulatedDevice) =>
+            LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetAbpDesiredTwinProperties(), simulatedDevice.GetAbpReportedTwinProperties());
     }
 }

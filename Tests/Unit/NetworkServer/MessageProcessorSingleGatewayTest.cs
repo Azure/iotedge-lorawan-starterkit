@@ -88,7 +88,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(TestUtils.CreateABPTwin(simulatedDevice));
+                .ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -484,7 +484,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // - send event
             // - receive c2d
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simulatedDevice.CreateABPTwin());
+                .ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))

@@ -221,7 +221,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // Will get device twin
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
             loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(TestUtils.CreateABPTwin(simulatedDevice));
+                .ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
 
             using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
             var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object, deviceCache, this.connectionManager);
