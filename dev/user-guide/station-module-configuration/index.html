@@ -331,6 +331,8 @@
           
             
               
+                
+              
               <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
@@ -1390,7 +1392,9 @@
             
             
               
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" hidden>
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -1474,8 +1478,13 @@
 <td>No (if not set, module will skip the reset of the board)</td>
 </tr>
 <tr>
+<td>CORECELL</td>
+<td>A boolean identifying whether to use the Corecell (SX1302) binary</td>
+<td>No (if not set, defaults to false)</td>
+</tr>
+<tr>
 <td>RADIODEV</td>
-<td>A string identifying the location where the board should be accessed (i.e.: <code>/dev/ttyACM0</code>)</td>
+<td>A string identifying the location where the board should be accessed (i.e.: <code>/dev/ttyACM0</code> for SPI devices or <code>usb:/dev/ttyUSB0</code> in case of USB-based SX1302 devices).</td>
 <td>No (if not set, board will be accessed at /dev/spidevX.0, see following item)</td>
 </tr>
 <tr>
@@ -1490,13 +1499,18 @@
 </tr>
 <tr>
 <td>FIXED_STATION_EUI</td>
-<td>Provides the ability to start the Basic Station with a fixed EUI</td>
-<td>No (if not set, the Basic Station built-in logic will be used for generating a EUI)</td>
+<td>Provides the ability to start the Basics Station with a fixed EUI</td>
+<td>No (if not set, the Basics Station built-in logic will be used for generating a EUI)</td>
 </tr>
 <tr>
 <td>STATION_PATH</td>
-<td>A string identifying the path of the folder where the compiled <code>station.std</code> binary for Basic Station is located</td>
+<td>A string identifying the path of the folder where the compiled <code>station.std</code> binary for Basics Station is located</td>
 <td>No (if not set, defaults to <code>/basicstation</code> folder)</td>
+</tr>
+<tr>
+<td>LOG_LEVEL</td>
+<td>A string setting the desired log level for the Basics Station binary. Allowed values: XDEBUG,DEBUG,VERBOSE,INFO,NOTICE,WARNING,ERROR,CRITICAL</td>
+<td>No (if not set, defaults to INFO)</td>
 </tr>
 </tbody>
 </table>
@@ -1506,7 +1520,7 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-07T10:54:11+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-07</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-02-24T14:21:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-02-24</span>
       
         <br>
         Created:
