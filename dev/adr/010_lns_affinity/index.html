@@ -289,13 +289,15 @@
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../001_region_cn470_implementation/" class="md-tabs__link">
+      <a href="../001_region_cn470_implementation/" class="md-tabs__link md-tabs__link--active">
         Decision Log
       </a>
     </li>
@@ -1080,12 +1082,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
       
       
       
@@ -1208,6 +1212,318 @@
     <li class="md-nav__item">
       <a href="../008_cups_firmware_upgrade/" class="md-nav__link">
         008. CUPS Protocol Implementation - Firmware Upgrade
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../009_discovery/" class="md-nav__link">
+        009. LoRaWAN Network Server (LNS) discovery
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          010. LNS sticky affinity over multiple sessions
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        010. LNS sticky affinity over multiple sessions
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#problem-statement" class="md-nav__link">
+    Problem statement
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    Out of scope
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-scope" class="md-nav__link">
+    In-scope
+  </a>
+  
+    <nav class="md-nav" aria-label="In-scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problematic-iot-hub-operations-on-behalf-of-edge-devices" class="md-nav__link">
+    Problematic IoT Hub operations on behalf of edge devices
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solution" class="md-nav__link">
+    Solution
+  </a>
+  
+    <nav class="md-nav" aria-label="Solution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#handling-of-cache-refresh" class="md-nav__link">
+    Handling of cache refresh
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling of cache refresh">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    Decision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternatives" class="md-nav__link">
+    Alternatives
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-of-join-requests" class="md-nav__link">
+    Handling of Join requests
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling of Join requests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision_1" class="md-nav__link">
+    Decision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative" class="md-nav__link">
+    Alternative
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#main-data-message-flow" class="md-nav__link">
+    Main data message flow
+  </a>
+  
+    <nav class="md-nav" aria-label="Main data message flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision_2" class="md-nav__link">
+    Decision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative_1" class="md-nav__link">
+    Alternative
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#further-processing" class="md-nav__link">
+    Further processing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-of-abp-relax-frame-counter-reset" class="md-nav__link">
+    Handling of ABP relax frame counter reset
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling of ABP relax frame counter reset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision_3" class="md-nav__link">
+    Decision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative_2" class="md-nav__link">
+    Alternative
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-class-c-downstream-messages" class="md-nav__link">
+    Handling Class C downstream messages
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling Class C downstream messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#should-we-delay-on-the-lns-itself-or-on-the-function" class="md-nav__link">
+    Should we delay on the LNS itself or on the Function?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delay-amount-configuration" class="md-nav__link">
+    Delay amount configuration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-candidates-considered" class="md-nav__link">
+    Other candidates considered
+  </a>
+  
+    <nav class="md-nav" aria-label="Other candidates considered">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-direct-mode-not-edge-hub" class="md-nav__link">
+    Using direct mode (not Edge hub)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parent-child-gateways" class="md-nav__link">
+    Parent-child gateways
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-changes" class="md-nav__link">
+    Related changes
+  </a>
+  
+    <nav class="md-nav" aria-label="Related changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#single-point-of-connection-handling-on-loradevice" class="md-nav__link">
+    Single point of connection handling on LoRaDevice
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../011_device_request_queue/" class="md-nav__link">
+        011. Device Request Queue
       </a>
     </li>
   
@@ -1604,9 +1920,9 @@
 
 
 <h1 id="010-lns-sticky-affinity-over-multiple-sessions">010. LNS sticky affinity over multiple sessions</h1>
-<p><strong>Feature</strong>: <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1475">#1475</a>  </p>
-<p><strong>Authors</strong>: Spyros Giannakakis, Daniele Antonio Maggio, Patrick Schuler</p>
-<p><strong>Status</strong>: Accepted</p>
+<p><strong>Feature</strong>: <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1475">#1475</a><br />
+<strong>Authors</strong>: Spyros Giannakakis, Daniele Antonio Maggio, Patrick Schuler<br />
+<strong>Status</strong>: Accepted  </p>
 <hr />
 <h2 id="problem-statement">Problem statement</h2>
 <p>Consider the topology:</p>
@@ -1861,7 +2177,7 @@ still required.</p>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-02-23T08:02:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-02-23</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-02-24T10:00:29+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-02-24</span>
       
         <br>
         Created:
@@ -1884,6 +2200,41 @@ still required.</p>
       </main>
       
         <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../009_discovery/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 009. LoRaWAN Network Server (LNS) discovery" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              009. LoRaWAN Network Server (LNS) discovery
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../011_device_request_queue/" class="md-footer__link md-footer__link--next" aria-label="Next: 011. Device Request Queue" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              011. Device Request Queue
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">

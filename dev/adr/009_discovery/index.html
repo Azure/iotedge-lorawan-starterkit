@@ -289,13 +289,15 @@
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../001_region_cn470_implementation/" class="md-tabs__link">
+      <a href="../001_region_cn470_implementation/" class="md-tabs__link md-tabs__link--active">
         Decision Log
       </a>
     </li>
@@ -1080,12 +1082,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
       
       
       
@@ -1208,6 +1212,137 @@
     <li class="md-nav__item">
       <a href="../008_cups_firmware_upgrade/" class="md-nav__link">
         008. CUPS Protocol Implementation - Firmware Upgrade
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          009. LoRaWAN Network Server (LNS) discovery
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        009. LoRaWAN Network Server (LNS) discovery
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    Decision
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-analysis" class="md-nav__link">
+    Detailed analysis
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#availability" class="md-nav__link">
+    Availability
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    Health checks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth" class="md-nav__link">
+    Auth
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orthogonal-considerations" class="md-nav__link">
+    Orthogonal considerations
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../010_lns_affinity/" class="md-nav__link">
+        010. LNS sticky affinity over multiple sessions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../011_device_request_queue/" class="md-nav__link">
+        011. Device Request Queue
       </a>
     </li>
   
@@ -1423,8 +1558,8 @@
 
 
 <h1 id="009-lorawan-network-server-lns-discovery">009. LoRaWAN Network Server (LNS) discovery</h1>
-<p><strong>Feature</strong>: <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1480">#1480</a>
-<strong>Authors</strong>: Bastian Burger, Daniele Maggio, Maggie Salak
+<p><strong>Feature</strong>: <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/1480">#1480</a><br />
+<strong>Authors</strong>: Bastian Burger, Daniele Antonio Maggio, Maggie Salak<br />
 <strong>Status</strong>: Accepted</p>
 <p>Service (or LNS) discovery is part of the LNS protocol. When a LoRa Basics Station (LBS) connects for the first time to a LNS, it invokes the service discovery endpoint (<code>/router-info</code>). We want to provide the users with the option to (potentially) increase availability by automatically rebalancing connection attempts to different LNS.</p>
 <p>We can consider implementing the service discovery in two places, because:</p>
@@ -1553,7 +1688,7 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-02-18T07:01:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-02-18</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-02-24T10:00:29+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-02-24</span>
       
         <br>
         Created:
@@ -1576,6 +1711,41 @@
       </main>
       
         <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../008_cups_firmware_upgrade/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 008. CUPS Protocol Implementation - Firmware Upgrade" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              008. CUPS Protocol Implementation - Firmware Upgrade
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../010_lns_affinity/" class="md-footer__link md-footer__link--next" aria-label="Next: 010. LNS sticky affinity over multiple sessions" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              010. LNS sticky affinity over multiple sessions
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
