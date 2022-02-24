@@ -681,19 +681,14 @@ namespace LoRaWan.Tests.Integration
 
             simulatedDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
-            var updatedTwin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
+            var updatedTwin = LoRaDeviceTwin.Create(
+                simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with { SensorDecoder = nameof(LoRaPayloadDecoder.DecoderValueSensor) },
+                new LoRaReportedTwinProperties
                 {
-                    { TwinProperty.AppEui, simulatedDevice.AppEui?.ToString() },
-                    { TwinProperty.AppKey, simulatedDevice.AppKey?.ToString() },
-                    { TwinProperty.SensorDecoder, nameof(LoRaPayloadDecoder.DecoderValueSensor) },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { TwinProperty.AppSKey, appSKey.ToString() },
-                    { TwinProperty.NwkSKey, nwkSKey.ToString() },
-                    { TwinProperty.DevAddr, devAddr.ToString() },
-                    { TwinProperty.DevNonce, "ABCD" },
+                    AppSessionKey = appSKey,
+                    NetworkSessionKey = nwkSKey,
+                    DevAddr = devAddr,
+                    DevNonce = new DevNonce(0xABCD)
                 });
 
             // Twin will be loaded once
@@ -892,7 +887,7 @@ namespace LoRaWan.Tests.Integration
             var devAddr = simulatedDevice.DevAddr.Value;
 
             // Device twin will be queried
-            var twin = simulatedDevice.CreateABPTwin();
+            var twin = simulatedDevice.GetDefaultAbpTwin();
             LoRaDeviceClient.SetupSequence(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync((Twin)null)
                 .ReturnsAsync(twin);
@@ -985,7 +980,7 @@ namespace LoRaWan.Tests.Integration
             if (!isAlreadyInDeviceRegistryCache)
             {
                 LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                    .ReturnsAsync(simulatedDevice.CreateABPTwin());
+                    .ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
             }
 
             // C2D message will be checked
@@ -1060,7 +1055,7 @@ namespace LoRaWan.Tests.Integration
             loRaDevice.SensorDecoder = "DecoderValueSensor";
 
             // will get the device twin without AppSKey
-            var twin = TestUtils.CreateABPTwin(simulatedDevice);
+            var twin = simulatedDevice.GetDefaultAbpTwin();
             twin.Properties.Desired[missingProperty] = null;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                     .ReturnsAsync(twin);
@@ -1291,7 +1286,7 @@ namespace LoRaWan.Tests.Integration
 
             deviceClient.Setup(x => x.EnsureConnected()).Returns(true);
 
-            deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice.CreateABPTwin());
+            deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
 
             deviceClient.Setup(x => x.DisconnectAsync())
                .Returns(Task.CompletedTask);
@@ -1362,7 +1357,7 @@ namespace LoRaWan.Tests.Integration
             deviceClient1.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            deviceClient1.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice1.CreateABPTwin());
+            deviceClient1.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice1.GetDefaultAbpTwin());
 
             if (isResetingDevice)
             {
@@ -1373,7 +1368,7 @@ namespace LoRaWan.Tests.Integration
             // Device client 2
             // - Get Twin
             var deviceClient2 = new Mock<ILoRaDeviceClient>();
-            deviceClient2.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice2.CreateABPTwin());
+            deviceClient2.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice2.GetDefaultAbpTwin());
 
             // device api will be searched for payload
             var searchDevicesResult = new SearchDevicesResult(new[]
@@ -1479,7 +1474,7 @@ namespace LoRaWan.Tests.Integration
             deviceClient1.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            deviceClient1.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice1.CreateABPTwin());
+            deviceClient1.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice1.GetDefaultAbpTwin());
 
             // If the framecounter is higher than 10 it will trigger an update of the framcounter in the reported properties.
             if (payloadFcntUp > 10)
@@ -1676,7 +1671,7 @@ namespace LoRaWan.Tests.Integration
 
             LoRaDeviceClient.SetupSequence(x => x.GetTwinAsync(CancellationToken.None))
                 .ThrowsAsync(new TimeoutException())
-                .ReturnsAsync(simDevice.CreateABPTwin());
+                .ReturnsAsync(simDevice.GetDefaultAbpTwin());
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
@@ -1730,7 +1725,7 @@ namespace LoRaWan.Tests.Integration
             }
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simDevice.CreateABPTwin());
+                .ReturnsAsync(simDevice.GetDefaultAbpTwin());
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);

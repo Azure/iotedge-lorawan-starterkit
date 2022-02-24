@@ -257,10 +257,8 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "ada").AsList()));
 
             // will read the device twins
-            var twin = simulatedDevice.CreateABPTwin(desiredProperties: new Dictionary<string, object>
-            {
-                { TwinProperty.KeepAliveTimeout, 3 }
-            });
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetAbpDesiredTwinProperties() with { KeepAliveTimeout = TimeSpan.FromSeconds(3) },
+                                             simulatedDevice.GetAbpReportedTwinProperties());
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
