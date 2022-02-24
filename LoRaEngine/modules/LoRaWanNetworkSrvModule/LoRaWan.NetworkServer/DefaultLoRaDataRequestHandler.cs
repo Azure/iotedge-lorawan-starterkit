@@ -32,7 +32,6 @@ namespace LoRaWan.NetworkServer
         private readonly Counter<int> receiveWindowHits;
         private readonly Histogram<int> d2cPayloadSizeHistogram;
         private readonly Counter<int> c2dMessageTooLong;
-        private readonly Counter<int> unhandledExceptionCount;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
 
         public DefaultLoRaDataRequestHandler(
@@ -60,13 +59,14 @@ namespace LoRaWan.NetworkServer
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
             this.d2cPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.D2CMessageSize);
             this.c2dMessageTooLong = meter?.CreateCounter<int>(MetricRegistry.C2DMessageTooLong);
-            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
             if (request is null) throw new ArgumentNullException(nameof(request));
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
+            var deferredTasks = new List<Task>();
 
             var timeWatcher = request.GetTimeWatcher();
             await using var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
@@ -297,7 +297,7 @@ namespace LoRaWan.NetworkServer
                                     if (!fcntDown.HasValue || fcntDown <= 0)
                                     {
                                         // We did not get a valid frame count down, therefore we should not process the message
-                                        _ = cloudToDeviceMessage.AbandonAsync();
+                                        deferredTasks.Add(cloudToDeviceMessage.AbandonAsync());
 
                                         cloudToDeviceMessage = null;
                                     }
@@ -308,7 +308,10 @@ namespace LoRaWan.NetworkServer
                                 }
                                 else
                                 {
-                                    SendClassCDeviceMessage(decodePayloadResult.CloudToDeviceMessage);
+                                    if (this.classCDeviceMessageSender != null)
+                                    {
+                                        deferredTasks.Add(this.classCDeviceMessageSender.SendAsync(decodePayloadResult.CloudToDeviceMessage));
+                                    }
                                 }
                             }
                         }
@@ -384,7 +387,7 @@ namespace LoRaWan.NetworkServer
                     if (downlinkMessageBuilderResp.DownlinkMessage != null)
                     {
                         this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)downlinkMessageBuilderResp.ReceiveWindow));
-                        _ = request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
+                        deferredTasks.Add(request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage));
 
                         if (cloudToDeviceMessage != null)
                         {
@@ -420,7 +423,7 @@ namespace LoRaWan.NetworkServer
                         if (cloudToDeviceMessage != null && !ValidateCloudToDeviceMessage(loRaDevice, request, cloudToDeviceMessage))
                         {
                             // Reject cloud to device message based on result from ValidateCloudToDeviceMessage
-                            _ = cloudToDeviceMessage.RejectAsync();
+                            deferredTasks.Add(cloudToDeviceMessage.RejectAsync());
                             cloudToDeviceMessage = null;
                         }
 
@@ -435,7 +438,7 @@ namespace LoRaWan.NetworkServer
                                 if (!fcntDown.HasValue || fcntDown <= 0)
                                 {
                                     // We did not get a valid frame count down, therefore we should not process the message
-                                    _ = cloudToDeviceMessage.AbandonAsync();
+                                    deferredTasks.Add(cloudToDeviceMessage.AbandonAsync());
                                     cloudToDeviceMessage = null;
                                 }
                                 else
@@ -456,7 +459,7 @@ namespace LoRaWan.NetworkServer
                                     {
                                         fpending = true;
                                         this.logger.LogInformation($"found cloud to device message, setting fpending flag, message id: {additionalMsg.MessageId ?? "undefined"}");
-                                        _ = additionalMsg.AbandonAsync();
+                                        deferredTasks.Add(additionalMsg.AbandonAsync());
                                     }
                                 }
                             }
@@ -486,25 +489,27 @@ namespace LoRaWan.NetworkServer
                     {
                         this.receiveWindowMissed?.Add(1);
                         this.logger.LogInformation($"out of time for downstream message, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
-                        _ = cloudToDeviceMessage.AbandonAsync();
+                        deferredTasks.Add(cloudToDeviceMessage.AbandonAsync());
                     }
                     else if (confirmDownlinkMessageBuilderResp.IsMessageTooLong)
                     {
                         this.c2dMessageTooLong?.Add(1);
                         this.logger.LogError($"payload will not fit in current receive window, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
-                        _ = cloudToDeviceMessage.AbandonAsync();
+                        deferredTasks.Add(cloudToDeviceMessage.AbandonAsync());
                     }
                     else
                     {
-                        _ = cloudToDeviceMessage.CompleteAsync();
+                        deferredTasks.Add(cloudToDeviceMessage.CompleteAsync());
                     }
                 }
 
                 if (confirmDownlinkMessageBuilderResp.DownlinkMessage != null)
                 {
                     this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)confirmDownlinkMessageBuilderResp.ReceiveWindow));
-                    _ = SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp);
+                    deferredTasks.Add(SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp));
                 }
+
+                await Task.WhenAll(deferredTasks);
 
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkMessage);
                 #endregion
@@ -591,16 +596,6 @@ namespace LoRaWan.NetworkServer
         }
 
         public void SetClassCMessageSender(IClassCDeviceMessageSender classCMessageSender) => this.classCDeviceMessageSender = classCMessageSender;
-
-        private void SendClassCDeviceMessage(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage)
-        {
-            if (this.classCDeviceMessageSender != null)
-            {
-                _ = TaskUtil.RunOnThreadPool(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage),
-                                             ex => this.logger.LogError(ex, $"[class-c] error sending class C cloud to device message. {ex.Message}"),
-                                             this.unhandledExceptionCount);
-            }
-        }
 
         protected virtual async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
         {
