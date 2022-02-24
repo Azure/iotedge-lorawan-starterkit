@@ -24,7 +24,7 @@ The code is organized into three sections:
 A **.NET 6** solution with the following projects:
 
 - **modules** - Azure IoT Edge modules.
-  - **LoRaBasicsStationModule** packages the Basics Station into an IoT Edge compatible docker container (See <https://github.com/lorabasics/basicstation>). If you are using a RAK833-USB, you need to build your own Basics Station docker image starting from the fork [at this link](https://github.com/danigian/basicstation). At the time of writing, SX1302 boards are supported only through SPI. If you are using a SX1302 board via USB you need to build your own Basics Station docker image starting from the fork [at this link](https://github.com/danigian/basicstation/tree/corecell)
+  - **LoRaBasicsStationModule** packages the Basics Station into an IoT Edge compatible docker container (See <https://github.com/lorabasics/basicstation>). If you are using a RAK833-USB, you need to build your own Basics Station docker image starting from the fork [at this link](https://github.com/danigian/basicstation).
   - **LoRaWanNetworkSrvModule** - is the LoRaWAN network server implementation.
 - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
 

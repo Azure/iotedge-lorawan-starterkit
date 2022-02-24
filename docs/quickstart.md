@@ -82,7 +82,7 @@ The template provision an IoT Hub with a [LoRa Basics™ Station](https://github
 
 If you are using the the RAK833-USB, you'll need to build a different LoRa Basics™ Station image. You can find a fork of the official Basic Station repository with support for RAK833-USB [here](https://github.com/danigian/basicstation).
 
-If you are using a SX1302 board via USB, you'll need to build a different LoRa Basics™ Station image. You can find a fork of the official Basic Station repository with support for SX1302 USB boards [here](https://github.com/danigian/basicstation/tree/corecell).
+If you are using a SX1302 (Corecell) board, you'll need to properly configure the built-in deployed module by having a look at the parameters in [Basics™ Station Module Configuration](user-guide/station-module-configuration.md) page.
 
 ## Using a Proxy Server to connect your Concentrator to Azure
 

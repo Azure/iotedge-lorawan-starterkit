@@ -30,17 +30,15 @@ In case you were using the pre-built [Packet Forwarder module](https://github.co
 | SPI_DEV | SPI_DEV | Name is not changing.<br/>In Basics Station module, it is a number identifying the SPI location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)<br/>Field defaults to 0 |
 | SPI_SPEED | SPI_SPEED | Name and functionality are not changing.<br/>In Basics Station module, default to 8, unique alternative provided is 2 |
 
-A more comprehensive list of allowed variables can be found in the [Basic Station module configuration][module-configuration] page
+Previous Packet Forwarder module was built only for SX1301 based devices using SPI communication. Current LoRaBasicsStationModule is built for both SX1301 and SX1302 based devices (starting from v2.1.0).
 
-As previous Packet Forwarder module, the LoRaBasicsStationModule is currently built only for SX1301 based devices using SPI communication.
+A more comprehensive list of allowed variables can be found in the [Basic Station module configuration][module-configuration] page.
 
 ### Custom built docker module
 
 In case you are not using the pre-built Packet Forwarder module, because of hardware incompatibilities, you can try build your own docker module by starting from the [official Basics Station source code](https://github.com/lorabasics/basicstation).
 
 If you own a USB-FTDI mPCIe RAK833 board, an unofficial and not supported fork of the Basics Station can be found [here](https://github.com/danigian/basicstation)
-
-If you own a SX1302 USB based device, an unofficial and not supported fork of the Basics Station can be found [here](https://github.com/danigian/basicstation/tree/corecell)
 
 ### Industrial device
 
