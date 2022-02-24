@@ -40,6 +40,12 @@ namespace LoRaWan.Tests.Common
                 {
                     case null:
                         break;
+                    case uint:
+                    case int:
+                    case Enum:
+                    case bool:
+                        target[key] = value;
+                        break;
                     case IConvertible convertible:
                         target[key] = convertible.ToString(CultureInfo.InvariantCulture);
                         break;
