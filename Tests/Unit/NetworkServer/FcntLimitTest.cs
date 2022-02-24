@@ -148,15 +148,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         // not saving, reported match, reset counter is lower
-        [InlineData(11, 10U, 10U, 10U, 10U, 1, 3, 10, 10, false)]
+        [InlineData(11, 10U, 10U, 10U, 10U, 1U, 3U, 10, 10, false)]
         // saving, reported match, but reset counter is set, reported null
-        [InlineData(11, 10U, 10U, 10U, 10U, 1, null, 10, 10, true)]
+        [InlineData(11, 10U, 10U, 10U, 10U, 1U, null, 10, 10, true)]
         // saving, reported match, but reset counter is set
-        [InlineData(11, 10U, 10U, 10U, 10U, 1, 0, 10, 10, true)]
+        [InlineData(11, 10U, 10U, 10U, 10U, 1U, 0U, 10, 10, true)]
         // save reporting do not match
-        [InlineData(2, 1U, 1U, 0U, 0U, 0, 0, 1U, 1U, true)]
+        [InlineData(2, 1U, 1U, 0U, 0U, 0U, 0U, 1U, 1U, true)]
         // save reporting do not match
-        [InlineData(11, 10U, 20U, 0U, 0U, 0, 0, 10U, 20U, true)]
+        [InlineData(11, 10U, 20U, 0U, 0U, 0U, 0U, 10U, 20U, true)]
         public async Task ValidateFcnt_Start_Values_And_ResetCounter(
             short fcntUp,
             uint startFcntUpDesired,
