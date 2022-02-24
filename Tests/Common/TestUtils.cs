@@ -14,7 +14,6 @@ namespace LoRaWan.Tests.Common
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
     using Xunit;
@@ -48,28 +47,6 @@ namespace LoRaWan.Tests.Common
                 result.SetRequestHandler(requestHandler);
 
             return result;
-        }
-
-        public static Twin CreateTwin(Dictionary<string, object> desired = null, Dictionary<string, object> reported = null)
-        {
-            var twin = new Twin();
-            if (desired != null)
-            {
-                foreach (var kv in desired)
-                {
-                    twin.Properties.Desired[kv.Key] = kv.Value;
-                }
-            }
-
-            if (reported != null)
-            {
-                foreach (var kv in reported)
-                {
-                    twin.Properties.Reported[kv.Key] = kv.Value;
-                }
-            }
-
-            return twin;
         }
 
         /// <summary>

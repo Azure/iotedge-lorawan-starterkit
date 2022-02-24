@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Common
     using System.Globalization;
     using System.Linq;
     using LoRaTools.Regions;
-    using LoRaWan.NetworkServer;
     using Microsoft.Azure.Devices.Shared;
 
     public static class LoRaDeviceTwin
@@ -39,6 +38,9 @@ namespace LoRaWan.Tests.Common
                 switch (value)
                 {
                     case null:
+                        break;
+                    case LoRaRegionType region:
+                        target[key] = region.ToString();
                         break;
                     case uint:
                     case int:
@@ -87,6 +89,9 @@ namespace LoRaWan.Tests.Common
         public int? RxDelay { get; init; }
         public char? ClassType { get; init; }
         public TimeSpan? KeepAliveTimeout { get; init; }
+        public uint? Version { get; init; }
+        public bool? DownlinkEnabled { get; init; }
+        public int? Cn470JoinChannel { get; init; }
 
         public override IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
@@ -114,6 +119,9 @@ namespace LoRaWan.Tests.Common
             yield return KeyValuePair.Create("RXDelay", (object?)RxDelay);
             yield return KeyValuePair.Create("ClassType", (object?)ClassType);
             yield return KeyValuePair.Create("KeepAliveTimeout", (object?)KeepAliveTimeout?.TotalSeconds);
+            yield return KeyValuePair.Create("$version", (object?)Version);
+            yield return KeyValuePair.Create("Downlink", (object?)DownlinkEnabled);
+            yield return KeyValuePair.Create("CN470JoinChannel", (object?)Cn470JoinChannel);
         }
     }
 
@@ -133,6 +141,8 @@ namespace LoRaWan.Tests.Common
         public NetId? NetId { get; init; }
         public DataRateIndex? Rx2DataRate { get; init; }
         public StationEui? LastProcessingStation { get; init; }
+        public uint? Version { get; init; }
+        public int? Cn470JoinChannel { get; init; }
 
         public override IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
@@ -150,6 +160,8 @@ namespace LoRaWan.Tests.Common
             yield return KeyValuePair.Create("NetId", (object?)NetId);
             yield return KeyValuePair.Create("RX2DataRate", (object?)Rx2DataRate);
             yield return KeyValuePair.Create("LastProcessingStationEui", (object?)LastProcessingStation);
+            yield return KeyValuePair.Create("$version", (object?)Version);
+            yield return KeyValuePair.Create("CN470JoinChannel", (object?)Cn470JoinChannel);
         }
     }
 

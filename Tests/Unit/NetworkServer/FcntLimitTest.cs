@@ -163,8 +163,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             uint startFcntDownDesired,
             uint? startFcntUpReported,
             uint? startFcntDownReported,
-            int? fcntResetCounterDesired,
-            int? fcntResetCounterReported,
+            uint? fcntResetCounterDesired,
+            uint? fcntResetCounterReported,
             uint startUpExpected,
             uint startDownExpected,
             bool saveExpected)

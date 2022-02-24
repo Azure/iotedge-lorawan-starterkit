@@ -27,14 +27,46 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     /// </summary>
     public class LoRaDeviceTest
     {
+        private static readonly NetworkServerConfiguration Configuration = new NetworkServerConfiguration { GatewayID = "test-gateway" };
+        private static readonly LoRaDesiredTwinProperties OtaaDesiredTwinProperties = new LoRaDesiredTwinProperties
+        {
+            JoinEui = new JoinEui(0xABC0200000000009),
+            AppKey = TestKeys.CreateAppKey(0xABC0200000000000, 0x09),
+            GatewayId = Configuration.GatewayID,
+            SensorDecoder = "DecoderValueSensor",
+            Version = 1,
+        };
+        private static readonly LoRaReportedTwinProperties OtaaReportedTwinProperties = new LoRaReportedTwinProperties
+        {
+            Version = 1,
+            NetworkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09),
+            AppSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09),
+            DevNonce = new DevNonce(0x0123),
+            DevAddr = new DevAddr(0xAABB),
+        };
+        private static readonly LoRaDesiredTwinProperties AbpDesiredTwinProperties = new LoRaDesiredTwinProperties
+        {
+            NetworkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09),
+            AppSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09),
+            DevAddr = DevAddr.Parse("0000AABB"),
+            GatewayId = Configuration.GatewayID,
+            SensorDecoder = "DecoderValueSensor",
+            Version = 1,
+        };
+        private static readonly LoRaReportedTwinProperties AbpReportedTwinProperties = new LoRaReportedTwinProperties
+        {
+            Version = 1,
+            NetworkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09),
+            AppSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09),
+            DevAddr = new DevAddr(0xAABB),
+        };
+
         private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
-        private readonly NetworkServerConfiguration configuration;
 
         public LoRaDeviceTest()
         {
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.loRaDeviceClient.Setup(ldc => ldc.Dispose());
-            this.configuration = new NetworkServerConfiguration { GatewayID = "test-gateway" };
         }
 
         [Fact]
@@ -106,33 +138,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Initialized_New_OTAA_Device_Should_Have_All_Properties()
         {
-            var appKey = TestKeys.CreateAppKey(0xABC0200000000000, 0x09);
-            var joinEui = new JoinEui(0xABC0200000000009);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
+            const string gateway = "mygateway";
+            var twin = CreateTwin(
+                desired: new()
                 {
-                    { "AppEUI", joinEui.ToString() },
-                    { "AppKey", appKey.ToString() },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { "$version", 1 },
+                    ["AppEUI"] = OtaaDesiredTwinProperties.JoinEui.ToString(),
+                    ["AppKey"] = OtaaDesiredTwinProperties.AppKey.ToString(),
+                    ["GatewayID"] = gateway,
+                    ["SensorDecoder"] = OtaaDesiredTwinProperties.SensorDecoder,
+                    ["$version"] = 1,
                 },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                });
+                reported: new() { ["$version"] = 1 });
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice(null, new DevEui(0xabc0200000000009), connectionManager);
-            await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal(joinEui, loRaDevice.AppEui);
-            Assert.Equal(appKey, loRaDevice.AppKey);
-            Assert.Equal("mygateway", loRaDevice.GatewayID);
-            Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
+            await loRaDevice.InitializeAsync(Configuration);
+            Assert.Equal(OtaaDesiredTwinProperties.JoinEui, loRaDevice.AppEui);
+            Assert.Equal(OtaaDesiredTwinProperties.AppKey, loRaDevice.AppKey);
+            Assert.Equal(gateway, loRaDevice.GatewayID);
+            Assert.Equal(OtaaDesiredTwinProperties.SensorDecoder, loRaDevice.SensorDecoder);
             Assert.Equal(0U, loRaDevice.FCntDown);
             Assert.Equal(0U, loRaDevice.LastSavedFCntDown);
             Assert.Equal(0U, loRaDevice.FCntUp);
@@ -151,27 +178,23 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Initialized_Joined_OTAA_Device_Should_Have_All_Properties()
         {
-            var appKey = TestKeys.CreateAppKey(0xABC0200000000000, 0x09);
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-            var joinEui = new JoinEui(0xABC0200000000009);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
+            const string gatewayId = "mygateway";
+            var twin = CreateTwin(
+                desired: new()
                 {
-                    { "AppEUI", joinEui.ToString() },
-                    { "AppKey", appKey.ToString() },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { "$version", 1 },
+                    ["AppEUI"] = OtaaDesiredTwinProperties.JoinEui.ToString(),
+                    ["AppKey"] = OtaaDesiredTwinProperties.AppKey.ToString(),
+                    ["GatewayID"] = gatewayId,
+                    ["SensorDecoder"] = OtaaDesiredTwinProperties.SensorDecoder,
+                    ["$version"] = 1,
                 },
-                reported: new Dictionary<string, object>
+                reported: new()
                 {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevNonce", "0123" },
-                    { "DevAddr", "0000AABB" },
+                    ["$version"] = 1,
+                    ["NwkSKey"] = OtaaReportedTwinProperties.NetworkSessionKey.ToString(),
+                    ["AppSKey"] = OtaaReportedTwinProperties.AppSessionKey.ToString(),
+                    ["DevNonce"] = OtaaReportedTwinProperties.DevNonce.ToString(),
+                    ["DevAddr"] = OtaaReportedTwinProperties.DevAddr.ToString(),
                 });
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
@@ -179,42 +202,39 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var loRaDevice = CreateDefaultDevice();
 
-            await loRaDevice.InitializeAsync(this.configuration);
-            Assert.Equal(joinEui, loRaDevice.AppEui);
-            Assert.Equal(appKey, loRaDevice.AppKey);
-            Assert.Equal("mygateway", loRaDevice.GatewayID);
-            Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
+            await loRaDevice.InitializeAsync(Configuration);
+            Assert.Equal(OtaaDesiredTwinProperties.JoinEui, loRaDevice.AppEui);
+            Assert.Equal(OtaaDesiredTwinProperties.AppKey, loRaDevice.AppKey);
+            Assert.Equal(gatewayId, loRaDevice.GatewayID);
+            Assert.Equal(OtaaDesiredTwinProperties.SensorDecoder, loRaDevice.SensorDecoder);
             Assert.False(loRaDevice.IsABP);
             Assert.False(loRaDevice.IsOurDevice);
-            Assert.Equal(networkSessionKey, loRaDevice.NwkSKey);
-            Assert.Equal(appSessionKey, loRaDevice.AppSKey);
-            Assert.Equal(new DevNonce(123), loRaDevice.DevNonce);
-            Assert.Equal(new DevAddr(0x0000aabb), loRaDevice.DevAddr);
+            Assert.Equal(OtaaReportedTwinProperties.NetworkSessionKey, loRaDevice.NwkSKey);
+            Assert.Equal(OtaaReportedTwinProperties.AppSessionKey, loRaDevice.AppSKey);
+            Assert.Equal(OtaaReportedTwinProperties.DevNonce, loRaDevice.DevNonce);
+            Assert.Equal(OtaaReportedTwinProperties.DevAddr, loRaDevice.DevAddr);
             Assert.Null(loRaDevice.ReportedDwellTimeSetting);
         }
 
         [Fact]
         public async Task When_Initialized_ABP_Device_Should_Have_All_Properties()
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
+            var twin = CreateTwin(
+                desired: new()
                 {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", this.configuration.GatewayID },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { "$version", 1 },
+                    ["NwkSKey"] = AbpDesiredTwinProperties.NetworkSessionKey.ToString(),
+                    ["AppSKey"] = AbpDesiredTwinProperties.AppSessionKey.ToString(),
+                    ["DevAddr"] = AbpDesiredTwinProperties.DevAddr.ToString(),
+                    ["GatewayID"] = AbpDesiredTwinProperties.GatewayId,
+                    ["SensorDecoder"] = AbpDesiredTwinProperties.SensorDecoder,
+                    ["$version"] = 1,
                 },
-                reported: new Dictionary<string, object>
+                reported: new()
                 {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
+                    ["$version"] = 1,
+                    ["NwkSKey"] = AbpReportedTwinProperties.NetworkSessionKey.ToString(),
+                    ["AppSKey"] = AbpReportedTwinProperties.AppSessionKey.ToString(),
+                    ["DevAddr"] = AbpReportedTwinProperties.DevAddr.ToString(),
                 });
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
@@ -222,11 +242,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var loRaDevice = CreateDefaultDevice();
 
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.Null(loRaDevice.AppEui);
             Assert.Null(loRaDevice.AppKey);
-            Assert.Equal(this.configuration.GatewayID, loRaDevice.GatewayID);
-            Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
+            Assert.Equal(Configuration.GatewayID, loRaDevice.GatewayID);
+            Assert.Equal(AbpDesiredTwinProperties.SensorDecoder, loRaDevice.SensorDecoder);
             Assert.True(loRaDevice.IsABP);
             Assert.True(loRaDevice.IsOurDevice);
             Assert.Equal(0U, loRaDevice.FCntDown);
@@ -234,117 +254,47 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(0U, loRaDevice.FCntUp);
             Assert.Equal(0U, loRaDevice.LastSavedFCntUp);
             Assert.False(loRaDevice.HasFrameCountChanges);
-            Assert.Equal(networkSessionKey, loRaDevice.NwkSKey);
-            Assert.Equal(appSessionKey, loRaDevice.AppSKey);
+            Assert.Equal(AbpReportedTwinProperties.NetworkSessionKey, loRaDevice.NwkSKey);
+            Assert.Equal(AbpReportedTwinProperties.AppSessionKey, loRaDevice.AppSKey);
             Assert.Null(loRaDevice.DevNonce);
             Assert.Equal(new DevAddr(0x0000aabb), loRaDevice.DevAddr);
             Assert.Null(loRaDevice.ReportedDwellTimeSetting);
         }
 
         [Theory]
-        [InlineData("false")]
-        [InlineData("FALSE")]
-        [InlineData(0)]
-        [InlineData(false)]
-        public async Task When_Downlink_Is_Disabled_In_Twin_Should_Have_DownlinkEnabled_Equals_False(object downlinkEnabledTwinValue)
+        [InlineData("false", false)]
+        [InlineData("FALSE", false)]
+        [InlineData(0, false)]
+        [InlineData(false, false)]
+        [InlineData("true", true)]
+        [InlineData("TRUE", true)]
+        [InlineData("1", true)]
+        [InlineData(1, true)]
+        [InlineData(true, true)]
+        public async Task Downlink_Should_Be_Deserialized_Correctly(object downlinkEnabledTwinValue, bool expectedDownlink)
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { TwinProperty.DownlinkEnabled, downlinkEnabledTwinValue },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                });
+            const string gatewayId = "mygateway";
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties with { GatewayId = gatewayId }, AbpReportedTwinProperties);
+            twin.Properties.Desired["Downlink"] = downlinkEnabledTwinValue;
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
-            Assert.False(loRaDevice.DownlinkEnabled);
-        }
-
-        [Theory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        [InlineData("1")]
-        [InlineData(1)]
-        [InlineData(true)]
-        public async Task When_Downlink_Is_Enabled_In_Twin_Should_Have_DownlinkEnabled_Equals_True(object downlinkTwinPropertyValue)
-        {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { TwinProperty.DownlinkEnabled, downlinkTwinPropertyValue },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                });
-
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(twin);
-
-            using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
-            Assert.True(loRaDevice.DownlinkEnabled);
+            await loRaDevice.InitializeAsync(Configuration);
+            Assert.Equal(expectedDownlink, loRaDevice.DownlinkEnabled);
         }
 
         [Fact]
         public async Task When_Downlink_Is_Not_Defined_In_Twin_Should_Have_DownlinkEnabled_Equals_True()
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                });
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties, AbpReportedTwinProperties);
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.True(loRaDevice.DownlinkEnabled);
         }
 
@@ -356,33 +306,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(true)]
         public async Task When_PreferredWindow_Is_Not_2_In_Twin_Should_Have_Window1_As_Preferred(object preferredWindowTwinValue)
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { TwinProperty.PreferredWindow, preferredWindowTwinValue },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                });
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties, AbpReportedTwinProperties);
+            twin.Properties.Desired[TwinProperty.PreferredWindow] = preferredWindowTwinValue;
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.Equal(ReceiveWindow1, loRaDevice.PreferredWindow);
         }
 
@@ -392,95 +323,42 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(2.0)]
         public async Task When_PreferredWindow_Is_2_In_Twin_Should_Have_Window2_As_Preferred(object preferredWindowTwinProperty)
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { TwinProperty.PreferredWindow, preferredWindowTwinProperty },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                });
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties, AbpReportedTwinProperties);
+            twin.Properties.Desired["PreferredWindow"] = preferredWindowTwinProperty;
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.Equal(ReceiveWindow2, loRaDevice.PreferredWindow);
         }
 
         [Fact]
         public async Task When_PreferredWindow_Is_Not_Define_In_Twin_Should_Have_Window1_As_Preferred()
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                });
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties, AbpReportedTwinProperties);
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.Equal(ReceiveWindow1, loRaDevice.PreferredWindow);
         }
 
         [Fact]
         public async Task When_CN470JoinChannel_Is_In_Twin_Should_Have_JoinChannel_Set()
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "CN470JoinChannel", 10 }
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "CN470JoinChannel", 2 }
-                });
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties, AbpReportedTwinProperties);
+            twin.Properties.Desired["CN470JoinChannel"] = 10;
+            twin.Properties.Reported["CN470JoinChannel"] = 2;
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.Equal(2, loRaDevice.ReportedCN470JoinChannel); // check that reported property is prioritized
         }
 
@@ -549,14 +427,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Updating_LastUpdate_Is_Updated()
         {
-            var twin = TestUtils.CreateTwin(desired: GetEssentialDesiredProperties());
+            var twin = LoRaDeviceTwin.Create(OtaaDesiredTwinProperties);
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
             var lastUpdate = loRaDevice.LastUpdate = DateTime.UtcNow - TimeSpan.FromDays(1);
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.True(loRaDevice.LastUpdate > lastUpdate);
         }
 
@@ -568,7 +446,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             using var loRaDevice = CreateDefaultDevice();
             var lastUpdate = loRaDevice.LastUpdate = DateTime.UtcNow - TimeSpan.FromDays(1);
-            await Assert.ThrowsAsync<LoRaProcessingException>(async () => await loRaDevice.InitializeAsync(this.configuration));
+            await Assert.ThrowsAsync<LoRaProcessingException>(async () => await loRaDevice.InitializeAsync(Configuration));
             Assert.Equal(lastUpdate, loRaDevice.LastUpdate);
         }
 
@@ -654,35 +532,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Initialized_ABP_Device_Has_Fcnt_Should_Have_Non_Zero_Fcnt_Values()
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", this.configuration.GatewayID },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "FCntDown", 10 },
-                    { "FCntUp", 20 },
-                });
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties, AbpReportedTwinProperties);
+            twin.Properties.Reported["FCntDown"] = 10;
+            twin.Properties.Reported["FCntUp"] = 20;
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
 
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.True(loRaDevice.IsOurDevice);
             Assert.Equal(10U, loRaDevice.FCntDown);
             Assert.Equal(10U, loRaDevice.LastSavedFCntDown);
@@ -698,36 +557,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Initialized_With_PreferredGateway_And_Region_Should_Get_Properties(
             [CombinatorialValues("EU868", "3132", "eu868", "US915", "us915", "eu")] string regionValue)
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
+            var twin = LoRaDeviceTwin.Create(
+                AbpDesiredTwinProperties,
+                AbpReportedTwinProperties with
                 {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "FCntDown", 10 },
-                    { "FCntUp", 20 },
-                    { "PreferredGatewayID", "gateway1" },
-                    { "Region", regionValue }
+                    FCntDown = 10,
+                    FCntUp = 20,
+                    PreferredGatewayId = "gateway1",
                 });
+
+            twin.Properties.Reported["Region"] = regionValue;
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
 
             if (string.Equals(LoRaRegionType.EU868.ToString(), regionValue, StringComparison.OrdinalIgnoreCase))
                 Assert.Equal(LoRaRegionType.EU868, loRaDevice.LoRaRegion);
@@ -745,81 +590,48 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(120, 120)]
         public async Task When_Initialized_With_Keep_Alive_Should_Read_Value_From_Twin(object keepAliveTimeoutValue, int expectedKeepAliveTimeout)
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
-                {
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "DecoderValueSensor" },
-                    { "KeepAliveTimeout", keepAliveTimeoutValue },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" }
-                });
+            const string gatewayId = "mygateway";
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties with { GatewayId = gatewayId }, AbpReportedTwinProperties);
+            twin.Properties.Desired["KeepAliveTimeout"] = keepAliveTimeoutValue;
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.Equal(expectedKeepAliveTimeout, loRaDevice.KeepAliveTimeout);
         }
 
         [Fact]
         public async Task When_Initialized_With_Class_C_And_Custom_RX2DR_Should_Have_Correct_Properties()
         {
-            var networkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var appSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09);
-
-            var twin = TestUtils.CreateTwin(
-                desired: new Dictionary<string, object>
+            var twin = LoRaDeviceTwin.Create(
+                OtaaDesiredTwinProperties,
+                OtaaReportedTwinProperties with
                 {
-                    { "AppEUI", new JoinEui(0xABCD1234).ToString() },
-                    { "AppKey", "ABCD2000000000000000000000000009" },
-                    { "ClassType", "C" },
-                    { "GatewayID", "mygateway" },
-                    { "SensorDecoder", "http://mydecoder" },
-                    { "RX2DataRate", "10" },
-                    { "$version", 1 },
-                },
-                reported: new Dictionary<string, object>
-                {
-                    { "$version", 1 },
-                    { "NwkSKey", networkSessionKey.ToString() },
-                    { "AppSKey", appSessionKey.ToString() },
-                    { "DevAddr", "0000AABB" },
-                    { "FCntDown", 9 },
-                    { "FCntUp", 100 },
-                    { "DevEUI", "ABC0200000000009" },
-                    { "NetId", "010000" },
-                    { "DevNonce", "C872" },
-                    { "RX2DataRate", 10 },
-                    { "Region", "US915" },
+                    FCntDown = 9,
+                    FCntUp = 100,
+                    NetId = new NetId(1231),
+                    Region = LoRaRegionType.US915
                 });
+
+            twin.Properties.Desired["RX2DataRate"] = "10";
+            twin.Properties.Desired["ClassType"] = "C";
+            twin.Properties.Reported["RX2DataRate"] = 10;
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
             using var loRaDevice = CreateDefaultDevice();
-            await loRaDevice.InitializeAsync(this.configuration);
+            await loRaDevice.InitializeAsync(Configuration);
             Assert.Equal(LoRaDeviceClassType.C, loRaDevice.ClassType);
-            Assert.Equal("mygateway", loRaDevice.GatewayID);
+            Assert.Equal(OtaaDesiredTwinProperties.GatewayId, loRaDevice.GatewayID);
             Assert.Equal(9u, loRaDevice.FCntDown);
             Assert.Equal(100u, loRaDevice.FCntUp);
             Assert.Equal(DR10, loRaDevice.ReportedRX2DataRate.Value);
             Assert.Equal(DR10, loRaDevice.DesiredRX2DataRate.Value);
-            Assert.Equal(appSessionKey, loRaDevice.AppSKey);
-            Assert.Equal(networkSessionKey, loRaDevice.NwkSKey);
+            Assert.Equal(OtaaReportedTwinProperties.AppSessionKey, loRaDevice.AppSKey);
+            Assert.Equal(OtaaReportedTwinProperties.NetworkSessionKey, loRaDevice.NwkSKey);
             Assert.Equal(LoRaRegionType.US915, loRaDevice.LoRaRegion);
             Assert.False(loRaDevice.IsABP);
         }
@@ -877,24 +689,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             using var loRaDevice = CreateDefaultDevice();
             var dwellTimeSetting = new DwellTimeSetting(true, false, 4);
-            var twin = TestUtils.CreateTwin(GetEssentialDesiredProperties(),
-                                            new Dictionary<string, object> { [TwinProperty.TxParam] = JsonSerializer.Serialize(dwellTimeSetting) });
+            var twin = LoRaDeviceTwin.Create(OtaaDesiredTwinProperties);
+            twin.Properties.Reported["TxParam"] = JsonSerializer.Serialize(dwellTimeSetting);
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                                  .ReturnsAsync(twin);
 
             // act
-            _ = await loRaDevice.InitializeAsync(this.configuration);
+            _ = await loRaDevice.InitializeAsync(Configuration);
 
             // assert
             Assert.Equal(dwellTimeSetting, loRaDevice.ReportedDwellTimeSetting);
         }
-
-        private static Dictionary<string, object> GetEssentialDesiredProperties() =>
-            new Dictionary<string, object>
-            {
-                ["AppEUI"] = new JoinEui(0xABCD1234).ToString(),
-                ["AppKey"] = TestKeys.CreateAppKey(1).ToString()
-            };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         private LoRaDevice CreateDefaultDevice(ILoRaDeviceClientConnectionManager connectionManager = null) =>
@@ -917,11 +722,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 const uint fcntUp = 10;
                 const uint fcntDown = 2;
-                var twin = TestUtils.CreateTwin(reported: new Dictionary<string, object>
-                                                {
-                                                    [TwinProperty.FCntUp] = fcntUp,
-                                                    [TwinProperty.FCntDown] = fcntDown
-                                                });
+
+                var twin = LoRaDeviceTwin.Create(reportedProperties: new LoRaReportedTwinProperties
+                {
+                    FCntUp = fcntUp,
+                    FCntDown = fcntDown,
+                });
 
                 device.ExecuteInitializeFrameCounters(twin);
                 AssertFcntUp(fcntUp, device);
@@ -941,20 +747,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 const uint fcntUp = 10;
                 const uint fcntDown = 2;
-                var twin = TestUtils.CreateTwin(desired: new Dictionary<string, object>
-                                                {
-                                                    [TwinProperty.FCntUpStart] = startDesiredUp,
-                                                    [TwinProperty.FCntDownStart] = startDesiredDown,
-                                                    [TwinProperty.FCntResetCounter] = fcntResetDesired
-                                                },
-                                                reported: new Dictionary<string, object>
-                                                {
-                                                    [TwinProperty.FCntUpStart] = startReportedUp,
-                                                    [TwinProperty.FCntDownStart] = startReportedDown,
-                                                    [TwinProperty.FCntUp] = fcntUp,
-                                                    [TwinProperty.FCntDown] = fcntDown,
-                                                    [TwinProperty.FCntResetCounter] = fcntResetReported
-                                                });
+
+                var twin = LoRaDeviceTwin.Create(
+                    new LoRaDesiredTwinProperties
+                    {
+                        FCntUpStart = startDesiredUp,
+                        FCntDownStart = startDesiredDown,
+                        FCntResetCounter = fcntResetDesired
+                    },
+                    new LoRaReportedTwinProperties
+                    {
+                        FCntUpStart = startReportedUp,
+                        FCntDownStart = startReportedDown,
+                        FCntUp = fcntUp,
+                        FCntDown = fcntDown,
+                        FCntResetCounter = fcntResetReported
+                    });
 
                 device.ExecuteInitializeFrameCounters(twin);
 
@@ -981,18 +789,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
                 const uint fcntUp = 10;
                 const uint fcntDown = 2;
-                var twin = TestUtils.CreateTwin(desired: new Dictionary<string, object>
-                                                {
-                                                    [TwinProperty.FCntUpStart] = startDesiredUp,
-                                                    [TwinProperty.FCntDownStart] = startDesiredDown
-                                                },
-                                                reported: new Dictionary<string, object>
-                                                {
-                                                    [TwinProperty.FCntUpStart] = startReportedUp,
-                                                    [TwinProperty.FCntDownStart] = startReportedDown,
-                                                    [TwinProperty.FCntUp] = fcntUp,
-                                                    [TwinProperty.FCntDown] = fcntDown
-                                                });
+                var twin = LoRaDeviceTwin.Create(
+                    new LoRaDesiredTwinProperties
+                    {
+                        FCntUpStart = startDesiredUp,
+                        FCntDownStart = startDesiredDown,
+                    },
+                    new LoRaReportedTwinProperties
+                    {
+                        FCntUpStart = startReportedUp,
+                        FCntDownStart = startReportedDown,
+                        FCntUp = fcntUp,
+                        FCntDown = fcntDown
+                    });
 
                 device.ExecuteInitializeFrameCounters(twin);
 
@@ -1056,6 +865,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // assert
             connectionManagerMock.Verify(x => x.BeginDeviceClientConnectionActivity(target),
                                          Times.Exactly(timeoutSeconds > 0 ? 1 : 0));
+        }
+
+        private static Twin CreateTwin(Dictionary<string, object> desired = null, Dictionary<string, object> reported = null)
+        {
+            var twin = new Twin();
+            if (desired != null)
+            {
+                foreach (var kv in desired)
+                {
+                    twin.Properties.Desired[kv.Key] = kv.Value;
+                }
+            }
+
+            if (reported != null)
+            {
+                foreach (var kv in reported)
+                {
+                    twin.Properties.Reported[kv.Key] = kv.Value;
+                }
+            }
+
+            return twin;
         }
     }
 }
