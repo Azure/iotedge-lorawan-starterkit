@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -738,8 +739,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await unconfirmedRequest1.WaitCompleteAsync());
             Assert.Null(unconfirmedRequest1.ResponseDownlink);
 
-            // wait 10ms so that loader is removed
-            await Task.Delay(10);
+            await WaitForLoaderEvictionAsync();
 
             // Unconfirmed message #2 should fail
             var payload2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
@@ -748,8 +748,7 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await unconfirmedRequest2.WaitCompleteAsync());
             Assert.Null(unconfirmedRequest2.ResponseDownlink);
 
-            // wait 10ms so that loader is removed
-            await Task.Delay(10);
+            await WaitForLoaderEvictionAsync();
 
             // Unconfirmed message #3 should succeed
             var payload3 = simulatedDevice.CreateUnconfirmedDataUpMessage("3", fcnt: 3);
@@ -765,6 +764,8 @@ namespace LoRaWan.Tests.Integration
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
+
+            Task WaitForLoaderEvictionAsync() => cache.WaitForEvictionAsync(LoRaDeviceRegistry.GetDevLoaderCacheKey(devAddr), CancellationToken.None);
         }
 
         /// <summary>
