@@ -29,73 +29,58 @@ namespace LoRaWan.Tests.Integration
             this.downstreamMessageSender = new TestDownstreamMessageSender();
         }
 
-        public static IEnumerable<object[]> Multiple_ABP_Messages()
+        public static TheoryData<ParallelTestConfiguration> Multiple_ABP_Messages() => TheoryDataFactory.From(new[]
         {
-            yield return new object[]
+            new ParallelTestConfiguration
             {
-                    new ParallelTestConfiguration()
-                    {
-                        DeviceID = 1,
-                        GatewayID = ServerGatewayID,
-                        BetweenMessageDuration = 1000,
-                        SearchByDevAddrDuration = 100,
-                        SendEventDuration = 100,
-                        ReceiveEventDuration = 100,
-                        UpdateTwinDuration = 100,
-                        LoadTwinDuration = 100,
-                    }
-            };
-
+                DeviceID = 1,
+                GatewayID = ServerGatewayID,
+                BetweenMessageDuration = 1000,
+                SearchByDevAddrDuration = 100,
+                SendEventDuration = 100,
+                ReceiveEventDuration = 100,
+                UpdateTwinDuration = 100,
+                LoadTwinDuration = 100,
+            },
             // Slow first calls
-            yield return new object[]
+            new ParallelTestConfiguration
             {
-                    new ParallelTestConfiguration()
-                    {
-                        DeviceID = 2,
-                        GatewayID = ServerGatewayID,
-                        BetweenMessageDuration = 1000,
-                        SearchByDevAddrDuration = new int[] { 1000, 100 },
-                        SendEventDuration = new int[] { 1000, 100 },
-                        ReceiveEventDuration = 400,
-                        UpdateTwinDuration = new int[] { 1000, 100 },
-                        LoadTwinDuration = new int[] { 1000, 100 },
-                    }
-            };
-
+                DeviceID = 2,
+                GatewayID = ServerGatewayID,
+                BetweenMessageDuration = 1000,
+                SearchByDevAddrDuration = new int[] { 1000, 100 },
+                SendEventDuration = new int[] { 1000, 100 },
+                ReceiveEventDuration = 400,
+                UpdateTwinDuration = new int[] { 1000, 100 },
+                LoadTwinDuration = new int[] { 1000, 100 },
+            },
             // Slow first calls with non-zero fcnt counts
-            yield return new object[]
+            new ParallelTestConfiguration
             {
-                    new ParallelTestConfiguration()
-                    {
-                        DeviceID = 3,
-                        GatewayID = ServerGatewayID,
-                        BetweenMessageDuration = 1000,
-                        SearchByDevAddrDuration = new int[] { 1000, 100 },
-                        SendEventDuration = new int[] { 1000, 100 },
-                        ReceiveEventDuration = 400,
-                        UpdateTwinDuration = new int[] { 1000, 100 },
-                        LoadTwinDuration = new int[] { 1000, 100 },
-                        DeviceTwinFcntDown = 5,
-                        DeviceTwinFcntUp = 11,
-                    }
-            };
-
+                DeviceID = 3,
+                GatewayID = ServerGatewayID,
+                BetweenMessageDuration = 1000,
+                SearchByDevAddrDuration = new int[] { 1000, 100 },
+                SendEventDuration = new int[] { 1000, 100 },
+                ReceiveEventDuration = 400,
+                UpdateTwinDuration = new int[] { 1000, 100 },
+                LoadTwinDuration = new int[] { 1000, 100 },
+                DeviceTwinFcntDown = 5,
+                DeviceTwinFcntUp = 11,
+            },
             // Very slow first calls
-            yield return new object[]
+            new ParallelTestConfiguration
             {
-                    new ParallelTestConfiguration()
-                    {
-                        DeviceID = 4,
-                        GatewayID = ServerGatewayID,
-                        BetweenMessageDuration = 1000,
-                        SearchByDevAddrDuration = new int[] { 5000, 100 },
-                        SendEventDuration = new int[] { 1000, 100 },
-                        ReceiveEventDuration = 400,
-                        UpdateTwinDuration = new int[] { 5000, 100 },
-                        LoadTwinDuration = new int[] { 5000, 100 },
-                    }
-            };
-        }
+                DeviceID = 4,
+                GatewayID = ServerGatewayID,
+                BetweenMessageDuration = 1000,
+                SearchByDevAddrDuration = new int[] { 5000, 100 },
+                SendEventDuration = new int[] { 1000, 100 },
+                ReceiveEventDuration = 400,
+                UpdateTwinDuration = new int[] { 5000, 100 },
+                LoadTwinDuration = new int[] { 5000, 100 },
+            }
+        });
 
         [Theory]
         [MemberData(nameof(Multiple_ABP_Messages))]
