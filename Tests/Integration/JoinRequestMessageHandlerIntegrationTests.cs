@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Integration
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
 
             // assert
-            this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None), Times.Once);
+            this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, true), Times.Once);
             if (!joinHandledByAnotherGateway)
                 this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Once());
 
@@ -107,7 +107,7 @@ namespace LoRaWan.Tests.Integration
             joinRequest = this.simulatedDevice.CreateJoinRequest();
             loraRequest.SetPayload(joinRequest);
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
-            this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None), Times.Exactly(2));
+            this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, true), Times.Exactly(2));
         }
 
         protected override async ValueTask DisposeAsync(bool disposing)

@@ -380,7 +380,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await deviceLoader.ExecuteCreateDevicesAsync(new[] { new IoTHubDeviceInfo { DevAddr = new DevAddr(0x456),  DevEUI = devEui } });
 
             loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
-            loRaDevice.Verify(x => x.CloseConnectionAsync(CancellationToken.None), Times.Once);
+            loRaDevice.Verify(x => x.CloseConnectionAsync(CancellationToken.None, false), Times.Once);
         }
 
         [Fact]
@@ -399,7 +399,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await deviceLoader.ExecuteCreateDevicesAsync(new[] { new IoTHubDeviceInfo { DevAddr = new DevAddr(0x456), DevEUI = devEui } });
 
             loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
-            loRaDevice.Verify(x => x.CloseConnectionAsync(CancellationToken.None), Times.Once);
+            loRaDevice.Verify(x => x.CloseConnectionAsync(CancellationToken.None, false), Times.Once);
 
             Assert.True(deviceLoader.HasLoadingDeviceError);
         }
