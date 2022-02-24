@@ -22,6 +22,8 @@ namespace LoRaWan.Tests.Integration
         private readonly SimulatedDevice simulatedDevice;
         private readonly Mock<LoRaDevice> deviceMock;
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
+        private readonly Mock<ILoRaDeviceRegistry> deviceRegistryMock;
+        private readonly Mock<ILoRaDeviceClient> clientMock;
         private bool disposedValue;
 
         public JoinRequestMessageHandlerIntegrationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
@@ -41,18 +43,18 @@ namespace LoRaWan.Tests.Integration
 
             this.cache = new MemoryCache(new MemoryCacheOptions());
             var concentratorDeduplication = new ConcentratorDeduplication(this.cache, this.testOutputLoggerFactory.CreateLogger<IConcentratorDeduplication>());
-            var deviceRegistryMock = new Mock<ILoRaDeviceRegistry>();
-            _ = deviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(It.IsAny<DevEui>(), It.IsAny<DevNonce>()))
+            this.deviceRegistryMock = new Mock<ILoRaDeviceRegistry>();
+            _ = this.deviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(It.IsAny<DevEui>(), It.IsAny<DevNonce>()))
                 .ReturnsAsync(this.deviceMock.Object);
 
-            var clientMock = new Mock<ILoRaDeviceClient>();
-            _ = clientMock.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-            ConnectionManager.Register(this.deviceMock.Object, clientMock.Object);
+            this.clientMock = new Mock<ILoRaDeviceClient>();
+            _ = this.clientMock.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            ConnectionManager.Register(this.deviceMock.Object, this.clientMock.Object);
 
             this.joinRequestHandler = new JoinRequestMessageHandler(
                 ServerConfiguration,
                 concentratorDeduplication,
-                deviceRegistryMock.Object,
+                this.deviceRegistryMock.Object,
                 this.testOutputLoggerFactory.CreateLogger<JoinRequestMessageHandler>(),
                 null);
         }
@@ -73,12 +75,14 @@ namespace LoRaWan.Tests.Integration
 
             // assert
             this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Once());
+            this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), null), Times.Once());
 
             // do another request
             joinRequest = this.simulatedDevice.CreateJoinRequest();
             loraRequest.SetPayload(joinRequest);
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
             this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+            this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), It.IsNotNull<DevAddr>()), Times.Once());
         }
 
         [Theory]
@@ -101,13 +105,42 @@ namespace LoRaWan.Tests.Integration
             // assert
             this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, true), Times.Once);
             if (!joinHandledByAnotherGateway)
+            {
                 this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Once());
+                this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), null), Times.Once());
+            }
 
             // act and assert again
             joinRequest = this.simulatedDevice.CreateJoinRequest();
             loraRequest.SetPayload(joinRequest);
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
             this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, true), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task Ensures_Registry_Update_Only_Invoked_When_Twin_Updated()
+        {
+            var joinRequest = this.simulatedDevice.CreateJoinRequest();
+            var loraRequest = CreateWaitableRequest(joinRequest);
+            loraRequest.SetPayload(joinRequest);
+            loraRequest.SetRegion(new RegionEU868());
+
+            _ = this.clientMock.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+            // first request will not be able to update twin
+            await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
+
+            // assert
+            this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Once());
+            this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), It.IsAny<DevAddr>()), Times.Never());
+
+            // do another request, which will succeed and therefore deviceRegistry should be updated
+            _ = this.clientMock.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            joinRequest = this.simulatedDevice.CreateJoinRequest();
+            loraRequest.SetPayload(joinRequest);
+            await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
+            this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+            // asserting that a UpdateDeviceAfterJoin with a null "oldDevAddr" is received meaning that device was not in dev Addr cache
+            this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), null), Times.Once());
         }
 
         protected override async ValueTask DisposeAsync(bool disposing)
