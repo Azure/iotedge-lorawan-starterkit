@@ -188,12 +188,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var (submittedList, processedList) = await TestProcessing(subject, processorIds);
 
             Assert.Equal(submittedList, processorIds);
-
-            // Suppose "processorCount" is 10 then one would expect that the processors got
-            // processed in the order [1, 10, 9, 8, 7, 6, 5, 4, 3, 2]. Processor 1 always go
-            // through first because when there is no other processor queued and the scheduler
-            // gets called where 1 is the only processor to select from.
-
             Assert.Equal(scheduler.SelectionList, processedList);
         }
 
