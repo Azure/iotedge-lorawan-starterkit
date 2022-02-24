@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer
                     try
                     {
                         // if the created client is registered, release it
-                        if (loRaDeviceClient != ((IIdentityProvider<ILoRaDeviceClient>)this.connectionManager.GetClient(loRaDevice)).Identity)
+                        if (!ReferenceEquals(loRaDeviceClient, ((IIdentityProvider<ILoRaDeviceClient>)this.connectionManager.GetClient(loRaDevice)).Identity))
                         {
                             this.logger.LogDebug("leaked connection found");
                         }
