@@ -22,18 +22,20 @@ namespace LoRaWan.NetworkServer
 
         private readonly TelemetryClient telemetryClient;
         private readonly string iotHubHostName;
+        private readonly string iotHubDependencySuffix;
 
         public ApplicationInsightsTracing(TelemetryClient telemetryClient, NetworkServerConfiguration networkServerConfiguration)
         {
             this.telemetryClient = telemetryClient;
             this.iotHubHostName = networkServerConfiguration.IoTHubHostName;
+            this.iotHubDependencySuffix = networkServerConfiguration.EnableGateway ? "(Gateway)" : "(Direct)";
         }
 
         public IDisposable TrackDataMessage() => this.telemetryClient.StartOperation<RequestTelemetry>("Data message");
 
         public IDisposable TrackIotHubDependency(string dependencyName, string data)
         {
-            var dependencyTelemetry = new DependencyTelemetry(IotHubDependencyTypeName, this.iotHubHostName, dependencyName, data);
+            var dependencyTelemetry = new DependencyTelemetry(IotHubDependencyTypeName, this.iotHubHostName, $"{dependencyName} {this.iotHubDependencySuffix}", data);
             return this.telemetryClient.StartOperation(dependencyTelemetry);
         }
     }
