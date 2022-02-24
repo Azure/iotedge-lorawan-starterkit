@@ -30,7 +30,7 @@ In case you were using the pre-built [Packet Forwarder module](https://github.co
 | SPI_DEV | SPI_DEV | Name is not changing.<br/>In Basics Station module, it is a number identifying the SPI location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)<br/>Field defaults to 0 |
 | SPI_SPEED | SPI_SPEED | Name and functionality are not changing.<br/>In Basics Station module, default to 8, unique alternative provided is 2 |
 
-Previous Packet Forwarder module was built only for SX1301 based devices using SPI communication. Current LoRaBasicsStationModule is built for both SX1301 and SX1302 based devices (starting from v2.1.0).
+Previously, the Packet Forwarder module was built only for SX1301 based devices using SPI communication. Current LoRaBasicsStationModule is built for both SX1301 and SX1302 based devices (starting from v2.1.0).
 
 A more comprehensive list of allowed variables can be found in the [Basic Station module configuration][module-configuration] page.
 
