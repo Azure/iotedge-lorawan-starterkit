@@ -19,7 +19,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static readonly NetworkServerConfiguration NetworkServerConfiguration = new NetworkServerConfiguration { IoTHubHostName = "somehub.azure-devices.net" };
         private readonly StubTelemetryChannel stubTelemetryChannel;
         private readonly TelemetryConfiguration configuration;
-        private readonly ApplicationInsightsTracing subject;
 
         public ApplicationInsightsTracingTests()
         {
@@ -30,15 +29,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 InstrumentationKey = Guid.NewGuid().ToString(),
                 TelemetryInitializers = { new OperationCorrelationTelemetryInitializer() }
             };
-
-            this.subject = new ApplicationInsightsTracing(new TelemetryClient(this.configuration), NetworkServerConfiguration);
         }
 
         [Fact]
         public void TrackDataMessage_Starts_ApplicationInsights_Operation()
         {
+            // arrange
+            var subject = Setup();
+
             // act
-            using (var operationHolder = this.subject.TrackDataMessage()) { /* noop */ }
+            using (var operationHolder = subject.TrackDataMessage()) { /* noop */ }
 
             // assert
             var telemetry = Assert.Single(this.stubTelemetryChannel.SentTelemetry);
@@ -52,17 +52,40 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // arrange
             const string dependencyName = "SDK GetTwin";
             const string data = "id=deviceFoo";
+            var subject = Setup();
 
             // act
-            using (var operationHolder = this.subject.TrackIotHubDependency(dependencyName, data)) { /* noop */ }
+            using (var operationHolder = subject.TrackIotHubDependency(dependencyName, data)) { /* noop */ }
 
             // assert
             var telemetry = Assert.Single(this.stubTelemetryChannel.SentTelemetry);
             var dependencyTelemetry = Assert.IsType<DependencyTelemetry>(telemetry);
             Assert.Equal("Azure IoT Hub", dependencyTelemetry.Type);
             Assert.Equal(NetworkServerConfiguration.IoTHubHostName, dependencyTelemetry.Target);
-            Assert.Equal(dependencyName, dependencyTelemetry.Name);
+            Assert.Equal($"{dependencyName} (Gateway)", dependencyTelemetry.Name);
             Assert.Equal(data, dependencyTelemetry.Data);
+        }
+
+        [Theory]
+        [InlineData(true, "(Gateway)")]
+        [InlineData(false, "(Direct)")]
+        public void TrackIotHubDependency_Tracks_Gateway_Or_Direct_Mode(bool enableGateway, string expectedSuffix)
+        {
+            // arrange
+            var networkServerConfiguration = new NetworkServerConfiguration
+            {
+                IoTHubHostName = NetworkServerConfiguration.IoTHubHostName,
+                EnableGateway = enableGateway
+            };
+            var subject = Setup(networkServerConfiguration);
+
+            // act
+            using (var operationHolder = subject.TrackIotHubDependency("foo", "bar")) { /* noop */ }
+
+            // assert
+            var telemetry = Assert.Single(this.stubTelemetryChannel.SentTelemetry);
+            var dependencyTelemetry = Assert.IsType<DependencyTelemetry>(telemetry);
+            Assert.True(dependencyTelemetry.Name.EndsWith(expectedSuffix, StringComparison.Ordinal), $"Expected '{dependencyTelemetry.Name}' to end with '{expectedSuffix}'.");
         }
 
         public void Dispose()
@@ -70,6 +93,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.stubTelemetryChannel.Dispose();
             this.configuration.Dispose();
         }
+
+        private ApplicationInsightsTracing Setup() => Setup(NetworkServerConfiguration);
+
+        private ApplicationInsightsTracing Setup(NetworkServerConfiguration networkServerConfiguration) =>
+            new ApplicationInsightsTracing(new TelemetryClient(this.configuration), networkServerConfiguration);
 
         private sealed class StubTelemetryChannel : ITelemetryChannel
         {
