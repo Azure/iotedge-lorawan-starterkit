@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Common
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using Microsoft.Azure.EventHubs;
+    using Azure.Messaging.EventHubs;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Xunit;
@@ -363,7 +363,7 @@ namespace LoRaWan.Tests.Common
 
                 foreach (var item in IoTHubMessages.Events)
                 {
-                    var bodyText = item.Body.Count > 0 ? Encoding.UTF8.GetString(item.Body) : string.Empty;
+                    var bodyText = Encoding.UTF8.GetString(item.EventBody);
                     var searchLogEvent = new SearchLogEvent
                     {
                         Message = bodyText,
@@ -409,7 +409,7 @@ namespace LoRaWan.Tests.Common
                 {
                     try
                     {
-                        var bodyText = item.Body.Count > 0 ? Encoding.UTF8.GetString(item.Body) : string.Empty;
+                        var bodyText = Encoding.UTF8.GetString(item.EventBody);
                         var searchLogEvent = new SearchLogEvent
                         {
                             SourceId = item.GetDeviceId(),
