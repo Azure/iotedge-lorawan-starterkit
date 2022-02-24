@@ -82,6 +82,25 @@ namespace LoRaWan.Tests.Simulation
         }
 
         [Fact]
+        public async Task Test_Disconnect()
+        {
+            // arrange
+            const int messageCount = 2;
+            var device = new SimulatedDevice(TestFixtureSim.Device1001_Simulated_ABP, simulatedBasicsStation: new[] { this.simulatedBasicsStations.First() }, logger: this.logger);
+            await SendConfirmedUpstreamMessages(device, 1);
+
+            // arrange
+            device.SimulatedBasicsStations = new[] { this.simulatedBasicsStations.Last() };
+            await SendConfirmedUpstreamMessages(device, 1);
+
+            // assert
+            var expectedLog = "to drop connection";
+            await TestFixture.AssertNetworkServerModuleLogExistsAsync(x => x.Contains(expectedLog, StringComparison.Ordinal), new SearchLogOptions(expectedLog) { TreatAsError = true });
+            await AssertIotHubMessageCountAsync(device, messageCount);
+            AssertMessageAcknowledgement(device, messageCount);
+        }
+
+        [Fact]
         public async Task Single_OTAA_Simulated_Device()
         {
             const int messageCount = 5;
