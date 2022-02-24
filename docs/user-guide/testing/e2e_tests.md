@@ -128,7 +128,8 @@ can discover them with `ls /dev/ttyACM*`.
     "SshPrivateKeyPath": "path-on-local-host-to-ssh-private-key-used-for-remote-ssh-connection",
     "SharedLnsEndpoint": "wss://IP_or_DNS:5001",
     "SharedCupsEndpoint": "https://IP_OR_DNS:5002",
-    "RadioDev": "the-device-path-for-concentrator (i.e. /dev/ttyUSB0)"
+    "RadioDev": "the-device-path-for-concentrator (i.e. /dev/ttyUSB0)",
+    "IsCorecellBasicStation": false // or true if a SX1302 based concentrator is used
   }
 }
 ```
