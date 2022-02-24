@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<LoRaDeviceFactory> logger;
         private readonly Meter meter;
+        private readonly ITracing tracing;
 
         public LoRaDeviceFactory(NetworkServerConfiguration configuration,
                                  ILoRaDataRequestHandler dataRequestHandler,
@@ -26,7 +27,8 @@ namespace LoRaWan.NetworkServer
                                  LoRaDeviceCache loRaDeviceCache,
                                  ILoggerFactory loggerFactory,
                                  ILogger<LoRaDeviceFactory> logger,
-                                 Meter meter)
+                                 Meter meter,
+                                 ITracing tracing)
         {
             this.configuration = configuration;
             this.dataRequestHandler = dataRequestHandler;
@@ -34,6 +36,7 @@ namespace LoRaWan.NetworkServer
             this.loggerFactory = loggerFactory;
             this.logger = logger;
             this.meter = meter;
+            this.tracing = tracing;
             this.loRaDeviceCache = loRaDeviceCache;
         }
 
@@ -145,7 +148,7 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(deviceConnectionStr, transportSettings, this.loggerFactory.CreateLogger<LoRaDeviceClient>(), this.meter);
+                return new LoRaDeviceClient(deviceId, deviceConnectionStr, transportSettings, this.loggerFactory.CreateLogger<LoRaDeviceClient>(), this.meter, this.tracing);
             }
             catch (Exception ex)
             {

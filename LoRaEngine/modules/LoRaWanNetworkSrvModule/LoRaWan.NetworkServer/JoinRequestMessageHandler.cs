@@ -14,6 +14,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
+    using LoRaWan.NetworkServer.Logger;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using static LoRaWan.ReceiveWindowNumber;
