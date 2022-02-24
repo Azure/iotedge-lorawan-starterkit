@@ -17,72 +17,47 @@ namespace LoRaWan.Tests.Common
         {
             var twin = new Twin();
 
-            if (desiredProperties is { } someDesiredProperties)
-            {
-                SetDesiredPropertyIfExists(twin, TwinProperty.DevEUI, someDesiredProperties.DevEui?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.DevAddr, someDesiredProperties.DevAddr?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.AppEui, someDesiredProperties.JoinEui?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.AppKey, someDesiredProperties.AppKey?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.AppSKey, someDesiredProperties.AppSessionKey?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.NwkSKey, someDesiredProperties.NetworkSessionKey?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.GatewayID, someDesiredProperties.GatewayId);
-                SetDesiredPropertyIfExists(twin, TwinProperty.SensorDecoder, someDesiredProperties.SensorDecoder);
-                SetDesiredPropertyIfExists(twin, TwinProperty.Supports32BitFCnt, someDesiredProperties.Supports32BitFCnt?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.ABPRelaxMode, someDesiredProperties.AbpRelaxMode?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.FCntUpStart, someDesiredProperties.FCntUpStart?.ToString(CultureInfo.InvariantCulture));
-                SetDesiredPropertyIfExists(twin, TwinProperty.FCntDownStart, someDesiredProperties.FCntDownStart?.ToString(CultureInfo.InvariantCulture));
-                SetDesiredPropertyIfExists(twin, TwinProperty.FCntResetCounter, someDesiredProperties.FCntResetCounter?.ToString(CultureInfo.InvariantCulture));
-                SetDesiredPropertyIfExists(twin, TwinProperty.RX1DROffset, someDesiredProperties.Rx1DROffset?.ToString(CultureInfo.InvariantCulture));
-                SetDesiredPropertyIfExists(twin, TwinProperty.RX2DataRate, someDesiredProperties.Rx2DataRate?.ToString());
-                var receiveWindow = someDesiredProperties.PreferredWindow switch
-                {
-                    ReceiveWindowNumber.ReceiveWindow1 => 1,
-                    ReceiveWindowNumber.ReceiveWindow2 => 2,
-                    _ => (int?)null
-                };
-                SetDesiredPropertyIfExists(twin, TwinProperty.PreferredWindow, receiveWindow?.ToString(CultureInfo.InvariantCulture));
-                SetDesiredPropertyIfExists(twin, TwinProperty.RXDelay, someDesiredProperties.RxDelay?.ToString(CultureInfo.InvariantCulture));
-                SetDesiredPropertyIfExists(twin, TwinProperty.ClassType, someDesiredProperties.ClassType?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.KeepAliveTimeout, someDesiredProperties.KeepAliveTimeout?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
-            }
+            var zeroProperties = Enumerable.Empty<KeyValuePair<string, object?>>();
 
-            if (reportedProperties is { } someReportedProperties)
+            var properties =
+                from ps in new[]
+                {
+                    from e in desiredProperties ?? zeroProperties
+                    select (twin.Properties.Desired, e.Key, e.Value),
+                    from e in reportedProperties ?? zeroProperties
+                    select (twin.Properties.Reported, e.Key, e.Value),
+                }
+                from p in ps
+                select p;
+
+            foreach (var (target, key, value) in properties)
             {
-                SetReportedPropertyIfExists(twin, TwinProperty.FCntUp, someReportedProperties.FCntUp?.ToString(CultureInfo.InvariantCulture));
-                SetReportedPropertyIfExists(twin, TwinProperty.FCntUpStart, someReportedProperties.FCntUpStart?.ToString(CultureInfo.InvariantCulture));
-                SetReportedPropertyIfExists(twin, TwinProperty.FCntDown, someReportedProperties.FCntDown?.ToString(CultureInfo.InvariantCulture));
-                SetReportedPropertyIfExists(twin, TwinProperty.FCntDownStart, someReportedProperties.FCntDownStart?.ToString(CultureInfo.InvariantCulture));
-                SetReportedPropertyIfExists(twin, TwinProperty.AppSKey, someReportedProperties.AppSessionKey?.ToString());
-                SetReportedPropertyIfExists(twin, TwinProperty.NwkSKey, someReportedProperties.NetworkSessionKey?.ToString());
-                SetReportedPropertyIfExists(twin, TwinProperty.DevAddr, someReportedProperties.DevAddr?.ToString());
-                SetReportedPropertyIfExists(twin, TwinProperty.DevNonce, someReportedProperties.DevNonce?.ToString());
-                SetReportedPropertyIfExists(twin, TwinProperty.FCntResetCounter, someReportedProperties.FCntResetCounter?.ToString(CultureInfo.InvariantCulture));
-                SetReportedPropertyIfExists(twin, TwinProperty.PreferredGatewayID, someReportedProperties.PreferredGatewayId);
-                SetReportedPropertyIfExists(twin, TwinProperty.Region, someReportedProperties.Region?.ToString());
-                SetReportedPropertyIfExists(twin, TwinProperty.NetId, someReportedProperties.NetId?.ToString());
-                SetReportedPropertyIfExists(twin, TwinProperty.RX2DataRate, someReportedProperties.Rx2DataRate?.ToString());
-                SetReportedPropertyIfExists(twin, TwinProperty.LastProcessingStationEui, someReportedProperties.LastProcessingStation?.ToString());
+#pragma warning disable IDE0010 // Add missing cases (false positive)
+                switch (value)
+                {
+                    case null:
+                        break;
+                    case IConvertible convertible:
+                        target[key] = convertible.ToString(CultureInfo.InvariantCulture);
+                        break;
+                    case var obj:
+                        target[key] = obj.ToString();
+                        break;
+                }
+#pragma warning restore IDE0010 // Add missing cases
             }
 
             return twin;
-
-            static void SetDesiredPropertyIfExists(Twin twin, string key, string? value) =>
-                SetPropertyIfExists(twin.Properties.Desired, key, value);
-
-            static void SetReportedPropertyIfExists(Twin twin, string key, string? value) =>
-                SetPropertyIfExists(twin.Properties.Reported, key, value);
-
-            static void SetPropertyIfExists(TwinCollection twinCollection, string key, string? value)
-            {
-                if (value is { } someValue)
-                {
-                    twinCollection[key] = someValue;
-                }
-            }
         }
     }
 
-    public sealed record LoRaDesiredTwinProperties
+    public abstract record LoRaTwinProperties : IEnumerable<KeyValuePair<string, object?>>
+    {
+        public abstract IEnumerator<KeyValuePair<string, object?>> GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    public sealed record LoRaDesiredTwinProperties : LoRaTwinProperties
     {
         public DevEui? DevEui { get; init; }
         public DevAddr? DevAddr { get; init; }
@@ -103,9 +78,37 @@ namespace LoRaWan.Tests.Common
         public int? RxDelay { get; init; }
         public char? ClassType { get; init; }
         public TimeSpan? KeepAliveTimeout { get; init; }
+
+        public override IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
+        {
+            yield return KeyValuePair.Create(TwinProperty.DevEUI, (object?)DevEui);
+            yield return KeyValuePair.Create(TwinProperty.DevAddr, (object?)DevAddr);
+            yield return KeyValuePair.Create(TwinProperty.AppEui, (object?)JoinEui);
+            yield return KeyValuePair.Create(TwinProperty.AppKey, (object?)AppKey);
+            yield return KeyValuePair.Create(TwinProperty.AppSKey, (object?)AppSessionKey);
+            yield return KeyValuePair.Create(TwinProperty.NwkSKey, (object?)NetworkSessionKey);
+            yield return KeyValuePair.Create(TwinProperty.GatewayID, (object?)GatewayId);
+            yield return KeyValuePair.Create(TwinProperty.SensorDecoder, (object?)SensorDecoder);
+            yield return KeyValuePair.Create(TwinProperty.Supports32BitFCnt, (object?)Supports32BitFCnt);
+            yield return KeyValuePair.Create(TwinProperty.ABPRelaxMode, (object?)AbpRelaxMode);
+            yield return KeyValuePair.Create(TwinProperty.FCntUpStart, (object?)FCntUpStart);
+            yield return KeyValuePair.Create(TwinProperty.FCntDownStart, (object?)FCntDownStart);
+            yield return KeyValuePair.Create(TwinProperty.FCntResetCounter, (object?)FCntResetCounter);
+            yield return KeyValuePair.Create(TwinProperty.RX1DROffset, (object?)Rx1DROffset);
+            yield return KeyValuePair.Create(TwinProperty.RX2DataRate, (object?)Rx2DataRate);
+            yield return KeyValuePair.Create(TwinProperty.PreferredWindow, PreferredWindow switch
+            {
+                ReceiveWindowNumber.ReceiveWindow1 => 1,
+                ReceiveWindowNumber.ReceiveWindow2 => 2,
+                _ => (object?)null
+            });
+            yield return KeyValuePair.Create(TwinProperty.RXDelay, (object?)RxDelay);
+            yield return KeyValuePair.Create(TwinProperty.ClassType, (object?)ClassType);
+            yield return KeyValuePair.Create(TwinProperty.KeepAliveTimeout, (object?)KeepAliveTimeout?.TotalSeconds);
+        }
     }
 
-    public sealed record LoRaReportedTwinProperties
+    public sealed record LoRaReportedTwinProperties : LoRaTwinProperties
     {
         public uint? FCntUp { get; init; }
         public uint? FCntUpStart { get; init; }
@@ -121,6 +124,24 @@ namespace LoRaWan.Tests.Common
         public NetId? NetId { get; init; }
         public DataRateIndex? Rx2DataRate { get; init; }
         public StationEui? LastProcessingStation { get; init; }
+
+        public override IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
+        {
+            yield return KeyValuePair.Create(TwinProperty.FCntUp, (object?)FCntUp);
+            yield return KeyValuePair.Create(TwinProperty.FCntUpStart, (object?)FCntUpStart);
+            yield return KeyValuePair.Create(TwinProperty.FCntDown, (object?)FCntDown);
+            yield return KeyValuePair.Create(TwinProperty.FCntDownStart, (object?)FCntDownStart);
+            yield return KeyValuePair.Create(TwinProperty.AppSKey, (object?)AppSessionKey);
+            yield return KeyValuePair.Create(TwinProperty.NwkSKey, (object?)NetworkSessionKey);
+            yield return KeyValuePair.Create(TwinProperty.DevAddr, (object?)DevAddr);
+            yield return KeyValuePair.Create(TwinProperty.DevNonce, (object?)DevNonce);
+            yield return KeyValuePair.Create(TwinProperty.FCntResetCounter, (object?)FCntResetCounter);
+            yield return KeyValuePair.Create(TwinProperty.PreferredGatewayID, (object?)PreferredGatewayId);
+            yield return KeyValuePair.Create(TwinProperty.Region, (object?)Region);
+            yield return KeyValuePair.Create(TwinProperty.NetId, (object?)NetId);
+            yield return KeyValuePair.Create(TwinProperty.RX2DataRate, (object?)Rx2DataRate);
+            yield return KeyValuePair.Create(TwinProperty.LastProcessingStationEui, (object?)LastProcessingStation);
+        }
     }
 
     public static class LoRaDeviceTwinExtensions
