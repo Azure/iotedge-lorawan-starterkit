@@ -936,8 +936,7 @@ namespace LoRaWan.Tests.Integration
 
             Assert.False(DeviceCache.TryGetForPayload(request1.Payload, out _));
 
-            // Wait 100ms so loader can be removed from cache
-            await Task.Delay(100);
+            await cache.WaitForEvictionAsync(LoRaDeviceRegistry.GetDevLoaderCacheKey(devAddr), CancellationToken.None);
 
             // sends 2nd unconfirmed message, now get twin will work
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
