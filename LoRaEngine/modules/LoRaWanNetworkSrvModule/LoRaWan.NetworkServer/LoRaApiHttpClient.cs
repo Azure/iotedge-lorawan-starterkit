@@ -45,9 +45,9 @@ namespace LoRaWan.NetworkServer
 
         internal static IServiceCollection AddApiClient(this IServiceCollection services, Func<HttpMessageHandler> createHttpMessageHandler)
         {
-            // Retry aggressively first to not miss the receive window if possible.
             _ = services.AddHttpClient(LoRaApiHttpClient.Name)
                         .ConfigurePrimaryHttpMessageHandler(createHttpMessageHandler)
+                        // Retry aggressively first to not miss the receive window if possible.
                         .AddTransientHttpErrorPolicy(policyBuilder =>
                             policyBuilder.WaitAndRetryAsync(NumberOfRetries, i => (i <= NumberOfAggressiveRetries ? AggressiveRetryInterval : RetryInterval) * Math.Pow(2, i)));
 
