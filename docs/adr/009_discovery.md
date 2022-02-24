@@ -1,7 +1,7 @@
 # 009. LoRaWAN Network Server (LNS) discovery
 
-**Feature**: [#1480](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1480)
-**Authors**: Bastian Burger, Daniele Maggio, Maggie Salak
+**Feature**: [#1480](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1480)  
+**Authors**: Bastian Burger, Daniele Antonio Maggio, Maggie Salak  
 **Status**: Accepted
 
 Service (or LNS) discovery is part of the LNS protocol. When a LoRa Basics Station (LBS) connects for the first time to a LNS, it invokes the service discovery endpoint (`/router-info`). We want to provide the users with the option to (potentially) increase availability by automatically rebalancing connection attempts to different LNS.

@@ -1,7 +1,8 @@
-# Device Request Queue
+# 011. Device Request Queue
 
-- **Feature**: [#1479]
-- **Status**: Proposed
+**Feature**: [#1479]  
+**Authors**: Atif Aziz  
+**Status**: Accepted  
 
 ## Context
 
