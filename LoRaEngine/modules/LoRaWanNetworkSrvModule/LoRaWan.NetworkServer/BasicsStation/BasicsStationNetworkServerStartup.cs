@@ -115,12 +115,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             if (useApplicationInsights)
             {
-                var options = new ApplicationInsightsServiceOptions
-                {
-                    EnableAdaptiveSampling = false,
-                    InstrumentationKey = appInsightsKey
-                };
-                _ = services.AddApplicationInsightsTelemetry(options)
+                _ = services.AddApplicationInsightsTelemetry(appInsightsKey)
                             .AddSingleton<ITracing, ApplicationInsightsTracing>();
             }
             else
