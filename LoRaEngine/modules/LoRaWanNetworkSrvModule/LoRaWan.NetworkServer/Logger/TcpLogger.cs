@@ -3,7 +3,7 @@
 
 #nullable enable
 
-namespace Logger
+namespace LoRaWan.NetworkServer.Logger
 {
     using System;
     using System.Buffers;
@@ -18,7 +18,6 @@ namespace Logger
     using System.Threading;
     using System.Threading.Channels;
     using System.Threading.Tasks;
-    using LoRaWan;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Logging;

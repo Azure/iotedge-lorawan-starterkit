@@ -40,7 +40,8 @@ namespace LoRaWan.Tests.Common
                    deviceCache,
                    NullLoggerFactory.Instance,
                    NullLogger<LoRaDeviceFactory>.Instance,
-                   meter: null)
+                   meter: null,
+                   new NoopTracing())
         {
             this.loRaDeviceClient = loRaDeviceClient;
         }

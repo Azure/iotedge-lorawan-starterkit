@@ -14,28 +14,61 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.ApplicationInsights.Extensibility;
     using Xunit;
 
-    public sealed class ApplicationInsightsTracingTests
+    public sealed class ApplicationInsightsTracingTests : IDisposable
     {
-        [Fact]
-        public void TrackDataMessage_Starts_ApplicationInsights_Operation()
+        private static readonly NetworkServerConfiguration NetworkServerConfiguration = new NetworkServerConfiguration { IoTHubHostName = "somehub.azure-devices.net" };
+        private readonly StubTelemetryChannel stubTelemetryChannel;
+        private readonly TelemetryConfiguration configuration;
+        private readonly ApplicationInsightsTracing subject;
+
+        public ApplicationInsightsTracingTests()
         {
-            // arrange
-            var stub = new StubTelemetryChannel();
-            using var configuration = new TelemetryConfiguration
+            this.stubTelemetryChannel = new StubTelemetryChannel();
+            this.configuration = new TelemetryConfiguration
             {
-                TelemetryChannel = stub,
+                TelemetryChannel = this.stubTelemetryChannel,
                 InstrumentationKey = Guid.NewGuid().ToString(),
                 TelemetryInitializers = { new OperationCorrelationTelemetryInitializer() }
             };
-            var subject = new ApplicationInsightsTracing(new TelemetryClient(configuration));
 
+            this.subject = new ApplicationInsightsTracing(new TelemetryClient(this.configuration), NetworkServerConfiguration);
+        }
+
+        [Fact]
+        public void TrackDataMessage_Starts_ApplicationInsights_Operation()
+        {
             // act
-            using (var operationHolder = subject.TrackDataMessage()) { /* noop */ }
+            using (var operationHolder = this.subject.TrackDataMessage()) { /* noop */ }
 
             // assert
-            var telemetry = Assert.Single(stub.SentTelemetry);
+            var telemetry = Assert.Single(this.stubTelemetryChannel.SentTelemetry);
             var requestTelemetry = Assert.IsType<RequestTelemetry>(telemetry);
             Assert.Equal("Data message", requestTelemetry.Name);
+        }
+
+        [Fact]
+        public void TrackIotHubDependency_Starts_ApplicationInsights_Operation()
+        {
+            // arrange
+            const string dependencyName = "SDK GetTwin";
+            const string data = "id=deviceFoo";
+
+            // act
+            using (var operationHolder = this.subject.TrackIotHubDependency(dependencyName, data)) { /* noop */ }
+
+            // assert
+            var telemetry = Assert.Single(this.stubTelemetryChannel.SentTelemetry);
+            var dependencyTelemetry = Assert.IsType<DependencyTelemetry>(telemetry);
+            Assert.Equal("Azure IoT Hub", dependencyTelemetry.Type);
+            Assert.Equal(NetworkServerConfiguration.IoTHubHostName, dependencyTelemetry.Target);
+            Assert.Equal(dependencyName, dependencyTelemetry.Name);
+            Assert.Equal(data, dependencyTelemetry.Data);
+        }
+
+        public void Dispose()
+        {
+            this.stubTelemetryChannel.Dispose();
+            this.configuration.Dispose();
         }
 
         private sealed class StubTelemetryChannel : ITelemetryChannel
