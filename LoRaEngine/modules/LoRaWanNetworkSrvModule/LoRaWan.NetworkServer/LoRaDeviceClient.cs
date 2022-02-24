@@ -143,7 +143,7 @@ namespace LoRaWan.NetworkServer
 
                     return true;
                 }
-                catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not send message to IoTHub/Edge with error: {ex.Message}")))
+                catch (OperationCanceledException) when (ExceptionFilterUtility.True(() => this.logger.LogError("could not send message to IoTHub/Edge due to timeout.")))
                 {
                     // continue
                 }
@@ -171,7 +171,7 @@ namespace LoRaWan.NetworkServer
 
                 return msg;
             }
-            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not retrieve cloud to device message with error: {ex.Message}")))
+            catch (OperationCanceledException) when (ExceptionFilterUtility.True(() => this.logger.LogError("could not retrieve cloud to device message due to timeout.")))
             {
                 return null;
             }
@@ -201,7 +201,7 @@ namespace LoRaWan.NetworkServer
                 this.logger.LogDebug("done processing '{OperationName}' on cloud to device message, id: '{MessageId}'.", operationName, messageId);
                 return true;
             }
-            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "'{OperationName}' failed on cloud to device message (id: {MessageId}) with error: '{ExceptionMessage}'.", operationName, messageId, ex.Message)))
+            catch (OperationCanceledException) when (ExceptionFilterUtility.True(() => this.logger.LogError("'{OperationName}' timed out on cloud to device message (id: {MessageId}).", operationName, messageId)))
             {
                 return false;
             }
