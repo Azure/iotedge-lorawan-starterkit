@@ -78,7 +78,7 @@ namespace LoRaWan.Tests.Integration
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(this.loraRequest, this.deviceMock.Object);
 
             // assert
-            this.dataRequestHandlerMock.Verify(x => x.DelayProcessingAssert(), connectionOwner != null && !connectionOwner.GetValueOrDefault() ? Times.Once : Times.Never);
+            this.dataRequestHandlerMock.Verify(x => x.DelayProcessingAssert(), connectionOwner is false ? Times.Once : Times.Never);
         }
 
         [Theory]
