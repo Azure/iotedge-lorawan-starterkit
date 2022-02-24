@@ -3,11 +3,11 @@
 
 #nullable enable
 
-namespace LoRaWan.Tests.Unit.Logger
+namespace LoRaWan.Tests.Unit.NetworkServer.Logger
 {
     using System;
-    using global::Logger;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.Logger;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using Moq;
@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Unit.Logger
             optionsMonitorMock.Setup(om => om.CurrentValue).Returns(configuration);
             optionsMonitorMock.Setup(om => om.OnChange(It.IsAny<Action<LoRaLoggerConfiguration, string>>()))
                               .Callback((Action<LoRaLoggerConfiguration, string> c) => actualOnChangeCallback = c)
-                              .Returns(NullDisposable.Instance);
+                              .Returns(NoopDisposable.Instance);
 
             // act
             using var loggerMonitor = new LoggerConfigurationMonitor(optionsMonitorMock.Object);
@@ -73,7 +73,7 @@ namespace LoRaWan.Tests.Unit.Logger
         {
             var optionsMonitorMock = new Mock<IOptionsMonitor<LoRaLoggerConfiguration>>();
             optionsMonitorMock.Setup(om => om.CurrentValue).Returns(configuration);
-            optionsMonitorMock.Setup(om => om.OnChange(It.IsAny<Action<LoRaLoggerConfiguration, string>>())).Returns(onChangeToken ?? NullDisposable.Instance);
+            optionsMonitorMock.Setup(om => om.OnChange(It.IsAny<Action<LoRaLoggerConfiguration, string>>())).Returns(onChangeToken ?? NoopDisposable.Instance);
             return optionsMonitorMock.Object;
         }
     }

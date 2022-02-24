@@ -328,8 +328,7 @@ namespace LoRaWan.Tests.Integration
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
-            var deviceTwin = TestUtils.CreateABPTwin(simulatedDevice);
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(deviceTwin);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
@@ -415,8 +414,7 @@ namespace LoRaWan.Tests.Integration
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
-            var deviceTwin = TestUtils.CreateABPTwin(simulatedDevice);
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(deviceTwin);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
@@ -501,14 +499,10 @@ namespace LoRaWan.Tests.Integration
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
-            var deviceTwin = TestUtils.CreateABPTwin(
-                simulatedDevice,
-                desiredProperties: new Dictionary<string, object>
-                {
-                    { TwinProperty.PreferredWindow, 2 }
-                });
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetAbpDesiredTwinProperties() with { PreferredWindow = ReceiveWindow2 },
+                                             simulatedDevice.GetAbpReportedTwinProperties());
 
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(deviceTwin);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -935,9 +929,8 @@ namespace LoRaWan.Tests.Integration
             var devEUI = simulatedDevice.DevEUI;
 
             // Will get twin to initialize LoRaDevice
-            var deviceTwin = TestUtils.CreateABPTwin(simulatedDevice);
-            this.LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(deviceTwin);
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);

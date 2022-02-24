@@ -132,7 +132,7 @@ namespace LoRaWan.Tests.Integration
             {
                 // Possible problem: manually casting frmPayload to array. No reversal.
                 var frmPayload = payloadDataDown.Frmpayload.ToArray();
-                var macCommands = MacCommand.CreateServerMacCommandFromBytes(simulatedDevice.DevEUI, frmPayload);
+                var macCommands = MacCommand.CreateServerMacCommandFromBytes(frmPayload);
                 Assert.Single(macCommands);
                 Assert.IsType<LinkCheckAnswer>(macCommands.First());
             }

@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Threading.Tasks;
+    using System.Linq;
     using global::LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -96,30 +97,39 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, foundStation);
         }
 
-        public static TheoryData CreateKeyDataMessagesTheoryData
-            => TheoryDataFactory.From<object, ulong, ushort, ushort, string?>(
-                new (object, ulong, ushort, ushort, string?)[]
-                {
-                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 0), 0, 0, 0, null),
-                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 0), 0, 0, 0, "1"), // a non-relevant field should not influence the key
-                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0x1010101010101010UL), new Mic(0), 0), 0x1010101010101010UL, 0, 0, null),
-                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(1), 0), 0, 1, 0, null),
-                    (new ConcentratorDeduplication.DataMessageKey(new DevEui(0), new Mic(0), 1), 0, 0, 1, null)
-                }
-            );
+        // Ensures that ConcentratorDeduplication.DataMessageKey can be internal, even though it is part of the return type of RawCreateKeyDataMessagesTheoryData.
+        public sealed class DataMessageKeyHolder
+        {
+            internal DataMessageKeyHolder(ConcentratorDeduplication.DataMessageKey dataMessageKey) => Value = dataMessageKey;
+            internal ConcentratorDeduplication.DataMessageKey Value { get; }
+        }
+
+        private static readonly (DevEui DevEui, Mic Mic, ushort FCnt, string? FieldNotUsedInKey)[] RawCreateKeyDataMessagesTheoryData = new (DevEui, Mic, ushort, string?)[]
+        {
+            (new DevEui(0), new Mic(0), 0,  null),
+            (new DevEui(0), new Mic(0), 0, "1"), // a non-relevant field should not influence the key
+            (new DevEui(0x1010101010101010UL), new Mic(0), 0, null),
+            (new DevEui(0), new Mic(1), 0, null),
+            (new DevEui(0), new Mic(0), 1, null)
+        };
+
+        public static TheoryData<DataMessageKeyHolder, DevEui, Mic, ushort, string?> CreateKeyDataMessagesTheoryData =>
+            TheoryDataFactory.From(from dataPoint in RawCreateKeyDataMessagesTheoryData
+                                   select (new DataMessageKeyHolder(new ConcentratorDeduplication.DataMessageKey(dataPoint.DevEui, dataPoint.Mic, dataPoint.FCnt)),
+                                           dataPoint.DevEui, dataPoint.Mic, dataPoint.FCnt, dataPoint.FieldNotUsedInKey));
 
         [Theory]
         [MemberData(nameof(CreateKeyDataMessagesTheoryData))]
-        internal async Task CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(ConcentratorDeduplication.DataMessageKey expectedKey, ulong devEui, ushort mic, ushort frameCounter, string? fieldNotUsedInKey = null)
+        internal async Task CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(DataMessageKeyHolder expectedKey, DevEui devEui, Mic mic, ushort frameCounter, string? fieldNotUsedInKey = null)
         {
             var options = fieldNotUsedInKey ?? string.Empty;
-            await using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, new DevEui(devEui), this.connectionManager);
+            await using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, devEui, this.connectionManager);
 
             var payload = new LoRaPayloadData(this.dataPayload.DevAddr, new MacHeader(MacMessageType.ConfirmedDataUp),
-                                              FrameControlFlags.None, frameCounter, options, "payload", FramePort.AppMin, new Mic(mic),
+                                              FrameControlFlags.None, frameCounter, options, "payload", FramePort.AppMin, mic,
                                               NullLogger.Instance);
 
-            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(payload, testDevice));
+            Assert.Equal(expectedKey.Value, ConcentratorDeduplication.CreateCacheKey(payload, testDevice));
         }
         #endregion
 
@@ -171,27 +181,33 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(station1Eui, addedStation);
         }
 
-        public static TheoryData CreateKeyJoinMessagesTheoryData
-            => TheoryDataFactory.From<object, ulong, ulong, ushort, int?>(
-                new (object, ulong, ulong, ushort, int?)[]
-                {
-                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0, null),
-                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(0)), 0, 0, 0, 1 ), // a non-relevant field should not influence the key
-                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0x1010101010101010UL), new DevEui(0), new DevNonce(0)), 0x1010101010101010UL, 0, 0, null),
-                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0x1010101010101010UL), new DevNonce(0)), 0, 0x1010101010101010UL, 0, null),
-                    (new ConcentratorDeduplication.JoinMessageKey(new JoinEui(0), new DevEui(0), new DevNonce(1)), 0, 0, 1, null),
-                }
-            );
+        // Ensures that ConcentratorDeduplication.JoinMessageKey can be internal, even though it is part of the return type of RawCreateKeyJoinMessagesTheoryData.
+        public sealed class JoinMessageKeyHolder
+        {
+            internal JoinMessageKeyHolder(ConcentratorDeduplication.JoinMessageKey joinMessageKey) => Value = joinMessageKey;
+            internal ConcentratorDeduplication.JoinMessageKey Value { get; }
+        }
+
+        private static readonly (JoinEui JoinEui, DevEui DevEui, DevNonce DevNonce, int? FieldNotUsedInKey)[] RawCreateKeyJoinMessagesTheoryData = new (JoinEui, DevEui, DevNonce, int?)[]
+        {
+            (new JoinEui(0), new DevEui(0), new DevNonce(0), null),
+            (new JoinEui(0), new DevEui(0), new DevNonce(0), 1),
+            (new JoinEui(0x1010101010101010UL), new DevEui(0), new DevNonce(0), null),
+            (new JoinEui(0), new DevEui(0x1010101010101010UL), new DevNonce(0), null),
+            (new JoinEui(0), new DevEui(0), new DevNonce(1), null),
+        };
+
+        public static TheoryData<JoinMessageKeyHolder, JoinEui, DevEui, DevNonce, Mic> CreateKeyJoinMessagesTheoryData =>
+            TheoryDataFactory.From(from dataPoint in RawCreateKeyJoinMessagesTheoryData
+                                   select (new JoinMessageKeyHolder(new ConcentratorDeduplication.JoinMessageKey(dataPoint.JoinEui, dataPoint.DevEui, dataPoint.DevNonce)),
+                                           dataPoint.JoinEui, dataPoint.DevEui, dataPoint.DevNonce, new Mic(dataPoint.FieldNotUsedInKey ?? 0)));
 
         [Theory]
         [MemberData(nameof(CreateKeyJoinMessagesTheoryData))]
-        internal void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(ConcentratorDeduplication.JoinMessageKey expectedKey, ulong joinEui, ulong devEui, ushort devNonce, int? fieldNotUsedInKey = null)
+        public void CreateCacheKey_Should_Return_Expected_Keys_For_Different_JoinRequests(JoinMessageKeyHolder expectedKey, JoinEui joinEui, DevEui devEui, DevNonce devNonce, Mic mic)
         {
-            var micValue = fieldNotUsedInKey ?? 0;
-            var payload = new LoRaPayloadJoinRequest(new JoinEui(joinEui), new DevEui(devEui),
-                                                     new DevNonce(devNonce), new Mic(micValue));
-
-            Assert.Equal(expectedKey, ConcentratorDeduplication.CreateCacheKey(payload));
+            var payload = new LoRaPayloadJoinRequest(joinEui, devEui, devNonce, mic);
+            Assert.Equal(expectedKey.Value, ConcentratorDeduplication.CreateCacheKey(payload));
         }
         #endregion
 

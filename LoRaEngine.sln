@@ -10,8 +10,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.NetworkServer", "Lo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkSrvModule", "LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWanNetworkSrvModule\LoRaWanNetworkSrvModule.csproj", "{B563A551-BF18-4A79-804F-6E8A3AB31990}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "LoRaEngine\modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj", "{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan", "LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan\LoRaWan.csproj", "{E38EDA03-9026-4528-8B4E-3ACA37373E69}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{67C7C34B-B11C-4E10-9D97-728FB122683F}"
@@ -78,14 +76,6 @@ Global
 		{B563A551-BF18-4A79-804F-6E8A3AB31990}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B563A551-BF18-4A79-804F-6E8A3AB31990}.Release|x86.ActiveCfg = Release|Any CPU
 		{B563A551-BF18-4A79-804F-6E8A3AB31990}.Release|x86.Build.0 = Release|Any CPU
-		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Debug|x86.Build.0 = Debug|Any CPU
-		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|x86.ActiveCfg = Release|Any CPU
-		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|x86.Build.0 = Release|Any CPU
 		{E38EDA03-9026-4528-8B4E-3ACA37373E69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E38EDA03-9026-4528-8B4E-3ACA37373E69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E38EDA03-9026-4528-8B4E-3ACA37373E69}.Debug|x86.ActiveCfg = Debug|Any CPU

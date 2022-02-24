@@ -90,11 +90,12 @@ namespace LoRaWan.Tests.Integration
             this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
                 .ReturnsAsync("123");
 
-            var twin = simulatedDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
-            {
-                { TwinProperty.Region, LoRaRegionType.EU868.ToString() },
-                { TwinProperty.LastProcessingStationEui, new StationEui(ulong.MaxValue).ToString() }
-            });
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetAbpDesiredTwinProperties(),
+                                             simulatedDevice.GetAbpReportedTwinProperties() with
+                                             {
+                                                 Region = LoRaRegionType.EU868,
+                                                 LastProcessingStation = new StationEui(ulong.MaxValue)
+                                             });
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 
@@ -152,8 +153,7 @@ namespace LoRaWan.Tests.Integration
 
             if (expectedMacCommandsCount > 0)
             {
-                var macCommands = MacCommand.CreateServerMacCommandFromBytes(
-                    simulatedDevice.DevEUI, payloadDataDown.Fopts);
+                var macCommands = MacCommand.CreateServerMacCommandFromBytes(payloadDataDown.Fopts);
                 Assert.Equal(expectedMacCommandsCount, macCommands.Count);
             }
             else
@@ -180,7 +180,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync("123");
 
             this.deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
-                .ReturnsAsync(simulatedDevice.CreateABPTwin());
+                .ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
 
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;

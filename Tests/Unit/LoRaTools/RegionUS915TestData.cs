@@ -3,9 +3,10 @@
 
 namespace LoRaWan.Tests.Unit.LoRaTools.Regions
 {
-    using System.Collections.Generic;
     using System.Linq;
     using global::LoRaTools.Regions;
+    using LoRaWan.Tests.Common;
+    using Xunit;
     using static LoRaWan.DataRateIndex;
     using static LoRaWan.Metric;
 
@@ -13,141 +14,129 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     {
         private static readonly Region Region = RegionManager.US915;
 
-        public static readonly IEnumerable<object[]> TestRegionFrequencyDataDR1To3 =
-            from dr in new ushort[] { 0, 1, 2, 3 }
-            from freq in new (double Input, double Output)[]
-            {
-                (902.3, 923.3),
-                (902.5, 923.9),
-                (902.7, 924.5),
-                (902.9, 925.1),
-                (903.1, 925.7),
-                (903.3, 926.3),
-                (903.5, 926.9),
-                (903.7, 927.5),
-                (903.9, 923.3),
-                (904.1, 923.9),
-                (904.3, 924.5),
-            }
-            select new object[] { Region, Hertz.Mega(freq.Input), dr, Hertz.Mega(freq.Output) };
+        public static readonly TheoryData<Region, Hertz, DataRateIndex, Hertz> TestRegionFrequencyDataDR1To3 =
+            TheoryDataFactory.From(from dr in new[] { DR0, DR1, DR2, DR3 }
+                                   from freq in new (double Input, double Output)[]
+                                   {
+                                       (902.3, 923.3),
+                                       (902.5, 923.9),
+                                       (902.7, 924.5),
+                                       (902.9, 925.1),
+                                       (903.1, 925.7),
+                                       (903.3, 926.3),
+                                       (903.5, 926.9),
+                                       (903.7, 927.5),
+                                       (903.9, 923.3),
+                                       (904.1, 923.9),
+                                       (904.3, 924.5),
+                                   }
+                                   select (Region, Hertz.Mega(freq.Input), dr, Hertz.Mega(freq.Output)));
 
-        public static readonly IEnumerable<object[]> TestRegionFrequencyDataDR4 =
-            from freq in new (Hertz Input, Hertz Output)[]
-            {
-                (Mega(903  ), Mega(923.3)),
-                (Mega(904.6), Mega(923.9)),
-                (Mega(906.2), Mega(924.5)),
-                (Mega(907.8), Mega(925.1)),
-                (Mega(909.4), Mega(925.7)),
-                (Mega(911  ), Mega(926.3)),
-                (Mega(912.6), Mega(926.9)),
-                (Mega(914.2), Mega(927.5)),
-            }
-            select new object[] { Region, freq.Input, /* data rate */ 4, freq.Output };
+        public static readonly TheoryData<Region, Hertz, DataRateIndex, Hertz> TestRegionFrequencyDataDR4 =
+            TheoryDataFactory.From(from freq in new (Hertz Input, Hertz Output)[]
+                                   {
+                                       (Mega(903  ), Mega(923.3)),
+                                       (Mega(904.6), Mega(923.9)),
+                                       (Mega(906.2), Mega(924.5)),
+                                       (Mega(907.8), Mega(925.1)),
+                                       (Mega(909.4), Mega(925.7)),
+                                       (Mega(911  ), Mega(926.3)),
+                                       (Mega(912.6), Mega(926.9)),
+                                       (Mega(914.2), Mega(927.5)),
+                                   }
+                                   select (Region, freq.Input, /* data rate */ DR4, freq.Output));
 
-        public static IEnumerable<object[]> TestRegionDataRateDataDR1To3()
-        {
-            var dataRates = new List<ushort> { 0, 1, 2, 3 };
+        public static TheoryData<Region, DataRateIndex, DataRateIndex> TestRegionDataRateDataDR1To3() =>
+             TheoryDataFactory.From(new[]
+             {
+                 (Region, DR0, DR10),
+                 (Region, DR1, DR11),
+                 (Region, DR2, DR12),
+                 (Region, DR3, DR13)
+             });
 
-            var inputDrToExpectedDr = new Dictionary<ushort, ushort>
-            {
-                { 0, 10 },
-                { 1, 11 },
-                { 2, 12 },
-                { 3, 13 }
-            };
+        public static TheoryData<Region, DataRateIndex, DataRateIndex> TestRegionDataRateDataDR4() =>
+            TheoryDataFactory.From(new[] { (Region, DR4, DR13) });
 
-            foreach (var dr in dataRates)
-                yield return new object[] { Region, dr, inputDrToExpectedDr[dr] };
-        }
-
-        public static IEnumerable<object[]> TestRegionDataRateDataDR4() =>
-            new List<object[]>
-            {
-                new object[]{ Region, 4, 13 }
-            };
-
-        public static IEnumerable<object[]> TestRegionDataRateData_InvalidOffset =>
-           new List<object[]>
+        public static TheoryData<Region, DataRateIndex, DataRateIndex> TestRegionDataRateData_InvalidOffset =>
+           TheoryDataFactory.From(new[]
            {
-               new object[] { Region, 0, 4 },
-               new object[] { Region, 0, 5 },
-           };
+               (Region, DR0, DR4),
+               (Region, DR0, DR5),
+           });
 
-        public static IEnumerable<object[]> TestRegionLimitData =>
-            from x in new(Hertz Frequency, ushort DataRate)[]
+        public static TheoryData<Region, Hertz, DataRateIndex> TestRegionLimitData =>
+            TheoryDataFactory.From(new (Region, Hertz, DataRateIndex)[]
             {
-                (Mega( 700.0),   5),
-                (Mega(1024.0),  10),
-                (Mega( 901.2),  90),
-                (Mega( 928.5), 100),
-            }
-            select new object[] { Region, x.Frequency, x.DataRate };
+                (Region, Mega( 700.0), DR5),
+                (Region, Mega(1024.0), DR10),
+                (Region, Mega( 901.2), (DataRateIndex)90),
+                (Region, Mega( 928.5), (DataRateIndex)100),
+            });
 
-        public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
-           new List<object[]>
+        public static TheoryData<Region, DataRateIndex, uint> TestRegionMaxPayloadLengthData =>
+           TheoryDataFactory.From(new (Region, DataRateIndex, uint)[]
            {
-               new object[] { Region, 0, 19 },
-               new object[] { Region, 1, 61 },
-               new object[] { Region, 2, 133 },
-               new object[] { Region, 3, 250 },
-               new object[] { Region, 4, 250 },
-               new object[] { Region, 8, 61 },
-               new object[] { Region, 9, 137 },
-               new object[] { Region, 10, 250 },
-               new object[] { Region, 11, 250 },
-               new object[] { Region, 13, 250 },
-           };
+               (Region, DR0, 19),
+               (Region, DR1, 61),
+               (Region, DR2, 133),
+               (Region, DR3, 250),
+               (Region, DR4, 250),
+               (Region, DR8, 61),
+               (Region, DR9, 137),
+               (Region, DR10, 250),
+               (Region, DR11, 250),
+               (Region, DR13, 250),
+           });
 
-        public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
-           from x in new (Hertz? NwkSrvRx2Freq, Hertz ExpectedFreq)[]
+        public static TheoryData<Region, Hertz?, Hertz> TestDownstreamRX2FrequencyData =>
+           TheoryDataFactory.From(new (Region, Hertz? NwkSrvRx2Freq, Hertz ExpectedFreq)[]
            {
-               (null       , Mega(923.3)),
-               (Mega(920.0), Mega(920.0)),
-           }
-           select new object[] { Region, x.NwkSrvRx2Freq, x.ExpectedFreq };
+               (Region, null       , Mega(923.3)),
+               (Region, Mega(920.0), Mega(920.0)),
+           });
 
-        public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
-           new List<object[]>
+        public static TheoryData<Region, DataRateIndex?, DataRateIndex?, DataRateIndex> TestDownstreamRX2DataRateData =>
+           TheoryDataFactory.From<Region, DataRateIndex?, DataRateIndex?, DataRateIndex>(new (Region, DataRateIndex?, DataRateIndex?, DataRateIndex)[]
            {
-                new object[] { Region, null, null, DR8 },
-                new object[] { Region, DR11, null, DR11 },
-                new object[] { Region, DR11, DR12, DR12 },
-           };
+                (Region, null, null, DR8),
+                (Region, DR11, null, DR11),
+                (Region, DR11, DR12, DR12),
+           });
 
-        public static IEnumerable<object[]> TestTranslateToRegionData =>
-           new List<object[]>
+        public static TheoryData<Region, LoRaRegionType> TestTranslateToRegionData =>
+           TheoryDataFactory.From(new[]
            {
-                new object[] { Region, LoRaRegionType.US915 },
-                new object[] { Region, LoRaRegionType.US902 },
-           };
+                (Region, LoRaRegionType.US915),
+                (Region, LoRaRegionType.US902),
+           });
 
-        public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
-            from freq in new Hertz[] { Mega(902.3), Mega(927.5) }
-            select new object[] { Region, freq, /* expected index */ -1 };
+        public static TheoryData<Region, Hertz, int> TestTryGetJoinChannelIndexData =>
+            TheoryDataFactory.From(from freq in new Hertz[] { Mega(902.3), Mega(927.5) }
+                                   select (Region, freq, /* expected index */ -1));
 
-        public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>
-           new List<object[]>
+        public static TheoryData<Region, int, bool> TestIsValidRX1DROffsetData =>
+           TheoryDataFactory.From(new[]
            {
-                new object[] { Region, 0, true },
-                new object[] { Region, 3, true },
-                new object[] { Region, 4, false },
-           };
+                (Region, 0, true),
+                (Region, 3, true),
+                (Region, 4, false),
+           });
 
-        public static IEnumerable<object[]> TestIsDRIndexWithinAcceptableValuesData =>
-            new List<object[]>
+        public static TheoryData<Region, DataRateIndex, bool, bool> TestIsDRIndexWithinAcceptableValuesData =>
+            TheoryDataFactory.From<Region, DataRateIndex, bool, bool>(new[]
             {
-                new object[] { Region, DR0, true, true },
-                new object[] { Region, DR2, true, true },
-                new object[] { Region, DR4, true, true },
-                new object[] { Region, DR10, false, true },
-                new object[] { Region, DR13, false, true },
-                new object[] { Region, DR2, false, false },
-                new object[] { Region, DR5, true, false },
-                new object[] { Region, DR7, true, false },
-                new object[] { Region, DR10, true, false },
-                new object[] { Region, DR12, true, false },
-                new object[] { Region, DR14, true, false },
-            };
+                (Region, DR0, true, true),
+                (Region, DR2, true, true),
+                (Region, DR4, true, true),
+                (Region, DR10, false, true),
+                (Region, DR13, false, true),
+                (Region, DR2, false, false),
+                (Region, DR5, true, false),
+                (Region, DR7, true, false),
+                (Region, DR10, true, false),
+                (Region, DR12, true, false),
+                (Region, DR14, true, false),
+            });
     }
 }

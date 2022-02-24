@@ -20,23 +20,40 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceClient : ILoRaDeviceClient, IIdentityProvider<ILoRaDeviceClient>
     {
+        private const string CompleteOperationName = "Complete";
+        private const string AbandonOperationName = "Abandon";
+        private const string RejectOperationName = "Reject";
+        private static readonly string GetTwinDependencyName = GetSdkDependencyName("GetTwin");
+        private static readonly string UpdateReportedPropertiesDependencyName = GetSdkDependencyName("UpdateReportedProperties");
+        private static readonly string SendEventDependencyName = GetSdkDependencyName("SendEvent");
+        private static readonly string ReceiveDependencyName = GetSdkDependencyName("Receive");
+        private static string GetSdkDependencyName(string dependencyName) => $"SDK {dependencyName}";
         private static readonly TimeSpan TwinUpdateTimeout = TimeSpan.FromSeconds(10);
         private static int activeDeviceConnections;
+
+        private readonly string deviceIdTracingData;
         private readonly string connectionString;
         private readonly ITransportSettings[] transportSettings;
         private readonly ILogger<LoRaDeviceClient> logger;
+        private readonly ITracing tracing;
         private readonly Counter<int> twinLoadRequests;
         private DeviceClient deviceClient;
 
-        public LoRaDeviceClient(string connectionString, ITransportSettings[] transportSettings, ILogger<LoRaDeviceClient> logger, Meter meter)
+        public LoRaDeviceClient(string deviceId,
+                                string connectionString,
+                                ITransportSettings[] transportSettings,
+                                ILogger<LoRaDeviceClient> logger,
+                                Meter meter,
+                                ITracing tracing)
         {
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or empty.", nameof(connectionString));
             if (meter is null) throw new ArgumentNullException(nameof(meter));
 
             this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
-
+            this.deviceIdTracingData = $"id={deviceId}";
             this.connectionString = connectionString;
             this.logger = logger;
+            this.tracing = tracing;
             this.twinLoadRequests = meter.CreateCounter<int>(MetricRegistry.TwinLoadRequests);
             _ = meter.CreateObservableGauge(MetricRegistry.ActiveClientConnections, () => activeDeviceConnections);
             this.deviceClient = CreateDeviceClient();
@@ -49,6 +66,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 this.logger.LogDebug("getting device twin");
+                using var getTwinOperation = this.tracing.TrackIotHubDependency(GetTwinDependencyName, this.deviceIdTracingData);
 
                 var twins = await this.deviceClient.GetTwinAsync(cancellationToken);
 
@@ -83,6 +101,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 this.logger.LogDebug("updating twin");
+                using var updateReportedPropertiesOperation = this.tracing.TrackIotHubDependency(UpdateReportedPropertiesDependencyName, this.deviceIdTracingData);
 
                 await this.deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
@@ -121,6 +140,7 @@ namespace LoRaWan.NetworkServer
                             message.Properties.Add(prop);
                     }
 
+                    using var sendEventOperation = this.tracing.TrackIotHubDependency(SendEventDependencyName, this.deviceIdTracingData);
                     await this.deviceClient.SendEventAsync(message);
 
                     return true;
@@ -140,6 +160,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.logger.LogDebug($"checking cloud to device message for {timeout}");
 
+                using var receiveOperation = this.tracing.TrackIotHubDependency(ReceiveDependencyName, this.deviceIdTracingData);
                 var msg = await this.deviceClient.ReceiveAsync(timeout);
 
                 if (this.logger.IsEnabled(LogLevel.Debug))
@@ -158,61 +179,31 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task<bool> CompleteAsync(Message cloudToDeviceMessage)
+        public Task<bool> CompleteAsync(Message cloudToDeviceMessage) =>
+            ExecuteC2DOperationAsync(cloudToDeviceMessage, static (client, message) => client.CompleteAsync(message), CompleteOperationName);
+
+        public Task<bool> AbandonAsync(Message cloudToDeviceMessage) =>
+            ExecuteC2DOperationAsync(cloudToDeviceMessage, static (client, message) => client.AbandonAsync(message), AbandonOperationName);
+
+        public Task<bool> RejectAsync(Message cloudToDeviceMessage) =>
+            ExecuteC2DOperationAsync(cloudToDeviceMessage, static (client, message) => client.RejectAsync(message), RejectOperationName);
+
+        private async Task<bool> ExecuteC2DOperationAsync(Message cloudToDeviceMessage, Func<DeviceClient, Message, Task> executeAsync, string operationName)
         {
             if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
+            var messageId = cloudToDeviceMessage.MessageId ?? "undefined";
 
             try
             {
-                this.logger.LogDebug($"completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
+                this.logger.LogDebug("'{OperationName}' cloud to device message, id: '{MessageId}'.", operationName, messageId);
+                using var dependencyOperation = this.tracing.TrackIotHubDependency(GetSdkDependencyName(operationName), $"{this.deviceIdTracingData}&messageId={messageId}");
 
-                await this.deviceClient.CompleteAsync(cloudToDeviceMessage);
+                await executeAsync(this.deviceClient, cloudToDeviceMessage);
 
-                this.logger.LogDebug($"done completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
-
+                this.logger.LogDebug("done processing '{OperationName}' on cloud to device message, id: '{MessageId}'.", operationName, messageId);
                 return true;
             }
-            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not complete cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}")))
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> AbandonAsync(Message cloudToDeviceMessage)
-        {
-            if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
-
-            try
-            {
-                this.logger.LogDebug($"abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
-
-                await this.deviceClient.AbandonAsync(cloudToDeviceMessage);
-
-                this.logger.LogDebug($"done abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
-
-                return true;
-            }
-            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not abandon cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}")))
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> RejectAsync(Message cloudToDeviceMessage)
-        {
-            if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
-
-            try
-            {
-                this.logger.LogDebug($"rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
-
-                await this.deviceClient.RejectAsync(cloudToDeviceMessage);
-
-                this.logger.LogDebug($"done rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
-
-                return true;
-            }
-            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not reject cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}")))
+            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "'{OperationName}' failed on cloud to device message (id: {MessageId}) with error: '{ExceptionMessage}'.", operationName, messageId, ex.Message)))
             {
                 return false;
             }

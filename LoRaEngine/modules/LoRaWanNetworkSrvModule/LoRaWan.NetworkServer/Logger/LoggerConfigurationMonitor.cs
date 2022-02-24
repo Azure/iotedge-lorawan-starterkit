@@ -3,7 +3,7 @@
 
 #nullable enable
 
-namespace Logger
+namespace LoRaWan.NetworkServer.Logger
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

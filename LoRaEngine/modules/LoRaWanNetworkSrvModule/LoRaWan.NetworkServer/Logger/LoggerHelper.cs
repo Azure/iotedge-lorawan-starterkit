@@ -3,11 +3,10 @@
 
 #nullable enable
 
-namespace Logger
+namespace LoRaWan.NetworkServer.Logger
 {
     using System;
     using System.Collections.Generic;
-    using LoRaWan;
     using Microsoft.Extensions.Logging;
 
     internal static class LoggerHelper

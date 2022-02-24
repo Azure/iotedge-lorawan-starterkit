@@ -64,14 +64,13 @@ namespace LoRaWan.Tests.Integration
 
             ServerConfiguration.NetId = new NetId(netId);
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            if (deviceGatewayID != null) twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            twin.Properties.Reported[TwinProperty.FCntUp] = initialFcntUp;
-            twin.Properties.Reported[TwinProperty.FCntDown] = initialFcntDown;
+            var twin = LoRaDeviceTwin.Create(
+                simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties(),
+                new LoRaReportedTwinProperties
+                {
+                    FCntUp = initialFcntUp,
+                    FCntDown = initialFcntDown
+                });
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             // Device twin will be updated
@@ -260,12 +259,7 @@ namespace LoRaWan.Tests.Integration
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            if (deviceGatewayID != null) twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties());
             LoRaDeviceClient.SetupSequence(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync((Twin)null)
                 .ReturnsAsync(twin);
@@ -361,12 +355,10 @@ namespace LoRaWan.Tests.Integration
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = "012345678901234567890123456789FF";
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
+            {
+                JoinEui = new JoinEui(01213147654)
+            });
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             // Lora device api will be search by devices with matching deveui,
@@ -407,12 +399,10 @@ namespace LoRaWan.Tests.Integration
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = "012345678901234567890123456789FF";
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties() with
+            {
+                AppKey = TestKeys.CreateAppKey(121314765654),
+            });
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             // Lora device api will be search by devices with matching deveui,
@@ -459,12 +449,7 @@ namespace LoRaWan.Tests.Integration
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties());
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(twin);
 
             // Device twin will be updated
@@ -513,12 +498,7 @@ namespace LoRaWan.Tests.Integration
             var devEui = simulatedDevice.LoRaDevice.DevEui;
 
             // Device twin will be queried
-            var twin = new Twin();
-            twin.Properties.Desired[TwinProperty.DevEUI] = devEui.ToString();
-            twin.Properties.Desired[TwinProperty.AppEui] = simulatedDevice.LoRaDevice.AppEui?.ToString();
-            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey?.ToString();
-            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
-            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            var twin = LoRaDeviceTwin.Create(simulatedDevice.LoRaDevice.GetOtaaDesiredTwinProperties());
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
 

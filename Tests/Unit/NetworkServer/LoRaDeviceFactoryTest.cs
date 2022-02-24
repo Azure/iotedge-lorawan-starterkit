@@ -113,7 +113,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                        loRaDeviceCache,
                        NullLoggerFactory.Instance,
                        NullLogger<LoRaDeviceFactory>.Instance,
-                       meter)
+                       meter,
+                       new NoopTracing())
             {
                 this.deviceSetup = deviceSetup;
             }

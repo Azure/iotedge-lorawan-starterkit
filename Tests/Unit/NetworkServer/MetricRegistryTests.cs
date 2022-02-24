@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Diagnostics.Metrics;
     using System.Linq;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Common;
     using Moq;
     using Xunit;
 
@@ -140,13 +141,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(LoRaProcessingErrorCode.TagNotSet, result.ErrorCode);
         }
 
-        public static object[][] Tag_Value_Is_Not_In_Tag_Names() => new[]
-        {
-            new object[] { Array.Empty<string>(), KeyValuePair.Create("foo", (object?)"bar") },
-            new object[] { new[] { "foo" }, KeyValuePair.Create("foo", (object?)"bar"), KeyValuePair.Create("baz", (object?)"bar") },
-            new object[] { new[] { MetricRegistry.GatewayIdTagName }, KeyValuePair.Create("foo", (object?)"bar") },
-            new object[] { new[] { MetricRegistry.GatewayIdTagName, "foo" }, KeyValuePair.Create("foo", (object?)"bar"), KeyValuePair.Create("baz", (object?)"bar") }
-        };
+        public static TheoryData<string[], KeyValuePair<string, object?>[]> Tag_Value_Is_Not_In_Tag_Names() =>
+            TheoryDataFactory.From(new[]
+            {
+                (Array.Empty<string>(), new[] { KeyValuePair.Create("foo", (object?)"bar") }),
+                (new[] { "foo" }, new[] { KeyValuePair.Create("foo", (object?)"bar"), KeyValuePair.Create("baz", (object?)"bar") }),
+                (new[] { MetricRegistry.GatewayIdTagName }, new[] { KeyValuePair.Create("foo", (object?)"bar") }),
+                (new[] { MetricRegistry.GatewayIdTagName, "foo" }, new[] { KeyValuePair.Create("foo", (object?)"bar"), KeyValuePair.Create("baz", (object?)"bar") })
+            });
 
         [Theory]
         [MemberData(nameof(Tag_Value_Is_Not_In_Tag_Names))]

@@ -13,8 +13,8 @@ namespace LoRaWan.Tests.Simulation
     using System.Text;
     using System.Text.Json;
     using System.Threading.Tasks;
+    using Azure.Messaging.EventHubs;
     using LoRaWan.Tests.Common;
-    using Microsoft.Azure.EventHubs;
     using Microsoft.Extensions.Logging;
     using NetworkServer;
     using Xunit;
@@ -330,7 +330,7 @@ namespace LoRaWan.Tests.Simulation
             {
                 if (eventData.Properties.ContainsKey("iothub-message-schema")) return false;
                 if (eventData.GetDeviceId() != simulatedDevice.LoRaDevice.DeviceID) return false;
-                return Encoding.UTF8.GetString(eventData.Body).Contains(this.uniqueMessageFragment, StringComparison.Ordinal);
+                return Encoding.UTF8.GetString(eventData.EventBody).Contains(this.uniqueMessageFragment, StringComparison.Ordinal);
             }
 
             this.logger.LogInformation("Message counts by DevEui:");
