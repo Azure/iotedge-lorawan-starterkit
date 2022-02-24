@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit
     using System.Globalization;
     using System.Linq;
     using LoRaWan;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     internal static class EuiTests
@@ -74,9 +75,9 @@ namespace LoRaWan.Tests.Unit
         }
 
 #pragma warning disable CA1000 // Do not declare static members on generic types (necessary for unit tests)
-        public static object[][] SupportedFormatsTheoryData() =>
+        public static TheoryData<string> SupportedFormatsTheoryData() =>
 #pragma warning restore CA1000 // Do not declare static members on generic types
-            EuiTests.SupportedFormats.Select(f => new object[] { f }).ToArray();
+            TheoryDataFactory.From(EuiTests.SupportedFormats.Select(c => c?.ToString()));
 
         [Theory]
         [MemberData(nameof(SupportedFormatsTheoryData))]

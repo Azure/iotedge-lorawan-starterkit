@@ -173,7 +173,7 @@ namespace LoRaWan.NetworkServer
 
         // Creates cache key for join device loader: "joinloader:{devEUI}"
         private static string GetJoinDeviceLoaderCacheKey(DevEui devEui) => string.Concat("joinloader:", devEui);
-        private static string GetDevLoaderCacheKey(DevAddr devAddr) => string.Concat("devaddrloader:", devAddr);
+        internal static string GetDevLoaderCacheKey(DevAddr devAddr) => string.Concat("devaddrloader:", devAddr);
 
         // Removes join device loader from cache
         private void RemoveJoinDeviceLoader(DevEui devEui) => this.cache.Remove(GetJoinDeviceLoaderCacheKey(devEui));

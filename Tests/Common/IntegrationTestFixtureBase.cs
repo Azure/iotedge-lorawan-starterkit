@@ -98,7 +98,20 @@ namespace LoRaWan.Tests.Common
             this.tcpLogListener?.ResetEvents();
         }
 
-        public Task DisposeAsync() => Task.FromResult(0);
+        public async Task DisposeAsync()
+        {
+            if (IoTHubMessages is { } iotHubMessages)
+            {
+                try
+                {
+                    await iotHubMessages.StopAsync();
+                }
+                finally
+                {
+                    await iotHubMessages.DisposeAsync();
+                }
+            }
+        }
 
         private RegistryManager GetRegistryManager()
         {
@@ -430,7 +443,6 @@ namespace LoRaWan.Tests.Common
                 {
                     AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
 
-                    IoTHubMessages?.Dispose();
                     IoTHubMessages = null;
                     this.registryManager?.Dispose();
                     this.registryManager = null;
