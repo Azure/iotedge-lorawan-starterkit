@@ -25,8 +25,8 @@ namespace LoRaWan.Tests.Common
                 SetDesiredPropertyIfExists(twin, TwinProperty.AppKey, someDesiredProperties.AppKey?.ToString());
                 SetDesiredPropertyIfExists(twin, TwinProperty.AppSKey, someDesiredProperties.AppSessionKey?.ToString());
                 SetDesiredPropertyIfExists(twin, TwinProperty.NwkSKey, someDesiredProperties.NetworkSessionKey?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.GatewayID, someDesiredProperties.GatewayId?.ToString());
-                SetDesiredPropertyIfExists(twin, TwinProperty.SensorDecoder, someDesiredProperties.SensorDecoder?.ToString());
+                SetDesiredPropertyIfExists(twin, TwinProperty.GatewayID, someDesiredProperties.GatewayId);
+                SetDesiredPropertyIfExists(twin, TwinProperty.SensorDecoder, someDesiredProperties.SensorDecoder);
                 SetDesiredPropertyIfExists(twin, TwinProperty.Supports32BitFCnt, someDesiredProperties.Supports32BitFCnt?.ToString());
                 SetDesiredPropertyIfExists(twin, TwinProperty.ABPRelaxMode, someDesiredProperties.AbpRelaxMode?.ToString());
                 SetDesiredPropertyIfExists(twin, TwinProperty.FCntUpStart, someDesiredProperties.FCntUpStart?.ToString(CultureInfo.InvariantCulture));
@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Common
                 SetReportedPropertyIfExists(twin, TwinProperty.DevAddr, someReportedProperties.DevAddr?.ToString());
                 SetReportedPropertyIfExists(twin, TwinProperty.DevNonce, someReportedProperties.DevNonce?.ToString());
                 SetReportedPropertyIfExists(twin, TwinProperty.FCntResetCounter, someReportedProperties.FCntResetCounter?.ToString(CultureInfo.InvariantCulture));
-                SetReportedPropertyIfExists(twin, TwinProperty.PreferredGatewayID, someReportedProperties.PreferredGatewayId?.ToString());
+                SetReportedPropertyIfExists(twin, TwinProperty.PreferredGatewayID, someReportedProperties.PreferredGatewayId);
                 SetReportedPropertyIfExists(twin, TwinProperty.Region, someReportedProperties.Region?.ToString());
                 SetReportedPropertyIfExists(twin, TwinProperty.NetId, someReportedProperties.NetId?.ToString());
                 SetReportedPropertyIfExists(twin, TwinProperty.RX2DataRate, someReportedProperties.Rx2DataRate?.ToString());
