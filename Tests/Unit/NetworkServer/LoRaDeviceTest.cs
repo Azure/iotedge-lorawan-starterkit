@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Security.Cryptography;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
@@ -30,8 +31,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static readonly NetworkServerConfiguration Configuration = new NetworkServerConfiguration { GatewayID = "test-gateway" };
         private static readonly LoRaDesiredTwinProperties OtaaDesiredTwinProperties = new LoRaDesiredTwinProperties
         {
-            JoinEui = new JoinEui(0xABC0200000000009),
-            AppKey = TestKeys.CreateAppKey(0xABC0200000000000, 0x09),
+            JoinEui = new JoinEui((ulong)RandomNumberGenerator.GetInt32(0, int.MaxValue)),
+            AppKey = TestKeys.CreateAppKey(),
             GatewayId = Configuration.GatewayID,
             SensorDecoder = "DecoderValueSensor",
             Version = 1,
@@ -39,16 +40,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static readonly LoRaReportedTwinProperties OtaaReportedTwinProperties = new LoRaReportedTwinProperties
         {
             Version = 1,
-            NetworkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09),
-            AppSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09),
-            DevNonce = new DevNonce(0x0123),
-            DevAddr = new DevAddr(0xAABB),
+            NetworkSessionKey = TestKeys.CreateNetworkSessionKey(),
+            AppSessionKey = TestKeys.CreateAppSessionKey(),
+            DevNonce = new DevNonce((ushort)RandomNumberGenerator.GetInt32(0, ushort.MaxValue)),
+            DevAddr = new DevAddr((uint)RandomNumberGenerator.GetInt32(0, int.MaxValue)),
         };
         private static readonly LoRaDesiredTwinProperties AbpDesiredTwinProperties = new LoRaDesiredTwinProperties
         {
-            NetworkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09),
-            AppSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09),
-            DevAddr = DevAddr.Parse("0000AABB"),
+            NetworkSessionKey = TestKeys.CreateNetworkSessionKey(),
+            AppSessionKey = TestKeys.CreateAppSessionKey(),
+            DevAddr = new DevAddr((uint)RandomNumberGenerator.GetInt32(0, int.MaxValue)),
             GatewayId = Configuration.GatewayID,
             SensorDecoder = "DecoderValueSensor",
             Version = 1,
@@ -56,9 +57,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private static readonly LoRaReportedTwinProperties AbpReportedTwinProperties = new LoRaReportedTwinProperties
         {
             Version = 1,
-            NetworkSessionKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09),
-            AppSessionKey = TestKeys.CreateAppSessionKey(0xABCD200000000000, 0x09),
-            DevAddr = new DevAddr(0xAABB),
+            NetworkSessionKey = TestKeys.CreateNetworkSessionKey(),
+            AppSessionKey = TestKeys.CreateAppSessionKey(),
+            DevAddr = AbpDesiredTwinProperties.DevAddr,
         };
 
         private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
@@ -254,10 +255,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(0U, loRaDevice.FCntUp);
             Assert.Equal(0U, loRaDevice.LastSavedFCntUp);
             Assert.False(loRaDevice.HasFrameCountChanges);
-            Assert.Equal(AbpReportedTwinProperties.NetworkSessionKey, loRaDevice.NwkSKey);
-            Assert.Equal(AbpReportedTwinProperties.AppSessionKey, loRaDevice.AppSKey);
+            Assert.Equal(AbpDesiredTwinProperties.NetworkSessionKey, loRaDevice.NwkSKey);
+            Assert.Equal(AbpDesiredTwinProperties.AppSessionKey, loRaDevice.AppSKey);
             Assert.Null(loRaDevice.DevNonce);
-            Assert.Equal(new DevAddr(0x0000aabb), loRaDevice.DevAddr);
+            Assert.Equal(AbpDesiredTwinProperties.DevAddr, loRaDevice.DevAddr);
             Assert.Null(loRaDevice.ReportedDwellTimeSetting);
         }
 
