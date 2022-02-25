@@ -393,6 +393,42 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.VerifyAll();
         }
 
+        [Fact]
+        // https://github.com/Azure/iotedge-lorawan-starterkit/issues/1540.
+        public async Task Deferred_Tasks_Do_Not_Impact_Downstream_Message_Delivery_And_Cause_Processing_Failure()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
+            var loRaDevice = CreateLoRaDevice(simulatedDevice);
+
+            var c2dMessage = new ReceivedLoRaCloudToDeviceMessage { Payload = "Hello", Fport = FramePorts.App1 };
+            using var cloudToDeviceMessage = c2dMessage.CreateMessage();
+            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                            .ReturnsAsync(cloudToDeviceMessage)
+                            .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
+
+            LoRaDeviceClient.Setup(c => c.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
+                            .ReturnsAsync(true);
+
+            LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                            .ThrowsAsync(new OperationCanceledException("Operation timed out."));
+
+            using var cache = EmptyMemoryCache();
+            DeviceCache.Register(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
+            using var messageDispatcher = TestMessageDispatcher.Create(cache, ServerConfiguration, deviceRegistry, FrameCounterUpdateStrategyProvider);
+
+            var payload = simulatedDevice.CreateConfirmedDataUpMessage("foo", fcnt: 1);
+            using var request = CreateWaitableRequest(payload);
+
+            // act
+            messageDispatcher.DispatchRequest(request);
+            await request.WaitCompleteAsync();
+
+            // assert
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            Assert.True(request.ProcessingFailed);
+        }
+
         [Theory]
         [InlineData("00")]
         [InlineData("26")]
