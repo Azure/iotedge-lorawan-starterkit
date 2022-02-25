@@ -510,7 +510,7 @@ namespace LoRaWan.Tests.E2E
                 NwkSKey = GetNetworkSessionKey(24),
                 DevAddr = new DevAddr(0x00000024),
                 IsIoTHubDevice = true,
-                ClassType = 'C',
+                ClassType = LoRaDeviceClassType.C,
             };
 
             // Device25_ABP: Connection timeout

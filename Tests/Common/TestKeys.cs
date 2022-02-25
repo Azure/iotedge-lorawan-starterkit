@@ -3,8 +3,14 @@
 
 namespace LoRaWan.Tests.Common
 {
+    using System.Security.Cryptography;
+
     public static class TestKeys
     {
+        private static ulong GenerateKey() => (ulong)RandomNumberGenerator.GetInt32(0, int.MaxValue);
+
+        public static NetworkSessionKey CreateNetworkSessionKey() => CreateNetworkSessionKey(GenerateKey());
+
         public static NetworkSessionKey CreateNetworkSessionKey(ulong value) => CreateNetworkSessionKey(0, value);
 
         public static NetworkSessionKey CreateNetworkSessionKey(ulong hi, ulong low)
@@ -15,6 +21,8 @@ namespace LoRaWan.Tests.Common
             return NetworkSessionKey.Read(buffer);
         }
 
+        public static AppSessionKey CreateAppSessionKey() => CreateAppSessionKey(GenerateKey());
+
         public static AppSessionKey CreateAppSessionKey(ulong value) => CreateAppSessionKey(0, value);
 
         public static AppSessionKey CreateAppSessionKey(ulong hi, ulong low)
@@ -24,6 +32,8 @@ namespace LoRaWan.Tests.Common
             _ = data128.Write(buffer);
             return AppSessionKey.Read(buffer);
         }
+
+        public static AppKey CreateAppKey() => CreateAppKey(GenerateKey());
 
         public static AppKey CreateAppKey(ulong value) => CreateAppKey(0, value);
 

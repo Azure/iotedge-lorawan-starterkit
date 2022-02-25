@@ -73,7 +73,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(ServerGatewayID)]
         public async Task When_Sending_Message_Should_Send_Downlink_To_DownstreamMessageSender(string deviceGatewayID)
         {
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: LoRaDeviceClassType.C, gatewayID: deviceGatewayID));
             var devEUI = simDevice.DevEUI;
 
             this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
@@ -190,7 +190,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Device_Is_Not_Joined_Should_Fail()
         {
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: LoRaDeviceClassType.C, gatewayID: ServerGatewayID));
             var devEUI = simDevice.DevEUI;
 
             this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
@@ -225,7 +225,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Fails_To_Get_FcntDown_Should_Fail()
         {
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c'));
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: LoRaDeviceClassType.C));
             var devEUI = simDevice.DevEUI;
 
             this.deviceApi.Setup(x => x.GetPrimaryKeyByEuiAsync(devEUI))
@@ -271,7 +271,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Message_Is_Invalid_Should_Fail()
         {
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: LoRaDeviceClassType.C, gatewayID: ServerGatewayID));
             var devEUI = simDevice.DevEUI;
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
@@ -300,7 +300,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Regions_Is_Not_Defined_Should_Fail()
         {
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: LoRaDeviceClassType.C, gatewayID: ServerGatewayID));
             var devEUI = simDevice.DevEUI;
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
@@ -332,7 +332,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devAddr = new DevAddr(0x023637F8);
             var appSKey = TestKeys.CreateAppSessionKey(0xABC0200000000000, 0x09);
             var nwkSKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: LoRaDeviceClassType.C, gatewayID: ServerGatewayID));
             var devEUI = simDevice.DevEUI;
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
@@ -398,7 +398,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devAddr = new DevAddr(0x023637F8);
             var appSKey = TestKeys.CreateAppSessionKey(0xABC0200000000000, 0x09);
             var nwkSKey = TestKeys.CreateNetworkSessionKey(0xABC0200000000000, 0x09);
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: LoRaDeviceClassType.C, gatewayID: ServerGatewayID));
             var devEUI = simDevice.DevEUI;
             simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 

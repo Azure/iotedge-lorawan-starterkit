@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Common
 
         public JoinEui? AppEui => LoRaDevice.AppEui;
 
-        public char ClassType => LoRaDevice.ClassType;
+        public LoRaDeviceClassType ClassType => LoRaDevice.ClassType;
 
         public DevAddr? DevAddr
         {
