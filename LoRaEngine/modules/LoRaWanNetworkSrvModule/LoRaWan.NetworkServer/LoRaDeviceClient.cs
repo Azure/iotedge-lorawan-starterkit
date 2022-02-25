@@ -221,7 +221,7 @@ namespace LoRaWan.NetworkServer
                 {
                     await this.deviceClient.CloseAsync(cancellationToken);
                 }
-                catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, closeFailureMessage)))
+                catch (OperationCanceledException ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, closeFailureMessage)))
                 {
                 }
                 catch (Exception ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, closeFailureMessage)))
