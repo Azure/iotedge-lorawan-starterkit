@@ -140,16 +140,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Initialized_New_OTAA_Device_Should_Have_All_Properties()
         {
             const string gateway = "mygateway";
-            var twin = CreateTwin(
-                desired: new()
-                {
-                    ["AppEUI"] = OtaaDesiredTwinProperties.JoinEui.ToString(),
-                    ["AppKey"] = OtaaDesiredTwinProperties.AppKey.ToString(),
-                    ["GatewayID"] = gateway,
-                    ["SensorDecoder"] = OtaaDesiredTwinProperties.SensorDecoder,
-                    ["$version"] = 1,
-                },
-                reported: new() { ["$version"] = 1 });
+            var twin = LoRaDeviceTwin.Create(OtaaDesiredTwinProperties with { GatewayId = gateway },
+                                             new LoRaReportedTwinProperties { Version = 1 });
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
@@ -180,23 +172,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task When_Initialized_Joined_OTAA_Device_Should_Have_All_Properties()
         {
             const string gatewayId = "mygateway";
-            var twin = CreateTwin(
-                desired: new()
-                {
-                    ["AppEUI"] = OtaaDesiredTwinProperties.JoinEui.ToString(),
-                    ["AppKey"] = OtaaDesiredTwinProperties.AppKey.ToString(),
-                    ["GatewayID"] = gatewayId,
-                    ["SensorDecoder"] = OtaaDesiredTwinProperties.SensorDecoder,
-                    ["$version"] = 1,
-                },
-                reported: new()
-                {
-                    ["$version"] = 1,
-                    ["NwkSKey"] = OtaaReportedTwinProperties.NetworkSessionKey.ToString(),
-                    ["AppSKey"] = OtaaReportedTwinProperties.AppSessionKey.ToString(),
-                    ["DevNonce"] = OtaaReportedTwinProperties.DevNonce.ToString(),
-                    ["DevAddr"] = OtaaReportedTwinProperties.DevAddr.ToString(),
-                });
+            var twin = LoRaDeviceTwin.Create(OtaaDesiredTwinProperties with { GatewayId = gatewayId },
+                                             OtaaReportedTwinProperties);
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
@@ -220,23 +197,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Initialized_ABP_Device_Should_Have_All_Properties()
         {
-            var twin = CreateTwin(
-                desired: new()
-                {
-                    ["NwkSKey"] = AbpDesiredTwinProperties.NetworkSessionKey.ToString(),
-                    ["AppSKey"] = AbpDesiredTwinProperties.AppSessionKey.ToString(),
-                    ["DevAddr"] = AbpDesiredTwinProperties.DevAddr.ToString(),
-                    ["GatewayID"] = AbpDesiredTwinProperties.GatewayId,
-                    ["SensorDecoder"] = AbpDesiredTwinProperties.SensorDecoder,
-                    ["$version"] = 1,
-                },
-                reported: new()
-                {
-                    ["$version"] = 1,
-                    ["NwkSKey"] = AbpReportedTwinProperties.NetworkSessionKey.ToString(),
-                    ["AppSKey"] = AbpReportedTwinProperties.AppSessionKey.ToString(),
-                    ["DevAddr"] = AbpReportedTwinProperties.DevAddr.ToString(),
-                });
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties, AbpReportedTwinProperties);
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
@@ -866,28 +827,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // assert
             connectionManagerMock.Verify(x => x.BeginDeviceClientConnectionActivity(target),
                                          Times.Exactly(timeoutSeconds > 0 ? 1 : 0));
-        }
-
-        private static Twin CreateTwin(Dictionary<string, object> desired = null, Dictionary<string, object> reported = null)
-        {
-            var twin = new Twin();
-            if (desired != null)
-            {
-                foreach (var kv in desired)
-                {
-                    twin.Properties.Desired[kv.Key] = kv.Value;
-                }
-            }
-
-            if (reported != null)
-            {
-                foreach (var kv in reported)
-                {
-                    twin.Properties.Reported[kv.Key] = kv.Value;
-                }
-            }
-
-            return twin;
         }
     }
 }
