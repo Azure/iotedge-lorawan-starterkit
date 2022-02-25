@@ -284,12 +284,8 @@ namespace LoRaWan.NetworkServer
 
             this.logger.LogInformation($"{nameof(LoRaDeviceCache)} cleared.");
 
-            foreach (var disposals in from chunk in devices.Chunk(20)
-                                      select from device in chunk
-                                             select device.DisposeAsync().AsTask())
-            {
-                await Task.WhenAll(disposals);
-            }
+            await Parallel.ForEachAsync(devices, new ParallelOptions { MaxDegreeOfParallelism = 20 },
+                                        (device, _) => device.DisposeAsync());
         }
 
         private class StatisticsTracker
