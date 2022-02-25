@@ -145,7 +145,7 @@ namespace LoRaWan.NetworkServer
                             // (lost race with another gw) - refresh the twins now and keep it
                             // in the cache
                             refreshTasks ??= new List<Task>();
-                            refreshTasks.Add(RefreshDevice(cachedDevice));
+                            refreshTasks.Add(RefreshDeviceAsync(cachedDevice));
                             this.logger.LogDebug("refreshing device to fetch DevAddr");
                         }
                         else
@@ -166,7 +166,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                async Task RefreshDevice(LoRaDevice device)
+                async Task RefreshDeviceAsync(LoRaDevice device)
                 {
                     try
                     {
