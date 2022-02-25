@@ -269,20 +269,7 @@ namespace LoRaWan.Tests.Integration
                 })
                 .ReturnsAsync(true);
 
-            var c2d = new ReceivedLoRaCloudToDeviceMessage()
-            {
-                Payload = "Hello",
-                Fport = FramePorts.App1,
-            };
-
-            using var cloudToDeviceMessage = c2d.CreateMessage();
-
-            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                .ReturnsAsync(cloudToDeviceMessage)
-                .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
-
-            LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
-                .ReturnsAsync(true);
+            using var cloudToDeviceMessageSetup = UsePendingCloudToDeviceMessage();
 
             // add device to cache already
             DeviceCache.Register(loRaDevice);
@@ -344,20 +331,8 @@ namespace LoRaWan.Tests.Integration
                 })
                 .ReturnsAsync(true);
 
-            var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
-            {
-                Payload = "Hello",
-                Fport = FramePorts.App1,
-            };
-
-            using var cloudToDeviceMessage = c2dMessage.CreateMessage();
-
-            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                .ReturnsAsync(cloudToDeviceMessage)
-                .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
-
-            LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
-                .ReturnsAsync(true);
+            var cloudToDeviceMessagePayload = "C2DMessagePayload";
+            using var cloudToDeviceMessageSetup = UsePendingCloudToDeviceMessage(cloudToDeviceMessagePayload);
 
             using var cache = EmptyMemoryCache();
             using var loraDeviceCache = CreateDeviceCache(loRaDevice);
@@ -385,7 +360,7 @@ namespace LoRaWan.Tests.Integration
             // FOpts are not encrypted
             var payload = data.GetDecryptedPayload(simulatedDevice.AppSKey.Value);
             var c2dreceivedPayload = Encoding.UTF8.GetString(payload);
-            Assert.Equal(c2dMessage.Payload, c2dreceivedPayload);
+            Assert.Equal(cloudToDeviceMessagePayload, c2dreceivedPayload);
             // Nothing should be sent to IoT Hub
             Assert.NotNull(loRaDeviceTelemetry);
 
@@ -400,17 +375,10 @@ namespace LoRaWan.Tests.Integration
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
             var loRaDevice = CreateLoRaDevice(simulatedDevice);
 
-            var c2dMessage = new ReceivedLoRaCloudToDeviceMessage { Payload = "Hello", Fport = FramePorts.App1 };
-            using var cloudToDeviceMessage = c2dMessage.CreateMessage();
-            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                            .ReturnsAsync(cloudToDeviceMessage)
-                            .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
-
             LoRaDeviceClient.Setup(c => c.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
                             .ReturnsAsync(true);
 
-            LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
-                            .ThrowsAsync(new OperationCanceledException("Operation timed out."));
+            using var cloudToDeviceMessage = UsePendingCloudToDeviceMessage(completeOperationException: new OperationCanceledException("Operation timed out."));
 
             using var cache = EmptyMemoryCache();
             DeviceCache.Register(loRaDevice);
@@ -1786,6 +1754,29 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.VerifyAll();
 
             LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        private IDisposable UsePendingCloudToDeviceMessage(Exception completeOperationException = null) => UsePendingCloudToDeviceMessage(Guid.NewGuid().ToString(), completeOperationException);
+
+        private IDisposable UsePendingCloudToDeviceMessage(string payload, Exception completeOperationException = null)
+        {
+            var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage { Payload = payload, Fport = FramePorts.App1 }.CreateMessage();
+            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                            .ReturnsAsync(cloudToDeviceMessage)
+                            .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
+
+            if (completeOperationException is { } someCompleteOperationException)
+            {
+                LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                                .ThrowsAsync(someCompleteOperationException);
+            }
+            else
+            {
+                LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                                .ReturnsAsync(true);
+            }
+
+            return cloudToDeviceMessage;
         }
     }
 }
