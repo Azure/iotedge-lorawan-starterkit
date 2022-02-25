@@ -829,11 +829,11 @@ namespace LoRaWan.NetworkServer
             ArgumentNullException.ThrowIfNull(loRaDevice, nameof(loRaDevice));
 
             var bundlerResult = await bundler.Execute();
-            if (bundlerResult.NextFCntDown.HasValue)
+            if (bundlerResult.NextFCntDown is { } nextFCntDown)
             {
                 // we got a new framecounter down. Make sure this
                 // gets saved eventually to the twins
-                loRaDevice.SetFcntDown(bundlerResult.NextFCntDown.Value);
+                loRaDevice.SetFcntDown(nextFCntDown);
             }
 
             return bundlerResult;
