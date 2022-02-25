@@ -825,8 +825,8 @@ namespace LoRaWan.NetworkServer
 
         protected virtual async Task<FunctionBundlerResult> TryUseBundler(FunctionBundler bundler, LoRaDevice loRaDevice)
         {
-            _ = bundler ?? throw new ArgumentNullException(nameof(bundler));
-            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            ArgumentNullException.ThrowIfNull(bundler, nameof(bundler));
+            ArgumentNullException.ThrowIfNull(loRaDevice, nameof(loRaDevice));
 
             var bundlerResult = await bundler.Execute();
             if (bundlerResult.NextFCntDown.HasValue)
