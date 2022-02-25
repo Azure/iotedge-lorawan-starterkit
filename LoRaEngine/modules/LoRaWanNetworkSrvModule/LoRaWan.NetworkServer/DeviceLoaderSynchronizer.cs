@@ -123,6 +123,7 @@ namespace LoRaWan.NetworkServer
             List<Task<LoRaDevice>> initTasks = null;
             List<Task> refreshTasks = null;
             var deviceCreated = 0;
+            List<Exception> deviceInitExceptionList = null;
 
             if (devices?.Count > 0)
             {
@@ -200,15 +201,33 @@ namespace LoRaWan.NetworkServer
                         {
                             var device = await deviceTask;
                             // run initializers
-                            InitializeDevice(device);
-                            deviceCreated++;
-                            await device.CloseConnectionAsync(CancellationToken.None);
+                            try
+                            {
+                                InitializeDevice(device);
+                                deviceCreated++;
+                            }
+#pragma warning disable CA1031 // Do not catch general exception types (captured and thrown later)
+                            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                            {
+#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
+                                deviceInitExceptionList ??= new List<Exception>();
+#pragma warning restore CA1508 // Avoid dead conditional code
+                                deviceInitExceptionList.Add(ex);
+                            }
+                            finally
+                            {
+                                await device.CloseConnectionAsync(CancellationToken.None);
+                            }
                         }
                     }
                 }
             }
 
             CreatedDevicesCount = deviceCreated;
+
+            if (deviceInitExceptionList is { Count: > 0 } someExceptions)
+                throw new AggregateException(someExceptions);
         }
 
         private void NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason loRaDeviceRequestFailedReason = LoRaDeviceRequestFailedReason.ApplicationError)
