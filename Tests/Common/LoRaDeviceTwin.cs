@@ -39,13 +39,7 @@ namespace LoRaWan.Tests.Common
                 {
                     case null:
                         break;
-                    case LoRaRegionType region:
-                        target[key] = region.ToString();
-                        break;
-                    case uint:
-                    case int:
-                    case Enum:
-                    case bool:
+                    case uint or int or bool or (Enum and not LoRaRegionType):
                         target[key] = value;
                         break;
                     case IConvertible convertible:
