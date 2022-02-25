@@ -32,10 +32,6 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
         }
 
-        /// Used only from tests
-        internal FunctionBundler()
-        { }
-
         public async Task<FunctionBundlerResult> Execute()
         {
             var result = await this.deviceApi.ExecuteFunctionBundlerAsync(this.devEui, this.request);
