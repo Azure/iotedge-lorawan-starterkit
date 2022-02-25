@@ -139,6 +139,22 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override int Length => 6;
         }
 
+        public sealed class RxParamSetupAnswerTests : MacCommandTests
+        {
+            public override Cid Cid => Cid.RXParamCmd;
+            public override MacCommand Subject => new RXParamSetupAnswer(true, false, true);
+            public override IReadOnlyList<byte> Bytes => new byte[] { 0b101 };
+            public override int Length => 2;
+        }
+
+        public sealed class RxParamSetupRequestTests : MacCommandTests
+        {
+            public override Cid Cid => Cid.RXParamCmd;
+            public override MacCommand Subject => new RXParamSetupRequest(1, 2, 3);
+            public override IReadOnlyList<byte> Bytes => new byte[] { 0b10010, 3, 0, 0 };
+            public override int Length => 5;
+        }
+
         [Fact]
         public void ToBytes_Success() => ToBytes_Internal(Subject, Bytes);
 
