@@ -139,9 +139,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Initialized_New_OTAA_Device_Should_Have_All_Properties()
         {
-            const string gateway = "mygateway";
-            var twin = LoRaDeviceTwin.Create(OtaaDesiredTwinProperties with { GatewayId = gateway },
-                                             new LoRaReportedTwinProperties { Version = 1 });
+            var twin = LoRaDeviceTwin.Create(OtaaDesiredTwinProperties, new LoRaReportedTwinProperties { Version = 1 });
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
@@ -151,7 +149,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await loRaDevice.InitializeAsync(Configuration);
             Assert.Equal(OtaaDesiredTwinProperties.JoinEui, loRaDevice.AppEui);
             Assert.Equal(OtaaDesiredTwinProperties.AppKey, loRaDevice.AppKey);
-            Assert.Equal(gateway, loRaDevice.GatewayID);
+            Assert.Equal(OtaaDesiredTwinProperties.GatewayId, loRaDevice.GatewayID);
             Assert.Equal(OtaaDesiredTwinProperties.SensorDecoder, loRaDevice.SensorDecoder);
             Assert.Equal(0U, loRaDevice.FCntDown);
             Assert.Equal(0U, loRaDevice.LastSavedFCntDown);
@@ -164,16 +162,39 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Null(loRaDevice.DevNonce);
             Assert.Null(loRaDevice.NetId);
             Assert.False(loRaDevice.IsABP);
-            Assert.False(loRaDevice.IsOurDevice);
+            Assert.True(loRaDevice.IsOurDevice);
             Assert.Null(loRaDevice.ReportedDwellTimeSetting);
+        }
+
+        [Fact]
+        public Task Initializing_Otaa_Device_Should_Determine_Device_Ownership() =>
+            Initializing_Device_Should_Determine_Device_Ownership(OtaaDesiredTwinProperties);
+
+        [Fact]
+        public Task Initializing_Abp_Device_Should_Determine_Device_Ownership() =>
+            Initializing_Device_Should_Determine_Device_Ownership(AbpDesiredTwinProperties);
+
+        private async Task Initializing_Device_Should_Determine_Device_Ownership(LoRaDesiredTwinProperties desiredProperties)
+        {
+            // arrange
+            const string gateway = "mygateway";
+            Assert.NotEqual(desiredProperties.GatewayId, gateway);
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
+                                 .ReturnsAsync(LoRaDeviceTwin.Create(desiredProperties with { GatewayId = gateway }));
+            using var loRaDevice = CreateDefaultDevice();
+
+            // act
+            _ = await loRaDevice.InitializeAsync(Configuration);
+
+            // assert
+            Assert.False(loRaDevice.IsOurDevice);
+            Assert.Equal(gateway, loRaDevice.GatewayID);
         }
 
         [Fact]
         public async Task When_Initialized_Joined_OTAA_Device_Should_Have_All_Properties()
         {
-            const string gatewayId = "mygateway";
-            var twin = LoRaDeviceTwin.Create(OtaaDesiredTwinProperties with { GatewayId = gatewayId },
-                                             OtaaReportedTwinProperties);
+            var twin = LoRaDeviceTwin.Create(OtaaDesiredTwinProperties, OtaaReportedTwinProperties);
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(twin);
@@ -183,10 +204,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await loRaDevice.InitializeAsync(Configuration);
             Assert.Equal(OtaaDesiredTwinProperties.JoinEui, loRaDevice.AppEui);
             Assert.Equal(OtaaDesiredTwinProperties.AppKey, loRaDevice.AppKey);
-            Assert.Equal(gatewayId, loRaDevice.GatewayID);
+            Assert.Equal(OtaaDesiredTwinProperties.GatewayId, loRaDevice.GatewayID);
             Assert.Equal(OtaaDesiredTwinProperties.SensorDecoder, loRaDevice.SensorDecoder);
             Assert.False(loRaDevice.IsABP);
-            Assert.False(loRaDevice.IsOurDevice);
+            Assert.True(loRaDevice.IsOurDevice);
             Assert.Equal(OtaaReportedTwinProperties.NetworkSessionKey, loRaDevice.NwkSKey);
             Assert.Equal(OtaaReportedTwinProperties.AppSessionKey, loRaDevice.AppSKey);
             Assert.Equal(OtaaReportedTwinProperties.DevNonce, loRaDevice.DevNonce);
@@ -235,8 +256,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(true, true)]
         public async Task Downlink_Should_Be_Deserialized_Correctly(object downlinkEnabledTwinValue, bool expectedDownlink)
         {
-            const string gatewayId = "mygateway";
-            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties with { GatewayId = gatewayId }, AbpReportedTwinProperties);
+            var twin = LoRaDeviceTwin.Create(AbpDesiredTwinProperties, AbpReportedTwinProperties);
             twin.Properties.Desired["Downlink"] = downlinkEnabledTwinValue;
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
