@@ -123,6 +123,22 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override int Length => 1;
         }
 
+        public sealed class NewChannelAnswerTests : MacCommandTests
+        {
+            public override Cid Cid => Cid.NewChannelCmd;
+            public override MacCommand Subject => new NewChannelAnswer(false, true);
+            public override IReadOnlyList<byte> Bytes => new byte[] { 1 };
+            public override int Length => 2;
+        }
+
+        public sealed class NewChannelRequestTests : MacCommandTests
+        {
+            public override Cid Cid => Cid.NewChannelCmd;
+            public override MacCommand Subject => new NewChannelRequest(1, 2, 3, 4);
+            public override IReadOnlyList<byte> Bytes => new byte[] { 1, 2, 0, 0, 0b110100 };
+            public override int Length => 6;
+        }
+
         [Fact]
         public void ToBytes_Success() => ToBytes_Internal(Subject, Bytes);
 
