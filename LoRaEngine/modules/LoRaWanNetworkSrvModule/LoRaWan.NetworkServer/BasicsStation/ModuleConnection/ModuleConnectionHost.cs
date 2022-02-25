@@ -182,7 +182,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
 
             var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(c2d.DevEUI.Value);
-            await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None);
+            loRaDevice.IsConnectionOwner = false;
+            await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, true);
 
             return new MethodResponse((int)HttpStatusCode.OK);
         }

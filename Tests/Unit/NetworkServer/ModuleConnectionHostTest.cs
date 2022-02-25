@@ -219,7 +219,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             loRaDeviceRegistry.VerifyAll();
-            mockedDevice.Verify(x => x.CloseConnectionAsync(It.IsAny<CancellationToken>(), It.IsAny<bool>()), Times.Once);
+            mockedDevice.Verify(x => x.CloseConnectionAsync(It.IsAny<CancellationToken>(), true), Times.Once);
         }
 
         public static TheoryData<byte[]> DropConnectionInvalidMessages =>
