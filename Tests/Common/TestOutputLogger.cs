@@ -40,7 +40,7 @@ namespace LoRaWan.Tests.Common
             {
                 this.testOutputHelper.WriteLine(message);
             }
-            catch (Exception)
+            catch (InvalidOperationException)
             {
                 // best-effort logging in case testOutputHelper has already been disposed. Fixes:
                 // https://github.com/Azure/iotedge-lorawan-starterkit/issues/1554.
