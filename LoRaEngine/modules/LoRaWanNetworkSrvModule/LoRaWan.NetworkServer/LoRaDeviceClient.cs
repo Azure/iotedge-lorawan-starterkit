@@ -215,17 +215,27 @@ namespace LoRaWan.NetworkServer
             {
                 _ = Interlocked.Decrement(ref activeDeviceConnections);
 
+                const string closeFailureMessage = "failed to close device client.";
+
                 try
                 {
                     await this.deviceClient.CloseAsync(cancellationToken);
                 }
-                catch (Exception ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "failed to close device client."))) { }
+                catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, closeFailureMessage)))
+                {
+                }
+                catch (Exception ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, closeFailureMessage)))
+                {
+                }
+                finally
+                {
 #pragma warning disable CA1849 // Calling DisposeAsync after CloseAsync throws an error
-                this.deviceClient.Dispose();
+                    this.deviceClient.Dispose();
 #pragma warning restore CA1849 // Call async methods when in an async method
-                this.deviceClient = null;
+                    this.deviceClient = null;
 
-                this.logger.LogDebug("device client disconnected");
+                    this.logger.LogDebug("device client disconnected");
+                }
             }
         }
 
