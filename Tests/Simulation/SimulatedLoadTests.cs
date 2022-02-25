@@ -95,8 +95,8 @@ namespace LoRaWan.Tests.Simulation
 
             // assert
             await TestFixture.AssertNetworkServerModuleLogExistsAsync(
-                x => x.Contains(ModuleConnectionHost.DroppingConnectionLog, StringComparison.Ordinal) && x.Contains(Configuration.LeafDeviceGatewayID, StringComparison.Ordinal),
-                new SearchLogOptions($"{ModuleConnectionHost.DroppingConnectionLog} and {Configuration.LeafDeviceGatewayID}") { TreatAsError = true });
+                x => x.Contains(ModuleConnectionHost.DroppedConnectionLog, StringComparison.Ordinal) && x.Contains(Configuration.LeafDeviceGatewayID, StringComparison.Ordinal),
+                new SearchLogOptions($"{ModuleConnectionHost.DroppedConnectionLog} and {Configuration.LeafDeviceGatewayID}") { TreatAsError = true });
             await AssertIotHubMessageCountAsync(device, 2);
         }
 

@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
-        public const string DroppingConnectionLog = "device connection is getting dropped";
+        public const string DroppedConnectionLog = "device connection was dropped";
 
         public ModuleConnectionHost(
             NetworkServerConfiguration networkServerConfiguration,
@@ -183,7 +183,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
 
             using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
-            this.logger.LogInformation($"{DroppingConnectionLog} from gateway: {this.networkServerConfiguration.GatewayID}");
 
             var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(c2d.DevEUI.Value);
             if (loRaDevice == null)
@@ -192,9 +191,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 return new MethodResponse((int)HttpStatusCode.NotFound);
             }
 
-            this.logger.LogDebug($"The current gateway is no longer the connection owner for device {loRaDevice.DevEUI}, closing connection");
             loRaDevice.IsConnectionOwner = false;
-            await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, true);
+            await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, force: true);
+            this.logger.LogInformation($"{DroppedConnectionLog} from gateway: {this.networkServerConfiguration.GatewayID}");
 
             return new MethodResponse((int)HttpStatusCode.OK);
         }
