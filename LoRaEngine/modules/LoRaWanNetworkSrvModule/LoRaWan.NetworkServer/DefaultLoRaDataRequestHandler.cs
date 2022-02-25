@@ -126,7 +126,9 @@ namespace LoRaWan.NetworkServer
             {
                 #region FunctionBundler
                 FunctionBundlerResult bundlerResult = null;
-                if (useMultipleGateways && (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission))
+                if (useMultipleGateways
+                    && concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate
+                                                       or ConcentratorDeduplicationResult.DuplicateDueToResubmission)
                 {
                     // in the case of resubmissions we need to contact the function to get a valid frame counter down
                     var bundler = CreateBundler(loraPayload, loRaDevice, request);
