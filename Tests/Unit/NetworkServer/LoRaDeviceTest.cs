@@ -28,8 +28,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     /// </summary>
     public class LoRaDeviceTest
     {
-        private static readonly NetworkServerConfiguration Configuration = new NetworkServerConfiguration { GatewayID = "test-gateway" };
-        private static readonly LoRaDesiredTwinProperties OtaaDesiredTwinProperties = new LoRaDesiredTwinProperties
+        private static readonly NetworkServerConfiguration Configuration = new() { GatewayID = "test-gateway" };
+        private static readonly LoRaDesiredTwinProperties OtaaDesiredTwinProperties = new()
         {
             JoinEui = new JoinEui((ulong)RandomNumberGenerator.GetInt32(0, int.MaxValue)),
             AppKey = TestKeys.CreateAppKey(),
@@ -37,7 +37,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             SensorDecoder = "DecoderValueSensor",
             Version = 1,
         };
-        private static readonly LoRaReportedTwinProperties OtaaReportedTwinProperties = new LoRaReportedTwinProperties
+        private static readonly LoRaReportedTwinProperties OtaaReportedTwinProperties = new()
         {
             Version = 1,
             NetworkSessionKey = TestKeys.CreateNetworkSessionKey(),
@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             DevNonce = new DevNonce((ushort)RandomNumberGenerator.GetInt32(0, ushort.MaxValue)),
             DevAddr = new DevAddr((uint)RandomNumberGenerator.GetInt32(0, int.MaxValue)),
         };
-        private static readonly LoRaDesiredTwinProperties AbpDesiredTwinProperties = new LoRaDesiredTwinProperties
+        private static readonly LoRaDesiredTwinProperties AbpDesiredTwinProperties = new()
         {
             NetworkSessionKey = TestKeys.CreateNetworkSessionKey(),
             AppSessionKey = TestKeys.CreateAppSessionKey(),
@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             SensorDecoder = "DecoderValueSensor",
             Version = 1,
         };
-        private static readonly LoRaReportedTwinProperties AbpReportedTwinProperties = new LoRaReportedTwinProperties
+        private static readonly LoRaReportedTwinProperties AbpReportedTwinProperties = new()
         {
             Version = 1,
             NetworkSessionKey = TestKeys.CreateNetworkSessionKey(),
