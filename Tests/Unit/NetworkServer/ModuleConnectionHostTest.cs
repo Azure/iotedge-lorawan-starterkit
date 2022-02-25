@@ -250,6 +250,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
+        public async Task OnDirectMethodCall_DropConnection_Should_Return_NotFound_When_Device_Not_Found()
+        {
+            // arrange
+            var networkServerConfiguration = new NetworkServerConfiguration();
+            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
+            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>();
+            var devEui = new DevEui(0);
+           
+            var c2d = $"{{\"DevEui\": \"{ devEui }\", \"Fport\": 1}}";
+
+            // act
+            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+            var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDropConnection, Encoding.UTF8.GetBytes(c2d)), null);
+
+            // assert
+            Assert.Equal((int)HttpStatusCode.NotFound, response.Status);
+            loRaDeviceRegistry.Verify(x => x.GetDeviceByDevEUIAsync(devEui), Times.Once);
+            loRaDeviceRegistry.VerifyNoOtherCalls();
+
+        }
+
+        [Fact]
         public async Task OnDirectMethodCall_CloudToDeviceDecoderElementName_When_Correct_Should_Work()
         {
             var networkServerConfiguration = new NetworkServerConfiguration();

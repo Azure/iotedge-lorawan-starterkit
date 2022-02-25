@@ -182,6 +182,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
 
             var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(c2d.DevEUI.Value);
+            if (loRaDevice == null)
+            {
+                this.logger.LogError($"Could not retrieve LoRa device {c2d.DevEUI.Value}");
+                return new MethodResponse((int)HttpStatusCode.NotFound);
+            }
+
+            this.logger.LogDebug($"The current gateway is no longer the connection owner for device {loRaDevice.DevEUI}, closing connection");
             loRaDevice.IsConnectionOwner = false;
             await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, true);
 
