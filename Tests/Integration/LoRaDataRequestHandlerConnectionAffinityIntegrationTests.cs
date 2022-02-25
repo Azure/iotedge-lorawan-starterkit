@@ -55,8 +55,6 @@ namespace LoRaWan.Tests.Integration
                 this.simulatedABPDevice.DevAddr,
                 this.simulatedABPDevice.DevEUI,
                 ConnectionManager);
-            this.deviceMock.Object.AppSKey = this.simulatedABPDevice.AppSKey;
-            this.deviceMock.Object.NwkSKey = this.simulatedABPDevice.NwkSKey;
 
             _ = this.frameCounterStrategyMock.Setup(x => x.NextFcntDown(this.deviceMock.Object, It.IsAny<uint>())).Returns(() => ValueTask.FromResult<uint>(1));
             _ = this.frameCounterProviderMock.Setup(x => x.GetStrategy(this.deviceMock.Object.GatewayID)).Returns(this.frameCounterStrategyMock.Object);
