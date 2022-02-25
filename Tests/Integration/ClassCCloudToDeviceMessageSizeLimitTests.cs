@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(
-                    1, deviceClassType: 'c', gatewayID: this.serverConfiguration.GatewayID));
+                    1, deviceClassType: LoRaDeviceClassType.C, gatewayID: this.serverConfiguration.GatewayID));
 
             var devEUI = simulatedDevice.DevEUI;
 
@@ -172,7 +172,7 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(
-                    1, deviceClassType: 'c', gatewayID: this.serverConfiguration.GatewayID));
+                    1, deviceClassType: LoRaDeviceClassType.C, gatewayID: this.serverConfiguration.GatewayID));
 
             var devEUI = simulatedDevice.DevEUI;
 

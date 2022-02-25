@@ -310,7 +310,7 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1,
                                                                                      gatewayID: ServerConfiguration.GatewayID,
-                                                                                     deviceClassType: 'c'));
+                                                                                     deviceClassType: LoRaDeviceClassType.C));
             var devEui = simulatedDevice.DevEUI;
 
             // will disconnected client
