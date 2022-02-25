@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Common
 
         public ReceiveWindowNumber PreferredWindow { get; set; } = ReceiveWindow1;
 
-        public char ClassType { get; set; } = 'A';
+        public LoRaDeviceClassType ClassType { get; set; } = LoRaDeviceClassType.A;
 
         public int RX2DataRate { get; set; }
 
@@ -102,7 +102,7 @@ namespace LoRaWan.Tests.Common
 
             desiredProperties[TwinProperty.PreferredWindow] = (int)PreferredWindow;
 
-            if (char.ToLower(ClassType, CultureInfo.InvariantCulture) != 'a')
+            if (ClassType != LoRaDeviceClassType.A)
                 desiredProperties[TwinProperty.ClassType] = ClassType.ToString();
 
             desiredProperties[TwinProperty.RX1DROffset] = RX1DROffset;
@@ -123,7 +123,13 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Creates a <see cref="TestDeviceInfo"/> with ABP authentication.
         /// </summary>
-        public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", int netId = 1, char deviceClassType = 'A', bool supports32BitFcnt = false)
+        public static TestDeviceInfo CreateABPDevice(uint deviceID,
+                                                     string prefix = null,
+                                                     string gatewayID = null,
+                                                     string sensorDecoder = "DecoderValueSensor",
+                                                     int netId = 1,
+                                                     LoRaDeviceClassType deviceClassType = LoRaDeviceClassType.A,
+                                                     bool supports32BitFcnt = false)
         {
             var value8 = deviceID.ToString("00000000", CultureInfo.InvariantCulture);
             var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
@@ -155,7 +161,11 @@ namespace LoRaWan.Tests.Common
         /// Creates a <see cref="TestDeviceInfo"/> with OTAA authentication.
         /// </summary>
         /// <param name="deviceID">Device identifier. It will padded with 0's.</param>
-        public static TestDeviceInfo CreateOTAADevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", char deviceClassType = 'A')
+        public static TestDeviceInfo CreateOTAADevice(uint deviceID,
+                                                      string prefix = null,
+                                                      string gatewayID = null,
+                                                      string sensorDecoder = "DecoderValueSensor",
+                                                      LoRaDeviceClassType deviceClassType = LoRaDeviceClassType.A)
         {
             var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
             var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);

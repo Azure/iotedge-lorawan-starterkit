@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Common
     using System.Globalization;
     using System.Linq;
     using LoRaTools.Regions;
+    using LoRaWan.NetworkServer;
     using Microsoft.Azure.Devices.Shared;
 
     public static class LoRaDeviceTwin
@@ -39,7 +40,7 @@ namespace LoRaWan.Tests.Common
                 {
                     case null:
                         break;
-                    case uint or int or bool or (Enum and not LoRaRegionType):
+                    case uint or int or bool or (Enum and not (LoRaRegionType or LoRaDeviceClassType)):
                         target[key] = value;
                         break;
                     case IConvertible convertible:
@@ -81,7 +82,7 @@ namespace LoRaWan.Tests.Common
         public DataRateIndex? Rx2DataRate { get; init; }
         public ReceiveWindowNumber? PreferredWindow { get; init; }
         public int? RxDelay { get; init; }
-        public char? ClassType { get; init; }
+        public LoRaDeviceClassType? ClassType { get; init; }
         public TimeSpan? KeepAliveTimeout { get; init; }
         public uint? Version { get; init; }
         public bool? DownlinkEnabled { get; init; }
