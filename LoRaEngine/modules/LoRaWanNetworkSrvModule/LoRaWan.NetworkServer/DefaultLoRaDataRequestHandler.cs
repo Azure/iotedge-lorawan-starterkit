@@ -131,8 +131,7 @@ namespace LoRaWan.NetworkServer
                                                        or ConcentratorDeduplicationResult.DuplicateDueToResubmission)
                 {
                     // in the case of resubmissions we need to contact the function to get a valid frame counter down
-                    var bundler = CreateBundler(loraPayload, loRaDevice, request);
-                    if (bundler != null)
+                    if (CreateBundler(loraPayload, loRaDevice, request) is { } bundler)
                     {
                         if (loRaDevice.IsConnectionOwner is false)
                         {
