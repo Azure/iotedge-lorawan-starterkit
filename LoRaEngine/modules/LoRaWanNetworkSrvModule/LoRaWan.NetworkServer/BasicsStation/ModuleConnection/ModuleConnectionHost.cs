@@ -102,11 +102,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 }
                 else if (string.Equals(Constants.CloudToDeviceDropConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return await DropConnection(methodRequest);
-                }
-                else if (string.Equals(Constants.CloudToDeviceDropConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return await DropConnection(methodRequest);
+                    return await DropConnectionAsync(methodRequest);
                 }
                 else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
@@ -140,10 +136,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                     return new MethodResponse((int)HttpStatusCode.BadRequest);
                 }
 
-                using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
-
                 using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
                 this.logger.LogDebug($"received cloud to device message from direct method: {methodRequest.DataAsJson}");
+
+                using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
 
                 if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
                 {
@@ -160,38 +156,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             return new MethodResponse((int)HttpStatusCode.OK);
         }
 
-        private async Task<MethodResponse> DropConnection(MethodRequest methodRequest)
-        {
-            this.forceClosedConnections.Add(1);
-            ReceivedLoRaCloudToDeviceMessage c2d = null;
-
-            try
-            {
-                c2d = JsonSerializer.Deserialize<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            }
-            catch (Exception ex) when (ex is ArgumentNullException or JsonException)
-            {
-                this.logger.LogError($"Impossible to parse Json for c2d message for device {c2d?.DevEUI}, error: {ex}");
-                return new MethodResponse((int)HttpStatusCode.BadRequest);
-            }
-
-            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
-
-            if (c2d.DevEUI == null)
-            {
-                this.logger.LogError($"DevEUI missing, cannot identify device to drop connection for; message Id: {c2d.MessageId}");
-                return new MethodResponse((int)HttpStatusCode.BadRequest);
-            }
-
-            using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
-
-            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(c2d.DevEUI.Value);
-            await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None);
-
-            return new MethodResponse((int)HttpStatusCode.OK);
-        }
-
-        private async Task<MethodResponse> DropConnection(MethodRequest methodRequest)
+        private async Task<MethodResponse> DropConnectionAsync(MethodRequest methodRequest)
         {
             this.forceClosedConnections.Add(1);
             ReceivedLoRaCloudToDeviceMessage c2d = null;
