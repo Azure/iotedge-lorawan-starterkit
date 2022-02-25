@@ -75,6 +75,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override int Length => 1;
         }
 
+        public sealed class DutyCycleAnswerTests : MacCommandTests
+        {
+            public override Cid Cid => Cid.DutyCycleCmd;
+            public override MacCommand Subject => new DutyCycleAnswer();
+            public override IReadOnlyList<byte> Bytes => Array.Empty<byte>();
+            public override int Length => 1;
+        }
+
         [Fact]
         public void ToBytes_Success() => ToBytes_Internal(Subject, Bytes);
 
