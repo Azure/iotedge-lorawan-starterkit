@@ -377,9 +377,31 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var deviceLoader = new TestDeviceLoaderSynchronizer(new DevAddr(0), null, null, deviceCache);
 
-            await deviceLoader.ExecuteCreateDevicesAsync(new[] { new IoTHubDeviceInfo { DevAddr = new DevAddr(0x456),  DevEUI = devEui } });
+            await deviceLoader.ExecuteCreateDevicesAsync(new[] { new IoTHubDeviceInfo { DevAddr = new DevAddr(0x456), DevEUI = devEui } });
 
             loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Once);
+            loRaDevice.Verify(x => x.CloseConnectionAsync(CancellationToken.None, false), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task When_Cache_Contains_Device_With_Outdated_DevAddr_Connection_Is_Closed(bool cachedDevAddrMatchesIoTHubInfo)
+        {
+            await using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+
+            var devEui = new DevEui(0x123);
+            var devAddr = new DevAddr(0x456);
+            var loRaDevice = new Mock<LoRaDevice>(devAddr, devEui, null);
+            loRaDevice.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None))
+                .ReturnsAsync(true);
+            deviceCache.Register(loRaDevice.Object);
+
+            var deviceLoader = new TestDeviceLoaderSynchronizer(new DevAddr(0), null, null, deviceCache);
+
+            await deviceLoader.ExecuteCreateDevicesAsync(new[] { new IoTHubDeviceInfo { DevAddr = cachedDevAddrMatchesIoTHubInfo ? devAddr : new DevAddr(0x789), DevEUI = devEui } });
+
+            loRaDevice.Verify(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None), Times.Never);
             loRaDevice.Verify(x => x.CloseConnectionAsync(CancellationToken.None, false), Times.Once);
         }
 
