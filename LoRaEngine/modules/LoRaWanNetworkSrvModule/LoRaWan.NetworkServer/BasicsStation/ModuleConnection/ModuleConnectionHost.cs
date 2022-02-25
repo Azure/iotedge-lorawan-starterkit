@@ -30,6 +30,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
+        public const string DroppingConnectionLog = "device connection is getting dropped";
+
         public ModuleConnectionHost(
             NetworkServerConfiguration networkServerConfiguration,
             IClassCDeviceMessageSender defaultClassCDevicesMessageSender,
@@ -93,6 +95,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         internal async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
             if (methodRequest == null) throw new ArgumentNullException(nameof(methodRequest));
+            this.logger.LogDebug($"Direct method: { methodRequest.Name } invoked on LNS: { this.networkServerConfiguration.GatewayID }");
 
             try
             {
@@ -180,6 +183,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
 
             using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
+            this.logger.LogInformation($"{DroppingConnectionLog} from gateway: {this.networkServerConfiguration.GatewayID}");
 
             var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(c2d.DevEUI.Value);
             if (loRaDevice == null)

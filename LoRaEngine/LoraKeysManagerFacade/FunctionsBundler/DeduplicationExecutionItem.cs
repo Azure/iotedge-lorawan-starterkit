@@ -55,7 +55,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
             {
                 if (await deviceCache.TryToLockAsync())
                 {
-                    // we are owning the lock now
+                    logger?.LogDebug($"Obtained the lock for LNS: {gatewayId} to execute deduplication");
+
                     if (deviceCache.TryGetInfo(out var cachedDeviceState))
                     {
                         var updateCacheState = false;
@@ -97,7 +98,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
                                     var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                                     _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
-
                                     var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
                                     if (res == null || !HttpUtilities.IsSuccessStatusCode(res.Status))
                                     {
@@ -107,6 +107,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                 catch (IotHubException ex)
                                 {
                                     logger?.LogError(ex, $"Failed to invoke direct method on LNS: {previousGateway} to drop the connection for device: {devEUI}");
+
+                                    // we don't want to rethrow if an exception is thrown.
+                                    // worst case the connection stays open on the gateway that lost
+                                    // the race.
                                 }
                             }
                         }

@@ -22,6 +22,7 @@ namespace LoRaWan.Tests.Simulation
     using static MoreLinq.Extensions.RepeatExtension;
     using static MoreLinq.Extensions.IndexExtension;
     using static MoreLinq.Extensions.TransposeExtension;
+    using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
 
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class SimulatedLoadTests : IntegrationTestBaseSim, IAsyncLifetime
@@ -82,22 +83,21 @@ namespace LoRaWan.Tests.Simulation
         }
 
         [Fact]
-        public async Task Test_Disconnect()
+        public async Task Ensures_Disconnect_Happens_For_Losing_Gateway_When_Connection_Switches()
         {
             // arrange
-            const int messageCount = 2;
-            var device = new SimulatedDevice(TestFixtureSim.Device1001_Simulated_ABP, simulatedBasicsStation: new[] { this.simulatedBasicsStations.First() }, logger: this.logger);
+            var device = new SimulatedDevice(TestFixtureSim.Device1003_Simulated_ABP, simulatedBasicsStation: new[] { this.simulatedBasicsStations.First() }, logger: this.logger);
             await SendConfirmedUpstreamMessages(device, 1);
 
-            // arrange
+            // act: change basics station that the device is listened from and therefore the gateway it uses as well
             device.SimulatedBasicsStations = new[] { this.simulatedBasicsStations.Last() };
             await SendConfirmedUpstreamMessages(device, 1);
 
             // assert
-            var expectedLog = "to drop connection";
-            await TestFixture.AssertNetworkServerModuleLogExistsAsync(x => x.Contains(expectedLog, StringComparison.Ordinal), new SearchLogOptions(expectedLog) { TreatAsError = true });
-            await AssertIotHubMessageCountAsync(device, messageCount);
-            AssertMessageAcknowledgement(device, messageCount);
+            await TestFixture.AssertNetworkServerModuleLogExistsAsync(
+                x => x.Contains(ModuleConnectionHost.DroppingConnectionLog, StringComparison.Ordinal) && x.Contains(Configuration.LeafDeviceGatewayID, StringComparison.Ordinal),
+                new SearchLogOptions($"{ModuleConnectionHost.DroppingConnectionLog} and {Configuration.LeafDeviceGatewayID}") { TreatAsError = true });
+            await AssertIotHubMessageCountAsync(device, 2);
         }
 
         [Fact]
