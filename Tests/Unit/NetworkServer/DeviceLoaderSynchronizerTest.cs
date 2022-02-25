@@ -426,6 +426,46 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(deviceLoader.HasLoadingDeviceError);
         }
 
+        [Fact]
+        public async Task When_Initializer_Fails_Connection_Is_Closed_And_Exception_Thrown()
+        {
+            await using var deviceCache = LoRaDeviceCacheDefault.CreateDefault();
+
+            // setting up the LoRaDevice
+            var devEui = new DevEui(0x123);
+            var devAddr = new DevAddr(0x456);
+            var loRaDevice = new Mock<LoRaDevice>(devAddr, devEui, null);
+            loRaDevice.Setup(x => x.InitializeAsync(It.IsAny<NetworkServerConfiguration>(), CancellationToken.None))
+                .ReturnsAsync(true);
+            loRaDevice.Object.IsOurDevice = true;
+
+            // setting up the ILoRaDeviceFactory mock so that CreateAndRegister returns above LoRaDevice
+            var deviceFactory = new Mock<ILoRaDeviceFactory>();
+            deviceFactory.Setup(x => x.CreateAndRegisterAsync(It.IsAny<IoTHubDeviceInfo>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(loRaDevice.Object);
+
+            // setting up one ILoRaDeviceInitializer to throw
+            var exceptionThrown = new InvalidOperationException("Mocked exception");
+            var failingInitializer = new Mock<ILoRaDeviceInitializer>();
+            failingInitializer.Setup(x => x.Initialize(It.IsAny<LoRaDevice>()))
+                              .Throws(exceptionThrown);
+
+            var deviceLoader = new TestDeviceLoaderSynchronizer(new DevAddr(0),
+                                                                null,
+                                                                deviceFactory.Object,
+                                                                deviceCache,
+                                                                new HashSet<ILoRaDeviceInitializer> { failingInitializer.Object });
+            // acting and asserting that the method throws
+            var iotHubDevicesInfo = new[] { new IoTHubDeviceInfo { DevAddr = devAddr, DevEUI = devEui } };
+            var actualException = await Assert.ThrowsAsync<AggregateException>(() => deviceLoader.ExecuteCreateDevicesAsync(iotHubDevicesInfo));
+
+            // asserting that the inner exception of the aggregate exception is actually what was expected
+            Assert.Equal(exceptionThrown, actualException.InnerException);
+
+            // asserting that the connection was closed nevertheless
+            loRaDevice.Verify(x => x.CloseConnectionAsync(CancellationToken.None, false), Times.Once);
+        }
+
         private class TestDeviceLoaderSynchronizer : DeviceLoaderSynchronizer
         {
             internal TestDeviceLoaderSynchronizer(DevAddr devAddr,
