@@ -120,14 +120,12 @@ namespace LoRaWan.NetworkServer
 
         protected async Task CreateDevicesAsync(IReadOnlyList<IoTHubDeviceInfo> devices)
         {
-            List<Task<LoRaDevice>> initTasks = null;
-            List<Task> refreshTasks = null;
-            var deviceCreated = 0;
-            List<Exception> deviceInitExceptionList = null;
-
             if (devices?.Count > 0)
             {
-                initTasks = new List<Task<LoRaDevice>>(devices.Count);
+                var deviceCreated = 0;
+                var initTasks = new List<Task<LoRaDevice>>(devices.Count);
+                List<Task> refreshTasks = null;
+                List<Exception> deviceInitExceptionList = null;
 
                 foreach (var foundDevice in devices)
                 {
@@ -222,12 +220,16 @@ namespace LoRaWan.NetworkServer
                         }
                     }
                 }
+
+                CreatedDevicesCount = deviceCreated;
+
+                if (deviceInitExceptionList is { Count: > 0 } someExceptions)
+                    throw new AggregateException(someExceptions);
             }
-
-            CreatedDevicesCount = deviceCreated;
-
-            if (deviceInitExceptionList is { Count: > 0 } someExceptions)
-                throw new AggregateException(someExceptions);
+            else
+            {
+                CreatedDevicesCount = 0;
+            }
         }
 
         private void NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason loRaDeviceRequestFailedReason = LoRaDeviceRequestFailedReason.ApplicationError)
