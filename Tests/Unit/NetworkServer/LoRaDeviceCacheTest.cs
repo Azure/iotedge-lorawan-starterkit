@@ -185,7 +185,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(await cache.RemoveAsync(device));
             Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
 
-            deviceMock.Protected().Verify(nameof(device.DisposeAsync), Times.Once(), true, true);
+            deviceMock.Protected().Verify("DisposeAsyncCore", Times.Once());
         }
 
         [Fact]
