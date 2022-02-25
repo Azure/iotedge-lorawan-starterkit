@@ -58,6 +58,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             factory.LastDeviceMock.Verify(x => x.InitializeAsync(defaultConfiguration, this.cancellationToken), Times.Once);
             connectionManager.VerifySuccess(device);
+            factory.LastDeviceClientMock.Verify(x => x.DisposeAsync(), Times.Never());
         }
 
         [Fact]
@@ -71,6 +72,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             factory.LastDeviceMock.Verify(x => x.InitializeAsync(defaultConfiguration, this.cancellationToken), Times.Never);
             connectionManager.VerifySuccess(device);
+            factory.LastDeviceClientMock.Verify(x => x.DisposeAsync(), Times.Never());
         }
 
         [Fact]
@@ -83,6 +85,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             Assert.False(cache.TryGetByDevEui(this.defaultDeviceInfo.DevEUI, out _));
             connectionManager.VerifyFailure(factory.LastDeviceMock.Object);
+            factory.LastDeviceClientMock.Verify(x => x.DisposeAsync(), Times.Once());
             factory.LastDeviceMock.Protected().Verify(nameof(LoRaDevice.DisposeAsync), Times.Once(), true, true);
         }
 
@@ -121,6 +124,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             internal Mock<LoRaDevice> LastDeviceMock { get; private set; }
 
+            internal Mock<ILoRaDeviceClient> LastDeviceClientMock { get; private set; }
+
             protected override LoRaDevice CreateDevice(IoTHubDeviceInfo deviceInfo)
             {
                 var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
@@ -135,6 +140,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 }
                 LastDeviceMock = device;
                 return device.Object;
+            }
+
+            public override ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey)
+            {
+                LastDeviceClientMock = new Mock<ILoRaDeviceClient>();
+                return LastDeviceClientMock.Object;
             }
         }
     }
