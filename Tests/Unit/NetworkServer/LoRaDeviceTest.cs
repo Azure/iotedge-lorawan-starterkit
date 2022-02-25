@@ -38,6 +38,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
+        public async Task When_Disposing_Device_ConnectionManager_Should_Release_It()
+        {
+            var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
+            var target = CreateDefaultDevice(connectionManager.Object);
+
+            // act
+            await target.DisposeAsync();
+
+            // assert
+            connectionManager.Verify(x => x.ReleaseAsync(target), Times.Once());
+        }
+
+        [Fact]
         public async Task When_No_Changes_Were_Made_Should_Not_Save_Frame_Counter()
         {
             await using var target = CreateDefaultDevice();
