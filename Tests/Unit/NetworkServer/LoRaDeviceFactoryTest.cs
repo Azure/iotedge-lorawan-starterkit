@@ -84,7 +84,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await Assert.ThrowsAsync<LoRaProcessingException>(() => factory.CreateAndRegisterAsync(defaultDeviceInfo, this.cancellationToken));
 
             Assert.False(cache.TryGetByDevEui(this.defaultDeviceInfo.DevEUI, out _));
-            connectionManager.VerifyFailure(factory.LastDeviceMock.Object);
             factory.LastDeviceClientMock.Verify(x => x.DisposeAsync(), Times.Once());
             factory.LastDeviceMock.Protected().Verify("DisposeAsyncCore", Times.Once());
         }
