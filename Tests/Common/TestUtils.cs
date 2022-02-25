@@ -36,7 +36,7 @@ namespace LoRaWan.Tests.Common
                 NwkSKey = simulatedDevice.LoRaDevice.NwkSKey,
                 GatewayID = simulatedDevice.LoRaDevice.GatewayID,
                 IsOurDevice = true,
-                ClassType = simulatedDevice.ClassType == LoRaDeviceClassType.C ? LoRaDeviceClassType.C : LoRaDeviceClassType.A,
+                ClassType = simulatedDevice.ClassType,
             };
 
             result.SetFcntDown(simulatedDevice.FrmCntDown);
