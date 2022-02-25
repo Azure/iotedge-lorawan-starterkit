@@ -215,16 +215,15 @@ namespace LoRaWan.NetworkServer
             {
                 _ = Interlocked.Decrement(ref activeDeviceConnections);
 
-                const string closeFailureMessage = "failed to close device client.";
-
                 try
                 {
                     await this.deviceClient.CloseAsync(cancellationToken);
                 }
-                catch (OperationCanceledException ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, closeFailureMessage)))
+                catch (OperationCanceledException)
                 {
+                    throw;
                 }
-                catch (Exception ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, closeFailureMessage)))
+                catch (Exception ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "failed to close device client.")))
                 {
                 }
                 finally
