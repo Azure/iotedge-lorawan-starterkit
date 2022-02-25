@@ -1604,7 +1604,7 @@ namespace LoRaWan.Tests.Integration
 
             if (loRaDevice is { } someLoRaDevice)
             {
-                DeviceCache.Register(loRaDevice);
+                DeviceCache.Register(someLoRaDevice);
             }
 #pragma warning disable CA2000 // Dispose objects before losing scope (ownership transferred to caller)
             var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
