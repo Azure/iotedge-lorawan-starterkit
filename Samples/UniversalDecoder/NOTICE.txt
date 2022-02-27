@@ -1939,7 +1939,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-fs-extra 10.0.0 - MIT
+fs-extra 10.0.1 - MIT
 https://github.com/jprichardson/node-fs-extra
 
 Copyright (c) 2011-2017 JP Richardson
