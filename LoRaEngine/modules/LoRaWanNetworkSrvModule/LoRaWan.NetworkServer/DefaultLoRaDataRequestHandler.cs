@@ -120,6 +120,7 @@ namespace LoRaWan.NetworkServer
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
             var stationEuiChanged = false;
+            var fcntResetSaved = false;
             IAsyncDisposable deviceConnectionActivity = null;
 
             try
@@ -195,6 +196,11 @@ namespace LoRaWan.NetworkServer
                 {
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
                 }
+
+                // saving fcnt reset changes
+                await SaveChangesToDeviceAsync(loRaDevice, isFrameCounterFromNewlyStartedDevice);
+                if (isFrameCounterFromNewlyStartedDevice)
+                    fcntResetSaved = true;
 
                 #region FrameCounterDown
                 // if deduplication already processed the next framecounter down, use that
@@ -537,7 +543,7 @@ namespace LoRaWan.NetworkServer
                     // #1556 Ideally we should add the SaveChanges to DeferredTasks and change the logic for not doing 
                     // a "WhenAll" but loop through all the deferred tasks and throw an aggregate exception for all those tasks that failed.
                     if (loRaDevice.IsConnectionOwner is true)
-                        await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged);
+                        await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged || (isFrameCounterFromNewlyStartedDevice && !fcntResetSaved));
                 }
                 catch (OperationCanceledException saveChangesException)
                 {
