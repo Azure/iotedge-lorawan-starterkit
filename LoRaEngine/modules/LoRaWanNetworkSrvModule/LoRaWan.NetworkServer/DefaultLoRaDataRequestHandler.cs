@@ -119,7 +119,6 @@ namespace LoRaWan.NetworkServer
             }
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
-            var stationEuiChanged = false;
             var fcntResetSaved = false;
             IAsyncDisposable deviceConnectionActivity = null;
 
@@ -497,7 +496,6 @@ namespace LoRaWan.NetworkServer
                     && loRaDevice.LastProcessingStationEui != request.StationEui)
                 {
                     loRaDevice.SetLastProcessingStationEui(request.StationEui);
-                    stationEuiChanged = true;
                 }
 
                 // No C2D message and request was not confirmed, return nothing
@@ -545,7 +543,7 @@ namespace LoRaWan.NetworkServer
                     // #1556 Ideally we should add the SaveChanges to DeferredTasks and change the logic for not doing 
                     // a "WhenAll" but loop through all the deferred tasks and throw an aggregate exception for all those tasks that failed.
                     if (loRaDevice.IsConnectionOwner is true)
-                        await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged || (isFrameCounterFromNewlyStartedDevice && !fcntResetSaved));
+                        await SaveChangesToDeviceAsync(loRaDevice, isFrameCounterFromNewlyStartedDevice && !fcntResetSaved);
                 }
                 catch (OperationCanceledException saveChangesException)
                 {
@@ -605,11 +603,11 @@ namespace LoRaWan.NetworkServer
             return request.DownstreamMessageSender.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkMessage);
         }
 
-        protected virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
+        protected virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool force)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
-            _ = await loRaDevice.SaveChangesAsync(force: stationEuiChanged);
+            _ = await loRaDevice.SaveChangesAsync(force: force);
         }
 
         private void HandlePreferredGatewayChanges(
