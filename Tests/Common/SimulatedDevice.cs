@@ -258,7 +258,7 @@ namespace LoRaWan.Tests.Common
 
         //// Sends unconfirmed message
         public Task SendDataMessageAsync(LoRaRequest loRaRequest) =>
-            Task.WhenAll(from basicsStation in this.SimulatedBasicsStations
+            Task.WhenAll(from basicsStation in SimulatedBasicsStations
                          select basicsStation.SendDataMessageAsync(loRaRequest, CancellationToken.None));
 
         // Performs join
@@ -306,12 +306,12 @@ namespace LoRaWan.Tests.Common
                     }
                 }
 
-                foreach (var basicsStation in this.SimulatedBasicsStations)
+                foreach (var basicsStation in SimulatedBasicsStations)
                     basicsStation.MessageReceived += OnMessageReceived;
 
                 try
                 {
-                    foreach (var basicsStation in this.SimulatedBasicsStations)
+                    foreach (var basicsStation in SimulatedBasicsStations)
                     {
                         await basicsStation.SerializeAndSendMessageAsync(new
                         {
@@ -343,7 +343,7 @@ namespace LoRaWan.Tests.Common
                 }
                 finally
                 {
-                    foreach (var basicsStation in this.SimulatedBasicsStations)
+                    foreach (var basicsStation in SimulatedBasicsStations)
                         basicsStation.MessageReceived -= OnMessageReceived;
                 }
             }
