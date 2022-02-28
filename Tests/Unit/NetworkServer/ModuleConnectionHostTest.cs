@@ -58,7 +58,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public async Task On_Desired_Properties_Correct_Update_Should_Update()
+        public async Task On_Desired_Properties_Correct_Update_Should_Update_Api_Service_Configuration()
         {
             var networkServerConfiguration = Mock.Of<NetworkServerConfiguration>();
             var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
@@ -93,7 +93,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("{ FacadeServerUrl: 'url2', FacadeAuthCode: 'authCode' }")]// not a url
         [InlineData("{ FacadeAuthCode: 'authCode' }")] // no Url
         [InlineData("{ FacadeServerUrl: '', FacadeAuthCode: 'authCode' }")]// empty url
-        public async Task On_Desired_Properties_Incorrect_Update_Should_Not_Update(string twinUpdate)
+        public async Task On_Desired_Properties_Incorrect_Update_Should_Not_Update_Api_Service_Configuration(string twinUpdate)
         {
             var facadeUri = faker.Internet.Url();
             var facadeCode = faker.Internet.Password();
@@ -115,6 +115,50 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(facadeCode, localLoRaDeviceApiServiceBase.AuthCode);
         }
 
+        [Theory]
+        [InlineData(-100)]
+        [InlineData(0)]
+        [InlineData(5)]
+        [InlineData(400)]
+        [InlineData(1000)]
+        public async Task On_Desired_Properties_Correct_Update_Should_Update_Processing_Delay(int processingDelay)
+        {
+            var networkServerConfiguration = new NetworkServerConfiguration();
+            var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
+            var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
+            var loRaModuleClientFactory = Mock.Of<ILoRaModuleClientFactory>();
+
+            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+
+            Assert.Equal(400, networkServerConfiguration.ProcessingDelayInMilliseconds);
+
+            var input = JsonSerializer.Serialize(new
+            {
+                ProcessingDelayInMilliseconds = processingDelay,
+            });
+
+            await moduleClient.OnDesiredPropertiesUpdate(new TwinCollection(input), null);
+            Assert.Equal(processingDelay, networkServerConfiguration.ProcessingDelayInMilliseconds);
+
+        }
+
+        [Theory]
+        [InlineData("{ ProcessingDelayInMilliseconds: '' }")]
+        [InlineData("{ ProcessingDelay: 200 }")]
+        public async Task On_Desired_Properties_Incorrect_Update_Should_Not_Update_Processing_Delay(string twinUpdate)
+        {
+            var networkServerConfiguration = new NetworkServerConfiguration();
+            var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
+            var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
+            var loRaModuleClientFactory = Mock.Of<ILoRaModuleClientFactory>();
+
+            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+
+            await moduleClient.OnDesiredPropertiesUpdate(new TwinCollection(twinUpdate), null);
+            Assert.Equal(400, networkServerConfiguration.ProcessingDelayInMilliseconds);
+
+        }
+
         [Fact]
         public async Task InitModuleAsync_Update_Should_Perform_Happy_Path()
         {
@@ -126,6 +170,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             networkServerConfiguration.IoTEdgeTimeout = 5;
             var facadeUri = this.faker.Internet.Url();
             var facadeCode = this.faker.Internet.Password();
+            var processingDelay = 1000;
             var twinProperty = new TwinProperties
             {
                 Desired = new TwinCollection(
@@ -133,6 +178,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     {
                         FacadeServerUrl = facadeUri,
                         FacadeAuthCode = facadeCode,
+                        ProcessingDelayInMilliseconds = processingDelay
                     }))
             };
             
@@ -142,6 +188,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await moduleClient.CreateAsync(CancellationToken.None);
             Assert.Equal(facadeUri + "/", loRaDeviceApiServiceBase.URL.ToString());
             Assert.Equal(facadeCode, loRaDeviceApiServiceBase.AuthCode);
+            Assert.Equal(processingDelay, networkServerConfiguration.ProcessingDelayInMilliseconds);
         }
 
         [Theory]
