@@ -37,6 +37,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(concurrency, ex.ActualValue);
         }
 
+        [Fact]
+        public void DisposeAllAsync_With_Empty_Sequence_Completes_Immediately()
+        {
+            var task = Array.Empty<IAsyncDisposable>().DisposeAllAsync(42);
+            Assert.True(task.IsCompletedSuccessfully);
+        }
+
         [Theory]
         [InlineData(10, 1)]
         [InlineData(10, 5)]
