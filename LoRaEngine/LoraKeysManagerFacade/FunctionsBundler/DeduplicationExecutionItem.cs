@@ -96,17 +96,18 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                 var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                                 _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
 
+                                var directMethodErrorMsg = $"Failed to invoke direct method on LNS: {previousGateway} to drop the connection for device: {devEUI}";
                                 try
                                 {
                                     var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
                                     if (res == null || !HttpUtilities.IsSuccessStatusCode(res.Status))
                                     {
-                                        logger?.LogError($"Failed to invoke direct method on LNS: {previousGateway} to drop the connection for device: {devEUI}, status: {res?.Status}");
+                                        logger?.LogError($"{directMethodErrorMsg}, status: {res?.Status}");
                                     }
                                 }
                                 catch (IotHubException ex)
                                 {
-                                    logger?.LogError(ex, $"Failed to invoke direct method on LNS: {previousGateway} to drop the connection for device: {devEUI}");
+                                    logger?.LogError(ex, directMethodErrorMsg);
 
                                     // The exception is not rethrown.
                                     // In this case the device connection would stay open
