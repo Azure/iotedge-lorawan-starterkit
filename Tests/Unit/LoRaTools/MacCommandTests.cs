@@ -63,14 +63,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public sealed class DevStatusAnswerTests : MacCommandTests
         {
             public override Cid Cid => Cid.DevStatusCmd;
-            public override MacCommand Subject => new DevStatusAnswer(1, 2);
+            public override DevStatusAnswer Subject => new DevStatusAnswer(1, 2);
             public override IReadOnlyList<byte> Bytes => new byte[] { 1, 2 };
             public override int Length => 3;
 
             [Fact]
             public void FromBytes_Success() => FromBytesTest(actual => actual.Cid == Cid
-                                                                    && actual.Battery == 1
-                                                                    && actual.Margin == 2,
+                                                                    && actual.Battery == Subject.Battery
+                                                                    && actual.Margin == Subject.Margin,
                                                              bytes => new DevStatusAnswer(new ReadOnlySpan<byte>(bytes)),
                                                              Bytes);
         }
@@ -98,21 +98,21 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public sealed class DutyCycleRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.DutyCycleCmd;
-            public override MacCommand Subject => new DutyCycleRequest(3);
+            public override DutyCycleRequest Subject => new DutyCycleRequest(3);
             public override IReadOnlyList<byte> Bytes => new byte[] { 3 };
             public override int Length => 2;
 
             [Fact]
             public void Deserializes_Correctly() =>
                 DeserializationTest<DutyCycleRequest>(actual => actual.Cid == Cid
-                                                             && actual.DutyCyclePL == 3,
+                                                             && actual.DutyCyclePL == Subject.DutyCyclePL,
                                                       @"{""cid"":4,""dutyCyclePL"":3}");
         }
 
         public sealed class LinkAdrAnswerTests : MacCommandTests
         {
             public override Cid Cid => Cid.LinkADRCmd;
-            public override MacCommand Subject => new LinkADRAnswer(true, true, false);
+            public override LinkADRAnswer Subject => new LinkADRAnswer(true, true, false);
             public override IReadOnlyList<byte> Bytes => new byte[] { 0b110 };
             public override int Length => 2;
 
@@ -128,16 +128,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public sealed class LinkAdrRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.LinkADRCmd;
-            public override MacCommand Subject => new LinkADRRequest(1, 2, 3, 4, 5);
+            public override LinkADRRequest Subject => new LinkADRRequest(1, 2, 3, 4, 5);
             public override IReadOnlyList<byte> Bytes => new byte[] { 0b10010, 0b11, 0, 0b1000101 };
             public override int Length => 5;
 
             private Predicate<LinkADRRequest> Assert => actual => actual.Cid == Cid
-                                                               && actual.DataRate == DataRateIndex.DR1
-                                                               && actual.TxPower == 2
-                                                               && actual.ChMask == 3
-                                                               && actual.ChMaskCntl == 4
-                                                               && actual.NbRep == 5;
+                                                               && actual.DataRate == Subject.DataRate
+                                                               && actual.TxPower == Subject.TxPower
+                                                               && actual.ChMask == Subject.ChMask
+                                                               && actual.ChMaskCntl == Subject.ChMaskCntl
+                                                               && actual.NbRep == Subject.NbRep;
 
             [Fact]
             public void Deserializes_Correctly() =>
@@ -150,14 +150,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public sealed class LinkCheckAnswerTests : MacCommandTests
         {
             public override Cid Cid => Cid.LinkCheckCmd;
-            public override MacCommand Subject => new LinkCheckAnswer(1, 2);
+            public override LinkCheckAnswer Subject => new LinkCheckAnswer(1, 2);
             public override IReadOnlyList<byte> Bytes => new byte[] { 1, 2 };
             public override int Length => 3;
 
             [Fact]
             public void FromBytes_Success() => FromBytesTest(actual => actual.Cid == Cid
-                                                                    && actual.Margin == 1
-                                                                    && actual.GwCnt == 2,
+                                                                    && actual.Margin == Subject.Margin
+                                                                    && actual.GwCnt == Subject.GwCnt,
                                                              bytes => new LinkCheckAnswer(new ReadOnlySpan<byte>(bytes)),
                                                              Bytes);
         }
@@ -173,7 +173,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public sealed class NewChannelAnswerTests : MacCommandTests
         {
             public override Cid Cid => Cid.NewChannelCmd;
-            public override MacCommand Subject => new NewChannelAnswer(false, true);
+            public override NewChannelAnswer Subject => new NewChannelAnswer(false, true);
             public override IReadOnlyList<byte> Bytes => new byte[] { 1 };
             public override int Length => 2;
 
@@ -188,24 +188,24 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public sealed class NewChannelRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.NewChannelCmd;
-            public override MacCommand Subject => new NewChannelRequest(1, 2, 3, 4);
+            public override NewChannelRequest Subject => new NewChannelRequest(1, 2, 3, 4);
             public override IReadOnlyList<byte> Bytes => new byte[] { 1, 2, 0, 0, 0b110100 };
             public override int Length => 6;
 
             [Fact]
             public void Deserializes_Correctly() =>
                 DeserializationTest<NewChannelRequest>(actual => actual.Cid == Cid
-                                                              && actual.ChIndex == 1
-                                                              && actual.Freq == 2
-                                                              && actual.MaxDR == 3
-                                                              && actual.MinDR == 4,
+                                                              && actual.ChIndex == Subject.ChIndex
+                                                              && actual.Freq == Subject.Freq
+                                                              && actual.MaxDR == Subject.MaxDR
+                                                              && actual.MinDR == Subject.MinDR,
                                                        @"{""cid"":7,""chIndex"":1,""freq"":2,""drRange"":52}");
         }
 
         public sealed class RxParamSetupAnswerTests : MacCommandTests
         {
             public override Cid Cid => Cid.RXParamCmd;
-            public override MacCommand Subject => new RXParamSetupAnswer(true, false, true);
+            public override RXParamSetupAnswer Subject => new RXParamSetupAnswer(true, false, true);
             public override IReadOnlyList<byte> Bytes => new byte[] { 0b101 };
             public override int Length => 2;
 
@@ -221,16 +221,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public sealed class RxParamSetupRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.RXParamCmd;
-            public override MacCommand Subject => new RXParamSetupRequest(1, 2, 3);
+            public override RXParamSetupRequest Subject => new RXParamSetupRequest(1, 2, 3);
             public override IReadOnlyList<byte> Bytes => new byte[] { 0b10010, 3, 0, 0 };
             public override int Length => 5;
 
             [Fact]
             public void Deserializes_Correctly() =>
                 DeserializationTest<RXParamSetupRequest>(actual => actual.Cid == Cid
-                                                                && actual.Frequency == 3
-                                                                && actual.RX1DROffset == 1
-                                                                && actual.RX2DataRate == 2,
+                                                                && actual.Frequency == Subject.Frequency
+                                                                && actual.RX1DROffset == Subject.RX1DROffset
+                                                                && actual.RX2DataRate == Subject.RX2DataRate,
                                                          @"{""cid"":5,""frequency"":3,""dlSettings"":18}");
         }
 
@@ -245,14 +245,13 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public sealed class RxTimingSetupRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.RXTimingCmd;
-            public override MacCommand Subject => new RXTimingSetupRequest(1);
+            public override RXTimingSetupRequest Subject => new RXTimingSetupRequest(1);
             public override IReadOnlyList<byte> Bytes => new byte[] { 1 };
             public override int Length => 2;
 
             [Fact]
             public void Deserializes_Correctly() =>
-                DeserializationTest<RXTimingSetupRequest>(actual => actual.Cid == Cid.RXTimingCmd
-                                                                 && actual.Settings == 1,
+                DeserializationTest<RXTimingSetupRequest>(actual => actual.Cid == Cid && actual.Settings == Subject.Settings,
                                                           @"{""cid"":8,""settings"":1}");
         }
 
