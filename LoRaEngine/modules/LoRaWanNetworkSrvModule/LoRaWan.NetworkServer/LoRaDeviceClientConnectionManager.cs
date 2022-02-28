@@ -93,7 +93,7 @@ namespace LoRaWan.NetworkServer
                         try
                         {
                             using var scope = logger.BeginDeviceScope(client.DevEui);
-                            await client.DisconnectAsync();
+                            await client.DisconnectAsync(CancellationToken.None);
                         }
                         catch (Exception ex) when (ExceptionFilterUtility.False(() => logger.LogError(ex, "Error while disconnecting client ({DevEUI}) due to cache eviction.", client.DevEui)))
                         {
@@ -110,13 +110,13 @@ namespace LoRaWan.NetworkServer
                 throw new InvalidOperationException($"Connection already registered for device {key}");
         }
 
-        public void Release(LoRaDevice loRaDevice)
+        public async Task ReleaseAsync(LoRaDevice loRaDevice)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
             if (this.clientByDevEui.TryRemove(loRaDevice.DevEUI, out var removedItem))
             {
-                removedItem.Dispose();
+                await removedItem.DisposeAsync();
             }
         }
 
@@ -129,10 +129,9 @@ namespace LoRaWan.NetworkServer
             _ = this.cache.TryGetValue(string.Empty, out _);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            foreach (var client in this.clientByDevEui.Values)
-                client.Dispose();
+            await Parallel.ForEachAsync(this.clientByDevEui.Values, (client, _) => client.DisposeAsync());
         }
 
         public IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice)
@@ -141,7 +140,7 @@ namespace LoRaWan.NetworkServer
             return this.clientByDevEui[loRaDevice.DevEUI].BeginDeviceClientConnectionActivity();
         }
 
-        private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient, ILoRaDeviceClientSynchronizedOperationEventSource
+        private sealed class SynchronizedLoRaDeviceClient : ILoRaDeviceClient, ILoRaDeviceClientSynchronizedOperationEventSource, IIdentityProvider<ILoRaDeviceClient>
         {
             private readonly ILoRaDeviceClient client;
             private readonly LoRaDevice device;
@@ -193,7 +192,9 @@ namespace LoRaWan.NetworkServer
             public DevEui DevEui => this.device.DevEUI;
             public TimeSpan KeepAliveTimeout => TimeSpan.FromSeconds(this.device.KeepAliveTimeout);
 
-            public void Dispose() => this.client?.Dispose();
+            ILoRaDeviceClient IIdentityProvider<ILoRaDeviceClient>.Identity => this.client;
+
+            public ValueTask DisposeAsync() => this.client.DisposeAsync();
 
             public event EventHandler? EnsureConnectedSucceeded;
 
@@ -252,8 +253,8 @@ namespace LoRaWan.NetworkServer
                 return connected;
             }
 
-            public Task DisconnectAsync() =>
-                DisconnectAsync(isActivityEnding: false);
+            public Task DisconnectAsync(CancellationToken cancellationToken) =>
+                DisconnectAsync(isActivityEnding: false, cancellationToken);
 
             private enum DisconnectionResult { Disconnected, Deferred, NotDisconnected }
 
@@ -263,7 +264,7 @@ namespace LoRaWan.NetworkServer
             /// to issue a disconnection if it was deferred and no other activities are
             /// outstanding.
             /// </remarks>
-            private Task<DisconnectionResult> DisconnectAsync(bool isActivityEnding) =>
+            private Task<DisconnectionResult> DisconnectAsync(bool isActivityEnding, CancellationToken cancellationToken) =>
                 InvokeExclusivelyAsync(doesNotRequireOpenConnection: true, async client =>
                 {
                     DisconnectionResult result;
@@ -280,7 +281,7 @@ namespace LoRaWan.NetworkServer
                     else
                     {
                         this.disconnectedDuringActivity = false;
-                        await client.DisconnectAsync();
+                        await client.DisconnectAsync(cancellationToken);
                         result = DisconnectionResult.Disconnected;
                     }
 
@@ -316,7 +317,7 @@ namespace LoRaWan.NetworkServer
                     if (activities > 0)
                         return;
 
-                    _ = await DisconnectAsync(isActivityEnding: true);
+                    _ = await DisconnectAsync(isActivityEnding: true, cancellationToken);
                 });
             }
 

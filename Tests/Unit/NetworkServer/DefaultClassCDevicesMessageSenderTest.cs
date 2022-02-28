@@ -18,7 +18,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Moq;
     using Xunit;
 
-    public sealed class DefaultClassCDevicesMessageSenderTest : IDisposable
+    public sealed class DefaultClassCDevicesMessageSenderTest : IAsyncDisposable
     {
         private const string ServerGatewayID = "test-gateway";
         private const FramePort TestPort = FramePorts.App10;
@@ -446,11 +446,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.deviceClient.VerifyAll();
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.loRaDeviceRegistry.Dispose();
+            await this.loRaDeviceRegistry.DisposeAsync();
             this.cache.Dispose();
-            this.deviceCache.Dispose();
+            await this.deviceCache.DisposeAsync();
         }
     }
 }

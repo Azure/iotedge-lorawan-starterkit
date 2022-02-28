@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             {
                 if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return await ClearCache();
+                    return await ClearCacheAsync();
                 }
                 else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
@@ -143,11 +143,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             return new MethodResponse((int)HttpStatusCode.BadRequest);
         }
 
-        private Task<MethodResponse> ClearCache()
+        private async Task<MethodResponse> ClearCacheAsync()
         {
-            this.loRaDeviceRegistry.ResetDeviceCache();
-
-            return Task.FromResult(new MethodResponse((int)HttpStatusCode.OK));
+            await this.loRaDeviceRegistry.ResetDeviceCacheAsync();
+            return new MethodResponse((int)HttpStatusCode.OK);
         }
 
         /// <summary>

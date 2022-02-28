@@ -42,25 +42,25 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 .ReturnsAsync((Message)null)
                 .ReturnsAsync((Message)null);
 
-            using var loRaDevice1 = CreateLoRaDevice(simulatedDevice);
-            using var connectionManager2 = new SingleDeviceConnectionManager(SecondLoRaDeviceClient.Object);
-            using var loRaDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, connectionManager2, SecondRequestHandlerImplementation);
+            await using var loRaDevice1 = CreateLoRaDevice(simulatedDevice);
+            await using var connectionManager2 = new SingleDeviceConnectionManager(SecondLoRaDeviceClient.Object);
+            await using var loRaDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, connectionManager2, SecondRequestHandlerImplementation);
 
             using var cache1 = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice1);
-            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice1);
+            await using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
             using var cache2 = EmptyMemoryCache();
-            using var loraDeviceCache2 = CreateDeviceCache(loRaDevice2);
-            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(ServerConfiguration, cache2, SecondLoRaDeviceApi.Object, SecondLoRaDeviceFactory, loraDeviceCache2);
+            await using var loraDeviceCache2 = CreateDeviceCache(loRaDevice2);
+            await using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(ServerConfiguration, cache2, SecondLoRaDeviceApi.Object, SecondLoRaDeviceFactory, loraDeviceCache2);
 
             // Send to message processor
-            using var messageProcessor1 = TestMessageDispatcher.Create(
+            await using var messageProcessor1 = TestMessageDispatcher.Create(
                 cache1,
                 ServerConfiguration,
                 loRaDeviceRegistry1,
                 FrameCounterUpdateStrategyProvider);
 
-            using var messageProcessor2 = TestMessageDispatcher.Create(
+            await using var messageProcessor2 = TestMessageDispatcher.Create(
                 cache2,
                 SecondServerConfiguration,
                 loRaDeviceRegistry2,
@@ -98,8 +98,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(1U, loRaDevice2.FCntUp);
 
             // the following setup is required after VerifyAll() is called
-            LoRaDeviceClient.Setup(ldc => ldc.Dispose());
-            SecondLoRaDeviceClient.Setup(ldc => ldc.Dispose());
+            LoRaDeviceClient.Setup(ldc => ldc.DisposeAsync()).Returns(ValueTask.CompletedTask);
+            SecondLoRaDeviceClient.Setup(ldc => ldc.DisposeAsync()).Returns(ValueTask.CompletedTask);
         }
     }
 }

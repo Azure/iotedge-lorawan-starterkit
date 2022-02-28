@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Threading.Tasks;
     using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using Moq;
@@ -56,10 +57,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(0)]
         [InlineData(950)]
         [InlineData(1390)]
-        public void When_In_Time_For_First_Window_But_Device_Preferes_Seconds_Should_Resolve_Window_2(int delayInMs)
+        public async Task When_In_Time_For_First_Window_But_Device_Preferes_Seconds_Should_Resolve_Window_2(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager)
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager)
             {
                 PreferredWindow = ReceiveWindow2,
             };
@@ -70,10 +71,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData(0)]
         [InlineData(490)]
-        public void When_In_Time_For_First_Window_Should_Resolve_Window_1(int delayInMs)
+        public async Task When_In_Time_For_First_Window_Should_Resolve_Window_1(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
             Assert.Equal(ReceiveWindow1, target.ResolveReceiveWindowToUse(loRaDevice));
         }
@@ -82,10 +83,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(1000)]
         [InlineData(1001)]
         [InlineData(1490)]
-        public void When_In_Time_For_Second_Window_Should_Resolve_Window_2(int delayInMs)
+        public async Task When_In_Time_For_Second_Window_Should_Resolve_Window_2(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
             Assert.Equal(ReceiveWindow2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
@@ -94,10 +95,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(1801)]
         [InlineData(2000)]
         [InlineData(4000)]
-        public void When_Missed_Both_Windows_Should_Resolve_Window_0(int delayInMs)
+        public async Task When_Missed_Both_Windows_Should_Resolve_Window_0(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
             Assert.Null(target.ResolveReceiveWindowToUse(loRaDevice));
         }
@@ -109,10 +110,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(3000)]
         [InlineData(4000)]
         [InlineData(4490)]
-        public void When_In_Time_For_Join_Accept_First_Window_Should_Resolve_Window_1(int delayInMs)
+        public async Task When_In_Time_For_Join_Accept_First_Window_Should_Resolve_Window_1(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
             Assert.Equal(ReceiveWindow1, target.ResolveJoinAcceptWindowToUse());
         }
@@ -121,10 +122,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(4900)]
         [InlineData(5000)]
         [InlineData(5490)]
-        public void When_In_Time_For_Join_Accept_Second_Window_Should_Resolve_Window_2(int delayInMs)
+        public async Task When_In_Time_For_Join_Accept_Second_Window_Should_Resolve_Window_2(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
             Assert.Equal(ReceiveWindow2, target.ResolveJoinAcceptWindowToUse());
         }
@@ -133,10 +134,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(6000)]
         [InlineData(7000)]
         [InlineData(8000)]
-        public void When_Out_Of_Time_For_Join_Accept_Second_Window_Should_Resolve_Window_0(int delayInMs)
+        public async Task When_Out_Of_Time_For_Join_Accept_Second_Window_Should_Resolve_Window_0(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x31312), new DevEui(0x312321321), ConnectionManager);
 
             Assert.Null(target.ResolveJoinAcceptWindowToUse());
         }
@@ -153,10 +154,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(1601, 0, 0)]
         [InlineData(1700, 0, 0)]
         [InlineData(3000, 0, 0)]
-        public void When_Device_PreferredWindow1_In_Time_For_First_Window_Should_Get_Check_C2D_Avaible_Time_Correctly(int delayInMs, int expectedMinMs, int expectedMaxMs)
+        public async Task When_Device_PreferredWindow1_In_Time_For_First_Window_Should_Get_Check_C2D_Avaible_Time_Correctly(int delayInMs, int expectedMinMs, int expectedMaxMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x1111), new DevEui(0x2222), ConnectionManager);
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x1111), new DevEui(0x2222), ConnectionManager);
 
             // Will be around 1000 - delay - 400
             Assert.InRange(target.GetAvailableTimeToCheckCloudToDeviceMessage(loRaDevice), TimeSpan.FromMilliseconds(expectedMinMs), TimeSpan.FromMilliseconds(expectedMaxMs));
@@ -173,10 +174,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(1601, 0, 0)]
         [InlineData(1700, 0, 0)]
         [InlineData(3000, 0, 0)]
-        public void When_Device_PreferredWindow2_In_Time_For_First_Window_Should_Get_Check_C2D_Avaible_Time_Correctly(int delayInMs, int expectedMinMs, int expectedMaxMs)
+        public async Task When_Device_PreferredWindow2_In_Time_For_First_Window_Should_Get_Check_C2D_Avaible_Time_Correctly(int delayInMs, int expectedMinMs, int expectedMaxMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x1111), new DevEui(0x2222), ConnectionManager)
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x1111), new DevEui(0x2222), ConnectionManager)
             {
                 PreferredWindow = ReceiveWindow2,
             };
@@ -194,10 +195,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(1581, ReceiveWindow2)]
         [InlineData(1600, ReceiveWindow2)]
         [InlineData(2000, ReceiveWindow2)]
-        public void When_Device_Out_Of_Time_For_C2D_Receive_Should_Return_TimeSpan_Zero(int delayInMs, ReceiveWindowNumber devicePreferredReceiveWindow)
+        public async Task When_Device_Out_Of_Time_For_C2D_Receive_Should_Return_TimeSpan_Zero(int delayInMs, ReceiveWindowNumber devicePreferredReceiveWindow)
         {
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
-            using var loRaDevice = new LoRaDevice(new DevAddr(0x1111), new DevEui(0x2222), ConnectionManager)
+            await using var loRaDevice = new LoRaDevice(new DevAddr(0x1111), new DevEui(0x2222), ConnectionManager)
             {
                 PreferredWindow = devicePreferredReceiveWindow,
             };

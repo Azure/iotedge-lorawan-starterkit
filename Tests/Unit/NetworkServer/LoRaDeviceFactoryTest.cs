@@ -33,22 +33,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public void Throws_When_Device_Is_Already_Registered()
+        public async Task Throws_When_Device_Is_Already_Registered()
         {
             var deviceInfo = defaultDeviceInfo;
-            using var cache = CreateDefaultCache();
+            await using var cache = CreateDefaultCache();
             var factory = new TestDeviceFactory(loRaDeviceCache: cache);
 
-            using var device = new LoRaDevice(deviceInfo.DevAddr, deviceInfo.DevEUI, null);
+            await using var device = new LoRaDevice(deviceInfo.DevAddr, deviceInfo.DevEUI, null);
             cache.Register(device);
-            Assert.ThrowsAsync<InvalidOperationException>(() => factory.CreateAndRegisterAsync(deviceInfo, this.cancellationToken));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => factory.CreateAndRegisterAsync(deviceInfo, this.cancellationToken));
         }
 
         [Fact]
         public async Task When_Created_Successfully_It_Is_Cached()
         {
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
-            using var cache = CreateDefaultCache();
+            await using var cache = CreateDefaultCache();
             var factory = new TestDeviceFactory(defaultConfiguration, connectionManager.Object, cache, meter: TestMeter.Instance);
 
             var device = await factory.CreateAndRegisterAsync(defaultDeviceInfo, this.cancellationToken);
@@ -58,32 +58,34 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             factory.LastDeviceMock.Verify(x => x.InitializeAsync(defaultConfiguration, this.cancellationToken), Times.Once);
             connectionManager.VerifySuccess(device);
+            factory.LastDeviceClientMock.Verify(x => x.DisposeAsync(), Times.Never());
         }
 
         [Fact]
         public async Task When_Created_But_Not_Our_Device_It_Is_Not_Initialized_But_Connection_Is_Registered()
         {
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
-            using var cache = CreateDefaultCache();
+            await using var cache = CreateDefaultCache();
             var factory = new TestDeviceFactory(defaultConfiguration, connectionManager.Object, cache, x => x.Object.GatewayID = "OtherGw", TestMeter.Instance);
 
             var device = await factory.CreateAndRegisterAsync(defaultDeviceInfo, this.cancellationToken);
 
             factory.LastDeviceMock.Verify(x => x.InitializeAsync(defaultConfiguration, this.cancellationToken), Times.Never);
             connectionManager.VerifySuccess(device);
+            factory.LastDeviceClientMock.Verify(x => x.DisposeAsync(), Times.Never());
         }
 
         [Fact]
         public async Task When_Init_Fails_Cleaned_Up()
         {
             var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
-            using var cache = CreateDefaultCache();
+            await using var cache = CreateDefaultCache();
             var factory = new TestDeviceFactory(defaultConfiguration, connectionManager.Object, cache, x => x.Setup(y => y.InitializeAsync(defaultConfiguration, this.cancellationToken)).ReturnsAsync(false), TestMeter.Instance);
             await Assert.ThrowsAsync<LoRaProcessingException>(() => factory.CreateAndRegisterAsync(defaultDeviceInfo, this.cancellationToken));
 
             Assert.False(cache.TryGetByDevEui(this.defaultDeviceInfo.DevEUI, out _));
-            connectionManager.VerifyFailure(factory.LastDeviceMock.Object);
-            factory.LastDeviceMock.Protected().Verify(nameof(LoRaDevice.Dispose), Times.Once(), true, true);
+            factory.LastDeviceClientMock.Verify(x => x.DisposeAsync(), Times.Once());
+            factory.LastDeviceMock.Protected().Verify("DisposeAsyncCore", Times.Once());
         }
 
         private readonly NetworkServerConfiguration defaultConfiguration = new NetworkServerConfiguration { EnableGateway = true, IoTHubHostName = "TestHub", GatewayHostName = "testGw" };
@@ -121,6 +123,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             internal Mock<LoRaDevice> LastDeviceMock { get; private set; }
 
+            internal Mock<ILoRaDeviceClient> LastDeviceClientMock { get; private set; }
+
             protected override LoRaDevice CreateDevice(IoTHubDeviceInfo deviceInfo)
             {
                 var connectionManager = new Mock<ILoRaDeviceClientConnectionManager>();
@@ -136,6 +140,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 LastDeviceMock = device;
                 return device.Object;
             }
+
+            public override ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey)
+            {
+                LastDeviceClientMock = new Mock<ILoRaDeviceClient>();
+                return LastDeviceClientMock.Object;
+            }
         }
     }
 
@@ -144,13 +154,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         internal static void VerifySuccess(this Mock<ILoRaDeviceClientConnectionManager> connectionManager, LoRaDevice device)
         {
             connectionManager.Verify(x => x.Register(device, It.IsAny<ILoRaDeviceClient>()), Times.Once);
-            connectionManager.Verify(x => x.Release(device), Times.Never);
+            connectionManager.Verify(x => x.ReleaseAsync(device), Times.Never);
         }
 
         internal static void VerifyFailure(this Mock<ILoRaDeviceClientConnectionManager> connectionManager, LoRaDevice device)
         {
             connectionManager.Verify(x => x.Register(device, It.IsAny<ILoRaDeviceClient>()), Times.Once);
-            connectionManager.Verify(x => x.Release(device), Times.Once);
+            connectionManager.Verify(x => x.ReleaseAsync(device), Times.Once);
         }
     }
 }

@@ -6,12 +6,13 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Threading.Tasks;
 
-    public interface ILoRaDeviceClientConnectionManager : IDisposable
+    public interface ILoRaDeviceClientConnectionManager : IAsyncDisposable
     {
         ILoRaDeviceClient GetClient(LoRaDevice loRaDevice);
 
-        void Release(LoRaDevice loRaDevice);
+        Task ReleaseAsync(LoRaDevice loRaDevice);
 
         void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient);
 

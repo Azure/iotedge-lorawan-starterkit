@@ -86,11 +86,11 @@ namespace LoRaWan.Tests.Integration
             }
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -176,11 +176,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -255,11 +255,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -343,11 +343,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -433,11 +433,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -523,11 +523,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -613,11 +613,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -676,11 +676,11 @@ namespace LoRaWan.Tests.Integration
             // LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
             // .ReturnsAsync((Message)null);
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,

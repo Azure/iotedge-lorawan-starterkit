@@ -43,9 +43,8 @@ namespace LoRaWan.NetworkServer
                 }
                 return await this.deviceFactory.CreateAndRegisterAsync(this.ioTHubDevice, CancellationToken.None);
             }
-            catch (LoRaProcessingException ex)
+            catch (LoRaProcessingException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "join refused: error initializing OTAA device, getting twin failed")))
             {
-                this.logger.LogError(ex, "join refused: error initializing OTAA device, getting twin failed");
                 this.canCache = false;
                 return null;
             }

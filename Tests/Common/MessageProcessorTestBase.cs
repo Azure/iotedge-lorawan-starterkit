@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Common
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-    using System.Net.Http;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
@@ -21,12 +20,14 @@ namespace LoRaWan.Tests.Common
     using Moq;
     using Xunit.Abstractions;
 
-    public class MessageProcessorTestBase : IDisposable
+    public class MessageProcessorTestBase : IAsyncDisposable
     {
         public const string ServerGatewayID = "test-gateway";
 
+#pragma warning disable CA2213 // Disposable fields should be disposed (false positive)
         private readonly MemoryCache cache;
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
+#pragma warning restore CA2213 // Disposable fields should be disposed
         private readonly byte[] macAddress;
         private readonly long startTime;
         private readonly List<IDisposable> valuesToDispose = new List<IDisposable>();
@@ -190,7 +191,7 @@ namespace LoRaWan.Tests.Common
                                          useRealTimer,
                                          effectiveRegion);
         }
-            
+
 
         protected WaitableLoRaRequest CreateWaitableRequest(RadioMetadata metadata,
                                                             LoRaPayload loRaPayload,
@@ -213,14 +214,14 @@ namespace LoRaWan.Tests.Common
             return request;
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected virtual async ValueTask DisposeAsync(bool disposing)
         {
             if (!this.disposedValue)
             {
                 if (disposing)
                 {
                     this.cache.Dispose();
-                    this.DeviceCache.Dispose();
+                    await this.DeviceCache.DisposeAsync();
                     this.testOutputLoggerFactory.Dispose();
                     foreach (var d in this.valuesToDispose)
                     {
@@ -232,10 +233,10 @@ namespace LoRaWan.Tests.Common
             }
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
+            await DisposeAsync(disposing: true);
             GC.SuppressFinalize(this);
         }
     }
