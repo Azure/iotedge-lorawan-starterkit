@@ -534,41 +534,26 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
+                if (loRaDevice.IsConnectionOwner is true)
+                    TrackDeferredTask(SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged));
+
                 try
                 {
-                    // #1556 Ideally we should add the SaveChanges to DeferredTasks and change the logic for not doing 
-                    // a "WhenAll" but loop through all the deferred tasks and throw an aggregate exception for all those tasks that failed.
-                    if (loRaDevice.IsConnectionOwner is true)
-                        await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged);
-                }
-                catch (OperationCanceledException saveChangesException)
-                {
-                    this.logger.LogError($"error updating reported properties. {saveChangesException.Message}");
-                }
-                catch (ArgumentOutOfRangeException ex)
-                {
-                    this.logger.LogError($"The device properties are out of range. {ex.Message}");
+                    if (deferredTasks is { } someDeferredTasks)
+                    {
+                        var deferredTaskExecutionResult = await Task.WhenAny(Task.WhenAll(someDeferredTasks));
+                        if (deferredTaskExecutionResult.Exception is { } someException)
+                        {
+                            this.logger.LogError(someException, "Error during the execution of at least one of the deferred tasks.");
+                            this.unhandledExceptions.Add(someException is AggregateException someAggregateException ? someAggregateException.InnerExceptions.Count : 1);
+                        }
+                    }
                 }
                 finally
                 {
-                    try
+                    if (deviceConnectionActivity is { } someDeviceConnectionActivity)
                     {
-                        if (deferredTasks is { } someDeferredTasks)
-                        {
-                            var deferredTaskExecutionResult = await Task.WhenAny(Task.WhenAll(someDeferredTasks));
-                            if (deferredTaskExecutionResult.Exception is { } someException)
-                            {
-                                this.logger.LogError(someException, "Error during the execution of at least one of the deferred tasks.");
-                                this.unhandledExceptions.Add(someException is AggregateException someAggregateException ? someAggregateException.InnerExceptions.Count : 1);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        if (deviceConnectionActivity is { } someDeviceConnectionActivity)
-                        {
-                            await someDeviceConnectionActivity.DisposeAsync();
-                        }
+                        await someDeviceConnectionActivity.DisposeAsync();
                     }
                 }
             }
