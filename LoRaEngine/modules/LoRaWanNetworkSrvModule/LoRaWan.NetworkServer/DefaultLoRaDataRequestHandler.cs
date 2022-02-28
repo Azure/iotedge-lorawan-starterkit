@@ -33,6 +33,7 @@ namespace LoRaWan.NetworkServer
         private readonly Counter<int> receiveWindowHits;
         private readonly Histogram<int> d2cPayloadSizeHistogram;
         private readonly Counter<int> c2dMessageTooLong;
+        private readonly Counter<int> unhandledExceptions;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
 
         public DefaultLoRaDataRequestHandler(
@@ -60,6 +61,7 @@ namespace LoRaWan.NetworkServer
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
             this.d2cPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.D2CMessageSize);
             this.c2dMessageTooLong = meter?.CreateCounter<int>(MetricRegistry.C2DMessageTooLong);
+            this.unhandledExceptions = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
@@ -552,7 +554,14 @@ namespace LoRaWan.NetworkServer
                     try
                     {
                         if (deferredTasks is { } someDeferredTasks)
-                            await Task.WhenAll(someDeferredTasks);
+                        {
+                            var deferredTaskExecutionResult = await Task.WhenAny(Task.WhenAll(someDeferredTasks));
+                            if (deferredTaskExecutionResult.Exception is { } someException)
+                            {
+                                this.logger.LogError(someException, "Error during the execution of at least one of the deferred tasks.");
+                                this.unhandledExceptions.Add(someException is AggregateException someAggregateException ? someAggregateException.InnerExceptions.Count : 1);
+                            }
+                        }
                     }
                     finally
                     {
