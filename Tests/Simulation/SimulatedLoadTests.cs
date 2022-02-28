@@ -336,7 +336,7 @@ namespace LoRaWan.Tests.Simulation
             // Wait for messages in IoT Hub.
             if (!disableWaitForIotHub)
             {
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                await Task.Delay(TimeSpan.FromSeconds(100));
             }
 
             var actualMessageCounts = new Dictionary<DevEui, int>();
@@ -363,6 +363,11 @@ namespace LoRaWan.Tests.Simulation
                     DeduplicationMode.Drop => numberOfMessages,
                     var mode => throw new SwitchExpressionException(mode)
                 };
+
+                if (!string.IsNullOrEmpty(device.LoRaDevice.GatewayID))
+                {
+                    expectedMessageCount /= Configuration.LnsEndpointsForSimulator.Count;
+                }
 
                 var applicableMessageCount = correction is { } someCorrection ? expectedMessageCount * someCorrection : expectedMessageCount;
                 var actualMessageCount = actualMessageCounts[device.DevEUI];
