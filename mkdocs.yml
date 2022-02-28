@@ -89,6 +89,7 @@ nav:
     - user-guide/architecture.md
     - user-guide/message-flows.md
     - user-guide/deployment-scenarios.md
+    - user-guide/scalability.md
     - user-guide/caching.md
     - user-guide/ci-setup.md
     - user-guide/adaptive-data-rate.md
