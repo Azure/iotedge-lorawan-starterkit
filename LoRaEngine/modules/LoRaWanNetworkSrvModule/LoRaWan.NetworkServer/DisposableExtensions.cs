@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer
                 _ => (int?)null,
             };
 
-            if (capacity is 0)
+            if (capacity is 0) // disposables collection is empty so bail out early
                 return;
 
             using var semaphore = new SemaphoreSlim(concurrency);
