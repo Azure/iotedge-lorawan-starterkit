@@ -44,15 +44,37 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(task.IsCompletedSuccessfully);
         }
 
+        public enum DisposablesSourceKind { Sequence, Array, ReadOnlyCollection }
+
         [Theory]
-        [InlineData(10, 1)]
-        [InlineData(10, 5)]
-        [InlineData(10, 10)]
-        public async Task DisposeAllAsync_Disposes_Each_Disposable(int count, int concurrency)
+        [InlineData(DisposablesSourceKind.Sequence, 10, 1)]
+        [InlineData(DisposablesSourceKind.Sequence, 10, 5)]
+        [InlineData(DisposablesSourceKind.Sequence, 10, 10)]
+        [InlineData(DisposablesSourceKind.Array, 10, 1)]
+        [InlineData(DisposablesSourceKind.Array, 10, 5)]
+        [InlineData(DisposablesSourceKind.Array, 10, 10)]
+        [InlineData(DisposablesSourceKind.ReadOnlyCollection, 10, 1)]
+        [InlineData(DisposablesSourceKind.ReadOnlyCollection, 10, 5)]
+        [InlineData(DisposablesSourceKind.ReadOnlyCollection, 10, 10)]
+        public async Task DisposeAllAsync_Disposes_Each_Disposable(DisposablesSourceKind sourceKind, int count, int concurrency)
         {
             var disposableMocks = Enumerable.Range(1, count).Select(_ => new Mock<IAsyncDisposable>()).ToArray();
 
-            await disposableMocks.Select(m => m.Object).DisposeAllAsync(concurrency);
+            var disposables = disposableMocks.Select(m => m.Object);
+            switch (sourceKind)
+            {
+                case DisposablesSourceKind.Sequence:
+                    break;
+                case DisposablesSourceKind.Array:
+                    disposables = disposables.ToArray();
+                    break;
+                case DisposablesSourceKind.ReadOnlyCollection:
+                    disposables = disposables.ToArray().WrapInReadOnlyCollection();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(sourceKind), sourceKind, null);
+            }
+            await disposables.DisposeAllAsync(concurrency);
 
             foreach (var disposableMock in disposableMocks)
                 disposableMock.Verify(x => x.DisposeAsync(), Times.Once);
