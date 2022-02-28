@@ -90,16 +90,15 @@ namespace LoRaWan.NetworkServer
                 Exception deferredTaskException = null;
                 if (deferredTasks is { } someDeferredTasks)
                 {
-                    try
+                    _ = await Task.WhenAny(Task.WhenAll(someDeferredTasks));
+                    var exs = someDeferredTasks.GetExceptions();
+
+                    deferredTaskException = exs switch
                     {
-                        await Task.WhenAll(someDeferredTasks);
-                    }
-#pragma warning disable CA1031 // Do not catch general exception types (exception is rethrown)
-                    catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-                    {
-                        deferredTaskException = ex;
-                    }
+                        { Count: 1 } => exs[0],
+                        { Count: > 1 } => new AggregateException(exs),
+                        _ => null
+                    };
                 }
 
                 if (edi is { } someEdi)
