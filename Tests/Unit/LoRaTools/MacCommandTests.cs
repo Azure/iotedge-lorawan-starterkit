@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
     using global::LoRaTools.Mac;
     using global::LoRaTools.Regions;
     using LoRaWan.Tests.Common;
+    using Newtonsoft.Json;
     using Xunit;
 
     public abstract class MacCommandTests
@@ -73,6 +74,10 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override MacCommand Subject => new DevStatusRequest();
             public override IReadOnlyList<byte> Bytes => Array.Empty<byte>();
             public override int Length => 1;
+
+            [Fact]
+            public void Deserializes_Correctly() =>
+                DeserializationTest<DevStatusRequest>(actual => actual.Cid == Cid.DevStatusCmd, @"{""cid"":6}");
         }
 
         public sealed class DutyCycleAnswerTests : MacCommandTests
@@ -89,6 +94,12 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override MacCommand Subject => new DutyCycleRequest(3);
             public override IReadOnlyList<byte> Bytes => new byte[] { 3 };
             public override int Length => 2;
+
+            [Fact]
+            public void Deserializes_Correctly() =>
+                DeserializationTest<DutyCycleRequest>(actual => actual.Cid == Cid.DutyCycleCmd
+                                                             && actual.DutyCyclePL == 3,
+                                                      @"{""cid"":4,""dutyCyclePL"":3}");
         }
 
         public sealed class LinkAdrAnswerTests : MacCommandTests
@@ -105,6 +116,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override MacCommand Subject => new LinkADRRequest(1, 2, 3, 4, 5);
             public override IReadOnlyList<byte> Bytes => new byte[] { 0b10010, 0b11, 0, 0b1000101 };
             public override int Length => 5;
+
+            [Fact]
+            public void Deserializes_Correctly() =>
+                DeserializationTest<LinkADRRequest>(actual => actual.Cid == Cid.LinkADRCmd
+                                                           && actual.DataRate == DataRateIndex.DR1
+                                                           && actual.TxPower == 2
+                                                           && actual.ChMask == 3
+                                                           && actual.ChMaskCntl == 4
+                                                           && actual.NbRep == 5,
+                                                    @"{""cid"":3,""dataRate"":1,""txPower"":2,""chMask"":3,""chMaskCntl"":4,""nbRep"":5}");
         }
 
         public sealed class LinkCheckAnswerTests : MacCommandTests
@@ -137,6 +158,15 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override MacCommand Subject => new NewChannelRequest(1, 2, 3, 4);
             public override IReadOnlyList<byte> Bytes => new byte[] { 1, 2, 0, 0, 0b110100 };
             public override int Length => 6;
+
+            [Fact]
+            public void Deserializes_Correctly() =>
+                DeserializationTest<NewChannelRequest>(actual => actual.Cid == Cid.NewChannelCmd
+                                                              && actual.ChIndex == 1
+                                                              && actual.Freq == 2
+                                                              && actual.MaxDR == 3
+                                                              && actual.MinDR == 4,
+                                                       @"{""cid"":7,""chIndex"":1,""freq"":2,""drRange"":52}");
         }
 
         public sealed class RxParamSetupAnswerTests : MacCommandTests
@@ -153,6 +183,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override MacCommand Subject => new RXParamSetupRequest(1, 2, 3);
             public override IReadOnlyList<byte> Bytes => new byte[] { 0b10010, 3, 0, 0 };
             public override int Length => 5;
+
+            [Fact]
+            public void Deserializes_Correctly() =>
+                DeserializationTest<RXParamSetupRequest>(actual => actual.Cid == Cid.RXParamCmd
+                                                                && actual.Frequency == 3
+                                                                && actual.RX1DROffset == 1
+                                                                && actual.RX2DataRate == 2,
+                                                         @"{""cid"":5,""frequency"":3,""dlSettings"":18}");
         }
 
         public sealed class RxTimingSetupAnswerTests : MacCommandTests
@@ -169,6 +207,12 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public override MacCommand Subject => new RXTimingSetupRequest(1);
             public override IReadOnlyList<byte> Bytes => new byte[] { 1 };
             public override int Length => 2;
+
+            [Fact]
+            public void Deserializes_Correctly() =>
+                DeserializationTest<RXTimingSetupRequest>(actual => actual.Cid == Cid.RXTimingCmd
+                                                                 && actual.Settings == 1,
+                                                          @"{""cid"":8,""settings"":1}");
         }
 
         [Fact]
@@ -182,5 +226,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void Cid_Success() => Assert.Equal(Cid, Subject.Cid);
+
+        protected static void DeserializationTest<T>(Predicate<T> predicate, string json) =>
+            Assert.True(predicate(JsonConvert.DeserializeObject<T>(json) ?? throw new InvalidOperationException("JSON was deserialized to null.")));
     }
 }

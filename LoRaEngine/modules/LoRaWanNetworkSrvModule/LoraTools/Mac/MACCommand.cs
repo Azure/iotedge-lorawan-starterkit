@@ -19,6 +19,7 @@ namespace LoRaTools
         [JsonProperty("cid")]
         public Cid Cid { get; set; }
 
+        [JsonIgnore]
         public abstract int Length { get; }
 
         public abstract override string ToString();

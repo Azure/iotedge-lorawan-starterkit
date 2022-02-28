@@ -68,10 +68,6 @@ namespace LoRaTools
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
-
-                    case Cid.Zero:
-                    case Cid.One:
-                    case Cid.LinkCheckCmd:
                     case Cid.LinkADRCmd:
                     {
                         GetValue("dataRate", out var datarate);
@@ -90,6 +86,9 @@ namespace LoRaTools
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
+                    case Cid.Zero:
+                    case Cid.One:
+                    case Cid.LinkCheckCmd:
                     case Cid.TxParamSetupCmd:
                     default:
                         throw new JsonReaderException($"Unhandled command identifier: {macCommandType}");
